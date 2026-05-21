@@ -10,13 +10,9 @@ import androidx.core.content.edit
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import it.fast4x.riplay.LocalPlayerAwareWindowInsets
-import it.fast4x.riplay.R
-import it.fast4x.riplay.extensions.preferences.lastfmSessionTokenKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LASTFM_SESSION_TOKEN
 import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.ui.components.themed.Title
 import it.fast4x.riplay.utils.appContext
-import it.fast4x.riplay.utils.globalContext
 import timber.log.Timber
 
 @Composable
@@ -28,7 +24,7 @@ fun LastFmAuthScreen(
             lastFmService = LastFmClient.service,
             onSaveSessionKey = { sessionKey ->
                 appContext().preferences.edit(commit = true) {
-                    putString(lastfmSessionTokenKey, sessionKey)
+                    putString(LASTFM_SESSION_TOKEN.key, sessionKey)
                 }
                 Timber.d("LastFmAuthScreen: Save Session Key -> $sessionKey")
             }

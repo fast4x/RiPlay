@@ -1,6 +1,5 @@
 package it.fast4x.riplay.ui.screens.player.unified
 
-import androidx.annotation.OptIn
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
@@ -46,15 +45,14 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.PauseBetweenSongs
 import it.fast4x.riplay.enums.PlayerTimelineType
-import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
-import it.fast4x.riplay.extensions.preferences.pauseBetweenSongsKey
-import it.fast4x.riplay.extensions.preferences.playerTimelineTypeKey
-import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PAUSE_BETWEEN_SONGS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_TIMELINE_TYPE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.seekWithTapKey
-import it.fast4x.riplay.extensions.preferences.showRemainingSongTimeKey
-import it.fast4x.riplay.extensions.preferences.textoutlineKey
-import it.fast4x.riplay.extensions.preferences.transparentbarKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SEEK_WITH_TAP
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_REMAINING_SONG_TIME
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TEXT_OUTLINE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BAR
 import it.fast4x.riplay.ui.components.SeekBar
 import it.fast4x.riplay.ui.components.SeekBarAudioForms
 import it.fast4x.riplay.ui.components.SeekBarSegmentColored
@@ -66,11 +64,8 @@ import it.fast4x.riplay.utils.PlayerViewModelFactory
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.isCompositionLaunched
-import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.delay
-import riplay.composeapp.generated.resources.Res
-import riplay.composeapp.generated.resources.play
 import timber.log.Timber
 
 @UnstableApi
@@ -82,8 +77,8 @@ fun UnifiedGetSeekBar(
     onPlay: () -> Unit = {},
 ) {
 
-    val playerTimelineType by rememberObservedPreference(
-        playerTimelineTypeKey,
+    val playerTimelineType by rememberPreference(
+        PLAYER_TIMELINE_TYPE.key,
         PlayerTimelineType.Default
     )
     var scrubbingPosition by remember(mediaId) {
@@ -105,17 +100,17 @@ fun UnifiedGetSeekBar(
     val position = positionAndDuration.first
     val duration = positionAndDuration.second
 
-    var transparentbar by rememberObservedPreference(transparentbarKey, true)
+    var transparentbar by rememberPreference(TRANSPARENT_BAR.key, true)
     val animatedPosition = remember { Animatable(position.toFloat()) }
     var isSeeking by remember { mutableStateOf(false) }
-    val showRemainingSongTime by rememberObservedPreference(showRemainingSongTimeKey, true)
-    val pauseBetweenSongs by rememberObservedPreference(pauseBetweenSongsKey, PauseBetweenSongs.`0`)
+    val showRemainingSongTime by rememberPreference(SHOW_REMAINING_SONG_TIME.key, true)
+    val pauseBetweenSongs by rememberPreference(PAUSE_BETWEEN_SONGS.key, PauseBetweenSongs.`0`)
 
     val compositionLaunched = isCompositionLaunched()
     LaunchedEffect(mediaId) {
         if (compositionLaunched) animatedPosition.animateTo(0f)
     }
-    val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
+    val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
     LaunchedEffect(position) {
         if (!isSeeking && !animatedPosition.isRunning)
             animatedPosition.animateTo(
@@ -125,8 +120,8 @@ fun UnifiedGetSeekBar(
                 )
             )
     }
-    val textoutline by rememberObservedPreference(textoutlineKey, false)
-    val seekWithTap by rememberObservedPreference(seekWithTapKey, true)
+    val textoutline by rememberPreference(TEXT_OUTLINE.key, false)
+    val seekWithTap by rememberPreference(SEEK_WITH_TAP.key, true)
 
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,

@@ -26,10 +26,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import it.fast4x.environment.Environment
-import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
@@ -42,7 +41,7 @@ fun ChipItemColored(
     modifier: Modifier = Modifier
 ) {
     var thumbnailRoundness by rememberPreference(
-        thumbnailRoundnessKey,
+        THUMBNAIL_ROUNDNESS.key,
         ThumbnailRoundness.Light
     )
 
@@ -99,7 +98,7 @@ fun ChipGridItemColored(
     thumbnailSizeDp: Dp
 ) {
     var thumbnailRoundness by rememberPreference(
-        thumbnailRoundnessKey,
+        THUMBNAIL_ROUNDNESS.key,
         ThumbnailRoundness.Light
     )
 

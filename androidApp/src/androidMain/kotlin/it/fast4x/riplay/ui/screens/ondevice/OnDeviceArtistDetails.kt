@@ -92,10 +92,10 @@ import it.fast4x.riplay.utils.fadingEdge
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.forcePlay
 import kotlinx.coroutines.Dispatchers
@@ -129,7 +129,7 @@ fun OnDeviceArtistDetails(
 
     val endPaddingValues = windowInsets.only(WindowInsetsSides.End).asPaddingValues()
 
-    val thumbnailRoundness by rememberPreference(thumbnailRoundnessKey, ThumbnailRoundness.Light)
+    val thumbnailRoundness by rememberPreference(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
 
     var artistItem by rememberSaveable {
         mutableStateOf(ArtistItem.Songs)
@@ -153,7 +153,7 @@ fun OnDeviceArtistDetails(
     var showArtistItems by rememberSaveable { mutableStateOf(false) }
 
     val hapticFeedback = LocalHapticFeedback.current
-    val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
+    val parentalControlEnabled by rememberPreference(PARENTAL_CONTROL_ENABLED.key, false)
     val menuState = LocalGlobalSheetState.current
 
     var scrollToNowPlaying by remember {

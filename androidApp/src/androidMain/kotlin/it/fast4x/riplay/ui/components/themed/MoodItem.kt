@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.dp
 import it.fast4x.environment.Environment
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.ui.styling.shimmer
 import it.fast4x.riplay.utils.colorPalette
@@ -43,7 +43,7 @@ fun MoodItemColored(
     modifier: Modifier = Modifier
 ) {
     var thumbnailRoundness by rememberPreference(
-        thumbnailRoundnessKey,
+        THUMBNAIL_ROUNDNESS.key,
         ThumbnailRoundness.Light
     )
 
@@ -98,7 +98,7 @@ fun MoodGridItemColored(
     thumbnailSizeDp: Dp
 ) {
     var thumbnailRoundness by rememberPreference(
-        thumbnailRoundnessKey,
+        THUMBNAIL_ROUNDNESS.key,
         ThumbnailRoundness.Light
     )
 
@@ -159,7 +159,7 @@ fun MoodItem(
     modifier: Modifier = Modifier
 ) {
     var thumbnailRoundness by rememberPreference(
-        thumbnailRoundnessKey,
+        THUMBNAIL_ROUNDNESS.key,
         ThumbnailRoundness.Light
     )
 
@@ -205,7 +205,7 @@ fun MoodGridItem(
     thumbnailSizeDp: Dp
 ) {
     var thumbnailRoundness by rememberPreference(
-        thumbnailRoundnessKey,
+        THUMBNAIL_ROUNDNESS.key,
         ThumbnailRoundness.Light
     )
 

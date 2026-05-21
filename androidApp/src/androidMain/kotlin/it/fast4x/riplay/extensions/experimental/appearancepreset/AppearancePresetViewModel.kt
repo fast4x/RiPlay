@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearancePreset
 import it.fast4x.riplay.extensions.experimental.appearancepreset.models.PresetEvent
 import it.fast4x.riplay.extensions.experimental.appearancepreset.models.PresetUiState
-import it.fast4x.riplay.extensions.preferences.activeAppearancePresetIdKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ACTIVE_APPEARANCE_PRESET_ID
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.utils.appContext
 import kotlinx.coroutines.channels.Channel
@@ -35,7 +35,7 @@ class AppearancePresetViewModel(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = appContext().preferences.getString(activeAppearancePresetIdKey, null)
+            initialValue = appContext().preferences.getString(ACTIVE_APPEARANCE_PRESET_ID.key, null)
         )
 
     init { loadPresets() }

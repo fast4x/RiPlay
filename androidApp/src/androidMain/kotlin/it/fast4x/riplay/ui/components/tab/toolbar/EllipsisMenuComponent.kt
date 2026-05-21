@@ -16,7 +16,7 @@ import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.GlobalSheetState
 import it.fast4x.riplay.ui.components.themed.Menu
-import it.fast4x.riplay.extensions.preferences.menuStyleKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MENU_STYLE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 
 class EllipsisMenuComponent private constructor(
@@ -31,7 +31,7 @@ class EllipsisMenuComponent private constructor(
         fun init( items: () -> List<Button> ) = EllipsisMenuComponent(
             items,
             LocalGlobalSheetState.current,
-            rememberPreference( menuStyleKey, MenuStyle.List )
+            rememberPreference( MENU_STYLE.key, MenuStyle.List )
         )
     }
 

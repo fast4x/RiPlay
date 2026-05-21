@@ -1,7 +1,7 @@
 package it.fast4x.riplay.enums
 
 import androidx.compose.runtime.Composable
-import it.fast4x.riplay.extensions.preferences.UiTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.UI_TYPE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 
 enum class UiType {
@@ -11,7 +11,7 @@ enum class UiType {
     companion object {
 
         @Composable
-        fun current(): UiType = rememberPreference( UiTypeKey, RiPlay ).value
+        fun current(): UiType = rememberPreference( UI_TYPE.key, RiPlay ).value
     }
 
     @Composable

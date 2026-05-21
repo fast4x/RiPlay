@@ -34,7 +34,7 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.SearchType
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.transitionEffectKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSITION_EFFECT
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.secondary
@@ -118,7 +118,7 @@ fun SearchTypeScreen(
                     innerTextField()
                 }
             }
-    val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.SlideHorizontal)
+    val transitionEffect by rememberPreference(TRANSITION_EFFECT.key, TransitionEffect.SlideHorizontal)
 
             ScreenContainer(
                 navController,

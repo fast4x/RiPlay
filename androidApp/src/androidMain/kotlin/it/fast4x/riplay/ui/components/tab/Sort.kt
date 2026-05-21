@@ -24,7 +24,7 @@ import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.GlobalSheetState
 import it.fast4x.riplay.ui.components.themed.MenuEntry
-import it.fast4x.riplay.extensions.preferences.menuStyleKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MENU_STYLE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.ui.components.navigation.header.TabToolBar
@@ -57,7 +57,7 @@ open class Sort<T: Enum<T>> protected constructor(
                 sortByEnums,
                 sortByState,
                 LocalGlobalSheetState.current,
-                rememberPreference( menuStyleKey, MenuStyle.List )
+                rememberPreference( MENU_STYLE.key, MenuStyle.List )
             )
     }
 

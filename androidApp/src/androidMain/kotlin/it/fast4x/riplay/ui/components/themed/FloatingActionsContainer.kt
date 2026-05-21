@@ -39,13 +39,12 @@ import it.fast4x.riplay.ui.components.FabItem
 import it.fast4x.riplay.ui.components.MultiFloatingActionsButton
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.ScrollingInfo
-import it.fast4x.riplay.extensions.preferences.floatActionIconOffsetXkey
-import it.fast4x.riplay.extensions.preferences.floatActionIconOffsetYkey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.FLOAT_ACTION_ICON_OFFSET_X
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.FLOAT_ACTION_ICON_OFFSET_Y
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.scrollingInfo
 import it.fast4x.riplay.utils.smoothScrollToTop
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 @ExperimentalMaterial3Api
 @UnstableApi
@@ -205,8 +204,8 @@ fun BoxScope.FloatingActions(
     val playerSheetState = LocalPlayerSheetState.current
     val bottomPadding = if (!playerSheetState.isExpanded) bottomDp + Dimensions.collapsedPlayer else bottomDp
 
-    var offsetX = rememberPreference(floatActionIconOffsetXkey, 0F )
-    var offsetY = rememberPreference(floatActionIconOffsetYkey, 0F )
+    var offsetX = rememberPreference(FLOAT_ACTION_ICON_OFFSET_X.key, 0F )
+    var offsetY = rememberPreference(FLOAT_ACTION_ICON_OFFSET_Y.key, 0F )
 
     val modifierActions = Modifier
         .padding(bottom = 16.dp)

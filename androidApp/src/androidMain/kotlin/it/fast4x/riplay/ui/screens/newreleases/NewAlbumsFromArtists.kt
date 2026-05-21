@@ -42,11 +42,11 @@ import it.fast4x.riplay.ui.items.AlbumItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.styling.center
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
-import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.NAVIGATION_BAR_POSITION
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.secondary
-import it.fast4x.riplay.extensions.preferences.showSearchTabKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SEARCH_TAB
 import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
@@ -78,15 +78,15 @@ fun NewAlbumsFromArtists(
     val thumbnailSizePx = thumbnailSizeDp.px
 
     val navigationBarPosition by rememberPreference(
-        navigationBarPositionKey,
+        NAVIGATION_BAR_POSITION.key,
         NavigationBarPosition.Bottom
     )
 
-    val showSearchTab by rememberPreference(showSearchTabKey, false)
+    val showSearchTab by rememberPreference(SHOW_SEARCH_TAB.key, false)
 
     val lazyGridState = rememberLazyGridState()
 
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
 
 
     Column(

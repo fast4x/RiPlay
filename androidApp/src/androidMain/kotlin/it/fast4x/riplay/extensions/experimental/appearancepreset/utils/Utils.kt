@@ -2,7 +2,6 @@ package it.fast4x.riplay.extensions.experimental.appearancepreset.utils
 
 import android.content.Context
 import android.net.Uri
-import androidx.work.impl.model.Preference
 import it.fast4x.riplay.enums.AnimatedGradient
 import it.fast4x.riplay.enums.CarouselSize
 import it.fast4x.riplay.enums.ColorPaletteMode
@@ -23,166 +22,165 @@ import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ThumbnailType
 import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearanceSettings
-import it.fast4x.riplay.extensions.preferences.actionExpandedKey
-import it.fast4x.riplay.extensions.preferences.actionspacedevenlyKey
-import it.fast4x.riplay.extensions.preferences.albumCoverRotationKey
-import it.fast4x.riplay.extensions.preferences.animatedGradientKey
-import it.fast4x.riplay.extensions.preferences.blackgradientKey
-import it.fast4x.riplay.extensions.preferences.blurStrengthKey
-import it.fast4x.riplay.extensions.preferences.bottomgradientKey
-import it.fast4x.riplay.extensions.preferences.buttonzoomoutKey
-import it.fast4x.riplay.extensions.preferences.carouselKey
-import it.fast4x.riplay.extensions.preferences.carouselSizeKey
-import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
-import it.fast4x.riplay.extensions.preferences.colorPaletteNameKey
-import it.fast4x.riplay.extensions.preferences.controlsExpandedKey
-import it.fast4x.riplay.extensions.preferences.coverThumbnailAnimationKey
-import it.fast4x.riplay.extensions.preferences.disablePlayerHorizontalSwipeKey
-import it.fast4x.riplay.extensions.preferences.expandedplayerKey
-import it.fast4x.riplay.extensions.preferences.expandedplayertoggleKey
-import it.fast4x.riplay.extensions.preferences.fadingedgeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ACTION_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ACTIONS_SPACED_EVENLY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUM_COVER_ROTATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ANIMATED_GRADIENT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BLACK_GRADIENT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BLUR_SCALE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BOTTOM_GRADIENT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BUTTON_ZOOM_OUT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CAROUSEL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CAROUSEL_SIZE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_NAME
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CONTROLS_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COVER_THUMBNAIL_ANIMATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_PLAYER_HORIZONTAL_SWIPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXPANDED_PLAYER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXPANDED_PLAYER_TOGGLE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.FADING_EDGE
 import it.fast4x.riplay.extensions.preferences.getEnum
-import it.fast4x.riplay.extensions.preferences.getEnumNew
-import it.fast4x.riplay.extensions.preferences.iconLikeTypeKey
-import it.fast4x.riplay.extensions.preferences.keepPlayerMinimizedKey
-import it.fast4x.riplay.extensions.preferences.miniQueueExpandedKey
-import it.fast4x.riplay.extensions.preferences.noblurKey
-import it.fast4x.riplay.extensions.preferences.playerBackgroundColorsKey
-import it.fast4x.riplay.extensions.preferences.playerControlsTypeKey
-import it.fast4x.riplay.extensions.preferences.playerInfoShowIconsKey
-import it.fast4x.riplay.extensions.preferences.playerInfoTypeKey
-import it.fast4x.riplay.extensions.preferences.playerPlayButtonTypeKey
-import it.fast4x.riplay.extensions.preferences.playerSwapControlsWithTimelineKey
-import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeLKey
-import it.fast4x.riplay.extensions.preferences.playerTimelineSizeKey
-import it.fast4x.riplay.extensions.preferences.playerTimelineTypeKey
-import it.fast4x.riplay.extensions.preferences.playerTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ICON_LIKE_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.KEEP_PLAYER_MINIMIZED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MINI_QUEUE_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.NO_BLUR
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_BACKGROUND_COLORS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_CONTROLS_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_INFO_SHOW_ICONS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_INFO_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_PLAY_BUTTON_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_SWAP_CONTROLS_WITH_TIMELINE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_THUMBNAIL_SIZE_L
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_TIMELINE_SIZE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_TIMELINE_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_TYPE
 import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.extensions.preferences.prevNextSongsKey
-import it.fast4x.riplay.extensions.preferences.queueDurationExpandedKey
-import it.fast4x.riplay.extensions.preferences.queueTypeKey
-import it.fast4x.riplay.extensions.preferences.showBackgroundLyricsKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerAddToPlaylistKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerArrowKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerDiscoverKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerLoopKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerLyricsKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerMenuKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerShuffleKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerSleepTimerKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerStartRadioKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerSystemEqualizerKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerVideoKey
-import it.fast4x.riplay.extensions.preferences.showCoverThumbnailAnimationKey
-import it.fast4x.riplay.extensions.preferences.showLikeButtonBackgroundPlayerKey
-import it.fast4x.riplay.extensions.preferences.showNextSongsInPlayerKey
-import it.fast4x.riplay.extensions.preferences.showPlayerActionsBarKey
-import it.fast4x.riplay.extensions.preferences.showRemainingSongTimeKey
-import it.fast4x.riplay.extensions.preferences.showTopActionsBarKey
-import it.fast4x.riplay.extensions.preferences.showTotalTimeQueueKey
-import it.fast4x.riplay.extensions.preferences.showalbumcoverKey
-import it.fast4x.riplay.extensions.preferences.showlyricsthumbnailKey
-import it.fast4x.riplay.extensions.preferences.showsongsKey
-import it.fast4x.riplay.extensions.preferences.showthumbnailKey
-import it.fast4x.riplay.extensions.preferences.showvisthumbnailKey
-import it.fast4x.riplay.extensions.preferences.statsExpandedKey
-import it.fast4x.riplay.extensions.preferences.statsfornerdsKey
-import it.fast4x.riplay.extensions.preferences.swipeUpQueueKey
-import it.fast4x.riplay.extensions.preferences.tapqueueKey
-import it.fast4x.riplay.extensions.preferences.textoutlineKey
-import it.fast4x.riplay.extensions.preferences.thumbnailFadeExKey
-import it.fast4x.riplay.extensions.preferences.thumbnailFadeKey
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
-import it.fast4x.riplay.extensions.preferences.thumbnailSpacingKey
-import it.fast4x.riplay.extensions.preferences.thumbnailTypeKey
-import it.fast4x.riplay.extensions.preferences.thumbnailpauseKey
-import it.fast4x.riplay.extensions.preferences.timelineExpandedKey
-import it.fast4x.riplay.extensions.preferences.titleExpandedKey
-import it.fast4x.riplay.extensions.preferences.topPaddingKey
-import it.fast4x.riplay.extensions.preferences.transparentBackgroundPlayerActionBarKey
-import it.fast4x.riplay.extensions.preferences.transparentbarKey
-import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PREV_NEXT_SONGS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUEUE_DURATION_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUEUE_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BACKGROUND_LYRICS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_ADD_TO_PLAYLIST
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_ARROW
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_DISCOVER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_LOOP
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_LYRICS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_MENU
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_SHUFFLE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_SLEEP_TIMER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_START_RADIO
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_SYSTEM_EQUALIZER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_VIDEO
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_COVER_THUMBNAIL_ANIMATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LIKE_BUTTON_BACKGROUND_PLAYER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_NEXT_SONGS_IN_PLAYER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_PLAYER_ACTIONS_BAR
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_REMAINING_SONG_TIME
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_TOP_ACTIONS_BAR
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_TOTAL_TIME_QUEUE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_ALBUM_COVER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LYRICS_THUMBNAIL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SONGS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_THUMBNAIL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_VIS_THUMBNAIL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.STATS_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.STATS_FOR_NERDS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SWIPE_UP_QUEUE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TAP_QUEUE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TEXT_OUTLINE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_FADE_EX
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_FADE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_SPACING
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_PAUSE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TIMELINE_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TITLE_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TOP_PADDING
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BAR
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.VISUALIZER_ENABLED
 import kotlin.Boolean
 
 fun AppearanceSettings.Companion.fromCurrentSettings(context: Context): AppearanceSettings {
     val prefs = context.preferences
     return AppearanceSettings(
-        showTopActionsBar = prefs.getBoolean(showTopActionsBarKey, true),
-        showThumbnail = prefs.getBoolean(showthumbnailKey, true),
-        playerBackgroundColors = prefs.getEnum(playerBackgroundColorsKey, PlayerBackgroundColors.BlurredCoverColor),
-        blurStrength = prefs.getFloat(blurStrengthKey, 50f),
-        thumbnailRoundness = prefs.getEnum(thumbnailRoundnessKey, ThumbnailRoundness.None),
-        thumbnailType = prefs.getEnum(thumbnailTypeKey, ThumbnailType.Modern),
-        playerThumbnailSize = prefs.getEnum(playerThumbnailSizeLKey, PlayerThumbnailSize.Big),
-        transparentBar = prefs.getBoolean(transparentbarKey, true),
-        bottomGradient = prefs.getBoolean(bottomgradientKey, true),
-        expandedPlayer = prefs.getBoolean(expandedplayerKey, true),
-        showLyricsThumbnail = prefs.getBoolean(showlyricsthumbnailKey, false),
-        playerInfoType = prefs.getEnum(playerInfoTypeKey, PlayerInfoType.Essential),
-        playerType = prefs.getEnum(playerTypeKey, PlayerType.Essential),
-        playerTimelineType = prefs.getEnum(playerTimelineTypeKey, PlayerTimelineType.ThinBar),
-        playerTimelineSize = prefs.getEnum(playerTimelineSizeKey, PlayerTimelineSize.Biggest),
-        playerControlsType = prefs.getEnum(playerControlsTypeKey, PlayerControlsType.Essential),
-        playerPlayButtonType = prefs.getEnum(playerPlayButtonTypeKey, PlayerPlayButtonType.Disabled),
-        showTotalTimeQueue = prefs.getBoolean(showTotalTimeQueueKey, false),
-        showRemainingSongTime = prefs.getBoolean(showRemainingSongTimeKey, true),
-        showNextSongsInPlayer = prefs.getBoolean(showNextSongsInPlayerKey, false),
-        colorPaletteName = prefs.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic),
-        colorPaletteMode = prefs.getEnum(colorPaletteModeKey, ColorPaletteMode.System),
-        transparentBackgroundActionBarPlayer = prefs.getBoolean(transparentBackgroundPlayerActionBarKey, true),
-        actionsSpacedEvenly = prefs.getBoolean(actionspacedevenlyKey, true),
-        showButtonPlayerVideo = prefs.getBoolean(showButtonPlayerVideoKey, false),
-        showButtonPlayerDiscover = prefs.getBoolean(showButtonPlayerDiscoverKey, false),
-        showButtonPlayerAddToPlaylist = prefs.getBoolean(showButtonPlayerAddToPlaylistKey, true),
-        showButtonPlayerLoop = prefs.getBoolean(showButtonPlayerLoopKey, false),
-        showButtonPlayerShuffle = prefs.getBoolean(showButtonPlayerShuffleKey, true),
-        showButtonPlayerLyrics = prefs.getBoolean(showButtonPlayerLyricsKey, false),
-        expandedPlayerToggle = prefs.getBoolean(expandedplayertoggleKey, false),
-        showButtonPlayerSleepTimer = prefs.getBoolean(showButtonPlayerSleepTimerKey, false),
-        visualizerEnabled = prefs.getBoolean(visualizerEnabledKey, false),
-        showButtonPlayerArrow = prefs.getBoolean(showButtonPlayerArrowKey, false),
-        showButtonPlayerStartRadio = prefs.getBoolean(showButtonPlayerStartRadioKey, false),
-        showButtonPlayerMenu = prefs.getBoolean(showButtonPlayerMenuKey, true),
-        showButtonPlayerSystemEqualizer = prefs.getBoolean(showButtonPlayerSystemEqualizerKey, false),
-        showBackgroundLyrics = prefs.getBoolean(showBackgroundLyricsKey, false),
-        showPlayerActionsBar = prefs.getBoolean(showPlayerActionsBarKey, true),
-        iconLikeType = prefs.getEnum(iconLikeTypeKey, IconLikeType.Essential),
-        playerSwapControlsWithTimeline = prefs.getBoolean(playerSwapControlsWithTimelineKey, false),
-        showvisthumbnail = prefs.getBoolean(showvisthumbnailKey, false),
-        buttonzoomout = prefs.getBoolean(buttonzoomoutKey, false),
-        thumbnailpause = prefs.getBoolean(thumbnailpauseKey, false),
-        showsongs = prefs.getEnum(showsongsKey, SongsNumber.`2`),
-        showalbumcover = prefs.getBoolean(showalbumcoverKey, true),
-        prevNextSongs = prefs.getEnum(prevNextSongsKey, PrevNextSongs.twosongs),
-        tapqueue = prefs.getBoolean(tapqueueKey, true),
-        swipeUpQueue = prefs.getBoolean(swipeUpQueueKey, true),
-        statsfornerds = prefs.getBoolean(statsfornerdsKey, false),
-        queueType = prefs.getEnum(queueTypeKey, QueueType.Modern),
-        noblur = prefs.getBoolean(noblurKey, true),
-        fadingedge = prefs.getBoolean(fadingedgeKey, false),
-        carousel = prefs.getBoolean(carouselKey, true),
-        carouselSize = prefs.getEnum(carouselSizeKey, CarouselSize.Biggest),
-        keepPlayerMinimized = prefs.getBoolean(keepPlayerMinimizedKey, false),
-        playerInfoShowIcons = prefs.getBoolean(playerInfoShowIconsKey, true),
-        queueDurationExpanded = prefs.getBoolean(queueDurationExpandedKey, true),
-        titleExpanded = prefs.getBoolean(titleExpandedKey, true),
-        timelineExpanded = prefs.getBoolean(timelineExpandedKey, true),
-        controlsExpanded = prefs.getBoolean(controlsExpandedKey, true),
-        miniQueueExpanded = prefs.getBoolean(miniQueueExpandedKey, true),
-        statsExpanded = prefs.getBoolean(statsExpandedKey, true),
-        actionExpanded = prefs.getBoolean(actionExpandedKey, true),
-        showCoverThumbnailAnimation = prefs.getBoolean(showCoverThumbnailAnimationKey, false),
-        coverThumbnailAnimation = prefs.getEnum(coverThumbnailAnimationKey, ThumbnailCoverType.Vinyl),
-        topPadding = prefs.getBoolean(topPaddingKey, true),
-        animatedGradient = prefs.getEnum(animatedGradientKey, AnimatedGradient.Linear),
-        albumCoverRotation = prefs.getBoolean(albumCoverRotationKey, false),
-        thumbnailFadeEx = prefs.getFloat(thumbnailFadeExKey, 5f),
-        thumbnailFade = prefs.getFloat(thumbnailFadeKey, 5f),
-        thumbnailSpacing = prefs.getFloat(thumbnailSpacingKey, 0f),
-        blackgradient = prefs.getBoolean(blackgradientKey, false),
-        textoutline = prefs.getBoolean(textoutlineKey, false),
-        disablePlayerHorizontalSwipe = prefs.getBoolean(disablePlayerHorizontalSwipeKey, false),
-        showLikeButtonBackgroundPlayer = prefs.getBoolean(showLikeButtonBackgroundPlayerKey, true)
+        showTopActionsBar = prefs.getBoolean(SHOW_TOP_ACTIONS_BAR.key, true),
+        showThumbnail = prefs.getBoolean(SHOW_THUMBNAIL.key, true),
+        playerBackgroundColors = prefs.getEnum(PLAYER_BACKGROUND_COLORS.key, PlayerBackgroundColors.BlurredCoverColor),
+        blurStrength = prefs.getFloat(BLUR_SCALE.key, 50f),
+        thumbnailRoundness = prefs.getEnum(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.None),
+        thumbnailType = prefs.getEnum(THUMBNAIL_TYPE.key, ThumbnailType.Modern),
+        playerThumbnailSize = prefs.getEnum(PLAYER_THUMBNAIL_SIZE_L.key, PlayerThumbnailSize.Big),
+        transparentBar = prefs.getBoolean(TRANSPARENT_BAR.key, true),
+        bottomGradient = prefs.getBoolean(BOTTOM_GRADIENT.key, true),
+        expandedPlayer = prefs.getBoolean(EXPANDED_PLAYER.key, true),
+        showLyricsThumbnail = prefs.getBoolean(SHOW_LYRICS_THUMBNAIL.key, false),
+        playerInfoType = prefs.getEnum(PLAYER_INFO_TYPE.key, PlayerInfoType.Essential),
+        playerType = prefs.getEnum(PLAYER_TYPE.key, PlayerType.Essential),
+        playerTimelineType = prefs.getEnum(PLAYER_TIMELINE_TYPE.key, PlayerTimelineType.ThinBar),
+        playerTimelineSize = prefs.getEnum(PLAYER_TIMELINE_SIZE.key, PlayerTimelineSize.Biggest),
+        playerControlsType = prefs.getEnum(PLAYER_CONTROLS_TYPE.key, PlayerControlsType.Essential),
+        playerPlayButtonType = prefs.getEnum(PLAYER_PLAY_BUTTON_TYPE.key, PlayerPlayButtonType.Disabled),
+        showTotalTimeQueue = prefs.getBoolean(SHOW_TOTAL_TIME_QUEUE.key, false),
+        showRemainingSongTime = prefs.getBoolean(SHOW_REMAINING_SONG_TIME.key, true),
+        showNextSongsInPlayer = prefs.getBoolean(SHOW_NEXT_SONGS_IN_PLAYER.key, false),
+        colorPaletteName = prefs.getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic),
+        colorPaletteMode = prefs.getEnum(COLOR_PALETTE_MODE.key, ColorPaletteMode.System),
+        transparentBackgroundActionBarPlayer = prefs.getBoolean(TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR.key, true),
+        actionsSpacedEvenly = prefs.getBoolean(ACTIONS_SPACED_EVENLY.key, true),
+        showButtonPlayerVideo = prefs.getBoolean(SHOW_BUTTON_PLAYER_VIDEO.key, false),
+        showButtonPlayerDiscover = prefs.getBoolean(SHOW_BUTTON_PLAYER_DISCOVER.key, false),
+        showButtonPlayerAddToPlaylist = prefs.getBoolean(SHOW_BUTTON_PLAYER_ADD_TO_PLAYLIST.key, true),
+        showButtonPlayerLoop = prefs.getBoolean(SHOW_BUTTON_PLAYER_LOOP.key, false),
+        showButtonPlayerShuffle = prefs.getBoolean(SHOW_BUTTON_PLAYER_SHUFFLE.key, true),
+        showButtonPlayerLyrics = prefs.getBoolean(SHOW_BUTTON_PLAYER_LYRICS.key, false),
+        expandedPlayerToggle = prefs.getBoolean(EXPANDED_PLAYER_TOGGLE.key, false),
+        showButtonPlayerSleepTimer = prefs.getBoolean(SHOW_BUTTON_PLAYER_SLEEP_TIMER.key, false),
+        visualizerEnabled = prefs.getBoolean(VISUALIZER_ENABLED.key, false),
+        showButtonPlayerArrow = prefs.getBoolean(SHOW_BUTTON_PLAYER_ARROW.key, false),
+        showButtonPlayerStartRadio = prefs.getBoolean(SHOW_BUTTON_PLAYER_START_RADIO.key, false),
+        showButtonPlayerMenu = prefs.getBoolean(SHOW_BUTTON_PLAYER_MENU.key, true),
+        showButtonPlayerSystemEqualizer = prefs.getBoolean(SHOW_BUTTON_PLAYER_SYSTEM_EQUALIZER.key, false),
+        showBackgroundLyrics = prefs.getBoolean(SHOW_BACKGROUND_LYRICS.key, false),
+        showPlayerActionsBar = prefs.getBoolean(SHOW_PLAYER_ACTIONS_BAR.key, true),
+        iconLikeType = prefs.getEnum(ICON_LIKE_TYPE.key, IconLikeType.Essential),
+        playerSwapControlsWithTimeline = prefs.getBoolean(PLAYER_SWAP_CONTROLS_WITH_TIMELINE.key, false),
+        showvisthumbnail = prefs.getBoolean(SHOW_VIS_THUMBNAIL.key, false),
+        buttonzoomout = prefs.getBoolean(BUTTON_ZOOM_OUT.key, false),
+        thumbnailpause = prefs.getBoolean(THUMBNAIL_PAUSE.key, false),
+        showsongs = prefs.getEnum(SHOW_SONGS.key, SongsNumber.`2`),
+        showalbumcover = prefs.getBoolean(SHOW_ALBUM_COVER.key, true),
+        prevNextSongs = prefs.getEnum(PREV_NEXT_SONGS.key, PrevNextSongs.twosongs),
+        tapqueue = prefs.getBoolean(TAP_QUEUE.key, true),
+        swipeUpQueue = prefs.getBoolean(SWIPE_UP_QUEUE.key, true),
+        statsfornerds = prefs.getBoolean(STATS_FOR_NERDS.key, false),
+        queueType = prefs.getEnum(QUEUE_TYPE.key, QueueType.Modern),
+        noblur = prefs.getBoolean(NO_BLUR.key, true),
+        fadingedge = prefs.getBoolean(FADING_EDGE.key, false),
+        carousel = prefs.getBoolean(CAROUSEL.key, true),
+        carouselSize = prefs.getEnum(CAROUSEL_SIZE.key, CarouselSize.Biggest),
+        keepPlayerMinimized = prefs.getBoolean(KEEP_PLAYER_MINIMIZED.key, false),
+        playerInfoShowIcons = prefs.getBoolean(PLAYER_INFO_SHOW_ICONS.key, true),
+        queueDurationExpanded = prefs.getBoolean(QUEUE_DURATION_EXPANDED.key, true),
+        titleExpanded = prefs.getBoolean(TITLE_EXPANDED.key, true),
+        timelineExpanded = prefs.getBoolean(TIMELINE_EXPANDED.key, true),
+        controlsExpanded = prefs.getBoolean(CONTROLS_EXPANDED.key, true),
+        miniQueueExpanded = prefs.getBoolean(MINI_QUEUE_EXPANDED.key, true),
+        statsExpanded = prefs.getBoolean(STATS_EXPANDED.key, true),
+        actionExpanded = prefs.getBoolean(ACTION_EXPANDED.key, true),
+        showCoverThumbnailAnimation = prefs.getBoolean(SHOW_COVER_THUMBNAIL_ANIMATION.key, false),
+        coverThumbnailAnimation = prefs.getEnum(COVER_THUMBNAIL_ANIMATION.key, ThumbnailCoverType.Vinyl),
+        topPadding = prefs.getBoolean(TOP_PADDING.key, true),
+        animatedGradient = prefs.getEnum(ANIMATED_GRADIENT.key, AnimatedGradient.Linear),
+        albumCoverRotation = prefs.getBoolean(ALBUM_COVER_ROTATION.key, false),
+        thumbnailFadeEx = prefs.getFloat(THUMBNAIL_FADE_EX.key, 5f),
+        thumbnailFade = prefs.getFloat(THUMBNAIL_FADE.key, 5f),
+        thumbnailSpacing = prefs.getFloat(THUMBNAIL_SPACING.key, 0f),
+        blackgradient = prefs.getBoolean(BLACK_GRADIENT.key, false),
+        textoutline = prefs.getBoolean(TEXT_OUTLINE.key, false),
+        disablePlayerHorizontalSwipe = prefs.getBoolean(DISABLE_PLAYER_HORIZONTAL_SWIPE.key, false),
+        showLikeButtonBackgroundPlayer = prefs.getBoolean(SHOW_LIKE_BUTTON_BACKGROUND_PLAYER.key, true)
     )
 }
 

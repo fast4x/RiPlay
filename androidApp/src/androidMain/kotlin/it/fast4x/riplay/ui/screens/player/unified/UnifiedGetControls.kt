@@ -1,6 +1,5 @@
 package it.fast4x.riplay.ui.screens.player.unified
 
-import androidx.annotation.OptIn
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
@@ -17,11 +16,10 @@ import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PlayerControlsType
 import it.fast4x.riplay.enums.PlayerPlayButtonType
-import it.fast4x.riplay.extensions.preferences.playbackSpeedKey
-import it.fast4x.riplay.extensions.preferences.playerBackgroundColorsKey
-import it.fast4x.riplay.extensions.preferences.playerControlsTypeKey
-import it.fast4x.riplay.extensions.preferences.playerPlayButtonTypeKey
-import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYBACK_SPEED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_BACKGROUND_COLORS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_CONTROLS_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_PLAY_BUTTON_TYPE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.services.playback.PlayerState
 import it.fast4x.riplay.ui.components.themed.PlaybackParamsDialog
@@ -43,11 +41,11 @@ fun UnifiedGetControls(
     playerState: PlayerState,
 ) {
     val playerControlsType by rememberPreference(
-        playerControlsTypeKey,
+        PLAYER_CONTROLS_TYPE.key,
         PlayerControlsType.Essential
     )
-    val playerPlayButtonType by rememberObservedPreference(
-        playerPlayButtonTypeKey,
+    val playerPlayButtonType by rememberPreference(
+        PLAYER_PLAY_BUTTON_TYPE.key,
         PlayerPlayButtonType.Disabled
     )
     var isRotated by rememberSaveable { mutableStateOf(false) }
@@ -56,14 +54,14 @@ fun UnifiedGetControls(
         animationSpec = tween(durationMillis = 200), label = ""
     )
     val playerBackgroundColors by rememberPreference(
-        playerBackgroundColorsKey,
+        PLAYER_BACKGROUND_COLORS.key,
         PlayerBackgroundColors.BlurredCoverColor
     )
 
     val isGradientBackgroundEnabled = playerBackgroundColors == PlayerBackgroundColors.ThemeColorGradient ||
             playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient
 
-    var playbackSpeed by rememberPreference(playbackSpeedKey, 1f)
+    var playbackSpeed by rememberPreference(PLAYBACK_SPEED.key, 1f)
 
     var showSpeedPlayerDialog by rememberSaveable {
         mutableStateOf(false)

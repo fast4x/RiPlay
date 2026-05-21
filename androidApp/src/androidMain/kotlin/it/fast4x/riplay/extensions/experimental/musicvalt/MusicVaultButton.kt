@@ -2,12 +2,9 @@ package it.fast4x.riplay.extensions.experimental.musicvalt
 
 import android.content.Context
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -20,8 +17,7 @@ import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Song
-import it.fast4x.riplay.extensions.preferences.musicVaultEnabledKey
-import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_VAULT_ENABLED
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.colorPalette
 import timber.log.Timber
@@ -33,7 +29,7 @@ fun MusicVaultButton(
     size: Dp = 20.dp
 ) {
 
-    var musicVaultEnabled by rememberObservedPreference(musicVaultEnabledKey, false)
+    var musicVaultEnabled by rememberPreference(MUSIC_VAULT_ENABLED.key, false)
     if (!musicVaultEnabled) return
 
     val sizeModifier = Modifier.size(size)

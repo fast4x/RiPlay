@@ -129,26 +129,26 @@ import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.PureBlackColorPalette
 import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.ui.styling.color
-import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
-import it.fast4x.riplay.extensions.preferences.expandedplayerKey
-import it.fast4x.riplay.extensions.preferences.isShowingSynchronizedLyricsKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXPANDED_PLAYER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_SHOWING_SYNCHRONIZED_LYRICS
 import it.fast4x.riplay.utils.languageDestination
 import it.fast4x.riplay.utils.languageDestinationName
-import it.fast4x.riplay.extensions.preferences.lyricsAlignmentKey
-import it.fast4x.riplay.extensions.preferences.lyricsBackgroundKey
-import it.fast4x.riplay.extensions.preferences.lyricsColorKey
-import it.fast4x.riplay.extensions.preferences.lyricsFontSizeKey
-import it.fast4x.riplay.extensions.preferences.lyricsHighlightKey
-import it.fast4x.riplay.extensions.preferences.lyricsOutlineKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LYRICS_ALIGNMENT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LYRICS_BACKGROUND
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LYRICS_COLOR
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LYRICS_FONT_SIZE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LYRICS_HIGHLIGHT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LYRICS_OUTLINE
 import it.fast4x.riplay.ui.styling.medium
-import it.fast4x.riplay.extensions.preferences.otherLanguageAppKey
-import it.fast4x.riplay.extensions.preferences.playerBackgroundColorsKey
-import it.fast4x.riplay.extensions.preferences.playerEnableLyricsPopupMessageKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.OTHER_LANGUAGE_APP
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_BACKGROUND_COLORS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_ENABLE_LYRICS_POPUP_MESSAGE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.romanizationKey
-import it.fast4x.riplay.extensions.preferences.showBackgroundLyricsKey
-import it.fast4x.riplay.extensions.preferences.showSecondLineKey
-import it.fast4x.riplay.extensions.preferences.showlyricsthumbnailKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ROMANIZATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BACKGROUND_LYRICS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SECOND_LINE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LYRICS_THUMBNAIL
 import it.fast4x.riplay.utils.copyTextToClipboard
 import it.fast4x.riplay.utils.verticalFadingEdge
 import kotlinx.coroutines.Dispatchers
@@ -166,15 +166,15 @@ import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.LyricsSizeDialog
-import it.fast4x.riplay.extensions.preferences.colorPaletteNameKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_NAME
 import it.fast4x.riplay.utils.applyIf
-import it.fast4x.riplay.extensions.preferences.effectRotationKey
-import it.fast4x.riplay.extensions.preferences.isShowingSynchronizedWordByWordLyricsKey
-import it.fast4x.riplay.extensions.preferences.jumpPreviousKey
-import it.fast4x.riplay.extensions.preferences.landscapeControlsKey
-import it.fast4x.riplay.extensions.preferences.lyricsSizeAnimateKey
-import it.fast4x.riplay.extensions.preferences.lyricsSizeKey
-import it.fast4x.riplay.extensions.preferences.lyricsSizeLKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EFFECT_ROTATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_SHOWING_SYNCHRONIZED_WORD_BY_WORD_LYRICS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.JUMP_PREVIOUS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LANDSCAPE_CONTROLS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LYRICS_SIZE_ANIMATE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LYRICS_SIZE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LYRICS_SIZE_L
 import it.fast4x.riplay.ui.styling.ColorPalette
 import it.fast4x.riplay.utils.SynchronizedLyricsLines
 import it.fast4x.riplay.utils.playNext
@@ -237,9 +237,9 @@ fun Lyrics(
     val positionProvider = { positionAndDuration.first }
     //Timber.d("LyricsNew positionAndDuration ${positionAndDuration.first}")
 
-    var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, false)
-    var isShowingSynchronizedLyrics by rememberPreference(isShowingSynchronizedLyricsKey, false)
-    var isShowingSynchronizedWordByWordLyrics by rememberPreference(isShowingSynchronizedWordByWordLyricsKey, false)
+    var showlyricsthumbnail by rememberPreference(SHOW_LYRICS_THUMBNAIL.key, false)
+    var isShowingSynchronizedLyrics by rememberPreference(IS_SHOWING_SYNCHRONIZED_LYRICS.key, false)
+    var isShowingSynchronizedWordByWordLyrics by rememberPreference(IS_SHOWING_SYNCHRONIZED_WORD_BY_WORD_LYRICS.key, false)
     //val isShowingSynchronizedWordByWordLyrics by remember { mutableStateOf(false) } // removed temporaly word word lyrics suspended by owner
 
     val currentLyrics by Database.lyrics(mediaId).collectAsState(initial = null)
@@ -247,13 +247,13 @@ fun Lyrics(
     var invalidLrc by remember(mediaId, isShowingSynchronizedLyrics) { mutableStateOf(false) }
     var isPicking by remember(mediaId, isShowingSynchronizedLyrics) { mutableStateOf(false) }
 
-    var lyricsColor by rememberPreference(lyricsColorKey, LyricsColor.Thememode)
-    var lyricsOutline by rememberPreference(lyricsOutlineKey, LyricsOutline.None)
-    val playerBackgroundColors by rememberPreference(playerBackgroundColorsKey, PlayerBackgroundColors.BlurredCoverColor)
-    var lyricsFontSize by rememberPreference(lyricsFontSizeKey, LyricsFontSize.Medium)
+    var lyricsColor by rememberPreference(LYRICS_COLOR.key, LyricsColor.Thememode)
+    var lyricsOutline by rememberPreference(LYRICS_OUTLINE.key, LyricsOutline.None)
+    val playerBackgroundColors by rememberPreference(PLAYER_BACKGROUND_COLORS.key, PlayerBackgroundColors.BlurredCoverColor)
+    var lyricsFontSize by rememberPreference(LYRICS_FONT_SIZE.key, LyricsFontSize.Medium)
 
     val thumbnailSize = Dimensions.thumbnails.player.song
-    val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
+    val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
 
     var isEditing by remember(mediaId, isShowingSynchronizedLyrics) { mutableStateOf(false) }
     //var showPlaceholder by remember { mutableStateOf(false) }
@@ -271,10 +271,10 @@ fun Lyrics(
     var showLanguagesList by remember { mutableStateOf(false) }
     var translateEnabled by remember { mutableStateOf(false) }
 
-    var romanization by rememberPreference(romanizationKey, Romanization.Off)
-    var showSecondLine by rememberPreference(showSecondLineKey, false)
-    var otherLanguageApp by rememberPreference(otherLanguageAppKey, Languages.English)
-    var lyricsBackground by rememberPreference(lyricsBackgroundKey, LyricsBackground.Black)
+    var romanization by rememberPreference(ROMANIZATION.key, Romanization.Off)
+    var showSecondLine by rememberPreference(SHOW_SECOND_LINE.key, false)
+    var otherLanguageApp by rememberPreference(OTHER_LANGUAGE_APP.key, Languages.English)
+    var lyricsBackground by rememberPreference(LYRICS_BACKGROUND.key, LyricsBackground.Black)
 
 
     if (showLanguagesList) {
@@ -311,36 +311,36 @@ fun Lyrics(
     var copyTranslatedToClipboard by remember { mutableStateOf(false) }
     if (copyTranslatedToClipboard) { textTranslated.let { copyTextToClipboard(it, context) }; copyTranslatedToClipboard = false }
 
-    var fontSize by rememberPreference(lyricsFontSizeKey, LyricsFontSize.Medium)
-    val showBackgroundLyrics by rememberPreference(showBackgroundLyricsKey, false)
-    val playerEnableLyricsPopupMessage by rememberPreference(playerEnableLyricsPopupMessageKey, true)
-    var expandedplayer by rememberPreference(expandedplayerKey, false)
+    var fontSize by rememberPreference(LYRICS_FONT_SIZE.key, LyricsFontSize.Medium)
+    val showBackgroundLyrics by rememberPreference(SHOW_BACKGROUND_LYRICS.key, false)
+    val playerEnableLyricsPopupMessage by rememberPreference(PLAYER_ENABLE_LYRICS_POPUP_MESSAGE.key, true)
+    var expandedplayer by rememberPreference(EXPANDED_PLAYER.key, false)
 
     var checkedLyricsLrc by remember(mediaId) { mutableStateOf(false) }
     var checkedLyricsKugou by remember(mediaId) { mutableStateOf(false) }
     var checkedLyricsInnertube by remember(mediaId) { mutableStateOf(false) }
     var checkedLyricsSimpLrc by remember(mediaId) { mutableStateOf(false) }
     var checkLyrics by remember { mutableStateOf(false) }
-    var lyricsHighlight by rememberPreference(lyricsHighlightKey, LyricsHighlight.None)
-    var lyricsAlignment by rememberPreference(lyricsAlignmentKey, LyricsAlignment.Center)
-    var lyricsSizeAnimate by rememberPreference(lyricsSizeAnimateKey, false)
+    var lyricsHighlight by rememberPreference(LYRICS_HIGHLIGHT.key, LyricsHighlight.None)
+    var lyricsAlignment by rememberPreference(LYRICS_ALIGNMENT.key, LyricsAlignment.Center)
+    var lyricsSizeAnimate by rememberPreference(LYRICS_SIZE_ANIMATE.key, false)
 
     val mediaMetadata = mediaMetadataProvider()
     var artistName by rememberSaveable { mutableStateOf(mediaMetadata.artist?.toString().orEmpty()) }
     var title by rememberSaveable { mutableStateOf(cleanPrefix(mediaMetadata.title?.toString().orEmpty())) }
 
-    var lyricsSize by rememberPreference(lyricsSizeKey, 20f)
-    var lyricsSizeL by rememberPreference(lyricsSizeLKey, 20f)
+    var lyricsSize by rememberPreference(LYRICS_SIZE.key, 20f)
+    var lyricsSizeL by rememberPreference(LYRICS_SIZE_L.key, 20f)
     val customSize = if (isLandscape) lyricsSizeL else lyricsSize
     var showLyricsSizeDialog by rememberSaveable { mutableStateOf(false) }
 
     val lightTheme = colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
-    val effectRotationEnabled by rememberPreference(effectRotationKey, true)
-    var landscapeControls by rememberPreference(landscapeControlsKey, true)
-    var jumpPrevious by rememberPreference(jumpPreviousKey, "3")
+    val effectRotationEnabled by rememberPreference(EFFECT_ROTATION.key, true)
+    var landscapeControls by rememberPreference(LANDSCAPE_CONTROLS.key, true)
+    var jumpPrevious by rememberPreference(JUMP_PREVIOUS.key, "3")
     var isRotated by rememberSaveable { mutableStateOf(false) }
     val rotationAngle by animateFloatAsState(targetValue = if (isRotated) 360F else 0f, animationSpec = tween(200), label = "")
-    val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
+    val colorPaletteName by rememberPreference(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
 
     if (showLyricsSizeDialog) {
         LyricsSizeDialog(onDismiss = { showLyricsSizeDialog = false }, sizeValue = { lyricsSize = it }, sizeValueL = { lyricsSizeL = it })

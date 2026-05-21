@@ -47,7 +47,7 @@ import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PlayerPosition
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.enums.UiType
-import it.fast4x.riplay.extensions.preferences.playerPositionKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_POSITION
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.components.navigation.header.AppHeader
 import it.fast4x.riplay.ui.components.navigation.nav.AbstractNavigationBar
@@ -228,7 +228,7 @@ fun ScreenContainer(
                     navigationBar.Draw()
             }
 
-            val playerPosition by rememberPreference(playerPositionKey, PlayerPosition.Bottom)
+            val playerPosition by rememberPreference(PLAYER_POSITION.key, PlayerPosition.Bottom)
             val playerAlignment =
                 if (playerPosition == PlayerPosition.Top)
                     Alignment.TopCenter

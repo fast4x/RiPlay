@@ -9,7 +9,7 @@ import es.dmoral.toasty.Toasty
 import it.fast4x.riplay.enums.MessageType
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.preferences.getEnum
-import it.fast4x.riplay.extensions.preferences.messageTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MESSAGE_TYPE
 import it.fast4x.riplay.extensions.preferences.preferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +26,7 @@ fun SmartMessage(
     CoroutineScope(Dispatchers.Main).launch {
         val length = if (durationLong) Toast.LENGTH_LONG else Toast.LENGTH_SHORT
 
-        if (context.preferences.getEnum(messageTypeKey, MessageType.Modern) == MessageType.Modern) {
+        if (context.preferences.getEnum(MESSAGE_TYPE.key, MessageType.Modern) == MessageType.Modern) {
             when (type) {
                 PopupType.Info -> Toasty.info(context, message, length, true).show()
                 PopupType.Success -> Toasty.success(context, message, length, true).show()

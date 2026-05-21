@@ -23,10 +23,9 @@ import it.fast4x.riplay.extensions.equalizer.InternalEqualizerScreen
 import it.fast4x.riplay.extensions.equalizer.rememberSystemEqualizerLauncher
 import it.fast4x.riplay.extensions.pip.isPipSupported
 import it.fast4x.riplay.extensions.pip.rememberPipHandler
-import it.fast4x.riplay.extensions.preferences.enableMusicIdentifierKey
-import it.fast4x.riplay.extensions.preferences.enablePictureInPictureKey
-import it.fast4x.riplay.extensions.preferences.equalizerTypeKey
-import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_MUSIC_IDENTIFIER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_PICTURE_IN_PICTURE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EQUALIZER_TYPE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.SheetBody
@@ -48,17 +47,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.window.PopupProperties
-import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.LocalRiTuneSheetState
 import it.fast4x.riplay.cast.CastButton
 import it.fast4x.riplay.cast.CastHelper
 import it.fast4x.riplay.enums.CastType
-import it.fast4x.riplay.extensions.preferences.castTypeKey
-import it.fast4x.riplay.extensions.preferences.showListenerLevelsKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CAST_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LISTENER_LEVELS
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.typography
-import timber.log.Timber
 
 @Composable
 private fun HamburgerMenu(
@@ -67,13 +64,13 @@ private fun HamburgerMenu(
     onDismissRequest: () -> Unit
 ) {
 
-    val enablePictureInPicture by rememberPreference(enablePictureInPictureKey, false)
+    val enablePictureInPicture by rememberPreference(ENABLE_PICTURE_IN_PICTURE.key, false)
     val pipHandler = rememberPipHandler()
     val sheet = LocalGlobalSheetState.current
-    val equalizerType by rememberObservedPreference(equalizerTypeKey, EqualizerType.Internal)
+    val equalizerType by rememberPreference(EQUALIZER_TYPE.key, EqualizerType.Internal)
     val internalEqualizer = LocalPlayerServiceBinder.current?.equalizer
     val launchSystemEqualizer by rememberSystemEqualizerLauncher(audioSessionId = {0})
-    val showListenerLevels by rememberPreference(showListenerLevelsKey, true)
+    val showListenerLevels by rememberPreference(SHOW_LISTENER_LEVELS.key, true)
 
     DropdownMenu(
         expanded = expanded,
@@ -279,7 +276,7 @@ private fun HamburgerMenu(
     onItemClick: (NavRoutes) -> Unit,
     onDismissRequest: () -> Unit
 ) {
-    val enablePictureInPicture by rememberPreference(enablePictureInPictureKey, false)
+    val enablePictureInPicture by rememberPreference(enablePictureInPictureKey.key, false)
     val pipHandler = rememberPipHandler()
 
     val menu = DropdownMenu(
@@ -297,7 +294,7 @@ private fun HamburgerMenu(
 
     val sheet = LocalGlobalSheetState.current
 
-    val equalizerType by rememberObservedPreference(equalizerTypeKey, EqualizerType.Internal)
+    val equalizerType by rememberObservedPreference(equalizerTypeKey.key, EqualizerType.Internal)
     val internalEqualizer = LocalPlayerServiceBinder.current?.equalizer
     val launchSystemEqualizer by rememberSystemEqualizerLauncher(audioSessionId = {0})
     menu.add(
@@ -401,7 +398,7 @@ fun ActionBar(
     var expanded by remember { mutableStateOf(false) }
     val sheet = LocalGlobalSheetState.current
 
-    var castType by rememberPreference(castTypeKey, CastType.RITUNECAST )
+    var castType by rememberPreference(CAST_TYPE.key, CastType.RITUNECAST )
     if (castType == CastType.RITUNECAST) {
         val showCastScreen = LocalRiTuneSheetState.current
         HeaderIcon(
@@ -432,7 +429,7 @@ fun ActionBar(
 
 
     val isEnabledMusicIdentifier by rememberPreference(
-        enableMusicIdentifierKey,
+        ENABLE_MUSIC_IDENTIFIER.key,
         false
     )
     if (isEnabledMusicIdentifier) {

@@ -5,7 +5,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
@@ -26,10 +25,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.valentinilk.shimmer.shimmer
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.bodies.BrowseBodyWithLocale
@@ -40,21 +37,15 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.data.models.Mood
-import it.fast4x.riplay.ui.components.ShimmerHost
-import it.fast4x.riplay.ui.components.themed.HeaderPlaceholder
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
-import it.fast4x.riplay.ui.components.themed.TextPlaceholder
 import it.fast4x.riplay.ui.items.AlbumItem
-import it.fast4x.riplay.ui.items.AlbumItemPlaceholder
 import it.fast4x.riplay.ui.items.ArtistItem
 import it.fast4x.riplay.ui.items.PlaylistItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.ui.styling.center
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.components.themed.LoaderScreen
-import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
@@ -96,7 +87,7 @@ fun MoodList(
         .padding(top = 24.dp, bottom = 8.dp)
         .padding(endPaddingValues)
 
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
 
     Column (
         modifier = Modifier

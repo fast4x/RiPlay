@@ -97,11 +97,11 @@ import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.riplay.extensions.persist.persistList
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
-import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.ShimmerHost
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
@@ -122,7 +122,6 @@ import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.components.themed.adaptiveThumbnailContent
 import it.fast4x.riplay.ui.items.AlbumItemPlaceholder
 import it.fast4x.riplay.ui.items.SongItem
-import it.fast4x.riplay.ui.items.SongItemPlaceholder
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.align
@@ -184,8 +183,8 @@ fun PlaylistSongList(
 
     var filter: String? by rememberSaveable { mutableStateOf(null) }
     val hapticFeedback = LocalHapticFeedback.current
-    val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val parentalControlEnabled by rememberPreference(PARENTAL_CONTROL_ENABLED.key, false)
+    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
     var isLiked by remember {
         mutableStateOf(0)
     }
@@ -269,7 +268,7 @@ fun PlaylistSongList(
     }
 
     var thumbnailRoundness by rememberPreference(
-        thumbnailRoundnessKey,
+        THUMBNAIL_ROUNDNESS.key,
         ThumbnailRoundness.Light
     )
 
@@ -1217,7 +1216,7 @@ fun PlaylistSongList(
                 }
             }
 
-            val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
+            val showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
             if( UiType.ViMusic.isCurrent() && showFloatingIcon )
             FloatingActionsContainerWithScrollToTop(
                 lazyListState = lazyListState,

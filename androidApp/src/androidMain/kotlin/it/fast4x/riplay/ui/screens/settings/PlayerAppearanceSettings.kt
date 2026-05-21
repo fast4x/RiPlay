@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,89 +59,89 @@ import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.RestartPlayerService
-import it.fast4x.riplay.extensions.preferences.actionExpandedKey
-import it.fast4x.riplay.extensions.preferences.actionspacedevenlyKey
-import it.fast4x.riplay.extensions.preferences.backgroundProgressKey
-import it.fast4x.riplay.extensions.preferences.blackgradientKey
-import it.fast4x.riplay.extensions.preferences.bottomgradientKey
-import it.fast4x.riplay.extensions.preferences.buttonzoomoutKey
-import it.fast4x.riplay.extensions.preferences.carouselKey
-import it.fast4x.riplay.extensions.preferences.carouselSizeKey
-import it.fast4x.riplay.extensions.preferences.clickOnLyricsTextKey
-import it.fast4x.riplay.extensions.preferences.controlsExpandedKey
-import it.fast4x.riplay.extensions.preferences.coverThumbnailAnimationKey
-import it.fast4x.riplay.extensions.preferences.disablePlayerHorizontalSwipeKey
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
-import it.fast4x.riplay.extensions.preferences.effectRotationKey
-import it.fast4x.riplay.extensions.preferences.enableWallpaperKey
-import it.fast4x.riplay.extensions.preferences.expandedplayerKey
-import it.fast4x.riplay.extensions.preferences.expandedplayertoggleKey
-import it.fast4x.riplay.extensions.preferences.fadingedgeKey
-import it.fast4x.riplay.extensions.preferences.iconLikeTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ACTION_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ACTIONS_SPACED_EVENLY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BACKGROUND_PROGRESS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BLACK_GRADIENT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BOTTOM_GRADIENT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BUTTON_ZOOM_OUT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CAROUSEL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CAROUSEL_SIZE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CLICK_ON_LYRICS_TEXT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CONTROLS_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COVER_THUMBNAIL_ANIMATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_PLAYER_HORIZONTAL_SWIPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EFFECT_ROTATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_WALLPAPER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXPANDED_PLAYER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXPANDED_PLAYER_TOGGLE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.FADING_EDGE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ICON_LIKE_TYPE
 import it.fast4x.riplay.utils.isAtLeastAndroid7
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.extensions.preferences.isShowingThumbnailInLockscreenKey
-import it.fast4x.riplay.extensions.preferences.keepPlayerMinimizedKey
-import it.fast4x.riplay.extensions.preferences.lastPlayerPlayButtonTypeKey
-import it.fast4x.riplay.extensions.preferences.miniPlayerTypeKey
-import it.fast4x.riplay.extensions.preferences.miniQueueExpandedKey
-import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
-import it.fast4x.riplay.extensions.preferences.noblurKey
-import it.fast4x.riplay.extensions.preferences.notificationPlayerFirstIconKey
-import it.fast4x.riplay.extensions.preferences.notificationPlayerSecondIconKey
-import it.fast4x.riplay.extensions.preferences.playerBackgroundColorsKey
-import it.fast4x.riplay.extensions.preferences.playerControlsTypeKey
-import it.fast4x.riplay.extensions.preferences.playerEnableLyricsPopupMessageKey
-import it.fast4x.riplay.extensions.preferences.playerInfoShowIconsKey
-import it.fast4x.riplay.extensions.preferences.playerInfoTypeKey
-import it.fast4x.riplay.extensions.preferences.playerPlayButtonTypeKey
-import it.fast4x.riplay.extensions.preferences.playerSwapControlsWithTimelineKey
-import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeKey
-import it.fast4x.riplay.extensions.preferences.playerTimelineSizeKey
-import it.fast4x.riplay.extensions.preferences.playerTimelineTypeKey
-import it.fast4x.riplay.extensions.preferences.playerTypeKey
-import it.fast4x.riplay.extensions.preferences.prevNextSongsKey
-import it.fast4x.riplay.extensions.preferences.queueDurationExpandedKey
-import it.fast4x.riplay.extensions.preferences.queueTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_SHOWING_THUMBNAIL_IN_LOCKSCREEN
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.KEEP_PLAYER_MINIMIZED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LAST_PLAYER_PLAY_BUTTON_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MINI_PLAYER_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MINI_QUEUE_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.NAVIGATION_BAR_POSITION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.NO_BLUR
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.NOTIFICATION_PLAYER_FIRST_ICON
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.NOTIFICATION_PLAYER_SECOND_ICON
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_BACKGROUND_COLORS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_CONTROLS_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_ENABLE_LYRICS_POPUP_MESSAGE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_INFO_SHOW_ICONS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_INFO_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_PLAY_BUTTON_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_SWAP_CONTROLS_WITH_TIMELINE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_THUMBNAIL_SIZE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_TIMELINE_SIZE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_TIMELINE_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PREV_NEXT_SONGS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUEUE_DURATION_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUEUE_TYPE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.showBackgroundLyricsKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerAddToPlaylistKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerArrowKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerDiscoverKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerLoopKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerLyricsKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerMenuKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerShuffleKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerSleepTimerKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerStartRadioKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerSystemEqualizerKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerVideoKey
-import it.fast4x.riplay.extensions.preferences.showLikeButtonBackgroundPlayerKey
-import it.fast4x.riplay.extensions.preferences.showNextSongsInPlayerKey
-import it.fast4x.riplay.extensions.preferences.showRemainingSongTimeKey
-import it.fast4x.riplay.extensions.preferences.showTopActionsBarKey
-import it.fast4x.riplay.extensions.preferences.showTotalTimeQueueKey
-import it.fast4x.riplay.extensions.preferences.showCoverThumbnailAnimationKey
-import it.fast4x.riplay.extensions.preferences.showalbumcoverKey
-import it.fast4x.riplay.extensions.preferences.showlyricsthumbnailKey
-import it.fast4x.riplay.extensions.preferences.showsongsKey
-import it.fast4x.riplay.extensions.preferences.showthumbnailKey
-import it.fast4x.riplay.extensions.preferences.showvisthumbnailKey
-import it.fast4x.riplay.extensions.preferences.statsExpandedKey
-import it.fast4x.riplay.extensions.preferences.statsfornerdsKey
-import it.fast4x.riplay.extensions.preferences.swipeUpQueueKey
-import it.fast4x.riplay.extensions.preferences.tapqueueKey
-import it.fast4x.riplay.extensions.preferences.textoutlineKey
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
-import it.fast4x.riplay.extensions.preferences.thumbnailTapEnabledKey
-import it.fast4x.riplay.extensions.preferences.thumbnailTypeKey
-import it.fast4x.riplay.extensions.preferences.thumbnailpauseKey
-import it.fast4x.riplay.extensions.preferences.timelineExpandedKey
-import it.fast4x.riplay.extensions.preferences.titleExpandedKey
-import it.fast4x.riplay.extensions.preferences.transparentBackgroundPlayerActionBarKey
-import it.fast4x.riplay.extensions.preferences.transparentbarKey
-import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
-import it.fast4x.riplay.extensions.preferences.wallpaperTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BACKGROUND_LYRICS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_ADD_TO_PLAYLIST
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_ARROW
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_DISCOVER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_LOOP
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_LYRICS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_MENU
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_SHUFFLE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_SLEEP_TIMER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_START_RADIO
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_SYSTEM_EQUALIZER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_VIDEO
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LIKE_BUTTON_BACKGROUND_PLAYER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_NEXT_SONGS_IN_PLAYER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_REMAINING_SONG_TIME
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_TOP_ACTIONS_BAR
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_TOTAL_TIME_QUEUE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_COVER_THUMBNAIL_ANIMATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_ALBUM_COVER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LYRICS_THUMBNAIL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SONGS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_THUMBNAIL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_VIS_THUMBNAIL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.STATS_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.STATS_FOR_NERDS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SWIPE_UP_QUEUE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TAP_QUEUE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TEXT_OUTLINE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_TAP_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_PAUSE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TIMELINE_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TITLE_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BAR
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.VISUALIZER_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.WALLPAPER_TYPE
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.AnimatedGradient
 import it.fast4x.riplay.enums.ColorPaletteMode
@@ -151,11 +150,6 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.SwipeAnimationNoThumbnail
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.extensions.experimental.appearancepreset.AppearancePreferences
-import it.fast4x.riplay.extensions.experimental.appearancepreset.AppearancePresetDialogHost
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearanceSettings
-import it.fast4x.riplay.extensions.experimental.appearancepreset.utils.fromCurrentSettings
-import it.fast4x.riplay.extensions.experimental.appearancepreset.utils.fromShareString
-import it.fast4x.riplay.extensions.experimental.appearancepreset.utils.toShareString
 import it.fast4x.riplay.utils.getUiType
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.Search
@@ -164,113 +158,111 @@ import it.fast4x.riplay.ui.components.themed.InputTextDialog
 import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.utils.RestartActivity
-import it.fast4x.riplay.extensions.preferences.albumCoverRotationKey
-import it.fast4x.riplay.extensions.preferences.animatedGradientKey
-import it.fast4x.riplay.extensions.preferences.blurStrengthKey
-import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
-import it.fast4x.riplay.extensions.preferences.colorPaletteNameKey
-import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeLKey
-import it.fast4x.riplay.extensions.preferences.seekWithTapKey
-import it.fast4x.riplay.extensions.preferences.showPlayerActionsBarKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUM_COVER_ROTATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ANIMATED_GRADIENT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BLUR_SCALE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_NAME
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_THUMBNAIL_SIZE_L
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SEEK_WITH_TAP
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_PLAYER_ACTIONS_BAR
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.swipeAnimationsNoThumbnailKey
-import it.fast4x.riplay.extensions.preferences.thumbnailFadeExKey
-import it.fast4x.riplay.extensions.preferences.thumbnailFadeKey
-import it.fast4x.riplay.extensions.preferences.thumbnailSpacingKey
-import it.fast4x.riplay.extensions.preferences.topPaddingKey
-import it.fast4x.riplay.ui.components.CustomModalBottomSheet
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SWIPE_ANIMATIONS_NO_THUMBNAIL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_FADE_EX
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_FADE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_SPACING
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TOP_PADDING
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.isAtLeastAndroid13
-import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Date
 
 @Composable
 fun DefaultPlayerAppearanceSettings() {
     var isShowingThumbnailInLockscreen by rememberPreference(
-        isShowingThumbnailInLockscreenKey,
+        IS_SHOWING_THUMBNAIL_IN_LOCKSCREEN.key,
         true
     )
     isShowingThumbnailInLockscreen = true
-    var showthumbnail by rememberPreference(showthumbnailKey, true)
+    var showthumbnail by rememberPreference(SHOW_THUMBNAIL.key, true)
     showthumbnail = true
-    var transparentbar by rememberPreference(transparentbarKey, true)
+    var transparentbar by rememberPreference(TRANSPARENT_BAR.key, true)
     transparentbar = true
-    var blackgradient by rememberPreference(blackgradientKey, false)
+    var blackgradient by rememberPreference(BLACK_GRADIENT.key, false)
     blackgradient = false
-    var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, false)
+    var showlyricsthumbnail by rememberPreference(SHOW_LYRICS_THUMBNAIL.key, false)
     showlyricsthumbnail = false
     var playerPlayButtonType by rememberPreference(
-        playerPlayButtonTypeKey,
+        PLAYER_PLAY_BUTTON_TYPE.key,
         PlayerPlayButtonType.Disabled
     )
     playerPlayButtonType = PlayerPlayButtonType.Disabled
-    var bottomgradient by rememberPreference(bottomgradientKey, false)
+    var bottomgradient by rememberPreference(BOTTOM_GRADIENT.key, false)
     bottomgradient = false
-    var textoutline by rememberPreference(textoutlineKey, false)
+    var textoutline by rememberPreference(TEXT_OUTLINE.key, false)
     textoutline = false
     var lastPlayerPlayButtonType by rememberPreference(
-        lastPlayerPlayButtonTypeKey,
+        LAST_PLAYER_PLAY_BUTTON_TYPE.key,
         PlayerPlayButtonType.Rectangular
     )
     lastPlayerPlayButtonType = PlayerPlayButtonType.Rectangular
-    var disablePlayerHorizontalSwipe by rememberPreference(disablePlayerHorizontalSwipeKey, false)
+    var disablePlayerHorizontalSwipe by rememberPreference(DISABLE_PLAYER_HORIZONTAL_SWIPE.key, false)
     disablePlayerHorizontalSwipe = false
-    var disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    var disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
     disableScrollingText = false
     var showLikeButtonBackgroundPlayer by rememberPreference(
-        showLikeButtonBackgroundPlayerKey,
+        SHOW_LIKE_BUTTON_BACKGROUND_PLAYER.key,
         true
     )
     showLikeButtonBackgroundPlayer = true
 
-    var visualizerEnabled by rememberPreference(visualizerEnabledKey, false)
+    var visualizerEnabled by rememberPreference(VISUALIZER_ENABLED.key, false)
     visualizerEnabled = false
-    var playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.Default)
+    var playerTimelineType by rememberPreference(PLAYER_TIMELINE_TYPE.key, PlayerTimelineType.Default)
     playerTimelineType = PlayerTimelineType.Default
     var playerThumbnailSize by rememberPreference(
-        playerThumbnailSizeKey,
+        PLAYER_THUMBNAIL_SIZE.key,
         PlayerThumbnailSize.Biggest
     )
     playerThumbnailSize = PlayerThumbnailSize.Biggest
     var playerTimelineSize by rememberPreference(
-        playerTimelineSizeKey,
+        PLAYER_TIMELINE_SIZE.key,
         PlayerTimelineSize.Biggest
     )
     playerTimelineSize = PlayerTimelineSize.Biggest
-    var effectRotationEnabled by rememberPreference(effectRotationKey, true)
+    var effectRotationEnabled by rememberPreference(EFFECT_ROTATION.key, true)
     effectRotationEnabled = true
-    var thumbnailTapEnabled by rememberPreference(thumbnailTapEnabledKey, true)
+    var thumbnailTapEnabled by rememberPreference(THUMBNAIL_TAP_ENABLED.key, true)
     thumbnailTapEnabled = true
-    var showButtonPlayerAddToPlaylist by rememberPreference(showButtonPlayerAddToPlaylistKey, true)
+    var showButtonPlayerAddToPlaylist by rememberPreference(SHOW_BUTTON_PLAYER_ADD_TO_PLAYLIST.key, true)
     showButtonPlayerAddToPlaylist = true
-    var showButtonPlayerArrow by rememberPreference(showButtonPlayerArrowKey, true)
+    var showButtonPlayerArrow by rememberPreference(SHOW_BUTTON_PLAYER_ARROW.key, true)
     showButtonPlayerArrow = false
-//    var showButtonPlayerDownload by rememberPreference(showButtonPlayerDownloadKey, true)
+//    var showButtonPlayerDownload by rememberPreference(showButtonPlayerDownloadKey.key, true)
 //    showButtonPlayerDownload = true
-    var showButtonPlayerLoop by rememberPreference(showButtonPlayerLoopKey, true)
+    var showButtonPlayerLoop by rememberPreference(SHOW_BUTTON_PLAYER_LOOP.key, true)
     showButtonPlayerLoop = true
-    var showButtonPlayerLyrics by rememberPreference(showButtonPlayerLyricsKey, true)
+    var showButtonPlayerLyrics by rememberPreference(SHOW_BUTTON_PLAYER_LYRICS.key, true)
     showButtonPlayerLyrics = true
-    var expandedplayertoggle by rememberPreference(expandedplayertoggleKey, true)
+    var expandedplayertoggle by rememberPreference(EXPANDED_PLAYER_TOGGLE.key, true)
     expandedplayertoggle = true
-    var showButtonPlayerShuffle by rememberPreference(showButtonPlayerShuffleKey, true)
+    var showButtonPlayerShuffle by rememberPreference(SHOW_BUTTON_PLAYER_SHUFFLE.key, true)
     showButtonPlayerShuffle = true
-    var showButtonPlayerSleepTimer by rememberPreference(showButtonPlayerSleepTimerKey, false)
+    var showButtonPlayerSleepTimer by rememberPreference(SHOW_BUTTON_PLAYER_SLEEP_TIMER.key, false)
     showButtonPlayerSleepTimer = false
-    var showButtonPlayerMenu by rememberPreference(showButtonPlayerMenuKey, false)
+    var showButtonPlayerMenu by rememberPreference(SHOW_BUTTON_PLAYER_MENU.key, false)
     showButtonPlayerMenu = false
     var showButtonPlayerSystemEqualizer by rememberPreference(
-        showButtonPlayerSystemEqualizerKey,
+        SHOW_BUTTON_PLAYER_SYSTEM_EQUALIZER.key,
         false
     )
     showButtonPlayerSystemEqualizer = false
-    var showButtonPlayerDiscover by rememberPreference(showButtonPlayerDiscoverKey, false)
+    var showButtonPlayerDiscover by rememberPreference(SHOW_BUTTON_PLAYER_DISCOVER.key, false)
     showButtonPlayerDiscover = false
-    var showButtonPlayerVideo by rememberPreference(showButtonPlayerVideoKey, true)
+    var showButtonPlayerVideo by rememberPreference(SHOW_BUTTON_PLAYER_VIDEO.key, true)
     showButtonPlayerVideo = false
     var navigationBarPosition by rememberPreference(
-        navigationBarPositionKey,
+        NAVIGATION_BAR_POSITION.key,
         NavigationBarPosition.Bottom
     )
     if (getUiType()==UiType.RiPlay)
@@ -278,96 +270,96 @@ fun DefaultPlayerAppearanceSettings() {
     else
         navigationBarPosition = NavigationBarPosition.Left
 
-    var showTotalTimeQueue by rememberPreference(showTotalTimeQueueKey, true)
+    var showTotalTimeQueue by rememberPreference(SHOW_TOTAL_TIME_QUEUE.key, true)
     showTotalTimeQueue = true
     var backgroundProgress by rememberPreference(
-        backgroundProgressKey,
+        BACKGROUND_PROGRESS.key,
         BackgroundProgress.MiniPlayer
     )
     backgroundProgress = BackgroundProgress.MiniPlayer
-    var showNextSongsInPlayer by rememberPreference(showNextSongsInPlayerKey, false)
+    var showNextSongsInPlayer by rememberPreference(SHOW_NEXT_SONGS_IN_PLAYER.key, false)
     showNextSongsInPlayer = false
-    var showRemainingSongTime by rememberPreference(showRemainingSongTimeKey, true)
+    var showRemainingSongTime by rememberPreference(SHOW_REMAINING_SONG_TIME.key, true)
     showRemainingSongTime = true
-    var clickLyricsText by rememberPreference(clickOnLyricsTextKey, true)
+    var clickLyricsText by rememberPreference(CLICK_ON_LYRICS_TEXT.key, true)
     clickLyricsText = true
-    var showBackgroundLyrics by rememberPreference(showBackgroundLyricsKey, false)
+    var showBackgroundLyrics by rememberPreference(SHOW_BACKGROUND_LYRICS.key, false)
     showBackgroundLyrics = false
     var thumbnailRoundness by rememberPreference(
-        thumbnailRoundnessKey,
+        THUMBNAIL_ROUNDNESS.key,
         ThumbnailRoundness.Light
     )
     thumbnailRoundness = ThumbnailRoundness.Light
     var miniPlayerType by rememberPreference(
-        miniPlayerTypeKey,
+        MINI_PLAYER_TYPE.key,
         MiniPlayerType.Modern
     )
     miniPlayerType = MiniPlayerType.Modern
     var playerBackgroundColors by rememberPreference(
-        playerBackgroundColorsKey,
+        PLAYER_BACKGROUND_COLORS.key,
         PlayerBackgroundColors.BlurredCoverColor
     )
     playerBackgroundColors = PlayerBackgroundColors.BlurredCoverColor
-    var showTopActionsBar by rememberPreference(showTopActionsBarKey, true)
+    var showTopActionsBar by rememberPreference(SHOW_TOP_ACTIONS_BAR.key, true)
     showTopActionsBar = true
-    var playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
+    var playerControlsType by rememberPreference(PLAYER_CONTROLS_TYPE.key, PlayerControlsType.Essential)
     playerControlsType = PlayerControlsType.Modern
-    var playerInfoType by rememberPreference(playerInfoTypeKey, PlayerInfoType.Essential)
+    var playerInfoType by rememberPreference(PLAYER_INFO_TYPE.key, PlayerInfoType.Essential)
     playerInfoType = PlayerInfoType.Modern
     var transparentBackgroundActionBarPlayer by rememberPreference(
-        transparentBackgroundPlayerActionBarKey,
+        TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR.key,
         true
     )
     transparentBackgroundActionBarPlayer = false
-    var iconLikeType by rememberPreference(iconLikeTypeKey, IconLikeType.Essential)
+    var iconLikeType by rememberPreference(ICON_LIKE_TYPE.key, IconLikeType.Essential)
     iconLikeType = IconLikeType.Essential
     var playerSwapControlsWithTimeline by rememberPreference(
-        playerSwapControlsWithTimelineKey,
+        PLAYER_SWAP_CONTROLS_WITH_TIMELINE.key,
         false
     )
     playerSwapControlsWithTimeline = false
     var playerEnableLyricsPopupMessage by rememberPreference(
-        playerEnableLyricsPopupMessageKey,
+        PLAYER_ENABLE_LYRICS_POPUP_MESSAGE.key,
         true
     )
     playerEnableLyricsPopupMessage = true
-    var actionspacedevenly by rememberPreference(actionspacedevenlyKey, false)
+    var actionspacedevenly by rememberPreference(ACTIONS_SPACED_EVENLY.key, false)
     actionspacedevenly = false
-    var thumbnailType by rememberPreference(thumbnailTypeKey, ThumbnailType.Modern)
+    var thumbnailType by rememberPreference(THUMBNAIL_TYPE.key, ThumbnailType.Modern)
     thumbnailType = ThumbnailType.Modern
-    var showvisthumbnail by rememberPreference(showvisthumbnailKey, false)
+    var showvisthumbnail by rememberPreference(SHOW_VIS_THUMBNAIL.key, false)
     showvisthumbnail = false
-    var buttonzoomout by rememberPreference(buttonzoomoutKey, false)
+    var buttonzoomout by rememberPreference(BUTTON_ZOOM_OUT.key, false)
     buttonzoomout = false
-    var thumbnailpause by rememberPreference(thumbnailpauseKey, false)
+    var thumbnailpause by rememberPreference(THUMBNAIL_PAUSE.key, false)
     thumbnailpause = false
-    var showsongs by rememberPreference(showsongsKey, SongsNumber.`2`)
+    var showsongs by rememberPreference(SHOW_SONGS.key, SongsNumber.`2`)
     showsongs = SongsNumber.`2`
-    var showalbumcover by rememberPreference(showalbumcoverKey, true)
+    var showalbumcover by rememberPreference(SHOW_ALBUM_COVER.key, true)
     showalbumcover = true
-    var prevNextSongs by rememberPreference(prevNextSongsKey, PrevNextSongs.twosongs)
+    var prevNextSongs by rememberPreference(PREV_NEXT_SONGS.key, PrevNextSongs.twosongs)
     prevNextSongs = PrevNextSongs.twosongs
-    var tapqueue by rememberPreference(tapqueueKey, true)
+    var tapqueue by rememberPreference(TAP_QUEUE.key, true)
     tapqueue = true
-    var swipeUpQueue by rememberPreference(swipeUpQueueKey, true)
+    var swipeUpQueue by rememberPreference(SWIPE_UP_QUEUE.key, true)
     swipeUpQueue = true
-    var statsfornerds by rememberPreference(statsfornerdsKey, false)
+    var statsfornerds by rememberPreference(STATS_FOR_NERDS.key, false)
     statsfornerds = false
-    var playerType by rememberPreference(playerTypeKey, PlayerType.Modern)
+    var playerType by rememberPreference(PLAYER_TYPE.key, PlayerType.Modern)
     playerType = PlayerType.Modern
-    var queueType by rememberPreference(queueTypeKey, QueueType.Modern)
+    var queueType by rememberPreference(QUEUE_TYPE.key, QueueType.Modern)
     queueType = QueueType.Modern
-    var noblur by rememberPreference(noblurKey, true)
+    var noblur by rememberPreference(NO_BLUR.key, true)
     noblur = true
-    var fadingedge by rememberPreference(fadingedgeKey, false)
+    var fadingedge by rememberPreference(FADING_EDGE.key, false)
     fadingedge = false
-    var carousel by rememberPreference(carouselKey, true)
+    var carousel by rememberPreference(CAROUSEL.key, true)
     carousel = true
-    var carouselSize by rememberPreference(carouselSizeKey, CarouselSize.Biggest)
+    var carouselSize by rememberPreference(CAROUSEL_SIZE.key, CarouselSize.Biggest)
     carouselSize = CarouselSize.Biggest
-    var keepPlayerMinimized by rememberPreference(keepPlayerMinimizedKey,false)
+    var keepPlayerMinimized by rememberPreference(KEEP_PLAYER_MINIMIZED.key,false)
     keepPlayerMinimized = false
-    var playerInfoShowIcons by rememberPreference(playerInfoShowIconsKey, true)
+    var playerInfoShowIcons by rememberPreference(PLAYER_INFO_SHOW_ICONS.key, true)
     playerInfoShowIcons = true
 }
 
@@ -379,184 +371,184 @@ fun PlayerAppearanceSettings(
 ) {
 
     var isShowingThumbnailInLockscreen by rememberPreference(
-        isShowingThumbnailInLockscreenKey,
+        IS_SHOWING_THUMBNAIL_IN_LOCKSCREEN.key,
         true
     )
 
-    var showthumbnail by rememberPreference(showthumbnailKey, true)
-    var transparentbar by rememberPreference(transparentbarKey, true)
-    var blackgradient by rememberPreference(blackgradientKey, false)
-    var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, false)
-    var expandedplayer by rememberPreference(expandedplayerKey, false)
+    var showthumbnail by rememberPreference(SHOW_THUMBNAIL.key, true)
+    var transparentbar by rememberPreference(TRANSPARENT_BAR.key, true)
+    var blackgradient by rememberPreference(BLACK_GRADIENT.key, false)
+    var showlyricsthumbnail by rememberPreference(SHOW_LYRICS_THUMBNAIL.key, false)
+    var expandedplayer by rememberPreference(EXPANDED_PLAYER.key, false)
     var playerPlayButtonType by rememberPreference(
-        playerPlayButtonTypeKey,
+        PLAYER_PLAY_BUTTON_TYPE.key,
         PlayerPlayButtonType.Disabled
     )
-    var bottomgradient by rememberPreference(bottomgradientKey, false)
-    var textoutline by rememberPreference(textoutlineKey, false)
+    var bottomgradient by rememberPreference(BOTTOM_GRADIENT.key, false)
+    var textoutline by rememberPreference(TEXT_OUTLINE.key, false)
 
     var lastPlayerPlayButtonType by rememberPreference(
-        lastPlayerPlayButtonTypeKey,
+        LAST_PLAYER_PLAY_BUTTON_TYPE.key,
         PlayerPlayButtonType.Rectangular
     )
-    var disablePlayerHorizontalSwipe by rememberPreference(disablePlayerHorizontalSwipeKey, false)
+    var disablePlayerHorizontalSwipe by rememberPreference(DISABLE_PLAYER_HORIZONTAL_SWIPE.key, false)
 
-    var disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    var disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
     var showLikeButtonBackgroundPlayer by rememberPreference(
-        showLikeButtonBackgroundPlayerKey,
+        SHOW_LIKE_BUTTON_BACKGROUND_PLAYER.key,
         true
     )
 
-    var visualizerEnabled by rememberPreference(visualizerEnabledKey, false)
+    var visualizerEnabled by rememberPreference(VISUALIZER_ENABLED.key, false)
     /*
     var playerVisualizerType by rememberPreference(
-        playerVisualizerTypeKey,
+        playerVisualizerTypeKey.key,
         PlayerVisualizerType.Disabled
     )
     */
-    var playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.Default)
+    var playerTimelineType by rememberPreference(PLAYER_TIMELINE_TYPE.key, PlayerTimelineType.Default)
     var playerThumbnailSize by rememberPreference(
-        playerThumbnailSizeKey,
+        PLAYER_THUMBNAIL_SIZE.key,
         PlayerThumbnailSize.Biggest
     )
     var playerThumbnailSizeL by rememberPreference(
-        playerThumbnailSizeLKey,
+        PLAYER_THUMBNAIL_SIZE_L.key,
         PlayerThumbnailSize.Biggest
     )
     var playerTimelineSize by rememberPreference(
-        playerTimelineSizeKey,
+        PLAYER_TIMELINE_SIZE.key,
         PlayerTimelineSize.Biggest
     )
 
     var seekWithTap by rememberPreference(
-        seekWithTapKey,
+        SEEK_WITH_TAP.key,
         true
     )
     //
 
-    var effectRotationEnabled by rememberPreference(effectRotationKey, true)
+    var effectRotationEnabled by rememberPreference(EFFECT_ROTATION.key, true)
 
-    var thumbnailTapEnabled by rememberPreference(thumbnailTapEnabledKey, true)
+    var thumbnailTapEnabled by rememberPreference(THUMBNAIL_TAP_ENABLED.key, true)
 
 
-    var showButtonPlayerAddToPlaylist by rememberPreference(showButtonPlayerAddToPlaylistKey, true)
-    var showButtonPlayerArrow by rememberPreference(showButtonPlayerArrowKey, true)
-    //var showButtonPlayerDownload by rememberPreference(showButtonPlayerDownloadKey, true)
-    var showButtonPlayerLoop by rememberPreference(showButtonPlayerLoopKey, true)
-    var showButtonPlayerLyrics by rememberPreference(showButtonPlayerLyricsKey, true)
-    var expandedplayertoggle by rememberPreference(expandedplayertoggleKey, true)
-    var showButtonPlayerShuffle by rememberPreference(showButtonPlayerShuffleKey, true)
-    var showButtonPlayerSleepTimer by rememberPreference(showButtonPlayerSleepTimerKey, false)
-    var showButtonPlayerMenu by rememberPreference(showButtonPlayerMenuKey, false)
-    var showButtonPlayerStartradio by rememberPreference(showButtonPlayerStartRadioKey, false)
+    var showButtonPlayerAddToPlaylist by rememberPreference(SHOW_BUTTON_PLAYER_ADD_TO_PLAYLIST.key, true)
+    var showButtonPlayerArrow by rememberPreference(SHOW_BUTTON_PLAYER_ARROW.key, true)
+    //var showButtonPlayerDownload by rememberPreference(showButtonPlayerDownloadKey.key, true)
+    var showButtonPlayerLoop by rememberPreference(SHOW_BUTTON_PLAYER_LOOP.key, true)
+    var showButtonPlayerLyrics by rememberPreference(SHOW_BUTTON_PLAYER_LYRICS.key, true)
+    var expandedplayertoggle by rememberPreference(EXPANDED_PLAYER_TOGGLE.key, true)
+    var showButtonPlayerShuffle by rememberPreference(SHOW_BUTTON_PLAYER_SHUFFLE.key, true)
+    var showButtonPlayerSleepTimer by rememberPreference(SHOW_BUTTON_PLAYER_SLEEP_TIMER.key, false)
+    var showButtonPlayerMenu by rememberPreference(SHOW_BUTTON_PLAYER_MENU.key, false)
+    var showButtonPlayerStartradio by rememberPreference(SHOW_BUTTON_PLAYER_START_RADIO.key, false)
     var showButtonPlayerSystemEqualizer by rememberPreference(
-        showButtonPlayerSystemEqualizerKey,
+        SHOW_BUTTON_PLAYER_SYSTEM_EQUALIZER.key,
         false
     )
-    var showButtonPlayerDiscover by rememberPreference(showButtonPlayerDiscoverKey, false)
-    var showButtonPlayerVideo by rememberPreference(showButtonPlayerVideoKey, true)
+    var showButtonPlayerDiscover by rememberPreference(SHOW_BUTTON_PLAYER_DISCOVER.key, false)
+    var showButtonPlayerVideo by rememberPreference(SHOW_BUTTON_PLAYER_VIDEO.key, true)
 
     val navigationBarPosition by rememberPreference(
-        navigationBarPositionKey,
+        NAVIGATION_BAR_POSITION.key,
         NavigationBarPosition.Bottom
     )
 
-    //var isGradientBackgroundEnabled by rememberPreference(isGradientBackgroundEnabledKey, false)
-    var showTotalTimeQueue by rememberPreference(showTotalTimeQueueKey, true)
+    //var isGradientBackgroundEnabled by rememberPreference(isGradientBackgroundEnabledKey.key, false)
+    var showTotalTimeQueue by rememberPreference(SHOW_TOTAL_TIME_QUEUE.key, true)
     var backgroundProgress by rememberPreference(
-        backgroundProgressKey,
+        BACKGROUND_PROGRESS.key,
         BackgroundProgress.MiniPlayer
     )
-    var showNextSongsInPlayer by rememberPreference(showNextSongsInPlayerKey, false)
-    var showRemainingSongTime by rememberPreference(showRemainingSongTimeKey, true)
-    var clickLyricsText by rememberPreference(clickOnLyricsTextKey, true)
-    var showBackgroundLyrics by rememberPreference(showBackgroundLyricsKey, false)
+    var showNextSongsInPlayer by rememberPreference(SHOW_NEXT_SONGS_IN_PLAYER.key, false)
+    var showRemainingSongTime by rememberPreference(SHOW_REMAINING_SONG_TIME.key, true)
+    var clickLyricsText by rememberPreference(CLICK_ON_LYRICS_TEXT.key, true)
+    var showBackgroundLyrics by rememberPreference(SHOW_BACKGROUND_LYRICS.key, false)
 
     val search = Search.init()
 
     var thumbnailRoundness by rememberPreference(
-        thumbnailRoundnessKey,
+        THUMBNAIL_ROUNDNESS.key,
         ThumbnailRoundness.Light
     )
 
     var miniPlayerType by rememberPreference(
-        miniPlayerTypeKey,
+        MINI_PLAYER_TYPE.key,
         MiniPlayerType.Modern
     )
     var playerBackgroundColors by rememberPreference(
-        playerBackgroundColorsKey,
+        PLAYER_BACKGROUND_COLORS.key,
         PlayerBackgroundColors.BlurredCoverColor
     )
 
-    var showTopActionsBar by rememberPreference(showTopActionsBarKey, true)
-    var showPlayerActionsBar by rememberPreference(showPlayerActionsBarKey, true)
+    var showTopActionsBar by rememberPreference(SHOW_TOP_ACTIONS_BAR.key, true)
+    var showPlayerActionsBar by rememberPreference(SHOW_PLAYER_ACTIONS_BAR.key, true)
 
-    var playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
-    var playerInfoType by rememberPreference(playerInfoTypeKey, PlayerInfoType.Essential)
+    var playerControlsType by rememberPreference(PLAYER_CONTROLS_TYPE.key, PlayerControlsType.Essential)
+    var playerInfoType by rememberPreference(PLAYER_INFO_TYPE.key, PlayerInfoType.Essential)
     var transparentBackgroundActionBarPlayer by rememberPreference(
-        transparentBackgroundPlayerActionBarKey,
+        TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR.key,
         true
     )
-    var iconLikeType by rememberPreference(iconLikeTypeKey, IconLikeType.Essential)
+    var iconLikeType by rememberPreference(ICON_LIKE_TYPE.key, IconLikeType.Essential)
     var playerSwapControlsWithTimeline by rememberPreference(
-        playerSwapControlsWithTimelineKey,
+        PLAYER_SWAP_CONTROLS_WITH_TIMELINE.key,
         false
     )
     var playerEnableLyricsPopupMessage by rememberPreference(
-        playerEnableLyricsPopupMessageKey,
+        PLAYER_ENABLE_LYRICS_POPUP_MESSAGE.key,
         true
     )
-    var actionspacedevenly by rememberPreference(actionspacedevenlyKey, false)
-    var thumbnailType by rememberPreference(thumbnailTypeKey, ThumbnailType.Modern)
-    var showvisthumbnail by rememberPreference(showvisthumbnailKey, false)
-    var buttonzoomout by rememberPreference(buttonzoomoutKey, false)
-    var thumbnailpause by rememberPreference(thumbnailpauseKey, false)
-    var showsongs by rememberPreference(showsongsKey, SongsNumber.`2`)
-    var showalbumcover by rememberPreference(showalbumcoverKey, true)
-    var prevNextSongs by rememberPreference(prevNextSongsKey, PrevNextSongs.twosongs)
-    var tapqueue by rememberPreference(tapqueueKey, true)
-    var swipeUpQueue by rememberPreference(swipeUpQueueKey, true)
-    var statsfornerds by rememberPreference(statsfornerdsKey, false)
+    var actionspacedevenly by rememberPreference(ACTIONS_SPACED_EVENLY.key, false)
+    var thumbnailType by rememberPreference(THUMBNAIL_TYPE.key, ThumbnailType.Modern)
+    var showvisthumbnail by rememberPreference(SHOW_VIS_THUMBNAIL.key, false)
+    var buttonzoomout by rememberPreference(BUTTON_ZOOM_OUT.key, false)
+    var thumbnailpause by rememberPreference(THUMBNAIL_PAUSE.key, false)
+    var showsongs by rememberPreference(SHOW_SONGS.key, SongsNumber.`2`)
+    var showalbumcover by rememberPreference(SHOW_ALBUM_COVER.key, true)
+    var prevNextSongs by rememberPreference(PREV_NEXT_SONGS.key, PrevNextSongs.twosongs)
+    var tapqueue by rememberPreference(TAP_QUEUE.key, true)
+    var swipeUpQueue by rememberPreference(SWIPE_UP_QUEUE.key, true)
+    var statsfornerds by rememberPreference(STATS_FOR_NERDS.key, false)
 
-    var playerType by rememberPreference(playerTypeKey, PlayerType.Modern)
-    var queueType by rememberPreference(queueTypeKey, QueueType.Modern)
-    var noblur by rememberPreference(noblurKey, true)
-    var fadingedge by rememberPreference(fadingedgeKey, false)
-    var carousel by rememberPreference(carouselKey, true)
-    var carouselSize by rememberPreference(carouselSizeKey, CarouselSize.Biggest)
-    var keepPlayerMinimized by rememberPreference(keepPlayerMinimizedKey,false)
-    var playerInfoShowIcons by rememberPreference(playerInfoShowIconsKey, true)
-    var queueDurationExpanded by rememberPreference(queueDurationExpandedKey, true)
-    var titleExpanded by rememberPreference(titleExpandedKey, true)
-    var timelineExpanded by rememberPreference(timelineExpandedKey, true)
-    var controlsExpanded by rememberPreference(controlsExpandedKey, true)
-    var miniQueueExpanded by rememberPreference(miniQueueExpandedKey, true)
-    var statsExpanded by rememberPreference(statsExpandedKey, true)
-    var actionExpanded by rememberPreference(actionExpandedKey, true)
+    var playerType by rememberPreference(PLAYER_TYPE.key, PlayerType.Modern)
+    var queueType by rememberPreference(QUEUE_TYPE.key, QueueType.Modern)
+    var noblur by rememberPreference(NO_BLUR.key, true)
+    var fadingedge by rememberPreference(FADING_EDGE.key, false)
+    var carousel by rememberPreference(CAROUSEL.key, true)
+    var carouselSize by rememberPreference(CAROUSEL_SIZE.key, CarouselSize.Biggest)
+    var keepPlayerMinimized by rememberPreference(KEEP_PLAYER_MINIMIZED.key,false)
+    var playerInfoShowIcons by rememberPreference(PLAYER_INFO_SHOW_ICONS.key, true)
+    var queueDurationExpanded by rememberPreference(QUEUE_DURATION_EXPANDED.key, true)
+    var titleExpanded by rememberPreference(TITLE_EXPANDED.key, true)
+    var timelineExpanded by rememberPreference(TIMELINE_EXPANDED.key, true)
+    var controlsExpanded by rememberPreference(CONTROLS_EXPANDED.key, true)
+    var miniQueueExpanded by rememberPreference(MINI_QUEUE_EXPANDED.key, true)
+    var statsExpanded by rememberPreference(STATS_EXPANDED.key, true)
+    var actionExpanded by rememberPreference(ACTION_EXPANDED.key, true)
     var restartService by rememberSaveable { mutableStateOf(false) }
     var restartActivity by rememberSaveable { mutableStateOf(false) }
-    var showCoverThumbnailAnimation by rememberPreference(showCoverThumbnailAnimationKey, false)
-    var coverThumbnailAnimation by rememberPreference(coverThumbnailAnimationKey, ThumbnailCoverType.Vinyl)
+    var showCoverThumbnailAnimation by rememberPreference(SHOW_COVER_THUMBNAIL_ANIMATION.key, false)
+    var coverThumbnailAnimation by rememberPreference(COVER_THUMBNAIL_ANIMATION.key, ThumbnailCoverType.Vinyl)
 
-    var notificationPlayerFirstIcon by rememberPreference(notificationPlayerFirstIconKey, NotificationButtons.Repeat)
-    var notificationPlayerSecondIcon by rememberPreference(notificationPlayerSecondIconKey, NotificationButtons.Favorites)
-    var enableWallpaper by rememberPreference(enableWallpaperKey, false)
-    var wallpaperType by rememberPreference(wallpaperTypeKey, WallpaperType.Lockscreen)
-    var topPadding by rememberPreference(topPaddingKey, true)
+    var notificationPlayerFirstIcon by rememberPreference(NOTIFICATION_PLAYER_FIRST_ICON.key, NotificationButtons.Repeat)
+    var notificationPlayerSecondIcon by rememberPreference(NOTIFICATION_PLAYER_SECOND_ICON.key, NotificationButtons.Favorites)
+    var enableWallpaper by rememberPreference(ENABLE_WALLPAPER.key, false)
+    var wallpaperType by rememberPreference(WALLPAPER_TYPE.key, WallpaperType.Lockscreen)
+    var topPadding by rememberPreference(TOP_PADDING.key, true)
     var animatedGradient by rememberPreference(
-        animatedGradientKey,
+        ANIMATED_GRADIENT.key,
         AnimatedGradient.Linear
     )
     var appearanceChooser by remember{ mutableStateOf(false)}
-    var albumCoverRotation by rememberPreference(albumCoverRotationKey, false)
+    var albumCoverRotation by rememberPreference(ALBUM_COVER_ROTATION.key, false)
 
-    var blurStrength by rememberPreference(blurStrengthKey, 25f)
-    var thumbnailFadeEx  by rememberPreference(thumbnailFadeExKey, 5f)
-    var thumbnailFade  by rememberPreference(thumbnailFadeKey, 5f)
-    var thumbnailSpacing  by rememberPreference(thumbnailSpacingKey, 0f)
-    var colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
-    var colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
-    var swipeAnimationNoThumbnail by rememberPreference(swipeAnimationsNoThumbnailKey, SwipeAnimationNoThumbnail.Sliding)
+    var blurStrength by rememberPreference(BLUR_SCALE.key, 25f)
+    var thumbnailFadeEx  by rememberPreference(THUMBNAIL_FADE_EX.key, 5f)
+    var thumbnailFade  by rememberPreference(THUMBNAIL_FADE.key, 5f)
+    var thumbnailSpacing  by rememberPreference(THUMBNAIL_SPACING.key, 0f)
+    var colorPaletteName by rememberPreference(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
+    var colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
+    var swipeAnimationNoThumbnail by rememberPreference(SWIPE_ANIMATIONS_NO_THUMBNAIL.key, SwipeAnimationNoThumbnail.Sliding)
 
     var appearanceFilename by remember {
         mutableStateOf("")

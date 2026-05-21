@@ -69,15 +69,15 @@ import it.fast4x.riplay.enums.PlayerControlsType
 import it.fast4x.riplay.enums.PlayerPlayButtonType
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.QueueLoopType
-import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
-import it.fast4x.riplay.extensions.preferences.colorPaletteNameKey
-import it.fast4x.riplay.extensions.preferences.effectRotationKey
-import it.fast4x.riplay.extensions.preferences.jumpPreviousKey
-import it.fast4x.riplay.extensions.preferences.playerBackgroundColorsKey
-import it.fast4x.riplay.extensions.preferences.playerControlsTypeKey
-import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_NAME
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EFFECT_ROTATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.JUMP_PREVIOUS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_BACKGROUND_COLORS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_CONTROLS_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUEUE_LOOP_TYPE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.textoutlineKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TEXT_OUTLINE
 import it.fast4x.riplay.services.playback.PlaybackState
 import it.fast4x.riplay.services.playback.PlayerState
 import it.fast4x.riplay.ui.components.themed.IconButton
@@ -126,13 +126,13 @@ fun UnifiedInfoAlbumAndArtistEssential(
     disableScrollingText: Boolean = false,
     mediaItem: MediaItem
 ) {
-    val playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
-    val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
-    var effectRotationEnabled by rememberPreference(effectRotationKey, true)
+    val playerControlsType by rememberPreference(PLAYER_CONTROLS_TYPE.key, PlayerControlsType.Essential)
+    val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
+    var effectRotationEnabled by rememberPreference(EFFECT_ROTATION.key, true)
     var isRotated by rememberSaveable { mutableStateOf(false) }
     var showSelectDialog by remember { mutableStateOf(false) }
-    var textoutline by rememberPreference(textoutlineKey, false)
-    val playerBackgroundColors by rememberPreference(playerBackgroundColorsKey,PlayerBackgroundColors.BlurredCoverColor)
+    var textoutline by rememberPreference(TEXT_OUTLINE.key, false)
+    val playerBackgroundColors by rememberPreference(PLAYER_BACKGROUND_COLORS.key,PlayerBackgroundColors.BlurredCoverColor)
     var likeButtonWidth by remember{ mutableStateOf(0.dp) }
 
     Row(
@@ -424,9 +424,9 @@ fun UnifiedControlsEssential(
     playerState: PlayerState,
 ) {
 
-    val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
-    val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
-    var effectRotationEnabled by rememberPreference(effectRotationKey, true)
+    val colorPaletteName by rememberPreference(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
+    val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
+    var effectRotationEnabled by rememberPreference(EFFECT_ROTATION.key, true)
     var isRotated by rememberSaveable { mutableStateOf(false) }
     val rotationAngle by animateFloatAsState(
         targetValue = if (isRotated) 360F else 0f,
@@ -439,9 +439,9 @@ fun UnifiedControlsEssential(
         targetValueByState = { if (it) 32.dp else 16.dp }
     )
 
-    var queueLoopType by rememberPreference(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
-    val playerBackgroundColors by rememberPreference(playerBackgroundColorsKey,PlayerBackgroundColors.BlurredCoverColor)
-    var jumpPrevious by rememberPreference(jumpPreviousKey,"3")
+    var queueLoopType by rememberPreference(QUEUE_LOOP_TYPE.key, defaultValue = QueueLoopType.Default)
+    val playerBackgroundColors by rememberPreference(PLAYER_BACKGROUND_COLORS.key,PlayerBackgroundColors.BlurredCoverColor)
+    var jumpPrevious by rememberPreference(JUMP_PREVIOUS.key,"3")
     val currentMediaItem = playerState.mediaInfo?.mediaItem
     var lightTheme = colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
 

@@ -95,13 +95,12 @@ import it.fast4x.riplay.ui.components.themed.PlaylistsItemMenu
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.items.AlbumItemPlaceholder
 import it.fast4x.riplay.ui.items.SongItem
-import it.fast4x.riplay.ui.items.SongItemPlaceholder
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.utils.enqueue
@@ -113,8 +112,8 @@ import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -199,11 +198,11 @@ fun Podcast(
     }
 
     var thumbnailRoundness by rememberPreference(
-        thumbnailRoundnessKey,
+        THUMBNAIL_ROUNDNESS.key,
         ThumbnailRoundness.Light
     )
 
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
 
     var totalPlayTimes = 0L
     podcastPage?.listEpisode?.forEach {
@@ -793,7 +792,7 @@ fun Podcast(
                 }
             }
 
-            val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
+            val showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
             if( UiType.ViMusic.isCurrent() && showFloatingIcon )
             FloatingActionsContainerWithScrollToTop(
                 lazyListState = lazyListState,

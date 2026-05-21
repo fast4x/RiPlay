@@ -28,7 +28,6 @@ import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -44,7 +43,6 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.MediaItem
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.colorPalette
@@ -54,10 +52,7 @@ import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.LinkType
 import it.fast4x.riplay.extensions.listapps.listApps
 import it.fast4x.riplay.extensions.listapps.toExternalApp
-import it.fast4x.riplay.data.models.Album
-import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.ExternalApp
-import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
@@ -66,10 +61,9 @@ import it.fast4x.riplay.ui.components.themed.MenuEntry
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.components.themed.TitleMiniSection
 import it.fast4x.riplay.ui.components.themed.TitleSection
-import it.fast4x.riplay.utils.asSong
-import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.copyTextToClipboard
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import kotlinx.coroutines.Dispatchers
 
 @Composable
@@ -134,8 +128,8 @@ fun FastShare(
     if (urlToShare == "") return
 
 
-    val thumbnailRoundness by rememberObservedPreference(
-        thumbnailRoundnessKey,
+    val thumbnailRoundness by rememberPreference(
+        THUMBNAIL_ROUNDNESS.key,
         ThumbnailRoundness.Light
     )
 

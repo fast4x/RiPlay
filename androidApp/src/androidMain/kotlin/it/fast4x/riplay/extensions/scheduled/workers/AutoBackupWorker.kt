@@ -35,88 +35,88 @@ import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ThumbnailType
 import it.fast4x.riplay.enums.WallpaperType
 import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
-import it.fast4x.riplay.extensions.preferences.actionExpandedKey
-import it.fast4x.riplay.extensions.preferences.actionspacedevenlyKey
-import it.fast4x.riplay.extensions.preferences.albumCoverRotationKey
-import it.fast4x.riplay.extensions.preferences.animatedGradientKey
-import it.fast4x.riplay.extensions.preferences.autoBackupFolderKey
-import it.fast4x.riplay.extensions.preferences.backgroundProgressKey
-import it.fast4x.riplay.extensions.preferences.blackgradientKey
-import it.fast4x.riplay.extensions.preferences.blurStrengthKey
-import it.fast4x.riplay.extensions.preferences.bottomgradientKey
-import it.fast4x.riplay.extensions.preferences.buttonzoomoutKey
-import it.fast4x.riplay.extensions.preferences.carouselKey
-import it.fast4x.riplay.extensions.preferences.carouselSizeKey
-import it.fast4x.riplay.extensions.preferences.clickOnLyricsTextKey
-import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
-import it.fast4x.riplay.extensions.preferences.colorPaletteNameKey
-import it.fast4x.riplay.extensions.preferences.controlsExpandedKey
-import it.fast4x.riplay.extensions.preferences.coverThumbnailAnimationKey
-import it.fast4x.riplay.extensions.preferences.effectRotationKey
-import it.fast4x.riplay.extensions.preferences.enableWallpaperKey
-import it.fast4x.riplay.extensions.preferences.expandedplayerKey
-import it.fast4x.riplay.extensions.preferences.fadingedgeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ACTION_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ACTIONS_SPACED_EVENLY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUM_COVER_ROTATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ANIMATED_GRADIENT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.AUTO_BACKUP_FOLDER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BACKGROUND_PROGRESS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BLACK_GRADIENT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BLUR_SCALE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BOTTOM_GRADIENT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BUTTON_ZOOM_OUT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CAROUSEL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CAROUSEL_SIZE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CLICK_ON_LYRICS_TEXT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_NAME
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CONTROLS_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COVER_THUMBNAIL_ANIMATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EFFECT_ROTATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_WALLPAPER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXPANDED_PLAYER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.FADING_EDGE
 import it.fast4x.riplay.extensions.preferences.getEnum
-import it.fast4x.riplay.extensions.preferences.iconLikeTypeKey
-import it.fast4x.riplay.extensions.preferences.keepPlayerMinimizedKey
-import it.fast4x.riplay.extensions.preferences.miniQueueExpandedKey
-import it.fast4x.riplay.extensions.preferences.noblurKey
-import it.fast4x.riplay.extensions.preferences.notificationPlayerFirstIconKey
-import it.fast4x.riplay.extensions.preferences.notificationPlayerSecondIconKey
-import it.fast4x.riplay.extensions.preferences.playerBackgroundColorsKey
-import it.fast4x.riplay.extensions.preferences.playerControlsTypeKey
-import it.fast4x.riplay.extensions.preferences.playerEnableLyricsPopupMessageKey
-import it.fast4x.riplay.extensions.preferences.playerInfoShowIconsKey
-import it.fast4x.riplay.extensions.preferences.playerInfoTypeKey
-import it.fast4x.riplay.extensions.preferences.playerPlayButtonTypeKey
-import it.fast4x.riplay.extensions.preferences.playerSwapControlsWithTimelineKey
-import it.fast4x.riplay.extensions.preferences.playerTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ICON_LIKE_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.KEEP_PLAYER_MINIMIZED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MINI_QUEUE_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.NO_BLUR
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.NOTIFICATION_PLAYER_FIRST_ICON
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.NOTIFICATION_PLAYER_SECOND_ICON
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_BACKGROUND_COLORS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_CONTROLS_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_ENABLE_LYRICS_POPUP_MESSAGE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_INFO_SHOW_ICONS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_INFO_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_PLAY_BUTTON_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_SWAP_CONTROLS_WITH_TIMELINE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_TYPE
 import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.extensions.preferences.prevNextSongsKey
-import it.fast4x.riplay.extensions.preferences.queueDurationExpandedKey
-import it.fast4x.riplay.extensions.preferences.queueTypeKey
-import it.fast4x.riplay.extensions.preferences.showBackgroundLyricsKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerAddToPlaylistKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerArrowKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerDiscoverKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerLoopKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerLyricsKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerMenuKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerShuffleKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerSleepTimerKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerStartRadioKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerSystemEqualizerKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerVideoKey
-import it.fast4x.riplay.extensions.preferences.showCoverThumbnailAnimationKey
-import it.fast4x.riplay.extensions.preferences.showLikeButtonBackgroundPlayerKey
-import it.fast4x.riplay.extensions.preferences.showNextSongsInPlayerKey
-import it.fast4x.riplay.extensions.preferences.showRemainingSongTimeKey
-import it.fast4x.riplay.extensions.preferences.showTopActionsBarKey
-import it.fast4x.riplay.extensions.preferences.showTotalTimeQueueKey
-import it.fast4x.riplay.extensions.preferences.showalbumcoverKey
-import it.fast4x.riplay.extensions.preferences.showlyricsthumbnailKey
-import it.fast4x.riplay.extensions.preferences.showsongsKey
-import it.fast4x.riplay.extensions.preferences.showthumbnailKey
-import it.fast4x.riplay.extensions.preferences.statsExpandedKey
-import it.fast4x.riplay.extensions.preferences.statsfornerdsKey
-import it.fast4x.riplay.extensions.preferences.swipeAnimationsNoThumbnailKey
-import it.fast4x.riplay.extensions.preferences.swipeUpQueueKey
-import it.fast4x.riplay.extensions.preferences.tapqueueKey
-import it.fast4x.riplay.extensions.preferences.textoutlineKey
-import it.fast4x.riplay.extensions.preferences.thumbnailFadeExKey
-import it.fast4x.riplay.extensions.preferences.thumbnailFadeKey
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
-import it.fast4x.riplay.extensions.preferences.thumbnailSpacingKey
-import it.fast4x.riplay.extensions.preferences.thumbnailTapEnabledKey
-import it.fast4x.riplay.extensions.preferences.thumbnailTypeKey
-import it.fast4x.riplay.extensions.preferences.thumbnailpauseKey
-import it.fast4x.riplay.extensions.preferences.timelineExpandedKey
-import it.fast4x.riplay.extensions.preferences.titleExpandedKey
-import it.fast4x.riplay.extensions.preferences.topPaddingKey
-import it.fast4x.riplay.extensions.preferences.transparentBackgroundPlayerActionBarKey
-import it.fast4x.riplay.extensions.preferences.transparentbarKey
-import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
-import it.fast4x.riplay.extensions.preferences.wallpaperTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PREV_NEXT_SONGS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUEUE_DURATION_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUEUE_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BACKGROUND_LYRICS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_ADD_TO_PLAYLIST
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_ARROW
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_DISCOVER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_LOOP
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_LYRICS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_MENU
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_SHUFFLE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_SLEEP_TIMER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_START_RADIO
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_SYSTEM_EQUALIZER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_VIDEO
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_COVER_THUMBNAIL_ANIMATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LIKE_BUTTON_BACKGROUND_PLAYER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_NEXT_SONGS_IN_PLAYER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_REMAINING_SONG_TIME
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_TOP_ACTIONS_BAR
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_TOTAL_TIME_QUEUE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_ALBUM_COVER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LYRICS_THUMBNAIL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SONGS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_THUMBNAIL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.STATS_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.STATS_FOR_NERDS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SWIPE_ANIMATIONS_NO_THUMBNAIL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SWIPE_UP_QUEUE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TAP_QUEUE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TEXT_OUTLINE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_FADE_EX
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_FADE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_SPACING
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_TAP_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_PAUSE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TIMELINE_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TITLE_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TOP_PADDING
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BAR
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.VISUALIZER_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.WALLPAPER_TYPE
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -134,7 +134,7 @@ class AutoBackupWorker(context: Context, params: WorkerParameters) : CoroutineWo
         return try {
             Timber.d("AutoBackupWorker: Start...")
 
-            val selectedFolderUri = context.preferences.getString(autoBackupFolderKey, "")
+            val selectedFolderUri = context.preferences.getString(AUTO_BACKUP_FOLDER.key, "")
             val savedUri = Uri.parse(selectedFolderUri)
             val folder = DocumentFile.fromTreeUri(context, savedUri)
 
@@ -163,96 +163,96 @@ class AutoBackupWorker(context: Context, params: WorkerParameters) : CoroutineWo
                 return Result.failure()
             }
 
-            val albumCoverRotation = context.preferences.getBoolean(albumCoverRotationKey, false)
-            val showthumbnail = context.preferences.getBoolean(showthumbnailKey, true)
-            val playerBackgroundColors = context.preferences.getEnum(playerBackgroundColorsKey, PlayerBackgroundColors.BlurredCoverColor)
-            val thumbnailRoundness = context.preferences.getEnum(thumbnailRoundnessKey, ThumbnailRoundness.Light)
-            val playerType = context.preferences.getEnum(playerTypeKey, PlayerType.Modern)
-            val queueType = context.preferences.getEnum(queueTypeKey, QueueType.Modern)
-            val noblur = context.preferences.getBoolean(noblurKey, true)
-            val fadingedge = context.preferences.getBoolean(fadingedgeKey, false)
-            val carousel = context.preferences.getBoolean(carouselKey, true)
-            val keepPlayerMinimized = context.preferences.getBoolean(keepPlayerMinimizedKey, false)
-            val playerInfoShowIcons = context.preferences.getBoolean(playerInfoShowIconsKey, true)
-            val showTopActionsBar = context.preferences.getBoolean(showTopActionsBarKey, true)
-            val carouselSize = context.preferences.getEnum(carouselSizeKey, CarouselSize.Biggest)
-            val playerControlsType = context.preferences.getEnum(playerControlsTypeKey, PlayerControlsType.Essential)
-            val playerInfoType = context.preferences.getEnum(playerInfoTypeKey, PlayerType.Modern)
+            val albumCoverRotation = context.preferences.getBoolean(ALBUM_COVER_ROTATION.key, false)
+            val showthumbnail = context.preferences.getBoolean(SHOW_THUMBNAIL.key, true)
+            val playerBackgroundColors = context.preferences.getEnum(PLAYER_BACKGROUND_COLORS.key, PlayerBackgroundColors.BlurredCoverColor)
+            val thumbnailRoundness = context.preferences.getEnum(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
+            val playerType = context.preferences.getEnum(PLAYER_TYPE.key, PlayerType.Modern)
+            val queueType = context.preferences.getEnum(QUEUE_TYPE.key, QueueType.Modern)
+            val noblur = context.preferences.getBoolean(NO_BLUR.key, true)
+            val fadingedge = context.preferences.getBoolean(FADING_EDGE.key, false)
+            val carousel = context.preferences.getBoolean(CAROUSEL.key, true)
+            val keepPlayerMinimized = context.preferences.getBoolean(KEEP_PLAYER_MINIMIZED.key, false)
+            val playerInfoShowIcons = context.preferences.getBoolean(PLAYER_INFO_SHOW_ICONS.key, true)
+            val showTopActionsBar = context.preferences.getBoolean(SHOW_TOP_ACTIONS_BAR.key, true)
+            val carouselSize = context.preferences.getEnum(CAROUSEL_SIZE.key, CarouselSize.Biggest)
+            val playerControlsType = context.preferences.getEnum(PLAYER_CONTROLS_TYPE.key, PlayerControlsType.Essential)
+            val playerInfoType = context.preferences.getEnum(PLAYER_INFO_TYPE.key, PlayerType.Modern)
             val transparentBackgroundActionBarPlayer = context.preferences.getBoolean(
-                transparentBackgroundPlayerActionBarKey,
+                TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR.key,
                 true
             )
-            val iconLikeType = context.preferences.getEnum(iconLikeTypeKey, IconLikeType.Essential)
+            val iconLikeType = context.preferences.getEnum(ICON_LIKE_TYPE.key, IconLikeType.Essential)
             val playerSwapControlsWithTimeline = context.preferences.getBoolean(
-                playerSwapControlsWithTimelineKey,
+                PLAYER_SWAP_CONTROLS_WITH_TIMELINE.key,
                 false
             )
             val playerEnableLyricsPopupMessage = context.preferences.getBoolean(
-                playerEnableLyricsPopupMessageKey,
+                PLAYER_ENABLE_LYRICS_POPUP_MESSAGE.key,
                 true
             )
-            val actionspacedevenly = context.preferences.getBoolean(actionspacedevenlyKey, false)
-            val thumbnailType = context.preferences.getEnum(thumbnailTypeKey, ThumbnailType.Modern)
-            val showvisthumbnail = context.preferences.getBoolean(showthumbnailKey, true)
-            val buttonzoomout = context.preferences.getBoolean(buttonzoomoutKey, false)
-            val thumbnailpause = context.preferences.getBoolean(thumbnailpauseKey, false)
-            val showsongs = context.preferences.getEnum(showsongsKey, SongsNumber.`2`)
-            val showalbumcover = context.preferences.getBoolean(showalbumcoverKey, true)
-            val prevNextSongs = context.preferences.getEnum(prevNextSongsKey, PrevNextSongs.twosongs)
-            val tapqueue = context.preferences.getBoolean(tapqueueKey, true)
-            val swipeUpQueue = context.preferences.getBoolean(swipeUpQueueKey, true)
-            val statsfornerds = context.preferences.getBoolean(statsfornerdsKey, false)
-            val transparentbar = context.preferences.getBoolean(transparentbarKey, true)
-            val showlyricsthumbnail = context.preferences.getBoolean(showlyricsthumbnailKey, false)
-            val blackgradient = context.preferences.getBoolean(blackgradientKey, false)
-            val expandedplayer = context.preferences.getBoolean(expandedplayerKey, true)
-            val playerPlayButtonType = context.preferences.getEnum(playerPlayButtonTypeKey, PlayerPlayButtonType.Disabled)
-            val bottomgradient = context.preferences.getBoolean(bottomgradientKey, false)
-            val textoutline = context.preferences.getBoolean(textoutlineKey, false)
-            val effectRotationEnabled = context.preferences.getBoolean(effectRotationKey, true)
-            val thumbnailTapEnabled = context.preferences.getBoolean(thumbnailTapEnabledKey, true)
-            val showButtonPlayerAddToPlaylist = context.preferences.getBoolean(showButtonPlayerAddToPlaylistKey, true)
-            val showButtonPlayerArrow = context.preferences.getBoolean(showButtonPlayerArrowKey, true)
-            val showButtonPlayerLoop = context.preferences.getBoolean(showButtonPlayerLoopKey, true)
-            val showButtonPlayerLyrics = context.preferences.getBoolean(showButtonPlayerLyricsKey, true)
-            val expandedplayertoggle = context.preferences.getBoolean(expandedplayerKey, true)
-            val showButtonPlayerShuffle = context.preferences.getBoolean(showButtonPlayerShuffleKey, true)
-            val showButtonPlayerSleepTimer = context.preferences.getBoolean(showButtonPlayerSleepTimerKey, true)
-            val showButtonPlayerMenu = context.preferences.getBoolean(showButtonPlayerMenuKey, true)
-            val showButtonPlayerStartradio = context.preferences.getBoolean(showButtonPlayerStartRadioKey, true)
-            val showButtonPlayerSystemEqualizer = context.preferences.getBoolean(showButtonPlayerSystemEqualizerKey, true)
-            val showButtonPlayerDiscover = context.preferences.getBoolean(showButtonPlayerDiscoverKey, true)
-            val showButtonPlayerVideo = context.preferences.getBoolean(showButtonPlayerVideoKey, true)
-            val showBackgroundLyrics = context.preferences.getBoolean(showBackgroundLyricsKey, false)
-            val showTotalTimeQueue = context.preferences.getBoolean(showTotalTimeQueueKey, true)
-            val backgroundProgress = context.preferences.getEnum(backgroundProgressKey, BackgroundProgress.MiniPlayer)
-            val showNextSongsInPlayer = context.preferences.getBoolean(showNextSongsInPlayerKey, true)
-            val showRemainingSongTime = context.preferences.getBoolean(showRemainingSongTimeKey, true)
-            val clickLyricsText = context.preferences.getBoolean(clickOnLyricsTextKey, false)
-            val queueDurationExpanded = context.preferences.getBoolean(queueDurationExpandedKey, true)
-            val titleExpanded = context.preferences.getBoolean(titleExpandedKey, true)
-            val timelineExpanded = context.preferences.getBoolean(timelineExpandedKey, true)
-            val controlsExpanded = context.preferences.getBoolean(controlsExpandedKey, true)
-            val miniQueueExpanded = context.preferences.getBoolean(miniQueueExpandedKey, true)
-            val statsExpanded = context.preferences.getBoolean(statsExpandedKey, true)
-            val actionExpanded = context.preferences.getBoolean(actionExpandedKey, true)
-            val showCoverThumbnailAnimation = context.preferences.getBoolean(showCoverThumbnailAnimationKey, false)
-            val coverThumbnailAnimation = context.preferences.getEnum(coverThumbnailAnimationKey, ThumbnailCoverType.Vinyl)
-            val notificationPlayerFirstIcon = context.preferences.getEnum(notificationPlayerFirstIconKey, NotificationButtons.Repeat)
-            val notificationPlayerSecondIcon = context.preferences.getEnum(notificationPlayerSecondIconKey, NotificationButtons.Favorites)
-            val enableWallpaper = context.preferences.getBoolean(enableWallpaperKey, false)
-            val wallpaperType = context.preferences.getEnum(wallpaperTypeKey, WallpaperType.Lockscreen)
-            val topPadding = context.preferences.getBoolean(topPaddingKey, true)
-            val animatedGradient = context.preferences.getEnum(animatedGradientKey, AnimatedGradient.Linear)
-            val blurStrength = context.preferences.getFloat(blurStrengthKey, 25f)
-            val thumbnailFadeEx = context.preferences.getFloat(thumbnailFadeExKey, 5f)
-            val thumbnailFade = context.preferences.getFloat(thumbnailFadeKey, 5f)
-            val thumbnailSpacing = context.preferences.getFloat(thumbnailSpacingKey, 0f)
-            val colorPaletteName = context.preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
-            val colorPaletteMode = context.preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
-            val swipeAnimationNoThumbnail = context.preferences.getEnum(swipeAnimationsNoThumbnailKey, SwipeAnimationNoThumbnail.Sliding)
-            val showLikeButtonBackgroundPlayer = context.preferences.getBoolean(showLikeButtonBackgroundPlayerKey, true)
-            val visualizerEnabled = context.preferences.getBoolean(visualizerEnabledKey, false)
+            val actionspacedevenly = context.preferences.getBoolean(ACTIONS_SPACED_EVENLY.key, false)
+            val thumbnailType = context.preferences.getEnum(THUMBNAIL_TYPE.key, ThumbnailType.Modern)
+            val showvisthumbnail = context.preferences.getBoolean(SHOW_THUMBNAIL.key, true)
+            val buttonzoomout = context.preferences.getBoolean(BUTTON_ZOOM_OUT.key, false)
+            val thumbnailpause = context.preferences.getBoolean(THUMBNAIL_PAUSE.key, false)
+            val showsongs = context.preferences.getEnum(SHOW_SONGS.key, SongsNumber.`2`)
+            val showalbumcover = context.preferences.getBoolean(SHOW_ALBUM_COVER.key, true)
+            val prevNextSongs = context.preferences.getEnum(PREV_NEXT_SONGS.key, PrevNextSongs.twosongs)
+            val tapqueue = context.preferences.getBoolean(TAP_QUEUE.key, true)
+            val swipeUpQueue = context.preferences.getBoolean(SWIPE_UP_QUEUE.key, true)
+            val statsfornerds = context.preferences.getBoolean(STATS_FOR_NERDS.key, false)
+            val transparentbar = context.preferences.getBoolean(TRANSPARENT_BAR.key, true)
+            val showlyricsthumbnail = context.preferences.getBoolean(SHOW_LYRICS_THUMBNAIL.key, false)
+            val blackgradient = context.preferences.getBoolean(BLACK_GRADIENT.key, false)
+            val expandedplayer = context.preferences.getBoolean(EXPANDED_PLAYER.key, true)
+            val playerPlayButtonType = context.preferences.getEnum(PLAYER_PLAY_BUTTON_TYPE.key, PlayerPlayButtonType.Disabled)
+            val bottomgradient = context.preferences.getBoolean(BOTTOM_GRADIENT.key, false)
+            val textoutline = context.preferences.getBoolean(TEXT_OUTLINE.key, false)
+            val effectRotationEnabled = context.preferences.getBoolean(EFFECT_ROTATION.key, true)
+            val thumbnailTapEnabled = context.preferences.getBoolean(THUMBNAIL_TAP_ENABLED.key, true)
+            val showButtonPlayerAddToPlaylist = context.preferences.getBoolean(SHOW_BUTTON_PLAYER_ADD_TO_PLAYLIST.key, true)
+            val showButtonPlayerArrow = context.preferences.getBoolean(SHOW_BUTTON_PLAYER_ARROW.key, true)
+            val showButtonPlayerLoop = context.preferences.getBoolean(SHOW_BUTTON_PLAYER_LOOP.key, true)
+            val showButtonPlayerLyrics = context.preferences.getBoolean(SHOW_BUTTON_PLAYER_LYRICS.key, true)
+            val expandedplayertoggle = context.preferences.getBoolean(EXPANDED_PLAYER.key, true)
+            val showButtonPlayerShuffle = context.preferences.getBoolean(SHOW_BUTTON_PLAYER_SHUFFLE.key, true)
+            val showButtonPlayerSleepTimer = context.preferences.getBoolean(SHOW_BUTTON_PLAYER_SLEEP_TIMER.key, true)
+            val showButtonPlayerMenu = context.preferences.getBoolean(SHOW_BUTTON_PLAYER_MENU.key, true)
+            val showButtonPlayerStartradio = context.preferences.getBoolean(SHOW_BUTTON_PLAYER_START_RADIO.key, true)
+            val showButtonPlayerSystemEqualizer = context.preferences.getBoolean(SHOW_BUTTON_PLAYER_SYSTEM_EQUALIZER.key, true)
+            val showButtonPlayerDiscover = context.preferences.getBoolean(SHOW_BUTTON_PLAYER_DISCOVER.key, true)
+            val showButtonPlayerVideo = context.preferences.getBoolean(SHOW_BUTTON_PLAYER_VIDEO.key, true)
+            val showBackgroundLyrics = context.preferences.getBoolean(SHOW_BACKGROUND_LYRICS.key, false)
+            val showTotalTimeQueue = context.preferences.getBoolean(SHOW_TOTAL_TIME_QUEUE.key, true)
+            val backgroundProgress = context.preferences.getEnum(BACKGROUND_PROGRESS.key, BackgroundProgress.MiniPlayer)
+            val showNextSongsInPlayer = context.preferences.getBoolean(SHOW_NEXT_SONGS_IN_PLAYER.key, true)
+            val showRemainingSongTime = context.preferences.getBoolean(SHOW_REMAINING_SONG_TIME.key, true)
+            val clickLyricsText = context.preferences.getBoolean(CLICK_ON_LYRICS_TEXT.key, false)
+            val queueDurationExpanded = context.preferences.getBoolean(QUEUE_DURATION_EXPANDED.key, true)
+            val titleExpanded = context.preferences.getBoolean(TITLE_EXPANDED.key, true)
+            val timelineExpanded = context.preferences.getBoolean(TIMELINE_EXPANDED.key, true)
+            val controlsExpanded = context.preferences.getBoolean(CONTROLS_EXPANDED.key, true)
+            val miniQueueExpanded = context.preferences.getBoolean(MINI_QUEUE_EXPANDED.key, true)
+            val statsExpanded = context.preferences.getBoolean(STATS_EXPANDED.key, true)
+            val actionExpanded = context.preferences.getBoolean(ACTION_EXPANDED.key, true)
+            val showCoverThumbnailAnimation = context.preferences.getBoolean(SHOW_COVER_THUMBNAIL_ANIMATION.key, false)
+            val coverThumbnailAnimation = context.preferences.getEnum(COVER_THUMBNAIL_ANIMATION.key, ThumbnailCoverType.Vinyl)
+            val notificationPlayerFirstIcon = context.preferences.getEnum(NOTIFICATION_PLAYER_FIRST_ICON.key, NotificationButtons.Repeat)
+            val notificationPlayerSecondIcon = context.preferences.getEnum(NOTIFICATION_PLAYER_SECOND_ICON.key, NotificationButtons.Favorites)
+            val enableWallpaper = context.preferences.getBoolean(ENABLE_WALLPAPER.key, false)
+            val wallpaperType = context.preferences.getEnum(WALLPAPER_TYPE.key, WallpaperType.Lockscreen)
+            val topPadding = context.preferences.getBoolean(TOP_PADDING.key, true)
+            val animatedGradient = context.preferences.getEnum(ANIMATED_GRADIENT.key, AnimatedGradient.Linear)
+            val blurStrength = context.preferences.getFloat(BLUR_SCALE.key, 25f)
+            val thumbnailFadeEx = context.preferences.getFloat(THUMBNAIL_FADE_EX.key, 5f)
+            val thumbnailFade = context.preferences.getFloat(THUMBNAIL_FADE.key, 5f)
+            val thumbnailSpacing = context.preferences.getFloat(THUMBNAIL_SPACING.key, 0f)
+            val colorPaletteName = context.preferences.getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
+            val colorPaletteMode = context.preferences.getEnum(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
+            val swipeAnimationNoThumbnail = context.preferences.getEnum(SWIPE_ANIMATIONS_NO_THUMBNAIL.key, SwipeAnimationNoThumbnail.Sliding)
+            val showLikeButtonBackgroundPlayer = context.preferences.getBoolean(SHOW_LIKE_BUTTON_BACKGROUND_PLAYER.key, true)
+            val visualizerEnabled = context.preferences.getBoolean(VISUALIZER_ENABLED.key, false)
 
             context.applicationContext.contentResolver.openOutputStream(appearanceFilename.uri)
                 ?.use { outputStream ->

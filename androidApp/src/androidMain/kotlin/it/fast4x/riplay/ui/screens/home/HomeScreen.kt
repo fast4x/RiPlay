@@ -33,16 +33,15 @@ import it.fast4x.riplay.data.models.toUiMood
 import it.fast4x.riplay.enums.HomePagetype
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.extensions.preferences.checkUpdateStateKey
-import it.fast4x.riplay.extensions.preferences.enableMusicIdentifierKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CHECK_UPDATE_STATE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_MUSIC_IDENTIFIER
 import it.fast4x.riplay.extensions.preferences.getEnum
-import it.fast4x.riplay.extensions.preferences.homePageTypeKey
-import it.fast4x.riplay.extensions.preferences.homeScreenTabIndexKey
-import it.fast4x.riplay.extensions.preferences.indexNavigationTabKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.HOME_PAGE_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.HOME_SCREEN_TAB_INDEX
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.INDEX_NAVIGATION_TAB
 import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.transitionEffectKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSITION_EFFECT
 import it.fast4x.riplay.extensions.updater.UpdateDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -74,34 +73,34 @@ fun HomeScreen(
 
     var showNewversionDialog by rememberSaveable { mutableStateOf(true) }
 
-    var checkUpdateState by rememberPreference(checkUpdateStateKey, CheckUpdateState.Enabled)
+    var checkUpdateState by rememberPreference(CHECK_UPDATE_STATE.key, CheckUpdateState.Enabled)
 
     val saveableStateHolder = rememberSaveableStateHolder()
 
     val preferences = LocalContext.current.preferences
-    //val enableQuickPicksPage by rememberPreference(enableQuickPicksPageKey, true)
+    //val enableQuickPicksPage by rememberPreference(enableQuickPicksPageKey.key, true)
 
     val openTabFromShortcut1 by remember{ mutableIntStateOf(openTabFromShortcut) }
 
     var initialtabIndex =
             when (openTabFromShortcut1) {
-            -1 -> when (preferences.getEnum(indexNavigationTabKey, HomeScreenTabs.Default)) {
+            -1 -> when (preferences.getEnum(INDEX_NAVIGATION_TAB.key, HomeScreenTabs.Default)) {
                 HomeScreenTabs.Default -> HomeScreenTabs.LocalSongs.index
-                else -> preferences.getEnum(indexNavigationTabKey, HomeScreenTabs.LocalSongs).index
+                else -> preferences.getEnum(INDEX_NAVIGATION_TAB.key, HomeScreenTabs.LocalSongs).index
             }
             else -> openTabFromShortcut1
         }
 
-    var (tabIndex, onTabChanged) = rememberPreference(homeScreenTabIndexKey, initialtabIndex)
+    var (tabIndex, onTabChanged) = rememberPreference(HOME_SCREEN_TAB_INDEX.key, initialtabIndex)
 
     val isEnabledMusicIdentifier by rememberPreference(
-        enableMusicIdentifierKey,
+        ENABLE_MUSIC_IDENTIFIER.key,
         false
     )
 
-    val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.SlideHorizontal)
+    val transitionEffect by rememberPreference(TRANSITION_EFFECT.key, TransitionEffect.SlideHorizontal)
 
-    val homePageType by rememberObservedPreference(homePageTypeKey, HomePagetype.Classic)
+    val homePageType by rememberPreference(HOME_PAGE_TYPE.key, HomePagetype.Classic)
 
     if (tabIndex == -2) navController.navigate(NavRoutes.search.name)
     if (tabIndex == -3) {

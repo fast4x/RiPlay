@@ -12,7 +12,7 @@ import it.fast4x.audiotaginfo.models.StatResponse
 import it.fast4x.riplay.R
 import it.fast4x.riplay.extensions.players.audioPlayer
 import it.fast4x.riplay.extensions.audiotag.models.UiState
-import it.fast4x.riplay.extensions.preferences.musicIdentifierApiKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_IDENTIFIER_API_KEY
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.recorders.AudioRecorder
 import it.fast4x.riplay.utils.SecureConfig
@@ -40,7 +40,7 @@ class AudioTagViewModel() : ViewModel(), ViewModelProvider.Factory {
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
     private val audioRecorder = AudioRecorder()
-    private val userApiKey = globalContext().preferences.getString(musicIdentifierApiKey, "")
+    private val userApiKey = globalContext().preferences.getString(MUSIC_IDENTIFIER_API_KEY.key, "")
     private val apiKey = if (!userApiKey.isNullOrEmpty()) userApiKey
     else SecureConfig.getApiKey(globalContext().resources.getString(R.string.AudioTagInfo_API_KEY))
 

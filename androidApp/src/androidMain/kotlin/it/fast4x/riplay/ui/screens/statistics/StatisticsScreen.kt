@@ -18,7 +18,7 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.StatisticsType
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.transitionEffectKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSITION_EFFECT
 import it.fast4x.riplay.ui.components.ScreenContainer
 import kotlinx.serialization.ExperimentalSerializationApi
 
@@ -49,7 +49,7 @@ fun StatisticsScreen(
         })
     }
 
-    val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.SlideHorizontal)
+    val transitionEffect by rememberPreference(TRANSITION_EFFECT.key, TransitionEffect.SlideHorizontal)
 
     PersistMapCleanup(tagPrefix = "${statisticsType.name}/")
 

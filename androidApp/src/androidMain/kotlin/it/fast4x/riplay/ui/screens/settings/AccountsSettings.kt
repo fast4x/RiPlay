@@ -51,38 +51,38 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ValidationType
 import it.fast4x.riplay.extensions.discord.DiscordLoginAndGetToken
-import it.fast4x.riplay.extensions.preferences.discordAccountNameKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISCORD_ACCOUNT_NAME
 import it.fast4x.riplay.extensions.youtubelogin.YouTubeLogin
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.styling.Dimensions
-import it.fast4x.riplay.extensions.preferences.discordPersonalAccessTokenKey
-import it.fast4x.riplay.extensions.preferences.enableYouTubeLoginKey
-import it.fast4x.riplay.extensions.preferences.enableYouTubeSyncKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISCORD_PERSONAL_ACCESS_TOKEN
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_YOU_TUBE_LOGIN
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_YOU_TUBE_SYNC
 import it.fast4x.riplay.utils.isAtLeastAndroid81
-import it.fast4x.riplay.extensions.preferences.isDiscordPresenceEnabledKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_DISCORD_PRESENCE_ENABLED
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
-import it.fast4x.riplay.extensions.preferences.useYtLoginOnlyForBrowseKey
-import it.fast4x.riplay.extensions.preferences.ytAccountChannelHandleKey
-import it.fast4x.riplay.extensions.preferences.ytAccountEmailKey
-import it.fast4x.riplay.extensions.preferences.ytAccountNameKey
-import it.fast4x.riplay.extensions.preferences.ytAccountThumbnailKey
-import it.fast4x.riplay.extensions.preferences.ytCookieKey
-import it.fast4x.riplay.extensions.preferences.ytDataSyncIdKey
-import it.fast4x.riplay.extensions.preferences.ytVisitorDataKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.USE_YT_LOGIN_ONLY_FOR_BROWSE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_ACCOUNT_CHANNEL_HANDLE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_ACCOUNT_EMAIL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_ACCOUNT_NAME
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_ACCOUNT_THUMBNAIL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_COOKIE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_DATA_SYNC_ID
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_VISITOR_DATA
 import it.fast4x.riplay.ui.components.themed.AccountInfoDialog
 import it.fast4x.riplay.extensions.encryptedpreferences.rememberEncryptedPreference
 import it.fast4x.riplay.extensions.lastfm.LastFmAuthScreen
-import it.fast4x.riplay.extensions.preferences.enableMusicIdentifierKey
-import it.fast4x.riplay.extensions.preferences.isEnabledLastfmKey
-import it.fast4x.riplay.extensions.preferences.lastfmScrobbleTypeKey
-import it.fast4x.riplay.extensions.preferences.lastfmSessionTokenKey
-import it.fast4x.riplay.extensions.preferences.musicIdentifierApiKey
-import it.fast4x.riplay.extensions.preferences.musicIdentifierProviderKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_MUSIC_IDENTIFIER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_ENABLED_LASTFM
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LASTFM_SCRUBBLE_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LASTFM_SESSION_TOKEN
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_IDENTIFIER_API_KEY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_IDENTIFIER_PROVIDER
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -99,20 +99,20 @@ import timber.log.Timber
 fun AccountsSettings() {
     val context = LocalContext.current
     val thumbnailRoundness by rememberPreference(
-        thumbnailRoundnessKey,
+        THUMBNAIL_ROUNDNESS.key,
         ThumbnailRoundness.Light
     )
 
     var showUserInfoDialog by rememberSaveable { mutableStateOf(false) }
 
     var isEnabledMusicIdentifier by rememberPreference(
-        enableMusicIdentifierKey,
+        ENABLE_MUSIC_IDENTIFIER.key,
         false
     )
-    var musicIdentifierProvider by rememberPreference(musicIdentifierProviderKey,
+    var musicIdentifierProvider by rememberPreference(MUSIC_IDENTIFIER_PROVIDER.key,
         MusicIdentifierProvider.AudioTagInfo)
 
-    var musicIdentifierApi by rememberPreference(musicIdentifierApiKey, "")
+    var musicIdentifierApi by rememberPreference(MUSIC_IDENTIFIER_API_KEY.key, "")
 
     val uriHandler = LocalUriHandler.current
 
@@ -140,20 +140,20 @@ fun AccountsSettings() {
 
         /****** YOUTUBE LOGIN ******/
 
-        var useYtLoginOnlyForBrowse by rememberPreference(useYtLoginOnlyForBrowseKey, true)
-        var isYouTubeLoginEnabled by rememberPreference(enableYouTubeLoginKey, false)
-        var isSyncEnabled by rememberPreference(enableYouTubeSyncKey, true)
+        var useYtLoginOnlyForBrowse by rememberPreference(USE_YT_LOGIN_ONLY_FOR_BROWSE.key, true)
+        var isYouTubeLoginEnabled by rememberPreference(ENABLE_YOU_TUBE_LOGIN.key, false)
+        var isSyncEnabled by rememberPreference(ENABLE_YOU_TUBE_SYNC.key, true)
         var loginYouTube by remember { mutableStateOf(false) }
-        var visitorData by rememberPreference(key = ytVisitorDataKey, defaultValue = "")
-        var dataSyncId by rememberPreference(key = ytDataSyncIdKey, defaultValue = "")
-        var cookie by rememberPreference(key = ytCookieKey, defaultValue = "")
-        var accountName by rememberPreference(key = ytAccountNameKey, defaultValue = "")
-        var accountEmail by rememberPreference(key = ytAccountEmailKey, defaultValue = "")
+        var visitorData by rememberPreference(key = YT_VISITOR_DATA.key, defaultValue = "")
+        var dataSyncId by rememberPreference(key = YT_DATA_SYNC_ID.key, defaultValue = "")
+        var cookie by rememberPreference(key = YT_COOKIE.key, defaultValue = "")
+        var accountName by rememberPreference(key = YT_ACCOUNT_NAME.key, defaultValue = "")
+        var accountEmail by rememberPreference(key = YT_ACCOUNT_EMAIL.key, defaultValue = "")
         var accountChannelHandle by rememberPreference(
-            key = ytAccountChannelHandleKey,
+            key = YT_ACCOUNT_CHANNEL_HANDLE.key,
             defaultValue = ""
         )
-        var accountThumbnail by rememberPreference(key = ytAccountThumbnailKey, defaultValue = "")
+        var accountThumbnail by rememberPreference(key = YT_ACCOUNT_THUMBNAIL.key, defaultValue = "")
         var isLoggedIn = remember(cookie) {
             "SID" in parseCookieString(cookie) ||
                     "LOGIN_INFO" in parseCookieString(cookie)
@@ -313,11 +313,11 @@ fun AccountsSettings() {
     /****** YOUTUBE LOGIN ******/
 
         /****** LASTFM ******/
-        var isEnabledLastfm by rememberPreference(isEnabledLastfmKey, false)
-        var lastFmSessionToken by rememberPreference(lastfmSessionTokenKey, "")
+        var isEnabledLastfm by rememberPreference(IS_ENABLED_LASTFM.key, false)
+        var lastFmSessionToken by rememberPreference(LASTFM_SESSION_TOKEN.key, "")
         var loginLastfm by remember { mutableStateOf(false) }
         var lastfmScrobbleType by rememberPreference(
-            lastfmScrobbleTypeKey,
+            LASTFM_SCRUBBLE_TYPE.key,
             LastFmScrobbleType.Simple
         )
 
@@ -375,7 +375,7 @@ fun AccountsSettings() {
                         onAuthSuccess = {
                             loginLastfm = false
                             lastFmSessionToken =
-                                context.preferences.getString(lastfmSessionTokenKey, "") ?: ""
+                                context.preferences.getString(LASTFM_SESSION_TOKEN.key, "") ?: ""
                             Timber.d("LastFmAuthScreen: Authentication complete")
                         }
                     )
@@ -395,15 +395,15 @@ fun AccountsSettings() {
         /****** LASTFM ******/
 
         /****** DISCORD ******/
-        var isDiscordPresenceEnabled by rememberPreference(isDiscordPresenceEnabledKey, false)
+        var isDiscordPresenceEnabled by rememberPreference(IS_DISCORD_PRESENCE_ENABLED.key, false)
         var loginDiscord by remember { mutableStateOf(false) }
         var showDiscordUserInfoDialog by remember { mutableStateOf(false) }
         var discordPersonalAccessToken by rememberEncryptedPreference(
-            key = discordPersonalAccessTokenKey,
+            key = DISCORD_PERSONAL_ACCESS_TOKEN.key,
             defaultValue = ""
         )
         var discordAccountName by rememberEncryptedPreference(
-            key = discordAccountNameKey,
+            key = DISCORD_ACCOUNT_NAME.key,
             defaultValue = ""
         )
         SettingsGroupSpacer()
@@ -595,17 +595,17 @@ fun AccountsSettings() {
 }
 
 fun isYtLoginEnabled(): Boolean {
-    val isLoginEnabled = appContext().preferences.getBoolean(enableYouTubeLoginKey, false)
+    val isLoginEnabled = appContext().preferences.getBoolean(ENABLE_YOU_TUBE_LOGIN.key, false)
     return isLoginEnabled
 }
 
 fun isYtSyncEnabled(): Boolean {
-    val isSyncEnabled = appContext().preferences.getBoolean(enableYouTubeSyncKey, true)
+    val isSyncEnabled = appContext().preferences.getBoolean(ENABLE_YOU_TUBE_SYNC.key, true)
     return isSyncEnabled && isYtLoggedIn() && isYtLoginEnabled()
 }
 
 fun isYtLoggedIn(): Boolean {
-    val cookie = appContext().preferences.getString(ytCookieKey, "")
+    val cookie = appContext().preferences.getString(YT_COOKIE.key, "")
     val isLoggedIn = cookie?.let { parseCookieString(it) }?.contains("SAPISID") == true && isYtLoginEnabled()
     return isLoggedIn
 }

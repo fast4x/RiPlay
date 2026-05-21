@@ -1,4 +1,4 @@
-package it.fast4x.riplay.utils
+package it.fast4x.riplay.enums
 
 class GenericMenuItem (
     val ordinal: Int,

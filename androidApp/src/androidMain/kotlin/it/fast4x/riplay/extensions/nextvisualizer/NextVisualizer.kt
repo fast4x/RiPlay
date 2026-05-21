@@ -66,17 +66,16 @@ import it.fast4x.riplay.extensions.nextvisualizer.utils.VisualizerHelper
 import it.fast4x.riplay.extensions.nextvisualizer.views.VisualizerView
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.utils.DisposableListener
-import it.fast4x.riplay.extensions.preferences.currentVisualizerKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CURRENT_VISUALIZER
 import it.fast4x.riplay.utils.currentWindow
 import it.fast4x.riplay.utils.getBitmapFromUrl
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.VISUALIZER_ENABLED
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ThumbnailRoundness
-import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.DelayedControls
 import timber.log.Timber
@@ -101,7 +100,7 @@ fun NextVisualizer() {
 
 
     val context = LocalContext.current
-    val visualizerEnabled by rememberPreference(visualizerEnabledKey, false)
+    val visualizerEnabled by rememberPreference(VISUALIZER_ENABLED.key, false)
 
     if (visualizerEnabled && permission.status.isGranted) {
 
@@ -178,11 +177,11 @@ fun NextVisualizer() {
             println("NextVisualizer View created audioSessionId: $audioSessionId")
 
             val visualizersList = getVisualizers()
-            var currentVisualizer by rememberPreference(currentVisualizerKey, 0)
+            var currentVisualizer by rememberPreference(CURRENT_VISUALIZER.key, 0)
             if (currentVisualizer < 0) currentVisualizer = 0
 
-            val thumbnailRoundness by rememberObservedPreference(
-                thumbnailRoundnessKey,
+            val thumbnailRoundness by rememberPreference(
+                THUMBNAIL_ROUNDNESS.key,
                 ThumbnailRoundness.Light
             )
 

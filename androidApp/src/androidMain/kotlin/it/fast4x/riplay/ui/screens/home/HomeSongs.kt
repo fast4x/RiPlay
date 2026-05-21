@@ -44,7 +44,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -146,7 +145,6 @@ import it.fast4x.riplay.ui.components.themed.PeriodMenu
 import it.fast4x.riplay.ui.components.themed.PlaylistsItemMenu
 import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.components.themed.TitleSection
 import it.fast4x.riplay.ui.items.FolderItem
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.styling.Dimensions
@@ -154,42 +152,42 @@ import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.onOverlay
 import it.fast4x.riplay.ui.styling.overlay
 import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.extensions.preferences.MaxTopPlaylistItemsKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MAX_TOP_PLAYLIST_ITEMS
 import it.fast4x.riplay.utils.OnDeviceOrganize
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.extensions.preferences.autoShuffleKey
-import it.fast4x.riplay.extensions.preferences.builtInPlaylistKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.AUTO_SHUFFLE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BUILT_IN_PLAYLIST
 import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.ui.styling.color
-import it.fast4x.riplay.extensions.preferences.defaultFolderKey
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DEFAULT_FOLDER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.utils.enqueue
-import it.fast4x.riplay.extensions.preferences.excludeSongsWithDurationLimitKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXCLUDE_SONGS_WITH_DURATION_LIMIT
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.hasPermission
-import it.fast4x.riplay.extensions.preferences.includeLocalSongsKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.INCLUDE_LOCAL_SONGS
 import it.fast4x.riplay.utils.isCompositionLaunched
-import it.fast4x.riplay.extensions.preferences.maxSongsInQueueKey
-import it.fast4x.riplay.extensions.preferences.onDeviceFolderSortByKey
-import it.fast4x.riplay.extensions.preferences.onDeviceSongSortByKey
-import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MAX_SONGS_IN_QUEUE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ON_DEVICE_FOLDER_SORT_BY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ON_DEVICE_SONG_SORT_BY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.showFavoritesPlaylistKey
-import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
-import it.fast4x.riplay.extensions.preferences.showFoldersOnDeviceKey
-import it.fast4x.riplay.extensions.preferences.showMyTopPlaylistKey
-import it.fast4x.riplay.extensions.preferences.showOnDevicePlaylistKey
-import it.fast4x.riplay.extensions.preferences.showSearchTabKey
-import it.fast4x.riplay.extensions.preferences.songSortByKey
-import it.fast4x.riplay.extensions.preferences.songSortOrderKey
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
-import it.fast4x.riplay.extensions.preferences.topPlaylistPeriodKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FAVORITES_PLAYLIST
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FOLDERS_ON_DEVICE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_MY_TOP_PLAYLIST
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_ON_DEVICE_PLAYLIST
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SEARCH_TAB
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SONG_SORT_BY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SONG_SORT_ORDER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TOP_PLAYLIST_PERIOD
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -205,7 +203,7 @@ import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.isNetworkConnected
-import it.fast4x.riplay.extensions.preferences.showDislikedPlaylistKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_DISLIKED_PLAYLIST
 import it.fast4x.riplay.ui.components.tab.TabHeader
 import it.fast4x.riplay.ui.components.themed.EnumsMenu
 import it.fast4x.riplay.utils.getRoundnessShape
@@ -234,34 +232,34 @@ fun HomeSongs(
     val thumbnailSizeDp = Dimensions.thumbnails.song
     val thumbnailSizePx = thumbnailSizeDp.px
 
-    var sortBy by rememberPreference(songSortByKey, SongSortBy.DateAdded)
-    var sortOrder by rememberPreference(songSortOrderKey, SortOrder.Descending)
-    val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
+    var sortBy by rememberPreference(SONG_SORT_BY.key, SongSortBy.DateAdded)
+    var sortOrder by rememberPreference(SONG_SORT_ORDER.key, SortOrder.Descending)
+    val parentalControlEnabled by rememberPreference(PARENTAL_CONTROL_ENABLED.key, false)
 
     var items by persistList<SongEntity>("home/songs")
 
     var filter: String? by rememberSaveable { mutableStateOf(null) }
     var builtInPlaylist by rememberPreference(
-        builtInPlaylistKey,
+        BUILT_IN_PLAYLIST.key,
         BuiltInPlaylist.Favorites
     )
 
     val context = LocalContext.current
 
     var thumbnailRoundness by rememberPreference(
-        thumbnailRoundnessKey,
+        THUMBNAIL_ROUNDNESS.key,
         ThumbnailRoundness.Light
     )
 
     var showHiddenSongs by remember { mutableStateOf(0) }
-    var includeLocalSongs by rememberPreference(includeLocalSongsKey, true)
-    var autoShuffle by rememberPreference(autoShuffleKey, false)
+    var includeLocalSongs by rememberPreference(INCLUDE_LOCAL_SONGS.key, true)
+    var autoShuffle by rememberPreference(AUTO_SHUFFLE.key, false)
 
     val maxTopPlaylistItems by rememberPreference(
-        MaxTopPlaylistItemsKey,
+        MAX_TOP_PLAYLIST_ITEMS.key,
         MaxTopPlaylistItems.`10`
     )
-    var topPlaylistPeriod by rememberPreference(topPlaylistPeriodKey, TopPlaylistPeriod.PastWeek)
+    var topPlaylistPeriod by rememberPreference(TOP_PLAYLIST_PERIOD.key, TopPlaylistPeriod.PastWeek)
 
     var scrollToNowPlaying by remember { mutableStateOf(false) }
     var nowPlayingItem by remember { mutableStateOf(-1) }
@@ -282,13 +280,13 @@ fun HomeSongs(
     )
 
     val backButtonFolder = Folder(name = "..", note = "Previous")
-    var showFolders by rememberPreference(showFoldersOnDeviceKey, true)
+    var showFolders by rememberPreference(SHOW_FOLDERS_ON_DEVICE.key, true)
 
-    var sortByOnDevice by rememberPreference(onDeviceSongSortByKey, OnDeviceSongSortBy.DateAdded)
-    var sortByFolderOnDevice by rememberPreference(onDeviceFolderSortByKey, OnDeviceFolderSortBy.Title)
-    var sortOrderOnDevice by rememberPreference(songSortOrderKey, SortOrder.Descending)
+    var sortByOnDevice by rememberPreference(ON_DEVICE_SONG_SORT_BY.key, OnDeviceSongSortBy.DateAdded)
+    var sortByFolderOnDevice by rememberPreference(ON_DEVICE_FOLDER_SORT_BY.key, OnDeviceFolderSortBy.Title)
+    var sortOrderOnDevice by rememberPreference(SONG_SORT_ORDER.key, SortOrder.Descending)
 
-    val defaultFolder by rememberPreference(defaultFolderKey, "/")
+    val defaultFolder by rememberPreference(DEFAULT_FOLDER.key, "/")
     val onDeviceViewModel: OnDeviceViewModel = viewModel()
     val songsDevice by onDeviceViewModel.audioFiles.collectAsState()
 
@@ -331,10 +329,10 @@ fun HomeSongs(
         }
 
     /************ Playlist Buttons Config */
-    val showFavoritesPlaylist by rememberPreference(showFavoritesPlaylistKey, true)
-    val showDislikedPlaylist by rememberPreference(showDislikedPlaylistKey, false)
-    val showMyTopPlaylist by rememberPreference(showMyTopPlaylistKey, true)
-    val showOnDevicePlaylist by rememberPreference(showOnDevicePlaylistKey, true)
+    val showFavoritesPlaylist by rememberPreference(SHOW_FAVORITES_PLAYLIST.key, true)
+    val showDislikedPlaylist by rememberPreference(SHOW_DISLIKED_PLAYLIST.key, false)
+    val showMyTopPlaylist by rememberPreference(SHOW_MY_TOP_PLAYLIST.key, true)
+    val showOnDevicePlaylist by rememberPreference(SHOW_ON_DEVICE_PLAYLIST.key, true)
 
     var buttonsList = listOf(BuiltInPlaylist.All to stringResource(R.string.all))
     if (showFavoritesPlaylist) buttonsList += BuiltInPlaylist.Favorites to stringResource(R.string.favorites)
@@ -342,9 +340,9 @@ fun HomeSongs(
     if (showOnDevicePlaylist) buttonsList += BuiltInPlaylist.OnDevice to stringResource(R.string.on_device)
     if (showDislikedPlaylist) buttonsList += BuiltInPlaylist.Disliked to stringResource(R.string.disliked)
 
-    val excludeSongWithDurationLimit by rememberPreference(excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled)
+    val excludeSongWithDurationLimit by rememberPreference(EXCLUDE_SONGS_WITH_DURATION_LIMIT.key, DurationInMinutes.Disabled)
     val hapticFeedback = LocalHapticFeedback.current
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
 
     val blacklisted = remember {
         Database.blacklisted(listOf(BlacklistType.Song.name, BlacklistType.Video.name, BlacklistType.Folder.name))
@@ -450,8 +448,8 @@ fun HomeSongs(
     )
 
     val lazyListState = rememberLazyListState()
-    val showSearchTab by rememberPreference(showSearchTabKey, false)
-    val maxSongsInQueue by rememberPreference(maxSongsInQueueKey, MaxSongs.`500`)
+    val showSearchTab by rememberPreference(SHOW_SEARCH_TAB.key, false)
+    val maxSongsInQueue by rememberPreference(MAX_SONGS_IN_QUEUE.key, MaxSongs.`500`)
 
     var listMediaItems = remember { mutableListOf<MediaItem>() }
     var selectItems by remember { mutableStateOf(false) }
@@ -1187,7 +1185,7 @@ fun HomeSongs(
 
         FloatingActionsContainerWithScrollToTop(lazyListState = lazyListState)
 
-        val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
+        val showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
         if (UiType.ViMusic.isCurrent() && showFloatingIcon)
             MultiFloatingActionsContainer(iconId = R.drawable.search, onClick = onSearchClick, onClickSettings = onSettingsClick, onClickSearch = onSearchClick)
     }

@@ -40,13 +40,13 @@ import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Format
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PlayerType
-import it.fast4x.riplay.extensions.preferences.blackgradientKey
-import it.fast4x.riplay.extensions.preferences.playerBackgroundColorsKey
-import it.fast4x.riplay.extensions.preferences.playerTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BLACK_GRADIENT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_BACKGROUND_COLORS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_TYPE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.showthumbnailKey
-import it.fast4x.riplay.extensions.preferences.statsfornerdsKey
-import it.fast4x.riplay.extensions.preferences.transparentBackgroundPlayerActionBarKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_THUMBNAIL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.STATS_FOR_NERDS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.ui.styling.medium
@@ -80,16 +80,16 @@ fun StatsForNerds(
         var format by remember {
             mutableStateOf<Format?>(null)
         }
-        val showThumbnail by rememberPreference(showthumbnailKey, true)
-        val statsForNerds by rememberPreference(statsfornerdsKey, false)
-        val playerType by rememberPreference(playerTypeKey, PlayerType.Modern)
+        val showThumbnail by rememberPreference(SHOW_THUMBNAIL.key, true)
+        val statsForNerds by rememberPreference(STATS_FOR_NERDS.key, false)
+        val playerType by rememberPreference(PLAYER_TYPE.key, PlayerType.Modern)
         val transparentBackgroundActionBarPlayer by rememberPreference(
-            transparentBackgroundPlayerActionBarKey,
+            TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR.key,
             true
         )
-        var blackgradient by rememberPreference(blackgradientKey, false)
+        var blackgradient by rememberPreference(BLACK_GRADIENT.key, false)
         val playerBackgroundColors by rememberPreference(
-            playerBackgroundColorsKey,
+            PLAYER_BACKGROUND_COLORS.key,
             PlayerBackgroundColors.BlurredCoverColor
         )
         var statsfornerdsfull by remember {mutableStateOf(false)}

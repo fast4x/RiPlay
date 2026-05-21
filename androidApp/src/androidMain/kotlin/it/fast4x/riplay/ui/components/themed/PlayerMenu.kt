@@ -1,7 +1,5 @@
 package it.fast4x.riplay.ui.components.themed
 
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,7 +26,7 @@ import it.fast4x.riplay.utils.addSongToYtPlaylist
 import it.fast4x.riplay.utils.addToOnlineLikedSong
 import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.isNetworkConnected
-import it.fast4x.riplay.extensions.preferences.menuStyleKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MENU_STYLE
 import it.fast4x.riplay.extensions.equalizer.rememberSystemEqualizerLauncher
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.services.playback.PlayerService
@@ -60,7 +58,7 @@ fun PlayerMenu(
     ) {
 
     val menuStyle by rememberPreference(
-        menuStyleKey,
+        MENU_STYLE.key,
         MenuStyle.List
     )
 
@@ -201,7 +199,7 @@ fun MiniPlayerMenu(
 ) {
 
     val menuStyle by rememberPreference(
-        menuStyleKey,
+        MENU_STYLE.key,
         MenuStyle.List
     )
 

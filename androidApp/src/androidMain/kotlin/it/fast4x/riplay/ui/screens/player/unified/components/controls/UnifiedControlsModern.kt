@@ -62,15 +62,15 @@ import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PlayerControlsType
 import it.fast4x.riplay.enums.PlayerPlayButtonType
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
-import it.fast4x.riplay.extensions.preferences.effectRotationKey
-import it.fast4x.riplay.extensions.preferences.jumpPreviousKey
-import it.fast4x.riplay.extensions.preferences.playerBackgroundColorsKey
-import it.fast4x.riplay.extensions.preferences.playerControlsTypeKey
-import it.fast4x.riplay.extensions.preferences.playerInfoShowIconsKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EFFECT_ROTATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.JUMP_PREVIOUS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_BACKGROUND_COLORS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_CONTROLS_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_INFO_SHOW_ICONS
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.showthumbnailKey
-import it.fast4x.riplay.extensions.preferences.textoutlineKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_THUMBNAIL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TEXT_OUTLINE
 import it.fast4x.riplay.services.playback.PlaybackState
 import it.fast4x.riplay.services.playback.PlayerState
 import it.fast4x.riplay.ui.components.themed.CustomElevatedButton
@@ -114,13 +114,13 @@ fun UnifiedControlsModern(
     onPrevious: () -> Unit,
     playerState: PlayerState,
 ) {
-    var effectRotationEnabled by rememberPreference(effectRotationKey, true)
+    var effectRotationEnabled by rememberPreference(EFFECT_ROTATION.key, true)
     var isRotated by rememberSaveable { mutableStateOf(false) }
     val rotationAngle by animateFloatAsState(
         targetValue = if (isRotated) 360F else 0f,
         animationSpec = tween(durationMillis = 200), label = ""
     )
-    var jumpPrevious by rememberPreference(jumpPreviousKey, "3")
+    var jumpPrevious by rememberPreference(JUMP_PREVIOUS.key, "3")
 
     if (playerPlayButtonType != PlayerPlayButtonType.Disabled) {
         CustomElevatedButton(
@@ -469,14 +469,14 @@ fun UnifiedInfoAlbumAndArtistModern(
     onCollapse: () -> Unit,
     disableScrollingText: Boolean = false
 ) {
-    val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
-    val playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
-    var showthumbnail by rememberPreference(showthumbnailKey, true)
-    var effectRotationEnabled by rememberPreference(effectRotationKey, true)
+    val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
+    val playerControlsType by rememberPreference(PLAYER_CONTROLS_TYPE.key, PlayerControlsType.Essential)
+    var showthumbnail by rememberPreference(SHOW_THUMBNAIL.key, true)
+    var effectRotationEnabled by rememberPreference(EFFECT_ROTATION.key, true)
     var isRotated by rememberSaveable { mutableStateOf(false) }
     var showSelectDialog by remember { mutableStateOf(false) }
-    val playerBackgroundColors by rememberPreference(playerBackgroundColorsKey,PlayerBackgroundColors.BlurredCoverColor)
-    val playerInfoShowIcon by rememberPreference(playerInfoShowIconsKey, true)
+    val playerBackgroundColors by rememberPreference(PLAYER_BACKGROUND_COLORS.key,PlayerBackgroundColors.BlurredCoverColor)
+    val playerInfoShowIcon by rememberPreference(PLAYER_INFO_SHOW_ICONS.key, true)
 
 
     Row(
@@ -530,7 +530,7 @@ fun UnifiedInfoAlbumAndArtistModern(
                 )
 
 
-            val textoutline by rememberPreference(textoutlineKey, false)
+            val textoutline by rememberPreference(TEXT_OUTLINE.key, false)
 
             if (!disableScrollingText) modifierTitle = modifierTitle.basicMarquee()
             Row(
@@ -715,7 +715,7 @@ fun UnifiedInfoAlbumAndArtistModern(
                 }
             )
 
-        var textoutline by rememberPreference(textoutlineKey, false)
+        var textoutline by rememberPreference(TEXT_OUTLINE.key, false)
         if (!disableScrollingText) modifierArtist = modifierArtist.basicMarquee()
         Box(
 

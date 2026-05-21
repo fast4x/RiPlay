@@ -7,7 +7,7 @@ import android.provider.DocumentsContract
 import androidx.documentfile.provider.DocumentFile
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Song
-import it.fast4x.riplay.extensions.preferences.musicVaultPathKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_VAULT_PATH
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.utils.appContext
 import kotlinx.coroutines.flow.Flow
@@ -19,7 +19,7 @@ import timber.log.Timber
 object MusicVaultRepository {
 
     fun getOutputDir(): String {
-        val savedUri = appContext().preferences.getString(musicVaultPathKey, null)
+        val savedUri = appContext().preferences.getString(MUSIC_VAULT_PATH.key, null)
         return if (savedUri != null) {
             // Conversione URI in path per yt-dlp (Python non capisce content://)
             DocumentFile.fromTreeUri(appContext(), savedUri.toUri())
@@ -31,7 +31,7 @@ object MusicVaultRepository {
     }
 
     fun getOutputUri(): Uri? {
-        val savedUri = appContext().preferences.getString(musicVaultPathKey, null)
+        val savedUri = appContext().preferences.getString(MUSIC_VAULT_PATH.key, null)
         val uri = savedUri?.toUri()
         Timber.d("MusicVaultRepository getOutputUri uri $uri")
         return uri

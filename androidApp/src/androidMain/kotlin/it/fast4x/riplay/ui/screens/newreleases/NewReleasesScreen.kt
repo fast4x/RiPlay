@@ -18,7 +18,7 @@ import it.fast4x.riplay.extensions.persist.PersistMapCleanup
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.transitionEffectKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSITION_EFFECT
 import it.fast4x.riplay.ui.components.ScreenContainer
 
 @ExperimentalMaterialApi
@@ -32,7 +32,7 @@ fun NewreleasesScreen(
     navController: NavController,
     miniPlayer: @Composable () -> Unit = {},
 ) {
-    val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.SlideHorizontal)
+    val transitionEffect by rememberPreference(TRANSITION_EFFECT.key, TransitionEffect.SlideHorizontal)
     val saveableStateHolder = rememberSaveableStateHolder()
 
     var tabIndex by rememberSaveable {

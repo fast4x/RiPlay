@@ -112,12 +112,12 @@ import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.fadingEdge
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isNetworkConnected
-import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.ui.components.themed.LayoutWithAdaptiveThumbnail
 import it.fast4x.riplay.ui.components.themed.LoaderScreen
@@ -165,7 +165,7 @@ fun ArtistOverview(
 
     val endPaddingValues = windowInsets.only(WindowInsetsSides.End).asPaddingValues()
 
-    val thumbnailRoundness by rememberPreference(thumbnailRoundnessKey, ThumbnailRoundness.Light)
+    val thumbnailRoundness by rememberPreference(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
 
 
     val context = LocalContext.current
@@ -183,7 +183,7 @@ fun ArtistOverview(
     var showArtistSongsInLibrary by rememberSaveable { mutableStateOf(false) }
 
     val hapticFeedback = LocalHapticFeedback.current
-    val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
+    val parentalControlEnabled by rememberPreference(PARENTAL_CONTROL_ENABLED.key, false)
     val menuState = LocalGlobalSheetState.current
 
     var readMore by remember { mutableStateOf(false) }
@@ -882,7 +882,7 @@ fun ArtistOverview(
 
             }
 
-            val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
+            val showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
             if (UiType.ViMusic.isCurrent() && showFloatingIcon)
                 artistPage?.radioEndpoint?.let { endpoint ->
 

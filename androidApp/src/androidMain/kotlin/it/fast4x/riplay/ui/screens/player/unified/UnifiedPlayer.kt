@@ -192,84 +192,83 @@ import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ThumbnailType
 import it.fast4x.riplay.extensions.equalizer.InternalEqualizerScreen
-import it.fast4x.riplay.extensions.preferences.VinylSizeKey
-import it.fast4x.riplay.extensions.preferences.actionExpandedKey
-import it.fast4x.riplay.extensions.preferences.actionspacedevenlyKey
-import it.fast4x.riplay.extensions.preferences.albumCoverRotationKey
-import it.fast4x.riplay.extensions.preferences.animatedGradientKey
-import it.fast4x.riplay.extensions.preferences.backgroundProgressKey
-import it.fast4x.riplay.extensions.preferences.blackgradientKey
-import it.fast4x.riplay.extensions.preferences.blurDarkenFactorKey
-import it.fast4x.riplay.extensions.preferences.blurStrengthKey
-import it.fast4x.riplay.extensions.preferences.bottomgradientKey
-import it.fast4x.riplay.extensions.preferences.carouselKey
-import it.fast4x.riplay.extensions.preferences.carouselSizeKey
-import it.fast4x.riplay.extensions.preferences.clickOnLyricsTextKey
-import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
-import it.fast4x.riplay.extensions.preferences.colorPaletteNameKey
-import it.fast4x.riplay.extensions.preferences.controlsExpandedKey
-import it.fast4x.riplay.extensions.preferences.coverThumbnailAnimationKey
-import it.fast4x.riplay.extensions.preferences.disablePlayerHorizontalSwipeKey
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
-import it.fast4x.riplay.extensions.preferences.discoverKey
-import it.fast4x.riplay.extensions.preferences.effectRotationKey
-import it.fast4x.riplay.extensions.preferences.expandedplayerKey
-import it.fast4x.riplay.extensions.preferences.expandedplayertoggleKey
-import it.fast4x.riplay.extensions.preferences.extraspaceKey
-import it.fast4x.riplay.extensions.preferences.fadingedgeKey
-import it.fast4x.riplay.extensions.preferences.jumpPreviousKey
-import it.fast4x.riplay.extensions.preferences.miniQueueExpandedKey
-import it.fast4x.riplay.extensions.preferences.noblurKey
-import it.fast4x.riplay.extensions.preferences.playerBackgroundColorsKey
-import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeKey
-import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeLKey
-import it.fast4x.riplay.extensions.preferences.playerTypeKey
-import it.fast4x.riplay.extensions.preferences.playlistindicatorKey
-import it.fast4x.riplay.extensions.preferences.queueDurationExpandedKey
-import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
-import it.fast4x.riplay.extensions.preferences.queueTypeKey
-import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.VINYL_SIZE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ACTION_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ACTIONS_SPACED_EVENLY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUM_COVER_ROTATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ANIMATED_GRADIENT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BACKGROUND_PROGRESS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BLACK_GRADIENT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BLUR_DARKEN_FACTOR
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BLUR_SCALE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BOTTOM_GRADIENT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CAROUSEL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CAROUSEL_SIZE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CLICK_ON_LYRICS_TEXT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_NAME
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CONTROLS_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COVER_THUMBNAIL_ANIMATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_PLAYER_HORIZONTAL_SWIPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISCOVER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EFFECT_ROTATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXPANDED_PLAYER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXPANDED_PLAYER_TOGGLE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXTRA_SPACE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.FADING_EDGE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.JUMP_PREVIOUS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MINI_QUEUE_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.NO_BLUR
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_BACKGROUND_COLORS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_THUMBNAIL_SIZE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_THUMBNAIL_SIZE_L
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_INDICATOR
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUEUE_DURATION_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUEUE_LOOP_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUEUE_TYPE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerAddToPlaylistKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerArrowKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerDiscoverKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerDownloadKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerLoopKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerLyricsKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerMenuKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerShuffleKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerSleepTimerKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerStartRadioKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerSystemEqualizerKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerVideoKey
-import it.fast4x.riplay.extensions.preferences.showCoverThumbnailAnimationKey
-import it.fast4x.riplay.extensions.preferences.showNextSongsInPlayerKey
-import it.fast4x.riplay.extensions.preferences.showPlayerActionsBarKey
-import it.fast4x.riplay.extensions.preferences.showTopActionsBarKey
-import it.fast4x.riplay.extensions.preferences.showTotalTimeQueueKey
-import it.fast4x.riplay.extensions.preferences.showalbumcoverKey
-import it.fast4x.riplay.extensions.preferences.showlyricsthumbnailKey
-import it.fast4x.riplay.extensions.preferences.showsongsKey
-import it.fast4x.riplay.extensions.preferences.showthumbnailKey
-import it.fast4x.riplay.extensions.preferences.showvisthumbnailKey
-import it.fast4x.riplay.extensions.preferences.statsExpandedKey
-import it.fast4x.riplay.extensions.preferences.statsfornerdsKey
-import it.fast4x.riplay.extensions.preferences.swipeAnimationsNoThumbnailKey
-import it.fast4x.riplay.extensions.preferences.swipeUpQueueKey
-import it.fast4x.riplay.extensions.preferences.tapqueueKey
-import it.fast4x.riplay.extensions.preferences.textoutlineKey
-import it.fast4x.riplay.extensions.preferences.thumbnailFadeExKey
-import it.fast4x.riplay.extensions.preferences.thumbnailFadeKey
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
-import it.fast4x.riplay.extensions.preferences.thumbnailSpacingKey
-import it.fast4x.riplay.extensions.preferences.thumbnailSpacingLKey
-import it.fast4x.riplay.extensions.preferences.thumbnailTapEnabledKey
-import it.fast4x.riplay.extensions.preferences.thumbnailTypeKey
-import it.fast4x.riplay.extensions.preferences.timelineExpandedKey
-import it.fast4x.riplay.extensions.preferences.titleExpandedKey
-import it.fast4x.riplay.extensions.preferences.topPaddingKey
-import it.fast4x.riplay.extensions.preferences.transparentBackgroundPlayerActionBarKey
-import it.fast4x.riplay.extensions.preferences.visualizerEnabledKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_ADD_TO_PLAYLIST
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_ARROW
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_DISCOVER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_DOWNLOAD
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_LOOP
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_LYRICS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_MENU
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_SHUFFLE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_SLEEP_TIMER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_START_RADIO
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_SYSTEM_EQUALIZER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_VIDEO
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_COVER_THUMBNAIL_ANIMATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_NEXT_SONGS_IN_PLAYER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_PLAYER_ACTIONS_BAR
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_TOP_ACTIONS_BAR
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_TOTAL_TIME_QUEUE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_ALBUM_COVER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LYRICS_THUMBNAIL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SONGS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_THUMBNAIL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_VIS_THUMBNAIL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.STATS_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.STATS_FOR_NERDS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SWIPE_ANIMATIONS_NO_THUMBNAIL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SWIPE_UP_QUEUE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TAP_QUEUE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TEXT_OUTLINE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_FADE_EX
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_FADE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_SPACING
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_SPACING_L
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_TAP_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TIMELINE_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TITLE_EXPANDED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TOP_PADDING
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.VISUALIZER_ENABLED
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
 import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultButton
 import it.fast4x.riplay.ui.screens.player.common.Queue
@@ -390,19 +389,19 @@ fun UnifiedPlayer(
 
     val menuState = LocalGlobalSheetState.current
 
-    val effectRotationEnabled by rememberObservedPreference(effectRotationKey, true)
+    val effectRotationEnabled by rememberPreference(EFFECT_ROTATION.key, true)
 
-    val playerThumbnailSize by rememberObservedPreference(
-        playerThumbnailSizeKey,
+    val playerThumbnailSize by rememberPreference(
+        PLAYER_THUMBNAIL_SIZE.key,
         PlayerThumbnailSize.Biggest
     )
-    val playerThumbnailSizeL by rememberObservedPreference(
-        playerThumbnailSizeLKey,
+    val playerThumbnailSizeL by rememberPreference(
+        PLAYER_THUMBNAIL_SIZE_L.key,
         PlayerThumbnailSize.Biggest
     )
 
-    val disablePlayerHorizontalSwipe by rememberObservedPreference(disablePlayerHorizontalSwipeKey, false)
-    val showlyricsthumbnail by rememberObservedPreference(showlyricsthumbnailKey, false)
+    val disablePlayerHorizontalSwipe by rememberPreference(DISABLE_PLAYER_HORIZONTAL_SWIPE.key, false)
+    val showlyricsthumbnail by rememberPreference(SHOW_LYRICS_THUMBNAIL.key, false)
     val binder = LocalPlayerServiceBinder.current
 
     binder?.player ?: return
@@ -426,7 +425,7 @@ fun UnifiedPlayer(
         animationSpec = tween(durationMillis = 200), label = ""
     )
 
-    val visualizerEnabled by rememberObservedPreference(visualizerEnabledKey, false)
+    val visualizerEnabled by rememberPreference(VISUALIZER_ENABLED.key, false)
 
     val defaultStrength = 25f
     val defaultDarkenFactor = 0.2f
@@ -434,13 +433,13 @@ fun UnifiedPlayer(
     val defaultSpacing = 0f
     val defaultFade = 5f
     val defaultImageCoverSize = 50f
-    var blurStrength by rememberPreference(blurStrengthKey, defaultStrength)
-    var thumbnailSpacing by rememberPreference(thumbnailSpacingKey, defaultSpacing)
-    var thumbnailSpacingL by rememberPreference(thumbnailSpacingLKey, defaultSpacing)
-    var thumbnailFade by rememberPreference(thumbnailFadeKey, defaultFade)
-    var thumbnailFadeEx by rememberPreference(thumbnailFadeExKey, defaultFade)
-    var imageCoverSize by rememberPreference(VinylSizeKey, defaultImageCoverSize)
-    var blurDarkenFactor by rememberPreference(blurDarkenFactorKey, defaultDarkenFactor)
+    var blurStrength by rememberPreference(BLUR_SCALE.key, defaultStrength)
+    var thumbnailSpacing by rememberPreference(THUMBNAIL_SPACING.key, defaultSpacing)
+    var thumbnailSpacingL by rememberPreference(THUMBNAIL_SPACING_L.key, defaultSpacing)
+    var thumbnailFade by rememberPreference(THUMBNAIL_FADE.key, defaultFade)
+    var thumbnailFadeEx by rememberPreference(THUMBNAIL_FADE_EX.key, defaultFade)
+    var imageCoverSize by rememberPreference(VINYL_SIZE.key, defaultImageCoverSize)
+    var blurDarkenFactor by rememberPreference(BLUR_DARKEN_FACTOR.key, defaultDarkenFactor)
     var showBlurPlayerDialog by rememberSaveable {
         mutableStateOf(false)
     }
@@ -450,7 +449,7 @@ fun UnifiedPlayer(
     var isShowingLyrics by rememberSaveable {
         mutableStateOf(false)
     }
-    val showvisthumbnail by rememberObservedPreference(showvisthumbnailKey, false)
+    val showvisthumbnail by rememberPreference(SHOW_VIS_THUMBNAIL.key, false)
     var isShowingVisualizer by rememberSaveable {
         mutableStateOf(false)
     }
@@ -486,11 +485,11 @@ fun UnifiedPlayer(
     var mediaItemIndex by remember {
         mutableIntStateOf(if (binder.player.mediaItemCount == 0) -1 else binder.player.currentMediaItemIndex)
     }
-    val queueDurationExpanded by rememberObservedPreference(queueDurationExpandedKey, true)
-    val miniQueueExpanded by rememberObservedPreference(miniQueueExpandedKey, true)
-    val statsExpanded by rememberObservedPreference(statsExpandedKey, true)
-    val actionExpanded by rememberObservedPreference(actionExpandedKey, true)
-    val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
+    val queueDurationExpanded by rememberPreference(QUEUE_DURATION_EXPANDED.key, true)
+    val miniQueueExpanded by rememberPreference(MINI_QUEUE_EXPANDED.key, true)
+    val statsExpanded by rememberPreference(STATS_EXPANDED.key, true)
+    val actionExpanded by rememberPreference(ACTION_EXPANDED.key, true)
+    val colorPaletteName by rememberPreference(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
 
     fun PagerState.offsetForPage(page: Int) = (currentPage - page) + currentPageOffsetFraction
 
@@ -528,7 +527,7 @@ fun UnifiedPlayer(
     }
 
 
-    var queueLoopType by rememberPreference(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
+    var queueLoopType by rememberPreference(QUEUE_LOOP_TYPE.key, defaultValue = QueueLoopType.Default)
 
     binder.player.DisposableListener {
         object : Player.Listener {
@@ -620,8 +619,8 @@ fun UnifiedPlayer(
             }
         )
     }
-    val actionspacedevenly by rememberObservedPreference(actionspacedevenlyKey, false)
-    var expandedplayer by rememberPreference(expandedplayerKey, false)
+    val actionspacedevenly by rememberPreference(ACTIONS_SPACED_EVENLY.key, false)
+    var expandedplayer by rememberPreference(EXPANDED_PLAYER.key, false)
 
     var updateBrush by rememberSaveable { mutableStateOf(false) }
 
@@ -676,27 +675,27 @@ fun UnifiedPlayer(
         updateBrush = true
     }
 
-    var showthumbnail by rememberObservedPreference(showthumbnailKey, true)
+    var showthumbnail by rememberPreference(SHOW_THUMBNAIL.key, true)
 
-    val showButtonPlayerAddToPlaylist by rememberObservedPreference(showButtonPlayerAddToPlaylistKey, true)
-    val showButtonPlayerArrow by rememberObservedPreference(showButtonPlayerArrowKey, true)
-    val showButtonPlayerDownload by rememberObservedPreference(showButtonPlayerDownloadKey, true)
-    val showButtonPlayerLoop by rememberObservedPreference(showButtonPlayerLoopKey, true)
-    val showButtonPlayerLyrics by rememberObservedPreference(showButtonPlayerLyricsKey, true)
-    val expandedplayertoggle by rememberPreference(expandedplayertoggleKey, true)
-    val showButtonPlayerShuffle by rememberObservedPreference(showButtonPlayerShuffleKey, true)
-    val showButtonPlayerSleepTimer by rememberObservedPreference(showButtonPlayerSleepTimerKey, false)
-    val showButtonPlayerMenu by rememberObservedPreference(showButtonPlayerMenuKey, false)
-    val showButtonPlayerStartRadio by rememberObservedPreference(showButtonPlayerStartRadioKey, false)
-    val showButtonPlayerSystemEqualizer by rememberObservedPreference(
-        showButtonPlayerSystemEqualizerKey,
+    val showButtonPlayerAddToPlaylist by rememberPreference(SHOW_BUTTON_PLAYER_ADD_TO_PLAYLIST.key, true)
+    val showButtonPlayerArrow by rememberPreference(SHOW_BUTTON_PLAYER_ARROW.key, true)
+    val showButtonPlayerDownload by rememberPreference(SHOW_BUTTON_PLAYER_DOWNLOAD.key, true)
+    val showButtonPlayerLoop by rememberPreference(SHOW_BUTTON_PLAYER_LOOP.key, true)
+    val showButtonPlayerLyrics by rememberPreference(SHOW_BUTTON_PLAYER_LYRICS.key, true)
+    val expandedplayertoggle by rememberPreference(EXPANDED_PLAYER_TOGGLE.key, true)
+    val showButtonPlayerShuffle by rememberPreference(SHOW_BUTTON_PLAYER_SHUFFLE.key, true)
+    val showButtonPlayerSleepTimer by rememberPreference(SHOW_BUTTON_PLAYER_SLEEP_TIMER.key, false)
+    val showButtonPlayerMenu by rememberPreference(SHOW_BUTTON_PLAYER_MENU.key, false)
+    val showButtonPlayerStartRadio by rememberPreference(SHOW_BUTTON_PLAYER_START_RADIO.key, false)
+    val showButtonPlayerSystemEqualizer by rememberPreference(
+        SHOW_BUTTON_PLAYER_SYSTEM_EQUALIZER.key,
         false
     )
-    val showButtonPlayerVideo by rememberObservedPreference(showButtonPlayerVideoKey, true)
+    val showButtonPlayerVideo by rememberPreference(SHOW_BUTTON_PLAYER_VIDEO.key, true)
 
-    val showTotalTimeQueue by rememberObservedPreference(showTotalTimeQueueKey, true)
-    val backgroundProgress by rememberObservedPreference(
-        backgroundProgressKey,
+    val showTotalTimeQueue by rememberPreference(SHOW_TOTAL_TIME_QUEUE.key, true)
+    val backgroundProgress by rememberPreference(
+        BACKGROUND_PROGRESS.key,
         BackgroundProgress.MiniPlayer
     )
 
@@ -704,19 +703,19 @@ fun UnifiedPlayer(
     var showCircularSlider by rememberSaveable {
         mutableStateOf(false)
     }
-    val showsongs by rememberObservedPreference(showsongsKey, SongsNumber.`2`)
-    val showalbumcover by rememberObservedPreference(showalbumcoverKey, true)
-    val tapqueue by rememberObservedPreference(tapqueueKey, true)
-    val swipeUpQueue by rememberObservedPreference(swipeUpQueueKey, true)
-    val playerType by rememberObservedPreference(playerTypeKey, PlayerType.Modern)
-    val queueType by rememberObservedPreference(queueTypeKey, QueueType.Modern)
-    val noblur by rememberObservedPreference(noblurKey, true)
-    val fadingedge by rememberObservedPreference(fadingedgeKey, false)
+    val showsongs by rememberPreference(SHOW_SONGS.key, SongsNumber.`2`)
+    val showalbumcover by rememberPreference(SHOW_ALBUM_COVER.key, true)
+    val tapqueue by rememberPreference(TAP_QUEUE.key, true)
+    val swipeUpQueue by rememberPreference(SWIPE_UP_QUEUE.key, true)
+    val playerType by rememberPreference(PLAYER_TYPE.key, PlayerType.Modern)
+    val queueType by rememberPreference(QUEUE_TYPE.key, QueueType.Modern)
+    val noblur by rememberPreference(NO_BLUR.key, true)
+    val fadingedge by rememberPreference(FADING_EDGE.key, false)
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val screenHeight = configuration.screenHeightDp.dp
 
-    var jumpPrevious by rememberPreference(jumpPreviousKey,"3")
+    var jumpPrevious by rememberPreference(JUMP_PREVIOUS.key,"3")
 
     if (isShowingSleepTimerDialog) {
         if (sleepTimerMillisLeft != null) {
@@ -871,7 +870,7 @@ fun UnifiedPlayer(
     var lightMuted by rememberSaveable { mutableStateOf(0) }
     var darkMuted by rememberSaveable { mutableStateOf(0) }
 
-    val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
+    val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
 
     var lightTheme =
         colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
@@ -886,12 +885,12 @@ fun UnifiedPlayer(
         )
     }
 
-    val playerBackgroundColors by rememberObservedPreference(
-        playerBackgroundColorsKey,
+    val playerBackgroundColors by rememberPreference(
+        PLAYER_BACKGROUND_COLORS.key,
         PlayerBackgroundColors.BlurredCoverColor
     )
-    val animatedGradient by rememberObservedPreference(
-        animatedGradientKey,
+    val animatedGradient by rememberPreference(
+        ANIMATED_GRADIENT.key,
         AnimatedGradient.Linear
     )
     val isGradientBackgroundEnabled =
@@ -1008,42 +1007,42 @@ fun UnifiedPlayer(
     }
 
 
-    val thumbnailTapEnabled by rememberObservedPreference(thumbnailTapEnabledKey, true)
-    val showNextSongsInPlayer by rememberObservedPreference(showNextSongsInPlayerKey, false)
+    val thumbnailTapEnabled by rememberPreference(THUMBNAIL_TAP_ENABLED.key, true)
+    val showNextSongsInPlayer by rememberPreference(SHOW_NEXT_SONGS_IN_PLAYER.key, false)
 
     var showQueue by rememberSaveable { mutableStateOf(false) }
     var showSearchEntity by rememberSaveable { mutableStateOf(false) }
 
-    val transparentBackgroundActionBarPlayer by rememberObservedPreference(
-        transparentBackgroundPlayerActionBarKey,
+    val transparentBackgroundActionBarPlayer by rememberPreference(
+        TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR.key,
         true
     )
-    val showTopActionsBar by rememberObservedPreference(showTopActionsBarKey, true)
-    val showPlayerActionsBar by rememberObservedPreference(showPlayerActionsBarKey, true)
+    val showTopActionsBar by rememberPreference(SHOW_TOP_ACTIONS_BAR.key, true)
+    val showPlayerActionsBar by rememberPreference(SHOW_PLAYER_ACTIONS_BAR.key, true)
 
     var containerModifier = Modifier
         //.padding(bottom = bottomDp)
         .padding(bottom = 0.dp)
     var deltaX by rememberSaveable { mutableStateOf(0f) }
-    val blackgradient by rememberObservedPreference(blackgradientKey, false)
-    val bottomgradient by rememberObservedPreference(bottomgradientKey, false)
-    val disableScrollingText by rememberObservedPreference(disableScrollingTextKey, false)
+    val blackgradient by rememberPreference(BLACK_GRADIENT.key, false)
+    val bottomgradient by rememberPreference(BOTTOM_GRADIENT.key, false)
+    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
 
-    var discoverIsEnabled by rememberObservedPreference(discoverKey, false)
-    val titleExpanded by rememberObservedPreference(titleExpandedKey, true)
-    val timelineExpanded by rememberObservedPreference(timelineExpandedKey, true)
-    val controlsExpanded by rememberObservedPreference(controlsExpandedKey, true)
+    var discoverIsEnabled by rememberPreference(DISCOVER.key, false)
+    val titleExpanded by rememberPreference(TITLE_EXPANDED.key, true)
+    val timelineExpanded by rememberPreference(TIMELINE_EXPANDED.key, true)
+    val controlsExpanded by rememberPreference(CONTROLS_EXPANDED.key, true)
 
-    val showCoverThumbnailAnimation by rememberObservedPreference(showCoverThumbnailAnimationKey, false)
-    var coverThumbnailAnimation by rememberObservedPreference(
-        coverThumbnailAnimationKey,
+    val showCoverThumbnailAnimation by rememberPreference(SHOW_COVER_THUMBNAIL_ANIMATION.key, false)
+    var coverThumbnailAnimation by rememberPreference(
+        COVER_THUMBNAIL_ANIMATION.key,
         ThumbnailCoverType.Vinyl
     )
 
     var valueGrad by rememberSaveable { mutableStateOf(2) }
     val gradients = enumValues<AnimatedGradient>()
     var tempGradient by rememberSaveable { mutableStateOf(AnimatedGradient.Linear) }
-    var albumCoverRotation by rememberObservedPreference(albumCoverRotationKey, false)
+    var albumCoverRotation by rememberPreference(ALBUM_COVER_ROTATION.key, false)
     var circleOffsetY by rememberSaveable { mutableStateOf(0f) }
 
     if (animatedGradient == AnimatedGradient.Random) {
@@ -1342,8 +1341,8 @@ fun UnifiedPlayer(
     }
 
 
-    val thumbnailRoundness by rememberObservedPreference(
-        thumbnailRoundnessKey,
+    val thumbnailRoundness by rememberPreference(
+        THUMBNAIL_ROUNDNESS.key,
         ThumbnailRoundness.Light
     )
 
@@ -1538,7 +1537,7 @@ fun UnifiedPlayer(
     }
 
 
-    val textoutline by rememberObservedPreference(textoutlineKey, false)
+    val textoutline by rememberPreference(TEXT_OUTLINE.key, false)
 
     var songPlaylist by rememberSaveable {
         mutableStateOf(0)
@@ -1549,11 +1548,11 @@ fun UnifiedPlayer(
         }
     }
 
-    val playlistindicator by rememberObservedPreference(playlistindicatorKey, false)
-    val carousel by rememberObservedPreference(carouselKey, true)
-    val carouselSize by rememberObservedPreference(carouselSizeKey, CarouselSize.Biggest)
+    val playlistindicator by rememberPreference(PLAYLIST_INDICATOR.key, false)
+    val carousel by rememberPreference(CAROUSEL.key, true)
+    val carouselSize by rememberPreference(CAROUSEL_SIZE.key, CarouselSize.Biggest)
 
-    var showButtonPlayerDiscover by rememberObservedPreference(showButtonPlayerDiscoverKey, false)
+    var showButtonPlayerDiscover by rememberPreference(SHOW_BUTTON_PLAYER_DISCOVER.key, false)
     val hazeState = remember { HazeState() }
 
     val equalizer = LocalPlayerServiceBinder.current?.equalizer
@@ -2186,8 +2185,8 @@ fun UnifiedPlayer(
         }
 
         //val binderPlayer = binder.player
-        val clickLyricsText by rememberObservedPreference(clickOnLyricsTextKey, true)
-        var extraspace by rememberObservedPreference(extraspaceKey, false)
+        val clickLyricsText by rememberPreference(CLICK_ON_LYRICS_TEXT.key, true)
+        var extraspace by rememberPreference(EXTRA_SPACE.key, false)
 
         val nextmedia = if (binder.player.mediaItemCount > 1
             && binder.player.currentMediaItemIndex + 1 < binder.player.mediaItemCount
@@ -2213,11 +2212,11 @@ fun UnifiedPlayer(
             }
         }
 
-        val thumbnailType by rememberObservedPreference(thumbnailTypeKey, ThumbnailType.Modern)
-        val statsfornerds by rememberObservedPreference(statsfornerdsKey, false)
-        val topPadding by rememberObservedPreference(topPaddingKey, true)
-        var swipeAnimationNoThumbnail by rememberObservedPreference(
-            swipeAnimationsNoThumbnailKey,
+        val thumbnailType by rememberPreference(THUMBNAIL_TYPE.key, ThumbnailType.Modern)
+        val statsfornerds by rememberPreference(STATS_FOR_NERDS.key, false)
+        val topPadding by rememberPreference(TOP_PADDING.key, true)
+        var swipeAnimationNoThumbnail by rememberPreference(
+            SWIPE_ANIMATIONS_NO_THUMBNAIL.key,
             SwipeAnimationNoThumbnail.Sliding
         )
 

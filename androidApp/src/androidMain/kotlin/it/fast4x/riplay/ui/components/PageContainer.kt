@@ -44,7 +44,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,12 +62,10 @@ import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PlayerPosition
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.enums.UiType
-import it.fast4x.riplay.extensions.preferences.playerPositionKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_POSITION
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.transitionEffectKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSITION_EFFECT
 import it.fast4x.riplay.ui.components.navigation.header.AppHeader
-import it.fast4x.riplay.ui.components.navigation.nav.HorizontalNavigationBar
-import it.fast4x.riplay.ui.screens.localplaylist.LocalPlaylistSongs
 import it.fast4x.riplay.utils.colorPalette
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -79,8 +76,8 @@ fun PageContainer(
     miniPlayer: @Composable () -> Unit = {},
     content: @Composable AnimatedVisibilityScope.(Int) -> Unit
 ) {
-    val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.SlideHorizontal)
-    val playerPosition by rememberPreference(playerPositionKey, PlayerPosition.Bottom)
+    val transitionEffect by rememberPreference(TRANSITION_EFFECT.key, TransitionEffect.SlideHorizontal)
+    val playerPosition by rememberPreference(PLAYER_POSITION.key, PlayerPosition.Bottom)
 
     var topBarHeightPx by remember { mutableFloatStateOf(0f) }
     var bottomBarHeightPx by remember { mutableFloatStateOf(0f) }

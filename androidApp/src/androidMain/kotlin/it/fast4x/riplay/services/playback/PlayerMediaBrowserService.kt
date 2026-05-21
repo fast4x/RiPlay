@@ -42,7 +42,7 @@ import it.fast4x.riplay.enums.AlbumSortBy
 import it.fast4x.riplay.enums.ArtistSortBy
 import it.fast4x.riplay.enums.MaxTopPlaylistItems
 import it.fast4x.riplay.enums.SortOrder
-import it.fast4x.riplay.extensions.preferences.MaxTopPlaylistItemsKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MAX_TOP_PLAYLIST_ITEMS
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.commonutils.removePrefix
@@ -52,16 +52,16 @@ import it.fast4x.riplay.enums.PlaylistSongSortBy
 import it.fast4x.riplay.enums.PlaylistSortBy
 import it.fast4x.riplay.enums.SongSortBy
 import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
-import it.fast4x.riplay.extensions.preferences.albumSortByKey
-import it.fast4x.riplay.extensions.preferences.albumSortOrderKey
-import it.fast4x.riplay.extensions.preferences.albumsItemSizeKey
-import it.fast4x.riplay.extensions.preferences.artistSortByKey
-import it.fast4x.riplay.extensions.preferences.artistSortOrderKey
-import it.fast4x.riplay.extensions.preferences.artistsItemSizeKey
-import it.fast4x.riplay.extensions.preferences.playlistSongSortByKey
-import it.fast4x.riplay.extensions.preferences.playlistSortByKey
-import it.fast4x.riplay.extensions.preferences.songSortByKey
-import it.fast4x.riplay.extensions.preferences.songSortOrderKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUM_SORT_BY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUM_SORT_ORDER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUMS_ITEM_SIZE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ARTIST_SORT_BY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ARTIST_SORT_ORDER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ARTISTS_ITEM_SIZE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SONG_SORT_BY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SORT_BY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SONG_SORT_BY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SONG_SORT_ORDER
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.getTitleMonthlyPlaylist
@@ -111,47 +111,47 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
         sharedPreferences ?: return
         Timber.d("PlayerMediaBrowserService onSharedPreferenceChanged $key")
         when (key) {
-            songSortByKey -> {
-                songsSortBy = sharedPreferences.getEnum(songSortByKey, SongSortBy.DateAdded)
+            SONG_SORT_BY.key -> {
+                songsSortBy = sharedPreferences.getEnum(SONG_SORT_BY.key, SongSortBy.DateAdded)
                 notifyChildrenChanged(MediaId.SONGS)
             }
 
-            songSortOrderKey -> {
-                songSortOrder = sharedPreferences.getEnum(songSortOrderKey, SortOrder.Descending)
+            SONG_SORT_ORDER.key -> {
+                songSortOrder = sharedPreferences.getEnum(SONG_SORT_ORDER.key, SortOrder.Descending)
                 notifyChildrenChanged(MediaId.SONGS)
             }
 
-            artistSortOrderKey -> {
+            ARTIST_SORT_ORDER.key -> {
                 artistSortOrder =
-                    sharedPreferences.getEnum(artistSortOrderKey, SortOrder.Descending)
+                    sharedPreferences.getEnum(ARTIST_SORT_ORDER.key, SortOrder.Descending)
                 notifyChildrenChanged(MediaId.ARTISTS_FAVORITES)
             }
-            artistSortByKey -> {
+            ARTIST_SORT_BY.key -> {
                 artistSortBy =
-                    sharedPreferences.getEnum(artistSortByKey, ArtistSortBy.DateAdded)
+                    sharedPreferences.getEnum(ARTIST_SORT_BY.key, ArtistSortBy.DateAdded)
                 notifyChildrenChanged(MediaId.ARTISTS_FAVORITES)
             }
 
-            albumSortOrderKey -> {
-                albumSortOrder = sharedPreferences.getEnum(albumSortOrderKey, SortOrder.Descending)
+            ALBUM_SORT_ORDER.key -> {
+                albumSortOrder = sharedPreferences.getEnum(ALBUM_SORT_ORDER.key, SortOrder.Descending)
                 notifyChildrenChanged(MediaId.ALBUMS_FAVORITES)
             }
 
-            albumSortByKey -> {
+            ALBUM_SORT_BY.key -> {
                 albumSortBy =
-                    sharedPreferences.getEnum(albumSortByKey, AlbumSortBy.DateAdded)
+                    sharedPreferences.getEnum(ALBUM_SORT_BY.key, AlbumSortBy.DateAdded)
                 notifyChildrenChanged(MediaId.ALBUMS_FAVORITES)
             }
 
-            playlistSongSortByKey -> {
+            PLAYLIST_SONG_SORT_BY.key -> {
                 playlistSongsSortBy =
-                    sharedPreferences.getEnum(playlistSongSortByKey, PlaylistSongSortBy.DateAdded)
+                    sharedPreferences.getEnum(PLAYLIST_SONG_SORT_BY.key, PlaylistSongSortBy.DateAdded)
                 notifyChildrenChanged(MediaId.PLAYLISTS)
             }
 
-            playlistSortByKey -> {
+            PLAYLIST_SORT_BY.key -> {
                 playlistSortBy =
-                    sharedPreferences.getEnum(playlistSortByKey, PlaylistSortBy.DateAdded)
+                    sharedPreferences.getEnum(PLAYLIST_SORT_BY.key, PlaylistSortBy.DateAdded)
                 notifyChildrenChanged(MediaId.PLAYLISTS)
             }
 
@@ -166,14 +166,14 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
     override fun onCreate() {
         super.onCreate()
 
-        songsSortBy = preferences.getEnum(songSortByKey, SongSortBy.DateAdded)
-        songSortOrder = preferences.getEnum(songSortOrderKey, SortOrder.Descending)
-        playlistSortBy = preferences.getEnum(playlistSortByKey, PlaylistSortBy.DateAdded)
-        playlistSongsSortBy = preferences.getEnum(playlistSongSortByKey, PlaylistSongSortBy.DateAdded)
-        artistSortBy = preferences.getEnum(artistSortByKey, ArtistSortBy.DateAdded)
-        artistSortOrder = preferences.getEnum(artistSortOrderKey, SortOrder.Descending)
-        albumSortBy = preferences.getEnum(albumSortByKey, AlbumSortBy.DateAdded)
-        albumSortOrder = preferences.getEnum(albumSortOrderKey, SortOrder.Descending)
+        songsSortBy = preferences.getEnum(SONG_SORT_BY.key, SongSortBy.DateAdded)
+        songSortOrder = preferences.getEnum(SONG_SORT_ORDER.key, SortOrder.Descending)
+        playlistSortBy = preferences.getEnum(PLAYLIST_SORT_BY.key, PlaylistSortBy.DateAdded)
+        playlistSongsSortBy = preferences.getEnum(PLAYLIST_SONG_SORT_BY.key, PlaylistSongSortBy.DateAdded)
+        artistSortBy = preferences.getEnum(ARTIST_SORT_BY.key, ArtistSortBy.DateAdded)
+        artistSortOrder = preferences.getEnum(ARTIST_SORT_ORDER.key, SortOrder.Descending)
+        albumSortBy = preferences.getEnum(ALBUM_SORT_BY.key, AlbumSortBy.DateAdded)
+        albumSortOrder = preferences.getEnum(ALBUM_SORT_ORDER.key, SortOrder.Descending)
 
 
 
@@ -360,7 +360,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                     }
 
                     MediaId.SONGS_TOP -> {
-                        val maxTopSongs = preferences.getEnum(MaxTopPlaylistItemsKey,
+                        val maxTopSongs = preferences.getEnum(MAX_TOP_PLAYLIST_ITEMS.key,
                             MaxTopPlaylistItems.`10`).number.toInt()
 
                         Database.trending(maxTopSongs)
@@ -907,7 +907,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                 )
                 .setTitle(title?.removePrefix())
                 .setSubtitle(authorsText)
-                .setIconUri(thumbnailUrl?.toThumbnail(preferences.getEnum(albumsItemSizeKey,HomeItemSize.BIG).size)?.toUri())
+                .setIconUri(thumbnailUrl?.toThumbnail(preferences.getEnum(ALBUMS_ITEM_SIZE.key,HomeItemSize.BIG).size)?.toUri())
                 .build(),
             MediaItem.FLAG_BROWSABLE
         )
@@ -924,7 +924,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                     }
                 )
                 .setTitle(name?.removePrefix())
-                .setIconUri(thumbnailUrl?.toThumbnail(preferences.getEnum(artistsItemSizeKey,HomeItemSize.BIG).size)?.toUri())
+                .setIconUri(thumbnailUrl?.toThumbnail(preferences.getEnum(ARTISTS_ITEM_SIZE.key,HomeItemSize.BIG).size)?.toUri())
                 .build(),
             MediaItem.FLAG_BROWSABLE
         )
@@ -1133,7 +1133,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
             MediaDescriptionCompat.Builder()
                 .setMediaId(MediaId.SONGS_TOP)
                 .setTitle((this as Context).resources.getString(R.string.my_playlist_top)
-                    .format((this as Context).preferences.getEnum(MaxTopPlaylistItemsKey,
+                    .format((this as Context).preferences.getEnum(MAX_TOP_PLAYLIST_ITEMS.key,
                         MaxTopPlaylistItems.`10`).number))
                 .setIconUri(uriFor(R.drawable.trending))
                 .build(),

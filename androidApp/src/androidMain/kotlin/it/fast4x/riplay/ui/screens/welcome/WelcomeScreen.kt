@@ -10,14 +10,14 @@ import androidx.navigation.NavController
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.transitionEffectKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSITION_EFFECT
 import it.fast4x.riplay.ui.components.SimpleScreenContainer
 
 @Composable
 fun WelcomeScreen(
     navController: NavController,
 ) {
-    val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.SlideHorizontal)
+    val transitionEffect by rememberPreference(TRANSITION_EFFECT.key, TransitionEffect.SlideHorizontal)
 
     var tabIndex by remember { mutableIntStateOf(0) }
 

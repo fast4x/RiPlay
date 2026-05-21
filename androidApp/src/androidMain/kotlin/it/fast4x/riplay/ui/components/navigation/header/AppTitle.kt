@@ -21,9 +21,9 @@ import androidx.navigation.NavController
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NetworkType
-import it.fast4x.riplay.extensions.preferences.eqEnabledKey
-import it.fast4x.riplay.extensions.preferences.logDebugEnabledKey
-import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EQ_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LOG_DEBUG_ENABLED
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.components.themed.Button
 import it.fast4x.riplay.utils.colorPalette
@@ -117,7 +117,7 @@ fun AppTitle(
                 )
             }
 
-            val isEqualizerEnabled by rememberObservedPreference(eqEnabledKey, false)
+            val isEqualizerEnabled by rememberPreference(EQ_ENABLED.key, false)
             if (isEqualizerEnabled) {
                 Image(
                     painter = painterResource(R.drawable.music_equalizer),
@@ -128,7 +128,7 @@ fun AppTitle(
                 )
             }
 
-            val isDebugModeEnabled by rememberObservedPreference(logDebugEnabledKey, false)
+            val isDebugModeEnabled by rememberPreference(LOG_DEBUG_ENABLED.key, false)
             if (isDebugModeEnabled)
                 Image(
                     painter = painterResource(R.drawable.maintenance),

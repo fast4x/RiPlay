@@ -75,7 +75,7 @@ import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.MaxSongs
@@ -101,13 +101,13 @@ import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isNetworkConnected
-import it.fast4x.riplay.extensions.preferences.maxSongsInQueueKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MAX_SONGS_IN_QUEUE
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.commonutils.setLikeState
 import it.fast4x.riplay.enums.ItemSortBy
 import it.fast4x.riplay.enums.SortOrder
-import it.fast4x.riplay.extensions.preferences.songSortOrderKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SONG_SORT_ORDER
 import it.fast4x.riplay.ui.components.themed.SortMenu
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.CoroutineScope
@@ -163,14 +163,14 @@ fun ArtistOverviewItems(
     var totalMinutesToLike by remember { mutableStateOf("") }
 
     val hapticFeedback = LocalHapticFeedback.current
-    val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
+    val parentalControlEnabled by rememberPreference(PARENTAL_CONTROL_ENABLED.key, false)
 
     var artistItemsPage by remember { mutableStateOf<ArtistItemsPage?>(null) }
 
 
     val thumbnailSizeDp = Dimensions.thumbnails.album //+ 24.dp
     val thumbnailSizePx = thumbnailSizeDp.px
-    val maxSongsInQueue by rememberPreference(maxSongsInQueueKey, MaxSongs.`500`)
+    val maxSongsInQueue by rememberPreference(MAX_SONGS_IN_QUEUE.key, MaxSongs.`500`)
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -493,7 +493,7 @@ fun ArtistOverviewItems(
             }
         } else {
             var sortBy by remember{ mutableStateOf(ItemSortBy.Year)}
-            var sortOrder by rememberPreference(songSortOrderKey, SortOrder.Descending)
+            var sortOrder by rememberPreference(SONG_SORT_ORDER.key, SortOrder.Descending)
             val sortOrderIconRotation by animateFloatAsState(
                 targetValue = if (sortOrder == SortOrder.Ascending) 0f else 180f,
                 animationSpec = tween(durationMillis = 400, easing = LinearEasing), label = ""

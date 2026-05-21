@@ -102,7 +102,6 @@ import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
-import com.valentinilk.shimmer.shimmer
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.LOCAL_KEY_PREFIX
@@ -118,16 +117,16 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.enums.QueueType
 import it.fast4x.riplay.enums.ThumbnailRoundness
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
-import it.fast4x.riplay.extensions.preferences.discoverKey
-import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
-import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
-import it.fast4x.riplay.extensions.preferences.queueTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISCOVER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXCLUDE_SONG_IF_IS_VIDEO
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUEUE_LOOP_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUEUE_TYPE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.reorderInQueueEnabledKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerArrowKey
-import it.fast4x.riplay.extensions.preferences.showButtonPlayerDiscoverKey
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.REORDER_IN_QUEUE_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_ARROW
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_DISCOVER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.SwipeableQueueItem
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
@@ -142,7 +141,6 @@ import it.fast4x.riplay.ui.components.themed.QueuedMediaItemMenu
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.items.QueueItem
 import it.fast4x.riplay.ui.items.SongItem
-import it.fast4x.riplay.ui.items.SongItemPlaceholder
 import it.fast4x.riplay.ui.screens.player.unified.UnifiedMiniPlayer
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
@@ -239,15 +237,15 @@ fun Queue(
 ) {
     val windowInsets = WindowInsets.systemBars
     val context = LocalContext.current
-    val showButtonPlayerArrow by rememberPreference(showButtonPlayerArrowKey, true)
-    var queueType by rememberPreference(queueTypeKey, QueueType.Essential)
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val showButtonPlayerArrow by rememberPreference(SHOW_BUTTON_PLAYER_ARROW.key, true)
+    var queueType by rememberPreference(QUEUE_TYPE.key, QueueType.Essential)
+    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
     val binder = LocalPlayerServiceBinder.current
     binder?.player ?: return
     val binderPlayer = binder.player
 
-    var queueLoopType by rememberPreference(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
-    var excludeSongsIfAreVideos by rememberPreference(excludeSongIfIsVideoKey, false)
+    var queueLoopType by rememberPreference(QUEUE_LOOP_TYPE.key, defaultValue = QueueLoopType.Default)
+    var excludeSongsIfAreVideos by rememberPreference(EXCLUDE_SONG_IF_IS_VIDEO.key, false)
     val menuState = LocalGlobalSheetState.current
     val thumbnailSizeDp = Dimensions.thumbnails.song
     val thumbnailSizePx = thumbnailSizeDp.px
@@ -287,7 +285,7 @@ fun Queue(
     }
     val rippleIndication = ripple(bounded = false)
     val musicBarsTransition = updateTransition(targetState = mediaItemIndex, label = "")
-    var isReorderDisabled by rememberPreference(reorderInQueueEnabledKey, defaultValue = true)
+    var isReorderDisabled by rememberPreference(REORDER_IN_QUEUE_ENABLED.key, defaultValue = true)
     var listMediaItems = remember { mutableListOf<MediaItem>() }
     var listMediaItemsIndex = remember { mutableListOf<Int>() }
     var selectQueueItems by remember { mutableStateOf(false) }
@@ -365,11 +363,11 @@ fun Queue(
     }
 
     val hapticFeedback = LocalHapticFeedback.current
-    val showButtonPlayerDiscover by rememberPreference(showButtonPlayerDiscoverKey, false)
-    var discoverIsEnabled by rememberPreference(discoverKey, false)
+    val showButtonPlayerDiscover by rememberPreference(SHOW_BUTTON_PLAYER_DISCOVER.key, false)
+    var discoverIsEnabled by rememberPreference(DISCOVER.key, false)
     var searching by rememberSaveable { mutableStateOf(false) }
     var filter: String? by rememberSaveable { mutableStateOf(null) }
-    val thumbnailRoundness by rememberPreference(thumbnailRoundnessKey, ThumbnailRoundness.Light)
+    val thumbnailRoundness by rememberPreference(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
     var showQueues by rememberSaveable { mutableStateOf(false) }
     val maxHeightQueuesList by remember { derivedStateOf { getScreenDimensions().height.dp.div(8) } }
     val heightQueues = animateDpAsState(if (showQueues) maxHeightQueuesList else 20.dp)

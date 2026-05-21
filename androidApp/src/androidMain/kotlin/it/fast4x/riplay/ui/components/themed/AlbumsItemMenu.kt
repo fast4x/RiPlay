@@ -54,9 +54,9 @@ import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.ui.items.AlbumItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.extensions.preferences.menuStyleKey
-import it.fast4x.riplay.extensions.preferences.playlistSortByKey
-import it.fast4x.riplay.extensions.preferences.playlistSortOrderKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MENU_STYLE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SORT_BY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SORT_ORDER
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
 import kotlinx.coroutines.Dispatchers
@@ -100,7 +100,7 @@ fun AlbumsItemMenu(
     }
 
     val menuStyle by rememberPreference(
-        menuStyleKey,
+        MENU_STYLE.key,
         MenuStyle.List
     )
 
@@ -136,8 +136,8 @@ fun AlbumsItemMenu(
         ) { currentIsViewingPlaylists ->
             if (currentIsViewingPlaylists) {
                 val context = LocalContext.current
-                val sortBy by rememberPreference(playlistSortByKey, PlaylistSortBy.DateAdded)
-                val sortOrder by rememberPreference(playlistSortOrderKey, SortOrder.Descending)
+                val sortBy by rememberPreference(PLAYLIST_SORT_BY.key, PlaylistSortBy.DateAdded)
+                val sortOrder by rememberPreference(PLAYLIST_SORT_ORDER.key, SortOrder.Descending)
                 val playlistPreviews by remember {
                     Database.playlistPreviews(sortBy, sortOrder)
                 }.collectAsState(initial = emptyList(), context = Dispatchers.IO)

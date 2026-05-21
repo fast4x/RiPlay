@@ -7,14 +7,14 @@ import androidx.compose.ui.res.stringResource
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.ViewType
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.viewTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.VIEW_TYPE
 import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.DynamicColor
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
 
 @Composable
 fun viewTypeToolbutton(messageId: Int): MenuIcon = object : MenuIcon, DynamicColor, Descriptive {
-    var viewType by rememberPreference(viewTypeKey, ViewType.Grid)
+    var viewType by rememberPreference(VIEW_TYPE.key, ViewType.Grid)
     override var isFirstColor: Boolean = true
     override var iconId: Int = if (viewType == ViewType.Grid) R.drawable.list_view else R.drawable.grid_view
     override val messageId: Int = messageId

@@ -5,9 +5,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,9 +37,9 @@ import it.fast4x.riplay.extensions.persist.PersistMapCleanup
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.enums.UiType
-import it.fast4x.riplay.extensions.preferences.enableVoiceInputKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_VOICE_INPUT
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.transitionEffectKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSITION_EFFECT
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.secondary
@@ -67,7 +65,7 @@ fun SearchScreen(
     onViewPlaylist: (String) -> Unit,
     onDismiss: (() -> Unit)? = null,
 ) {
-    val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.SlideHorizontal)
+    val transitionEffect by rememberPreference(TRANSITION_EFFECT.key, TransitionEffect.SlideHorizontal)
     val saveableStateHolder = rememberSaveableStateHolder()
 
     val (tabIndex, onTabChanged) = rememberSaveable {
@@ -88,7 +86,7 @@ fun SearchScreen(
 
     PersistMapCleanup(tagPrefix = "search/")
 
-    val isEnabledVoiceInput by rememberPreference(enableVoiceInputKey, true)
+    val isEnabledVoiceInput by rememberPreference(ENABLE_VOICE_INPUT.key, true)
 
     var startVoiceInput by remember { mutableStateOf(false) }
 

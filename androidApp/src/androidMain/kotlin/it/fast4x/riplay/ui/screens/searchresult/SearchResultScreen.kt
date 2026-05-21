@@ -63,19 +63,18 @@ import it.fast4x.riplay.ui.items.ArtistItemPlaceholder
 import it.fast4x.riplay.ui.items.PlaylistItem
 import it.fast4x.riplay.ui.items.PlaylistItemPlaceholder
 import it.fast4x.riplay.ui.items.SongItem
-import it.fast4x.riplay.ui.items.SongItemPlaceholder
 import it.fast4x.riplay.ui.items.VideoItem
 import it.fast4x.riplay.ui.items.VideoItemPlaceholder
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.utils.enqueue
-import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.searchResultScreenTabIndexKey
-import it.fast4x.riplay.extensions.preferences.transitionEffectKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SEARCH_RESULT_SCREEN_TAB_INDEX
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSITION_EFFECT
 import it.fast4x.riplay.ui.components.themed.Loader
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.Menu
@@ -111,13 +110,13 @@ fun SearchResultScreen(
     val selectedQueue = LocalSelectedQueue.current
 
     val saveableStateHolder = rememberSaveableStateHolder()
-    val (tabIndex, onTabIndexChanges) = rememberPreference(searchResultScreenTabIndexKey, 0)
+    val (tabIndex, onTabIndexChanges) = rememberPreference(SEARCH_RESULT_SCREEN_TAB_INDEX.key, 0)
 
     val hapticFeedback = LocalHapticFeedback.current
 
-    val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
+    val parentalControlEnabled by rememberPreference(PARENTAL_CONTROL_ENABLED.key, false)
 
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
     val menuState = LocalGlobalSheetState.current
     var filterContentType by remember { mutableStateOf(ContentType.All) }
 
@@ -200,7 +199,7 @@ fun SearchResultScreen(
 
             val emptyItemsText = stringResource(R.string.no_results_found)
 
-            val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.SlideHorizontal)
+            val transitionEffect by rememberPreference(TRANSITION_EFFECT.key, TransitionEffect.SlideHorizontal)
 
             ScreenContainer(
                 navController,

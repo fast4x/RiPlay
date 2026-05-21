@@ -8,14 +8,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -23,9 +20,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -37,24 +32,19 @@ import androidx.compose.ui.unit.sp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.mikepenz.hypnoticcanvas.shaderBackground
-import it.fast4x.riplay.extensions.persist.persist
-import it.fast4x.environment.Environment
-import it.fast4x.environment.requests.discoverPage
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
-import it.fast4x.riplay.ui.items.AlbumItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
-import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.NAVIGATION_BAR_POSITION
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.showSearchTabKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SEARCH_TAB
 import it.fast4x.riplay.extensions.rewind.utils.getRewindYears
 import it.fast4x.riplay.extensions.rewind.utils.shadersList
-import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import it.fast4x.riplay.ui.items.RewindItem
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.LazyListContainer
@@ -74,15 +64,15 @@ fun RewindListScreen(
     val thumbnailSizePx = thumbnailSizeDp.px
 
     val navigationBarPosition by rememberPreference(
-        navigationBarPositionKey,
+        NAVIGATION_BAR_POSITION.key,
         NavigationBarPosition.Bottom
     )
 
-    val showSearchTab by rememberPreference(showSearchTabKey, false)
+    val showSearchTab by rememberPreference(SHOW_SEARCH_TAB.key, false)
 
     val lazyGridState = rememberLazyGridState()
 
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
 
 
     Column(

@@ -7,9 +7,9 @@ import it.fast4x.riplay.enums.HomeItemSize
 object Preference {
 
     /****  ENUMS  ****/
-    val HOME_ARTIST_ITEM_SIZE = Key( artistsItemSizeKey, HomeItemSize.BIG )
-    val HOME_ALBUM_ITEM_SIZE = Key( albumsItemSizeKey, HomeItemSize.BIG )
-    val HOME_LIBRARY_ITEM_SIZE = Key( libraryItemSizeKey, HomeItemSize.BIG )
+    val HOME_ARTIST_ITEM_SIZE = Key(PreferenceKey.ARTISTS_ITEM_SIZE.key, HomeItemSize.BIG )
+    val HOME_ALBUM_ITEM_SIZE = Key(PreferenceKey.ALBUMS_ITEM_SIZE.key, HomeItemSize.BIG )
+    val HOME_LIBRARY_ITEM_SIZE = Key(PreferenceKey.LIBRARY_ITEM_SIZE.key, HomeItemSize.BIG )
 
     @Composable
     inline fun <reified T: Enum<T>> remember( key: Key<T>): MutableState<T> =

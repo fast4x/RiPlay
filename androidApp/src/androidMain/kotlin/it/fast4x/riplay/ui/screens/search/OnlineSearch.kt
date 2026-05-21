@@ -80,13 +80,13 @@ import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.styling.align
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.ui.styling.medium
-import it.fast4x.riplay.extensions.preferences.pauseSearchHistoryKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PAUSE_SEARCH_HISTORY
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.secondary
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -117,7 +117,7 @@ fun OnlineSearch(
     }
 
     LaunchedEffect(textFieldValue.text, reloadHistory) {
-        if (!context.preferences.getBoolean(pauseSearchHistoryKey, false)) {
+        if (!context.preferences.getBoolean(PAUSE_SEARCH_HISTORY.key, false)) {
             Database.queries("%${textFieldValue.text}%")
                 .distinctUntilChanged { old, new -> old.size == new.size }
                 .collect { history = it }
@@ -150,7 +150,7 @@ fun OnlineSearch(
     }
 
     var thumbnailRoundness by rememberPreference(
-        thumbnailRoundnessKey,
+        THUMBNAIL_ROUNDNESS.key,
         ThumbnailRoundness.Heavy
     )
 
@@ -165,7 +165,7 @@ fun OnlineSearch(
     val hapticFeedback = LocalHapticFeedback.current
     val binder = LocalPlayerServiceBinder.current
 
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
 
     Box(
         modifier = Modifier

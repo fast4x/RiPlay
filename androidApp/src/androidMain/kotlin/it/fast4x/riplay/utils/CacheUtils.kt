@@ -16,9 +16,9 @@ import androidx.media3.datasource.cache.NoOpCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import it.fast4x.riplay.enums.ExoPlayerCacheLocation
 import it.fast4x.riplay.enums.ExoPlayerDiskCacheMaxSize
-import it.fast4x.riplay.extensions.preferences.exoPlayerCacheLocationKey
-import it.fast4x.riplay.extensions.preferences.exoPlayerCustomCacheKey
-import it.fast4x.riplay.extensions.preferences.exoPlayerDiskCacheMaxSizeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXO_PLAYER_CACHE_LOCATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXO_PLAYER_CUSTOM_CACHE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXO_PLAYER_DISK_CACHE_MAX_SIZE
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.preferences
 import timber.log.Timber
@@ -49,17 +49,17 @@ fun logCacheInfo(context: Context) {
 }
 
 object PrincipalCache {
-    private val exoPlayerCustomCache = appContext().preferences.getInt(exoPlayerCustomCacheKey, 32) * 1000 * 1000L
+    private val exoPlayerCustomCache = appContext().preferences.getInt(EXO_PLAYER_CUSTOM_CACHE.key, 32) * 1000 * 1000L
     private var principalCache: SimpleCache? = null
     private var databaseProvider: StandaloneDatabaseProvider? = null
     private val exoPlayerCacheLocation = appContext().preferences.getEnum(
-        exoPlayerCacheLocationKey, ExoPlayerCacheLocation.System
+        EXO_PLAYER_CACHE_LOCATION.key, ExoPlayerCacheLocation.System
     )
     private val directoryLocation =
         if (exoPlayerCacheLocation == ExoPlayerCacheLocation.Private) appContext().filesDir else appContext().cacheDir
 
     private val cacheSize =
-        appContext().preferences.getEnum(exoPlayerDiskCacheMaxSizeKey, ExoPlayerDiskCacheMaxSize.`2GB`)
+        appContext().preferences.getEnum(EXO_PLAYER_DISK_CACHE_MAX_SIZE.key, ExoPlayerDiskCacheMaxSize.`2GB`)
 
     private val cacheDirName = if (cacheSize == ExoPlayerDiskCacheMaxSize.Disabled) "riplay_no_cache" else "riplay_cache"
 
@@ -79,7 +79,7 @@ object PrincipalCache {
         appContext().filesDir.resolve("coil").deleteRecursively()
     }
     private val cacheEvictor = when (val size =
-        appContext().preferences.getEnum(exoPlayerDiskCacheMaxSizeKey, ExoPlayerDiskCacheMaxSize.`2GB`)) {
+        appContext().preferences.getEnum(EXO_PLAYER_DISK_CACHE_MAX_SIZE.key, ExoPlayerDiskCacheMaxSize.`2GB`)) {
         ExoPlayerDiskCacheMaxSize.Unlimited -> NoOpCacheEvictor()
         ExoPlayerDiskCacheMaxSize.Custom -> LeastRecentlyUsedCacheEvictor(exoPlayerCustomCache)
         else -> LeastRecentlyUsedCacheEvictor(size.bytes)

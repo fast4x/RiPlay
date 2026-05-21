@@ -85,14 +85,14 @@ import it.fast4x.riplay.ui.components.themed.MultiFloatingActionsContainer
 import it.fast4x.riplay.ui.items.AlbumItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.addNext
-import it.fast4x.riplay.extensions.preferences.albumSortByKey
-import it.fast4x.riplay.extensions.preferences.albumSortOrderKey
-import it.fast4x.riplay.extensions.preferences.albumTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUM_SORT_BY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUM_SORT_ORDER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUM_TYPE
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
 import kotlinx.coroutines.flow.map
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.NavRoutes
@@ -150,7 +150,7 @@ fun HomeAlbums(
     val lazyGridState = rememberLazyGridState()
     val lazyListState = rememberLazyListState() // Spostato qui sopra per gestire il ripristino scroll
 
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
 
     var items by persistList<Album>("home/albums")
     var itemsOnDisplay by persistList<Album>("home/albums/on_display")
@@ -167,12 +167,12 @@ fun HomeAlbums(
         Database.songsInAllBookmarkedAlbums().map { it.map(Song::asMediaItem) }
     }
 
-    var albumType by rememberPreference(albumTypeKey, AlbumsType.Favorites)
+    var albumType by rememberPreference(ALBUM_TYPE.key, AlbumsType.Favorites)
     val buttonsList = AlbumsType.entries.map { it to it.textName }
     val coroutineScope = rememberCoroutineScope()
 
-    var sortBy by rememberPreference(albumSortByKey, AlbumSortBy.DateAdded)
-    var sortOrder by rememberPreference(albumSortOrderKey, SortOrder.Descending)
+    var sortBy by rememberPreference(ALBUM_SORT_BY.key, AlbumSortBy.DateAdded)
+    var sortOrder by rememberPreference(ALBUM_SORT_ORDER.key, SortOrder.Descending)
     val sortOrderIconRotation by animateFloatAsState(
         targetValue = if (sortOrder == SortOrder.Ascending) 0f else 180f,
         animationSpec = tween(durationMillis = 400, easing = LinearEasing), label = ""
@@ -714,7 +714,7 @@ fun HomeAlbums(
 
             FloatingActionsContainerWithScrollToTop(lazyGridState)
 
-            val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
+            val showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
             if (UiType.ViMusic.isCurrent() && showFloatingIcon)
                 MultiFloatingActionsContainer(
                     iconId = R.drawable.search,

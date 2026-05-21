@@ -20,7 +20,7 @@ import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.SongPlaylistMap
-import it.fast4x.riplay.extensions.preferences.enableYouTubeSyncKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_YOU_TUBE_SYNC
 import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.DynamicColor
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
@@ -323,7 +323,7 @@ suspend fun removeYTSongFromPlaylist(
 @Composable
 fun autoSyncToolbutton(messageId: Int): MenuIcon = object : MenuIcon, DynamicColor, Descriptive {
 
-    override var isFirstColor: Boolean by rememberPreference(enableYouTubeSyncKey, true)
+    override var isFirstColor: Boolean by rememberPreference(ENABLE_YOU_TUBE_SYNC.key, true)
     override val iconId: Int = R.drawable.sync
     override val messageId: Int = messageId
     override val menuIconTitle: String

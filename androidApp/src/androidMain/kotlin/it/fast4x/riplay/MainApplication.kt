@@ -10,17 +10,15 @@ import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
 import coil.request.CachePolicy
-import it.fast4x.riplay.cast.CastHelper
 import it.fast4x.riplay.data.DatabaseInitializer
 import it.fast4x.riplay.enums.CoilDiskCacheMaxSize
 import it.fast4x.riplay.utils.FileLoggingTree
-import it.fast4x.riplay.extensions.preferences.coilCustomDiskCacheKey
-import it.fast4x.riplay.extensions.preferences.coilDiskCacheMaxSizeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COIL_CUSTOM_DISK_CACHE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COIL_DISK_CACHE_MAX_SIZE
 import it.fast4x.riplay.extensions.preferences.getEnum
-import it.fast4x.riplay.extensions.preferences.logDebugEnabledKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LOG_DEBUG_ENABLED
 import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.extensions.preferences.usePlaceholderInImageLoaderKey
-import it.fast4x.riplay.commonutils.initializeEnvironment
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.USE_PLACEHOLDER_IN_IMAGE_LOADER
 import it.fast4x.riplay.extensions.crashreporter.CrashReporter
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.utils.InitializeEnvironment
@@ -53,7 +51,7 @@ class MainApplication : Application(), ImageLoaderFactory {
         /***** CRASH LOG ALWAYS ENABLED *****/
 
         /**** LOG *********/
-        val logEnabled = preferences.getBoolean(logDebugEnabledKey, false)
+        val logEnabled = preferences.getBoolean(LOG_DEBUG_ENABLED.key, false)
         if (logEnabled) {
             Timber.plant(FileLoggingTree(File(dir, "RiPlay_log.txt")))
             Timber.d("Log enabled at ${dir.absolutePath}")
@@ -65,9 +63,9 @@ class MainApplication : Application(), ImageLoaderFactory {
     }
 
     override fun newImageLoader(): ImageLoader {
-        val coilCustomDiskCache = preferences.getInt(coilCustomDiskCacheKey, 128) * 1000 * 1000L
-        val coilDiskCacheMaxSize = preferences.getEnum(coilDiskCacheMaxSizeKey,CoilDiskCacheMaxSize.`128MB`)
-        val usePlaceholder = preferences.getBoolean(usePlaceholderInImageLoaderKey, true)
+        val coilCustomDiskCache = preferences.getInt(COIL_CUSTOM_DISK_CACHE.key, 128) * 1000 * 1000L
+        val coilDiskCacheMaxSize = preferences.getEnum(COIL_DISK_CACHE_MAX_SIZE.key,CoilDiskCacheMaxSize.`128MB`)
+        val usePlaceholder = preferences.getBoolean(USE_PLACEHOLDER_IN_IMAGE_LOADER.key, true)
         val coilCacheSize = when (coilDiskCacheMaxSize) {
             CoilDiskCacheMaxSize.Custom -> coilCustomDiskCache
             else -> coilDiskCacheMaxSize.bytes

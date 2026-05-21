@@ -129,7 +129,7 @@ import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.onOverlay
 import it.fast4x.riplay.ui.styling.overlay
 import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.extensions.preferences.UiTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.UI_TYPE
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.ui.styling.center
@@ -138,18 +138,18 @@ import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
-import it.fast4x.riplay.extensions.preferences.isRecommendationEnabledKey
-import it.fast4x.riplay.extensions.preferences.maxSongsInQueueKey
-import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
-import it.fast4x.riplay.extensions.preferences.playlistSongSortByKey
-import it.fast4x.riplay.extensions.preferences.recommendationsNumberKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_RECOMMENDATION_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MAX_SONGS_IN_QUEUE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.NAVIGATION_BAR_POSITION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SONG_SORT_BY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.RECOMMENDATIONS_NUMBER
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.reorderInQueueEnabledKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.REORDER_IN_QUEUE_ENABLED
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
-import it.fast4x.riplay.extensions.preferences.songSortOrderKey
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SONG_SORT_ORDER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
@@ -172,7 +172,7 @@ import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.utils.checkFileExists
 import it.fast4x.riplay.utils.deleteFileIfExists
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.utils.saveImageToInternalStorage
 import kotlinx.coroutines.CoroutineScope
 import it.fast4x.riplay.data.models.SongEntity
@@ -190,7 +190,7 @@ import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.move
-import it.fast4x.riplay.extensions.preferences.playlistSongsTypeFilterKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SONGS_TYPE_FILTER
 import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.forcePlay
@@ -225,7 +225,7 @@ fun LocalPlaylistSongs(
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalGlobalSheetState.current
     val selectedQueue = LocalSelectedQueue.current
-    val uiType by rememberPreference(UiTypeKey, UiType.RiPlay)
+    val uiType by rememberPreference(UI_TYPE.key, UiType.RiPlay)
 
     var playlistAllSongs by persistList<SongEntity>("localPlaylist/$playlistId/songs")
     var songsInTheToPlaylist by persistList<SongEntity>("")
@@ -235,13 +235,13 @@ fun LocalPlaylistSongs(
     val thumbnailUrl = remember { mutableStateOf("") }
 
 
-    var sortBy by rememberPreference(playlistSongSortByKey, PlaylistSongSortBy.Title)
-    var sortOrder by rememberPreference(songSortOrderKey, SortOrder.Descending)
+    var sortBy by rememberPreference(PLAYLIST_SONG_SORT_BY.key, PlaylistSongSortBy.Title)
+    var sortOrder by rememberPreference(SONG_SORT_ORDER.key, SortOrder.Descending)
 
     var filter: String? by rememberSaveable { mutableStateOf(null) }
 
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
-    var playlistSongsTypeFilter by rememberPreference(playlistSongsTypeFilterKey, PlaylistSongsTypeFilter.All)
+    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    var playlistSongsTypeFilter by rememberPreference(PLAYLIST_SONGS_TYPE_FILTER.key, PlaylistSongsTypeFilter.All)
 
     LaunchedEffect(Unit, filter, sortOrder, sortBy) {
         Database.songsPlaylist(playlistId, sortBy, sortOrder).filterNotNull()
@@ -304,10 +304,10 @@ fun LocalPlaylistSongs(
 
     //**** SMART RECOMMENDATION
     val recommendationsNumber by rememberPreference(
-        recommendationsNumberKey,
+        RECOMMENDATIONS_NUMBER.key,
         RecommendationsNumber.`5`
     )
-    var isRecommendationEnabled by rememberPreference(isRecommendationEnabledKey, false)
+    var isRecommendationEnabled by rememberPreference(IS_RECOMMENDATION_ENABLED.key, false)
     var relatedSongsRecommendationResult by persist<Result<Environment.RelatedSongs?>?>(tag = "home/relatedSongsResult")
     var songBaseRecommendation by persist<SongEntity?>("home/songBaseRecommendation")
     var positionsRecommendationList = arrayListOf<Int>()
@@ -379,7 +379,7 @@ fun LocalPlaylistSongs(
 
 
     val thumbnailRoundness by rememberPreference(
-        thumbnailRoundnessKey,
+        THUMBNAIL_ROUNDNESS.key,
         ThumbnailRoundness.Light
     )
 
@@ -557,7 +557,7 @@ fun LocalPlaylistSongs(
         }
     }
 
-    var isReorderDisabled by rememberPreference(reorderInQueueEnabledKey, defaultValue = true)
+    var isReorderDisabled by rememberPreference(REORDER_IN_QUEUE_ENABLED.key, defaultValue = true)
 
     val playlistThumbnailSizeDp = Dimensions.thumbnails.playlist
     val playlistThumbnailSizePx = playlistThumbnailSizeDp.px
@@ -784,10 +784,10 @@ fun LocalPlaylistSongs(
     }
 
     val navigationBarPosition by rememberPreference(
-        navigationBarPositionKey,
+        NAVIGATION_BAR_POSITION.key,
         NavigationBarPosition.Bottom
     )
-    val maxSongsInQueue by rememberPreference(maxSongsInQueueKey, MaxSongs.`500`)
+    val maxSongsInQueue by rememberPreference(MAX_SONGS_IN_QUEUE.key, MaxSongs.`500`)
 
     val playlistNotMonthlyType =
         playlistPreview?.playlist?.name?.startsWith(MONTHLY_PREFIX, 0, true) == false
@@ -2424,7 +2424,7 @@ fun LocalPlaylistSongs(
 
             FloatingActionsContainerWithScrollToTop(lazyListState = lazyListState)
 
-            val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
+            val showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
             if (uiType == UiType.ViMusic || showFloatingIcon)
                 FloatingActionsContainerWithScrollToTop(
                     lazyListState = lazyListState,

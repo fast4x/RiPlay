@@ -20,9 +20,7 @@ import androidx.core.graphics.ColorUtils.colorToHSL
 import coil.size.Size
 import coil.transform.Transformation
 import it.fast4x.riplay.enums.ColorPaletteMode
-import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
-import it.fast4x.riplay.extensions.preferences.getEnum
-import it.fast4x.riplay.extensions.preferences.preferences
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -310,7 +308,7 @@ private suspend fun Bitmap.blur(
 
 @Composable
 fun saturate(color: Int): Color {
-    val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
+    val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
     val colorHSL by rememberSaveable { mutableStateOf(floatArrayOf(0f, 0f, 0f)) }
     val lightTheme =
         colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))

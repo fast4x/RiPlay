@@ -26,11 +26,11 @@ import it.fast4x.riplay.ui.components.themed.MenuEntry
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
-import it.fast4x.riplay.extensions.preferences.menuStyleKey
-import it.fast4x.riplay.extensions.preferences.playlistSongSortByKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MENU_STYLE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SONG_SORT_BY
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.reorderInQueueEnabledKey
-import it.fast4x.riplay.extensions.preferences.songSortOrderKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.REORDER_IN_QUEUE_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SONG_SORT_ORDER
 import it.fast4x.riplay.ui.components.themed.DeleteDialog
 import it.fast4x.riplay.ui.components.themed.IDialog
 import it.fast4x.riplay.ui.components.tab.Sort
@@ -84,7 +84,7 @@ class PositionLock private constructor(
         @JvmStatic
         @Composable
         fun init( sortOrder: SortOrder ) = PositionLock(
-            rememberPreference(reorderInQueueEnabledKey, true),
+            rememberPreference(REORDER_IN_QUEUE_ENABLED.key, true),
             rememberSaveable( sortOrder ) { mutableStateOf( sortOrder == SortOrder.Ascending ) }
         )
     }
@@ -131,10 +131,10 @@ class PlaylistSongsSort private constructor(
         @JvmStatic
         @Composable
         fun init() = PlaylistSongsSort(
-            rememberPreference(songSortOrderKey, SortOrder.Descending),
-            rememberPreference(playlistSongSortByKey, PlaylistSongSortBy.Title),
+            rememberPreference(SONG_SORT_ORDER.key, SortOrder.Descending),
+            rememberPreference(PLAYLIST_SONG_SORT_BY.key, PlaylistSongSortBy.Title),
             LocalGlobalSheetState.current,
-            rememberPreference(menuStyleKey, MenuStyle.List)
+            rememberPreference(MENU_STYLE.key, MenuStyle.List)
         )
     }
 

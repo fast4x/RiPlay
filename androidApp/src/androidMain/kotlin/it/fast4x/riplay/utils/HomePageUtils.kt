@@ -14,10 +14,10 @@ import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.enums.PlayEventsType
 import it.fast4x.riplay.enums.TopPlaylistPeriod
-import it.fast4x.riplay.extensions.preferences.autoShuffleKey
-import it.fast4x.riplay.extensions.preferences.menuStyleKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.AUTO_SHUFFLE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MENU_STYLE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.topPlaylistPeriodKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TOP_PLAYLIST_PERIOD
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.GlobalSheetState
 import it.fast4x.riplay.ui.components.themed.PeriodMenu
@@ -60,7 +60,7 @@ class HiddenSongs private constructor(
 @Composable
 fun randomSort(): MenuIcon = object: MenuIcon, DynamicColor, Descriptive {
 
-    override var isFirstColor: Boolean by rememberPreference(autoShuffleKey, false)
+    override var isFirstColor: Boolean by rememberPreference(AUTO_SHUFFLE.key, false)
     override val iconId: Int = R.drawable.random
     override val messageId: Int = R.string.random_sorting
     override val menuIconTitle: String
@@ -80,9 +80,9 @@ class PeriodSelector private constructor(
         @JvmStatic
         @Composable
         fun init() = PeriodSelector(
-            rememberPreference(topPlaylistPeriodKey, TopPlaylistPeriod.PastWeek),
+            rememberPreference(TOP_PLAYLIST_PERIOD.key, TopPlaylistPeriod.PastWeek),
             LocalGlobalSheetState.current,
-            rememberPreference(menuStyleKey, MenuStyle.List)
+            rememberPreference(MENU_STYLE.key, MenuStyle.List)
         )
     }
 

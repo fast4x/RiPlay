@@ -77,24 +77,24 @@ import it.fast4x.riplay.ui.components.themed.MultiFloatingActionsContainer
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.screens.welcome.WelcomeMessage
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.extensions.preferences.playEventsTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAY_EVENTS_TYPE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.selectedCountryCodeKey
-import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
-import it.fast4x.riplay.extensions.preferences.showMoodsAndGenresKey
-import it.fast4x.riplay.extensions.preferences.showNewAlbumsArtistsKey
-import it.fast4x.riplay.extensions.preferences.showNewAlbumsKey
-import it.fast4x.riplay.extensions.preferences.showSearchTabKey
-import it.fast4x.riplay.extensions.preferences.showTipsKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SELECTED_COUNTRY_CODE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_MOODS_AND_GENRES
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_NEW_ALBUMS_ARTISTS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_NEW_ALBUMS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SEARCH_TAB
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_TIPS
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
-import it.fast4x.riplay.extensions.preferences.showListenerLevelsKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LISTENER_LEVELS
 import it.fast4x.riplay.extensions.rewind.HomepageRewind
 import it.fast4x.riplay.ui.components.themed.ChipItemColored
 import it.fast4x.riplay.utils.isLocal
@@ -148,7 +148,7 @@ fun HomePage(
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalGlobalSheetState.current
     val windowInsets = LocalPlayerAwareWindowInsets.current
-    var playEventType by rememberPreference(playEventsTypeKey, PlayEventsType.MostPlayed)
+    var playEventType by rememberPreference(PLAY_EVENTS_TYPE.key, PlayEventsType.MostPlayed)
 
     var trending by remember { mutableStateOf(HomeDataCache.trending) }
     var relatedPage by remember { mutableStateOf(HomeDataCache.relatedPage) }
@@ -157,21 +157,21 @@ fun HomePage(
 
     var preferitesArtists by remember { mutableStateOf<List<Artist>>(emptyList()) }
 
-    val showNewAlbumsArtists by rememberPreference(showNewAlbumsArtistsKey, true)
-    val showMoodsAndGenres by rememberPreference(showMoodsAndGenresKey, true)
-    val showNewAlbums by rememberPreference(showNewAlbumsKey, true)
+    val showNewAlbumsArtists by rememberPreference(SHOW_NEW_ALBUMS_ARTISTS.key, true)
+    val showMoodsAndGenres by rememberPreference(SHOW_MOODS_AND_GENRES.key, true)
+    val showNewAlbums by rememberPreference(SHOW_NEW_ALBUMS.key, true)
 
-    val showTips by rememberPreference(showTipsKey, true)
-    val showListenerLevels by rememberPreference(showListenerLevelsKey, true)
+    val showTips by rememberPreference(SHOW_TIPS.key, true)
+    val showListenerLevels by rememberPreference(SHOW_LISTENER_LEVELS.key, true)
     val refreshScope = rememberCoroutineScope()
 
-    var selectedCountryCode by rememberPreference(selectedCountryCodeKey, Countries.ZZ)
+    var selectedCountryCode by rememberPreference(SELECTED_COUNTRY_CODE.key, Countries.ZZ)
 
     val blacklisted = remember {
         Database.blacklisted(listOf(BlacklistType.Song.name, BlacklistType.Video.name))
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
-    //var loadedData by rememberPreference(loadedDataKey, false)
+    //var loadedData by rememberPreference(loadedDataKey.key, false)
 
     suspend fun loadData() {
 
@@ -348,11 +348,11 @@ fun HomePage(
         .padding(top = 24.dp, bottom = 8.dp)
         .padding(endPaddingValues)
 
-    val showSearchTab by rememberPreference(showSearchTabKey, false)
+    val showSearchTab by rememberPreference(SHOW_SEARCH_TAB.key, false)
 
     val hapticFeedback = LocalHapticFeedback.current
 
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
 
 
     PullToRefreshBox(
@@ -895,7 +895,7 @@ fun HomePage(
 
 
 
-            val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
+            val showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
             if (UiType.ViMusic.isCurrent() && showFloatingIcon)
                 MultiFloatingActionsContainer(
                     iconId = R.drawable.search,

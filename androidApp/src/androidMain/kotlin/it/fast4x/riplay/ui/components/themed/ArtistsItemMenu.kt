@@ -15,11 +15,10 @@ import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import it.fast4x.riplay.R
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.enums.MenuStyle
-import it.fast4x.riplay.extensions.preferences.menuStyleKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MENU_STYLE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.items.ArtistItem
 import it.fast4x.riplay.ui.styling.Dimensions
@@ -40,7 +39,7 @@ fun ArtistsItemMenu(
     }
 
     val menuStyle by rememberPreference(
-        menuStyleKey,
+        MENU_STYLE.key,
         MenuStyle.List
     )
 

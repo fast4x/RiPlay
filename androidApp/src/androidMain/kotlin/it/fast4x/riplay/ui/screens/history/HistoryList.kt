@@ -50,17 +50,17 @@ import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
-import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import kotlinx.coroutines.flow.map
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.HistoryType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.ui.components.ButtonsRow
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
-import it.fast4x.riplay.extensions.preferences.historyTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.HISTORY_TYPE
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.forcePlay
@@ -98,9 +98,9 @@ fun HistoryList(
     val thumbnailSizePx = thumbnailSizeDp.px
 
 
-    val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
-    val thumbnailRoundness by rememberPreference(thumbnailRoundnessKey, ThumbnailRoundness.Light)
+    val parentalControlEnabled by rememberPreference(PARENTAL_CONTROL_ENABLED.key, false)
+    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    val thumbnailRoundness by rememberPreference(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
 
     var isSelectionMode by remember { mutableStateOf(false) }
     val selectedIds = remember { mutableStateSetOf<String>() }
@@ -129,7 +129,7 @@ fun HistoryList(
     val buttonsList = mutableListOf(HistoryType.History to stringResource(R.string.history))
     if (isYtLoggedIn()) buttonsList += HistoryType.OnlineHistory to stringResource(R.string.online_history)
 
-    var historyType by rememberPreference(historyTypeKey, HistoryType.History)
+    var historyType by rememberPreference(HISTORY_TYPE.key, HistoryType.History)
     var historyPage by persist<HistoryPage>("home/historyPage")
 
     LaunchedEffect(Unit, historyType) {

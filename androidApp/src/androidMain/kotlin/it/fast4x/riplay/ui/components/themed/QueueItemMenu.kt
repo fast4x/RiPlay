@@ -8,7 +8,7 @@ import androidx.navigation.NavController
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.MenuStyle
-import it.fast4x.riplay.extensions.preferences.menuStyleKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MENU_STYLE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 
 @Composable
@@ -20,7 +20,7 @@ fun QueueItemMenu(
     onRemove: () -> Unit = {},
 ) {
     val menuStyle by rememberPreference(
-        menuStyleKey,
+        MENU_STYLE.key,
         MenuStyle.List
     )
     if (menuStyle == MenuStyle.Grid) {

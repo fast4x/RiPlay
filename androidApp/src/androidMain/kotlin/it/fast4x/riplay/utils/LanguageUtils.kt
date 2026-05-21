@@ -6,7 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.Languages
-import it.fast4x.riplay.extensions.preferences.otherLanguageAppKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.OTHER_LANGUAGE_APP
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import dev.rebelonion.translator.Language
 import java.util.Locale
@@ -24,7 +24,7 @@ fun languageDestination (
     language: Languages? = null,
 ): Language {
     //val languageApp  by rememberPreference(languageAppKey, Languages.English)
-    val otherLanguageApp  by rememberPreference(otherLanguageAppKey, Languages.English)
+    val otherLanguageApp  by rememberPreference(OTHER_LANGUAGE_APP.key, Languages.English)
     //Timber.d("LanguageDestination: language $language otherLanguageApp $otherLanguageApp")
 
     return when (language ?: otherLanguageApp) {
@@ -85,7 +85,7 @@ fun languageDestinationName (
     language: Languages? = null,
 ): String {
     //val languageApp  by rememberPreference(languageAppKey, Languages.English)
-    val otherLanguageApp  by rememberPreference(otherLanguageAppKey, Languages.English)
+    val otherLanguageApp  by rememberPreference(OTHER_LANGUAGE_APP.key, Languages.English)
     //Timber.d("LanguageDestination: language $language otherLanguageApp $otherLanguageApp")
 
     return when (language ?: otherLanguageApp) {

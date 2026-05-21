@@ -38,15 +38,15 @@ import it.fast4x.riplay.enums.AlbumSwipeAction
 import it.fast4x.riplay.enums.PlaylistSwipeAction
 import it.fast4x.riplay.enums.QueueSwipeAction
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.extensions.preferences.albumSwipeLeftActionKey
-import it.fast4x.riplay.extensions.preferences.albumSwipeRightActionKey
-import it.fast4x.riplay.extensions.preferences.isSwipeToActionEnabledKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUM_SWIPE_LEFT_ACTION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUM_SWIPE_RIGHT_ACTION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_SWIPE_TO_ACTION_ENABLED
 import it.fast4x.riplay.utils.mediaItemToggleLike
-import it.fast4x.riplay.extensions.preferences.playlistSwipeLeftActionKey
-import it.fast4x.riplay.extensions.preferences.playlistSwipeRightActionKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SWIPE_LEFT_ACTION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SWIPE_RIGHT_ACTION
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.queueSwipeLeftActionKey
-import it.fast4x.riplay.extensions.preferences.queueSwipeRightActionKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUEUE_SWIPE_LEFT_ACTION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUEUE_SWIPE_RIGHT_ACTION
 import kotlinx.coroutines.flow.distinctUntilChanged
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.PopupType
@@ -82,7 +82,7 @@ fun SwipeableContent(
         }
     )
 
-    val isSwipeToActionEnabled by rememberPreference(isSwipeToActionEnabledKey, true)
+    val isSwipeToActionEnabled by rememberPreference(IS_SWIPE_TO_ACTION_ENABLED.key, true)
 
     val current = LocalViewConfiguration.current
     CompositionLocalProvider(LocalViewConfiguration provides object : ViewConfiguration by current{
@@ -180,8 +180,8 @@ fun SwipeableQueueItem(
         }
     }
 
-    val queueSwipeLeftAction by rememberPreference(queueSwipeLeftActionKey, QueueSwipeAction.RemoveFromQueue)
-    val queueSwipeRightAction by rememberPreference(queueSwipeRightActionKey, QueueSwipeAction.PlayNext)
+    val queueSwipeLeftAction by rememberPreference(QUEUE_SWIPE_LEFT_ACTION.key, QueueSwipeAction.RemoveFromQueue)
+    val queueSwipeRightAction by rememberPreference(QUEUE_SWIPE_RIGHT_ACTION.key, QueueSwipeAction.PlayNext)
     var isViewingQueues by remember { mutableStateOf(false) }
 
     fun getActionCallback(actionName: QueueSwipeAction): () -> Unit {
@@ -265,8 +265,8 @@ fun SwipeablePlaylistItem(
         }
     }
 
-    val playlistSwipeLeftAction by rememberPreference(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite)
-    val playlistSwipeRightAction by rememberPreference(playlistSwipeRightActionKey, PlaylistSwipeAction.PlayNext)
+    val playlistSwipeLeftAction by rememberPreference(PLAYLIST_SWIPE_LEFT_ACTION.key, PlaylistSwipeAction.Favourite)
+    val playlistSwipeRightAction by rememberPreference(PLAYLIST_SWIPE_RIGHT_ACTION.key, PlaylistSwipeAction.PlayNext)
     var isViewingQueues by remember { mutableStateOf(false) }
 
     fun getActionCallback(actionName: PlaylistSwipeAction): () -> Unit {
@@ -318,8 +318,8 @@ fun SwipeableAlbumItem(
         Database.albumBookmarkedAt(albumItem.key).distinctUntilChanged().collect { bookmarkedAt = it }
     }
 
-    val albumSwipeLeftAction by rememberPreference(albumSwipeLeftActionKey, AlbumSwipeAction.PlayNext)
-    val albumSwipeRightAction by rememberPreference(albumSwipeRightActionKey, AlbumSwipeAction.Bookmark)
+    val albumSwipeLeftAction by rememberPreference(ALBUM_SWIPE_LEFT_ACTION.key, AlbumSwipeAction.PlayNext)
+    val albumSwipeRightAction by rememberPreference(ALBUM_SWIPE_RIGHT_ACTION.key, AlbumSwipeAction.Bookmark)
 
     fun getActionCallback(actionName: AlbumSwipeAction): () -> Unit {
         return when (actionName) {

@@ -107,33 +107,33 @@ import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Info
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.shimmer
-import it.fast4x.riplay.extensions.preferences.blurDarkenFactorKey
-import it.fast4x.riplay.extensions.preferences.blurStrengthKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BLUR_DARKEN_FACTOR
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BLUR_SCALE
 import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.commonutils.toThumbnail
-import it.fast4x.riplay.extensions.preferences.VinylSizeKey
-import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.VINYL_SIZE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
 import it.fast4x.riplay.utils.drawCircle
-import it.fast4x.riplay.extensions.preferences.expandedplayerKey
-import it.fast4x.riplay.extensions.preferences.fadingedgeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXPANDED_PLAYER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.FADING_EDGE
 import it.fast4x.riplay.utils.getDeviceVolume
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isValidIP
 import it.fast4x.riplay.ui.styling.medium
-import it.fast4x.riplay.extensions.preferences.playbackDeviceVolumeKey
-import it.fast4x.riplay.extensions.preferences.playbackDurationKey
-import it.fast4x.riplay.extensions.preferences.playbackPitchKey
-import it.fast4x.riplay.extensions.preferences.playbackSpeedKey
-import it.fast4x.riplay.extensions.preferences.playbackVolumeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYBACK_DEVICE_VOLUME
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYBACK_DURATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYBACK_PITCH
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYBACK_SPEED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYBACK_VOLUME
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.setDeviceVolume
-import it.fast4x.riplay.extensions.preferences.showCoverThumbnailAnimationKey
-import it.fast4x.riplay.extensions.preferences.thumbnailFadeKey
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
-import it.fast4x.riplay.extensions.preferences.thumbnailSpacingKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_COVER_THUMBNAIL_ANIMATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_FADE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_SPACING
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.isBassBoostEnabled
 import it.fast4x.riplay.data.models.Album
@@ -152,15 +152,15 @@ import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
-import it.fast4x.riplay.extensions.preferences.bassboostLevelKey
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BASSBOOST_LEVEL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.utils.isValidHex
 import it.fast4x.riplay.utils.isValidHttpUrl
-import it.fast4x.riplay.extensions.preferences.lyricsSizeKey
-import it.fast4x.riplay.extensions.preferences.lyricsSizeLKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LYRICS_SIZE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LYRICS_SIZE_L
 import it.fast4x.riplay.utils.removeYTSongFromPlaylist
-import it.fast4x.riplay.extensions.preferences.thumbnailFadeExKey
-import it.fast4x.riplay.extensions.preferences.thumbnailSpacingLKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_FADE_EX
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_SPACING_L
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.getUpdateDownloadUrl
 import it.fast4x.riplay.utils.isLocal
@@ -662,8 +662,8 @@ fun SelectorArtistsDialog(
 
     val dialogSize = if (isLandscape) (screenHeight * 0.85f) else (screenWidth * 0.85f)
 
-    val thumbnailRoundness by rememberPreference(thumbnailRoundnessKey, ThumbnailRoundness.Light)
-    val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
+    val thumbnailRoundness by rememberPreference(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
+    val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -819,7 +819,7 @@ inline fun SelectorArtistsDialog(
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val screenHeight = configuration.screenHeightDp.dp
-    val thumbnailRoundness by rememberPreference(thumbnailRoundnessKey, ThumbnailRoundness.Heavy)
+    val thumbnailRoundness by rememberPreference(thumbnailRoundnessKey.key, ThumbnailRoundness.Heavy)
 
     Dialog(onDismissRequest = onDismiss) {
         Box(
@@ -830,7 +830,7 @@ inline fun SelectorArtistsDialog(
         ) {
             if (values != null) {
                 val pagerState = rememberPagerState(pageCount = { values.size })
-                val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
+                val colorPaletteMode by rememberPreference(colorPaletteModeKey.key, ColorPaletteMode.Dark)
 
                 Box {
                     HorizontalPager(state = pagerState) { idArtist ->
@@ -1812,15 +1812,15 @@ fun BlurParamsDialog(
     val defaultStrength = 25f
     //val defaultStrength2 = 30f
     val defaultDarkenFactor = 0.2f
-    var blurStrength  by rememberPreference(blurStrengthKey, defaultStrength)
-    //var blurStrength2  by rememberPreference(blurStrength2Key, defaultStrength2)
-    var blurDarkenFactor  by rememberPreference(blurDarkenFactorKey, defaultDarkenFactor)
+    var blurStrength  by rememberPreference(BLUR_SCALE.key, defaultStrength)
+    //var blurStrength2  by rememberPreference(blurStrength2Key.key, defaultStrength2)
+    var blurDarkenFactor  by rememberPreference(BLUR_DARKEN_FACTOR.key, defaultDarkenFactor)
 
     /*
     var isShowingLyrics by rememberSaveable {
         mutableStateOf(false)
     }
-    var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, false)
+    var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey.key, false)
 
      */
 
@@ -1926,14 +1926,14 @@ fun BlurParamsDialog(
         val defaultFade = 5f
         val defaultSpacing = 0f
         val defaultImageCoverSize = 50f
-        var thumbnailSpacing by rememberPreference(thumbnailSpacingKey, defaultSpacing)
-        var thumbnailSpacingL by rememberPreference(thumbnailSpacingLKey, defaultSpacing)
-        var thumbnailFade by rememberPreference(thumbnailFadeKey, defaultFade)
-        var thumbnailFadeEx by rememberPreference(thumbnailFadeExKey, defaultFade)
-        var fadingedge by rememberPreference(fadingedgeKey, false)
-        var imageCoverSize by rememberPreference(VinylSizeKey, defaultImageCoverSize)
-        val showCoverThumbnailAnimation by rememberPreference(showCoverThumbnailAnimationKey, false)
-        val expandedplayer by rememberPreference(expandedplayerKey, false)
+        var thumbnailSpacing by rememberPreference(THUMBNAIL_SPACING.key, defaultSpacing)
+        var thumbnailSpacingL by rememberPreference(THUMBNAIL_SPACING_L.key, defaultSpacing)
+        var thumbnailFade by rememberPreference(THUMBNAIL_FADE.key, defaultFade)
+        var thumbnailFadeEx by rememberPreference(THUMBNAIL_FADE_EX.key, defaultFade)
+        var fadingedge by rememberPreference(FADING_EDGE.key, false)
+        var imageCoverSize by rememberPreference(VINYL_SIZE.key, defaultImageCoverSize)
+        val showCoverThumbnailAnimation by rememberPreference(SHOW_COVER_THUMBNAIL_ANIMATION.key, false)
+        val expandedplayer by rememberPreference(EXPANDED_PLAYER.key, false)
         DefaultDialog(
             onDismiss = {
                 spacingValue(thumbnailSpacing)
@@ -2304,8 +2304,8 @@ fun LyricsSizeDialog(
     sizeValue: (Float) -> Unit,
     sizeValueL: (Float) -> Unit,
 ) {
-    var lyricsSize by rememberPreference(lyricsSizeKey, 20f)
-    var lyricsSizeL by rememberPreference(lyricsSizeLKey, 20f)
+    var lyricsSize by rememberPreference(LYRICS_SIZE.key, 20f)
+    var lyricsSizeL by rememberPreference(LYRICS_SIZE_L.key, 20f)
     DefaultDialog(
         onDismiss = {
             sizeValue(lyricsSize)
@@ -2448,7 +2448,7 @@ fun SongMatchingDialog(
             val binder = LocalPlayerServiceBinder.current
             val songThumbnailSizeDp = Dimensions.thumbnails.song
             val songThumbnailSizePx = songThumbnailSizeDp.px
-            val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+            val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
 
             LaunchedEffect(Unit,startSearch) {
                 runBlocking(Dispatchers.IO) {
@@ -2793,13 +2793,13 @@ fun PlaybackParamsDialog(
     val defaultDuration = 0f
     val defaultStrength = 25f
     val defaultBassboost = 0.5f
-    var playbackSpeed  by rememberPreference(playbackSpeedKey,   defaultSpeed)
-    var playbackPitch  by rememberPreference(playbackPitchKey,   defaultPitch)
-    var playbackVolume  by rememberPreference(playbackVolumeKey, 0.5f)
-    var playbackDeviceVolume  by rememberPreference(playbackDeviceVolumeKey, getDeviceVolume(context))
-    var playbackDuration by rememberPreference(playbackDurationKey, defaultDuration)
-    var blurStrength  by rememberPreference(blurStrengthKey, defaultStrength)
-    var bassBoost  by rememberPreference(bassboostLevelKey, defaultBassboost)
+    var playbackSpeed  by rememberPreference(PLAYBACK_SPEED.key,   defaultSpeed)
+    var playbackPitch  by rememberPreference(PLAYBACK_PITCH.key,   defaultPitch)
+    var playbackVolume  by rememberPreference(PLAYBACK_VOLUME.key, 0.5f)
+    var playbackDeviceVolume  by rememberPreference(PLAYBACK_DEVICE_VOLUME.key, getDeviceVolume(context))
+    var playbackDuration by rememberPreference(PLAYBACK_DURATION.key, defaultDuration)
+    var blurStrength  by rememberPreference(BLUR_SCALE.key, defaultStrength)
+    var bassBoost  by rememberPreference(BASSBOOST_LEVEL.key, defaultBassboost)
 
     DefaultDialog(
         onDismiss = {

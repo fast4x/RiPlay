@@ -73,11 +73,11 @@ import it.fast4x.riplay.enums.BackgroundProgress
 import it.fast4x.riplay.enums.MiniPlayerType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.extensions.preferences.backgroundProgressKey
-import it.fast4x.riplay.extensions.preferences.disableClosingPlayerSwipingDownKey
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
-import it.fast4x.riplay.extensions.preferences.effectRotationKey
-import it.fast4x.riplay.extensions.preferences.miniPlayerTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BACKGROUND_PROGRESS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_CLOSING_PLAYER_SWIPING_DOWN
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EFFECT_ROTATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MINI_PLAYER_TYPE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
 import it.fast4x.riplay.services.playback.PlaybackState
@@ -160,7 +160,7 @@ fun UnifiedMiniPlayer(
     }
 
     var miniPlayerType by rememberPreference(
-        miniPlayerTypeKey,
+        MINI_PLAYER_TYPE.key,
         MiniPlayerType.Modern
     )
 
@@ -234,8 +234,8 @@ fun UnifiedMiniPlayer(
         }
     )
 
-    val backgroundProgress by rememberPreference(backgroundProgressKey, BackgroundProgress.MiniPlayer)
-    val effectRotationEnabled by rememberPreference(effectRotationKey, true)
+    val backgroundProgress by rememberPreference(BACKGROUND_PROGRESS.key, BackgroundProgress.MiniPlayer)
+    val effectRotationEnabled by rememberPreference(EFFECT_ROTATION.key, true)
     val shouldBePlayingTransition = updateTransition(shouldBePlaying, label = "shouldBePlaying")
     val playPauseRoundness by shouldBePlayingTransition.animateDp(
         transitionSpec = { tween(durationMillis = 100, easing = LinearEasing) },
@@ -248,8 +248,8 @@ fun UnifiedMiniPlayer(
         targetValue = if (isRotated) 360F else 0f,
         animationSpec = tween(durationMillis = 200), label = ""
     )
-    val disableClosingPlayerSwipingDown by rememberPreference(disableClosingPlayerSwipingDownKey, false)
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val disableClosingPlayerSwipingDown by rememberPreference(DISABLE_CLOSING_PLAYER_SWIPING_DOWN.key, false)
+    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
 
     val colorPalette = colorPalette()
 

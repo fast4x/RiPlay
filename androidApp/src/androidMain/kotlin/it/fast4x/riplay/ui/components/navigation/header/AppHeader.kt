@@ -1,24 +1,17 @@
 package it.fast4x.riplay.ui.components.navigation.header
 
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.components.themed.Button
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.utils.isEnabledFullscreen
 
 class AppHeader(
     val navController: NavController

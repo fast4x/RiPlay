@@ -34,9 +34,9 @@ import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.GlobalSheetState
-import it.fast4x.riplay.extensions.preferences.menuStyleKey
-import it.fast4x.riplay.extensions.preferences.playlistSortByKey
-import it.fast4x.riplay.extensions.preferences.playlistSortOrderKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MENU_STYLE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SORT_BY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SORT_ORDER
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
 import kotlinx.coroutines.Dispatchers
@@ -72,7 +72,7 @@ class PlaylistsMenu private constructor(
             onFailure,
             finalAction,
             LocalGlobalSheetState.current,
-            rememberPreference( menuStyleKey, MenuStyle.List )
+            rememberPreference( MENU_STYLE.key, MenuStyle.List )
         )
     }
 
@@ -158,8 +158,8 @@ class PlaylistsMenu private constructor(
 
     @Composable
     override fun MenuComponent() {
-        val sortBy by rememberPreference( playlistSortByKey, PlaylistSortBy.DateAdded )
-        val sortOrder by rememberPreference( playlistSortOrderKey, SortOrder.Descending )
+        val sortBy by rememberPreference( PLAYLIST_SORT_BY.key, PlaylistSortBy.DateAdded )
+        val sortOrder by rememberPreference( PLAYLIST_SORT_ORDER.key, SortOrder.Descending )
 
         val playlistPreviews by remember {
             Database.playlistPreviews( sortBy, sortOrder )

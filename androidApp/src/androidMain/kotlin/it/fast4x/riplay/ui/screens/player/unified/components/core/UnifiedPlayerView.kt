@@ -9,8 +9,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
 import it.fast4x.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import it.fast4x.riplay.enums.PlayerThumbnailSize
-import it.fast4x.riplay.extensions.preferences.isKeepScreenOnEnabledKey
-import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_KEEP_SCREEN_ON_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_THUMBNAIL_SIZE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.isLandscape
@@ -24,10 +24,10 @@ fun UnifiedPlayerView(
 ){
     if (mediaItem.isLocal) return
 
-    val enableKeepScreenOn by rememberPreference(isKeepScreenOnEnabledKey, false)
+    val enableKeepScreenOn by rememberPreference(IS_KEEP_SCREEN_ON_ENABLED.key, false)
     val isLandscape = isLandscape
     val playerThumbnailSize by rememberPreference(
-        playerThumbnailSizeKey,
+        PLAYER_THUMBNAIL_SIZE.key,
         PlayerThumbnailSize.Biggest
     )
 

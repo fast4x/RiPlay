@@ -1,7 +1,7 @@
 package it.fast4x.riplay.enums
 
 import androidx.compose.runtime.Composable
-import it.fast4x.riplay.extensions.preferences.navigationBarTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.NAVIGATION_BAR_TYPE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 
 
@@ -12,7 +12,7 @@ enum class NavigationBarType {
     companion object {
 
         @Composable
-        fun current(): NavigationBarType = rememberPreference( navigationBarTypeKey, NavigationBarType.IconAndText ).value
+        fun current(): NavigationBarType = rememberPreference( NAVIGATION_BAR_TYPE.key, NavigationBarType.IconAndText ).value
     }
 
     @Composable

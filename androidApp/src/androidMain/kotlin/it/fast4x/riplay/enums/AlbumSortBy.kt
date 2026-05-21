@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import it.fast4x.riplay.R
-import it.fast4x.riplay.utils.GenericMenuItem
 
 enum class AlbumSortBy(
     @StringRes val textId: Int,

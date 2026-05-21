@@ -42,7 +42,7 @@ import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
@@ -155,7 +155,7 @@ class Search private constructor(
     @Composable
     fun SearchBar( columnScope: ColumnScope ) {
         val thumbnailRoundness by rememberPreference(
-            thumbnailRoundnessKey,
+            THUMBNAIL_ROUNDNESS.key,
             ThumbnailRoundness.Light
         )
 

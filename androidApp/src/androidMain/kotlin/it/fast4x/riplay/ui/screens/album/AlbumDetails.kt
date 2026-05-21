@@ -86,7 +86,6 @@ import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
-import it.fast4x.riplay.ui.components.ShimmerHost
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
 import it.fast4x.riplay.ui.components.themed.AlbumsItemMenu
 import it.fast4x.riplay.ui.components.themed.AutoResizeText
@@ -103,7 +102,6 @@ import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.items.AlbumItem
 import it.fast4x.riplay.ui.items.AlbumItemPlaceholder
 import it.fast4x.riplay.ui.items.SongItem
-import it.fast4x.riplay.ui.items.SongItemPlaceholder
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.addNext
@@ -112,7 +110,6 @@ import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.utils.applyIf
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
 import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.utils.enqueue
@@ -123,11 +120,11 @@ import it.fast4x.riplay.utils.formatAsTime
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.languageDestination
 import it.fast4x.riplay.ui.styling.medium
-import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -137,6 +134,7 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
@@ -180,8 +178,8 @@ fun AlbumDetails(
     val selectedQueue = LocalSelectedQueue.current
     var songs by persistList<Song>("album/$browseId/songs")
     var album by persist<Album?>("album/$browseId")
-    val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val parentalControlEnabled by rememberPreference(PARENTAL_CONTROL_ENABLED.key, false)
+    val disableScrollingText by rememberPreference(PreferenceKey.DISABLE_SCROLLING_TEXT.key, false)
 
     LoaderScreen(show = songs.isEmpty())
 
@@ -1394,7 +1392,7 @@ fun AlbumDetails(
                 }
 
 
-                val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
+                val showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
                 if (UiType.ViMusic.isCurrent() && showFloatingIcon)
                     MultiFloatingActionsContainer(
                         iconId = R.drawable.shuffle,

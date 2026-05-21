@@ -8,7 +8,6 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -52,9 +51,9 @@ import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.ui.items.PlaylistItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.extensions.preferences.menuStyleKey
-import it.fast4x.riplay.extensions.preferences.playlistSortByKey
-import it.fast4x.riplay.extensions.preferences.playlistSortOrderKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MENU_STYLE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SORT_BY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SORT_ORDER
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
 import kotlinx.coroutines.Dispatchers
@@ -112,7 +111,7 @@ fun PlaylistsItemMenu(
 //    }
 
     val menuStyle by rememberPreference(
-        menuStyleKey,
+        MENU_STYLE.key,
         MenuStyle.List
     )
 
@@ -166,8 +165,8 @@ fun PlaylistsItemMenu(
         ) { currentIsViewingPlaylists ->
             if (currentIsViewingPlaylists) {
                 val context = LocalContext.current
-                val sortBy by rememberPreference(playlistSortByKey, PlaylistSortBy.DateAdded)
-                val sortOrder by rememberPreference(playlistSortOrderKey, SortOrder.Descending)
+                val sortBy by rememberPreference(PLAYLIST_SORT_BY.key, PlaylistSortBy.DateAdded)
+                val sortOrder by rememberPreference(PLAYLIST_SORT_ORDER.key, SortOrder.Descending)
                 val playlistPreviews by remember {
                     Database.playlistPreviews(sortBy, sortOrder)
                 }.collectAsState(initial = emptyList(), context = Dispatchers.IO)

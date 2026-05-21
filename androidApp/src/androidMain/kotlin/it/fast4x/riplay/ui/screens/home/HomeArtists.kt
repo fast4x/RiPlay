@@ -78,13 +78,13 @@ import it.fast4x.riplay.ui.components.themed.HeaderInfo
 import it.fast4x.riplay.ui.components.themed.MultiFloatingActionsContainer
 import it.fast4x.riplay.ui.items.ArtistItem
 import it.fast4x.riplay.ui.styling.Dimensions
-import it.fast4x.riplay.extensions.preferences.artistSortByKey
-import it.fast4x.riplay.extensions.preferences.artistSortOrderKey
-import it.fast4x.riplay.extensions.preferences.artistTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ARTIST_SORT_BY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ARTIST_SORT_ORDER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ARTIST_TYPE
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
 import kotlinx.coroutines.flow.map
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ViewType
@@ -134,7 +134,7 @@ fun HomeArtists(
     var items by persistList<Artist>("")
     var itemsOnDisplay by persistList<Artist>("home/artists/on_display")
 
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
     val search = Search.init()
     val itemSize = ItemSize.init(HOME_ARTIST_ITEM_SIZE)
 
@@ -144,7 +144,7 @@ fun HomeArtists(
         override fun onClick(index: Int) = onArtistClick(itemsOnDisplay[index])
     }
 
-    var artistType by rememberPreference(artistTypeKey, ArtistsType.Favorites)
+    var artistType by rememberPreference(ARTIST_TYPE.key, ArtistsType.Favorites)
 
     // Configurazione Shuffle
     val shuffle = SongsShuffle.init {
@@ -160,8 +160,8 @@ fun HomeArtists(
     val coroutineScope = rememberCoroutineScope()
 
     // Gestione Ordinamento
-    var sortBy by rememberPreference(artistSortByKey, ArtistSortBy.DateAdded)
-    var sortOrder by rememberPreference(artistSortOrderKey, SortOrder.Descending)
+    var sortBy by rememberPreference(ARTIST_SORT_BY.key, ArtistSortBy.DateAdded)
+    var sortOrder by rememberPreference(ARTIST_SORT_ORDER.key, SortOrder.Descending)
     val sortOrderIconRotation by animateFloatAsState(
         targetValue = if (sortOrder == SortOrder.Ascending) 0f else 180f,
         animationSpec = tween(durationMillis = 400, easing = LinearEasing), label = ""
@@ -500,7 +500,7 @@ fun HomeArtists(
 
             FloatingActionsContainerWithScrollToTop(lazyGridState = lazyGridState)
 
-            val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
+            val showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
             if (UiType.ViMusic.isCurrent() && showFloatingIcon)
                 MultiFloatingActionsContainer(
                     iconId = R.drawable.search,

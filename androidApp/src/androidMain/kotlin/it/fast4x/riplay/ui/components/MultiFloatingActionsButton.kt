@@ -54,8 +54,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
 import it.fast4x.riplay.ui.styling.favoritesIcon
-import it.fast4x.riplay.extensions.preferences.multiFloatActionIconOffsetXkey
-import it.fast4x.riplay.extensions.preferences.multiFloatActionIconOffsetYkey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MULTI_FLOAT_ACTION_ICON_OFFSET_X
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MULTI_FLOAT_ACTION_ICON_OFFSET_Y
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.getRoundnessShape
@@ -117,8 +117,8 @@ fun MultiFloatingActionsButton (
     //var offsetX by remember { mutableStateOf(0f) }
     //var offsetY by remember { mutableStateOf(0f) }
 
-    var offsetX = rememberPreference(multiFloatActionIconOffsetXkey, 0F )
-    var offsetY = rememberPreference(multiFloatActionIconOffsetYkey, 0F )
+    var offsetX = rememberPreference(MULTI_FLOAT_ACTION_ICON_OFFSET_X.key, 0F )
+    var offsetY = rememberPreference(MULTI_FLOAT_ACTION_ICON_OFFSET_Y.key, 0F )
 
     Box(
         modifier = modifier,

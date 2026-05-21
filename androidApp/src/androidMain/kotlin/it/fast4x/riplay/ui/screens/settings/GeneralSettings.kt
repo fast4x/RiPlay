@@ -62,60 +62,60 @@ import it.fast4x.riplay.ui.styling.DefaultLightColorPalette
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.RestartActivity
 import it.fast4x.riplay.utils.RestartPlayerService
-import it.fast4x.riplay.extensions.preferences.autoLoadSongsInQueueKey
-import it.fast4x.riplay.extensions.preferences.closeWithBackButtonKey
-import it.fast4x.riplay.extensions.preferences.closebackgroundPlayerKey
-import it.fast4x.riplay.extensions.preferences.customThemeDark_Background0Key
-import it.fast4x.riplay.extensions.preferences.customThemeDark_Background1Key
-import it.fast4x.riplay.extensions.preferences.customThemeDark_Background2Key
-import it.fast4x.riplay.extensions.preferences.customThemeDark_Background3Key
-import it.fast4x.riplay.extensions.preferences.customThemeDark_Background4Key
-import it.fast4x.riplay.extensions.preferences.customThemeDark_TextKey
-import it.fast4x.riplay.extensions.preferences.customThemeDark_accentKey
-import it.fast4x.riplay.extensions.preferences.customThemeDark_iconButtonPlayerKey
-import it.fast4x.riplay.extensions.preferences.customThemeDark_textDisabledKey
-import it.fast4x.riplay.extensions.preferences.customThemeDark_textSecondaryKey
-import it.fast4x.riplay.extensions.preferences.customThemeLight_Background0Key
-import it.fast4x.riplay.extensions.preferences.customThemeLight_Background1Key
-import it.fast4x.riplay.extensions.preferences.customThemeLight_Background2Key
-import it.fast4x.riplay.extensions.preferences.customThemeLight_Background3Key
-import it.fast4x.riplay.extensions.preferences.customThemeLight_Background4Key
-import it.fast4x.riplay.extensions.preferences.customThemeLight_TextKey
-import it.fast4x.riplay.extensions.preferences.customThemeLight_accentKey
-import it.fast4x.riplay.extensions.preferences.customThemeLight_iconButtonPlayerKey
-import it.fast4x.riplay.extensions.preferences.customThemeLight_textDisabledKey
-import it.fast4x.riplay.extensions.preferences.customThemeLight_textSecondaryKey
-import it.fast4x.riplay.extensions.preferences.disableClosingPlayerSwipingDownKey
-import it.fast4x.riplay.extensions.preferences.discoverKey
-import it.fast4x.riplay.extensions.preferences.enablePictureInPictureAutoKey
-import it.fast4x.riplay.extensions.preferences.enablePictureInPictureKey
-import it.fast4x.riplay.extensions.preferences.excludeSongsWithDurationLimitKey
-import it.fast4x.riplay.extensions.preferences.exoPlayerMinTimeForEventKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.AUTO_LOAD_SONGS_IN_QUEUE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CLOSE_WITH_BACK_BUTTON
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CLOSE_BACKGROUND_PLAYER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_0
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_1
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_2
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_3
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_4
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_TEXT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_ACCENT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_ICON_BUTTON_PLAYER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_TEXT_DISABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_TEXT_SECONDARY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_0
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_1
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_2
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_3
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_4
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_TEXT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_ACCENT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_ICON_BUTTON_PLAYER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_TEXT_DISABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_TEXT_SECONDARY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_CLOSING_PLAYER_SWIPING_DOWN
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISCOVER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_PICTURE_IN_PICTURE_AUTO
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_PICTURE_IN_PICTURE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXCLUDE_SONGS_WITH_DURATION_LIMIT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXO_PLAYER_MIN_TIME_FOR_EVENT
 import it.fast4x.riplay.utils.isAtLeastAndroid12
 import it.fast4x.riplay.utils.isAtLeastAndroid6
-import it.fast4x.riplay.extensions.preferences.isPauseOnVolumeZeroEnabledKey
-import it.fast4x.riplay.extensions.preferences.jumpPreviousKey
-import it.fast4x.riplay.extensions.preferences.keepPlayerMinimizedKey
-import it.fast4x.riplay.extensions.preferences.languageAppKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_PAUSE_ON_VOLUME_ZERO_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.JUMP_PREVIOUS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.KEEP_PLAYER_MINIMIZED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LANGUAGE_APP
 import it.fast4x.riplay.utils.languageDestinationName
-import it.fast4x.riplay.extensions.preferences.loudnessBaseGainKey
-import it.fast4x.riplay.extensions.preferences.maxSongsInQueueKey
-import it.fast4x.riplay.extensions.preferences.minimumSilenceDurationKey
-import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
-import it.fast4x.riplay.extensions.preferences.nowPlayingIndicatorKey
-import it.fast4x.riplay.extensions.preferences.pauseBetweenSongsKey
-import it.fast4x.riplay.extensions.preferences.pauseListenHistoryKey
-import it.fast4x.riplay.extensions.preferences.persistentQueueKey
-import it.fast4x.riplay.extensions.preferences.pipModuleKey
-import it.fast4x.riplay.extensions.preferences.playbackFadeAudioDurationKey
-import it.fast4x.riplay.extensions.preferences.playlistindicatorKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LOUDNESS_BASE_GAIN
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MAX_SONGS_IN_QUEUE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MINIMUM_SILENCE_DURATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.NAVIGATION_BAR_POSITION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.NOW_PLAYING_INDICATOR
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PAUSE_BETWEEN_SONGS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PAUSE_LISTEN_HISTORY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PERSISTENT_QUEUE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PIP_MODULE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYBACK_FADE_AUDIO_DURATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_INDICATOR
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.resumePlaybackOnStartKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.RESUME_PLAYBACK_ON_START
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.shakeEventEnabledKey
-import it.fast4x.riplay.extensions.preferences.skipMediaOnErrorKey
-import it.fast4x.riplay.extensions.preferences.skipSilenceKey
-import it.fast4x.riplay.extensions.preferences.volumeNormalizationKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHAKE_EVENT_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SKIP_MEDIA_ON_ERROR
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SKIP_SILENCE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.VOLUME_NORMALIZATION
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.DnsOverHttpsType
 import it.fast4x.riplay.enums.PopupType
@@ -123,21 +123,21 @@ import it.fast4x.riplay.enums.PresetsReverb
 import it.fast4x.riplay.enums.ValidationType
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.utils.typography
-import it.fast4x.riplay.extensions.preferences.audioReverbPresetKey
-import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
-import it.fast4x.riplay.extensions.preferences.bassboostLevelKey
-import it.fast4x.riplay.extensions.preferences.customDnsOverHttpsServerKey
-import it.fast4x.riplay.extensions.preferences.dnsOverHttpsTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.AUDIO_REVERB_PRESET
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BASSBOOST_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BASSBOOST_LEVEL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_DNS_OVER_HTTPS_SERVER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DNS_OVER_HTTPS_TYPE
 import it.fast4x.riplay.utils.getSystemlanguage
-import it.fast4x.riplay.extensions.preferences.handleAudioFocusEnabledKey
-import it.fast4x.riplay.extensions.preferences.isConnectionMeteredEnabledKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.HANDLE_AUDIO_FOCUS_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_CONNECTION_METERED_ENABLED
 import it.fast4x.riplay.utils.isIgnoringBatteryOptimizations
-import it.fast4x.riplay.extensions.preferences.isKeepScreenOnEnabledKey
-import it.fast4x.riplay.extensions.preferences.isProxyEnabledKey
-import it.fast4x.riplay.extensions.preferences.proxyHostnameKey
-import it.fast4x.riplay.extensions.preferences.proxyModeKey
-import it.fast4x.riplay.extensions.preferences.proxyPortKey
-import it.fast4x.riplay.extensions.preferences.volumeBoostLevelKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_KEEP_SCREEN_ON_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_PROXY_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PROXY_HOSTNAME
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PROXY_MODE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PROXY_PORT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.VOLUME_BOOST_LEVEL
 import java.net.Proxy
 import androidx.core.net.toUri
 import androidx.core.text.isDigitsOnly
@@ -147,29 +147,28 @@ import it.fast4x.riplay.enums.CastType
 import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.enums.EqualizerType
-import it.fast4x.riplay.extensions.preferences.castTypeKey
-import it.fast4x.riplay.extensions.preferences.checkUpdateStateKey
-import it.fast4x.riplay.extensions.preferences.closePlayerServiceAfterMinutesKey
-import it.fast4x.riplay.extensions.preferences.closePlayerServiceWhenPausedAfterMinutesKey
-import it.fast4x.riplay.extensions.preferences.disableAudioDRCKey
-import it.fast4x.riplay.extensions.preferences.enableVoiceInputKey
-import it.fast4x.riplay.extensions.preferences.equalizerTypeKey
-import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
-import it.fast4x.riplay.extensions.preferences.filterContentTypeKey
-import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
-import it.fast4x.riplay.extensions.preferences.pauseSearchHistoryKey
-import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenCallKey
-import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
-import it.fast4x.riplay.extensions.preferences.showAllSongsAAKey
-import it.fast4x.riplay.extensions.preferences.showFavoritesSongsAAKey
-import it.fast4x.riplay.extensions.preferences.showGridAAKey
-import it.fast4x.riplay.extensions.preferences.showInLibraryAAKey
-import it.fast4x.riplay.extensions.preferences.showMonthlyPlaylistsAAKey
-import it.fast4x.riplay.extensions.preferences.showOnDeviceAAKey
-import it.fast4x.riplay.extensions.preferences.showPinnedAAKey
-import it.fast4x.riplay.extensions.preferences.showPodcastAAKey
-import it.fast4x.riplay.extensions.preferences.showShuffleSongsAAKey
-import it.fast4x.riplay.extensions.preferences.showTopSongsAAKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CAST_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CHECK_UPDATE_STATE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CLOSE_PLAYER_SERVICE_AFTER_MINUTES
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_AUDIO_DRC
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_VOICE_INPUT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EQUALIZER_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXCLUDE_SONG_IF_IS_VIDEO
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.FILTER_CONTENT_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PAUSE_SEARCH_HISTORY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.RESUME_OR_PAUSE_PLAYBACK_WHEN_CALL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_ALL_SONGS_AA
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FAVORITES_SONGS_AA
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_GRID_AA
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_IN_LIBRARY_AA
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_MONTHLY_PLAYLISTS_AA
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_ON_DEVICE_AA
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_PINNED_AA
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_PODCAST_AA
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SHUFFLE_SONGS_AA
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_TOP_SONGS_AA
 import it.fast4x.riplay.extensions.updater.UpdateDialog
 import it.fast4x.riplay.services.playback.PlayerMediaBrowserService
 import it.fast4x.riplay.services.helpers.AudioDRCHelper
@@ -191,36 +190,36 @@ fun GeneralSettings(
     val binder = LocalPlayerServiceBinder.current
 
     val systemLocale = LocaleListCompat.getDefault().get(0).toString()
-    var languageApp  by rememberPreference(languageAppKey, getSystemlanguage())
+    var languageApp  by rememberPreference(LANGUAGE_APP.key, getSystemlanguage())
 
     var restartService by rememberSaveable { mutableStateOf(false) }
     var restartActivity by rememberSaveable { mutableStateOf(false) }
 
     var minTimeForEvent by rememberPreference(
-        exoPlayerMinTimeForEventKey,
+        EXO_PLAYER_MIN_TIME_FOR_EVENT.key,
         MinTimeForEvent.`20s`
     )
-    var persistentQueue by rememberPreference(persistentQueueKey, true)
-    var resumePlaybackOnStart by rememberPreference(resumePlaybackOnStartKey, false)
-    var closebackgroundPlayer by rememberPreference(closebackgroundPlayerKey, false)
+    var persistentQueue by rememberPreference(PERSISTENT_QUEUE.key, true)
+    var resumePlaybackOnStart by rememberPreference(RESUME_PLAYBACK_ON_START.key, false)
+    var closebackgroundPlayer by rememberPreference(CLOSE_BACKGROUND_PLAYER.key, false)
     var closeBackgroundPlayerAfterMinutes by rememberPreference(
-        closePlayerServiceAfterMinutesKey,
+        CLOSE_PLAYER_SERVICE_AFTER_MINUTES.key,
         DurationInMinutes.Disabled
     )
 
 //    var closePlayerWhenPausedAfterMinutes by rememberPreference(
-//        closePlayerServiceWhenPausedAfterMinutesKey,
+//        closePlayerServiceWhenPausedAfterMinutesKey.key,
 //        DurationInMinutes.Disabled
 //    )
 
-    var closeWithBackButton by rememberPreference(closeWithBackButtonKey, true)
+    var closeWithBackButton by rememberPreference(CLOSE_WITH_BACK_BUTTON.key, true)
     var resumeOrPausePlaybackWhenDevice by rememberPreference(
-        resumeOrPausePlaybackWhenDeviceKey,
+        RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE.key,
         false
     )
 
     var resumeOrPausePlaybackWhenCall by rememberPreference(
-        resumeOrPausePlaybackWhenCallKey,
+        RESUME_OR_PAUSE_PLAYBACK_WHEN_CALL.key,
         false
     )
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -234,92 +233,92 @@ fun GeneralSettings(
         }
     }
 
-    var skipSilence by rememberPreference(skipSilenceKey, false)
-    var skipMediaOnError by rememberPreference(skipMediaOnErrorKey, false)
-    var volumeNormalization by rememberPreference(volumeNormalizationKey, false)
-    var isConnectionMeteredEnabled by rememberPreference(isConnectionMeteredEnabledKey, true)
+    var skipSilence by rememberPreference(SKIP_SILENCE.key, false)
+    var skipMediaOnError by rememberPreference(SKIP_MEDIA_ON_ERROR.key, false)
+    var volumeNormalization by rememberPreference(VOLUME_NORMALIZATION.key, false)
+    var isConnectionMeteredEnabled by rememberPreference(IS_CONNECTION_METERED_ENABLED.key, true)
 
-    var useDnsOverHttpsType by rememberPreference(dnsOverHttpsTypeKey, DnsOverHttpsType.None)
+    var useDnsOverHttpsType by rememberPreference(DNS_OVER_HTTPS_TYPE.key, DnsOverHttpsType.None)
 
 
-    var keepPlayerMinimized by rememberPreference(keepPlayerMinimizedKey,   false)
+    var keepPlayerMinimized by rememberPreference(KEEP_PLAYER_MINIMIZED.key,   false)
 
-    var disableClosingPlayerSwipingDown by rememberPreference(disableClosingPlayerSwipingDownKey, false)
+    var disableClosingPlayerSwipingDown by rememberPreference(DISABLE_CLOSING_PLAYER_SWIPING_DOWN.key, false)
 
-    val navigationBarPosition by rememberPreference(navigationBarPositionKey, NavigationBarPosition.Bottom)
-    //var navigationBarType by rememberPreference(navigationBarTypeKey, NavigationBarType.IconAndText)
-    var pauseBetweenSongs  by rememberPreference(pauseBetweenSongsKey, PauseBetweenSongs.`0`)
-    var maxSongsInQueue  by rememberPreference(maxSongsInQueueKey, MaxSongs.`500`)
-    var filterContentType by rememberPreference(filterContentTypeKey, ContentType.All)
+    val navigationBarPosition by rememberPreference(NAVIGATION_BAR_POSITION.key, NavigationBarPosition.Bottom)
+    //var navigationBarType by rememberPreference(navigationBarTypeKey.key, NavigationBarType.IconAndText)
+    var pauseBetweenSongs  by rememberPreference(PAUSE_BETWEEN_SONGS.key, PauseBetweenSongs.`0`)
+    var maxSongsInQueue  by rememberPreference(MAX_SONGS_IN_QUEUE.key, MaxSongs.`500`)
+    var filterContentType by rememberPreference(FILTER_CONTENT_TYPE.key, ContentType.All)
 
     val search = Search.init()
 
-    var shakeEventEnabled by rememberPreference(shakeEventEnabledKey, false)
-    //var useVolumeKeysToChangeSong by rememberPreference(useVolumeKeysToChangeSongKey, false)
+    var shakeEventEnabled by rememberPreference(SHAKE_EVENT_ENABLED.key, false)
+    //var useVolumeKeysToChangeSong by rememberPreference(useVolumeKeysToChangeSongKey.key, false)
 
-    var customThemeLight_Background0 by rememberPreference(customThemeLight_Background0Key, DefaultLightColorPalette.background0.hashCode())
-    var customThemeLight_Background1 by rememberPreference(customThemeLight_Background1Key, DefaultLightColorPalette.background1.hashCode())
-    var customThemeLight_Background2 by rememberPreference(customThemeLight_Background2Key, DefaultLightColorPalette.background2.hashCode())
-    var customThemeLight_Background3 by rememberPreference(customThemeLight_Background3Key, DefaultLightColorPalette.background3.hashCode())
-    var customThemeLight_Background4 by rememberPreference(customThemeLight_Background4Key, DefaultLightColorPalette.background4.hashCode())
-    var customThemeLight_Text by rememberPreference(customThemeLight_TextKey, DefaultLightColorPalette.text.hashCode())
-    var customThemeLight_TextSecondary by rememberPreference(customThemeLight_textSecondaryKey, DefaultLightColorPalette.textSecondary.hashCode())
-    var customThemeLight_TextDisabled by rememberPreference(customThemeLight_textDisabledKey, DefaultLightColorPalette.textDisabled.hashCode())
-    var customThemeLight_IconButtonPlayer by rememberPreference(customThemeLight_iconButtonPlayerKey, DefaultLightColorPalette.iconButtonPlayer.hashCode())
-    var customThemeLight_Accent by rememberPreference(customThemeLight_accentKey, DefaultLightColorPalette.accent.hashCode())
+    var customThemeLight_Background0 by rememberPreference(CUSTOM_THEME_LIGHT_BACKGROUND_0.key, DefaultLightColorPalette.background0.hashCode())
+    var customThemeLight_Background1 by rememberPreference(CUSTOM_THEME_LIGHT_BACKGROUND_1.key, DefaultLightColorPalette.background1.hashCode())
+    var customThemeLight_Background2 by rememberPreference(CUSTOM_THEME_LIGHT_BACKGROUND_2.key, DefaultLightColorPalette.background2.hashCode())
+    var customThemeLight_Background3 by rememberPreference(CUSTOM_THEME_LIGHT_BACKGROUND_3.key, DefaultLightColorPalette.background3.hashCode())
+    var customThemeLight_Background4 by rememberPreference(CUSTOM_THEME_LIGHT_BACKGROUND_4.key, DefaultLightColorPalette.background4.hashCode())
+    var customThemeLight_Text by rememberPreference(CUSTOM_THEME_LIGHT_TEXT.key, DefaultLightColorPalette.text.hashCode())
+    var customThemeLight_TextSecondary by rememberPreference(CUSTOM_THEME_LIGHT_TEXT_SECONDARY.key, DefaultLightColorPalette.textSecondary.hashCode())
+    var customThemeLight_TextDisabled by rememberPreference(CUSTOM_THEME_LIGHT_TEXT_DISABLED.key, DefaultLightColorPalette.textDisabled.hashCode())
+    var customThemeLight_IconButtonPlayer by rememberPreference(CUSTOM_THEME_LIGHT_ICON_BUTTON_PLAYER.key, DefaultLightColorPalette.iconButtonPlayer.hashCode())
+    var customThemeLight_Accent by rememberPreference(CUSTOM_THEME_LIGHT_ACCENT.key, DefaultLightColorPalette.accent.hashCode())
 
-    var customThemeDark_Background0 by rememberPreference(customThemeDark_Background0Key, DefaultDarkColorPalette.background0.hashCode())
-    var customThemeDark_Background1 by rememberPreference(customThemeDark_Background1Key, DefaultDarkColorPalette.background1.hashCode())
-    var customThemeDark_Background2 by rememberPreference(customThemeDark_Background2Key, DefaultDarkColorPalette.background2.hashCode())
-    var customThemeDark_Background3 by rememberPreference(customThemeDark_Background3Key, DefaultDarkColorPalette.background3.hashCode())
-    var customThemeDark_Background4 by rememberPreference(customThemeDark_Background4Key, DefaultDarkColorPalette.background4.hashCode())
-    var customThemeDark_Text by rememberPreference(customThemeDark_TextKey, DefaultDarkColorPalette.text.hashCode())
-    var customThemeDark_TextSecondary by rememberPreference(customThemeDark_textSecondaryKey, DefaultDarkColorPalette.textSecondary.hashCode())
-    var customThemeDark_TextDisabled by rememberPreference(customThemeDark_textDisabledKey, DefaultDarkColorPalette.textDisabled.hashCode())
-    var customThemeDark_IconButtonPlayer by rememberPreference(customThemeDark_iconButtonPlayerKey, DefaultDarkColorPalette.iconButtonPlayer.hashCode())
-    var customThemeDark_Accent by rememberPreference(customThemeDark_accentKey, DefaultDarkColorPalette.accent.hashCode())
+    var customThemeDark_Background0 by rememberPreference(CUSTOM_THEME_DARK_BACKGROUND_0.key, DefaultDarkColorPalette.background0.hashCode())
+    var customThemeDark_Background1 by rememberPreference(CUSTOM_THEME_DARK_BACKGROUND_1.key, DefaultDarkColorPalette.background1.hashCode())
+    var customThemeDark_Background2 by rememberPreference(CUSTOM_THEME_DARK_BACKGROUND_2.key, DefaultDarkColorPalette.background2.hashCode())
+    var customThemeDark_Background3 by rememberPreference(CUSTOM_THEME_DARK_BACKGROUND_3.key, DefaultDarkColorPalette.background3.hashCode())
+    var customThemeDark_Background4 by rememberPreference(CUSTOM_THEME_DARK_BACKGROUND_4.key, DefaultDarkColorPalette.background4.hashCode())
+    var customThemeDark_Text by rememberPreference(CUSTOM_THEME_DARK_TEXT.key, DefaultDarkColorPalette.text.hashCode())
+    var customThemeDark_TextSecondary by rememberPreference(CUSTOM_THEME_DARK_TEXT_SECONDARY.key, DefaultDarkColorPalette.textSecondary.hashCode())
+    var customThemeDark_TextDisabled by rememberPreference(CUSTOM_THEME_DARK_TEXT_DISABLED.key, DefaultDarkColorPalette.textDisabled.hashCode())
+    var customThemeDark_IconButtonPlayer by rememberPreference(CUSTOM_THEME_DARK_ICON_BUTTON_PLAYER.key, DefaultDarkColorPalette.iconButtonPlayer.hashCode())
+    var customThemeDark_Accent by rememberPreference(CUSTOM_THEME_DARK_ACCENT.key, DefaultDarkColorPalette.accent.hashCode())
 
     var resetCustomLightThemeDialog by rememberSaveable { mutableStateOf(false) }
     var resetCustomDarkThemeDialog by rememberSaveable { mutableStateOf(false) }
-    var playbackFadeAudioDuration by rememberPreference(playbackFadeAudioDurationKey, DurationInMilliseconds.Disabled)
-    var excludeSongWithDurationLimit by rememberPreference(excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled)
-    var excludeSongsIfAreVideos by rememberPreference(excludeSongIfIsVideoKey, false)
-    var playlistindicator by rememberPreference(playlistindicatorKey, false)
-    var nowPlayingIndicator by rememberPreference(nowPlayingIndicatorKey, MusicAnimationType.Bubbles)
-    var discoverIsEnabled by rememberPreference(discoverKey, false)
-    var isPauseOnVolumeZeroEnabled by rememberPreference(isPauseOnVolumeZeroEnabledKey, false)
+    var playbackFadeAudioDuration by rememberPreference(PLAYBACK_FADE_AUDIO_DURATION.key, DurationInMilliseconds.Disabled)
+    var excludeSongWithDurationLimit by rememberPreference(EXCLUDE_SONGS_WITH_DURATION_LIMIT.key, DurationInMinutes.Disabled)
+    var excludeSongsIfAreVideos by rememberPreference(EXCLUDE_SONG_IF_IS_VIDEO.key, false)
+    var playlistindicator by rememberPreference(PLAYLIST_INDICATOR.key, false)
+    var nowPlayingIndicator by rememberPreference(NOW_PLAYING_INDICATOR.key, MusicAnimationType.Bubbles)
+    var discoverIsEnabled by rememberPreference(DISCOVER.key, false)
+    var isPauseOnVolumeZeroEnabled by rememberPreference(IS_PAUSE_ON_VOLUME_ZERO_ENABLED.key, false)
 
 
 //    val launchEqualizer by rememberEqualizerLauncher(audioSessionId = {
 //        //binder?.player?.audioSessionId
 //        0
 //    })
-    var equalizerType by rememberPreference(equalizerTypeKey, EqualizerType.Internal)
+    var equalizerType by rememberPreference(EQUALIZER_TYPE.key, EqualizerType.Internal)
 
-    var minimumSilenceDuration by rememberPreference(minimumSilenceDurationKey, 2_000_000L)
+    var minimumSilenceDuration by rememberPreference(MINIMUM_SILENCE_DURATION.key, 2_000_000L)
 
-    var pauseListenHistory by rememberPreference(pauseListenHistoryKey, false)
+    var pauseListenHistory by rememberPreference(PAUSE_LISTEN_HISTORY.key, false)
 
 
-    var loudnessBaseGain by rememberPreference(loudnessBaseGainKey, 5.00f)
-    var autoLoadSongsInQueue by rememberPreference(autoLoadSongsInQueueKey, true)
+    var loudnessBaseGain by rememberPreference(LOUDNESS_BASE_GAIN.key, 5.00f)
+    var autoLoadSongsInQueue by rememberPreference(AUTO_LOAD_SONGS_IN_QUEUE.key, true)
 
-    var bassboostEnabled by rememberPreference(bassboostEnabledKey,false)
-    var bassboostLevel by rememberPreference(bassboostLevelKey, 0.5f)
-    var volumeBoostLevel by rememberPreference(volumeBoostLevelKey, 0f)
-    var audioReverb by rememberPreference(audioReverbPresetKey,   PresetsReverb.NONE)
-    var audioFocusEnabled by rememberPreference(handleAudioFocusEnabledKey, true)
+    var bassboostEnabled by rememberPreference(BASSBOOST_ENABLED.key,false)
+    var bassboostLevel by rememberPreference(BASSBOOST_LEVEL.key, 0.5f)
+    var volumeBoostLevel by rememberPreference(VOLUME_BOOST_LEVEL.key, 0f)
+    var audioReverb by rememberPreference(AUDIO_REVERB_PRESET.key,   PresetsReverb.NONE)
+    var audioFocusEnabled by rememberPreference(HANDLE_AUDIO_FOCUS_ENABLED.key, true)
 
-    var enablePictureInPicture by rememberPreference(enablePictureInPictureKey, false)
-    var enablePictureInPictureAuto by rememberPreference(enablePictureInPictureAutoKey, false)
-    var pipModule by rememberPreference(pipModuleKey, PipModule.Cover)
-    var jumpPrevious by rememberPreference(jumpPreviousKey,"3")
+    var enablePictureInPicture by rememberPreference(ENABLE_PICTURE_IN_PICTURE.key, false)
+    var enablePictureInPictureAuto by rememberPreference(ENABLE_PICTURE_IN_PICTURE_AUTO.key, false)
+    var pipModule by rememberPreference(PIP_MODULE.key, PipModule.Cover)
+    var jumpPrevious by rememberPreference(JUMP_PREVIOUS.key,"3")
 
-    var isProxyEnabled by rememberPreference(isProxyEnabledKey, false)
-    var proxyHost by rememberPreference(proxyHostnameKey, "")
-    var proxyPort by rememberPreference(proxyPortKey, 1080)
-    var proxyMode by rememberPreference(proxyModeKey, Proxy.Type.HTTP)
-    var customDnsOverHttpsServer by rememberPreference(customDnsOverHttpsServerKey, "")
+    var isProxyEnabled by rememberPreference(IS_PROXY_ENABLED.key, false)
+    var proxyHost by rememberPreference(PROXY_HOSTNAME.key, "")
+    var proxyPort by rememberPreference(PROXY_PORT.key, 1080)
+    var proxyMode by rememberPreference(PROXY_MODE.key, Proxy.Type.HTTP)
+    var customDnsOverHttpsServer by rememberPreference(CUSTOM_DNS_OVER_HTTPS_SERVER.key, "")
     val context = LocalContext.current
 
     var isAndroidAutoEnabled by remember {
@@ -342,30 +341,30 @@ fun GeneralSettings(
         )
     }
 
-    var showShuffleSongsAA by rememberPreference(showShuffleSongsAAKey, true)
-    var showMonthlyPlaylistsAA by rememberPreference(showMonthlyPlaylistsAAKey, true)
-    var showInLibraryAA by rememberPreference(showInLibraryAAKey, true)
-    var showOnDeviceAA by rememberPreference(showOnDeviceAAKey, true)
-    var showFavoritesSongsAA by rememberPreference(showFavoritesSongsAAKey, true)
-    var showTopSongsAA by rememberPreference(showTopSongsAAKey, true)
-    var showAllSongsAA by rememberPreference(showAllSongsAAKey, true)
-    var showPodcastAA by rememberPreference(showPodcastAAKey, true)
-    var showPinnedAA by rememberPreference(showPinnedAAKey, true)
-    var showGridAA by rememberPreference(showGridAAKey, true)
+    var showShuffleSongsAA by rememberPreference(SHOW_SHUFFLE_SONGS_AA.key, true)
+    var showMonthlyPlaylistsAA by rememberPreference(SHOW_MONTHLY_PLAYLISTS_AA.key, true)
+    var showInLibraryAA by rememberPreference(SHOW_IN_LIBRARY_AA.key, true)
+    var showOnDeviceAA by rememberPreference(SHOW_ON_DEVICE_AA.key, true)
+    var showFavoritesSongsAA by rememberPreference(SHOW_FAVORITES_SONGS_AA.key, true)
+    var showTopSongsAA by rememberPreference(SHOW_TOP_SONGS_AA.key, true)
+    var showAllSongsAA by rememberPreference(SHOW_ALL_SONGS_AA.key, true)
+    var showPodcastAA by rememberPreference(SHOW_PODCAST_AA.key, true)
+    var showPinnedAA by rememberPreference(SHOW_PINNED_AA.key, true)
+    var showGridAA by rememberPreference(SHOW_GRID_AA.key, true)
 
     var isEnabledVoiceInput by rememberPreference(
-        enableVoiceInputKey,
+        ENABLE_VOICE_INPUT.key,
         true
     )
 
-    //var checkVolumeLevel by rememberPreference(checkVolumeLevelKey, true)
-    var parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
+    //var checkVolumeLevel by rememberPreference(checkVolumeLevelKey.key, true)
+    var parentalControlEnabled by rememberPreference(PARENTAL_CONTROL_ENABLED.key, false)
 
-    //var castToRiTuneDeviceEnabled by rememberPreference(castToRiTuneDeviceEnabledKey, false )
+    //var castToRiTuneDeviceEnabled by rememberPreference(castToRiTuneDeviceEnabledKey.key, false )
 
-    var castType by rememberPreference(castTypeKey, CastType.RITUNECAST)
+    var castType by rememberPreference(CAST_TYPE.key, CastType.RITUNECAST)
 
-    var disableAudioDRC by rememberPreference(disableAudioDRCKey, false)
+    var disableAudioDRC by rememberPreference(DISABLE_AUDIO_DRC.key, false)
 
 
     val eventsCount by remember {
@@ -380,13 +379,13 @@ fun GeneralSettings(
         )
     }
 
-    var pauseSearchHistory by rememberPreference(pauseSearchHistoryKey, false)
+    var pauseSearchHistory by rememberPreference(PAUSE_SEARCH_HISTORY.key, false)
 
     val queriesCount by remember {
         Database.queriesCount().distinctUntilChanged()
     }.collectAsState(initial = 0)
 
-    var checkUpdateState by rememberPreference(checkUpdateStateKey, CheckUpdateState.Enabled)
+    var checkUpdateState by rememberPreference(CHECK_UPDATE_STATE.key, CheckUpdateState.Enabled)
 
     val internalEqualizer = LocalPlayerServiceBinder.current?.equalizer
 
@@ -684,7 +683,7 @@ fun GeneralSettings(
 
                 settingsItem {
                     val context = LocalContext.current
-                    var isKeepScreenOnEnabled by rememberPreference(isKeepScreenOnEnabledKey, false)
+                    var isKeepScreenOnEnabled by rememberPreference(IS_KEEP_SCREEN_ON_ENABLED.key, false)
                     var isIgnoringBatteryOptimizations by remember {
                         mutableStateOf(context.isIgnoringBatteryOptimizations())
                     }

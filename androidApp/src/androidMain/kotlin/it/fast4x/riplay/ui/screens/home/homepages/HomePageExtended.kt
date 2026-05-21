@@ -68,36 +68,36 @@ import it.fast4x.riplay.ui.components.themed.MultiFloatingActionsContainer
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.screens.welcome.WelcomeMessage
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
-import it.fast4x.riplay.extensions.preferences.homeTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.HOME_TYPE
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.extensions.preferences.loadedDataKey
-import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
-import it.fast4x.riplay.extensions.preferences.playEventsTypeKey
-import it.fast4x.riplay.extensions.preferences.quickPicsDiscoverPageKey
-import it.fast4x.riplay.extensions.preferences.quickPicsRelatedPageKey
-import it.fast4x.riplay.extensions.preferences.quickPicsTrendingSongKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LOADED_DATA
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAY_EVENTS_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUICK_PICS_DISCOVER_PAGE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUICK_PICS_RELATED_PAGE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUICK_PICS_TRENDING_SONG
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.selectedCountryCodeKey
-import it.fast4x.riplay.extensions.preferences.showChartsKey
-import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
-import it.fast4x.riplay.extensions.preferences.showMonthlyPlaylistInQuickPicksKey
-import it.fast4x.riplay.extensions.preferences.showMoodsAndGenresKey
-import it.fast4x.riplay.extensions.preferences.showNewAlbumsArtistsKey
-import it.fast4x.riplay.extensions.preferences.showNewAlbumsKey
-import it.fast4x.riplay.extensions.preferences.showPlaylistMightLikeKey
-import it.fast4x.riplay.extensions.preferences.showRelatedAlbumsKey
-import it.fast4x.riplay.extensions.preferences.showSearchTabKey
-import it.fast4x.riplay.extensions.preferences.showSimilarArtistsKey
-import it.fast4x.riplay.extensions.preferences.showTipsKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SELECTED_COUNTRY_CODE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_CHARTS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_MONTHLY_PLAYLIST_IN_QUICK_PICKS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_MOODS_AND_GENRES
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_NEW_ALBUMS_ARTISTS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_NEW_ALBUMS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_PLAYLIST_MIGHT_LIKE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_RELATED_ALBUMS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SEARCH_TAB
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SIMILAR_ARTISTS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_TIPS
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
-import it.fast4x.riplay.extensions.preferences.quickPicsHomePageKey
-import it.fast4x.riplay.extensions.preferences.showListenerLevelsKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUICK_PICS_HOME_PAGE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LISTENER_LEVELS
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.ui.components.ButtonsRow
 import it.fast4x.riplay.ui.components.themed.IconButton
@@ -128,23 +128,23 @@ fun HomePageExtended(
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalGlobalSheetState.current
     val windowInsets = LocalPlayerAwareWindowInsets.current
-    var playEventType by rememberPreference(playEventsTypeKey, PlayEventsType.MostPlayed)
+    var playEventType by rememberPreference(PLAY_EVENTS_TYPE.key, PlayEventsType.MostPlayed)
 
     var trending by remember { mutableStateOf<Song?>(null) }
     val trendingInit by remember { mutableStateOf<Song?>(null) }
-    var trendingPreference by rememberPreference(quickPicsTrendingSongKey, trendingInit)
+    var trendingPreference by rememberPreference(QUICK_PICS_TRENDING_SONG.key, trendingInit)
 
     var relatedPageResult by remember { mutableStateOf<Result<Environment.RelatedPage?>?>(null) }
     var relatedInit by remember { mutableStateOf<Environment.RelatedPage?>(null) }
-    var relatedPreference by rememberPreference(quickPicsRelatedPageKey, relatedInit)
+    var relatedPreference by rememberPreference(QUICK_PICS_RELATED_PAGE.key, relatedInit)
 
     var discoverPageResult by remember { mutableStateOf<Result<Environment.DiscoverPage?>?>(null) }
     var discoverPageInit by remember { mutableStateOf<Environment.DiscoverPage?>(null) }
-    var discoverPagePreference by rememberPreference(quickPicsDiscoverPageKey, discoverPageInit)
+    var discoverPagePreference by rememberPreference(QUICK_PICS_DISCOVER_PAGE.key, discoverPageInit)
 
     var homePageResult by remember { mutableStateOf<Result<HomePage?>?>(null) }
     var homePageInit by remember { mutableStateOf<HomePage?>(null) }
-    var homePagePreference by rememberPreference(quickPicsHomePageKey, homePageInit)
+    var homePagePreference by rememberPreference(QUICK_PICS_HOME_PAGE.key, homePageInit)
 
     var chartsPageResult by remember { mutableStateOf<Result<Environment.ChartsPage?>?>(null) }
     var chartsPageInit by remember { mutableStateOf<Environment.ChartsPage?>(null) }
@@ -156,30 +156,30 @@ fun HomePageExtended(
         Database.monthlyPlaylistsPreview("").collect { localMonthlyPlaylists = it }
     }
 
-    val showRelatedAlbums by rememberPreference(showRelatedAlbumsKey, true)
-    val showSimilarArtists by rememberPreference(showSimilarArtistsKey, true)
-    val showNewAlbumsArtists by rememberPreference(showNewAlbumsArtistsKey, true)
-    val showPlaylistMightLike by rememberPreference(showPlaylistMightLikeKey, true)
-    val showMoodsAndGenres by rememberPreference(showMoodsAndGenresKey, true)
-    val showNewAlbums by rememberPreference(showNewAlbumsKey, true)
+    val showRelatedAlbums by rememberPreference(SHOW_RELATED_ALBUMS.key, true)
+    val showSimilarArtists by rememberPreference(SHOW_SIMILAR_ARTISTS.key, true)
+    val showNewAlbumsArtists by rememberPreference(SHOW_NEW_ALBUMS_ARTISTS.key, true)
+    val showPlaylistMightLike by rememberPreference(SHOW_PLAYLIST_MIGHT_LIKE.key, true)
+    val showMoodsAndGenres by rememberPreference(SHOW_MOODS_AND_GENRES.key, true)
+    val showNewAlbums by rememberPreference(SHOW_NEW_ALBUMS.key, true)
     val showMonthlyPlaylistInQuickPicks by rememberPreference(
-        showMonthlyPlaylistInQuickPicksKey,
+        SHOW_MONTHLY_PLAYLIST_IN_QUICK_PICKS.key,
         true
     )
-    val showTips by rememberPreference(showTipsKey, true)
-    val showCharts by rememberPreference(showChartsKey, true)
-    val showListenerLevels by rememberPreference(showListenerLevelsKey, true)
+    val showTips by rememberPreference(SHOW_TIPS.key, true)
+    val showCharts by rememberPreference(SHOW_CHARTS.key, true)
+    val showListenerLevels by rememberPreference(SHOW_LISTENER_LEVELS.key, true)
     val refreshScope = rememberCoroutineScope()
 
-    var selectedCountryCode by rememberPreference(selectedCountryCodeKey, Countries.ZZ)
+    var selectedCountryCode by rememberPreference(SELECTED_COUNTRY_CODE.key, Countries.ZZ)
 
-    val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
+    val parentalControlEnabled by rememberPreference(PARENTAL_CONTROL_ENABLED.key, false)
 
     val blacklisted = remember {
         Database.blacklisted(listOf(BlacklistType.Song.name, BlacklistType.Video.name))
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
-    var loadedData by rememberPreference(loadedDataKey, false)
+    var loadedData by rememberPreference(LOADED_DATA.key, false)
 
     suspend fun loadData() {
 
@@ -297,11 +297,11 @@ fun HomePageExtended(
         .padding(top = 24.dp, bottom = 8.dp)
         .padding(endPaddingValues)
 
-    val showSearchTab by rememberPreference(showSearchTabKey, false)
+    val showSearchTab by rememberPreference(SHOW_SEARCH_TAB.key, false)
 
     val hapticFeedback = LocalHapticFeedback.current
 
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
 
     val buttonsList = listOf(
         HomePageSection.Home to HomePageSection.Home.textName
@@ -312,7 +312,7 @@ fun HomePageExtended(
 
 
     var homePageSection by rememberSaveable { mutableStateOf(HomePageSection.Home) }
-    var homeType by rememberPreference(homeTypeKey, HomeType.Tabbed)
+    var homeType by rememberPreference(HOME_TYPE.key, HomeType.Tabbed)
 
 
     PullToRefreshBox(
@@ -577,7 +577,7 @@ fun HomePageExtended(
             }
 
 
-            val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
+            val showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
             if (UiType.ViMusic.isCurrent() && showFloatingIcon)
                 MultiFloatingActionsContainer(
                     iconId = R.drawable.search,

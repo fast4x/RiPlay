@@ -3,58 +3,58 @@ package it.fast4x.riplay.ui.styling
 import android.content.Context
 import androidx.compose.ui.graphics.Color
 import it.fast4x.riplay.enums.ColorPaletteMode
-import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
-import it.fast4x.riplay.extensions.preferences.customThemeDark_Background0Key
-import it.fast4x.riplay.extensions.preferences.customThemeDark_Background1Key
-import it.fast4x.riplay.extensions.preferences.customThemeDark_Background2Key
-import it.fast4x.riplay.extensions.preferences.customThemeDark_Background3Key
-import it.fast4x.riplay.extensions.preferences.customThemeDark_Background4Key
-import it.fast4x.riplay.extensions.preferences.customThemeDark_TextKey
-import it.fast4x.riplay.extensions.preferences.customThemeDark_accentKey
-import it.fast4x.riplay.extensions.preferences.customThemeDark_iconButtonPlayerKey
-import it.fast4x.riplay.extensions.preferences.customThemeDark_textDisabledKey
-import it.fast4x.riplay.extensions.preferences.customThemeDark_textSecondaryKey
-import it.fast4x.riplay.extensions.preferences.customThemeLight_Background0Key
-import it.fast4x.riplay.extensions.preferences.customThemeLight_Background1Key
-import it.fast4x.riplay.extensions.preferences.customThemeLight_Background2Key
-import it.fast4x.riplay.extensions.preferences.customThemeLight_Background3Key
-import it.fast4x.riplay.extensions.preferences.customThemeLight_Background4Key
-import it.fast4x.riplay.extensions.preferences.customThemeLight_TextKey
-import it.fast4x.riplay.extensions.preferences.customThemeLight_accentKey
-import it.fast4x.riplay.extensions.preferences.customThemeLight_iconButtonPlayerKey
-import it.fast4x.riplay.extensions.preferences.customThemeLight_textDisabledKey
-import it.fast4x.riplay.extensions.preferences.customThemeLight_textSecondaryKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_0
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_1
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_2
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_3
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_4
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_TEXT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_ACCENT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_ICON_BUTTON_PLAYER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_TEXT_DISABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_TEXT_SECONDARY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_0
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_1
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_2
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_3
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_4
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_TEXT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_ACCENT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_ICON_BUTTON_PLAYER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_TEXT_DISABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_TEXT_SECONDARY
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.preferences
 
 
 fun customColorPalette(colorPalette: ColorPalette, context: Context, isSystemInDarkTheme: Boolean): ColorPalette {
-    val colorPaletteMode = context.preferences.getEnum(colorPaletteModeKey, ColorPaletteMode.Dark)
+    val colorPaletteMode = context.preferences.getEnum(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
 
     val customThemeLight = colorPalette.copy(
-        background0 = Color(context.preferences.getInt(customThemeLight_Background0Key, DefaultLightColorPalette.background0.hashCode())),
-        background1 = Color(context.preferences.getInt(customThemeLight_Background1Key, DefaultLightColorPalette.background1.hashCode())),
-        background2 = Color(context.preferences.getInt(customThemeLight_Background2Key, DefaultLightColorPalette.background2.hashCode())),
-        background3 = Color(context.preferences.getInt(customThemeLight_Background3Key, DefaultLightColorPalette.background3.hashCode())),
-        background4 = Color(context.preferences.getInt(customThemeLight_Background4Key, DefaultLightColorPalette.background4.hashCode())),
-        text = Color(context.preferences.getInt(customThemeLight_TextKey, DefaultLightColorPalette.text.hashCode())),
-        textSecondary = Color(context.preferences.getInt(customThemeLight_textSecondaryKey, DefaultLightColorPalette.textSecondary.hashCode())),
-        textDisabled = Color(context.preferences.getInt(customThemeLight_textDisabledKey, DefaultLightColorPalette.textDisabled.hashCode())),
-        iconButtonPlayer = Color(context.preferences.getInt(customThemeLight_iconButtonPlayerKey, DefaultLightColorPalette.iconButtonPlayer.hashCode())),
-        accent = Color(context.preferences.getInt(customThemeLight_accentKey, DefaultLightColorPalette.accent.hashCode()))
+        background0 = Color(context.preferences.getInt(CUSTOM_THEME_LIGHT_BACKGROUND_0.key, DefaultLightColorPalette.background0.hashCode())),
+        background1 = Color(context.preferences.getInt(CUSTOM_THEME_LIGHT_BACKGROUND_1.key, DefaultLightColorPalette.background1.hashCode())),
+        background2 = Color(context.preferences.getInt(CUSTOM_THEME_LIGHT_BACKGROUND_2.key, DefaultLightColorPalette.background2.hashCode())),
+        background3 = Color(context.preferences.getInt(CUSTOM_THEME_LIGHT_BACKGROUND_3.key, DefaultLightColorPalette.background3.hashCode())),
+        background4 = Color(context.preferences.getInt(CUSTOM_THEME_LIGHT_BACKGROUND_4.key, DefaultLightColorPalette.background4.hashCode())),
+        text = Color(context.preferences.getInt(CUSTOM_THEME_LIGHT_TEXT.key, DefaultLightColorPalette.text.hashCode())),
+        textSecondary = Color(context.preferences.getInt(CUSTOM_THEME_LIGHT_TEXT_SECONDARY.key, DefaultLightColorPalette.textSecondary.hashCode())),
+        textDisabled = Color(context.preferences.getInt(CUSTOM_THEME_LIGHT_TEXT_DISABLED.key, DefaultLightColorPalette.textDisabled.hashCode())),
+        iconButtonPlayer = Color(context.preferences.getInt(CUSTOM_THEME_LIGHT_ICON_BUTTON_PLAYER.key, DefaultLightColorPalette.iconButtonPlayer.hashCode())),
+        accent = Color(context.preferences.getInt(CUSTOM_THEME_LIGHT_ACCENT.key, DefaultLightColorPalette.accent.hashCode()))
     )
 
     val customThemeDark = colorPalette.copy(
-        background0 = Color(context.preferences.getInt(customThemeDark_Background0Key, DefaultDarkColorPalette.background0.hashCode())),
-        background1 = Color(context.preferences.getInt(customThemeDark_Background1Key, DefaultDarkColorPalette.background1.hashCode())),
-        background2 = Color(context.preferences.getInt(customThemeDark_Background2Key, DefaultDarkColorPalette.background2.hashCode())),
-        background3 = Color(context.preferences.getInt(customThemeDark_Background3Key, DefaultDarkColorPalette.background3.hashCode())),
-        background4 = Color(context.preferences.getInt(customThemeDark_Background4Key, DefaultDarkColorPalette.background4.hashCode())),
-        text = Color(context.preferences.getInt(customThemeDark_TextKey, DefaultDarkColorPalette.text.hashCode())),
-        textSecondary = Color(context.preferences.getInt(customThemeDark_textSecondaryKey, DefaultDarkColorPalette.textSecondary.hashCode())),
-        textDisabled = Color(context.preferences.getInt(customThemeDark_textDisabledKey, DefaultDarkColorPalette.textDisabled.hashCode())),
-        iconButtonPlayer = Color(context.preferences.getInt(customThemeDark_iconButtonPlayerKey, DefaultDarkColorPalette.iconButtonPlayer.hashCode())),
-        accent = Color(context.preferences.getInt(customThemeDark_accentKey, DefaultDarkColorPalette.accent.hashCode()))
+        background0 = Color(context.preferences.getInt(CUSTOM_THEME_DARK_BACKGROUND_0.key, DefaultDarkColorPalette.background0.hashCode())),
+        background1 = Color(context.preferences.getInt(CUSTOM_THEME_DARK_BACKGROUND_1.key, DefaultDarkColorPalette.background1.hashCode())),
+        background2 = Color(context.preferences.getInt(CUSTOM_THEME_DARK_BACKGROUND_2.key, DefaultDarkColorPalette.background2.hashCode())),
+        background3 = Color(context.preferences.getInt(CUSTOM_THEME_DARK_BACKGROUND_3.key, DefaultDarkColorPalette.background3.hashCode())),
+        background4 = Color(context.preferences.getInt(CUSTOM_THEME_DARK_BACKGROUND_4.key, DefaultDarkColorPalette.background4.hashCode())),
+        text = Color(context.preferences.getInt(CUSTOM_THEME_DARK_TEXT.key, DefaultDarkColorPalette.text.hashCode())),
+        textSecondary = Color(context.preferences.getInt(CUSTOM_THEME_DARK_TEXT_SECONDARY.key, DefaultDarkColorPalette.textSecondary.hashCode())),
+        textDisabled = Color(context.preferences.getInt(CUSTOM_THEME_DARK_TEXT_DISABLED.key, DefaultDarkColorPalette.textDisabled.hashCode())),
+        iconButtonPlayer = Color(context.preferences.getInt(CUSTOM_THEME_DARK_ICON_BUTTON_PLAYER.key, DefaultDarkColorPalette.iconButtonPlayer.hashCode())),
+        accent = Color(context.preferences.getInt(CUSTOM_THEME_DARK_ACCENT.key, DefaultDarkColorPalette.accent.hashCode()))
     )
 
     return when (colorPaletteMode) {

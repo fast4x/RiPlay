@@ -13,8 +13,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
-import it.fast4x.riplay.extensions.preferences.shortOnDeviceFolderNameKey
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHORT_ON_DEVICE_FOLDER_NAME
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.time.Duration
@@ -129,7 +129,7 @@ inline val Int.asBoolean: Boolean
 
 @Composable
 fun String.cleanOnDeviceName(): String {
-    val shortOnDeviceFolderName by rememberObservedPreference(shortOnDeviceFolderNameKey, false)
+    val shortOnDeviceFolderName by rememberPreference(SHORT_ON_DEVICE_FOLDER_NAME.key, false)
     return if (shortOnDeviceFolderName)
          this.substringAfterLast("/") else this
 }

@@ -2,9 +2,6 @@ package it.fast4x.riplay.ui.screens.settings
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,38 +11,28 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
-import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.HomePagetype
 import it.fast4x.riplay.enums.NavigationBarPosition
-import it.fast4x.riplay.enums.PlayEventsType
-import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.styling.Dimensions
-import it.fast4x.riplay.extensions.preferences.enableQuickPicksPageKey
-import it.fast4x.riplay.extensions.preferences.homePageTypeKey
-import it.fast4x.riplay.extensions.preferences.playEventsTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.HOME_PAGE_TYPE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.showChartsKey
-import it.fast4x.riplay.extensions.preferences.showListenerLevelsKey
-import it.fast4x.riplay.extensions.preferences.showMonthlyPlaylistInQuickPicksKey
-import it.fast4x.riplay.extensions.preferences.showMoodsAndGenresKey
-import it.fast4x.riplay.extensions.preferences.showNewAlbumsArtistsKey
-import it.fast4x.riplay.extensions.preferences.showNewAlbumsKey
-import it.fast4x.riplay.extensions.preferences.showPlaylistMightLikeKey
-import it.fast4x.riplay.extensions.preferences.showRelatedAlbumsKey
-import it.fast4x.riplay.extensions.preferences.showSimilarArtistsKey
-import it.fast4x.riplay.extensions.preferences.showTipsKey
-import kotlinx.coroutines.flow.distinctUntilChanged
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_CHARTS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_MONTHLY_PLAYLIST_IN_QUICK_PICKS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_MOODS_AND_GENRES
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_NEW_ALBUMS_ARTISTS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_NEW_ALBUMS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_PLAYLIST_MIGHT_LIKE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_RELATED_ALBUMS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SIMILAR_ARTISTS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_TIPS
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.utils.LazyListContainer
@@ -54,18 +41,18 @@ import it.fast4x.riplay.utils.LazyListContainer
 @UnstableApi
 @Composable
 fun  HomeSettings() {
-    //var showListenerLevels by rememberPreference(showListenerLevelsKey, true)
-    var showTips by rememberPreference(showTipsKey, true)
-    var showRelatedAlbums by rememberPreference(showRelatedAlbumsKey, true)
-    var showSimilarArtists by rememberPreference(showSimilarArtistsKey, true)
-    var showNewAlbumsArtists by rememberPreference(showNewAlbumsArtistsKey, true)
-    var showNewAlbums by rememberPreference(showNewAlbumsKey, true)
-    var showPlaylistMightLike by rememberPreference(showPlaylistMightLikeKey, true)
-    var showMoodsAndGenres by rememberPreference(showMoodsAndGenresKey, true)
-    var showMonthlyPlaylistInQuickPicks by rememberPreference(showMonthlyPlaylistInQuickPicksKey, true)
-    var showCharts by rememberPreference(showChartsKey, true)
+    //var showListenerLevels by rememberPreference(showListenerLevelsKey.key, true)
+    var showTips by rememberPreference(SHOW_TIPS.key, true)
+    var showRelatedAlbums by rememberPreference(SHOW_RELATED_ALBUMS.key, true)
+    var showSimilarArtists by rememberPreference(SHOW_SIMILAR_ARTISTS.key, true)
+    var showNewAlbumsArtists by rememberPreference(SHOW_NEW_ALBUMS_ARTISTS.key, true)
+    var showNewAlbums by rememberPreference(SHOW_NEW_ALBUMS.key, true)
+    var showPlaylistMightLike by rememberPreference(SHOW_PLAYLIST_MIGHT_LIKE.key, true)
+    var showMoodsAndGenres by rememberPreference(SHOW_MOODS_AND_GENRES.key, true)
+    var showMonthlyPlaylistInQuickPicks by rememberPreference(SHOW_MONTHLY_PLAYLIST_IN_QUICK_PICKS.key, true)
+    var showCharts by rememberPreference(SHOW_CHARTS.key, true)
 
-    var homePageType by rememberPreference(homePageTypeKey, HomePagetype.Classic)
+    var homePageType by rememberPreference(HOME_PAGE_TYPE.key, HomePagetype.Classic)
 
     Column(
         modifier = Modifier

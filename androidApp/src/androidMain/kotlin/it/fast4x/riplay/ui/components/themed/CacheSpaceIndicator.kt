@@ -20,9 +20,9 @@ import it.fast4x.riplay.enums.CacheType
 import it.fast4x.riplay.enums.CoilDiskCacheMaxSize
 import it.fast4x.riplay.enums.ExoPlayerDiskCacheMaxSize
 import it.fast4x.riplay.enums.ExoPlayerDiskDownloadCacheMaxSize
-import it.fast4x.riplay.extensions.preferences.coilDiskCacheMaxSizeKey
-import it.fast4x.riplay.extensions.preferences.exoPlayerDiskCacheMaxSizeKey
-import it.fast4x.riplay.extensions.preferences.exoPlayerDiskDownloadCacheMaxSizeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COIL_DISK_CACHE_MAX_SIZE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXO_PLAYER_DISK_CACHE_MAX_SIZE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXO_PLAYER_DISK_DOWNLOAD_CACHE_MAX_SIZE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 
 
@@ -36,16 +36,16 @@ fun CacheSpaceIndicator(
 ) {
 
     val coilDiskCacheMaxSize by rememberPreference(
-        coilDiskCacheMaxSizeKey,
+        COIL_DISK_CACHE_MAX_SIZE.key,
         CoilDiskCacheMaxSize.`128MB`
     )
     val exoPlayerDiskCacheMaxSize by rememberPreference(
-        exoPlayerDiskCacheMaxSizeKey,
+        EXO_PLAYER_DISK_CACHE_MAX_SIZE.key,
         ExoPlayerDiskCacheMaxSize.`2GB`
     )
 
     val exoPlayerDiskDownloadCacheMaxSize by rememberPreference(
-        exoPlayerDiskDownloadCacheMaxSizeKey,
+        EXO_PLAYER_DISK_DOWNLOAD_CACHE_MAX_SIZE.key,
         ExoPlayerDiskDownloadCacheMaxSize.`2GB`
     )
 

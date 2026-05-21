@@ -51,7 +51,7 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.enums.ValidationType
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.transitionEffectKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSITION_EFFECT
 import it.fast4x.riplay.ui.components.themed.DialogColorPicker
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
 import it.fast4x.riplay.ui.components.themed.Slider
@@ -89,7 +89,7 @@ fun SettingsScreen(
     val (tabIndex, onTabChanged) = rememberSaveable {
         mutableStateOf(0)
     }
-    val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.SlideHorizontal)
+    val transitionEffect by rememberPreference(TRANSITION_EFFECT.key, TransitionEffect.SlideHorizontal)
 
     ScreenContainer(
         navController,

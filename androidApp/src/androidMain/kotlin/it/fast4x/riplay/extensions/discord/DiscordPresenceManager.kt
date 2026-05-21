@@ -22,8 +22,8 @@ import io.ktor.http.HttpHeaders
 import it.fast4x.environment.Environment
 import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.extensions.preferences.discordPersonalAccessTokenKey
-import it.fast4x.riplay.extensions.preferences.isDiscordPresenceEnabledKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISCORD_PERSONAL_ACCESS_TOKEN
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_DISCORD_PRESENCE_ENABLED
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.ui.components.themed.SmartMessage
@@ -457,13 +457,13 @@ fun updateDiscordPresenceWithOfflinePlayer(
 ) {
     if (binder.player.currentMediaItem?.isLocal == false) return
 
-    val isDiscordPresenceEnabled = globalContext().preferences.getBoolean(isDiscordPresenceEnabledKey, false)
+    val isDiscordPresenceEnabled = globalContext().preferences.getBoolean(IS_DISCORD_PRESENCE_ENABLED.key, false)
     if (!isDiscordPresenceEnabled || !isAtLeastAndroid8) return
 
     val player = binder.player
 
     val discordPersonalAccessToken = globalContext().encryptedPreferences.getString(
-        discordPersonalAccessTokenKey, ""
+        DISCORD_PERSONAL_ACCESS_TOKEN.key, ""
     )
 
     runCatching {
@@ -496,11 +496,11 @@ fun updateDiscordPresenceWithOnlinePlayer(
     Timber.d("UpdateDiscordPresence")
     if (mediaItem.isLocal) return
 
-    val isDiscordPresenceEnabled = globalContext().preferences.getBoolean(isDiscordPresenceEnabledKey, false)
+    val isDiscordPresenceEnabled = globalContext().preferences.getBoolean(IS_DISCORD_PRESENCE_ENABLED.key, false)
     if (!isDiscordPresenceEnabled || !isAtLeastAndroid8) return
 
     val discordPersonalAccessToken = globalContext().encryptedPreferences.getString(
-        discordPersonalAccessTokenKey, ""
+        DISCORD_PERSONAL_ACCESS_TOKEN.key, ""
     )
     val currentPosition = (currentSecond * 1000).toLong()
     runCatching {

@@ -70,18 +70,18 @@ import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.styling.shimmer
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.ui.styling.color
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.formatAsTime
-import it.fast4x.riplay.extensions.preferences.maxStatisticsItemsKey
-import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MAX_STATISTICS_ITEMS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.NAVIGATION_BAR_POSITION
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.showStatsListeningTimeKey
-import it.fast4x.riplay.extensions.preferences.statisticsCategoryKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_STATS_LISTENING_TIME
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.STATISTICS_CATEGORY
 import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.data.models.defaultQueue
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -129,13 +129,13 @@ fun StatisticsPage(
     val playlistThumbnailSizePx = playlistThumbnailSizeDp.px
 
 
-    val thumbnailRoundness by rememberPreference(thumbnailRoundnessKey, ThumbnailRoundness.Light)
-    val showStatsListeningTime by rememberPreference(showStatsListeningTimeKey, true)
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
-    val navigationBarPosition by rememberPreference(navigationBarPositionKey, NavigationBarPosition.Bottom)
+    val thumbnailRoundness by rememberPreference(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
+    val showStatsListeningTime by rememberPreference(SHOW_STATS_LISTENING_TIME.key, true)
+    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    val navigationBarPosition by rememberPreference(NAVIGATION_BAR_POSITION.key, NavigationBarPosition.Bottom)
 
-    var maxStatisticsItems by rememberPreference(maxStatisticsItemsKey, MaxStatisticsItems.`10`)
-    var statisticsCategory by rememberPreference(statisticsCategoryKey, StatisticsCategory.Songs)
+    var maxStatisticsItems by rememberPreference(MAX_STATISTICS_ITEMS.key, MaxStatisticsItems.`10`)
+    var statisticsCategory by rememberPreference(STATISTICS_CATEGORY.key, StatisticsCategory.Songs)
 
     var songs by persistList<Song>("statistics/songs")
     var allSongs by persistList<Song>("statistics/allsongs")

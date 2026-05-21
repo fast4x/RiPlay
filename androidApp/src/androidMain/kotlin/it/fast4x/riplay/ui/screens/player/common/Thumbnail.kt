@@ -52,14 +52,14 @@ import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailType
-import it.fast4x.riplay.extensions.preferences.clickOnLyricsTextKey
-import it.fast4x.riplay.extensions.preferences.coverThumbnailAnimationKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CLICK_ON_LYRICS_TEXT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COVER_THUMBNAIL_ANIMATION
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.showCoverThumbnailAnimationKey
-import it.fast4x.riplay.extensions.preferences.showlyricsthumbnailKey
-import it.fast4x.riplay.extensions.preferences.showvisthumbnailKey
-import it.fast4x.riplay.extensions.preferences.thumbnailTypeKey
-import it.fast4x.riplay.extensions.preferences.thumbnailpauseKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_COVER_THUMBNAIL_ANIMATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LYRICS_THUMBNAIL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_VIS_THUMBNAIL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_PAUSE
 import it.fast4x.riplay.services.playback.LoginRequiredException
 import it.fast4x.riplay.services.playback.NoInternetException
 import it.fast4x.riplay.services.playback.PlayableFormatNonSupported
@@ -111,7 +111,7 @@ fun Thumbnail(
         it to (it - 64.dp).px
     }
 
-    var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, false)
+    var showlyricsthumbnail by rememberPreference(SHOW_LYRICS_THUMBNAIL.key, false)
     var nullableWindow by remember {
         mutableStateOf(player.currentWindow)
     }
@@ -143,9 +143,9 @@ fun Thumbnail(
         mutableStateOf(true)
     }
 
-    val clickLyricsText by rememberPreference(clickOnLyricsTextKey, true)
-    var showvisthumbnail by rememberPreference(showvisthumbnailKey, false)
-    //var expandedlyrics by rememberPreference(expandedlyricsKey,false)
+    val clickLyricsText by rememberPreference(CLICK_ON_LYRICS_TEXT.key, true)
+    var showvisthumbnail by rememberPreference(SHOW_VIS_THUMBNAIL.key, false)
+    //var expandedlyrics by rememberPreference(expandedlyricsKey.key,false)
 
     player.DisposableListener {
         object : Player.Listener {
@@ -177,8 +177,8 @@ fun Thumbnail(
         onSuccess = { artImageAvailable = true }
     )
 
-    val showCoverThumbnailAnimation by rememberPreference(showCoverThumbnailAnimationKey, false)
-    var coverThumbnailAnimation by rememberPreference(coverThumbnailAnimationKey, ThumbnailCoverType.Vinyl)
+    val showCoverThumbnailAnimation by rememberPreference(SHOW_COVER_THUMBNAIL_ANIMATION.key, false)
+    var coverThumbnailAnimation by rememberPreference(COVER_THUMBNAIL_ANIMATION.key, ThumbnailCoverType.Vinyl)
 
 
     AnimatedContent(
@@ -214,7 +214,7 @@ fun Thumbnail(
         contentAlignment = Alignment.Center, label = ""
     ) { currentWindow ->
 
-        val thumbnailType by rememberPreference(thumbnailTypeKey, ThumbnailType.Modern)
+        val thumbnailType by rememberPreference(THUMBNAIL_TYPE.key, ThumbnailType.Modern)
 
         var modifierUiType by remember { mutableStateOf(modifier) }
 
@@ -399,7 +399,7 @@ fun Thumbnail(
 fun Modifier.thumbnailpause(
     shouldBePlaying: Boolean
 ) = composed {
-    var thumbnailpause by rememberPreference(thumbnailpauseKey, false)
+    var thumbnailpause by rememberPreference(THUMBNAIL_PAUSE.key, false)
     val scale by animateFloatAsState(if ((thumbnailpause) && (!shouldBePlaying)) 0.9f else 1f)
 
     this

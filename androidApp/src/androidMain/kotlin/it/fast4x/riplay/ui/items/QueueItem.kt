@@ -18,14 +18,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
-import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.LocalAppearance
 import it.fast4x.riplay.ui.styling.favoritesOverlay
 import it.fast4x.riplay.utils.applyIf
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.getRoundnessShape
@@ -41,7 +40,7 @@ fun QueueItem(
     onLongClick: () -> Unit,
 ) {
     val colorPalette = LocalAppearance.current.colorPalette
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
     val thumbnailSizeDp = Dimensions.thumbnails.song
     val roundnessShape = getRoundnessShape()
 
@@ -130,7 +129,7 @@ fun QueueItem(
 ) {
 
     val colorPalette = LocalAppearance.current.colorPalette
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val disableScrollingText by rememberPreference(disableScrollingTextKey.key, false)
     val thumbnailSizeDp = Dimensions.thumbnails.song
 
     ItemContainer(

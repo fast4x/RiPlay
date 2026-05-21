@@ -49,9 +49,8 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.enums.ButtonState
-import it.fast4x.riplay.extensions.preferences.buttonzoomoutKey
-import it.fast4x.riplay.extensions.preferences.disablePlayerHorizontalSwipeKey
-import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BUTTON_ZOOM_OUT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_PLAYER_HORIZONTAL_SWIPE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.shimmer
 import kotlin.math.sqrt
@@ -109,7 +108,7 @@ fun Modifier.detectGestures(
     onPress: () -> Unit? = {},
     onLongPress: () -> Unit? = {},
 ): Modifier {
-    val disablePlayerHorizontalSwipe by rememberObservedPreference(disablePlayerHorizontalSwipeKey, false)
+    val disablePlayerHorizontalSwipe by rememberPreference(DISABLE_PLAYER_HORIZONTAL_SWIPE.key, false)
     var deltaX by remember { mutableStateOf(0f) }
     return this
         .pointerInput(Unit) {
@@ -487,7 +486,7 @@ fun Modifier.applyIf(condition : Boolean, modifier : Modifier.() -> Modifier) : 
 
 fun Modifier.bounceClick() = composed {
     var buttonState by remember { mutableStateOf(ButtonState.Idle) }
-    var buttonzoomout by rememberPreference(buttonzoomoutKey,false)
+    var buttonzoomout by rememberPreference(BUTTON_ZOOM_OUT.key,false)
     val scale by animateFloatAsState(if ((buttonState == ButtonState.Pressed) && (buttonzoomout)) 0.8f else 1f)
 
     this

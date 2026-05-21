@@ -29,7 +29,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.utils.GenericMenuItem
+import it.fast4x.riplay.enums.GenericMenuItem
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.drawCircle
 import it.fast4x.riplay.utils.typography

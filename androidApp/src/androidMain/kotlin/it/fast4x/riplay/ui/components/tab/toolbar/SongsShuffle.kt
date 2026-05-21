@@ -10,7 +10,7 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.enums.MaxSongs
 import it.fast4x.riplay.extensions.preferences.getEnum
-import it.fast4x.riplay.extensions.preferences.maxSongsInQueueKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MAX_SONGS_IN_QUEUE
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.themed.SmartMessage
@@ -66,7 +66,7 @@ fun playShuffledSongs( mediaItems: List<MediaItem>, context: Context, binder: Pl
     }
 
     val maxSongsInQueue = context.preferences
-        .getEnum( maxSongsInQueueKey, MaxSongs.`500` )
+        .getEnum( MAX_SONGS_IN_QUEUE.key, MaxSongs.`500` )
         .number
         .toInt()
 

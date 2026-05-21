@@ -35,7 +35,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.ColorPaletteMode
-import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
@@ -47,7 +47,7 @@ fun <E> ButtonsRow(
     onValueUpdate: (E) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
+    val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
     val scrollState = rememberScrollState()
 
     val backgroundColor = colorPalette().background0

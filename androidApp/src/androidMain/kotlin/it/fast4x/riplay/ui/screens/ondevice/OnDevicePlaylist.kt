@@ -109,7 +109,7 @@ import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.LocalAppearance
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.extensions.preferences.UiTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.UI_TYPE
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.commonutils.durationTextToMillis
@@ -117,13 +117,13 @@ import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsTime
-import it.fast4x.riplay.extensions.preferences.maxSongsInQueueKey
-import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MAX_SONGS_IN_QUEUE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.NAVIGATION_BAR_POSITION
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
-import it.fast4x.riplay.extensions.preferences.songSortOrderKey
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SONG_SORT_ORDER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -135,7 +135,7 @@ import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import kotlinx.coroutines.CoroutineScope
 import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.data.models.defaultQueue
@@ -149,7 +149,7 @@ import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.utils.LazyListContainer
 import kotlinx.coroutines.delay
 import it.fast4x.riplay.extensions.persist.persistList
-import it.fast4x.riplay.extensions.preferences.onDeviceSongSortByKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ON_DEVICE_SONG_SORT_BY
 import it.fast4x.riplay.ui.items.PlaylistItem
 import it.fast4x.riplay.utils.cleanOnDeviceName
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -174,7 +174,7 @@ fun OnDevicePlaylist(
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalGlobalSheetState.current
     val selectedQueue = LocalSelectedQueue.current
-    val uiType by rememberPreference(UiTypeKey, UiType.RiPlay)
+    val uiType by rememberPreference(UI_TYPE.key, UiType.RiPlay)
 
     val folder by remember(folder) { mutableStateOf(folder.replace("$","/")) }
 
@@ -185,12 +185,12 @@ fun OnDevicePlaylist(
     val thumbnailUrl = remember { mutableStateOf("") }
 
 
-    var sortBy by rememberPreference(onDeviceSongSortByKey, OnDeviceSongSortBy.DateAdded)
-    var sortOrder by rememberPreference(songSortOrderKey, SortOrder.Descending)
+    var sortBy by rememberPreference(ON_DEVICE_SONG_SORT_BY.key, OnDeviceSongSortBy.DateAdded)
+    var sortOrder by rememberPreference(SONG_SORT_ORDER.key, SortOrder.Descending)
 
     var filter: String? by rememberSaveable { mutableStateOf(null) }
 
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
 
     val onDeviceViewModel = LocalOnDeviceViewModel.current
     LaunchedEffect(Unit, filter, sortOrder, sortBy) {
@@ -242,7 +242,7 @@ fun OnDevicePlaylist(
 
 
     val thumbnailRoundness by rememberPreference(
-        thumbnailRoundnessKey,
+        THUMBNAIL_ROUNDNESS.key,
         ThumbnailRoundness.Light
     )
 
@@ -393,10 +393,10 @@ fun OnDevicePlaylist(
     }
 
     val navigationBarPosition by rememberPreference(
-        navigationBarPositionKey,
+        NAVIGATION_BAR_POSITION.key,
         NavigationBarPosition.Bottom
     )
-    val maxSongsInQueue by rememberPreference(maxSongsInQueueKey, MaxSongs.`500`)
+    val maxSongsInQueue by rememberPreference(MAX_SONGS_IN_QUEUE.key, MaxSongs.`500`)
 
     val thumbnails = playlistSongs.map { it.song }
         .takeWhile { it.thumbnailUrl?.isNotEmpty() ?: false }
@@ -1187,7 +1187,7 @@ fun OnDevicePlaylist(
 
             FloatingActionsContainerWithScrollToTop(lazyListState = lazyListState)
 
-            val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
+            val showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
             if (uiType == UiType.ViMusic || showFloatingIcon)
                 FloatingActionsContainerWithScrollToTop(
                     lazyListState = lazyListState,

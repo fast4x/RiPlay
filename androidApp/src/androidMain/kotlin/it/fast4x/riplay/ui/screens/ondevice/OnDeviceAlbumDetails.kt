@@ -90,7 +90,6 @@ import it.fast4x.riplay.ui.components.themed.SelectorDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.items.AlbumItemPlaceholder
 import it.fast4x.riplay.ui.items.SongItem
-import it.fast4x.riplay.ui.items.SongItemPlaceholder
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.ui.styling.align
@@ -98,7 +97,7 @@ import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.utils.applyIf
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.utils.enqueue
@@ -108,10 +107,10 @@ import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsTime
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.ui.styling.medium
-import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.showFloatingIconKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -150,8 +149,8 @@ fun OnDeviceAlbumDetails(
     val selectedQueue = LocalSelectedQueue.current
     var songs by persistList<Song>("album/$albumId/songs")
     var album by persist<Album?>("album/$albumId")
-    val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val parentalControlEnabled by rememberPreference(PARENTAL_CONTROL_ENABLED.key, false)
+    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
 
     LaunchedEffect(Unit) {
         Database.albumSongs(albumId).collect {
@@ -854,7 +853,7 @@ fun OnDeviceAlbumDetails(
                 }
 
 
-                val showFloatingIcon by rememberPreference(showFloatingIconKey, false)
+                val showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
                 if (UiType.ViMusic.isCurrent() && showFloatingIcon)
                     MultiFloatingActionsContainer(
                         iconId = R.drawable.shuffle,

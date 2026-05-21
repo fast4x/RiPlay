@@ -4,7 +4,6 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,7 +20,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -52,7 +50,6 @@ import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ColorPaletteName
 import it.fast4x.riplay.data.models.Song
-import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
@@ -67,19 +64,18 @@ import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.favoritesOverlay
 import it.fast4x.riplay.ui.styling.shimmer
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.extensions.preferences.colorPaletteNameKey
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_NAME
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.ui.styling.medium
-import it.fast4x.riplay.extensions.preferences.playlistindicatorKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_INDICATOR
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.isNowPlaying
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.shimmerEffect
 import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultButton
@@ -266,8 +262,8 @@ fun SongItem(
     val authors = remember(mediaItem) { mediaItem.mediaMetadata.artist.toString() }
     val duration = remember(mediaItem) { mediaItem.mediaMetadata.extras?.getString("durationText") }
 
-    val playlistindicator by rememberPreference(playlistindicatorKey, false)
-    val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
+    val playlistindicator by rememberPreference(PLAYLIST_INDICATOR.key, false)
+    val colorPaletteName by rememberPreference(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
 
     val songPlaylist by if (playlistindicator)
         Database.songUsedInPlaylistsAsFlow(mediaItem.mediaId).collectAsState(initial = 0)
@@ -276,7 +272,7 @@ fun SongItem(
 
     val binder = LocalPlayerServiceBinder.current
     val isNowPlaying = binder?.player?.isNowPlaying(mediaItem.mediaId)
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
 
     val context = LocalContext.current
     val colorPalette = LocalAppearance.current.colorPalette
@@ -475,11 +471,11 @@ fun SongItem(
     val authors = mediaItem.mediaMetadata.artist.toString()
     val duration = mediaItem.mediaMetadata.extras?.getString("durationText")
 
-    val playlistindicator by rememberPreference(playlistindicatorKey,false)
+    val playlistindicator by rememberPreference(playlistindicatorKey.key,false)
     var songPlaylist: State<Int> = remember {
         mutableIntStateOf(0)
     }
-    val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
+    val colorPaletteName by rememberPreference(colorPaletteNameKey.key, ColorPaletteName.Dynamic)
 
     if (playlistindicator)
         songPlaylist = Database.songUsedInPlaylistsAsFlow(mediaItem.mediaId).collectAsState(initial = 0)
@@ -487,7 +483,7 @@ fun SongItem(
     val binder = LocalPlayerServiceBinder.current
     val isNowPlaying = binder?.player?.isNowPlaying(mediaItem.mediaId)
 
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val disableScrollingText by rememberPreference(disableScrollingTextKey.key, false)
 
     val context = LocalContext.current
     val colorPalette = LocalAppearance.current.colorPalette

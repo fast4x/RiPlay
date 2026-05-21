@@ -12,9 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -22,12 +20,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.enums.MusicAnimationType
-import it.fast4x.riplay.utils.DisposableListener
-import it.fast4x.riplay.extensions.preferences.nowPlayingIndicatorKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.NOW_PLAYING_INDICATOR
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import kotlinx.coroutines.launch
 
@@ -45,7 +41,7 @@ fun MusicAnimation(
     val playerState = binder?.playerState?.collectAsState()
     val isPlaying = playerState?.value?.isPlaying
 
-    val nowPlayingIndicator by rememberPreference(nowPlayingIndicatorKey, MusicAnimationType.Bubbles)
+    val nowPlayingIndicator by rememberPreference(NOW_PLAYING_INDICATOR.key, MusicAnimationType.Bubbles)
     if (nowPlayingIndicator == MusicAnimationType.Disabled) return
 
     val animatablesWithSteps = remember {

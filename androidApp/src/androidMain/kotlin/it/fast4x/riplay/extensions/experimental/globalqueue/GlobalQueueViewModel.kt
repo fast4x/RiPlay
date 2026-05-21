@@ -13,8 +13,8 @@ import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.data.models.defaultQueueId
 import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
-import it.fast4x.riplay.extensions.preferences.excludeSongsWithDurationLimitKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXCLUDE_SONG_IF_IS_VIDEO
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXCLUDE_SONGS_WITH_DURATION_LIMIT
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.services.playback.PlayerService
@@ -101,7 +101,7 @@ class GlobalQueueViewModel() : ViewModel(), ViewModelProvider.Factory {
     fun exclude(mediaItem: MediaItem, context: Context): Boolean {
         runCatching {
             val preferences = context.preferences
-            val excludeIfIsVideo = preferences.getBoolean(excludeSongIfIsVideoKey, false)
+            val excludeIfIsVideo = preferences.getBoolean(EXCLUDE_SONG_IF_IS_VIDEO.key, false)
             if (excludeIfIsVideo && mediaItem.isVideo) {
                 CoroutineScope(Dispatchers.Main).launch {
                     SmartMessage(context.resources.getString(R.string.message_excluded_videos).format(1), context = context)
@@ -110,7 +110,7 @@ class GlobalQueueViewModel() : ViewModel(), ViewModelProvider.Factory {
             }
 
             val excludeSongWithDurationLimit =
-                preferences.getEnum(excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled)
+                preferences.getEnum(EXCLUDE_SONGS_WITH_DURATION_LIMIT.key, DurationInMinutes.Disabled)
             if (excludeSongWithDurationLimit != DurationInMinutes.Disabled) {
                 val excludedSong = (mediaItem.mediaMetadata.extras?.getString("durationText")?.let { it1 ->
                     durationTextToMillis(it1)
@@ -136,7 +136,7 @@ class GlobalQueueViewModel() : ViewModel(), ViewModelProvider.Factory {
         var filteredMediaItems = mediaItems
         runCatching {
             val preferences = context.preferences
-            val excludeIfIsVideo = preferences.getBoolean(excludeSongIfIsVideoKey, false)
+            val excludeIfIsVideo = preferences.getBoolean(EXCLUDE_SONG_IF_IS_VIDEO.key, false)
             if (excludeIfIsVideo) {
                 filteredMediaItems = mediaItems.filter { !it.isVideo }
             }
@@ -148,7 +148,7 @@ class GlobalQueueViewModel() : ViewModel(), ViewModelProvider.Factory {
                 }
 
             val excludeSongWithDurationLimit =
-                preferences.getEnum(excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled)
+                preferences.getEnum(EXCLUDE_SONGS_WITH_DURATION_LIMIT.key, DurationInMinutes.Disabled)
 
             if (excludeSongWithDurationLimit != DurationInMinutes.Disabled) {
                 filteredMediaItems = mediaItems.filter {

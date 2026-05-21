@@ -1,22 +1,17 @@
 package it.fast4x.riplay.ui.screens.settings
 
 import android.annotation.SuppressLint
-import android.content.ActivityNotFoundException
 import android.text.format.Formatter
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -29,20 +24,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.util.UnstableApi
 import coil.Coil
 import coil.annotation.ExperimentalCoilApi
 import it.fast4x.riplay.LocalBackupManager
-import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.CacheType
 import it.fast4x.riplay.enums.CoilDiskCacheMaxSize
@@ -54,20 +42,15 @@ import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.InputNumericDialog
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.RestartPlayerService
-import it.fast4x.riplay.extensions.preferences.coilCustomDiskCacheKey
-import it.fast4x.riplay.extensions.preferences.coilDiskCacheMaxSizeKey
-import it.fast4x.riplay.extensions.preferences.pauseSearchHistoryKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COIL_CUSTOM_DISK_CACHE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COIL_DISK_CACHE_MAX_SIZE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import kotlinx.coroutines.flow.distinctUntilChanged
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.databasebackup.BackupUiState
-import it.fast4x.riplay.extensions.databasebackup.BackupViewModel
-import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import java.text.SimpleDateFormat
 import java.util.Date
-import kotlin.compareTo
 
 @SuppressLint("SuspiciousIndentation")
 @OptIn(ExperimentalCoilApi::class)
@@ -106,14 +89,14 @@ fun DataSettings() {
     }
 
     var coilDiskCacheMaxSize by rememberPreference(
-        coilDiskCacheMaxSizeKey,
+        COIL_DISK_CACHE_MAX_SIZE.key,
         CoilDiskCacheMaxSize.`128MB`
     )
 
 
     var showCoilCustomDiskCacheDialog by remember { mutableStateOf(false) }
     var coilCustomDiskCache by rememberPreference(
-        coilCustomDiskCacheKey,32
+        COIL_CUSTOM_DISK_CACHE.key,32
     )
     var isExporting by remember { mutableStateOf(false) }
     var isImporting by remember { mutableStateOf(false) }

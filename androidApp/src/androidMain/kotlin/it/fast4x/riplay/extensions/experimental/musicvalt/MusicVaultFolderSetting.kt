@@ -1,7 +1,6 @@
 package it.fast4x.riplay.extensions.experimental.musicvalt
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Environment
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -21,7 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.documentfile.provider.DocumentFile
-import it.fast4x.riplay.extensions.preferences.musicVaultPathKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_VAULT_PATH
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import androidx.core.net.toUri
 import it.fast4x.riplay.utils.colorPalette
@@ -29,7 +27,7 @@ import it.fast4x.riplay.utils.colorPalette
 @Composable
 fun MusicVaultFolderSetting() {
     val context = LocalContext.current
-    var musicVaultPath by rememberPreference(musicVaultPathKey, "")
+    var musicVaultPath by rememberPreference(MUSIC_VAULT_PATH.key, "")
 
     val displayPath = when {
         musicVaultPath.isEmpty() ->

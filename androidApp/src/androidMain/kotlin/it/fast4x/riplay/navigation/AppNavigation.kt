@@ -72,13 +72,13 @@ import it.fast4x.riplay.ui.screens.statistics.StatisticsScreen
 import it.fast4x.riplay.ui.screens.welcome.WelcomeScreen
 import it.fast4x.riplay.utils.ShowVideoOrSongInfo
 import it.fast4x.riplay.extensions.preferences.clearPreference
-import it.fast4x.riplay.extensions.preferences.homeScreenTabIndexKey
-import it.fast4x.riplay.extensions.preferences.pauseSearchHistoryKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.HOME_SCREEN_TAB_INDEX
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PAUSE_SEARCH_HISTORY
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.showOnBoardingScreenKey
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
-import it.fast4x.riplay.extensions.preferences.transitionEffectKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_ON_BOARDING_SCREEN
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSITION_EFFECT
 import it.fast4x.riplay.extensions.rewind.RewindListScreen
 import it.fast4x.riplay.extensions.rewind.RewindScreen
 import it.fast4x.riplay.ui.screens.moodandchip.ChipListScreen
@@ -103,7 +103,7 @@ fun AppNavigation(
 ) {
     val navController = rememberNavController()
     onNavControllerInit(navController)
-    val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.SlideHorizontal)
+    val transitionEffect by rememberPreference(TRANSITION_EFFECT.key, TransitionEffect.SlideHorizontal)
 
     @Composable
     fun modalBottomSheetPage(
@@ -112,7 +112,7 @@ fun AppNavigation(
     ) {
 
         val thumbnailRoundness by rememberPreference(
-            thumbnailRoundnessKey,
+            THUMBNAIL_ROUNDNESS.key,
             ThumbnailRoundness.Light
         )
 
@@ -137,9 +137,9 @@ fun AppNavigation(
 
 
     val context = LocalContext.current
-    clearPreference(context, homeScreenTabIndexKey)
+    clearPreference(context, HOME_SCREEN_TAB_INDEX.key)
 
-    var showOnBoardingScreen by rememberPreference(showOnBoardingScreenKey, true)
+    var showOnBoardingScreen by rememberPreference(SHOW_ON_BOARDING_SCREEN.key, true)
 
 
     NavHost(
@@ -488,7 +488,7 @@ fun AppNavigation(
                         }"
                     )
 
-                    if (!context.preferences.getBoolean(pauseSearchHistoryKey, false)) {
+                    if (!context.preferences.getBoolean(PAUSE_SEARCH_HISTORY.key, false)) {
                         Database.asyncTransaction {
                             insert(SearchQuery(query = query))
                         }
@@ -612,7 +612,7 @@ fun AppNavigation(
                     val encodedQuery = URLEncoder.encode(newQuery, "UTF-8")
                     navController.navigate(route = "${NavRoutes.searchResults.name}/${encodedQuery}")
 
-                    if (!context.preferences.getBoolean(pauseSearchHistoryKey, false)) {
+                    if (!context.preferences.getBoolean(PAUSE_SEARCH_HISTORY.key, false)) {
                         Database.asyncTransaction {
                             insert(SearchQuery(query = encodedQuery))
                         }

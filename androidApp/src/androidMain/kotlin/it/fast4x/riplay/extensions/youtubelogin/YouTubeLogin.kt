@@ -1,6 +1,5 @@
 package it.fast4x.riplay.extensions.youtubelogin
 
-import android.content.Context
 import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
@@ -29,13 +28,13 @@ import it.fast4x.environment.Environment
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.R
 import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.extensions.preferences.ytAccountChannelHandleKey
-import it.fast4x.riplay.extensions.preferences.ytAccountEmailKey
-import it.fast4x.riplay.extensions.preferences.ytAccountNameKey
-import it.fast4x.riplay.extensions.preferences.ytAccountThumbnailKey
-import it.fast4x.riplay.extensions.preferences.ytCookieKey
-import it.fast4x.riplay.extensions.preferences.ytDataSyncIdKey
-import it.fast4x.riplay.extensions.preferences.ytVisitorDataKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_ACCOUNT_CHANNEL_HANDLE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_ACCOUNT_EMAIL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_ACCOUNT_NAME
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_ACCOUNT_THUMBNAIL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_COOKIE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_DATA_SYNC_ID
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_VISITOR_DATA
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.restartApp
@@ -124,9 +123,9 @@ fun YouTubeLogin(
                             delay(200)
 
                             Timber.d("YouTubeLogin: save login preferences")
-                            context.preferences.edit { putString(ytVisitorDataKey, visitorData) }
-                            context.preferences.edit { putString(ytDataSyncIdKey, dataSyncId) }
-                            context.preferences.edit { putString(ytCookieKey, freshCookie) }
+                            context.preferences.edit { putString(YT_VISITOR_DATA.key, visitorData) }
+                            context.preferences.edit { putString(YT_DATA_SYNC_ID.key, dataSyncId) }
+                            context.preferences.edit { putString(YT_COOKIE.key, freshCookie) }
                             delay(200)
 
                             Timber.d("YouTubeLogin: Initialize Environment")
@@ -139,10 +138,10 @@ fun YouTubeLogin(
                             Timber.d("YouTubeLogin: Initialized, get account info")
 
                             Environment.accountInfo().onSuccess {
-                                context.preferences.edit { putString(ytAccountNameKey, it?.name.orEmpty()) }
-                                context.preferences.edit { putString(ytAccountEmailKey, it?.email.orEmpty()) }
-                                context.preferences.edit { putString(ytAccountChannelHandleKey, it?.channelHandle.orEmpty()) }
-                                context.preferences.edit { putString(ytAccountThumbnailKey, it?.thumbnailUrl.orEmpty()) }
+                                context.preferences.edit { putString(YT_ACCOUNT_NAME.key, it?.name.orEmpty()) }
+                                context.preferences.edit { putString(YT_ACCOUNT_EMAIL.key, it?.email.orEmpty()) }
+                                context.preferences.edit { putString(YT_ACCOUNT_CHANNEL_HANDLE.key, it?.channelHandle.orEmpty()) }
+                                context.preferences.edit { putString(YT_ACCOUNT_THUMBNAIL.key, it?.thumbnailUrl.orEmpty()) }
                                 delay(200)
 
                                 Timber.d("YouTubeLogin: Logged in as ${it?.name}, restarting app...")

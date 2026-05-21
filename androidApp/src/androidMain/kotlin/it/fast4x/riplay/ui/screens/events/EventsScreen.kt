@@ -36,7 +36,7 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.EventType
-import it.fast4x.riplay.extensions.preferences.autoBackupFolderKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.AUTO_BACKUP_FOLDER
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.scheduled.periodicAutoBackup
 import it.fast4x.riplay.extensions.scheduled.periodicCheckNewFromArtists
@@ -47,7 +47,6 @@ import it.fast4x.riplay.utils.formatTimeRemaining
 import it.fast4x.riplay.utils.getWorkStatusFlow
 import it.fast4x.riplay.utils.isWorkScheduled
 import it.fast4x.riplay.utils.typography
-import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.ui.styling.semiBold
 
 
@@ -406,7 +405,7 @@ fun AutoBackupContent(
 ) {
     val isScheduled = isWorkScheduled(workInfo)
     val DEFAULT_DOWNLOADS_URI = "content://com.android.externalstorage.documents/tree/primary%3ADownload"
-    var selectedFolderUri by rememberPreference(autoBackupFolderKey, DEFAULT_DOWNLOADS_URI)
+    var selectedFolderUri by rememberPreference(AUTO_BACKUP_FOLDER.key, DEFAULT_DOWNLOADS_URI)
 
     val folderPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()

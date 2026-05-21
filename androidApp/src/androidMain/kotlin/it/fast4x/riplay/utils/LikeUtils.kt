@@ -9,7 +9,7 @@ import androidx.compose.runtime.setValue
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.IconLikeType
-import it.fast4x.riplay.extensions.preferences.iconLikeTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ICON_LIKE_TYPE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -54,7 +54,7 @@ fun setDisLikeState(likedAt: Long?): Long? {
 
 @Composable
 fun getLikedIcon(): Int {
-    val iconLikeType by rememberPreference(iconLikeTypeKey, IconLikeType.Essential)
+    val iconLikeType by rememberPreference(ICON_LIKE_TYPE.key, IconLikeType.Essential)
 
     return when (iconLikeType) {
         IconLikeType.Essential -> R.drawable.heart
@@ -69,7 +69,7 @@ fun getLikedIcon(): Int {
 
 @Composable
 fun getUnlikedIcon(): Int {
-    val iconLikeType by rememberPreference(iconLikeTypeKey, IconLikeType.Essential)
+    val iconLikeType by rememberPreference(ICON_LIKE_TYPE.key, IconLikeType.Essential)
 
     return when (iconLikeType) {
         IconLikeType.Essential -> R.drawable.heart_outline

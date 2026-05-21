@@ -57,7 +57,7 @@ import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ArtistItem
@@ -76,7 +76,7 @@ import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.isExplicit
-import it.fast4x.riplay.extensions.preferences.maxSongsInQueueKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MAX_SONGS_IN_QUEUE
 import it.fast4x.riplay.utils.LazyListContainer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -121,11 +121,11 @@ fun OnDeviceArtistItems(
 
 
     val hapticFeedback = LocalHapticFeedback.current
-    val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
+    val parentalControlEnabled by rememberPreference(PARENTAL_CONTROL_ENABLED.key, false)
 
     val thumbnailSizeDp = Dimensions.thumbnails.album //+ 24.dp
     val thumbnailSizePx = thumbnailSizeDp.px
-    val maxSongsInQueue by rememberPreference(maxSongsInQueueKey, MaxSongs.`500`)
+    val maxSongsInQueue by rememberPreference(MAX_SONGS_IN_QUEUE.key, MaxSongs.`500`)
     //var forceRecompose by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     var songs by persistList<Song?>("")

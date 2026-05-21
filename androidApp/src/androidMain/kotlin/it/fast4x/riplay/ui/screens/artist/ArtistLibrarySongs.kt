@@ -44,18 +44,16 @@ import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.enums.SongSortBy
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
-import it.fast4x.riplay.ui.components.ShimmerHost
 import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenu
 import it.fast4x.riplay.ui.items.SongItem
-import it.fast4x.riplay.ui.items.SongItemPlaceholder
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.extensions.preferences.disableScrollingTextKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.songSortByKey
-import it.fast4x.riplay.extensions.preferences.songSortOrderKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SONG_SORT_BY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SONG_SORT_ORDER
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
 import it.fast4x.riplay.ui.components.themed.Loader
 import it.fast4x.riplay.ui.components.themed.SortMenu
@@ -83,10 +81,10 @@ fun ArtistLibrarySongs(
     val menuState = LocalGlobalSheetState.current
     var songs by persist<List<SongEntity>?>("artist/$browseId/localSongs")
 
-    var sortBy by rememberPreference(songSortByKey, SongSortBy.DateAdded)
-    var sortOrder by rememberPreference(songSortOrderKey, SortOrder.Descending)
+    var sortBy by rememberPreference(SONG_SORT_BY.key, SongSortBy.DateAdded)
+    var sortOrder by rememberPreference(SONG_SORT_ORDER.key, SortOrder.Descending)
 
-    val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
+    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
 
     LaunchedEffect(Unit, sortBy, sortOrder) {
         Database.listArtistLibrarySongs(browseId, sortBy, sortOrder).collect { songs = it }

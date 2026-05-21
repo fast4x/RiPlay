@@ -119,39 +119,39 @@ import it.fast4x.riplay.extensions.discord.DiscordPresenceManager
 import it.fast4x.riplay.extensions.discord.updateDiscordPresenceWithOfflinePlayer
 import it.fast4x.riplay.extensions.discord.updateDiscordPresenceWithOnlinePlayer
 import it.fast4x.riplay.extensions.history.updateOnlineHistory
-import it.fast4x.riplay.extensions.preferences.audioReverbPresetKey
-import it.fast4x.riplay.extensions.preferences.autoLoadSongsInQueueKey
-import it.fast4x.riplay.extensions.preferences.bassboostEnabledKey
-import it.fast4x.riplay.extensions.preferences.bassboostLevelKey
-import it.fast4x.riplay.extensions.preferences.closePlayerServiceAfterMinutesKey
-import it.fast4x.riplay.extensions.preferences.discordPersonalAccessTokenKey
-import it.fast4x.riplay.extensions.preferences.discoverKey
-import it.fast4x.riplay.extensions.preferences.exoPlayerMinTimeForEventKey
-import it.fast4x.riplay.extensions.preferences.filterContentTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.AUDIO_REVERB_PRESET
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.AUTO_LOAD_SONGS_IN_QUEUE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BASSBOOST_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BASSBOOST_LEVEL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CLOSE_PLAYER_SERVICE_AFTER_MINUTES
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISCORD_PERSONAL_ACCESS_TOKEN
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISCOVER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXO_PLAYER_MIN_TIME_FOR_EVENT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.FILTER_CONTENT_TYPE
 import it.fast4x.riplay.extensions.preferences.getEnum
-import it.fast4x.riplay.extensions.preferences.isDiscordPresenceEnabledKey
-import it.fast4x.riplay.extensions.preferences.isPauseOnVolumeZeroEnabledKey
-import it.fast4x.riplay.extensions.preferences.isShowingThumbnailInLockscreenKey
-import it.fast4x.riplay.extensions.preferences.loudnessBaseGainKey
-import it.fast4x.riplay.extensions.preferences.minimumSilenceDurationKey
-import it.fast4x.riplay.extensions.preferences.notificationPlayerFirstIconKey
-import it.fast4x.riplay.extensions.preferences.notificationPlayerSecondIconKey
-import it.fast4x.riplay.extensions.preferences.pauseListenHistoryKey
-import it.fast4x.riplay.extensions.preferences.persistentQueueKey
-import it.fast4x.riplay.extensions.preferences.playbackDurationKey
-import it.fast4x.riplay.extensions.preferences.playbackFadeAudioDurationKey
-import it.fast4x.riplay.extensions.preferences.playbackPitchKey
-import it.fast4x.riplay.extensions.preferences.playbackSpeedKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_DISCORD_PRESENCE_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_PAUSE_ON_VOLUME_ZERO_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_SHOWING_THUMBNAIL_IN_LOCKSCREEN
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LOUDNESS_BASE_GAIN
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MINIMUM_SILENCE_DURATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.NOTIFICATION_PLAYER_FIRST_ICON
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.NOTIFICATION_PLAYER_SECOND_ICON
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PAUSE_LISTEN_HISTORY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PERSISTENT_QUEUE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYBACK_DURATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYBACK_FADE_AUDIO_DURATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYBACK_PITCH
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYBACK_SPEED
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.putEnum
-import it.fast4x.riplay.extensions.preferences.queueLoopTypeKey
-import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
-import it.fast4x.riplay.extensions.preferences.resumePlaybackOnStartKey
-import it.fast4x.riplay.extensions.preferences.shakeEventEnabledKey
-import it.fast4x.riplay.extensions.preferences.skipSilenceKey
-import it.fast4x.riplay.extensions.preferences.useVolumeKeysToChangeSongKey
-import it.fast4x.riplay.extensions.preferences.volumeBoostLevelKey
-import it.fast4x.riplay.extensions.preferences.volumeNormalizationKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUEUE_LOOP_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.RESUME_PLAYBACK_ON_START
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHAKE_EVENT_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SKIP_SILENCE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.USE_VOLUME_KEYS_TO_CHANGE_SONG
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.VOLUME_BOOST_LEVEL
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.VOLUME_NORMALIZATION
 import it.fast4x.riplay.ui.screens.player.unified.components.customui.CustomDefaultPlayerUiController
 import it.fast4x.riplay.ui.widgets.PlayerHorizontalWidget
 import it.fast4x.riplay.ui.widgets.PlayerVerticalWidget
@@ -180,15 +180,15 @@ import it.fast4x.riplay.extensions.encryptedpreferences.encryptedPreferences
 import it.fast4x.riplay.extensions.lastfm.sendNowPlaying
 import it.fast4x.riplay.extensions.lastfm.sendScrobble
 import it.fast4x.riplay.extensions.players.getOnlineMetadata
-import it.fast4x.riplay.extensions.preferences.disableAudioDRCKey
-import it.fast4x.riplay.extensions.preferences.enableWallpaperKey
-import it.fast4x.riplay.extensions.preferences.excludeSongIfIsVideoKey
-import it.fast4x.riplay.extensions.preferences.isEnabledLastfmKey
-import it.fast4x.riplay.extensions.preferences.lastfmScrobbleTypeKey
-import it.fast4x.riplay.extensions.preferences.lastfmSessionTokenKey
-import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
-import it.fast4x.riplay.extensions.preferences.timerEndTimeKey
-import it.fast4x.riplay.extensions.preferences.wallpaperTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_AUDIO_DRC
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_WALLPAPER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXCLUDE_SONG_IF_IS_VIDEO
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_ENABLED_LASTFM
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LASTFM_SCRUBBLE_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LASTFM_SESSION_TOKEN
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TIMER_END_TIME
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.WALLPAPER_TYPE
 import it.fast4x.riplay.cast.ritune.RiTuneCastClient
 import it.fast4x.riplay.cast.ritune.models.RiTuneConnectionStatus
 import it.fast4x.riplay.cast.ritune.models.RiTunePlayerState
@@ -197,10 +197,10 @@ import it.fast4x.riplay.data.models.QueuedMediaItem
 import it.fast4x.riplay.data.models.defaultQueueId
 import it.fast4x.riplay.enums.AudioQualityFormat
 import it.fast4x.riplay.enums.CastType
-import it.fast4x.riplay.extensions.preferences.audioQualityFormatKey
-import it.fast4x.riplay.extensions.preferences.castTypeKey
-import it.fast4x.riplay.extensions.preferences.stateDurationKey
-import it.fast4x.riplay.extensions.preferences.stateMediaIdKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.AUDIO_QUALITY_FORMAT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CAST_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.STATE_DURATION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.STATE_MEDIA_ID
 import it.fast4x.riplay.services.helpers.AudioDRCHelper
 import it.fast4x.riplay.services.helpers.BluetoothConnectHelper
 import it.fast4x.riplay.services.helpers.EqualizerHelper
@@ -560,7 +560,7 @@ class PlayerService : Service(),
                     }
                     //fallback if online player not fire state ended
                     //updateOnlineNearEndTicks() Experimental aternative whatchdog for end time
-                    if (_currentDuration.value > 0 && preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default) == QueueLoopType.Default) {
+                    if (_currentDuration.value > 0 && preferences.getEnum(QUEUE_LOOP_TYPE.key, QueueLoopType.Default) == QueueLoopType.Default) {
                         if (_currentSecond.value >= _currentDuration.value - 0.5f) {
                             if (_playerState.value.isPlaying) {
                                 Timber.d("PlayerService Watchdog: End of online track detected by time, forcing playNext()")
@@ -629,30 +629,30 @@ class PlayerService : Service(),
 
     private fun initializeVariables() {
 
-        isPersistentQueueEnabled = preferences.getBoolean(persistentQueueKey, true)
-        isResumePlaybackOnStart = preferences.getBoolean(resumePlaybackOnStartKey, false)
+        isPersistentQueueEnabled = preferences.getBoolean(PERSISTENT_QUEUE.key, true)
+        isResumePlaybackOnStart = preferences.getBoolean(RESUME_PLAYBACK_ON_START.key, false)
         isShowingThumbnailInLockscreen =
-            preferences.getBoolean(isShowingThumbnailInLockscreenKey, false)
-        medleyDuration = preferences.getFloat(playbackDurationKey, 0f)
+            preferences.getBoolean(IS_SHOWING_THUMBNAIL_IN_LOCKSCREEN.key, false)
+        medleyDuration = preferences.getFloat(PLAYBACK_DURATION.key, 0f)
 
         _internalOnlinePlayerView.value = LayoutInflater.from(appContext())
             .inflate(R.layout.youtube_player, null, false) as YouTubePlayerView
 
         currentMediaItemState.value = player.currentMediaItem
-        audioQualityFormat = preferences.getEnum(audioQualityFormatKey, AudioQualityFormat.Auto)
-        //isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey, false)
+        audioQualityFormat = preferences.getEnum(AUDIO_QUALITY_FORMAT.key, AudioQualityFormat.Auto)
+        //isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey.key, false)
         closeServiceAfterMinutes =
-            preferences.getEnum(closePlayerServiceAfterMinutesKey, DurationInMinutes.Disabled)
+            preferences.getEnum(CLOSE_PLAYER_SERVICE_AFTER_MINUTES.key, DurationInMinutes.Disabled)
 
 //        closeServiceWhenPlayerPausedAfterMinutes = preferences.getEnum(
-//            closePlayerServiceWhenPausedAfterMinutesKey, DurationInMinutes.Disabled
+//            closePlayerServiceWhenPausedAfterMinutesKey.key, DurationInMinutes.Disabled
 //        )
     }
 
     private fun initializePlaybackParameters() {
         when (localMediaItem?.isLocal) {
             false -> {
-                val playbackSpeed = preferences.getFloat(playbackSpeedKey, 1f)
+                val playbackSpeed = preferences.getFloat(PLAYBACK_SPEED.key, 1f)
                 val onlinePlabackRate = when {
                     (playbackSpeed.toDouble() in 0.0..0.25) -> PlayerConstants.PlaybackRate.RATE_0_25
                     (playbackSpeed.toDouble() in 0.26..0.5) -> PlayerConstants.PlaybackRate.RATE_0_5
@@ -669,8 +669,8 @@ class PlayerService : Service(),
 
             else -> {
                 player.playbackParameters = PlaybackParameters(
-                    preferences.getFloat(playbackSpeedKey, 1f),
-                    preferences.getFloat(playbackPitchKey, 1f)
+                    preferences.getFloat(PLAYBACK_SPEED.key, 1f),
+                    preferences.getFloat(PLAYBACK_PITCH.key, 1f)
                 )
             }
         }
@@ -697,7 +697,7 @@ class PlayerService : Service(),
 
         riTuneObserverJob?.cancel()
 
-        val isRiTuneEnabled = preferences.getEnum(castTypeKey, CastType.RITUNECAST) == CastType.RITUNECAST
+        val isRiTuneEnabled = preferences.getEnum(CAST_TYPE.key, CastType.RITUNECAST) == CastType.RITUNECAST
         if (!isRiTuneEnabled) return
         //if (!isRiTuneEnabled || riTuneClient.connectionStatus.value != RiTuneConnectionStatus.Connected) return
         //Timber.d("PlayerService initializeRiTune isRituneEnabled $isRiTuneEnabled")
@@ -816,8 +816,8 @@ class PlayerService : Service(),
     private fun initializeDiscordPresence() {
         if (!isAtLeastAndroid81) return
 
-        if (preferences.getBoolean(isDiscordPresenceEnabledKey, false)) {
-            val token = encryptedPreferences.getString(discordPersonalAccessTokenKey, "")
+        if (preferences.getBoolean(IS_DISCORD_PRESENCE_ENABLED.key, false)) {
+            val token = encryptedPreferences.getString(DISCORD_PERSONAL_ACCESS_TOKEN.key, "")
             //Timber.d("PlayerService initializeDiscordPresence token $token")
             if (token?.isNotEmpty() == true) {
                 discordPresenceManager = DiscordPresenceManager(
@@ -829,7 +829,7 @@ class PlayerService : Service(),
     }
 
     private fun initializeSensorListener() {
-        if (preferences.getBoolean(shakeEventEnabledKey, false)) {
+        if (preferences.getBoolean(SHAKE_EVENT_ENABLED.key, false)) {
             sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
             Objects.requireNonNull(sensorManager)
                 ?.registerListener(
@@ -844,7 +844,7 @@ class PlayerService : Service(),
     private val sensorListener: SensorEventListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent) {
 
-            if (preferences.getBoolean(shakeEventEnabledKey, false)) {
+            if (preferences.getBoolean(SHAKE_EVENT_ENABLED.key, false)) {
                 // Fetching x,y,z values
                 val x = event.values[0]
                 val y = event.values[1]
@@ -916,7 +916,7 @@ class PlayerService : Service(),
 
         unifiedMediaSession = MediaSessionCompat(this, "PlayerService")
 
-        val repeatMode = preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default).type
+        val repeatMode = preferences.getEnum(QUEUE_LOOP_TYPE.key, QueueLoopType.Default).type
 
         unifiedMediaSession.setFlags(
             MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
@@ -924,7 +924,7 @@ class PlayerService : Service(),
         )
         unifiedMediaSession.setRepeatMode(repeatMode)
 
-        if (preferences.getBoolean(useVolumeKeysToChangeSongKey, false))
+        if (preferences.getBoolean(USE_VOLUME_KEYS_TO_CHANGE_SONG.key, false))
             unifiedMediaSession.setPlaybackToRemote(getVolumeProvider())
 
         initializeUnifiedSessionCallback()
@@ -973,9 +973,9 @@ class PlayerService : Service(),
                 addAnalyticsListener(PlaybackStatsListener(false, this@PlayerService))
             }
 
-        player.repeatMode = preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default).type
+        player.repeatMode = preferences.getEnum(QUEUE_LOOP_TYPE.key, QueueLoopType.Default).type
 
-        player.skipSilenceEnabled = preferences.getBoolean(skipSilenceKey, false)
+        player.skipSilenceEnabled = preferences.getBoolean(SKIP_SILENCE.key, false)
         player.pauseAtEndOfMediaItems = true
     }
 
@@ -1036,8 +1036,8 @@ class PlayerService : Service(),
 
                 _currentDuration.value = duration
 
-                preferences.edit { putFloat(stateDurationKey, duration) }
-                preferences.edit { putString(stateMediaIdKey, localMediaItem?.mediaId) }
+                preferences.edit { putFloat(STATE_DURATION.key, duration) }
+                preferences.edit { putString(STATE_MEDIA_ID.key, localMediaItem?.mediaId) }
 
                 updateUnifiedNotification()
                 updateDiscordPresence()
@@ -1246,7 +1246,7 @@ class PlayerService : Service(),
         }
 
         //This initilize chromecast if available (available only on full build variant)
-        if (CastHelper.isCastAvailable && preferences.getEnum(castTypeKey, CastType.RITUNECAST) !in listOf(CastType.NONE, CastType.RITUNECAST)) {
+        if (CastHelper.isCastAvailable && preferences.getEnum(CAST_TYPE.key, CastType.RITUNECAST) !in listOf(CastType.NONE, CastType.RITUNECAST)) {
             serviceScope.launch {
                 CastHelper.initChromecastYouTubePlayerContext(this@PlayerService)
                 while (isActive) {
@@ -1381,7 +1381,7 @@ class PlayerService : Service(),
             VolumeProviderCompat(VOLUME_CONTROL_RELATIVE, maxVolume, currentVolume) {
 
                 override fun onAdjustVolume(direction: Int) {
-                        val useVolumeKeysToChangeSong = preferences.getBoolean(useVolumeKeysToChangeSongKey, false)
+                        val useVolumeKeysToChangeSong = preferences.getBoolean(USE_VOLUME_KEYS_TO_CHANGE_SONG.key, false)
                         // Up = 1, Down = -1, Release = 0
                         if (direction == VOLUME_UP) {
                             if (binder.player.isPlaying && useVolumeKeysToChangeSong) {
@@ -1550,7 +1550,7 @@ private fun updateOnlineNearEndTicks() {
 
     val shouldTrackNearEnd =
         localMediaItem?.isLocal == false &&
-        preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default) == QueueLoopType.Default &&
+        preferences.getEnum(QUEUE_LOOP_TYPE.key, QueueLoopType.Default) == QueueLoopType.Default &&
         _playerState.value.isPlaying &&
         _currentDuration.value > 0f &&
         _currentSecond.value >= (_currentDuration.value - 0.5f)
@@ -1570,7 +1570,7 @@ private fun updateOnlineNearEndTicks() {
 
 private var pausedByZeroVolume = false
     override fun onAudioVolumeChanged(currentVolume: Int, maxVolume: Int) {
-        if (preferences.getBoolean(isPauseOnVolumeZeroEnabledKey, false)) {
+        if (preferences.getBoolean(IS_PAUSE_ON_VOLUME_ZERO_ENABLED.key, false)) {
             if ((player.isPlaying || _playerState.value.isPlaying) && currentVolume < 1) {
                 if (player.currentMediaItem?.isLocal == true) {
                     binder.callPause {}
@@ -1614,7 +1614,7 @@ private var pausedByZeroVolume = false
 
         Timber.d("PlayerService onPlaybackStatsReady CALLED eventTime $eventTime playbackStats $playbackStats")
 
-        if (preferences.getBoolean(pauseListenHistoryKey, false)) return
+        if (preferences.getBoolean(PAUSE_LISTEN_HISTORY.key, false)) return
 
         val mediaItem =
             eventTime.timeline.getWindow(eventTime.windowIndex, Timeline.Window()).mediaItem
@@ -1634,7 +1634,7 @@ private var pausedByZeroVolume = false
 
 
         val minTimeForEvent =
-            preferences.getEnum(exoPlayerMinTimeForEventKey, MinTimeForEvent.`20s`)
+            preferences.getEnum(EXO_PLAYER_MIN_TIME_FOR_EVENT.key, MinTimeForEvent.`20s`)
 
         if (totalPlayTimeMs > minTimeForEvent.ms) {
             Timber.d("PlayerService onPlaybackStatsReady INSERT EVENT totalPlayTimeMs $totalPlayTimeMs")
@@ -1747,9 +1747,9 @@ private var pausedByZeroVolume = false
 
         saveQueue()
 
-        if (preferences.getBoolean(isEnabledLastfmKey, false)) {
-            preferences.getString(lastfmSessionTokenKey, "")?.let {
-                when (preferences.getEnum(lastfmScrobbleTypeKey, LastFmScrobbleType.Simple)) {
+        if (preferences.getBoolean(IS_ENABLED_LASTFM.key, false)) {
+            preferences.getString(LASTFM_SESSION_TOKEN.key, "")?.let {
+                when (preferences.getEnum(LASTFM_SCRUBBLE_TYPE.key, LastFmScrobbleType.Simple)) {
                     LastFmScrobbleType.Simple -> {
                         sendScrobble(
                             mediaItem.mediaMetadata.artist.toString(),
@@ -1875,9 +1875,9 @@ private var pausedByZeroVolume = false
     }
 
     private fun maybeProcessRadio(reason: Int) {
-        if (!preferences.getBoolean(autoLoadSongsInQueueKey, true)
+        if (!preferences.getBoolean(AUTO_LOAD_SONGS_IN_QUEUE.key, true)
             || preferences.getEnum(
-                queueLoopTypeKey,
+                QUEUE_LOOP_TYPE.key,
                 defaultValue = QueueLoopType.Default
             ) == QueueLoopType.RepeatAll
         ) return
@@ -1906,7 +1906,7 @@ private var pausedByZeroVolume = false
     @ExperimentalCoroutinesApi
     @UnstableApi
     private fun initializeNormalizeVolume() {
-        if (!preferences.getBoolean(volumeNormalizationKey, false)) {
+        if (!preferences.getBoolean(VOLUME_NORMALIZATION.key, false)) {
             loudnessEnhancer?.enabled = false
             loudnessEnhancer?.release()
             loudnessEnhancer = null
@@ -1923,8 +1923,8 @@ private var pausedByZeroVolume = false
         loudnessEnhancer = null
         loudnessEnhancer = LoudnessEnhancer(0)
 
-        val baseGain = preferences.getFloat(loudnessBaseGainKey, 5.00f)
-        val boostLevel = preferences.getFloat(volumeBoostLevelKey, 0.00f)
+        val baseGain = preferences.getFloat(LOUDNESS_BASE_GAIN.key, 5.00f)
+        val boostLevel = preferences.getFloat(VOLUME_BOOST_LEVEL.key, 0.00f)
 
         if (currentSong.value?.isLocal == true && currentSong.value?.mediaId?.isEmpty() == true) return
 
@@ -1955,7 +1955,7 @@ private var pausedByZeroVolume = false
     }
 
     private fun initializeAudioDRCHelper() {
-       val disable = preferences.getBoolean(disableAudioDRCKey, false)
+       val disable = preferences.getBoolean(DISABLE_AUDIO_DRC.key, false)
 
         AudioDRCHelper.init(this)
         if (disable) AudioDRCHelper.disableDRC()
@@ -1988,7 +1988,7 @@ private var pausedByZeroVolume = false
 
     @ExperimentalCoroutinesApi
     private fun initializeBluetoothConnect() {
-        if (!preferences.getBoolean(resumeOrPausePlaybackWhenDeviceKey, false)) return
+        if (!preferences.getBoolean(RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE.key, false)) return
 
         bluetoothReceiver = BluetoothConnectHelper(
             context = this,
@@ -2086,8 +2086,8 @@ private var pausedByZeroVolume = false
                     PlaybackStateCompat.ACTION_SEEK_TO or
                     PlaybackStateCompat.ACTION_SKIP_TO_QUEUE_ITEM
 
-        val notificationPlayerFirstIcon = preferences.getEnum(notificationPlayerFirstIconKey, NotificationButtons.Repeat)
-        val notificationPlayerSecondIcon = preferences.getEnum(notificationPlayerSecondIconKey, NotificationButtons.Favorites)
+        val notificationPlayerFirstIcon = preferences.getEnum(NOTIFICATION_PLAYER_FIRST_ICON.key, NotificationButtons.Repeat)
+        val notificationPlayerSecondIcon = preferences.getEnum(NOTIFICATION_PLAYER_SECOND_ICON.key, NotificationButtons.Favorites)
 
         val firstCustomAction = NotificationButtons.entries
             .filter { it == notificationPlayerFirstIcon }
@@ -2329,8 +2329,8 @@ private var pausedByZeroVolume = false
          */
 
         isPlayingNow = isPlaying
-        val fadeDisabled = preferences.getEnum(playbackFadeAudioDurationKey, DurationInMilliseconds.Disabled) == DurationInMilliseconds.Disabled
-        val duration = preferences.getEnum(playbackFadeAudioDurationKey, DurationInMilliseconds.Disabled).milliSeconds
+        val fadeDisabled = preferences.getEnum(PLAYBACK_FADE_AUDIO_DURATION.key, DurationInMilliseconds.Disabled) == DurationInMilliseconds.Disabled
+        val duration = preferences.getEnum(PLAYBACK_FADE_AUDIO_DURATION.key, DurationInMilliseconds.Disabled).milliSeconds
         if (isPlayingNow && !fadeDisabled)
             startFadeAnimator(
                 player = binder.player,
@@ -2356,65 +2356,65 @@ private var pausedByZeroVolume = false
         sharedPreferences ?: return
 
         when (key) {
-            persistentQueueKey -> {
+            PERSISTENT_QUEUE.key -> {
                 isPersistentQueueEnabled = sharedPreferences.getBoolean(key, true)
             }
-            resumePlaybackOnStartKey  -> {
+            RESUME_PLAYBACK_ON_START.key  -> {
                     isResumePlaybackOnStart = sharedPreferences.getBoolean(key, false)
             }
-            skipSilenceKey -> {
+            SKIP_SILENCE.key -> {
                 player.skipSilenceEnabled = sharedPreferences.getBoolean(key, false)
             }
-            excludeSongIfIsVideoKey -> {
+            EXCLUDE_SONG_IF_IS_VIDEO.key -> {
                 excludeIfIsVideoEnabled = sharedPreferences.getBoolean(key, false)
             }
-            parentalControlEnabledKey -> {
+            PARENTAL_CONTROL_ENABLED.key -> {
                 parentalControlEnabled = sharedPreferences.getBoolean(key, false)
             }
-            queueLoopTypeKey -> {
+            QUEUE_LOOP_TYPE.key -> {
                 player.repeatMode =
                     sharedPreferences.getEnum(key, QueueLoopType.Default).type
             }
 //            closebackgroundPlayerKey -> {
-//                    isclosebackgroundPlayerEnabled = sharedPreferences.getBoolean(key, false)
+//                    isclosebackgroundPlayerEnabled = sharedPreferences.getBoolean(Key.key, false)
 //            }
-            closePlayerServiceAfterMinutesKey -> {
+            CLOSE_PLAYER_SERVICE_AFTER_MINUTES.key -> {
                 closeServiceAfterMinutes =
                     sharedPreferences.getEnum(key,
                         DurationInMinutes.Disabled)
             }
             /*
-            closePlayerServiceWhenPausedAfterMinutesKey -> {
+            closePlayerServiceWhenPausedAfterMinutesKey.key -> {
                 closeServiceWhenPlayerPausedAfterMinutes =
-                    sharedPreferences.getEnum(key,
+                    sharedPreferences.getEnum(Key.key,
                         DurationInMinutes.Disabled)
             }
              */
-            isShowingThumbnailInLockscreenKey -> {
+            IS_SHOWING_THUMBNAIL_IN_LOCKSCREEN.key -> {
                 isShowingThumbnailInLockscreen = sharedPreferences.getBoolean(key, true)
                 initializeSongCoverInLockScreen()
             }
-            playbackDurationKey -> {
+            PLAYBACK_DURATION.key -> {
                 medleyDuration = sharedPreferences.getFloat(key, 0f)
                 initializeMedleyMode()
             }
-            exoPlayerMinTimeForEventKey -> {
+            EXO_PLAYER_MIN_TIME_FOR_EVENT.key -> {
                 minTimeForEvent = sharedPreferences.getEnum(key,
                     MinTimeForEvent.`20s`)
             }
-            resumeOrPausePlaybackWhenDeviceKey -> initializeBluetoothConnect()
-            bassboostLevelKey, bassboostEnabledKey -> initializeBassBoost()
-            audioReverbPresetKey -> initializeReverb()
-            volumeNormalizationKey, loudnessBaseGainKey, volumeBoostLevelKey -> initializeNormalizeVolume()
-            playbackPitchKey, playbackSpeedKey -> initializePlaybackParameters()
-            castTypeKey -> initializeRiTune()
-            disableAudioDRCKey -> initializeAudioDRCHelper()
+            RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE.key -> initializeBluetoothConnect()
+            BASSBOOST_LEVEL.key, BASSBOOST_ENABLED.key -> initializeBassBoost()
+            AUDIO_REVERB_PRESET.key -> initializeReverb()
+            VOLUME_NORMALIZATION.key, LOUDNESS_BASE_GAIN.key, VOLUME_BOOST_LEVEL.key -> initializeNormalizeVolume()
+            PLAYBACK_PITCH.key, PLAYBACK_SPEED.key -> initializePlaybackParameters()
+            CAST_TYPE.key -> initializeRiTune()
+            DISABLE_AUDIO_DRC.key -> initializeAudioDRCHelper()
         }
     }
 
     @ExperimentalCoroutinesApi
     private fun initializeBassBoost() {
-        if (!preferences.getBoolean(bassboostEnabledKey, false)) {
+        if (!preferences.getBoolean(BASSBOOST_ENABLED.key, false)) {
             runCatching {
                 bassBoost?.enabled = false
                 bassBoost?.release()
@@ -2427,7 +2427,7 @@ private var pausedByZeroVolume = false
         runCatching {
             if (bassBoost == null) bassBoost = BassBoost(0, 0)
             val bassboostLevel =
-                (preferences.getFloat(bassboostLevelKey, 0.5f) * 1000f).toInt().toShort()
+                (preferences.getFloat(BASSBOOST_LEVEL.key, 0.5f) * 1000f).toInt().toShort()
             Timber.d("PlayerService processBassBoost bassboostLevel $bassboostLevel")
             bassBoost?.enabled = false
             bassBoost?.setStrength(bassboostLevel)
@@ -2441,7 +2441,7 @@ private var pausedByZeroVolume = false
     }
 
     private fun initializeReverb() {
-        val presetType = preferences.getEnum(audioReverbPresetKey, PresetsReverb.NONE)
+        val presetType = preferences.getEnum(AUDIO_REVERB_PRESET.key, PresetsReverb.NONE)
         Timber.d("PlayerService processReverb presetType $presetType")
         if (presetType == PresetsReverb.NONE) {
             runCatching {
@@ -2493,8 +2493,8 @@ private var pausedByZeroVolume = false
         ).build()
 
 
-        val notificationPlayerFirstIcon = preferences.getEnum(notificationPlayerFirstIconKey, NotificationButtons.Repeat)
-        val notificationPlayerSecondIcon = preferences.getEnum(notificationPlayerSecondIconKey, NotificationButtons.Favorites)
+        val notificationPlayerFirstIcon = preferences.getEnum(NOTIFICATION_PLAYER_FIRST_ICON.key, NotificationButtons.Repeat)
+        val notificationPlayerSecondIcon = preferences.getEnum(NOTIFICATION_PLAYER_SECOND_ICON.key, NotificationButtons.Favorites)
 
         val firstCustomAction = NotificationButtons.entries
             .filter { it == notificationPlayerFirstIcon }
@@ -2657,7 +2657,7 @@ private var pausedByZeroVolume = false
             enableAudioTrackPlaybackParams: Boolean
         ): AudioSink {
             val minimumSilenceDuration = preferences.getLong(
-                minimumSilenceDurationKey, 2_000_000L
+                MINIMUM_SILENCE_DURATION.key, 2_000_000L
             ).coerceIn(1000L..2_000_000L)
 
             return DefaultAudioSink.Builder(applicationContext)
@@ -2707,7 +2707,7 @@ private var pausedByZeroVolume = false
     @ExperimentalCoroutinesApi
     private fun incrementOnlineListenedPlaytimeMs() {
         if (currentSong.value?.isLocal == true
-                || preferences.getBoolean(pauseListenHistoryKey, false)
+                || preferences.getBoolean(PAUSE_LISTEN_HISTORY.key, false)
         ) return
 
         currentSong.value?.id?.let { mediaId ->
@@ -2719,7 +2719,7 @@ private var pausedByZeroVolume = false
             }
 
             val minTimeForEvent =
-                preferences.getEnum(exoPlayerMinTimeForEventKey, MinTimeForEvent.`20s`)
+                preferences.getEnum(EXO_PLAYER_MIN_TIME_FOR_EVENT.key, MinTimeForEvent.`20s`)
 
             if (_currentSecond.value > minTimeForEvent.seconds) {
                 Timber.d("PlayerService incrementOnlineListenedPlaytimeMs INSERT EVENT totalPlayTimeMs $onlineListenedDurationMs")
@@ -2766,7 +2766,7 @@ private var pausedByZeroVolume = false
                 ) {
 
                     val queueLoopType = preferences.getEnum(
-                        queueLoopTypeKey,
+                        QUEUE_LOOP_TYPE.key,
                         defaultValue = QueueLoopType.Default
                     )
 
@@ -2813,9 +2813,9 @@ private var pausedByZeroVolume = false
     suspend fun setWallpaper(context: Context, bitmap: Bitmap) {
         if (!isAtLeastAndroid7) return
 
-        val enabled = preferences.getBoolean(enableWallpaperKey, false)
+        val enabled = preferences.getBoolean(ENABLE_WALLPAPER.key, false)
         if (!enabled) return
-        val wallpaperTarget = preferences.getEnum(wallpaperTypeKey, WallpaperType.Lockscreen)
+        val wallpaperTarget = preferences.getEnum(WALLPAPER_TYPE.key, WallpaperType.Lockscreen)
 
         CoroutineScope(Dispatchers.IO).launch {
             val wallpaperManager = WallpaperManager.getInstance(context) ?: return@launch
@@ -2844,7 +2844,7 @@ private var pausedByZeroVolume = false
     }
 
     private fun checkAndRestoreTimer() {
-        val savedEndTime = preferences.getLong(timerEndTimeKey, 0)
+        val savedEndTime = preferences.getLong(TIMER_END_TIME.key, 0)
 
         if (savedEndTime != 0L) {
             val currentTime = System.currentTimeMillis()
@@ -2945,11 +2945,11 @@ private var pausedByZeroVolume = false
 
                 if (!queuedSong.mediaItem.isLocal) {
                     val duration = try {
-                        preferences.getFloat(stateDurationKey, 0f)
+                        preferences.getFloat(STATE_DURATION.key, 0f)
                     } catch (e: Exception) {
                         0f
                     }
-                    val mId = preferences.getString(stateMediaIdKey, null)
+                    val mId = preferences.getString(STATE_MEDIA_ID.key, null)
                     playFromSecond = position.toFloat()
                     _currentSecond.value = playFromSecond
                     _currentDuration.value = if (queuedSong.mediaId == mId) duration else 0f
@@ -3017,7 +3017,7 @@ private var pausedByZeroVolume = false
             timerJob?.cancel()
 
             val endTime = System.currentTimeMillis() + delayMillis
-            preferences.edit { putLong(timerEndTimeKey, endTime) }
+            preferences.edit { putLong(TIMER_END_TIME.key, endTime) }
 
             Timber.d("PlayerService startSleepTimer delayMillis $delayMillis, scheduled for $endTime")
 
@@ -3028,7 +3028,7 @@ private var pausedByZeroVolume = false
         }
 
         fun executeStopServiceLogic() {
-            preferences.edit { putLong(timerEndTimeKey, 0) }
+            preferences.edit { putLong(TIMER_END_TIME.key, 0) }
 
             saveQueue()
 
@@ -3071,8 +3071,8 @@ private var pausedByZeroVolume = false
         private fun startRadio(endpoint: NavigationEndpoint.Endpoint.Watch?, justAdd: Boolean, filterArtist: String = "") {
             radioJob?.cancel()
             radio = null
-            val isDiscoverEnabled = applicationContext.preferences.getBoolean(discoverKey, false)
-            val filterContentType = applicationContext.preferences.getEnum(filterContentTypeKey,
+            val isDiscoverEnabled = applicationContext.preferences.getBoolean(DISCOVER.key, false)
+            val filterContentType = applicationContext.preferences.getEnum(FILTER_CONTENT_TYPE.key,
                 ContentType.All)
 
             OnlineRadio(
@@ -3166,13 +3166,13 @@ private var pausedByZeroVolume = false
         }
 
         fun toggleRepeat() {
-            val queueLoopType = preferences.getEnum(queueLoopTypeKey, defaultValue = QueueLoopType.Default)
-            preferences.edit { putEnum(queueLoopTypeKey, setQueueLoopState(queueLoopType)) }
+            val queueLoopType = preferences.getEnum(QUEUE_LOOP_TYPE.key, defaultValue = QueueLoopType.Default)
+            preferences.edit { putEnum(QUEUE_LOOP_TYPE.key, setQueueLoopState(queueLoopType)) }
         }
 
         fun callPause(onPause: () -> Unit) {
-            val fadeDisabled = preferences.getEnum(playbackFadeAudioDurationKey, DurationInMilliseconds.Disabled) == DurationInMilliseconds.Disabled
-            val duration = preferences.getEnum(playbackFadeAudioDurationKey, DurationInMilliseconds.Disabled).milliSeconds
+            val fadeDisabled = preferences.getEnum(PLAYBACK_FADE_AUDIO_DURATION.key, DurationInMilliseconds.Disabled) == DurationInMilliseconds.Disabled
+            val duration = preferences.getEnum(PLAYBACK_FADE_AUDIO_DURATION.key, DurationInMilliseconds.Disabled).milliSeconds
             if (player.isPlaying) {
                 if (fadeDisabled) {
                     player.pause()

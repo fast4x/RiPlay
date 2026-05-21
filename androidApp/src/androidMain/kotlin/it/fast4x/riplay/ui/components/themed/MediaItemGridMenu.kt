@@ -76,8 +76,8 @@ import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.mediaItemToggleLike
-import it.fast4x.riplay.extensions.preferences.playlistSortByKey
-import it.fast4x.riplay.extensions.preferences.playlistSortOrderKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SORT_BY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SORT_ORDER
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.commonutils.toThumbnail
@@ -719,8 +719,8 @@ fun MediaItemGridMenu (
         }, label = ""
     ) { currentIsViewingPlaylists ->
         if (currentIsViewingPlaylists) {
-            val sortBy by rememberPreference(playlistSortByKey, PlaylistSortBy.DateAdded)
-            val sortOrder by rememberPreference(playlistSortOrderKey, SortOrder.Descending)
+            val sortBy by rememberPreference(PLAYLIST_SORT_BY.key, PlaylistSortBy.DateAdded)
+            val sortOrder by rememberPreference(PLAYLIST_SORT_ORDER.key, SortOrder.Descending)
             val playlistPreviews by remember {
                 Database.playlistPreviews(sortBy, sortOrder)
             }.collectAsState(initial = emptyList(), context = Dispatchers.IO)

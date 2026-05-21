@@ -24,7 +24,7 @@ import it.fast4x.riplay.enums.PlayerThumbnailSize
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.styling.shimmer
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.extensions.preferences.playerThumbnailSizeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_THUMBNAIL_SIZE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.utils.colorPalette
@@ -61,7 +61,7 @@ fun adaptiveThumbnailContent(
         val thumbnailSizeDp = if (isLandscape) (maxHeight - 128.dp) else (maxWidth - 64.dp)
         val thumbnailSizePx = thumbnailSizeDp.px
         val context = LocalContext.current
-        val playerThumbnailSize by rememberPreference(playerThumbnailSizeKey, PlayerThumbnailSize.Medium)
+        val playerThumbnailSize by rememberPreference(PLAYER_THUMBNAIL_SIZE.key, PlayerThumbnailSize.Medium)
 
         val modifier = Modifier
             //.padding(all = 16.dp)
