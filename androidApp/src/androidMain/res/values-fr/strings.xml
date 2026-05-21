@@ -1335,4 +1335,18 @@ Volume BAS : titre précédent</string>
     <string name="storage_manage_storage">Manage Storage</string>
     <string name="storage_your_device_is_running_out_of_storage_the_app_may_not_work_properly">Your device is running out of storage. The app may not work properly.</string>
     <string name="storage_your_device_is_low_on_storage_consider_freeing_up_some_space_soon">Your device is low on storage. Consider freeing up some space soon.</string>
+    <string name="settings_music_vault_title">Music Vault</string>
+    <string name="settings_music_vault_enable_personal_audio_saving">Enable Personal Audio Saving</string>
+    <string name="settings_music_vault_save_songs_from_youtube_for_personal_offline_listening">Save songs from YouTube for personal offline listening.</string>
+    <string name="disclaimer_music_vault_title_before_you_use_music_vault">Before you use Music Vault</string>
+    <string name="disclaimer_music_vault_info_lets_you_save_audio_from_youtube_solely_for_personal_offline_listening">Music Vault lets you save audio from YouTube solely for personal, offline listening.</string>
+    <string name="disclaimer_music_vault_info1_please_be_aware_that">Please be aware that:</string>
+    <string name="disclaimer_music_vault_info2_downloading_youtube_content_without_a_premium_subscription_may_violate_youtube_s_terms_of_service">Downloading YouTube content without a Premium subscription may violate YouTube\'s Terms of Service.</string>
+    <string name="disclaimer_music_vault_info3_saved_content_is_for_personal_use_only_redistribution_or_commercial_use_is_not_permitted">Saved content is for personal use only. Redistribution or commercial use is not permitted.</string>
+    <string name="disclaimer_music_vault_info4_this_feature_is_provided_as_is_the_developer_is_not_responsible_for_any_misuse">This feature is provided as-is. The developer is not responsible for any misuse.</string>
+    <string name="disclaimer_music_vault_info5_by_continuing_you_confirm_that_you_will_use_this_feature_responsibly_and_solely_for_personal_use">By continuing, you confirm that you will use this feature responsibly and solely for personal use.</string>
+    <string name="disclaimer_music_vault_accept_i_understand">I Understand</string>
+    <string name="disclaimer_music_vault_decline">Decline</string>
+    <string name="settings_music_vault_folder_music_vault">Folder Music Vault</string>
+    <string name="settings_music_vault_restore_default_folder">Restore default folder</string>
 </resources>

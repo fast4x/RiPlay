@@ -29,18 +29,22 @@ import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultDisclaimerDialog
 import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultFolderSetting
+import it.fast4x.riplay.extensions.experimental.musicvalt.checkAndStartMusicVault
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.LocalAppearance
-import it.fast4x.riplay.extensions.preferences.defaultFolderKey
-import it.fast4x.riplay.extensions.preferences.logDebugEnabledKey
-import it.fast4x.riplay.extensions.preferences.musicVaultDisclaimerAcceptedKey
-import it.fast4x.riplay.extensions.preferences.musicVaultEnabledKey
-import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DEFAULT_FOLDER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LOG_DEBUG_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_VAULT_DISCLAIMER_ACCEPTED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_VAULT_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.NAVIGATION_BAR_POSITION
 import it.fast4x.riplay.extensions.preferences.rememberPreference
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileInputStream
 import java.text.SimpleDateFormat
@@ -54,13 +58,13 @@ import java.util.Date
 fun MiscSettings() {
     val context = LocalContext.current
     val (colorPalette, _, _) = LocalAppearance.current
-    var defaultFolder by rememberPreference(defaultFolderKey, "/")
+    var defaultFolder by rememberPreference(DEFAULT_FOLDER.key, "/")
     val navigationBarPosition by rememberPreference(
-        navigationBarPositionKey,
+        NAVIGATION_BAR_POSITION.key,
         NavigationBarPosition.Bottom
     )
 
-    var logDebugEnabled by rememberPreference(logDebugEnabledKey, false)
+    var logDebugEnabled by rememberPreference(LOG_DEBUG_ENABLED.key, false)
 
     var fileName by remember {
         mutableStateOf("")
@@ -124,8 +128,8 @@ fun MiscSettings() {
         )
     }
 
-    var musicVaultEnabled by rememberPreference(musicVaultEnabledKey, false)
-    var disclaimerAccepted by rememberPreference(musicVaultDisclaimerAcceptedKey, false)
+    var musicVaultEnabled by rememberPreference(MUSIC_VAULT_ENABLED.key, false)
+    var disclaimerAccepted by rememberPreference(MUSIC_VAULT_DISCLAIMER_ACCEPTED.key, false)
     var showDisclaimer by remember { mutableStateOf(false) }
 
     Column(
@@ -160,12 +164,12 @@ fun MiscSettings() {
                 isHeader = true
             ) {
                 SettingsGroupSpacer()
-                SettingsEntryGroupText(title = "Music Vault")
+                SettingsEntryGroupText(title = stringResource(R.string.settings_music_vault_title))
             }
             settingsItem {
                 SwitchSettingEntry(
-                    title = "Enable Personal Audio Saving",
-                    text = "Save songs from YouTube for personal offline listening.",
+                    title = stringResource(R.string.settings_music_vault_enable_personal_audio_saving),
+                    text = stringResource(R.string.settings_music_vault_save_songs_from_youtube_for_personal_offline_listening),
                     isChecked = musicVaultEnabled,
                     onCheckedChange = {
                         if (it) {
@@ -185,6 +189,10 @@ fun MiscSettings() {
                             disclaimerAccepted = true
                             musicVaultEnabled = true
                             showDisclaimer = false
+                            CoroutineScope(Dispatchers.IO).launch {
+                                // Disclaimer accettato quindi Music Vault può essere avviato
+                                checkAndStartMusicVault()
+                            }
                         },
                         onDecline = {
                             showDisclaimer = false

@@ -127,71 +127,69 @@ import it.fast4x.riplay.extensions.pip.PipModuleCover
 import it.fast4x.riplay.extensions.pip.isInPip
 import it.fast4x.riplay.extensions.pip.maybeEnterPip
 import it.fast4x.riplay.extensions.pip.maybeExitPip
-import it.fast4x.riplay.extensions.preferences.UiTypeKey
-import it.fast4x.riplay.extensions.preferences.appIsRunningKey
-import it.fast4x.riplay.extensions.preferences.applyFontPaddingKey
-import it.fast4x.riplay.extensions.preferences.backgroundProgressKey
-import it.fast4x.riplay.extensions.preferences.colorPaletteModeKey
-import it.fast4x.riplay.extensions.preferences.colorPaletteNameKey
-import it.fast4x.riplay.extensions.preferences.customColorKey
-import it.fast4x.riplay.extensions.preferences.customDnsOverHttpsServerKey
-import it.fast4x.riplay.extensions.preferences.customThemeDark_Background0Key
-import it.fast4x.riplay.extensions.preferences.customThemeDark_Background1Key
-import it.fast4x.riplay.extensions.preferences.customThemeDark_Background2Key
-import it.fast4x.riplay.extensions.preferences.customThemeDark_Background3Key
-import it.fast4x.riplay.extensions.preferences.customThemeDark_Background4Key
-import it.fast4x.riplay.extensions.preferences.customThemeDark_TextKey
-import it.fast4x.riplay.extensions.preferences.customThemeDark_accentKey
-import it.fast4x.riplay.extensions.preferences.customThemeDark_iconButtonPlayerKey
-import it.fast4x.riplay.extensions.preferences.customThemeDark_textDisabledKey
-import it.fast4x.riplay.extensions.preferences.customThemeDark_textSecondaryKey
-import it.fast4x.riplay.extensions.preferences.customThemeLight_Background0Key
-import it.fast4x.riplay.extensions.preferences.customThemeLight_Background1Key
-import it.fast4x.riplay.extensions.preferences.customThemeLight_Background2Key
-import it.fast4x.riplay.extensions.preferences.customThemeLight_Background3Key
-import it.fast4x.riplay.extensions.preferences.customThemeLight_Background4Key
-import it.fast4x.riplay.extensions.preferences.customThemeLight_TextKey
-import it.fast4x.riplay.extensions.preferences.customThemeLight_accentKey
-import it.fast4x.riplay.extensions.preferences.customThemeLight_iconButtonPlayerKey
-import it.fast4x.riplay.extensions.preferences.customThemeLight_textDisabledKey
-import it.fast4x.riplay.extensions.preferences.customThemeLight_textSecondaryKey
-import it.fast4x.riplay.extensions.preferences.disableClosingPlayerSwipingDownKey
-import it.fast4x.riplay.extensions.preferences.disablePlayerHorizontalSwipeKey
-import it.fast4x.riplay.extensions.preferences.fontTypeKey
-import it.fast4x.riplay.extensions.preferences.getEnum
-import it.fast4x.riplay.extensions.preferences.isEnabledFullscreenKey
-import it.fast4x.riplay.extensions.preferences.isKeepScreenOnEnabledKey
-import it.fast4x.riplay.extensions.preferences.isProxyEnabledKey
-import it.fast4x.riplay.extensions.preferences.languageAppKey
-import it.fast4x.riplay.extensions.preferences.loadedDataKey
-import it.fast4x.riplay.extensions.preferences.miniPlayerTypeKey
-import it.fast4x.riplay.extensions.preferences.navigationBarPositionKey
-import it.fast4x.riplay.extensions.preferences.navigationBarTypeKey
-import it.fast4x.riplay.extensions.preferences.parentalControlEnabledKey
-import it.fast4x.riplay.extensions.preferences.pipModuleKey
-import it.fast4x.riplay.extensions.preferences.playerBackgroundColorsKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.UI_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.APP_IS_RUNNING
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.APPLY_FONT_PADDING
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.BACKGROUND_PROGRESS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_NAME
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_COLOR
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_DNS_OVER_HTTPS_SERVER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_0
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_1
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_2
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_3
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_4
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_TEXT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_ACCENT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_ICON_BUTTON_PLAYER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_TEXT_DISABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_TEXT_SECONDARY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_0
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_1
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_2
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_3
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_4
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_TEXT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_ACCENT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_ICON_BUTTON_PLAYER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_TEXT_DISABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_TEXT_SECONDARY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_CLOSING_PLAYER_SWIPING_DOWN
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_PLAYER_HORIZONTAL_SWIPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.FONT_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_ENABLED_FULLSCREEN
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_KEEP_SCREEN_ON_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_PROXY_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LANGUAGE_APP
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.LOADED_DATA
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MINI_PLAYER_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.NAVIGATION_BAR_POSITION
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.NAVIGATION_BAR_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PIP_MODULE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_BACKGROUND_COLORS
 import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.extensions.preferences.proxyHostnameKey
-import it.fast4x.riplay.extensions.preferences.proxyModeKey
-import it.fast4x.riplay.extensions.preferences.proxyPortKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PROXY_HOSTNAME
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PROXY_MODE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PROXY_PORT
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.rememberObservedPreference
-import it.fast4x.riplay.extensions.preferences.restartActivityKey
-import it.fast4x.riplay.extensions.preferences.shakeEventEnabledKey
-import it.fast4x.riplay.extensions.preferences.showSearchTabKey
-import it.fast4x.riplay.extensions.preferences.showTotalTimeQueueKey
-import it.fast4x.riplay.extensions.preferences.thumbnailRoundnessKey
-import it.fast4x.riplay.extensions.preferences.transitionEffectKey
-import it.fast4x.riplay.extensions.preferences.useSystemFontKey
-import it.fast4x.riplay.extensions.preferences.ytCookieKey
-import it.fast4x.riplay.extensions.preferences.ytDataSyncIdKey
-import it.fast4x.riplay.extensions.preferences.ytVisitorDataKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.RESTART_ACTIVITY
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHAKE_EVENT_ENABLED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SEARCH_TAB
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_TOTAL_TIME_QUEUE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSITION_EFFECT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.USE_SYSTEM_FONT
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_COOKIE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_DATA_SYNC_ID
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_VISITOR_DATA
 import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
 import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.extensions.audiotag.AudioTagViewModel
-import it.fast4x.riplay.extensions.preferences.closebackgroundPlayerKey
-import it.fast4x.riplay.extensions.preferences.showAutostartPermissionDialogKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CLOSE_BACKGROUND_PLAYER
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_AUTOSTART_PERMISSION_DIALOG
 import it.fast4x.riplay.navigation.AppNavigation
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.BottomSheet
@@ -234,12 +232,12 @@ import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
 import it.fast4x.riplay.extensions.htmlreader.shazamSongInfoExtractor
 import it.fast4x.riplay.extensions.nsd.discoverNsdServices
 import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
-import it.fast4x.riplay.extensions.preferences.resumeOrPausePlaybackWhenDeviceKey
-import it.fast4x.riplay.extensions.preferences.showSnowfallEffectKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SNOWFALL_EFFECT
 import it.fast4x.riplay.cast.ritune.models.toRiTuneDevice
 import it.fast4x.riplay.cast.ritune.RiTuneCastSelector
 import it.fast4x.riplay.enums.CastType
-import it.fast4x.riplay.extensions.preferences.castTypeKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CAST_TYPE
 import it.fast4x.riplay.extensions.storagewarning.StorageWarningChecker
 import it.fast4x.riplay.services.playback.PlayerState
 import it.fast4x.riplay.ui.components.Snowfall
@@ -267,12 +265,12 @@ import java.net.Proxy
 import java.net.URLEncoder
 import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 import java.util.Objects
 import kotlin.math.sqrt
 import androidx.compose.ui.platform.LocalLocale
-import com.chaquo.python.Python
-import com.chaquo.python.android.AndroidPlatform
+import it.fast4x.riplay.extensions.experimental.musicvalt.checkAndStartMusicVault
+import it.fast4x.riplay.extensions.preferences.cleanUpUnusedPreferences
+import it.fast4x.riplay.extensions.preferences.getEnum
 
 
 @UnstableApi
@@ -387,7 +385,7 @@ class MainActivity :
             permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
         }
 
-        if (isAtLeastAndroid12 && preferences.getBoolean(resumeOrPausePlaybackWhenDeviceKey, false))
+        if (isAtLeastAndroid12 && preferences.getBoolean(RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE.key, false))
             permissionsToRequest.add(Manifest.permission.BLUETOOTH_CONNECT)
 
 
@@ -468,23 +466,6 @@ class MainActivity :
             startActivity(fallbackIntent)
             SmartMessage( "Open the app settings and look for battery or autostart options.", context= this)
         }
-    }
-
-    private fun testChaquopy() {
-        if (!Python.isStarted()) {
-            Python.start(AndroidPlatform(this))
-        }
-
-        val py = Python.getInstance()
-
-        // Test 1: Python funziona?
-        val sys = py.getModule("sys")
-        Timber.d("Chaquopy Python version: ${sys["version"]}")
-
-        // Test 2: yt-dlp è installato?
-        val ytdlp = py.getModule("yt_dlp")
-        Timber.d("Chaquopy yt-dlp version: ${ytdlp["version"]?.get("__version__")}")
-
     }
 
     override fun onStart() {
@@ -568,7 +549,7 @@ class MainActivity :
             startApp()
         }
 
-        if (preferences.getBoolean(shakeEventEnabledKey, false)) {
+        if (preferences.getBoolean(SHAKE_EVENT_ENABLED.key, false)) {
             sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
             Objects.requireNonNull(sensorManager)
                 ?.registerListener(
@@ -581,7 +562,7 @@ class MainActivity :
 
         checkIfAppIsRunningInBackground()
 
-        if (preferences.getEnum(castTypeKey, CastType.RITUNECAST) == CastType.RITUNECAST) {
+        if (preferences.getEnum(CAST_TYPE.key, CastType.RITUNECAST) == CastType.RITUNECAST) {
             //registerNsdService()
             discoverNsdServices(
                 onServiceFound = { devices ->
@@ -591,16 +572,22 @@ class MainActivity :
             )
         }
 
-        isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey, false)
+        isclosebackgroundPlayerEnabled = preferences.getBoolean(CLOSE_BACKGROUND_PLAYER.key, false)
 
-        showAutostartPermissionDialog = preferences.getBoolean(showAutostartPermissionDialogKey, true)
+        showAutostartPermissionDialog = preferences.getBoolean(SHOW_AUTOSTART_PERMISSION_DIALOG.key, true)
 
         //checkAndRequestStandardPermissions()
 
         //mediaRouter = MediaRouter.getInstance(this)
 
         lifecycleScope.launch(Dispatchers.IO) {
-            testChaquopy()
+            // Controlla che l'utente abbia accettato il disclaimer ed avvia Music Vault
+            checkAndStartMusicVault()
+        }
+
+        lifecycleScope.launch {
+            // Esegue in background la pulizia delle preferenze non utilizzate
+            cleanUpUnusedPreferences(applicationContext)
         }
 
     }
@@ -704,15 +691,15 @@ class MainActivity :
     fun startApp() {
 
         // Hide autostart permission dialog after showing the dialog
-        preferences.edit(commit = true) { putBoolean(showAutostartPermissionDialogKey, false) }
+        preferences.edit(commit = true) { putBoolean(SHOW_AUTOSTART_PERMISSION_DIALOG.key, false) }
 
         // Used in QuickPics for load data from remote instead of last saved in SharedPreferences
-        preferences.edit(commit = true) { putBoolean(loadedDataKey, false) }
+        preferences.edit(commit = true) { putBoolean(LOADED_DATA.key, false) }
 
         // Used for android auto to show notification to invite user launch app
-        preferences.edit(commit = true) { putBoolean(appIsRunningKey, true) }
+        preferences.edit(commit = true) { putBoolean(APP_IS_RUNNING.key, true) }
 
-//        if (!preferences.getBoolean(closeWithBackButtonKey, false))
+//        if (!preferences.getBoolean(closeWithBackButtonKey.key, false))
 //            if (Build.VERSION.SDK_INT >= 33) {
 //                onBackInvokedDispatcher.registerOnBackInvokedCallback(
 //                    OnBackInvokedDispatcher.PRIORITY_DEFAULT
@@ -731,14 +718,14 @@ class MainActivity :
         intentUriData = intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri()
 
         with(preferences) {
-            if (getBoolean(isKeepScreenOnEnabledKey, false)) {
+            if (getBoolean(IS_KEEP_SCREEN_ON_ENABLED.key, false)) {
                 window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             }
 
-            if (getBoolean(isProxyEnabledKey, false)) {
-                val hostName = getString(proxyHostnameKey, null)
-                val proxyPort = getInt(proxyPortKey, 8080)
-                val proxyMode = getEnum(proxyModeKey, Proxy.Type.HTTP)
+            if (getBoolean(IS_PROXY_ENABLED.key, false)) {
+                val hostName = getString(PROXY_HOSTNAME.key, null)
+                val proxyPort = getInt(PROXY_PORT.key, 8080)
+                val proxyMode = getEnum(PROXY_MODE.key, Proxy.Type.HTTP)
                 if (isValidIP(hostName)) {
                     hostName?.let { hName ->
                         ProxyPreferences.preference =
@@ -797,8 +784,8 @@ class MainActivity :
 //            val isInternetAvailable by internetConnectivityObserver.internetNetworkStatus.collectAsState(true)
 
             // Observe preference so theme mode updates immediately when changed from Settings
-            val colorPaletteMode by rememberObservedPreference(
-                colorPaletteModeKey,
+            val colorPaletteMode by rememberPreference(
+                COLOR_PALETTE_MODE.key,
                 ColorPaletteMode.Dark
             )
 
@@ -806,14 +793,14 @@ class MainActivity :
             val isSystemInDarkTheme = isSystemInDarkTheme()
             var navController: NavHostController? = null
 
-            var customColor by rememberPreference(customColorKey, Color.Green.hashCode())
+            var customColor by rememberPreference(CUSTOM_COLOR.key, Color.Green.hashCode())
             val lightTheme =
                 colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
 
             val locale = LocalLocale.current.platformLocale
             val languageTag = locale.toLanguageTag().replace("-Hant", "")
             val languageApp =
-                globalContext().preferences.getEnum(languageAppKey, getSystemlanguage())
+                globalContext().preferences.getEnum(LANGUAGE_APP.key, getSystemlanguage())
             LocalePreferences.preference =
                 LocalePreferenceItem(
                     hl = languageApp.code.takeIf { it != Languages.System.code }
@@ -828,8 +815,8 @@ class MainActivity :
                 gl = LocalePreferences.preference?.gl
             )
 
-            cookie.value = preferences.getString(ytCookieKey, "").toString()
-            visitorData.value = preferences.getString(ytVisitorDataKey, "").toString()
+            cookie.value = preferences.getString(YT_COOKIE.key, "").toString()
+            visitorData.value = preferences.getString(YT_VISITOR_DATA.key, "").toString()
 
 
 
@@ -841,7 +828,7 @@ class MainActivity :
                         Environment.getInitialVisitorData().getOrNull()
                     }.takeIf { it != "null" } ?: ""
                     // Save visitorData in SharedPreferences
-                    preferences.edit { putString(ytVisitorDataKey, visitorData.value) }
+                    preferences.edit { putString(YT_VISITOR_DATA.key, visitorData.value) }
                 }.onFailure {
                     Timber.e("MainActivity.setContent visitorData.isEmpty() getInitialVisitorData ${it.stackTraceToString()}")
                     visitorData.value = "" //Environment._uMYwa66ycM
@@ -856,11 +843,11 @@ class MainActivity :
                 else {
                     Environment.cookie = ""
                     cookie.value = ""
-                    preferences.edit { putString(ytCookieKey, "") }
+                    preferences.edit { putString(YT_COOKIE.key, "") }
                 }
             }
 
-            val dataSyncId = preferences.getString(ytDataSyncIdKey, "").toString()
+            val dataSyncId = preferences.getString(YT_DATA_SYNC_ID.key, "").toString()
             Environment.dataSyncId = dataSyncId.let {
                 it.takeIf { !it.contains("||") }
                     ?: it.takeIf { it.endsWith("||") }?.substringBefore("||")
@@ -869,7 +856,7 @@ class MainActivity :
 
             Timber.d("MainActivity.setContent Environment variables cookie: ${Environment.cookie} visitorData: ${Environment.visitorData} dataSyncId: ${Environment.dataSyncId}")
             val customDnsOverHttpsServer =
-                preferences.getString(customDnsOverHttpsServerKey, "")
+                preferences.getString(CUSTOM_DNS_OVER_HTTPS_SERVER.key, "")
 
             val customDnsIsOk = customDnsOverHttpsServer?.let { isValidHttpUrl(it) }
             if (customDnsIsOk == false && getDnsOverHttpsType() == DnsOverHttpsType.Custom)
@@ -891,16 +878,16 @@ class MainActivity :
             ) {
                 with(preferences) {
                     val colorPaletteName =
-                        getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
+                        getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
                     val thumbnailRoundness =
-                        getEnum(thumbnailRoundnessKey, ThumbnailRoundness.Light)
-                    val useSystemFont = getBoolean(useSystemFontKey, false)
-                    val applyFontPadding = getBoolean(applyFontPaddingKey, false)
+                        getEnum(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
+                    val useSystemFont = getBoolean(USE_SYSTEM_FONT.key, false)
+                    val applyFontPadding = getBoolean(APPLY_FONT_PADDING.key, false)
 
                     var colorPalette =
                         colorPaletteOf(colorPaletteName, colorPaletteMode, !lightTheme)
 
-                    val fontType = getEnum(fontTypeKey, FontType.Rubik)
+                    val fontType = getEnum(FONT_TYPE.key, FontType.Rubik)
 
                     //TODO CHECK MATERIALYOU OR MONIT
                     if (colorPaletteName == ColorPaletteName.MaterialYou) {
@@ -940,7 +927,7 @@ class MainActivity :
             fun setDynamicPalette(url: String) {
 
                 val colorPaletteName =
-                    preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
+                    preferences.getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
                 val isDynamicPalette = colorPaletteName == ColorPaletteName.Dynamic
 
                 if (!isDynamicPalette) return
@@ -991,9 +978,9 @@ class MainActivity :
                     SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
                         when (key) {
 
-                            languageAppKey -> {
+                            LANGUAGE_APP.key -> {
                                 val lang = sharedPreferences.getEnum(
-                                    languageAppKey,
+                                    LANGUAGE_APP.key,
                                     Languages.English
                                 )
 
@@ -1009,54 +996,54 @@ class MainActivity :
                             }
 
                             // todo improve enum in live state
-                            UiTypeKey,
-                            disablePlayerHorizontalSwipeKey,
-                            disableClosingPlayerSwipingDownKey,
-                            showSearchTabKey,
-                            navigationBarPositionKey,
-                            navigationBarTypeKey,
-                            showTotalTimeQueueKey,
-                            backgroundProgressKey,
-                            transitionEffectKey,
-                            playerBackgroundColorsKey,
-                            miniPlayerTypeKey,
-                            restartActivityKey
+                            UI_TYPE.key,
+                            DISABLE_PLAYER_HORIZONTAL_SWIPE.key,
+                            DISABLE_CLOSING_PLAYER_SWIPING_DOWN.key,
+                            SHOW_SEARCH_TAB.key,
+                            NAVIGATION_BAR_POSITION.key,
+                            NAVIGATION_BAR_TYPE.key,
+                            SHOW_TOTAL_TIME_QUEUE.key,
+                            BACKGROUND_PROGRESS.key,
+                            TRANSITION_EFFECT.key,
+                            PLAYER_BACKGROUND_COLORS.key,
+                            MINI_PLAYER_TYPE.key,
+                            RESTART_ACTIVITY.key
                                 -> {
                                 this@MainActivity.recreate()
                                 Timber.d("MainActivity.recreate()")
                             }
 
-                            colorPaletteNameKey, colorPaletteModeKey,
-                            customThemeLight_Background0Key,
-                            customThemeLight_Background1Key,
-                            customThemeLight_Background2Key,
-                            customThemeLight_Background3Key,
-                            customThemeLight_Background4Key,
-                            customThemeLight_TextKey,
-                            customThemeLight_textSecondaryKey,
-                            customThemeLight_textDisabledKey,
-                            customThemeLight_iconButtonPlayerKey,
-                            customThemeLight_accentKey,
-                            customThemeDark_Background0Key,
-                            customThemeDark_Background1Key,
-                            customThemeDark_Background2Key,
-                            customThemeDark_Background3Key,
-                            customThemeDark_Background4Key,
-                            customThemeDark_TextKey,
-                            customThemeDark_textSecondaryKey,
-                            customThemeDark_textDisabledKey,
-                            customThemeDark_iconButtonPlayerKey,
-                            customThemeDark_accentKey,
-                            customColorKey
+                            COLOR_PALETTE_NAME.key, COLOR_PALETTE_MODE.key,
+                            CUSTOM_THEME_LIGHT_BACKGROUND_0.key,
+                            CUSTOM_THEME_LIGHT_BACKGROUND_1.key,
+                            CUSTOM_THEME_LIGHT_BACKGROUND_2.key,
+                            CUSTOM_THEME_LIGHT_BACKGROUND_3.key,
+                            CUSTOM_THEME_LIGHT_BACKGROUND_4.key,
+                            CUSTOM_THEME_LIGHT_TEXT.key,
+                            CUSTOM_THEME_LIGHT_TEXT_SECONDARY.key,
+                            CUSTOM_THEME_LIGHT_TEXT_DISABLED.key,
+                            CUSTOM_THEME_LIGHT_ICON_BUTTON_PLAYER.key,
+                            CUSTOM_THEME_LIGHT_ACCENT.key,
+                            CUSTOM_THEME_DARK_BACKGROUND_0.key,
+                            CUSTOM_THEME_DARK_BACKGROUND_1.key,
+                            CUSTOM_THEME_DARK_BACKGROUND_2.key,
+                            CUSTOM_THEME_DARK_BACKGROUND_3.key,
+                            CUSTOM_THEME_DARK_BACKGROUND_4.key,
+                            CUSTOM_THEME_DARK_TEXT.key,
+                            CUSTOM_THEME_DARK_TEXT_SECONDARY.key,
+                            CUSTOM_THEME_DARK_TEXT_DISABLED.key,
+                            CUSTOM_THEME_DARK_ICON_BUTTON_PLAYER.key,
+                            CUSTOM_THEME_DARK_ACCENT.key,
+                            CUSTOM_COLOR.key
                                 -> {
                                 val colorPaletteName =
                                     sharedPreferences.getEnum(
-                                        colorPaletteNameKey,
+                                        COLOR_PALETTE_NAME.key,
                                         ColorPaletteName.Dynamic
                                     )
 
                                 val newColorPaletteMode = sharedPreferences.getEnum(
-                                    colorPaletteModeKey,
+                                    COLOR_PALETTE_MODE.key,
                                     ColorPaletteMode.Dark
                                 )
                                 val isNewPitchBlack = newColorPaletteMode == ColorPaletteMode.PitchBlack
@@ -1140,22 +1127,22 @@ class MainActivity :
                                 }
                             }
 
-                            thumbnailRoundnessKey -> {
+                            THUMBNAIL_ROUNDNESS.key -> {
                                 val thumbnailRoundness =
-                                    sharedPreferences.getEnum(key, ThumbnailRoundness.Light)
+                                    sharedPreferences.getEnum(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
 
                                 appearance = appearance.copy(
                                     thumbnailShape = thumbnailRoundness.shape()
                                 )
                             }
 
-                            useSystemFontKey, applyFontPaddingKey, fontTypeKey -> {
+                            USE_SYSTEM_FONT.key, APPLY_FONT_PADDING.key, FONT_TYPE.key -> {
                                 val useSystemFont =
-                                    sharedPreferences.getBoolean(useSystemFontKey, false)
+                                    sharedPreferences.getBoolean(USE_SYSTEM_FONT.key, false)
                                 val applyFontPadding =
-                                    sharedPreferences.getBoolean(applyFontPaddingKey, false)
+                                    sharedPreferences.getBoolean(APPLY_FONT_PADDING.key, false)
                                 val fontType =
-                                    sharedPreferences.getEnum(fontTypeKey, FontType.Rubik)
+                                    sharedPreferences.getEnum(FONT_TYPE.key, FontType.Rubik)
 
                                 appearance = appearance.copy(
                                     typography = typographyOf(
@@ -1167,18 +1154,18 @@ class MainActivity :
                                 )
                             }
 
-                            ytCookieKey -> cookie.value =
-                                sharedPreferences.getString(ytCookieKey, "").toString()
+                            YT_COOKIE.key -> cookie.value =
+                                sharedPreferences.getString(YT_COOKIE.key, "").toString()
 
-                            ytVisitorDataKey -> {
+                            YT_VISITOR_DATA.key -> {
                                 if (visitorData.value.isEmpty())
                                     visitorData.value =
-                                        sharedPreferences.getString(ytVisitorDataKey, "").toString()
+                                        sharedPreferences.getString(YT_VISITOR_DATA.key, "").toString()
                             }
-                            isEnabledFullscreenKey -> enableFullscreenMode()
-                            closebackgroundPlayerKey -> isclosebackgroundPlayerEnabled =
+                            IS_ENABLED_FULLSCREEN.key -> enableFullscreenMode()
+                            CLOSE_BACKGROUND_PLAYER.key -> isclosebackgroundPlayerEnabled =
                                 sharedPreferences.getBoolean(
-                                    closebackgroundPlayerKey,
+                                    CLOSE_BACKGROUND_PLAYER.key,
                                     false
                                 )
 
@@ -1189,7 +1176,7 @@ class MainActivity :
                     registerOnSharedPreferenceChangeListener(listener)
 
                     val colorPaletteName =
-                        getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
+                        getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
                     if (colorPaletteName == ColorPaletteName.Dynamic) {
                         setDynamicPalette(
                             (binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri.toString().toThumbnail(
@@ -1230,7 +1217,7 @@ class MainActivity :
 
             LaunchedEffect(Unit) {
                 val colorPaletteName =
-                    preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
+                    preferences.getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
                 if (colorPaletteName == ColorPaletteName.Customized) {
                     appearance = appearance.copy(
                         colorPalette = customColorPalette(
@@ -1335,7 +1322,7 @@ class MainActivity :
                     state = pip
                 ) { isCurrentInPip ->
                     //Timber.d("MainActivity pipState ${pipState.value} CrossfadeContainer isCurrentInPip $isCurrentInPip ")
-                    val pipModule by rememberPreference(pipModuleKey, PipModule.Cover)
+                    val pipModule by rememberPreference(PIP_MODULE.key, PipModule.Cover)
                     if (isCurrentInPip) {
                         Box(
                             modifier = Modifier
@@ -1428,7 +1415,7 @@ class MainActivity :
                                     openTabFromShortcut = openTabFromShortcut
                                 )
 
-                                val isSnowEffectEnabled by rememberObservedPreference(showSnowfallEffectKey, false)
+                                val isSnowEffectEnabled by rememberPreference(SHOW_SNOWFALL_EFFECT.key, false)
                                 if (isSnowEffectEnabled)
                                     Box(modifier = Modifier.fillMaxSize()) {
                                         Snowfall()
@@ -1438,7 +1425,7 @@ class MainActivity :
                                 if (appRunningInBackground) localPlayerSheetState.collapseSoft()
 
                                 val thumbnailRoundness by rememberPreference(
-                                    thumbnailRoundnessKey,
+                                    THUMBNAIL_ROUNDNESS.key,
                                     ThumbnailRoundness.Light
                                 )
 
@@ -1720,7 +1707,7 @@ class MainActivity :
                                 val binder = snapshotFlow { binder }.filterNotNull().first()
                                 withContext(Dispatchers.Main) {
                                     if (!song.explicit && !preferences.getBoolean(
-                                            parentalControlEnabledKey,
+                                            PARENTAL_CONTROL_ENABLED.key,
                                             false
                                         )
                                     )
@@ -1797,7 +1784,7 @@ class MainActivity :
     private val sensorListener: SensorEventListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent) {
 
-            if (preferences.getBoolean(shakeEventEnabledKey, false)) {
+            if (preferences.getBoolean(SHAKE_EVENT_ENABLED.key, false)) {
                 // Fetching x,y,z values
                 val x = event.values[0]
                 val y = event.values[1]
@@ -1834,7 +1821,7 @@ class MainActivity :
 
         binder?.onlinePlayer?.setVolume(100) // maybe is needed when webview lost audiofocus
 
-        preferences.edit(commit = true) { putBoolean(appIsRunningKey, true) }
+        preferences.edit(commit = true) { putBoolean(APP_IS_RUNNING.key, true) }
 
         runCatching {
             sensorManager?.registerListener(
@@ -1854,7 +1841,7 @@ class MainActivity :
     override fun onPause() {
         super.onPause()
 
-        preferences.edit(commit = true) { putBoolean(appIsRunningKey, false) }
+        preferences.edit(commit = true) { putBoolean(APP_IS_RUNNING.key, false) }
 
         runCatching {
             sensorListener.let { sensorManager?.unregisterListener(it) }
@@ -1893,7 +1880,7 @@ class MainActivity :
         super.onDestroy()
 
         Timber.d("MainActivity.onDestroy")
-        preferences.edit(commit = true) { putBoolean(appIsRunningKey, false) }
+        preferences.edit(commit = true) { putBoolean(APP_IS_RUNNING.key, false) }
 
         runCatching {
             localMonet.removeMonetColorsChangedListener(this)
@@ -1938,7 +1925,7 @@ class MainActivity :
     ) {
         super<MonetCompatActivity>.onMonetColorsChanged(monet, monetColors, isInitialChange)
         val colorPaletteName =
-            preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
+            preferences.getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
         if (!isInitialChange && colorPaletteName == ColorPaletteName.MaterialYou) {
             /*
             monet.updateMonetColors()
