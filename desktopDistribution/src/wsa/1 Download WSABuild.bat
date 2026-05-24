@@ -1,0 +1,1 @@
+start "" "https://github.com/MustardChef/WSABuilds/releases/download/Windows_11_2407.40000.4.0_LTS_7_HOTFIX_1/WSA_2407.40000.4.0_x64_Release-Nightly-with-magisk-30.6.30600.-stable-NoGApps-NoAmazon.7z"
