@@ -27,6 +27,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -2232,6 +2233,7 @@ fun UnifiedPlayer(
             if (!mediaItem.isVideo) {
                 Box(
                     modifier = Modifier
+                        .fillMaxSize()
                         .conditional(queueType == QueueType.Modern) {
                             hazeEffect(
                                 state = hazeState,
@@ -2244,150 +2246,7 @@ fun UnifiedPlayer(
                         }
                 ) {
 
-                    if ((playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor && playerType == PlayerType.Modern && (!showthumbnail || albumCoverRotation)) || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) {
-                        val fling = PagerDefaults.flingBehavior(
-                            state = pagerStateFS,
-                            snapPositionalThreshold = 0.20f
-                        )
-                        pagerStateFS.LaunchedEffectScrollToPage(binder.player.currentMediaItemIndex)
 
-                        if (!showQueue) {
-                            LaunchedEffect(pagerStateFS) {
-                                var previousPage = pagerStateFS.settledPage
-                                snapshotFlow { pagerStateFS.settledPage }.distinctUntilChanged()
-                                    .collect {
-                                        if (previousPage != it) {
-                                            if (it != binder.player.currentMediaItemIndex) binder.player.playAtIndex(
-                                                it
-                                            )
-                                        }
-                                        previousPage = it
-                                    }
-                            }
-                        }
-
-                        HorizontalPager(
-                            state = pagerStateFS,
-                            beyondViewportPageCount = 1,
-                            flingBehavior = fling,
-                            userScrollEnabled = !((albumCoverRotation || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) && (isShowingLyrics || showthumbnail)),
-                            modifier = Modifier
-                        ) { index ->
-                            if (!(index < binder.player.mediaItemCount && index >= 0)) return@HorizontalPager
-
-                            var currentRotation by rememberSaveable {
-                                mutableFloatStateOf(0f)
-                            }
-
-                            val rotation = rememberSavableAnimatable(currentRotation)
-
-                            LaunchedEffect(playerState.isPlaying, pagerStateFS.settledPage) {
-                                if (playerState.isPlaying && index == pagerStateFS.settledPage) {
-                                    rotation.animateTo(
-                                        targetValue = currentRotation + 360f,
-                                        animationSpec = infiniteRepeatable(
-                                            animation = tween(30000, easing = LinearEasing),
-                                            repeatMode = RepeatMode.Restart
-                                        )
-                                    ) {
-                                        currentRotation = value
-                                    }
-                                } else {
-                                    if (currentRotation > 0f && index == pagerStateFS.settledPage) {
-                                        rotation.animateTo(
-                                            targetValue = currentRotation + 10,
-                                            animationSpec = tween(
-                                                1250,
-                                                easing = LinearOutSlowInEasing
-                                            )
-                                        ) {
-                                            currentRotation = value
-                                        }
-                                    }
-                                }
-                            }
-
-                            val blurRadius = if ((isShowingLyrics && !isShowingVisualizer) || !noblur)
-                                blurStrength.toInt() else 0
-
-                            val request = remember(index, binder.player.getMediaItemAt(index).mediaId, showthumbnail, blurRadius) {
-                                ImageRequest.Builder(context)
-                                    .data(
-                                        binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
-                                            .toThumbnail(1200)
-                                    )
-                                    .size(1200, 1200)
-                                    .transformations(
-                                        listOf(
-                                            LandscapeToSquareTransformation(1200),
-                                            if (showthumbnail) {
-                                                BlurTransformation(scale = 0.5f, radius = blurStrength.toInt())
-                                            } else {
-                                                BlurTransformation(scale = 0.5f, radius = blurRadius)
-                                            }
-                                        )
-                                    )
-                                    .build()
-                            }
-
-                            AsyncImage(
-                                model = request,
-                                contentDescription = "",
-                                contentScale = if ((albumCoverRotation || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) && (isShowingLyrics || showthumbnail)) ContentScale.Fit else ContentScale.Crop,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .zIndex(if (index == pagerStateFS.currentPage) 1f else 0.9f)
-                                    .conditional(albumCoverRotation || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) {
-                                        graphicsLayer {
-                                            scaleX =
-                                                if (isShowingLyrics || showthumbnail) (screenWidth / screenHeight) + 0.5f else 1f
-                                            scaleY =
-                                                if (isShowingLyrics || showthumbnail) (screenWidth / screenHeight) + 0.5f else 1f
-                                            rotationZ =
-                                                if ((index == pagerStateFS.settledPage) && (isShowingLyrics || showthumbnail)) rotation.value else 0f
-                                        }
-                                    }
-                                    .combinedClickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null,
-                                        onClick = {
-                                            if (thumbnailTapEnabled && !showthumbnail) {
-                                                if (isShowingVisualizer) isShowingVisualizer = false
-                                                isShowingLyrics = !isShowingLyrics
-                                            }
-                                        },
-//                                        onDoubleClick = {
-//                                            if (!showlyricsthumbnail && !showvisthumbnail)
-//                                                showthumbnail = !showthumbnail
-//                                        },
-                                        onLongClick = {
-                                            if (showthumbnail || (isShowingLyrics && !isShowingVisualizer) || !noblur)
-                                                showBlurPlayerDialog = true
-                                        }
-                                    )
-                            )
-                        }
-
-                        Column(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .background(
-                                    Brush.verticalGradient(
-                                        0.0f to Color.Transparent,
-                                        1.0f to if (bottomgradient) if (lightTheme) Color.White.copy(
-                                            if (isLandscape) 0.8f else 0.75f
-                                        ) else Color.Black.copy(if (isLandscape) 0.8f else 0.75f) else Color.Transparent,
-                                        startY = if (isLandscape) 600f else if (expandedplayer) 1300f else 950f,
-                                        endY = POSITIVE_INFINITY
-                                    )
-                                )
-                                .background(
-                                    if (bottomgradient) if (isLandscape) if (lightTheme) Color.White.copy(
-                                        0.25f
-                                    ) else Color.Black.copy(0.25f) else Color.Transparent else Color.Transparent
-                                )
-                        ) {}
-                    }
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = containerModifier
@@ -2410,11 +2269,157 @@ fun UnifiedPlayer(
                         Column(
                             verticalArrangement = Arrangement.Center,
                             modifier = Modifier
-                                .fillMaxHeight()
+                                .fillMaxHeight(.7f)
                                 .fillMaxWidth(.4f)
                                 .animateContentSize()
                             // .border(BorderStroke(1.dp, Color.Blue))
                         ) {
+
+                            if ((playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor && playerType == PlayerType.Modern && (!showthumbnail || albumCoverRotation)) || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) {
+                                val fling = PagerDefaults.flingBehavior(
+                                    state = pagerStateFS,
+                                    snapPositionalThreshold = 0.20f
+                                )
+                                pagerStateFS.LaunchedEffectScrollToPage(binder.player.currentMediaItemIndex)
+
+                                if (!showQueue) {
+                                    LaunchedEffect(pagerStateFS) {
+                                        var previousPage = pagerStateFS.settledPage
+                                        snapshotFlow { pagerStateFS.settledPage }.distinctUntilChanged()
+                                            .collect {
+                                                if (previousPage != it) {
+                                                    if (it != binder.player.currentMediaItemIndex) binder.player.playAtIndex(
+                                                        it
+                                                    )
+                                                }
+                                                previousPage = it
+                                            }
+                                    }
+                                }
+
+                                HorizontalPager(
+                                    state = pagerStateFS,
+                                    beyondViewportPageCount = 2,
+                                    flingBehavior = fling,
+                                    snapPosition = SnapPosition.Center,
+                                    userScrollEnabled = !((albumCoverRotation || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) && (isShowingLyrics || showthumbnail)),
+                                    modifier = Modifier
+                                ) { index ->
+                                    if (!(index < binder.player.mediaItemCount && index >= 0)) return@HorizontalPager
+
+                                    var currentRotation by rememberSaveable {
+                                        mutableFloatStateOf(0f)
+                                    }
+
+                                    val rotation = rememberSavableAnimatable(currentRotation)
+
+                                    LaunchedEffect(playerState.isPlaying, pagerStateFS.settledPage) {
+                                        if (playerState.isPlaying && index == pagerStateFS.settledPage) {
+                                            rotation.animateTo(
+                                                targetValue = currentRotation + 360f,
+                                                animationSpec = infiniteRepeatable(
+                                                    animation = tween(30000, easing = LinearEasing),
+                                                    repeatMode = RepeatMode.Restart
+                                                )
+                                            ) {
+                                                currentRotation = value
+                                            }
+                                        } else {
+                                            if (currentRotation > 0f && index == pagerStateFS.settledPage) {
+                                                rotation.animateTo(
+                                                    targetValue = currentRotation + 10,
+                                                    animationSpec = tween(
+                                                        1250,
+                                                        easing = LinearOutSlowInEasing
+                                                    )
+                                                ) {
+                                                    currentRotation = value
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    val blurRadius = if ((isShowingLyrics && !isShowingVisualizer) || !noblur)
+                                        blurStrength.toInt() else 0
+
+                                    val request = remember(index, binder.player.getMediaItemAt(index).mediaId, showthumbnail, blurRadius) {
+                                        ImageRequest.Builder(context)
+                                            .data(
+                                                binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
+                                                    .toThumbnail(1200)
+                                            )
+                                            .size(1200, 1200)
+                                            .transformations(
+                                                listOf(
+                                                    LandscapeToSquareTransformation(1200),
+                                                    if (showthumbnail) {
+                                                        BlurTransformation(scale = 0.5f, radius = blurStrength.toInt())
+                                                    } else {
+                                                        BlurTransformation(scale = 0.5f, radius = blurRadius)
+                                                    }
+                                                )
+                                            )
+                                            .build()
+                                    }
+
+                                    AsyncImage(
+                                        model = request,
+                                        contentDescription = "",
+                                        contentScale = if ((albumCoverRotation || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) && (isShowingLyrics || showthumbnail)) ContentScale.Fit else ContentScale.Crop,
+                                        modifier = Modifier
+                                            .zIndex(if (index == pagerStateFS.currentPage) 1f else 0.9f)
+                                            .conditional(albumCoverRotation || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) {
+                                                graphicsLayer {
+                                                    scaleX =
+                                                        if (isShowingLyrics || showthumbnail) (screenWidth / screenHeight) + 0.5f else 1f
+                                                    scaleY =
+                                                        if (isShowingLyrics || showthumbnail) (screenWidth / screenHeight) + 0.5f else 1f
+                                                    rotationZ =
+                                                        if ((index == pagerStateFS.settledPage) && (isShowingLyrics || showthumbnail)) rotation.value else 0f
+                                                }
+                                            }
+                                            .combinedClickable(
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                indication = null,
+                                                onClick = {
+                                                    if (thumbnailTapEnabled && !showthumbnail) {
+                                                        if (isShowingVisualizer) isShowingVisualizer = false
+                                                        isShowingLyrics = !isShowingLyrics
+                                                    }
+                                                },
+//                                        onDoubleClick = {
+//                                            if (!showlyricsthumbnail && !showvisthumbnail)
+//                                                showthumbnail = !showthumbnail
+//                                        },
+                                                onLongClick = {
+                                                    if (showthumbnail || (isShowingLyrics && !isShowingVisualizer) || !noblur)
+                                                        showBlurPlayerDialog = true
+                                                }
+                                            )
+                                    )
+                                }
+
+                                Column(
+                                    modifier = Modifier
+                                        //.matchParentSize()
+                                        .background(
+                                            Brush.verticalGradient(
+                                                0.0f to Color.Transparent,
+                                                1.0f to if (bottomgradient) if (lightTheme) Color.White.copy(
+                                                    if (isLandscape) 0.8f else 0.75f
+                                                ) else Color.Black.copy(if (isLandscape) 0.8f else 0.75f) else Color.Transparent,
+                                                startY = if (isLandscape) 600f else if (expandedplayer) 1300f else 950f,
+                                                endY = POSITIVE_INFINITY
+                                            )
+                                        )
+                                        .background(
+                                            if (bottomgradient) if (isLandscape) if (lightTheme) Color.White.copy(
+                                                0.25f
+                                            ) else Color.Black.copy(0.25f) else Color.Transparent else Color.Transparent
+                                        )
+                                ) {}
+                            }
+
 
                             if (isShowingVisualizer && !showvisthumbnail && playerType == PlayerType.Essential) {
                                 Box(
