@@ -148,6 +148,12 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 
 ---
 
+## 📲 Installation on PC
+**How to?**
+- [Installer AVD and RiPlay - Windows and Linux](/desktopDistribution/redist/Installer%20AVD%20and%20RiPlay%20-%20Windows%20and%20Linux.7z)
+- [Installer WSA and RiPlay - Only Windows](/desktopDistribution/redist/Installer%20WSA%20and%20RiPlay%20-%20Only%20Windows.7z)
+
+
 ## ❓ Need Help?
 
 - 📖 [Wiki & FAQs](https://github.com/fast4x/RiPlay/wiki/FAQs)  
@@ -177,6 +183,7 @@ RiPlay wouldn't be possible without the amazing work of these projects and contr
 - [KuGou](https://www.kugou.com), [LrcLib](https://lrclib.net), [SimpMusic Lyrics](https://simpmusic.org) – Lyrics providers
 - [HypnoticCanvas](https://mikepenz.github.io/HypnoticCanvas/) – shaders for Compose  
 - [AudioTag.info](https://audiotag.info) – music recognition API
+- [WSABuilds](https://github.com/MustardChef/WSABuilds) - Run Windows Subsystem For Android on your Windows 10 and Windows 11 PC using prebuilt binaries
 
 ---
 
