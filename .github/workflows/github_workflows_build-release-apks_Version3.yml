@@ -89,6 +89,16 @@ jobs:
           find androidApp -name "*.apk" -path "*/release/*" -exec cp {} release-apks/ \;
           ls -lah release-apks/
 
+      - name: Copy additional ZIP files
+        run: |
+          echo "📦 Copying additional assets..."
+          
+          cp desktopDistribution/redist/*.7z release-apks/
+          
+          # Check if files exists
+          echo "📂 Final content of folder release-apks:"
+          ls -lah release-apks/
+
       - name: Generate Changelog
         id: changelog
         run: |
@@ -153,7 +163,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: release-apks/*.apk
+          files: release-apks/*
           body: ${{ steps.release_notes.outputs.release_notes }}
           draft: false
           prerelease: false
