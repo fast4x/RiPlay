@@ -1737,7 +1737,8 @@ private var pausedByZeroVolume = false
             }
         }
 
-        maybeRecoverPlaybackError()
+        // maybe not needed
+        //maybeRecoverPlaybackError()
         initializeNormalizeVolume()
         maybeProcessRadio(reason)
 
