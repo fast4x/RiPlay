@@ -8,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
+import it.fast4x.environment.Environment
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.PopupType
@@ -19,6 +20,9 @@ import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
 import it.fast4x.riplay.utils.formatAsDuration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class ImportSongsFromCSV private constructor(
     private val launcher: ManagedActivityResultLauncher<Array<String>, Uri?>
@@ -31,57 +35,127 @@ class ImportSongsFromCSV private constructor(
             afterTransaction: ( Int, Song, Album, List<Artist> ) -> Unit = { _,_,_,_ -> }
         ) {
             appContext().applicationContext
-                        .contentResolver
-                        .openInputStream(uri)
-                        ?.use { inputStream ->
-                            csvReader().open(inputStream) {
-                                readAllWithHeaderAsSequence().forEachIndexed { index, row: Map<String, String> ->
-                                    println("mediaItem index song $index")
+                .contentResolver
+                .openInputStream(uri)
+                ?.use { inputStream ->
+                    csvReader().open(inputStream) {
+                        readAllWithHeaderAsSequence().forEachIndexed { index, row: Map<String, String> ->
+                            println("mediaItem index song $index")
 
-                                    Database.asyncTransaction {
-                                        beforeTransaction( index, row )
-                                        /**/
-                                        val explicitPrefix = if (row["Explicit"] == "true") "e:" else ""
-                                        val pseudoMediaId = (row["Track Name"]+row["Artist Name(s)"]).filter { it.isLetterOrDigit() }
-                                        val title = row["Title"] ?: row["Track Name"] ?: return@asyncTransaction
-                                        val mediaId = row["MediaId"] ?: pseudoMediaId
-                                        val artistsText = row["Artists"] ?: row["Artist Name(s)"] ?: ""
-                                        val durationText = row["Duration"] ?: formatAsDuration(row["Track Duration (ms)"]?.toLong() ?: 0L)
+                            Database.asyncTransaction {
+                                beforeTransaction( index, row )
 
-                                        val song = Song(
-                                            id = mediaId,
-                                            title = explicitPrefix+title,
-                                            artistsText = artistsText,
-                                            durationText = durationText,
-                                            thumbnailUrl = row["ThumbnailUrl"] ?: "",
-                                            totalPlayTimeMs = 1L
+                                // Rilevamento del formato: controlliamo se esiste "Track URI" (Spotify)
+                                val isSpotifyFormat = row.containsKey("Track URI")
+
+                                val song: Song
+                                val album: Album
+                                val artists: List<Artist>
+
+                                if (isSpotifyFormat) {
+
+                                    val explicitPrefix = if (row["Explicit"] == "true") "e:" else ""
+
+                                    // Usa Track URI come ID, o niente
+                                    val mediaId = row["Track URI"] ?: return@asyncTransaction
+
+                                    val title = row["Track Name"] ?: return@asyncTransaction
+
+                                    // Gestione Artisti: Spotify usa "Artist Name(s)"
+                                    val artistsText = row["Artist Name(s)"] ?: ""
+
+                                    // Gestione Durata: Spotify usa "Duration (ms)"
+                                    val durationText = formatAsDuration(row["Duration (ms)"]?.toLong() ?: 0L)
+
+                                    val spotifyTrackId = row["Track URI"]?.split(":")?.last()
+
+                                    song = Song(
+                                        id = mediaId,
+                                        title = explicitPrefix + title,
+                                        artistsText = artistsText,
+                                        durationText = durationText,
+                                        thumbnailUrl = null,
+                                        totalPlayTimeMs = 1L
+                                    )
+
+                                    // Album
+                                    val albumTitle = row["Album Name"]
+                                    album = Album(
+                                        id = "",
+                                        title = albumTitle
+                                    )
+
+                                    // Artisti
+                                    val artistNames = row["Artist Name(s)"]?.split(",")
+                                    artists = artistNames?.map { name ->
+                                        Artist(
+                                            id = "",
+                                            name = name.trim()
                                         )
+                                    } ?: mutableListOf()
 
-                                         val albumId = row["AlbumId"] ?: ""
-                                         val albumTitle = row["AlbumTitle"]
-                                         val album = Album(
-                                            id = albumId,
-                                            title = albumTitle
-                                         )
+                                    afterTransaction( index, song, album, artists )
 
-                                         val artistNames = row["Artists"]?.split(",")
-                                         val artistIds = row["ArtistIds"]?.split(",")
-                                         val artists = mutableListOf<Artist>()
-                                         if (artistIds != null && (artistNames?.size == artistIds.size)) {
-                                            for(idx in artistIds.indices){
-                                                val artistName = artistNames.getOrNull(idx)
-                                                val artistId = artistIds.getOrNull(idx)
-                                                if(artistId!=null){
-                                                    val artist = Artist(
+                                    // 3. Recupero della copertina in parallelo
+                                    spotifyTrackId?.let { id ->
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            val url = Environment.spotifyThumbnail(id).getOrNull()
+
+                                            if (!url.isNullOrEmpty()) {
+                                                println("ImportPlaylist Copertina trovata per $title: $url. Aggiorno DB con ID: $mediaId")
+                                                Database.updateSongThumbnail(mediaId, url)
+                                            }
+                                        }
+                                    }
+
+                                } else {
+
+                                    val explicitPrefix = if (row["Explicit"] == "true") "e:" else ""
+                                    val pseudoMediaId = (row["Track Name"]+row["Artist Name(s)"]).filter { it.isLetterOrDigit() }
+                                    val mediaId = row["MediaId"] ?: pseudoMediaId
+                                    val title = row["Title"] ?: row["Track Name"] ?: return@asyncTransaction
+                                    val artistsText = row["Artists"] ?: row["Artist Name(s)"] ?: ""
+
+                                    // Tenta prima la colonna "Duration" (testo), poi "Track Duration (ms)"
+                                    val durationText = row["Duration"] ?: formatAsDuration(row["Track Duration (ms)"]?.toLong() ?: 0L)
+
+                                    song = Song(
+                                        id = mediaId,
+                                        title = explicitPrefix+title,
+                                        artistsText = artistsText,
+                                        durationText = durationText,
+                                        thumbnailUrl = row["ThumbnailUrl"] ?: "",
+                                        totalPlayTimeMs = 1L
+                                    )
+
+                                    val albumId = row["AlbumId"] ?: ""
+                                    val albumTitle = row["AlbumTitle"]
+                                    album = Album(
+                                        id = albumId,
+                                        title = albumTitle
+                                    )
+
+                                    val artistNames = row["Artists"]?.split(",")
+                                    val artistIds = row["ArtistIds"]?.split(",")
+                                    val mutableArtists = mutableListOf<Artist>()
+                                    if (artistIds != null && (artistNames?.size == artistIds.size)) {
+                                        for(idx in artistIds.indices){
+                                            val artistName = artistNames.getOrNull(idx)
+                                            val artistId = artistIds.getOrNull(idx)
+                                            if(artistId!=null){
+                                                val artist = Artist(
                                                     id = artistId,
                                                     name = artistName
-                                                    )
-                                                    artists.add(artist)
-                                                }
+                                                )
+                                                mutableArtists.add(artist)
                                             }
-                                         }
+                                        }
+                                    }
+                                    artists = mutableArtists
 
-                                afterTransaction( index, song, album, artists )
+                                    afterTransaction( index, song, album, artists )
+                                }
+
                             }
                         }
                     }

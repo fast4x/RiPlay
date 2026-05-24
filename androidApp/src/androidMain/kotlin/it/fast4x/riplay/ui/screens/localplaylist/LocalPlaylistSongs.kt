@@ -242,13 +242,21 @@ fun LocalPlaylistSongs(
 
     val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
     var playlistSongsTypeFilter by rememberPreference(PLAYLIST_SONGS_TYPE_FILTER.key, PlaylistSongsTypeFilter.All)
+    var isSpotifyPlaylist by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit, filter, sortOrder, sortBy) {
         Database.songsPlaylist(playlistId, sortBy, sortOrder).filterNotNull()
-            .collect { playlistAllSongs = it }
+            .collect { songs ->
+                playlistAllSongs = songs
+                isSpotifyPlaylist = songs.any { it.song.id.startsWith("spotify") }
+            }
+
 
 
     }
+
+    println("LocalPlaylistSongs isSpotifyPlaylist $isSpotifyPlaylist")
+    println("LocalPlaylistSongs playlistAllSongs $playlistAllSongs")
 
     LaunchedEffect(Unit, playlistAllSongs, filter, playlistSongsTypeFilter) {
         when (playlistSongsTypeFilter) {
@@ -951,12 +959,14 @@ fun LocalPlaylistSongs(
     var totalSongsToUpdate by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit,playlistUpdateDialog){
-        Database.asyncTransaction {
-            totalSongsToUpdate = playlistAllSongs.filter { it.song.thumbnailUrl?.startsWith("https://lh3.googleusercontent.com/") == true
+        //Database.asyncTransaction {
+
+            totalSongsToUpdate = if (!isSpotifyPlaylist) playlistAllSongs.filter { it.song.thumbnailUrl?.startsWith("https://lh3.googleusercontent.com/") == true
                     && !((songAlbumInfo(it.asMediaItem.mediaId)?.id != null)
                     && songArtistInfo(it.asMediaItem.mediaId).isNotEmpty()
                     && !it.song.artistsText.isNullOrBlank()) }.size
-        }
+            else playlistAllSongs.filter { it.song.id.startsWith("spotify") }.size
+        //}
     }
 
     if (playlistUpdateDialog){
@@ -971,12 +981,30 @@ fun LocalPlaylistSongs(
         withContext(Dispatchers.IO) {
             songsUpdated = 0
             val jobs = mutableListOf<Job>()
-            playlistAllSongs.filter { it.song.thumbnailUrl?.startsWith("https://lh3.googleusercontent.com/") == true
-                    && !((songAlbumInfo(it.asMediaItem.mediaId)?.id != null) && songArtistInfo(it.asMediaItem.mediaId).isNotEmpty() && !it.song.artistsText.isNullOrBlank()) }.forEach { song ->
-                jobs.add(coroutineScope.launch(Dispatchers.IO) {
-                    updateLocalPlaylist(song.song)
+            if (!isSpotifyPlaylist) {
+                playlistAllSongs.filter {
+                    it.song.thumbnailUrl?.startsWith("https://lh3.googleusercontent.com/") == true
+                            && !((songAlbumInfo(it.asMediaItem.mediaId)?.id != null) && songArtistInfo(
+                        it.asMediaItem.mediaId
+                    ).isNotEmpty() && !it.song.artistsText.isNullOrBlank())
+                }.forEach { song ->
+
+                    jobs.add(
+                        coroutineScope.launch(Dispatchers.IO) {
+                            updateLocalPlaylist(song.song)
+                        }
+                    )
                 }
-                )
+            } else {
+                println("LocalPlaylistSongs Conversione playlist")
+//                playlistAllSongs.filter { it.song.id.startsWith("spotify") }
+//                    .forEach { song ->
+//                        jobs.add(
+//                            coroutineScope.launch(Dispatchers.IO) {
+//                                updateLocalPlaylist(song.song)
+//                            }
+//                        )
+//                    }
             }
             while(jobs.isNotEmpty()){
                 val oldSize = jobs.size
@@ -1010,6 +1038,7 @@ fun LocalPlaylistSongs(
     )
 
     println("LocalPlaylistSongs playlist browseId ${playlistPreview?.playlist?.browseId}")
+    println("LocalPlaylistSongs ${playlistAllSongs}")
 
     PullToRefreshBox(
         refreshing = refreshing,

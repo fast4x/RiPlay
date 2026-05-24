@@ -1092,5 +1092,23 @@ object Environment {
         }
     }
 
+    @Serializable
+    data class SpotifyOEmbedResponse(
+        val thumbnail_url: String? = null
+    )
+
+    suspend fun spotifyThumbnail(trackId: String): Result<String?> =
+        runCatching {
+            val oembedUrl = "https://open.spotify.com/oembed"
+            val trackUrl = "https://open.spotify.com/track/$trackId"
+            val response = client.get(oembedUrl) {
+                parameter("url", trackUrl)
+            }.body<SpotifyOEmbedResponse>()
+
+            response.thumbnail_url
+        }.onFailure {
+            println("Environment spotifyThumbnail error ${it.message}")
+        }
+
 }
 

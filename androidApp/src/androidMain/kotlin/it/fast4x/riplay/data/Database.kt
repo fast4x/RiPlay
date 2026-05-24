@@ -781,6 +781,10 @@ interface Database {
     fun updateSongTitle(id: String, title: String): Int
 
     @Transaction
+    @Query("UPDATE Song SET thumbnailUrl = :url WHERE id = :id")
+    fun updateSongThumbnail(id: String, url: String): Int
+
+    @Transaction
     @Query("UPDATE Song SET artistsText = :artist WHERE id = :id")
     fun updateSongArtist(id: String, artist: String): Int
 
