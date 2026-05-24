@@ -71,6 +71,14 @@ fun MusicVaultDisclaimerDialog(
                     style = typography.s.semiBold,
                     color = colorPalette.text
                 )
+
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = "Powered by yt-dlp and Python",
+                    style = typography.xxs,
+                    color = colorPalette.text
+                )
+
             }
         },
         confirmButton = {
