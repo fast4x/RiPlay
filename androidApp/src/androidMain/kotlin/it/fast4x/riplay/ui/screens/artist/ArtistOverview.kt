@@ -81,6 +81,7 @@ import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
@@ -111,7 +112,6 @@ import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.fadingEdge
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.secondary
@@ -442,7 +442,7 @@ fun ArtistOverview(
                                 R.string.following
                             ),
                             onClick = {
-                                if (isYtSyncEnabled() && !isNetworkConnected(context)) {
+                                if (isYtSyncEnabled() && !isNetworkConnected()) {
                                     SmartMessage(
                                         context.resources.getString(R.string.no_connection),
                                         context = context,

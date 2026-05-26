@@ -51,10 +51,10 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.data.models.Queues
+import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
 import it.fast4x.riplay.ui.components.themed.QueuesDialog
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.utils.addToOnlineLikedSong
-import it.fast4x.riplay.utils.isNetworkConnected
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -152,7 +152,7 @@ fun SwipeableQueueItem(
         Database.likedAt(mediaItem.mediaId).distinctUntilChanged().collect { likedAt = it }
     }
     val onFavourite: () -> Unit = {
-        if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
+        if (!isNetworkConnected() && isYtSyncEnabled()) {
             SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
         } else if (!isYtSyncEnabled()){
             mediaItemToggleLike(mediaItem)
@@ -237,7 +237,7 @@ fun SwipeablePlaylistItem(
         Database.likedAt(mediaItem.mediaId).distinctUntilChanged().collect { likedAt = it }
     }
     val onFavourite: () -> Unit = {
-        if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
+        if (!isNetworkConnected() && isYtSyncEnabled()) {
             SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
         } else if (!isYtSyncEnabled()){
             mediaItemToggleLike(mediaItem)

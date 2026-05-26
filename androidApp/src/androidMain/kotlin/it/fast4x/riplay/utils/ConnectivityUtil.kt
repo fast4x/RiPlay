@@ -16,42 +16,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-
-fun getNetworkType(context: Context): NetworkType {
-    val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-
-    // Android M (API 23+) and up
-    if (isAtLeastAndroid6) {
-        val network = connectivityManager.activeNetwork ?: return NetworkType.NONE
-        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return NetworkType.NONE
-
-        return when {
-            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> NetworkType.WIFI
-            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> NetworkType.CELLULAR
-            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> NetworkType.ETHERNET
-            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> NetworkType.BLUETOOTH
-            else -> NetworkType.UNKNOWN
-        }
-    } else {
-        // Prior Android M
-        @Suppress("DEPRECATION")
-        val networkInfo = connectivityManager.activeNetworkInfo
-
-        @Suppress("DEPRECATION")
-        return if (networkInfo?.isConnected == true) {
-            when (networkInfo.type) {
-                ConnectivityManager.TYPE_WIFI -> NetworkType.WIFI
-                ConnectivityManager.TYPE_MOBILE -> NetworkType.CELLULAR
-                ConnectivityManager.TYPE_ETHERNET -> NetworkType.ETHERNET
-                ConnectivityManager.TYPE_BLUETOOTH -> NetworkType.BLUETOOTH
-                else -> NetworkType.UNKNOWN
-            }
-        } else {
-            NetworkType.NONE
-        }
-    }
-}
-
+/*
 fun isNetworkConnected(context: Context): Boolean {
     val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
@@ -71,6 +36,7 @@ fun isNetworkConnected(context: Context): Boolean {
         return networkInfo?.isConnected == true
     }
 }
+*/
 
 
 object CustomHttpClient {

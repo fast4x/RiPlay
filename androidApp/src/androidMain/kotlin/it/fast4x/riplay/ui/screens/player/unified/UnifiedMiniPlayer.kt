@@ -80,6 +80,7 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.EFFECT_ROTATION
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.MINI_PLAYER_TYPE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
+import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
 import it.fast4x.riplay.services.playback.PlaybackState
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.themed.IconButton
@@ -105,7 +106,6 @@ import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.intent
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isLocal
-import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
@@ -175,7 +175,7 @@ fun UnifiedMiniPlayer(
 
     LaunchedEffect(updateLike, updateDislike) {
         if (updateLike) {
-            if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
+            if (!isNetworkConnected() && isYtSyncEnabled()) {
                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
             } else if (!isYtSyncEnabled()){
                 mediaItemToggleLike(mediaItem)
@@ -191,7 +191,7 @@ fun UnifiedMiniPlayer(
             updateLike = false
         }
         if (updateDislike) {
-            if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
+            if (!isNetworkConnected() && isYtSyncEnabled()) {
                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
             } else if (!isYtSyncEnabled()){
                 Database.asyncTransaction {

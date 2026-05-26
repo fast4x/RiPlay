@@ -177,7 +177,7 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 import java.text.SimpleDateFormat
 import java.util.Date
 
-// ─── Piccolo composable helper: icona azione con background pill quando attiva ───
+
 @Composable
 private fun ActionIconButton(
     icon: Int,

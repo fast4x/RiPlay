@@ -92,6 +92,7 @@ import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.UiType
+import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
@@ -132,7 +133,6 @@ import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.CoroutineScope
@@ -533,7 +533,7 @@ fun ArtistOverviewNew1(
                                     RoundedCornerShape(50)
                                 )
                                 .clickable {
-                                    if (isYtSyncEnabled() && !isNetworkConnected(context)) {
+                                    if (isYtSyncEnabled() && !isNetworkConnected()) {
                                         SmartMessage(
                                             context.resources.getString(R.string.no_connection),
                                             context = context, type = PopupType.Error

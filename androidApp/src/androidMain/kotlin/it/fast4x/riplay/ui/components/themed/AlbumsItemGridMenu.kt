@@ -62,8 +62,8 @@ import it.fast4x.riplay.ui.styling.semiBold
 import kotlinx.coroutines.Dispatchers
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.NavRoutes
+import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
 import it.fast4x.riplay.utils.typography
-import it.fast4x.riplay.utils.isNetworkConnected
 
 @ExperimentalTextApi
 @SuppressLint("SuspiciousIndentation")
@@ -124,7 +124,7 @@ fun AlbumsItemGridMenu(
 
                 val pinnedPlaylists = playlistPreviews.filter {
                     it.playlist.name.startsWith(PINNED_PREFIX, 0, true)
-                            && if (isNetworkConnected(context)) !(it.playlist.isYoutubePlaylist && !it.playlist.isEditable) else !it.playlist.isYoutubePlaylist
+                            && if (isNetworkConnected()) !(it.playlist.isYoutubePlaylist && !it.playlist.isEditable) else !it.playlist.isYoutubePlaylist
                 }
 
                 val youtubePlaylists = playlistPreviews.filter { it.playlist.isEditable && it.playlist.isYoutubePlaylist && !it.playlist.name.startsWith(PINNED_PREFIX) }
@@ -259,7 +259,7 @@ fun AlbumsItemGridMenu(
                         }
                     }
 
-                    if (youtubePlaylists.isNotEmpty() && isNetworkConnected(context)) {
+                    if (youtubePlaylists.isNotEmpty() && isNetworkConnected()) {
                         BasicText(
                             text = stringResource(R.string.ytm_playlists),
                             style = typography().m.semiBold,

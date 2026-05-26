@@ -11,16 +11,20 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
-import it.fast4x.riplay.enums.NetworkType
+import it.fast4x.riplay.extensions.appviewmodel.LocalAppViewModel
+import it.fast4x.riplay.extensions.appviewmodel.models.NetworkType
+import it.fast4x.riplay.extensions.appviewmodel.toIcon
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.EQ_ENABLED
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.LOG_DEBUG_ENABLED
 import it.fast4x.riplay.extensions.preferences.rememberPreference
@@ -30,7 +34,6 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.isParentalControlEnabled
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.isAtLeastAndroid7
-import it.fast4x.riplay.utils.getNetworkType
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -57,7 +60,6 @@ private fun AppLogoText( navController: NavController ) {
     val iconTextClick: () -> Unit = {
         if ( NavRoutes.home.isNotHere( navController ) )
             navController.popBackStack(route = NavRoutes.home.name, inclusive = false)
-            //navController.navigate(NavRoutes.home.name)
     }
 
 
@@ -87,6 +89,9 @@ fun AppTitle(
     navController: NavController,
     context: Context
 ) {
+    val appViewModel = LocalAppViewModel.current
+    val networkState by appViewModel.networkState.collectAsStateWithLifecycle()
+
     Row(
         horizontalArrangement = Arrangement.spacedBy( 5.dp ),
         verticalAlignment = Alignment.CenterVertically
@@ -100,22 +105,19 @@ fun AppTitle(
         Column(
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
+
             if (isAtLeastAndroid7) {
-                val dataTypeIcon = when (getNetworkType(context)) {
-                    NetworkType.WIFI -> R.drawable.datawifi
-                    NetworkType.CELLULAR -> R.drawable.datamobile
-                    NetworkType.ETHERNET -> R.drawable.dataethernet
-                    else -> R.drawable.alert_circle_not_filled
-                }
                 Image(
-                    painter = painterResource(dataTypeIcon),
+                    painter = painterResource(networkState.networkType?.toIcon() ?: R.drawable.alert_circle_not_filled),
                     contentDescription = null,
                     colorFilter = ColorFilter.tint(colorPalette().text),
                     modifier = Modifier
-                        .size(9.dp)
-                       // .align(Alignment.TopEnd)
+                    .size(9.dp)
+                // .align(Alignment.TopEnd)
                 )
             }
+
+
 
             val isEqualizerEnabled by rememberPreference(EQ_ENABLED.key, false)
             if (isEqualizerEnabled) {

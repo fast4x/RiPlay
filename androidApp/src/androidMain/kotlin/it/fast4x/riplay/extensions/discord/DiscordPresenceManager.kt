@@ -22,6 +22,7 @@ import io.ktor.http.HttpHeaders
 import it.fast4x.environment.Environment
 import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISCORD_PERSONAL_ACCESS_TOKEN
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_DISCORD_PRESENCE_ENABLED
 import it.fast4x.riplay.extensions.preferences.preferences
@@ -50,7 +51,6 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.putJsonArray
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import it.fast4x.riplay.utils.isNetworkConnected
 import org.jetbrains.annotations.Contract
 import timber.log.Timber
 import java.io.IOException
@@ -188,7 +188,7 @@ class DiscordPresenceManager(
      */
 
      internal suspend fun validateToken(token: String): Boolean? = withContext(Dispatchers.IO) {
-        if (!isNetworkConnected(context)) return@withContext null
+        if (!isNetworkConnected()) return@withContext null
         val request = Request.Builder()
             .url("https://discord.com/api/v9/users/@me")
             .header("Authorization", token)
@@ -221,7 +221,7 @@ class DiscordPresenceManager(
         val token = getToken() ?: return
         if (token.isEmpty()) return
 
-        if (!isNetworkConnected(context)) {
+        if (!isNetworkConnected()) {
             return
         }
 
@@ -435,7 +435,7 @@ class DiscordPresenceManager(
         refreshJob = discordScope.launch {
             while (isActive && !isStopped) {
                 delay(15_000L)
-                if (!isNetworkConnected(context)) {
+                if (!isNetworkConnected()) {
                     continue
                 }
                 val isPlaying = isPlayingProvider()

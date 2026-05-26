@@ -12,6 +12,9 @@ import coil.memory.MemoryCache
 import coil.request.CachePolicy
 import it.fast4x.riplay.data.DatabaseInitializer
 import it.fast4x.riplay.enums.CoilDiskCacheMaxSize
+import it.fast4x.riplay.extensions.appviewmodel.AppViewModel
+import it.fast4x.riplay.extensions.appviewmodel.models.NetworkConnectivity
+import it.fast4x.riplay.extensions.appviewmodel.observeNetworkType
 import it.fast4x.riplay.utils.FileLoggingTree
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.COIL_CUSTOM_DISK_CACHE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.COIL_DISK_CACHE_MAX_SIZE
@@ -22,14 +25,41 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.USE_PLACEHOLDER_IN_
 import it.fast4x.riplay.extensions.crashreporter.CrashReporter
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.utils.InitializeEnvironment
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.io.File
 
 class MainApplication : Application(), ImageLoaderFactory {
 
+    // Stato condiviso accessibile ovunque, anche dai Service
+    val networkConnectivity: StateFlow<NetworkConnectivity>
+        get() = _networkConnectivity
+
+    private val _networkConnectivity = MutableStateFlow<NetworkConnectivity>(
+        NetworkConnectivity.Disconnected
+    )
+
+    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
+    val appViewModelFactory by lazy {
+        AppViewModel.factory(this)
+    }
+
     @OptIn(UnstableApi::class)
     override fun onCreate() {
         super.onCreate()
+
+        applicationScope.launch {
+            observeNetworkType(this@MainApplication).collect {
+                _networkConnectivity.value = it
+            }
+        }
 
         val receiver = ComponentName(this, PlayerService::class.java)
         val pm = packageManager
@@ -60,6 +90,11 @@ class MainApplication : Application(), ImageLoaderFactory {
             Timber.plant(Timber.DebugTree())
         }
         /**** LOG *********/
+    }
+
+    override fun onTerminate() {
+        super.onTerminate()
+        applicationScope.cancel()
     }
 
     override fun newImageLoader(): ImageLoader {

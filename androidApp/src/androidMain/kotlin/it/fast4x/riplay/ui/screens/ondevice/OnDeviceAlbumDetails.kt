@@ -118,13 +118,13 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
 import it.fast4x.riplay.ui.components.themed.Loader
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.QueuesDialog
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addToYtLikedSongs
-import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemSetLiked
 import kotlinx.serialization.ExperimentalSerializationApi
 
@@ -676,7 +676,7 @@ fun OnDeviceAlbumDetails(
                                                         navController.navigate("${NavRoutes.localPlaylist.name}/$it")
                                                     },
                                                     onAddToFavourites = {
-                                                        if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
+                                                        if (!isNetworkConnected() && isYtSyncEnabled()) {
                                                             SmartMessage(
                                                                 appContext().resources.getString(
                                                                     R.string.no_connection

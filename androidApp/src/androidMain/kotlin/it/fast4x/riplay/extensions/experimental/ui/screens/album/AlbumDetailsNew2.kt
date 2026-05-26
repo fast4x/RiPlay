@@ -154,6 +154,7 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
 import it.fast4x.riplay.ui.components.ActionPillButton
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.PullToRefreshBox
@@ -167,7 +168,6 @@ import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.globalContext
-import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemSetLiked
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -248,7 +248,7 @@ fun AlbumDetailsNew2(
     }
 
     fun update() {
-        if (!isNetworkConnected(context)) return
+        if (!isNetworkConnected()) return
         runBlocking(Dispatchers.IO) {
             withContext(Dispatchers.IO) {
                 Database.asyncTransaction {
@@ -681,7 +681,7 @@ fun AlbumDetailsNew2(
                                         activeColor = colorPalette().accent,
                                         tint = colorPalette().accent,
                                         onClick = {
-                                            if (isYtSyncEnabled() && !isNetworkConnected(context)) {
+                                            if (isYtSyncEnabled() && !isNetworkConnected()) {
                                                 SmartMessage(context.resources.getString(R.string.no_connection), context = context, type = PopupType.Error)
                                             } else {
                                                 val bookmarkedAt = if (album?.bookmarkedAt == null) System.currentTimeMillis() else null
@@ -861,7 +861,7 @@ fun AlbumDetailsNew2(
                                                             navController.navigate("${NavRoutes.localPlaylist.name}/$it")
                                                         },
                                                         onAddToFavourites = {
-                                                            if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
+                                                            if (!isNetworkConnected() && isYtSyncEnabled()) {
                                                                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
                                                             } else if (!isYtSyncEnabled()) {
                                                                 songs.forEach { song -> mediaItemSetLiked(song.asMediaItem) }

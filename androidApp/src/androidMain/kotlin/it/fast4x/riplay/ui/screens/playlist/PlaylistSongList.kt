@@ -94,6 +94,7 @@ import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.UiType
+import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.riplay.extensions.persist.persistList
@@ -148,7 +149,6 @@ import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.formatAsTime
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isLocal
-import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.utils.languageDestination
 import it.fast4x.riplay.utils.mediaItemSetLiked
 import it.fast4x.riplay.utils.typography
@@ -764,7 +764,7 @@ fun PlaylistSongList(
                                     enabled = playlistPage?.songs?.isNotEmpty() == true,
                                     color = colorPalette().text,
                                     onClick = {
-                                        if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
+                                        if (!isNetworkConnected() && isYtSyncEnabled()) {
                                             SmartMessage(
                                                 appContext().resources.getString(R.string.no_connection),
                                                 context = appContext(),
@@ -818,7 +818,7 @@ fun PlaylistSongList(
                                         icon = if (localPlaylist?.isYoutubePlaylist == true) R.drawable.bookmark else R.drawable.bookmark_outline,
                                         color = colorPalette().text,
                                         onClick = {
-                                            if (isNetworkConnected(context)) {
+                                            if (isNetworkConnected()) {
                                                 if (localPlaylist?.isYoutubePlaylist == true) {
                                                     CoroutineScope(Dispatchers.IO).launch {
                                                         EnvironmentExt.removelikePlaylistOrAlbum(

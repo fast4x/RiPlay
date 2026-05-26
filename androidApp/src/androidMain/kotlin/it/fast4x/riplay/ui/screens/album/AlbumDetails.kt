@@ -134,6 +134,7 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.PullToRefreshBox
@@ -148,7 +149,6 @@ import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.globalContext
-import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemSetLiked
 import it.fast4x.riplay.utils.isPrimaryAction
 import kotlinx.coroutines.delay
@@ -239,7 +239,7 @@ fun AlbumDetails(
 
 
     fun update() {
-        if(!isNetworkConnected(context)) {
+        if(!isNetworkConnected()) {
             return
         }
         runBlocking(Dispatchers.IO) {
@@ -709,9 +709,7 @@ fun AlbumDetails(
                                     },
                                     color = colorPalette().accent,
                                     onClick = {
-                                        if (isYtSyncEnabled() && !isNetworkConnected(
-                                                context
-                                            )
+                                        if (isYtSyncEnabled() && !isNetworkConnected()
                                         ) {
                                             SmartMessage(
                                                 context.resources.getString(R.string.no_connection),
@@ -1047,7 +1045,7 @@ fun AlbumDetails(
                                                         navController.navigate("${NavRoutes.localPlaylist.name}/$it")
                                                     },
                                                     onAddToFavourites = {
-                                                        if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
+                                                        if (!isNetworkConnected() && isYtSyncEnabled()) {
                                                             SmartMessage(
                                                                 appContext().resources.getString(
                                                                     R.string.no_connection

@@ -100,13 +100,13 @@ import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.isExplicit
-import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.MAX_SONGS_IN_QUEUE
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.commonutils.setLikeState
 import it.fast4x.riplay.enums.ItemSortBy
 import it.fast4x.riplay.enums.SortOrder
+import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SONG_SORT_ORDER
 import it.fast4x.riplay.ui.components.themed.SortMenu
 import it.fast4x.riplay.utils.typography
@@ -381,7 +381,7 @@ fun ArtistOverviewItems(
                                 enabled = artistSongs?.isNotEmpty() == true,
                                 color = colorPalette().text,
                                 onClick = {
-                                    if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
+                                    if (!isNetworkConnected() && isYtSyncEnabled()) {
                                         SmartMessage(
                                             appContext().resources.getString(R.string.no_connection),
                                             context = appContext(),

@@ -21,11 +21,11 @@ import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.data.models.SongPlaylistMap
+import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.utils.addSongToYtPlaylist
 import it.fast4x.riplay.utils.addToOnlineLikedSong
 import it.fast4x.riplay.utils.addToYtPlaylist
-import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.MENU_STYLE
 import it.fast4x.riplay.extensions.equalizer.rememberSystemEqualizerLauncher
 import it.fast4x.riplay.extensions.preferences.rememberPreference
@@ -154,7 +154,7 @@ fun PlayerMenu(
             onHideFromDatabase = { isHiding = true },
             onClosePlayer = onClosePlayer,
             onAddToPreferites = {
-                if (!isNetworkConnected(globalContext()) && isYtSyncEnabled()){
+                if (!isNetworkConnected() && isYtSyncEnabled()){
                     SmartMessage(globalContext().resources.getString(R.string.no_connection), context = globalContext(), type = PopupType.Error)
                 } else if (!isYtSyncEnabled()){
                     Database.asyncTransaction {
@@ -211,7 +211,7 @@ fun MiniPlayerMenu(
                 onClosePlayer()
             },
             onAddToPreferites = {
-                if (!isNetworkConnected(globalContext()) && isYtSyncEnabled()){
+                if (!isNetworkConnected() && isYtSyncEnabled()){
                     SmartMessage(globalContext().resources.getString(R.string.no_connection), context = globalContext(), type = PopupType.Error)
                 } else if (!isYtSyncEnabled()){
                     Database.asyncTransaction {
@@ -238,7 +238,7 @@ fun MiniPlayerMenu(
                 onClosePlayer()
             },
             onAddToPreferites = {
-                if (!isNetworkConnected(globalContext()) && isYtSyncEnabled()){
+                if (!isNetworkConnected() && isYtSyncEnabled()){
                     SmartMessage(globalContext().resources.getString(R.string.no_connection), context = globalContext(), type = PopupType.Error)
                 } else if (!isYtSyncEnabled()){
                     Database.asyncTransaction {

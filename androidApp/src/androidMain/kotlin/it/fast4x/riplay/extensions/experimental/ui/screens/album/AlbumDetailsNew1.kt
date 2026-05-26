@@ -98,6 +98,7 @@ import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.UiType
+import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.riplay.extensions.persist.persistList
@@ -152,7 +153,6 @@ import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsTime
 import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.utils.languageDestination
 import it.fast4x.riplay.utils.mediaItemSetLiked
 import it.fast4x.riplay.utils.typography
@@ -580,7 +580,7 @@ fun AlbumDetailsNew1(
                                 icon = if (isBookmarked) R.drawable.bookmark else R.drawable.bookmark_outline,
                                 active = isBookmarked,
                                 onClick = {
-                                    if (isYtSyncEnabled() && !isNetworkConnected(context)) {
+                                    if (isYtSyncEnabled() && !isNetworkConnected()) {
                                         SmartMessage(context.resources.getString(R.string.no_connection), context = context, type = PopupType.Error)
                                     } else {
                                         val bookmarkedAt = if (album?.bookmarkedAt == null) System.currentTimeMillis() else null
@@ -694,7 +694,7 @@ fun AlbumDetailsNew1(
                                                 },
                                                 onGoToPlaylist = { onNavigateTo(); navController.navigate("${NavRoutes.localPlaylist.name}/$it") },
                                                 onAddToFavourites = {
-                                                    if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
+                                                    if (!isNetworkConnected() && isYtSyncEnabled()) SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
                                                     else if (!isYtSyncEnabled()) songs.forEach { song -> mediaItemSetLiked(song.asMediaItem) }
                                                     else { val totalSongsToLike = songs.filter { it.likedAt in listOf(-1L, null) }; CoroutineScope(Dispatchers.IO).launch { addToYtLikedSongs(totalSongsToLike.map { it.asMediaItem }) } }
                                                 },

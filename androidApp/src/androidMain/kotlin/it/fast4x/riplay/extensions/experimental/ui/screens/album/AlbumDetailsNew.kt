@@ -142,6 +142,7 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.ui.components.themed.LoaderScreen
@@ -152,7 +153,6 @@ import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.globalContext
-import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemSetLiked
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
@@ -410,7 +410,7 @@ fun AlbumDetailsNew(
                                 active = album?.bookmarkedAt != null,
                                 size = 22, // Leggermente più grande in quanto è da solo
                                 onClick = {
-                                    if (isYtSyncEnabled() && !isNetworkConnected(context)) {
+                                    if (isYtSyncEnabled() && !isNetworkConnected()) {
                                         SmartMessage(context.resources.getString(R.string.no_connection), context = context, type = PopupType.Error)
                                     } else {
                                         val bookmarkedAt = if (album?.bookmarkedAt == null) System.currentTimeMillis() else null
@@ -516,7 +516,7 @@ fun AlbumDetailsNew(
                                                     },
                                                     onGoToPlaylist = { onNavigateTo(); navController.navigate("${NavRoutes.localPlaylist.name}/$it") },
                                                     onAddToFavourites = {
-                                                        if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
+                                                        if (!isNetworkConnected() && isYtSyncEnabled()) SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
                                                         else if (!isYtSyncEnabled()) songs.forEach { song -> mediaItemSetLiked(song.asMediaItem) }
                                                         else { val totalSongsToLike = songs.filter { it.likedAt in listOf(-1L, null) }; CoroutineScope(Dispatchers.IO).launch { addToYtLikedSongs(totalSongsToLike.map { it.asMediaItem }) } }
                                                     },

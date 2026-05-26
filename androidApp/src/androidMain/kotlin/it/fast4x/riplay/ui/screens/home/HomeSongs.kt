@@ -164,6 +164,7 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.DEFAULT_FOLDER
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.enums.BlacklistType
+import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXCLUDE_SONGS_WITH_DURATION_LIMIT
 import it.fast4x.riplay.utils.forcePlayAtIndex
@@ -202,7 +203,6 @@ import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.formatAsDuration
-import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_DISLIKED_PLAYLIST
 import it.fast4x.riplay.ui.components.tab.TabHeader
 import it.fast4x.riplay.ui.components.themed.EnumsMenu
@@ -333,12 +333,14 @@ fun HomeSongs(
     val showDislikedPlaylist by rememberPreference(SHOW_DISLIKED_PLAYLIST.key, false)
     val showMyTopPlaylist by rememberPreference(SHOW_MY_TOP_PLAYLIST.key, true)
     val showOnDevicePlaylist by rememberPreference(SHOW_ON_DEVICE_PLAYLIST.key, true)
+    val isConnected = remember { isNetworkConnected() }
+    var buttonsList = if (isConnected) listOf(BuiltInPlaylist.All to stringResource(R.string.all)) else emptyList()
 
-    var buttonsList = listOf(BuiltInPlaylist.All to stringResource(R.string.all))
-    if (showFavoritesPlaylist) buttonsList += BuiltInPlaylist.Favorites to stringResource(R.string.favorites)
-    if (showMyTopPlaylist) buttonsList += BuiltInPlaylist.Top to String.format(stringResource(R.string.my_playlist_top), maxTopPlaylistItems.number)
+    if (showFavoritesPlaylist && isConnected) buttonsList += BuiltInPlaylist.Favorites to stringResource(R.string.favorites)
+    if (showMyTopPlaylist && isConnected) buttonsList += BuiltInPlaylist.Top to String.format(stringResource(R.string.my_playlist_top), maxTopPlaylistItems.number)
+    buttonsList += BuiltInPlaylist.MusicVault to "Music Vault"
     if (showOnDevicePlaylist) buttonsList += BuiltInPlaylist.OnDevice to stringResource(R.string.on_device)
-    if (showDislikedPlaylist) buttonsList += BuiltInPlaylist.Disliked to stringResource(R.string.disliked)
+    if (showDislikedPlaylist && isConnected) buttonsList += BuiltInPlaylist.Disliked to stringResource(R.string.disliked)
 
     val excludeSongWithDurationLimit by rememberPreference(EXCLUDE_SONGS_WITH_DURATION_LIMIT.key, DurationInMinutes.Disabled)
     val hapticFeedback = LocalHapticFeedback.current
@@ -356,7 +358,7 @@ fun HomeSongs(
                     .collect { items = it.filter { item -> blacklisted.value?.map { it.path }?.contains(item.song.id) == false } }
             }
         }
-        BuiltInPlaylist.Favorites, BuiltInPlaylist.Top, BuiltInPlaylist.Disliked -> {
+        BuiltInPlaylist.Favorites, BuiltInPlaylist.Top, BuiltInPlaylist.Disliked, BuiltInPlaylist.MusicVault -> {
             LaunchedEffect(Unit, builtInPlaylist, sortBy, sortOrder, filter, topPlaylistPeriod) {
                 if (builtInPlaylist == BuiltInPlaylist.Favorites) {
                     Database.songsFavorites(sortBy, sortOrder)
@@ -490,7 +492,7 @@ fun HomeSongs(
             title = stringResource(R.string.enter_the_playlist_name),
             value = when (builtInPlaylist) {
                 BuiltInPlaylist.All -> context.resources.getString(R.string.songs)
-                BuiltInPlaylist.OnDevice -> context.resources.getString(R.string.on_device)
+                BuiltInPlaylist.OnDevice, BuiltInPlaylist.MusicVault -> context.resources.getString(R.string.on_device)
                 BuiltInPlaylist.Favorites -> context.resources.getString(R.string.favorites)
                 BuiltInPlaylist.Top -> context.resources.getString(R.string.playlist_top)
                 BuiltInPlaylist.Disliked -> context.resources.getString(R.string.disliked)
@@ -561,7 +563,9 @@ fun HomeSongs(
         LazyColumn(state = lazyListState, modifier = Modifier) {
 
             stickyHeader {
-                Column(modifier = Modifier.fillMaxWidth().background(colorPalette().background0)) {
+                Column(modifier = Modifier
+                    .fillMaxWidth()
+                    .background(colorPalette().background0)) {
                     // 0. Optional Header for ViMusic
                     if (UiType.ViMusic.isCurrent())
                         HeaderWithIcon(
@@ -841,7 +845,7 @@ fun HomeSongs(
                                             }
                                         },
                                         onAddToPreferites = {
-                                            if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
+                                            if (!isNetworkConnected() && isYtSyncEnabled()) {
                                                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
                                             } else if (!isYtSyncEnabled()) {
                                                 if (listMediaItems.isNotEmpty()) {
@@ -859,7 +863,7 @@ fun HomeSongs(
                                         },
                                         showonAddToPreferitesYoutube = isYtSyncEnabled(),
                                         onAddToPreferitesYoutube = {
-                                            if (!isNetworkConnected(appContext())) { SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error) }
+                                            if (!isNetworkConnected()) { SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error) }
                                             else { showRiPlayLikeYoutubeLikeConfirmDialog = true }
                                         },
                                         onAddToPlaylist = { playlistPreview ->
@@ -897,7 +901,9 @@ fun HomeSongs(
                     AnimatedVisibility(visible = searching) {
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Bottom,
-                            modifier = Modifier.padding(all = 10.dp).fillMaxWidth()
+                            modifier = Modifier
+                                .padding(all = 10.dp)
+                                .fillMaxWidth()
                         ) {
                             val focusRequester = remember { FocusRequester() }
                             val focusManager = LocalFocusManager.current
@@ -914,10 +920,16 @@ fun HomeSongs(
                                 }),
                                 cursorBrush = SolidColor(colorPalette().text),
                                 decorationBox = { innerTextField ->
-                                    Box(contentAlignment = Alignment.CenterStart, modifier = Modifier.weight(1f).padding(horizontal = 10.dp)) {
-                                        IconButton(onClick = {}, icon = R.drawable.search, color = colorPalette().favoritesIcon, modifier = Modifier.align(Alignment.CenterStart).size(16.dp))
+                                    Box(contentAlignment = Alignment.CenterStart, modifier = Modifier
+                                        .weight(1f)
+                                        .padding(horizontal = 10.dp)) {
+                                        IconButton(onClick = {}, icon = R.drawable.search, color = colorPalette().favoritesIcon, modifier = Modifier
+                                            .align(Alignment.CenterStart)
+                                            .size(16.dp))
                                     }
-                                    Box(contentAlignment = Alignment.CenterStart, modifier = Modifier.weight(1f).padding(horizontal = 30.dp)) {
+                                    Box(contentAlignment = Alignment.CenterStart, modifier = Modifier
+                                        .weight(1f)
+                                        .padding(horizontal = 30.dp)) {
                                         androidx.compose.animation.AnimatedVisibility(visible = filter?.isEmpty() ?: true, enter = fadeIn(tween(100)), exit = fadeOut(tween(100))) {
                                             BasicText(text = stringResource(R.string.search), maxLines = 1, overflow = TextOverflow.Ellipsis, style = typography().xs.semiBold.secondary.copy(color = colorPalette().textDisabled))
                                         }
@@ -925,11 +937,19 @@ fun HomeSongs(
                                     }
                                 },
                                 modifier = Modifier
-                                    .height(30.dp).fillMaxWidth().background(colorPalette().background4, shape = thumbnailRoundness.shape())
-                                    .focusRequester(focusRequester).onFocusChanged {
+                                    .height(30.dp)
+                                    .fillMaxWidth()
+                                    .background(
+                                        colorPalette().background4,
+                                        shape = thumbnailRoundness.shape()
+                                    )
+                                    .focusRequester(focusRequester)
+                                    .onFocusChanged {
                                         if (!it.hasFocus) {
                                             keyboardController?.hide()
-                                            if (filter?.isBlank() == true) { filter = null; searching = false }
+                                            if (filter?.isBlank() == true) {
+                                                filter = null; searching = false
+                                            }
                                         }
                                     }
                             )
@@ -959,7 +979,9 @@ fun HomeSongs(
                     if (showFolders && currentFolder != null) {
                         stickyHeader {
                             Spacer(modifier = Modifier.height(10.dp))
-                            Box(modifier = Modifier.padding(horizontal = 24.dp).background(colorPalette().background0)) {
+                            Box(modifier = Modifier
+                                .padding(horizontal = 24.dp)
+                                .background(colorPalette().background0)) {
                                 Box(modifier = Modifier.border(BorderStroke(1.dp, colorPalette().textSecondary), thumbnailShape())) {
                                     FolderItem(folder = currentFolder, thumbnailSizeDp = thumbnailSizeDp, modifier = Modifier, disableScrollingText = disableScrollingText)
                                 }
@@ -973,8 +995,18 @@ fun HomeSongs(
                                 FolderItem(
                                     folder = folderItem, thumbnailSizeDp = thumbnailSizeDp,
                                     modifier = Modifier
-                                        .combinedClickable(onClick = { currentFolderPath = currentFolderPath.removeSuffix("/").substringBeforeLast("/") + "/" })
-                                        .animateItem(fadeInSpec = tween(200), fadeOutSpec = tween(200), placementSpec = spring(stiffness = Spring.StiffnessMediumLow, dampingRatio = Spring.DampingRatioMediumBouncy)),
+                                        .combinedClickable(onClick = { currentFolderPath =
+                                            currentFolderPath.removeSuffix("/")
+                                                .substringBeforeLast("/") + "/"
+                                        })
+                                        .animateItem(
+                                            fadeInSpec = tween(200),
+                                            fadeOutSpec = tween(200),
+                                            placementSpec = spring(
+                                                stiffness = Spring.StiffnessMediumLow,
+                                                dampingRatio = Spring.DampingRatioMediumBouncy
+                                            )
+                                        ),
                                     disableScrollingText = disableScrollingText
                                 )
                             }
@@ -986,13 +1018,32 @@ fun HomeSongs(
                                     .combinedClickable(
                                         onLongClick = {
                                             menuState.display {
-                                                FolderItemMenu(folder = folder, onDismiss = menuState::hide, onEnqueue = { binder?.player?.enqueue(folder.getAllSongs().map { it.asMediaItem }, context) }, onBlacklist = { insertOrUpdateBlacklist(folder) }, thumbnailSizeDp = thumbnailSizeDp, disableScrollingText = disableScrollingText)
+                                                FolderItemMenu(
+                                                    folder = folder,
+                                                    onDismiss = menuState::hide,
+                                                    onEnqueue = {
+                                                        binder?.player?.enqueue(
+                                                            folder.getAllSongs()
+                                                                .map { it.asMediaItem }, context
+                                                        )
+                                                    },
+                                                    onBlacklist = { insertOrUpdateBlacklist(folder) },
+                                                    thumbnailSizeDp = thumbnailSizeDp,
+                                                    disableScrollingText = disableScrollingText
+                                                )
                                             }
                                             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                         },
                                         onClick = { currentFolderPath += folder.name + "/" }
                                     )
-                                    .animateItem(fadeInSpec = tween(200), fadeOutSpec = tween(200), placementSpec = spring(stiffness = Spring.StiffnessMediumLow, dampingRatio = Spring.DampingRatioMediumBouncy)),
+                                    .animateItem(
+                                        fadeInSpec = tween(200),
+                                        fadeOutSpec = tween(200),
+                                        placementSpec = spring(
+                                            stiffness = Spring.StiffnessMediumLow,
+                                            dampingRatio = Spring.DampingRatioMediumBouncy
+                                        )
+                                    ),
                                 disableScrollingText = disableScrollingText
                             )
                         }
@@ -1032,7 +1083,18 @@ fun HomeSongs(
                                         var typography = typography().xxs
                                         var alignment = Alignment.BottomCenter
                                         if (builtInPlaylist == BuiltInPlaylist.Top) { text = (index + 1).toString(); typography = typography().m; alignment = Alignment.Center }
-                                        BasicText(text = text, style = typography.semiBold.center.color(colorPalette().onOverlay), maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp).align(alignment).background(brush = Brush.verticalGradient(colors = listOf(Color.Transparent, colorPalette().overlay)), shape = thumbnailShape()))
+                                        BasicText(text = text, style = typography.semiBold.center.color(colorPalette().onOverlay), maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                            .align(alignment)
+                                            .background(
+                                                brush = Brush.verticalGradient(
+                                                    colors = listOf(
+                                                        Color.Transparent,
+                                                        colorPalette().overlay
+                                                    )
+                                                ), shape = thumbnailShape()
+                                            ))
                                     }
                                     NowPlayingSongIndicator(song.asMediaItem.mediaId, binder?.player)
                                 },
@@ -1046,18 +1108,40 @@ fun HomeSongs(
                                     .combinedClickable(
                                         onLongClick = {
                                             menuState.display {
-                                                InHistoryMediaItemMenu(navController = navController, onDismiss = { menuState.hide() }, song = song.song, onInfo = { navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.song.id}") }, onSelectUnselect = { selectItems = !selectItems; if (!selectItems) listMediaItems.clear() }, disableScrollingText = disableScrollingText, onBlacklist = { insertOrUpdateBlacklist(song.song) })
+                                                InHistoryMediaItemMenu(
+                                                    navController = navController,
+                                                    onDismiss = { menuState.hide() },
+                                                    song = song.song,
+                                                    onInfo = { navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.song.id}") },
+                                                    onSelectUnselect = {
+                                                        selectItems =
+                                                            !selectItems; if (!selectItems) listMediaItems.clear()
+                                                    },
+                                                    disableScrollingText = disableScrollingText,
+                                                    onBlacklist = { insertOrUpdateBlacklist(song.song) })
                                             }
                                             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                         },
                                         onClick = {
                                             if (!selectItems) {
-                                                searching = false; filter = null; binder?.stopRadio()
-                                                binder?.player?.forcePlayAtIndex(filteredSongs.map(SongEntity::asMediaItem), index)
+                                                searching = false; filter =
+                                                    null; binder?.stopRadio()
+                                                binder?.player?.forcePlayAtIndex(
+                                                    filteredSongs.map(
+                                                        SongEntity::asMediaItem
+                                                    ), index
+                                                )
                                             }
                                         }
                                     )
-                                    .animateItem(fadeInSpec = tween(200), fadeOutSpec = tween(200), placementSpec = spring(stiffness = Spring.StiffnessMediumLow, dampingRatio = Spring.DampingRatioMediumBouncy)),
+                                    .animateItem(
+                                        fadeInSpec = tween(200),
+                                        fadeOutSpec = tween(200),
+                                        placementSpec = spring(
+                                            stiffness = Spring.StiffnessMediumLow,
+                                            dampingRatio = Spring.DampingRatioMediumBouncy
+                                        )
+                                    ),
                             )
                         }
                     }
@@ -1117,13 +1201,46 @@ fun HomeSongs(
                             song = song.song, thumbnailSizePx = thumbnailSizePx, thumbnailSizeDp = thumbnailSizeDp,
                             onThumbnailContent = {
                                 if (sortBy == SongSortBy.PlayTime) {
-                                    BasicText(text = song.song.formattedTotalPlayTime, style = typography().xxs.semiBold.center.color(colorPalette().onOverlay), maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.fillMaxWidth().background(brush = Brush.verticalGradient(colors = listOf(Color.Transparent, colorPalette().overlay)), shape = thumbnailShape()).padding(horizontal = 8.dp, vertical = 4.dp).align(Alignment.BottomCenter))
+                                    BasicText(text = song.song.formattedTotalPlayTime, style = typography().xxs.semiBold.center.color(colorPalette().onOverlay), maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(
+                                            brush = Brush.verticalGradient(
+                                                colors = listOf(
+                                                    Color.Transparent,
+                                                    colorPalette().overlay
+                                                )
+                                            ), shape = thumbnailShape()
+                                        )
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                        .align(Alignment.BottomCenter))
                                 }
                                 if (sortBy == SongSortBy.RelativePlayTime) {
-                                    BasicText(text = "${song.relativePlayTime().toLong()}", style = typography().xxs.semiBold.center.color(colorPalette().onOverlay), maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.fillMaxWidth().background(brush = Brush.verticalGradient(colors = listOf(Color.Transparent, colorPalette().overlay)), shape = thumbnailShape()).padding(horizontal = 8.dp, vertical = 4.dp).align(Alignment.BottomCenter))
+                                    BasicText(text = "${song.relativePlayTime().toLong()}", style = typography().xxs.semiBold.center.color(colorPalette().onOverlay), maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(
+                                            brush = Brush.verticalGradient(
+                                                colors = listOf(
+                                                    Color.Transparent,
+                                                    colorPalette().overlay
+                                                )
+                                            ), shape = thumbnailShape()
+                                        )
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                        .align(Alignment.BottomCenter))
                                 }
                                 if (nowPlayingItem > -1) NowPlayingSongIndicator(song.song.asMediaItem.mediaId, binder?.player)
-                                if (builtInPlaylist == BuiltInPlaylist.Top) BasicText(text = (index + 1).toString(), style = typography().m.semiBold.center.color(colorPalette().onOverlay), maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.fillMaxWidth().background(brush = Brush.verticalGradient(colors = listOf(Color.Transparent, colorPalette().overlay)), shape = thumbnailShape()).padding(horizontal = 8.dp, vertical = 4.dp).align(Alignment.Center))
+                                if (builtInPlaylist == BuiltInPlaylist.Top) BasicText(text = (index + 1).toString(), style = typography().m.semiBold.center.color(colorPalette().onOverlay), maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(
+                                                Color.Transparent,
+                                                colorPalette().overlay
+                                            )
+                                        ), shape = thumbnailShape()
+                                    )
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    .align(Alignment.Center))
                             },
                             trailingContent = {
                                 if (selectItems)
@@ -1134,7 +1251,15 @@ fun HomeSongs(
                                 .combinedClickable(
                                     onLongClick = {
                                         menuState.display {
-                                            InHistoryMediaItemMenu(navController = navController, song = song.song, onDismiss = { menuState.hide() }, onInfo = { navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.song.id}") }, onHideFromDatabase = { isHiding = true }, onDeleteFromDatabase = { isDeleting = true }, disableScrollingText = disableScrollingText, onBlacklist = { insertOrUpdateBlacklist(song.song) })
+                                            InHistoryMediaItemMenu(
+                                                navController = navController,
+                                                song = song.song,
+                                                onDismiss = { menuState.hide() },
+                                                onInfo = { navController.navigate("${NavRoutes.videoOrSongInfo.name}/${song.song.id}") },
+                                                onHideFromDatabase = { isHiding = true },
+                                                onDeleteFromDatabase = { isDeleting = true },
+                                                disableScrollingText = disableScrollingText,
+                                                onBlacklist = { insertOrUpdateBlacklist(song.song) })
                                         }
                                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                     },
@@ -1144,31 +1269,74 @@ fun HomeSongs(
                                             val maxSongs = maxSongsInQueue.number.toInt()
                                             val itemsRange: IntRange
                                             val playIndex: Int
-                                            if (items.size < maxSongsInQueue.number) { itemsRange = items.indices; playIndex = index } else {
+                                            if (items.size < maxSongsInQueue.number) {
+                                                itemsRange = items.indices; playIndex = index
+                                            } else {
                                                 when (queueLimit) {
                                                     QueueSelection.START_OF_QUEUE -> {
-                                                        itemsRange = index..<min(index + maxSongs, items.size); playIndex = 0
+                                                        itemsRange = index..<min(
+                                                            index + maxSongs,
+                                                            items.size
+                                                        ); playIndex = 0
                                                     }
+
                                                     QueueSelection.CENTERED -> {
-                                                        val minIndex = max(0, index - maxSongs / 2); val maxIndex = min(index + maxSongs / 2, items.size); itemsRange = minIndex..<maxIndex; playIndex = index - minIndex
+                                                        val minIndex = max(0, index - maxSongs / 2);
+                                                        val maxIndex = min(
+                                                            index + maxSongs / 2,
+                                                            items.size
+                                                        ); itemsRange =
+                                                            minIndex..<maxIndex; playIndex =
+                                                            index - minIndex
                                                     }
+
                                                     QueueSelection.END_OF_QUEUE -> {
-                                                        val minIndex = max(0, index - maxSongs + 1); val maxIndex = min(index, items.size); itemsRange = minIndex..maxIndex; playIndex = index - minIndex
+                                                        val minIndex = max(0, index - maxSongs + 1);
+                                                        val maxIndex =
+                                                            min(index, items.size); itemsRange =
+                                                            minIndex..maxIndex; playIndex =
+                                                            index - minIndex
                                                     }
+
                                                     QueueSelection.END_OF_QUEUE_WINDOWED -> {
-                                                        val minIndex = max(0, index - maxSongs + 1); val maxIndex = min(minIndex + maxSongs, items.size); itemsRange = minIndex..<maxIndex; playIndex = index - minIndex
+                                                        val minIndex = max(0, index - maxSongs + 1);
+                                                        val maxIndex = min(
+                                                            minIndex + maxSongs,
+                                                            items.size
+                                                        ); itemsRange =
+                                                            minIndex..<maxIndex; playIndex =
+                                                            index - minIndex
                                                     }
                                                 }
                                             }
                                             val itemsLimited = items.slice(itemsRange)
                                             binder?.stopRadio()
-                                            binder?.player?.forcePlayAtIndex(itemsLimited.filter { it.song.likedAt != -1L }.map(SongEntity::asMediaItem), itemsLimited.filter { it.song.likedAt != -1L }.map(SongEntity::asMediaItem).indexOf(song.asMediaItem))
+                                            binder?.player?.forcePlayAtIndex(
+                                                itemsLimited.filter { it.song.likedAt != -1L }
+                                                    .map(SongEntity::asMediaItem),
+                                                itemsLimited.filter { it.song.likedAt != -1L }
+                                                    .map(SongEntity::asMediaItem)
+                                                    .indexOf(song.asMediaItem)
+                                            )
                                         } else {
-                                            CoroutineScope(Dispatchers.Main).launch { SmartMessage(context.resources.getString(R.string.disliked_this_song), type = PopupType.Error, context = context) }
+                                            CoroutineScope(Dispatchers.Main).launch {
+                                                SmartMessage(
+                                                    context.resources.getString(R.string.disliked_this_song),
+                                                    type = PopupType.Error,
+                                                    context = context
+                                                )
+                                            }
                                         }
                                     }
                                 )
-                                .animateItem(fadeInSpec = tween(200), fadeOutSpec = tween(200), placementSpec = spring(stiffness = Spring.StiffnessMediumLow, dampingRatio = Spring.DampingRatioMediumBouncy)),
+                                .animateItem(
+                                    fadeInSpec = tween(200),
+                                    fadeOutSpec = tween(200),
+                                    placementSpec = spring(
+                                        stiffness = Spring.StiffnessMediumLow,
+                                        dampingRatio = Spring.DampingRatioMediumBouncy
+                                    )
+                                ),
                         )
                     }
                 }
@@ -1178,7 +1346,9 @@ fun HomeSongs(
         }
 
         VerticalScrollbar(
-            modifier = Modifier.align(Alignment.TopEnd).fillMaxHeight(),
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .fillMaxHeight(),
             adapter = rememberScrollbarAdapter(scrollState = lazyListState),
             style = it.fast4x.riplay.utils.defaultScrollbarStyle(), enablePressToScroll = true
         )

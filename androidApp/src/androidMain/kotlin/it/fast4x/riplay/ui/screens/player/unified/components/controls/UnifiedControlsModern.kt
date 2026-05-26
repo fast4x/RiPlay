@@ -62,6 +62,7 @@ import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PlayerControlsType
 import it.fast4x.riplay.enums.PlayerPlayButtonType
 import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.EFFECT_ROTATION
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.JUMP_PREVIOUS
@@ -92,7 +93,6 @@ import it.fast4x.riplay.utils.doubleShadowDrop
 import it.fast4x.riplay.utils.dropShadow
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.getUnlikedIcon
-import it.fast4x.riplay.utils.isNetworkConnected
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import it.fast4x.riplay.utils.typography
@@ -593,7 +593,7 @@ fun UnifiedInfoAlbumAndArtistModern(
                         color = colorPalette().favoritesIcon,
                         icon = getLikeState(mediaItem.mediaId),
                         onClick = {
-                            if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
+                            if (!isNetworkConnected() && isYtSyncEnabled()) {
                                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
                             } else if (!isYtSyncEnabled()){
                                 mediaItem.takeIf { it.mediaId == mediaItem.mediaId }.let { mediaItem ->
@@ -613,7 +613,7 @@ fun UnifiedInfoAlbumAndArtistModern(
                             if (effectRotationEnabled) isRotated = !isRotated
                         },
                         onLongClick = {
-                            if (!isNetworkConnected(appContext()) && isYtSyncEnabled()) {
+                            if (!isNetworkConnected() && isYtSyncEnabled()) {
                                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
                             } else if (!isYtSyncEnabled()){
                                 Database.asyncTransaction {
