@@ -66,327 +66,228 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 
-        var sortOrder: SortOrder = SortOrder.Descending
-        var sortBy: OnDeviceSongSortBy = OnDeviceSongSortBy.DateAdded
+    var sortOrder: SortOrder = SortOrder.Descending
+    var sortBy: OnDeviceSongSortBy = OnDeviceSongSortBy.DateAdded
 
-        private var _audioFiles = MutableStateFlow<List<Song>>(emptyList())
-        val audioFiles: StateFlow<List<Song>> = _audioFiles.asStateFlow()
+    private var _audioFiles = MutableStateFlow<List<Song>>(emptyList())
+    val audioFiles: StateFlow<List<Song>> = _audioFiles.asStateFlow()
 
-        private var _audioFolders = MutableStateFlow<List<String>>(emptyList())
-        val audioFolders: StateFlow<List<String>> = _audioFolders.asStateFlow()
+    private var _audioFolders = MutableStateFlow<List<String>>(emptyList())
+    val audioFolders: StateFlow<List<String>> = _audioFolders.asStateFlow()
 
-        private val contentResolver: ContentResolver = application.applicationContext.contentResolver
+    private val contentResolver: ContentResolver = application.applicationContext.contentResolver
 
-        private val contentObserver = object : ContentObserver(null) {
-            override fun onChange(selfChange: Boolean, uri: Uri?) {
-                // Called when change some data in device storage, example of uri. Must be checked if exists to understand if removed or added
-                // example of uri content://media/external/audio/media/1000037024
-                Timber.d("OnDeviceViewModel onChange called with uri $uri and selfChange $selfChange")
-                removeObsoleteOndeviceMusic(application.applicationContext)
-                loadAudioFiles()
-            }
-        }
-
-        init {
-            contentResolver.registerContentObserver(
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                true,
-                contentObserver
-            )
+    private val contentObserver = object : ContentObserver(null) {
+        override fun onChange(selfChange: Boolean, uri: Uri?) {
+            // Called when change some data in device storage, example of uri. Must be checked if exists to understand if removed or added
+            // example of uri content://media/external/audio/media/1000037024
+            Timber.d("OnDeviceViewModel onChange called with uri $uri and selfChange $selfChange")
+            removeObsoleteOndeviceMusic(application.applicationContext)
             loadAudioFiles()
         }
+    }
 
-        override fun onCleared() {
-            super.onCleared()
-            contentResolver.unregisterContentObserver(contentObserver)
+    init {
+        contentResolver.registerContentObserver(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            true,
+            contentObserver
+        )
+        loadAudioFiles()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        contentResolver.unregisterContentObserver(contentObserver)
+    }
+
+    fun loadAudioFiles() {
+        val showOndevice = application.applicationContext.preferences
+            .getBoolean(SHOW_ON_DEVICE_PLAYLIST.key, true)
+
+        Timber.d("OnDeviceViewModel loadAudioFiles called showOndevice $showOndevice")
+        if (!showOndevice) return
+
+        val hasPermission = ContextCompat.checkSelfPermission(
+            application.applicationContext,
+            if (isAtLeastAndroid13) Manifest.permission.READ_MEDIA_AUDIO
+            else Manifest.permission.READ_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (!hasPermission) return
+
+        viewModelScope.launch {
+            val songs = withContext(Dispatchers.IO) {
+                runCatching {
+                    loadAudioFilesInternal()
+                }.onFailure {
+                    Timber.e("OnDeviceViewModel loadAudioFiles Error: ${it.stackTraceToString()}")
+                }.getOrElse { emptyList() }
+            }
+
+            _audioFiles.value = songs
+            _audioFolders = MutableStateFlow(
+                songs.mapNotNull { it.folder }.distinct()
+            )
+            Timber.d("OnDeviceViewModel audioList size: ${songs.size}")
+        }
+    }
+
+    @SuppressLint("Range")
+    private fun loadAudioFilesInternal(): List<Song> {
+        val collection = if (isAtLeastAndroid10)
+            MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+        else
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+
+        var projection = arrayOf(
+            MediaStore.Audio.Media._ID,
+            MediaStore.Audio.Media.DISPLAY_NAME,
+            MediaStore.Audio.Media.DURATION,
+            MediaStore.Audio.Media.ARTIST,
+            MediaStore.Audio.Media.ALBUM_ID,
+            MediaStore.Audio.Media.ALBUM,
+            if (isAtLeastAndroid10) MediaStore.Audio.Media.RELATIVE_PATH
+            else MediaStore.Audio.Media.DATA,
+            MediaStore.Audio.Media.TITLE,
+            MediaStore.Audio.Media.IS_MUSIC,
+            MediaStore.Audio.Media.MIME_TYPE,
+            MediaStore.Audio.Media.DATE_MODIFIED,
+            MediaStore.Audio.Media.SIZE
+        )
+        if (isAtLeastAndroid11) projection += MediaStore.Audio.Media.BITRATE
+
+        val sortBySQL = buildSortSQL()
+        val albumUriBase = "content://media/external/audio/albumart".toUri()
+        val blacklist = OnDeviceBlacklist() // ← istanziata UNA volta sola
+        val audioFiles = mutableListOf<Song>()
+
+        contentResolver.query(
+            collection,
+            projection,
+            "${MediaStore.Audio.Media.IS_MUSIC} != 0",
+            null,
+            sortBySQL
+        )?.use { cursor ->
+
+            // ← tutti i getColumnIndex FUORI dal loop
+            val idIdx          = cursor.getColumnIndex(MediaStore.Audio.Media._ID)
+            val nameIdx        = cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME)
+            val durationIdx    = cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)
+            val artistIdx      = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)
+            val albumIdIdx     = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)
+            val albumIdx       = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)
+            val relativePathIdx = if (isAtLeastAndroid10)
+                cursor.getColumnIndex(MediaStore.Audio.Media.RELATIVE_PATH)
+            else
+                cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
+            val titleIdx       = cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)
+            val mimeTypeIdx    = cursor.getColumnIndex(MediaStore.Audio.Media.MIME_TYPE)
+            val bitrateIdx     = if (isAtLeastAndroid11)
+                cursor.getColumnIndex(MediaStore.Audio.Media.BITRATE) else -1
+            val fileSizeIdx    = cursor.getColumnIndex(MediaStore.Audio.Media.SIZE)
+            val dateModifiedIdx = cursor.getColumnIndex(MediaStore.Audio.Media.DATE_MODIFIED)
+
+            while (cursor.moveToNext()) {
+                val duration = cursor.getInt(durationIdx)
+                if (duration == 0) continue
+
+                val id   = cursor.getLong(idIdx)
+                val name = cursor.getString(nameIdx)?.substringBeforeLast(".") ?: "Unknown"
+                val mediaId = name.substringAfterLast('[', "")
+                    .substringBeforeLast(']', "").takeIf { !it.contains(" ") }
+
+                val relativePath = if (isAtLeastAndroid10)
+                    cursor.getString(relativePathIdx) ?: ""
+                else
+                    cursor.getString(relativePathIdx)?.substringBeforeLast("/") ?: ""
+
+                val exclude = blacklist.checkIf(relativePath)
+                        || blacklist.checkIf("/$relativePath")
+                        || blacklist.checkIf(mediaId ?: "")
+                        || relativePath.contains("WhatsApp")
+
+                if (exclude) continue
+
+                val trackName    = cursor.getString(titleIdx)
+                val artist       = cursor.getString(artistIdx)
+                val albumId      = cursor.getLong(albumIdIdx)
+                val album        = cursor.getString(albumIdx)
+                val mimeType     = cursor.getString(mimeTypeIdx)
+                val bitrate      = if (isAtLeastAndroid11) cursor.getInt(bitrateIdx) else 0
+                val fileSize     = cursor.getInt(fileSizeIdx)
+                val dateModified = cursor.getLong(dateModifiedIdx)
+                val songId       = "$LOCAL_KEY_PREFIX$id"
+                val albumUri     = ContentUris.withAppendedId(albumUriBase, albumId)
+                val durationText = duration.milliseconds.toComponents { minutes, seconds, _ ->
+                    "$minutes:${seconds.toString().padStart(2, '0')}"
+                }
+                val uri = Uri.withAppendedPath(collection, id.toString())
+
+                runCatching {
+                    val song = Song(
+                        id = songId,
+                        mediaId = mediaId,
+                        title = trackName ?: name,
+                        artistsText = artist,
+                        durationText = durationText,
+                        thumbnailUrl = albumUri.toString(),
+                        folder = relativePath
+                    )
+
+                    Database.upsert(song, Format(
+                        songId = song.id,
+                        itag = 0,
+                        mimeType = mimeType,
+                        bitrate = bitrate.toLong(),
+                        contentLength = fileSize.toLong(),
+                        lastModified = dateModified
+                    ))
+                    Database.upsert(
+                        Album(
+                            id = "$LOCAL_KEY_PREFIX$albumId",
+                            title = album,
+                            thumbnailUrl = albumUri.toString(),
+                            year = null,
+                            authorsText = artist,
+                            shareUrl = null,
+                            timestamp = dateModified
+                        ),
+                        SongAlbumMap(songId = song.id, albumId = "$LOCAL_KEY_PREFIX$albumId", position = 0)
+                    )
+                    Database.upsert(
+                        Artist(
+                            id = "$LOCAL_KEY_PREFIX$artist",
+                            name = artist,
+                            thumbnailUrl = albumUri.toString(),
+                            timestamp = dateModified
+                        ),
+                        SongArtistMap(songId = song.id, artistId = "$LOCAL_KEY_PREFIX$artist")
+                    )
+
+                    audioFiles.add(song)
+                    Timber.d("OnDeviceViewModel added: ${song.title} [${song.id}]")
+                }.onFailure {
+                    Timber.e("OnDeviceViewModel addSong error: ${it.stackTraceToString()}")
+                }
+            }
         }
 
-        @SuppressLint("Range")
-        fun loadAudioFiles() {
-            try {
-                val showOndevice = application.applicationContext.preferences.getBoolean(
-                    SHOW_ON_DEVICE_PLAYLIST.key,
-                    true
-                )
-                Timber.d("OnDeviceViewModel loadAudioFiles called showOndevice $showOndevice")
-                if (!showOndevice) return
+        return audioFiles
+    }
 
-                val hasPermission = ContextCompat
-                    .checkSelfPermission(
-                        application.applicationContext,
-                        if (isAtLeastAndroid13) Manifest.permission.READ_MEDIA_AUDIO
-                        else Manifest.permission.READ_EXTERNAL_STORAGE
-                    ) == PackageManager.PERMISSION_GRANTED
-                if (!hasPermission) {
-//                SmartMessage(application.applicationContext.resources.getString(R.string.media_permission_required_please_grant),
-//                    PopupType.Error, durationLong = true, context = application.applicationContext)
-                    return
-                }
-
-                try {
-                    viewModelScope.launch {
-                        withContext(Dispatchers.IO) {
-                            val collection = if (isAtLeastAndroid10) {
-                                MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-                            } else {
-                                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-                            }
-
-                            var projection = arrayOf(
-                                MediaStore.Audio.Media._ID,
-                                MediaStore.Audio.Media.DISPLAY_NAME,
-                                MediaStore.Audio.Media.DURATION,
-                                MediaStore.Audio.Media.ARTIST,
-                                MediaStore.Audio.Media.ALBUM_ID,
-                                MediaStore.Audio.Media.ALBUM,
-                                if (isAtLeastAndroid10) {
-                                    MediaStore.Audio.Media.RELATIVE_PATH
-                                } else {
-                                    MediaStore.Audio.Media.DATA
-                                },
-                                MediaStore.Audio.Media.TITLE,
-                                MediaStore.Audio.Media.IS_MUSIC,
-                                MediaStore.Audio.Media.MIME_TYPE,
-                                MediaStore.Audio.Media.DATE_MODIFIED
-                            )
-                            if (isAtLeastAndroid11)
-                                projection += MediaStore.Audio.Media.BITRATE
-
-                            projection += MediaStore.Audio.Media.SIZE
-
-                            val sortOrderSQL = when (sortOrder) {
-                                SortOrder.Ascending -> "ASC"
-                                SortOrder.Descending -> "DESC"
-                            }
-
-                            val sortBySQL = when (sortBy) {
-                                OnDeviceSongSortBy.Title -> "${MediaStore.Audio.Media.TITLE} COLLATE NOCASE $sortOrderSQL"
-                                OnDeviceSongSortBy.DateAdded -> "${MediaStore.Audio.Media.DATE_ADDED} $sortOrderSQL"
-                                OnDeviceSongSortBy.Artist -> "${MediaStore.Audio.Media.ARTIST} COLLATE NOCASE $sortOrderSQL"
-                                OnDeviceSongSortBy.Duration -> "${MediaStore.Audio.Media.DURATION} COLLATE NOCASE $sortOrderSQL"
-                                OnDeviceSongSortBy.Album -> "${MediaStore.Audio.Media.ALBUM} COLLATE NOCASE $sortOrderSQL"
-                            }
-
-
-                            val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
-                            val albumUriBase = "content://media/external/audio/albumart".toUri()
-                            val audioFiles = mutableListOf<Song>()
-
-                            contentResolver.query(
-                                collection,
-                                projection,
-                                selection,
-                                null,
-                                sortBySQL
-                            )?.use { cursor ->
-                                while (cursor.moveToNext()) {
-                                    val isMusicIdx =
-                                        cursor.getColumnIndex(MediaStore.Audio.Media.IS_MUSIC)
-                                    //Timber.i(" OnDeviceViewModel colums isMusicIdx $isMusicIdx")
-
-                                    val idIdx = cursor.getColumnIndex(MediaStore.Audio.Media._ID)
-                                    //Timber.i(" OnDeviceViewModel colums idIdx $idIdx")
-                                    val nameIdx =
-                                        cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME)
-                                    //Timber.i(" OnDeviceViewModel colums nameIdx $nameIdx")
-                                    val durationIdx =
-                                        cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)
-                                    //Timber.i(" OnDeviceViewModel colums durationIdx $durationIdx")
-                                    val artistIdx =
-                                        cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)
-                                    //Timber.i(" OnDeviceViewModel colums artistIdx $artistIdx")
-                                    //val artistIdIdx = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST_ID)
-                                    //Timber.i(" OnDeviceViewModel colums artistIdIdx $artistIdIdx")
-                                    val albumIdIdx =
-                                        cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)
-                                    //Timber.i(" OnDeviceViewModel colums albumIdIdx $albumIdIdx")
-                                    val albumIdx =
-                                        cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)
-                                    //Timber.i(" OnDeviceViewModel colums albumIdx $albumIdx")
-                                    //val yearIdx = cursor.getColumnIndex(MediaStore.Audio.Media.YEAR)
-                                    //Timber.i(" OnDeviceViewModel colums yearIdx $yearIdx")
-                                    val relativePathIdx = if (isAtLeastAndroid10) {
-                                        cursor.getColumnIndex(MediaStore.Audio.Media.RELATIVE_PATH)
-                                    } else {
-                                        cursor.getColumnIndex(MediaStore.Audio.Media.DATA)
-                                    }
-                                    //Timber.i(" OnDeviceViewModel colums relativePathIdx $relativePathIdx")
-                                    val titleIdx =
-                                        cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)
-                                    //Timber.i(" OnDeviceViewModel colums titleIdx $titleIdx")
-                                    val mimeTypeIdx =
-                                        cursor.getColumnIndex(MediaStore.Audio.Media.MIME_TYPE)
-                                    //Timber.i(" OnDeviceViewModel colums mimeTypeIdx $mimeTypeIdx")
-                                    val bitrateIdx =
-                                        if (isAtLeastAndroid11) cursor.getColumnIndex(MediaStore.Audio.Media.BITRATE) else -1
-                                    //Timber.i(" OnDeviceViewModel colums bitrateIdx $bitrateIdx")
-                                    val fileSizeIdx =
-                                        cursor.getColumnIndex(MediaStore.Audio.Media.SIZE)
-                                    //Timber.i(" OnDeviceViewModel colums fileSizeIdx $fileSizeIdx")
-                                    val dateModifiedIdx =
-                                        cursor.getColumnIndex(MediaStore.Audio.Media.DATE_MODIFIED)
-                                    //Timber.i(" OnDeviceViewModel colums dateModifiedIdx $dateModifiedIdx")
-
-                                    val blacklist = OnDeviceBlacklist()
-
-                                    //Timber.i(" OnDeviceViewModel SDK ${Build.VERSION.SDK_INT} initialize columns complete")
-
-                                    //val uri = Uri.withAppendedPath(collection, idIdx.toString())
-
-                                    val id = cursor.getLong(idIdx)
-                                    val name = cursor.getString(nameIdx)?.substringBeforeLast(".")?: "Unknown"
-                                    val mediaId = name.substringAfterLast('[', "")
-                                        .substringBeforeLast(']', "").takeIf { !it.contains(" ") }
-                                    val uri = Uri.withAppendedPath(
-                                        collection,
-                                        id.toString()
-                                    )
-                                    //Timber.i("OnDeviceViewModel name $name mediaId $mediaId")
-
-
-                                    val trackName = cursor.getString(titleIdx)
-                                    val duration = cursor.getInt(durationIdx)
-                                    if (duration == 0) continue
-                                    val artist = cursor.getString(artistIdx)
-                                    //val artistId = cursor.getLong(artistIdIdx)
-                                    val albumId = cursor.getLong(albumIdIdx)
-                                    val album = cursor.getString(albumIdx)
-                                    //val year = cursor.getInt(yearIdx)
-
-                                    val mimeType = cursor.getString(mimeTypeIdx)
-                                    val bitrate =
-                                        if (isAtLeastAndroid11) cursor.getInt(bitrateIdx) else 0
-                                    val fileSize = cursor.getInt(fileSizeIdx)
-                                    val dateModified = cursor.getLong(dateModifiedIdx)
-
-                                    val relativePath = if (isAtLeastAndroid10) {
-                                        cursor.getString(relativePathIdx) ?: ""
-                                    } else {
-                                        cursor.getString(relativePathIdx)?.substringBeforeLast("/") ?: ""
-                                    }
-
-
-                                    val songId = "$LOCAL_KEY_PREFIX$id"
-
-                                    /*
-                                    // todo check if effectively works in all devices
-                                    // Read internal lyrics
-                                    val lyricsRaw = readLyricsFromAudio(appContext(), uri)
-                                    val lyrics = try {
-                                        when (lyricsRaw?.type) {
-                                            LyricsType.PLAIN -> Lyrics(songId, fixed = lyricsRaw.rawContent, synced = null)
-                                            LyricsType.LINE_SYNCED -> Lyrics(songId, fixed = null, synced = lyricsRaw.rawContent)
-                                            LyricsType.WORD_SYNCED -> Lyrics(songId, fixed = null, synced= null, lrcSynced = lyricsRaw.rawContent)
-                                            else -> null
-                                        }
-                                    } catch (e: Exception) {
-                                        Timber.e("Error parsing lyrics type for $uri")
-                                        null
-                                    }
-                                     */
-
-
-                                    val exclude =
-                                        blacklist.checkIf(relativePath) || blacklist.checkIf("/$relativePath")
-                                                || blacklist.checkIf(mediaId ?: "")
-                                                || relativePath.contains("WhatsApp")
-
-                                    Timber.d("OnDeviceViewModel trackname $trackName exclude $exclude relativePath $relativePath")
-
-                                    if (!exclude) {
-                                        runCatching {
-
-                                            val albumUri =
-                                                ContentUris.withAppendedId(albumUriBase, albumId)
-                                            val durationText =
-                                                duration.milliseconds.toComponents { minutes, seconds, _ ->
-                                                    "$minutes:${
-                                                        seconds.toString().padStart(2, '0')
-                                                    }"
-                                                }
-                                            val song = Song(
-                                                id = songId,
-                                                mediaId = mediaId,
-                                                title = trackName ?: name,
-                                                artistsText = artist,
-                                                durationText = durationText,
-                                                thumbnailUrl = albumUri.toString(),
-                                                folder = relativePath
-                                            )
-                                            Database.upsert(
-                                                song,
-                                                Format(
-                                                    songId = song.id,
-                                                    itag = 0,
-                                                    mimeType = mimeType,
-                                                    bitrate = bitrate.toLong(),
-                                                    contentLength = fileSize.toLong(),
-                                                    lastModified = dateModified
-                                                )
-                                            )
-
-                                            Database.upsert(
-                                                Album(
-                                                    id = "$LOCAL_KEY_PREFIX${albumId}",
-                                                    title = album,
-                                                    thumbnailUrl = albumUri.toString(),
-                                                    year = null,
-                                                    authorsText = artist,
-                                                    shareUrl = null,
-                                                    timestamp = dateModified
-                                                ),
-                                                SongAlbumMap(
-                                                    songId = song.id,
-                                                    albumId = "$LOCAL_KEY_PREFIX${albumId}",
-                                                    position = 0
-                                                )
-                                            )
-
-                                            Database.upsert(
-                                                Artist(
-                                                    id = "$LOCAL_KEY_PREFIX${artist}",
-                                                    name = artist,
-                                                    thumbnailUrl = albumUri.toString(),
-                                                    timestamp = dateModified
-                                                ),
-                                                SongArtistMap(
-                                                    songId = song.id,
-                                                    artistId = "$LOCAL_KEY_PREFIX${artist}"
-                                                )
-                                            )
-
-                                            //lyrics?.let { Database.upsert(it) }
-
-                                            audioFiles.add(
-                                                song
-                                            )
-                                            Timber.d("OnDeviceViewModel updated and added song ${song.title} and songId ${song.id}")
-                                        }.onFailure {
-                                            Timber.e("OnDeviceViewModel addSong error ${it.stackTraceToString()}")
-                                        }
-
-                                    }
-
-                                }
-                            }
-                            audioFiles
-                        }.let { songs ->
-                            _audioFiles.value = songs
-                            _audioFolders =
-                                MutableStateFlow(
-                                    songs.map { song -> song.folder ?: "" }.distinct().toList()
-                                )
-
-                            Timber.d("OnDeviceViewModel audioList inside size audioFiles ${_audioFiles.value.size} ")
-                        }
-
-                    }
-                } catch (e: Exception) {
-                    Timber.e("OnDeviceViewModel loadAudioFiles Error ${e.stackTraceToString()}")
-                }
-            } catch (e: Exception) {
-                Timber.e("OnDeviceViewModel loadAudioFiles error ${e.message}")
-            }
+    private fun buildSortSQL(): String {
+        val order = when (sortOrder) {
+            SortOrder.Ascending -> "ASC"
+            SortOrder.Descending -> "DESC"
+        }
+        return when (sortBy) {
+            OnDeviceSongSortBy.Title     -> "${MediaStore.Audio.Media.TITLE} COLLATE NOCASE $order"
+            OnDeviceSongSortBy.DateAdded -> "${MediaStore.Audio.Media.DATE_ADDED} $order"
+            OnDeviceSongSortBy.Artist    -> "${MediaStore.Audio.Media.ARTIST} COLLATE NOCASE $order"
+            OnDeviceSongSortBy.Duration  -> "${MediaStore.Audio.Media.DURATION} $order"
+            OnDeviceSongSortBy.Album     -> "${MediaStore.Audio.Media.ALBUM} COLLATE NOCASE $order"
+        }
     }
 
     fun removeObsoleteOndeviceMusic(
@@ -397,7 +298,22 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
 
             viewModelScope.launch {
                 while (currentCoroutineContext().isActive) {
-                    val newVersion = MediaStore.getVersion(context)
+
+                    val newVersion = runCatching {
+                        if (isAtLeastAndroid10)
+                            MediaStore.getVersion(context, MediaStore.VOLUME_EXTERNAL)
+                        else
+                            MediaStore.getVersion(context)
+                    }.onFailure {
+                        Timber.w("removeObsoleteOndeviceMusic: MediaStore non disponibile, retry tra 5s: ${it.message}")
+                    }.getOrNull()
+
+                    // Se il volume non è pronto, skippa e riprova dopo
+                    if (newVersion == null) {
+                        delay(5.seconds)
+                        continue
+                    }
+
                     if (version != newVersion) {
                         version = newVersion
 
