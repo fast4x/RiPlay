@@ -28,6 +28,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.gestures.snapping.SnapPosition
+import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -2283,18 +2284,22 @@ fun UnifiedPlayer(
                                 pagerStateFS.LaunchedEffectScrollToPage(binder.player.currentMediaItemIndex)
 
                                 if (!showQueue) {
-                                    LaunchedEffect(pagerStateFS) {
-                                        var previousPage = pagerStateFS.settledPage
-                                        snapshotFlow { pagerStateFS.settledPage }.distinctUntilChanged()
-                                            .collect {
-                                                if (previousPage != it) {
-                                                    if (it != binder.player.currentMediaItemIndex) binder.player.playAtIndex(
-                                                        it
-                                                    )
-                                                }
-                                                previousPage = it
-                                            }
-                                    }
+                                    //PATCH
+                                    pagerStateFS.LaunchedEffectPlayAtIndexOnUserSwipe(
+                                        player = binder.player
+                                    )
+//                                    LaunchedEffect(pagerStateFS) {
+//                                        var previousPage = pagerStateFS.settledPage
+//                                        snapshotFlow { pagerStateFS.settledPage }.distinctUntilChanged()
+//                                            .collect {
+//                                                if (previousPage != it) {
+//                                                    if (it != binder.player.currentMediaItemIndex) binder.player.playAtIndex(
+//                                                        it
+//                                                    )
+//                                                }
+//                                                previousPage = it
+//                                            }
+//                                    }
                                 }
 
                                 HorizontalPager(
@@ -2535,18 +2540,22 @@ fun UnifiedPlayer(
                                             }
 
                                             if (!showQueue) {
-                                                LaunchedEffect(pagerState) {
-                                                    var previousPage = pagerState.settledPage
-                                                    snapshotFlow { pagerState.settledPage }.distinctUntilChanged()
-                                                        .collect {
-                                                            if (previousPage != it) {
-                                                                if (it != binder.player.currentMediaItemIndex) binder.player.playAtIndex(
-                                                                    it
-                                                                )
-                                                            }
-                                                            previousPage = it
-                                                        }
-                                                }
+                                                //PATH
+                                                pagerStateFS.LaunchedEffectPlayAtIndexOnUserSwipe(
+                                                    player = binder.player
+                                                )
+//                                                LaunchedEffect(pagerState) {
+//                                                    var previousPage = pagerState.settledPage
+//                                                    snapshotFlow { pagerState.settledPage }.distinctUntilChanged()
+//                                                        .collect {
+//                                                            if (previousPage != it) {
+//                                                                if (it != binder.player.currentMediaItemIndex) binder.player.playAtIndex(
+//                                                                    it
+//                                                                )
+//                                                            }
+//                                                            previousPage = it
+//                                                        }
+//                                                }
                                             }
                                             HorizontalPager(
                                                 state = pagerState,
@@ -2959,19 +2968,24 @@ fun UnifiedPlayer(
                     pagerStateFS.LaunchedEffectScrollToPage(binder.player.currentMediaItemIndex)
 
                     if (!showQueue) {
-                        LaunchedEffect(pagerStateFS) {
-                            var previousPage = pagerStateFS.settledPage
-                            snapshotFlow { pagerStateFS.settledPage }.distinctUntilChanged()
-                                .collect {
-                                    if (previousPage != it) {
-                                        delay(if (swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Fade) 0 else 400)
-                                        if (it != binder.player.currentMediaItemIndex) binder.player.playAtIndex(
-                                            it
-                                        )
-                                    }
-                                    previousPage = it
-                                }
-                        }
+                        //PATCH
+                        pagerStateFS.LaunchedEffectPlayAtIndexOnUserSwipe(
+                            player = binder.player,
+                            delayBeforePlayMs = if (swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Fade) 0L else 400L
+                        )
+//                        LaunchedEffect(pagerStateFS) {
+//                            var previousPage = pagerStateFS.settledPage
+//                            snapshotFlow { pagerStateFS.settledPage }.distinctUntilChanged()
+//                                .collect {
+//                                    if (previousPage != it) {
+//                                        delay(if (swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Fade) 0 else 400)
+//                                        if (it != binder.player.currentMediaItemIndex) binder.player.playAtIndex(
+//                                            it
+//                                        )
+//                                    }
+//                                    previousPage = it
+//                                }
+//                        }
                     }
                     HorizontalPager(
                         state = pagerStateFS,
@@ -3441,18 +3455,22 @@ fun UnifiedPlayer(
                                     pagerState.LaunchedEffectScrollToPage(binder.player.currentMediaItemIndex)
 
                                     if (!showQueue) {
-                                        LaunchedEffect(pagerState) {
-                                            var previousPage = pagerState.settledPage
-                                            snapshotFlow { pagerState.settledPage }.distinctUntilChanged()
-                                                .collect {
-                                                    if (previousPage != it) {
-                                                        if (it != binder.player.currentMediaItemIndex) binder.player.playAtIndex(
-                                                            it
-                                                        )
-                                                    }
-                                                    previousPage = it
-                                                }
-                                        }
+                                        //PATCH
+                                        pagerState.LaunchedEffectPlayAtIndexOnUserSwipe(
+                                            player = binder.player
+                                        )
+//                                        LaunchedEffect(pagerState) {
+//                                            var previousPage = pagerState.settledPage
+//                                            snapshotFlow { pagerState.settledPage }.distinctUntilChanged()
+//                                                .collect {
+//                                                    if (previousPage != it) {
+//                                                        if (it != binder.player.currentMediaItemIndex) binder.player.playAtIndex(
+//                                                            it
+//                                                        )
+//                                                    }
+//                                                    previousPage = it
+//                                                }
+//                                        }
                                     }
 
                                     val pageSpacing =
@@ -4183,10 +4201,64 @@ private fun PagerState.LaunchedEffectScrollToPage(
 ) {
     val pagerState = this
     LaunchedEffect(pagerState, index) {
+        if (index !in 0 until pagerState.pageCount) return@LaunchedEffect
+        if (pagerState.currentPage == index && pagerState.settledPage == index) return@LaunchedEffect
         if (!appRunningInBackground) {
             pagerState.animateScrollToPage(index)
         } else {
             pagerState.scrollToPage(index)
         }
+    }
+}
+
+@Composable
+@OptIn(UnstableApi::class)
+private fun PagerState.LaunchedEffectPlayAtIndexOnUserSwipe(
+    player: Player,
+    enabled: Boolean = true,
+    delayBeforePlayMs: Long = 0L
+) {
+    val pagerState = this
+
+    LaunchedEffect(pagerState, enabled) {
+        if (!enabled) return@LaunchedEffect
+
+        var previousPage = pagerState.settledPage
+        var userGestureSeen = false
+
+        launch {
+            pagerState.interactionSource.interactions.collect { interaction ->
+                if (interaction is DragInteraction.Start) {
+                    userGestureSeen = true
+                }
+            }
+        }
+
+        snapshotFlow { pagerState.settledPage }
+            .distinctUntilChanged()
+            .collect { page ->
+                if (previousPage != page) {
+                    if (userGestureSeen) {
+                        if (delayBeforePlayMs > 0L) delay(delayBeforePlayMs)
+
+                        val currentIndex = player.currentMediaItemIndex
+                        val mediaItemCount = player.mediaItemCount
+
+                        if (page != currentIndex && page in 0 until mediaItemCount) {
+                            Timber.w(
+                                "UnifiedPlayer playAtIndex from USER pager swipe page=$page current=$currentIndex count=$mediaItemCount"
+                            )
+                            player.playAtIndex(page)
+                        }
+                    } else {
+                        Timber.d(
+                            "UnifiedPlayer ignored PROGRAMMATIC pager change page=$page current=${player.currentMediaItemIndex}"
+                        )
+                    }
+                }
+
+                previousPage = page
+                userGestureSeen = false
+            }
     }
 }
