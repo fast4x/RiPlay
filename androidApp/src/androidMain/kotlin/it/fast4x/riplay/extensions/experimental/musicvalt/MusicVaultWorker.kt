@@ -56,6 +56,15 @@ class MusicVaultWorker(
                 thumbnailFileName = finalThumbnailFileName
             )
 
+            MusicVaultEvents.emit(
+                MusicVaultEvent.DownloadCompleted(
+                    songId            = songId,
+                    fileName          = finalFileName,
+                    thumbnailFileName = finalThumbnailFileName
+                )
+            )
+
+
             Result.success(workDataOf("file_name" to finalFileName))
 
         } catch (e: Exception) {

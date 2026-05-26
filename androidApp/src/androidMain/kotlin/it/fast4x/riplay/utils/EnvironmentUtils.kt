@@ -1,6 +1,8 @@
 package it.fast4x.riplay.utils
 
+import android.content.ContentUris
 import android.content.Context
+import android.provider.MediaStore
 import androidx.annotation.OptIn
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
@@ -36,6 +38,8 @@ import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultRepository
+import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultState
 import it.fast4x.riplay.extensions.lastfm.sendLoveTrack
 import it.fast4x.riplay.extensions.lastfm.sendUnloveTrack
 import it.fast4x.riplay.ui.components.themed.SmartMessage
@@ -46,6 +50,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
+import java.io.File
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
@@ -99,6 +104,71 @@ val Environment.Podcast.EpisodeItem.asMediaItem: MediaItem
         )
         .build()
 
+
+@UnstableApi
+suspend fun Environment.SongItem.toMediaItem(): MediaItem {
+    val database = Database
+    val localSong = database.song(key).firstOrNull()
+
+    val musicVaultState = localSong?.musicVaultState ?: MusicVaultState.NONE
+    val isLocal = localSong?.isLocal ?: false
+    val musicVaultFileName = localSong?.musicVaultFileName
+
+    val finalUri = when {
+        musicVaultState == MusicVaultState.COMPLETED -> {
+            val fileName = musicVaultFileName ?: key
+            if (fileName.startsWith("content://")) {
+                fileName.toUri()
+            } else {
+                File(MusicVaultRepository.getOutputDir(), fileName).toUri()
+            }
+        }
+        isLocal -> ContentUris.withAppendedId(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            key.substringAfter(LOCAL_KEY_PREFIX).toLong()
+        )
+        else -> key.toUri()
+    }
+
+    return MediaItem.Builder()
+        .setMediaId(key)
+        .setUri(finalUri)
+        .setCustomCacheKey(key)
+        .setMediaMetadata(
+            MediaMetadata.Builder()
+                .setTitle(info?.name)
+                .setArtist(
+                    authors?.filter { it.name?.matches(Regex("\\s*([,&])\\s*")) == false }
+                        ?.joinToString(", ") { it.name ?: "" }
+                )
+                .setAlbumTitle(album?.name)
+                .setArtworkUri(thumbnail?.url?.toUri())
+                .setExtras(
+                    bundleOf(
+                        "albumId" to album?.endpoint?.browseId,
+                        "durationText" to durationText,
+                        "artistNames" to authors?.filter { it.endpoint != null }
+                            ?.mapNotNull { it.name },
+                        "artistIds" to authors?.mapNotNull { it.endpoint?.browseId },
+                        EXPLICIT_BUNDLE_TAG to explicit,
+                        "setVideoId" to setVideoId,
+                        "isOfficialMusicVideo" to isOfficialMusicVideo,
+                        "isOfficialUploadByArtistContent" to isOfficialUploadByArtistContent,
+                        "isUserGeneratedContent" to isUserGeneratedContent,
+                        "isVideo" to !isAudioOnly,
+
+                        "musicVaultState" to musicVaultState.name,
+                        "musicVaultFileName" to musicVaultFileName,
+                        "musicVaultThumbnailFileName" to localSong?.musicVaultThumbnailFileName,
+                        "isLocal" to isLocal
+                    )
+                )
+                .build()
+        )
+        .build()
+}
+
+
 val Environment.SongItem.asMediaItem: MediaItem
     @UnstableApi
     get() = MediaItem.Builder()
@@ -129,6 +199,8 @@ val Environment.SongItem.asMediaItem: MediaItem
                 .build()
         )
         .build()
+
+
 
 val Environment.SongItem.asVideoMediaItem: MediaItem
     @UnstableApi

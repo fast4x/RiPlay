@@ -70,6 +70,11 @@ object MusicVaultService {
                         fileName          = "",
                         thumbnailFileName = ""
                     )
+                    MusicVaultEvents.emit(
+                        MusicVaultEvent.DownloadRemoved(
+                            songId = songId
+                        )
+                    )
                 }
         }
     }

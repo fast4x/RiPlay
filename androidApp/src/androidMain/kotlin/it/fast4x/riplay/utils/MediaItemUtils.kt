@@ -20,6 +20,7 @@ import it.fast4x.riplay.services.playback.MediaInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.io.File
 
 
@@ -82,61 +83,66 @@ fun mediaItemSetLiked( mediaItem: MediaItem ) {
 
 val Song.asMediaItem: MediaItem
     @UnstableApi
-    get() = MediaItem.Builder()
-        .setMediaMetadata(
-            MediaMetadata.Builder()
-                .setTitle(title)
-                .setArtist(artistsText)
-                .setArtworkUri(thumbnailUrl?.toUri())
-                .setExtras(
-                    bundleOf(
-                        "durationText" to durationText,
-                        EXPLICIT_BUNDLE_TAG to title.startsWith(EXPLICIT_PREFIX, true),
-                        "isVideo" to (isAudioOnly != 1),
-                        "isPodcast" to (isPodcast == 1),
-                        "isDisliked" to (likedAt?.toInt() == -1),
-                        "isLiked" to ((likedAt?.toInt() ?: 0) > 0),
-                        "mediaId" to mediaId,
-                        // MusicVault
-                        "musicVaultState" to musicVaultState.name,
-                        "musicVaultFileName" to musicVaultFileName,
-                        "musicVaultThumbnailFileName" to musicVaultThumbnailFileName
+    get() {
+
+        Timber.d("createLocalDataSourceFactory Song.asMediaItem id=${this.id} mediaId=${this.mediaId} musicVaultState=${this.musicVaultState.name} musicVaultFileName ${this.musicVaultFileName}")
+
+        return MediaItem.Builder()
+            .setMediaMetadata(
+                MediaMetadata.Builder()
+                    .setTitle(title)
+                    .setArtist(artistsText)
+                    .setArtworkUri(thumbnailUrl?.toUri())
+                    .setExtras(
+                        bundleOf(
+                            "durationText" to durationText,
+                            EXPLICIT_BUNDLE_TAG to title.startsWith(EXPLICIT_PREFIX, true),
+                            "isVideo" to (isAudioOnly != 1),
+                            "isPodcast" to (isPodcast == 1),
+                            "isDisliked" to (likedAt?.toInt() == -1),
+                            "isLiked" to ((likedAt?.toInt() ?: 0) > 0),
+                            "mediaId" to mediaId,
+                            // MusicVault
+                            "musicVaultState" to musicVaultState.name,
+                            "musicVaultFileName" to musicVaultFileName,
+                            "musicVaultThumbnailFileName" to musicVaultThumbnailFileName
+                        )
                     )
-                )
-                .build()
-        )
-        .setMediaId(id)
-        .setUri(
-            when {
-                // Canzone MusicVault — usa URI SAF o path fisico
-                musicVaultState == MusicVaultState.COMPLETED -> {
-                    val fileName = musicVaultFileName ?: id.toUri().toString()
-                    if (fileName.startsWith("content://")) {
-                        fileName.toUri()
-                    } else {
-                        File(
-                            MusicVaultRepository.getOutputDir(),
-                            fileName
-                        ).toUri()
+                    .build()
+            )
+            .setMediaId(id)
+            .setUri(
+                when {
+                    // Canzone MusicVault — usa URI SAF o path fisico
+                    musicVaultState == MusicVaultState.COMPLETED -> {
+                        val fileName = musicVaultFileName ?: id.toUri().toString()
+                        if (fileName.startsWith("content://")) {
+                            fileName.toUri()
+                        } else {
+                            File(
+                                MusicVaultRepository.getOutputDir(),
+                                fileName
+                            ).toUri()
+                        }
                     }
+                    // Canzone locale da MediaStore
+                    isLocal -> ContentUris.withAppendedId(
+                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                        id.substringAfter(LOCAL_KEY_PREFIX).toLong()
+                    )
+                    // Canzone online
+                    else -> id.toUri()
                 }
-                // Canzone locale da MediaStore
-                isLocal -> ContentUris.withAppendedId(
-                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    id.substringAfter(LOCAL_KEY_PREFIX).toLong()
-                )
-                // Canzone online
-                else -> id.toUri()
-            }
-        )
-        .setCustomCacheKey(
-            when {
-                musicVaultState == MusicVaultState.COMPLETED -> "$MUSIC_VAULT_KEY_PREFIX$id"
-                id.startsWith(LOCAL_KEY_PREFIX) -> id
-                else -> id
-            }
-        )
-        .build()
+            )
+            .setCustomCacheKey(
+                when {
+                    musicVaultState == MusicVaultState.COMPLETED -> "$MUSIC_VAULT_KEY_PREFIX$id"
+                    //id.startsWith(LOCAL_KEY_PREFIX) -> id
+                    else -> id
+                }
+            )
+            .build()
+    }
 
 /*
 val Song.asMediaItem: MediaItem
@@ -314,7 +320,7 @@ val MediaItem.asRelated: MediaItem
 
 val MediaItem.origin: String
     get() = when {
-        this.isLocal && this.isMusicVault -> "MUSIC VAULT"
+        this.isMusicVault -> "MUSIC VAULT"
         this.isLocal -> appContext().resources.getString(R.string.local_now_playing_title)
         else -> appContext().resources.getString(R.string.online_now_playing_title)
     }

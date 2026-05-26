@@ -54,11 +54,7 @@ const val MUSIC_VAULT_KEY_PREFIX = "musicvault:"
 val DataSpec.isLocal
     @OptIn(UnstableApi::class)
     get() = key?.startsWith(LOCAL_KEY_PREFIX) == true
-        || key?.startsWith(MUSIC_VAULT_KEY_PREFIX) == true
 
-val DataSpec.isMusicVault
-    @OptIn(UnstableApi::class)
-    get() = key?.startsWith(MUSIC_VAULT_KEY_PREFIX) == true
 
 @get:OptIn(UnstableApi::class)
 val DataSpec.isLocalUri get() = uri.toString().startsWith("content://")
@@ -76,28 +72,6 @@ val Song.isLocal get() = id.startsWith(LOCAL_KEY_PREFIX)
 val Song.isMusicVault get() = musicVaultState == MusicVaultState.COMPLETED
 
 val String.isLocal get() = this.startsWith(LOCAL_KEY_PREFIX)
-        || this.startsWith(MUSIC_VAULT_KEY_PREFIX)
-
-val String.isMusicVault get() = this.startsWith(MUSIC_VAULT_KEY_PREFIX)
-
-//var GlobalVolume: Float = 0.5f
-
-/*
-fun Player.restoreGlobalVolume() {
-    CoroutineScope(Dispatchers.Main).launch {
-        volume = GlobalVolume
-    }
-}
-
-fun Player.setGlobalVolume(v: Float) {
-    GlobalVolume = v
-}
-
-fun Player.getGlobalVolume(): Float {
-    return GlobalVolume
-}
-
- */
 
 fun Player.isNowPlaying(mediaId: String): Boolean {
     return mediaId == currentMediaItem?.mediaId

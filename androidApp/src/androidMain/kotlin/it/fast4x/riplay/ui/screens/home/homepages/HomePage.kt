@@ -120,8 +120,11 @@ import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.asVideoMediaItem
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
+import it.fast4x.riplay.utils.toMediaItem
 import it.fast4x.riplay.utils.typography
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 
@@ -598,18 +601,23 @@ fun HomePage(
                                             )
                                         },
                                         onClick = {
-                                            Timber.d("HomePage Clicked on song")
-                                            val mediaItem = if (song.isAudioOnly)
-                                                song.asMediaItem
-                                            else
-                                                song.asVideoMediaItem
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                Timber.d("HomePage Clicked on song")
+                                                val mediaItem = if (song.isAudioOnly)
+                                                //song.asMediaItem
+                                                    song.toMediaItem()
+                                                else
+                                                    song.asVideoMediaItem
 
-                                            binder?.stopRadio()
-                                            binder?.player?.forcePlay(mediaItem)
-                                            //fastPlay(mediaItem, binder)
-                                            binder?.setupRadio(
-                                                NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
-                                            )
+                                                binder?.stopRadio()
+                                                withContext(Dispatchers.Main) {
+                                                    binder?.player?.forcePlay(mediaItem)
+                                                }
+                                                binder?.setupRadio(
+                                                    NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
+                                                )
+                                            }
+
                                         }
                                     ),
 
