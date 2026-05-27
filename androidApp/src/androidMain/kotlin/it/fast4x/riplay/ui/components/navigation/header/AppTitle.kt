@@ -30,6 +30,7 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.LOG_DEBUG_ENABLED
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.components.themed.Button
+import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.isParentalControlEnabled
 import it.fast4x.riplay.utils.typography
@@ -92,6 +93,7 @@ fun AppTitle(
     val appViewModel = LocalAppViewModel.current
     val networkState by appViewModel.networkState.collectAsStateWithLifecycle()
     var offlineModeEnabled by rememberPreference(PreferenceKey.OFFLINE_MODE_ENABLED.key, false)
+    val isAndroidAutoConnected by GlobalSharedData.androidAutoConnected
 
     Row(
         horizontalArrangement = Arrangement.spacedBy( 5.dp ),
@@ -119,6 +121,14 @@ fun AppTitle(
                 )
             }
 
+            if (isAndroidAutoConnected)
+                Image(
+                    painter = painterResource(R.drawable.ic_android_auto),
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(colorPalette().text),
+                    modifier = Modifier
+                        .size(9.dp)
+                )
 
 
             val isEqualizerEnabled by rememberPreference(EQ_ENABLED.key, false)

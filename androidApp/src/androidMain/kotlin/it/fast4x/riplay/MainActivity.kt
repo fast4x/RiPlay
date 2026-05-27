@@ -1475,39 +1475,42 @@ class MainActivity :
 
                                 */
 
-                                    BottomSheet(
-                                        state = localPlayerSheetState,
-                                        collapsedContent = {
-                                            Box(modifier = Modifier.fillMaxSize()) {
-                                                //Text(text = "BottomSheet", modifier = Modifier.align(Alignment.Center))
+                                    val isAndroidAutoConnected by GlobalSharedData.androidAutoConnected
+
+                                    if (!isAndroidAutoConnected)
+                                        BottomSheet(
+                                            state = localPlayerSheetState,
+                                            collapsedContent = {
+                                                Box(modifier = Modifier.fillMaxSize()) {
+                                                    //Text(text = "BottomSheet", modifier = Modifier.align(Alignment.Center))
+                                                }
+                                            },
+                                            contentAlwaysAvailable = true
+                                        ) {
+                                            navController?.let {
+                                                UnifiedPlayer(
+                                                    navController = it,
+                                                    onlineCore = {
+                                                        binder?.player?.currentMediaItem?.let {
+                                                            UnifiedPlayerView(
+                                                                onlinePlayerView = onlinePlayerView,
+                                                                mediaItem = it,
+                                                            )
+                                                        }
+                                                    },
+                                                    playerSheetState = localPlayerSheetState,
+                                                    onDismiss = {
+                                                        localPlayerSheetState.collapseSoft()
+                                                    },
+                                                )
                                             }
-                                        },
-                                        contentAlwaysAvailable = true
-                                    ) {
-                                        navController?.let {
-                                            UnifiedPlayer(
-                                                navController = it,
-                                                onlineCore = {
-                                                    binder?.player?.currentMediaItem?.let {
-                                                        UnifiedPlayerView(
-                                                            onlinePlayerView = onlinePlayerView,
-                                                            mediaItem = it,
-                                                        )
-                                                    }
-                                                },
-                                                playerSheetState = localPlayerSheetState,
-                                                onDismiss = {
-                                                    localPlayerSheetState.collapseSoft()
-                                                },
-                                            )
+
+    //                                    if (binder?.currentMediaItemAsSong?.isLocal == true)
+    //                                        localPlayer()
+    //                                    else
+    //                                        onlinePlayer()
+
                                         }
-
-//                                    if (binder?.currentMediaItemAsSong?.isLocal == true)
-//                                        localPlayer()
-//                                    else
-//                                        onlinePlayer()
-
-                                    }
 
                                     val menuState = LocalGlobalSheetState.current
                                     CustomModalBottomSheet(

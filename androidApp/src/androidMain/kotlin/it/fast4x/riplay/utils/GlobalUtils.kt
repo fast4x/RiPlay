@@ -119,6 +119,8 @@ object GlobalSharedData {
         get() = riTuneDevices.value.any { it.selected }
 
     var chromecastConnected = mutableStateOf(false)
+
+    var androidAutoConnected = mutableStateOf(false)
 }
 
 

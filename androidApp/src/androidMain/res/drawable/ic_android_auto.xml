@@ -1,0 +1,35 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="?attr/colorControlNormal">
+
+    <!-- Carrozzeria auto -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M3.5,13.5 Q3.5,11 5.5,10.5 L7,8 Q7.5,7 9,7 L15,7 Q16.5,7 17,8 L18.5,10.5 Q20.5,11 20.5,13.5 L20.5,15.5 Q20.5,16.5 19.5,16.5 L18.5,16.5 Q18.5,17.5 17.5,17.5 L17,17.5 Q16,17.5 16,16.5 L8,16.5 Q8,17.5 7,17.5 L6.5,17.5 Q5.5,17.5 5.5,16.5 L4.5,16.5 Q3.5,16.5 3.5,15.5 Z"/>
+
+    <!-- Parabrezza -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M7.5,10.5 L8.5,8 L15.5,8 L16.5,10.5 Z"/>
+
+    <!-- Linea divisoria porte -->
+    <path
+        android:strokeColor="@android:color/white"
+        android:strokeWidth="0.5"
+        android:fillColor="@android:color/transparent"
+        android:pathData="M12,10.5 L12,16.5"/>
+
+    <!-- Ruota sinistra -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M7.5,16.5 A1.5,1.5 0 1,1 7.5,19.5 A1.5,1.5 0 1,1 7.5,16.5 Z"/>
+
+    <!-- Ruota destra -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M16.5,16.5 A1.5,1.5 0 1,1 16.5,19.5 A1.5,1.5 0 1,1 16.5,16.5 Z"/>
+
+</vector>

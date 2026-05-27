@@ -62,6 +62,7 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SONG_SORT_
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SORT_BY
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SONG_SORT_BY
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SONG_SORT_ORDER
+import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.getTitleMonthlyPlaylist
@@ -105,7 +106,11 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
     private var bound = false
     private var playerServiceBinder: PlayerService.Binder? = null
 
-
+    // Package AA da riconoscere
+    private val androidAutoPackages = setOf(
+        "com.google.android.projection.gearhead",   // Android Auto
+        "com.google.android.automotiveui"            // Android Automotive OS
+    )
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         sharedPreferences ?: return
@@ -184,6 +189,10 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
 
 
     override fun onDestroy() {
+
+        GlobalSharedData.androidAutoConnected.value = false
+        Timber.d("PlayerMediaBrowserService: destroyed, Android Auto disconnected")
+
         if (bound) {
             unbindService(this)
         }
@@ -211,6 +220,12 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
         rootHints: Bundle?
     ): BrowserRoot {
         bindService(intent<PlayerService>(), this, BIND_AUTO_CREATE)
+
+        if (clientPackageName in androidAutoPackages) {
+            GlobalSharedData.androidAutoConnected.value = true
+            Timber.d("PlayerMediaBrowserService: Android Auto connected ($clientPackageName)")
+        }
+
         return BrowserRoot(
             MediaId.ROOT,
             Bundle().apply {
