@@ -60,6 +60,7 @@ import it.fast4x.riplay.utils.typography
 
 @Composable
 private fun HamburgerMenu(
+    navController: NavController,
     expanded: Boolean,
     onItemClick: (NavRoutes) -> Unit,
     onDismissRequest: () -> Unit
@@ -186,7 +187,9 @@ private fun HamburgerMenu(
                     iconRes = R.drawable.airplane,
                     textRes = R.string.offline,
                     checked = offlineModeEnabled,
-                    onCheckedChange = { offlineModeEnabled = it }
+                    onCheckedChange = {
+                        offlineModeEnabled = it
+                    }
                 )
 
                 HorizontalDivider(
@@ -567,9 +570,10 @@ fun ActionBar(
 
     // Hamburger menu
     HamburgerMenu(
+        navController = navController,
         expanded = expanded,
         onItemClick = onItemClick,
-        onDismissRequest = onDismissRequest
+        onDismissRequest = onDismissRequest,
     )
 // END
 }

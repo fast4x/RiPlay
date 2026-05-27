@@ -85,13 +85,19 @@ fun HomeScreen(
     val preferences = LocalContext.current.preferences
     //val enableQuickPicksPage by rememberPreference(enableQuickPicksPageKey.key, true)
 
-    val openTabFromShortcut1 by remember{ mutableIntStateOf(openTabFromShortcut) }
+    val isNetworkConnected = rememberIsNetworkConnected()
+
+    val openTabFromShortcut1 by remember{
+        Timber.d("HomeScreen openTabFromShortcut $openTabFromShortcut")
+        mutableIntStateOf(openTabFromShortcut)
+    }
 
     val initialtabIndex = remember {
         when (openTabFromShortcut1) {
-            -1 -> when (preferences.getEnum(INDEX_NAVIGATION_TAB.key, HomeScreenTabs.Default)) {
-                HomeScreenTabs.Default -> HomeScreenTabs.LocalSongs.index
-                else -> preferences.getEnum(INDEX_NAVIGATION_TAB.key, HomeScreenTabs.LocalSongs).index
+            -1 -> {
+                val savedTab = preferences.getEnum(INDEX_NAVIGATION_TAB.key, HomeScreenTabs.Home)
+                if (savedTab == HomeScreenTabs.Default) HomeScreenTabs.Home.index
+                else savedTab.index
             }
             else -> openTabFromShortcut1
         }
@@ -99,10 +105,9 @@ fun HomeScreen(
 
     var (tabIndex, onTabChanged) = rememberPreference(HOME_SCREEN_TAB_INDEX.key, initialtabIndex)
 
-    LaunchedEffect(openTabFromShortcut) {
-        if (openTabFromShortcut >= 0) {
-            onTabChanged(openTabFromShortcut)
-        }
+    val offlineModeEnabled by rememberPreference(PreferenceKey.OFFLINE_MODE_ENABLED.key, false)
+    LaunchedEffect(Unit, offlineModeEnabled) {
+        if (offlineModeEnabled) onTabChanged(1)
     }
 
     val isEnabledMusicIdentifier by rememberPreference(
@@ -123,8 +128,6 @@ fun HomeScreen(
             SmartMessage("Music Identifier is disabled", context = LocalContext.current)
         }
     }
-
-    val isNetworkConnected = rememberIsNetworkConnected()
 
     ScreenContainer(
         navController,
