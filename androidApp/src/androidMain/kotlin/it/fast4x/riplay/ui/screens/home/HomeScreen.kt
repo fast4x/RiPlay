@@ -19,6 +19,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.core.content.edit
 import androidx.lifecycle.Lifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -86,14 +87,15 @@ fun HomeScreen(
 
     val openTabFromShortcut1 by remember{ mutableIntStateOf(openTabFromShortcut) }
 
-    var initialtabIndex =
-            when (openTabFromShortcut1) {
+    val initialtabIndex = remember {
+        when (openTabFromShortcut1) {
             -1 -> when (preferences.getEnum(INDEX_NAVIGATION_TAB.key, HomeScreenTabs.Default)) {
                 HomeScreenTabs.Default -> HomeScreenTabs.LocalSongs.index
                 else -> preferences.getEnum(INDEX_NAVIGATION_TAB.key, HomeScreenTabs.LocalSongs).index
             }
             else -> openTabFromShortcut1
         }
+    }
 
     var (tabIndex, onTabChanged) = rememberPreference(HOME_SCREEN_TAB_INDEX.key, initialtabIndex)
 

@@ -35,7 +35,10 @@ enum class NavRoutes {
         fun current( navController: NavController ) = navController.currentBackStackEntry?.destination?.route
     }
 
-    fun isHere( navController: NavController ) = current( navController ) == this.name
+    fun isHere(navController: NavController): Boolean {
+        val currentRoute = current(navController) ?: return false
+        return currentRoute == this.name || currentRoute.startsWith("${this.name}?")
+    }
 
     fun isNotHere( navController: NavController ) = !isHere( navController )
 }

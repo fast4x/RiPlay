@@ -137,8 +137,8 @@ fun AppNavigation(
     }
 
 
-    val context = LocalContext.current
-    clearPreference(context, HOME_SCREEN_TAB_INDEX.key)
+    //val context = LocalContext.current
+    //clearPreference(context, HOME_SCREEN_TAB_INDEX.key)
 
     var showOnBoardingScreen by rememberPreference(SHOW_ON_BOARDING_SCREEN.key, true)
 

@@ -710,13 +710,15 @@ fun <T> rememberPreference(key: String, defaultValue: T): MutableState<T> {
     }
 
     return remember(key, defaultValue) {
-        object : MutableState<T> by internalState {
+        object : MutableState<T> {
             override var value: T
                 get() = internalState.value
                 set(newValue) {
                     internalState.value = newValue
                     writeValue(newValue)
                 }
+            override fun component1(): T = value
+            override fun component2(): (T) -> Unit = { value = it }
         }
     }
 }
