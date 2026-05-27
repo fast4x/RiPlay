@@ -1442,39 +1442,6 @@ class MainActivity :
                                         ThumbnailRoundness.Light
                                     )
 
-                                    /*
-                                val localPlayer: @Composable () -> Unit = {
-                                    LocalPlayer(
-                                        navController = navController,
-                                        onDismiss = {
-                                            localPlayerSheetState.collapseSoft()
-                                        }
-                                    )
-                                }
-
-
-
-
-                                val onlinePlayer: @Composable () -> Unit = {
-                                    OnlinePlayer(
-                                        navController = navController,
-                                        onlineCore = {
-                                            binder?.player?.currentMediaItem?.let{
-                                                OnlinePlayerView(
-                                                    onlinePlayerView = onlinePlayerView,
-                                                    mediaItem = it,
-                                                )
-                                            }
-                                        },
-                                        playerSheetState = localPlayerSheetState,
-                                        onDismiss = {
-                                            localPlayerSheetState.collapseSoft()
-                                        },
-                                    )
-                                }
-
-                                */
-
                                     val isAndroidAutoConnected by GlobalSharedData.androidAutoConnected
 
                                     if (!isAndroidAutoConnected)
@@ -1505,12 +1472,8 @@ class MainActivity :
                                                 )
                                             }
 
-    //                                    if (binder?.currentMediaItemAsSong?.isLocal == true)
-    //                                        localPlayer()
-    //                                    else
-    //                                        onlinePlayer()
-
                                         }
+                                    else SmartMessage("Android Auto is connected", context = this@MainActivity)
 
                                     val menuState = LocalGlobalSheetState.current
                                     CustomModalBottomSheet(
