@@ -20,6 +20,8 @@ import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_VAULT_ENABLED
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.isLocal
+import it.fast4x.riplay.utils.isMusicVault
 import timber.log.Timber
 
 @Composable
@@ -37,6 +39,8 @@ fun MusicVaultButton(
     // Osserva lo stato dal database
     val songState by Database.song(song.id)
         .collectAsState(initial = song)
+
+    if (songState?.isLocal == true || songState?.isMusicVault == true) return // Già local o vault quindi il bottone non serve
 
     val dbState = songState?.musicVaultState ?: MusicVaultState.NONE
 
