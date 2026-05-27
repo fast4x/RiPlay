@@ -69,6 +69,9 @@ val MediaItem.isMusicVault get() =
 val Song.isLocal get() = id.startsWith(LOCAL_KEY_PREFIX)
         || musicVaultState == MusicVaultState.COMPLETED
 
+val Song.isExclusivelyLocal get() = id.startsWith(LOCAL_KEY_PREFIX)
+
+
 val Song.isMusicVault get() = musicVaultState == MusicVaultState.COMPLETED
 
 val String.isLocal get() = this.startsWith(LOCAL_KEY_PREFIX)
