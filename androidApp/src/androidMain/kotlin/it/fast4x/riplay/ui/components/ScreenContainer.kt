@@ -66,7 +66,7 @@ fun ScreenContainer(
     onTabChanged: (Int) -> Unit = {},
     miniPlayer: @Composable (() -> Unit)? = null,
     transitionEffect: TransitionEffect = TransitionEffect.SlideHorizontal,
-    navBarContent: @Composable (@Composable (Int, String, Int) -> Unit) -> Unit,
+    navBarContent: @Composable (@Composable (Int, String, Int, Boolean) -> Unit) -> Unit,
     content: @Composable AnimatedVisibilityScope.(Int) -> Unit
 ) {
     val navigationBar: AbstractNavigationBar =

@@ -20,6 +20,7 @@ import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.SongPlaylistMap
+import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_YOU_TUBE_SYNC
 import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.DynamicColor
@@ -37,7 +38,7 @@ import timber.log.Timber
 
 @ExperimentalSerializationApi
 suspend fun importYTMPrivatePlaylists(): Boolean {
-    if (isYtSyncEnabled()) {
+    if (isYtSyncEnabled() && isNetworkConnected()) {
 
         SmartMessage(
             message = appContext().resources.getString(R.string.syncing),
@@ -125,6 +126,8 @@ suspend fun importYTMPrivatePlaylists(): Boolean {
 @ExperimentalSerializationApi
 @OptIn(UnstableApi::class)
 fun ytmPrivatePlaylistSync(playlist: Playlist, playlistId: Long) {
+    if (!isNetworkConnected()) return
+
     playlist.let { plist ->
         Database.asyncTransaction {
             runBlocking(Dispatchers.IO) {
@@ -178,7 +181,7 @@ fun ytmPrivatePlaylistSync(playlist: Playlist, playlistId: Long) {
 
 suspend fun importYTMSubscribedChannels(): Boolean {
     println("importYTMSubscribedChannels isYouTubeSyncEnabled() = ${isYtSyncEnabled()}}")
-    if (isYtSyncEnabled()) {
+    if (isYtSyncEnabled() && isNetworkConnected()) {
 
         SmartMessage(
             message = appContext().resources.getString(R.string.syncing),
@@ -237,7 +240,7 @@ suspend fun importYTMSubscribedChannels(): Boolean {
 
 suspend fun importYTMLikedAlbums(): Boolean {
     println("importYTMLikedAlbums isYouTubeSyncEnabled() = ${isYtSyncEnabled()}}")
-    if (isYtSyncEnabled()) {
+    if (isYtSyncEnabled() && isNetworkConnected()) {
 
         SmartMessage(
             message = appContext().resources.getString(R.string.syncing),
@@ -304,7 +307,7 @@ suspend fun removeYTSongFromPlaylist(
 
     Timber.d("removeYTSongFromPlaylist removeSongFromPlaylist params songId = $songId, playlistBrowseId = $playlistBrowseId, playlistId = $playlistId")
 
-    if (isYtSyncEnabled()) {
+    if (isYtSyncEnabled() && isNetworkConnected()) {
         Database.asyncTransaction {
             CoroutineScope(Dispatchers.IO).launch {
                 val songSetVideoId = Database.getSetVideoIdFromPlaylist(songId, playlistId).firstOrNull()

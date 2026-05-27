@@ -105,7 +105,7 @@ import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.UiType
-import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
+import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.riplay.extensions.persist.persistList
@@ -344,6 +344,7 @@ fun PlaylistSongListNew1(
         content = playlistPage?.playlist?.asPlaylist ?: return
     )
 
+    val isNetworkConnected = rememberIsNetworkConnected()
 
     LayoutWithAdaptiveThumbnail(thumbnailLandscapeContent = thumbnailContent) {
         Box(
@@ -605,7 +606,7 @@ fun PlaylistSongListNew1(
                                     icon = R.drawable.heart,
                                     enabled = playlistPage?.songs?.isNotEmpty() == true,
                                     onClick = {
-                                        if (!isNetworkConnected() && isYtSyncEnabled())
+                                        if (!isNetworkConnected && isYtSyncEnabled())
                                             SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
                                         else if (!isYtSyncEnabled()) {
                                             Database.asyncTransaction {
@@ -631,7 +632,7 @@ fun PlaylistSongListNew1(
                                         icon = if (isYtSaved) R.drawable.bookmark else R.drawable.bookmark_outline,
                                         active = isYtSaved,
                                         onClick = {
-                                            if (isNetworkConnected()) {
+                                            if (isNetworkConnected) {
                                                 if (isYtSaved) {
                                                     CoroutineScope(Dispatchers.IO).launch { EnvironmentExt.removelikePlaylistOrAlbum(browseId.substringAfter("VL")) }
                                                     Database.asyncTransaction { Database.playlistWithBrowseId(browseId.substringAfter("VL"))?.let { delete(it) } }

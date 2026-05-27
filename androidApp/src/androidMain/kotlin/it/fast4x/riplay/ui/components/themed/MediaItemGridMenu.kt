@@ -102,7 +102,7 @@ import it.fast4x.riplay.utils.addToOnlineLikedSong
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.commonutils.setDisLikeState
-import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
+import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import kotlinx.serialization.ExperimentalSerializationApi
 
@@ -428,6 +428,8 @@ fun MediaItemGridMenu (
         mutableStateOf(0.dp)
     }
 
+    val isNetworkConnected = rememberIsNetworkConnected()
+
     val topContent = @Composable {
         var showFastShare by remember { mutableStateOf(false) }
         Row(
@@ -450,7 +452,7 @@ fun MediaItemGridMenu (
                     icon = getLikeState(mediaItem.mediaId),
                     color = colorPalette().favoritesIcon,
                     onClick = {
-                        if (!isNetworkConnected() && isYtSyncEnabled()) {
+                        if (!isNetworkConnected && isYtSyncEnabled()) {
                             SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
                         } else if (!isYtSyncEnabled()){
                             mediaItemToggleLike(mediaItem)
@@ -462,7 +464,7 @@ fun MediaItemGridMenu (
                         }
                     },
                     onLongClick = {
-                        if (!isNetworkConnected() && isYtSyncEnabled()) {
+                        if (!isNetworkConnected && isYtSyncEnabled()) {
                             SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
                         } else if (!isYtSyncEnabled()){
                             Database.asyncTransaction {

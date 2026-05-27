@@ -102,7 +102,7 @@ import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.UiType
-import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
+import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.riplay.extensions.persist.persistList
@@ -325,6 +325,8 @@ fun PlaylistSongListNew(
 
     val hasLikableSongs = playlistPage?.songs?.any { it.asMediaItem.mediaId !in dislikedSongs } == true
 
+    val isNetworkConnected = rememberIsNetworkConnected()
+
     LayoutWithAdaptiveThumbnail(thumbnailLandscapeContent = thumbnailContent) {
         Box(
             modifier = Modifier
@@ -426,7 +428,7 @@ fun PlaylistSongListNew(
                                         active = localPlaylist?.isYoutubePlaylist == true,
                                         size = 20,
                                         onClick = {
-                                            if (isNetworkConnected()) {
+                                            if (isNetworkConnected) {
                                                 if (localPlaylist?.isYoutubePlaylist == true) {
                                                     CoroutineScope(Dispatchers.IO).launch { EnvironmentExt.removelikePlaylistOrAlbum(browseId.substringAfter("VL")) }
                                                     Database.asyncTransaction { Database.playlistWithBrowseId(browseId.substringAfter("VL"))?.let { delete(it) } }
@@ -455,7 +457,7 @@ fun PlaylistSongListNew(
 
                                 ActionIconButton(icon = R.drawable.add_in_playlist, size = 20, onClick = { menuState.display { PlaylistsItemMenu(navController = navController, modifier = Modifier.fillMaxHeight(0.4f), onDismiss = menuState::hide, onImportOnlinePlaylist = { isImportingPlaylist = true }, onAddToPlaylist = { playlistPreview -> position = playlistPreview.songCount.minus(1) ?: 0; if (position > 0) position++ else position = 0; val playlistSize = playlistPage?.songs?.size ?: 0; if ((playlistSize + playlistPreview.songCount) > 5000 && playlistPreview.playlist.isYoutubePlaylist && isYtSyncEnabled()) SmartMessage(context.resources.getString(R.string.yt_playlist_limited), context = context, type = PopupType.Error) else if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) { playlistPage?.songs?.forEachIndexed { index, song -> runCatching { coroutineScope.launch(Dispatchers.IO) { Database.insert(song.asSong); Database.insert(SongPlaylistMap(songId = song.asMediaItem.mediaId, playlistId = playlistPreview.playlist.id, position = position + index).default()) } }.onFailure { Timber.e("Failed onAddToPlaylist in PlaylistSongListModern ${it.stackTraceToString()}") } } } else CoroutineScope(Dispatchers.IO).launch { EnvironmentExt.addPlaylistToPlaylist(cleanPrefix(playlistPreview.playlist.browseId ?: ""), browseId.substringAfter("VL")) }; CoroutineScope(Dispatchers.Main).launch { SmartMessage(context.resources.getString(R.string.done), type = PopupType.Success, context = context) } }, onGoToPlaylist = { navController.navigate("${NavRoutes.localPlaylist.name}/$it") }, disableScrollingText = disableScrollingText) } }, onLongClick = { SmartMessage(context.resources.getString(R.string.info_add_in_playlist), context = context) })
 
-                                ActionIconButton(icon = R.drawable.heart, enabled = playlistPage?.songs?.isNotEmpty() == true, size = 20, onClick = { if (!isNetworkConnected() && isYtSyncEnabled()) SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error) else if (!isYtSyncEnabled()) { Database.asyncTransaction { playlistPage?.songs?.filter { getLikedAt(it.asMediaItem.mediaId) in listOf(-1L, null) }?.forEachIndexed { _, song -> mediaItemSetLiked(song.asMediaItem) }; SmartMessage(context.resources.getString(R.string.done), context = context) } } else showYoutubeLikeConfirmDialog = true }, onLongClick = { SmartMessage(context.resources.getString(R.string.add_to_favorites), context = context) })
+                                ActionIconButton(icon = R.drawable.heart, enabled = playlistPage?.songs?.isNotEmpty() == true, size = 20, onClick = { if (!isNetworkConnected && isYtSyncEnabled()) SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error) else if (!isYtSyncEnabled()) { Database.asyncTransaction { playlistPage?.songs?.filter { getLikedAt(it.asMediaItem.mediaId) in listOf(-1L, null) }?.forEachIndexed { _, song -> mediaItemSetLiked(song.asMediaItem) }; SmartMessage(context.resources.getString(R.string.done), context = context) } } else showYoutubeLikeConfirmDialog = true }, onLongClick = { SmartMessage(context.resources.getString(R.string.add_to_favorites), context = context) })
 
                                 ActionIconButton(icon = R.drawable.get_app, enabled = playlistPage?.songs?.isNotEmpty() == true, size = 20, onClick = { showFastShare = true; showDirectFastShare = true }, onLongClick = { SmartMessage(context.resources.getString(R.string.share_with_external_app), context = context) })
                             }

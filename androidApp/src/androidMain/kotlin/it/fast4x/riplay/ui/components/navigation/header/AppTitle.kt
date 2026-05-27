@@ -11,8 +11,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -23,8 +23,8 @@ import androidx.navigation.NavController
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.appviewmodel.LocalAppViewModel
-import it.fast4x.riplay.extensions.appviewmodel.models.NetworkType
 import it.fast4x.riplay.extensions.appviewmodel.toIcon
+import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.EQ_ENABLED
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.LOG_DEBUG_ENABLED
 import it.fast4x.riplay.extensions.preferences.rememberPreference
@@ -91,6 +91,7 @@ fun AppTitle(
 ) {
     val appViewModel = LocalAppViewModel.current
     val networkState by appViewModel.networkState.collectAsStateWithLifecycle()
+    var offlineModeEnabled by rememberPreference(PreferenceKey.OFFLINE_MODE_ENABLED.key, false)
 
     Row(
         horizontalArrangement = Arrangement.spacedBy( 5.dp ),
@@ -108,7 +109,8 @@ fun AppTitle(
 
             if (isAtLeastAndroid7) {
                 Image(
-                    painter = painterResource(networkState.networkType?.toIcon() ?: R.drawable.alert_circle_not_filled),
+                    painter = if (offlineModeEnabled) painterResource(R.drawable.airplane)
+                        else painterResource(networkState.networkType?.toIcon() ?: R.drawable.alert_circle_not_filled),
                     contentDescription = null,
                     colorFilter = ColorFilter.tint(colorPalette().text),
                     modifier = Modifier

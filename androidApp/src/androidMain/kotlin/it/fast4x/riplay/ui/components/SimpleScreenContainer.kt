@@ -33,7 +33,7 @@ fun SimpleScreenContainer(
     tabIndex: Int = 0,
     onTabChanged: (Int) -> Unit = {},
     transitionEffect: TransitionEffect = TransitionEffect.SlideHorizontal,
-    navBarContent: @Composable (@Composable (Int, String, Int) -> Unit) -> Unit,
+    navBarContent: @Composable (@Composable (Int, String, Int, Boolean) -> Unit) -> Unit,
     navigationBarVertical: Boolean = false,
     content: @Composable AnimatedVisibilityScope.(Int) -> Unit
 ) {

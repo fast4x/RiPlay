@@ -118,7 +118,7 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.data.models.defaultQueue
-import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
+import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.ui.components.themed.Loader
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.QueuesDialog
@@ -151,6 +151,8 @@ fun OnDeviceAlbumDetails(
     var album by persist<Album?>("album/$albumId")
     val parentalControlEnabled by rememberPreference(PARENTAL_CONTROL_ENABLED.key, false)
     val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+
+    val isNetworkConnected = rememberIsNetworkConnected()
 
     LaunchedEffect(Unit) {
         Database.albumSongs(albumId).collect {
@@ -676,7 +678,7 @@ fun OnDeviceAlbumDetails(
                                                         navController.navigate("${NavRoutes.localPlaylist.name}/$it")
                                                     },
                                                     onAddToFavourites = {
-                                                        if (!isNetworkConnected() && isYtSyncEnabled()) {
+                                                        if (!isNetworkConnected && isYtSyncEnabled()) {
                                                             SmartMessage(
                                                                 appContext().resources.getString(
                                                                     R.string.no_connection

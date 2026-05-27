@@ -272,7 +272,7 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.TOP_PADDING
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.VISUALIZER_ENABLED
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
-import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
+import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultButton
 import it.fast4x.riplay.ui.screens.player.common.Queue
 import it.fast4x.riplay.ui.components.BottomSheetState
@@ -1562,6 +1562,8 @@ fun UnifiedPlayer(
     val density = LocalDensity.current
     val bottomInset = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
     val contentPadding = PaddingValues(bottom = bottomInset)
+
+    val isNetworkConnected = rememberIsNetworkConnected()
 
     Box(
         modifier = Modifier
@@ -3893,7 +3895,7 @@ fun UnifiedPlayer(
                                         color = colorPalette().favoritesIcon,
                                         icon = getLikeState(mediaItem.mediaId),
                                         onClick = {
-                                            if (!isNetworkConnected() && isYtSyncEnabled()) {
+                                            if (!isNetworkConnected && isYtSyncEnabled()) {
                                                 SmartMessage(
                                                     appContext().resources.getString(R.string.no_connection),
                                                     context = appContext(),
@@ -3916,7 +3918,7 @@ fun UnifiedPlayer(
                                             if (effectRotationEnabled) isRotated = !isRotated
                                         },
                                         onLongClick = {
-                                            if (!isNetworkConnected() && isYtSyncEnabled()) {
+                                            if (!isNetworkConnected && isYtSyncEnabled()) {
                                                 SmartMessage(
                                                     appContext().resources.getString(R.string.no_connection),
                                                     context = appContext(),

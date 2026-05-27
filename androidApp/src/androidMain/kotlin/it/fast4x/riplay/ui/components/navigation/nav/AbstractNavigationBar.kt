@@ -4,7 +4,9 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
@@ -69,13 +71,13 @@ abstract class AbstractNavigationBar(
     }
 
     @Composable
-    abstract fun add( buttons: @Composable (@Composable (Int, String, Int) -> Unit) -> Unit )
+    abstract fun add( buttons: @Composable (@Composable (Int, String, Int, Boolean) -> Unit) -> Unit )
 
     @Composable
     abstract fun Draw()
 
     @Composable
-    fun buttonList(): MutableList<@Composable () -> Unit> = remember { buttonList }
+    fun buttonList(): MutableList<@Composable () -> Unit> = buttonList // remember { buttonList }
 }
 
 internal class NavigationButton(

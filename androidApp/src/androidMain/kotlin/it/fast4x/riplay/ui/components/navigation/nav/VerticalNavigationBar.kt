@@ -71,11 +71,13 @@ class VerticalNavigationBar(
         super.buttonList.add( component )
 
     @Composable
-    override fun add(buttons: @Composable (@Composable (Int, String, Int) -> Unit) -> Unit ) {
+    override fun add(buttons: @Composable (@Composable (Int, String, Int, Boolean) -> Unit) -> Unit ) {
         val transition = updateTransition( targetState = tabIndex, label = null )
         val isLandscape: Boolean = isLandscape
 
-        buttons { index, text, iconId ->
+        buttons { index, text, iconId, visible ->
+            if (!visible) return@buttons
+
             val textColor by transition.animateColor(label = "") {
                 if (it == index)
                     colorPalette().text

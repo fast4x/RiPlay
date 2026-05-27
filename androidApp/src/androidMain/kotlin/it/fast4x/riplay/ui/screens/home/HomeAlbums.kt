@@ -100,7 +100,9 @@ import it.fast4x.riplay.enums.ViewType
 import it.fast4x.riplay.utils.getViewType
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.enums.BlacklistType
+import it.fast4x.riplay.enums.BuiltInPlaylist
 import it.fast4x.riplay.enums.SortOrder
+import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.navigation.header.TabToolBar
 import it.fast4x.riplay.ui.components.tab.ItemSize
@@ -168,7 +170,11 @@ fun HomeAlbums(
     }
 
     var albumType by rememberPreference(ALBUM_TYPE.key, AlbumsType.Favorites)
-    val buttonsList = AlbumsType.entries.map { it to it.textName }
+    val isNetworkConnected = rememberIsNetworkConnected()
+
+    val buttonsList = AlbumsType.entries.map { it to it.textName }.filter {
+        if (isNetworkConnected) true else it.first.availableWhenOffline
+    }
     val coroutineScope = rememberCoroutineScope()
 
     var sortBy by rememberPreference(ALBUM_SORT_BY.key, AlbumSortBy.DateAdded)
@@ -177,6 +183,11 @@ fun HomeAlbums(
         targetValue = if (sortOrder == SortOrder.Ascending) 0f else 180f,
         animationSpec = tween(durationMillis = 400, easing = LinearEasing), label = ""
     )
+
+    LaunchedEffect(isNetworkConnected) {
+        if (!isNetworkConnected && albumType !in listOf(AlbumsType.OnDevice))
+            albumType = AlbumsType.OnDevice
+    }
 
     LaunchedEffect(sortBy, sortOrder, albumType) {
         when (albumType) {

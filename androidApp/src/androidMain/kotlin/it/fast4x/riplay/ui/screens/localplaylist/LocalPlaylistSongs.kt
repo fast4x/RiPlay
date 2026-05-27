@@ -177,7 +177,7 @@ import it.fast4x.riplay.utils.saveImageToInternalStorage
 import kotlinx.coroutines.CoroutineScope
 import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.data.models.defaultQueue
-import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
+import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.FilterMenu
@@ -243,6 +243,8 @@ fun LocalPlaylistSongs(
     val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
     var playlistSongsTypeFilter by rememberPreference(PLAYLIST_SONGS_TYPE_FILTER.key, PlaylistSongsTypeFilter.All)
     var isSpotifyPlaylist by remember { mutableStateOf(false) }
+
+    val isNetworkConnected = rememberIsNetworkConnected()
 
     LaunchedEffect(Unit, filter, sortOrder, sortBy) {
         Database.songsPlaylist(playlistId, sortBy, sortOrder).filterNotNull()
@@ -554,7 +556,7 @@ fun LocalPlaylistSongs(
 
 
     LaunchedEffect(shouldSync) {
-        if (!shouldSync || !isNetworkConnected()) {
+        if (!shouldSync || !isNetworkConnected) {
             return@LaunchedEffect
         }
         coroutineScope.launch {
@@ -1040,6 +1042,7 @@ fun LocalPlaylistSongs(
     println("LocalPlaylistSongs playlist browseId ${playlistPreview?.playlist?.browseId}")
     println("LocalPlaylistSongs ${playlistAllSongs}")
 
+
     PullToRefreshBox(
         refreshing = refreshing,
         onRefresh = { refresh() }
@@ -1370,7 +1373,7 @@ fun LocalPlaylistSongs(
                                             ))
                                         }) colorPalette.text else colorPalette.textDisabled,
                                     onClick = {
-                                        if (!isNetworkConnected() && playlistPreview?.playlist?.isYoutubePlaylist == true && (playlistPreview?.playlist?.isEditable == true) && isYtSyncEnabled()) {
+                                        if (!isNetworkConnected && playlistPreview?.playlist?.isYoutubePlaylist == true && (playlistPreview?.playlist?.isEditable == true) && isYtSyncEnabled()) {
                                             SmartMessage(
                                                 context.resources.getString(R.string.no_connection),
                                                 context = context,
@@ -1493,10 +1496,10 @@ fun LocalPlaylistSongs(
                                                     }
                                                 },
                                                 showOnSyncronize = !playlistPreview.playlist.browseId.isNullOrBlank(),
-                                                showLinkUnlink = isNetworkConnected() && (!playlistPreview.playlist.browseId.isNullOrBlank()),
+                                                showLinkUnlink = rememberIsNetworkConnected() && (!playlistPreview.playlist.browseId.isNullOrBlank()),
                                                 onSyncronize = { sync() },
                                                 onLinkUnlink = {
-                                                    if (!isNetworkConnected() && playlistPreview.playlist.isYoutubePlaylist && playlistPreview.playlist.isEditable && isYtSyncEnabled()) {
+                                                    if (!isNetworkConnected && playlistPreview.playlist.isYoutubePlaylist && playlistPreview.playlist.isEditable && isYtSyncEnabled()) {
                                                         SmartMessage(
                                                             context.resources.getString(R.string.no_connection),
                                                             context = context,
@@ -1536,7 +1539,7 @@ fun LocalPlaylistSongs(
                                                     }
                                                 },
                                                 onRename = {
-                                                    if (!isNetworkConnected() && playlistPreview.playlist.isYoutubePlaylist && (playlistPreview.playlist.isEditable) && isYtSyncEnabled()) {
+                                                    if (!isNetworkConnected && playlistPreview.playlist.isYoutubePlaylist && (playlistPreview.playlist.isEditable) && isYtSyncEnabled()) {
                                                         SmartMessage(
                                                             context.resources.getString(R.string.no_connection),
                                                             context = context,
@@ -1690,7 +1693,7 @@ fun LocalPlaylistSongs(
                                                     }
                                                 },
                                                 onAddToPreferites = {
-                                                    if (!isNetworkConnected() && isYtSyncEnabled()) {
+                                                    if (!isNetworkConnected && isYtSyncEnabled()) {
                                                         SmartMessage(
                                                             appContext().resources.getString(R.string.no_connection),
                                                             context = appContext(),
@@ -1737,7 +1740,7 @@ fun LocalPlaylistSongs(
                                                         )
                                                 },
                                                 onDelete = {
-                                                    if (!isNetworkConnected() && playlistPreview.playlist.isYoutubePlaylist && isYtSyncEnabled()) {
+                                                    if (!isNetworkConnected && playlistPreview.playlist.isYoutubePlaylist && isYtSyncEnabled()) {
                                                         SmartMessage(
                                                             context.resources.getString(R.string.no_connection),
                                                             context = context,
@@ -2197,7 +2200,7 @@ fun LocalPlaylistSongs(
                                 SwipeableQueueItem(
                                     mediaItem = song.asMediaItem,
                                     onRemoveFromQueue = {
-                                        if (!isNetworkConnected() && playlistPreview?.playlist?.isYoutubePlaylist == true && (playlistPreview?.playlist?.isEditable == true) && isYtSyncEnabled()) {
+                                        if (!isNetworkConnected && playlistPreview?.playlist?.isYoutubePlaylist == true && (playlistPreview?.playlist?.isEditable == true) && isYtSyncEnabled()) {
                                             SmartMessage(
                                                 context.resources.getString(R.string.no_connection),
                                                 context = context,
@@ -2366,7 +2369,7 @@ fun LocalPlaylistSongs(
                                                     menuState.display {
                                                         InPlaylistMediaItemMenu(
                                                             onMatchingSong = {
-                                                                if (!isNetworkConnected() && playlistPreview?.playlist?.isYoutubePlaylist == true && (playlistPreview?.playlist?.isEditable == true) && isYtSyncEnabled()) {
+                                                                if (!isNetworkConnected && playlistPreview?.playlist?.isYoutubePlaylist == true && (playlistPreview?.playlist?.isEditable == true) && isYtSyncEnabled()) {
                                                                     SmartMessage(
                                                                         context.resources.getString(
                                                                             R.string.no_connection

@@ -97,10 +97,11 @@ class HorizontalNavigationBar(
     private fun topPadding(): Dp = 0.dp
 
     @Composable
-    override fun add(buttons: @Composable (@Composable (Int, String, Int) -> Unit) -> Unit) {
+    override fun add(buttons: @Composable (@Composable (Int, String, Int, Boolean) -> Unit) -> Unit) {
         val transition = updateTransition(targetState = tabIndex, label = null)
 
-        buttons { index, text, iconId ->
+        buttons { index, text, iconId, visible ->
+            if (!visible) return@buttons
 
             val color by transition.animateColor(label = "") {
                 if (it == index) colorPalette().text else colorPalette().textDisabled

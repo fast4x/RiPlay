@@ -92,7 +92,7 @@ import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.UiType
-import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
+import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
@@ -234,6 +234,8 @@ fun ArtistOverviewNew1(
         onDismissRequest = { showFastShare = false },
         content = artist ?: return
     )
+
+    val isNetworkConnected = rememberIsNetworkConnected()
 
     Box(
         modifier = Modifier
@@ -533,7 +535,7 @@ fun ArtistOverviewNew1(
                                     RoundedCornerShape(50)
                                 )
                                 .clickable {
-                                    if (isYtSyncEnabled() && !isNetworkConnected()) {
+                                    if (isYtSyncEnabled() && !isNetworkConnected) {
                                         SmartMessage(
                                             context.resources.getString(R.string.no_connection),
                                             context = context, type = PopupType.Error

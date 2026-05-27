@@ -27,11 +27,11 @@ fun WelcomeScreen(
         onTabChanged = { tabIndex = it },
         transitionEffect = transitionEffect,
         navBarContent = { Item ->
-            Item(0, stringResource(R.string.home), R.drawable.sparkles)
-            Item(1, stringResource(R.string.songs), R.drawable.disc)
-            Item(2, stringResource(R.string.artists), R.drawable.artists)
-            Item(3, stringResource(R.string.albums), R.drawable.album)
-            Item(4, stringResource(R.string.playlists), R.drawable.playlist)
+            Item(0, stringResource(R.string.home), R.drawable.sparkles, true)
+            Item(1, stringResource(R.string.songs), R.drawable.disc, true)
+            Item(2, stringResource(R.string.artists), R.drawable.artists, true)
+            Item(3, stringResource(R.string.albums), R.drawable.album, true)
+            Item(4, stringResource(R.string.playlists), R.drawable.playlist, true)
         },
         navigationBarVertical = true
     ) { currentTabIndex ->

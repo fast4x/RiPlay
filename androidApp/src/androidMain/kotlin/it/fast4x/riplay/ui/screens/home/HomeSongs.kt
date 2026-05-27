@@ -164,7 +164,7 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.DEFAULT_FOLDER
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.enums.BlacklistType
-import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
+import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXCLUDE_SONGS_WITH_DURATION_LIMIT
 import it.fast4x.riplay.utils.forcePlayAtIndex
@@ -333,14 +333,15 @@ fun HomeSongs(
     val showDislikedPlaylist by rememberPreference(SHOW_DISLIKED_PLAYLIST.key, false)
     val showMyTopPlaylist by rememberPreference(SHOW_MY_TOP_PLAYLIST.key, true)
     val showOnDevicePlaylist by rememberPreference(SHOW_ON_DEVICE_PLAYLIST.key, true)
-    val isConnected = remember { isNetworkConnected() }
-    var buttonsList = if (isConnected) listOf(BuiltInPlaylist.All to stringResource(R.string.all)) else emptyList()
+    val isNetworkConnected = rememberIsNetworkConnected()
 
-    if (showFavoritesPlaylist && isConnected) buttonsList += BuiltInPlaylist.Favorites to stringResource(R.string.favorites)
-    if (showMyTopPlaylist && isConnected) buttonsList += BuiltInPlaylist.Top to String.format(stringResource(R.string.my_playlist_top), maxTopPlaylistItems.number)
+    val buttonsList = (if (isNetworkConnected) listOf(BuiltInPlaylist.All to stringResource(R.string.all)) else emptyList()).toMutableList()
+
+    if (showFavoritesPlaylist && isNetworkConnected) buttonsList += BuiltInPlaylist.Favorites to stringResource(R.string.favorites)
+    if (showMyTopPlaylist && isNetworkConnected) buttonsList += BuiltInPlaylist.Top to String.format(stringResource(R.string.my_playlist_top), maxTopPlaylistItems.number)
     buttonsList += BuiltInPlaylist.MusicVault to "Music Vault"
     if (showOnDevicePlaylist) buttonsList += BuiltInPlaylist.OnDevice to stringResource(R.string.on_device)
-    if (showDislikedPlaylist && isConnected) buttonsList += BuiltInPlaylist.Disliked to stringResource(R.string.disliked)
+    if (showDislikedPlaylist && isNetworkConnected) buttonsList += BuiltInPlaylist.Disliked to stringResource(R.string.disliked)
 
     val excludeSongWithDurationLimit by rememberPreference(EXCLUDE_SONGS_WITH_DURATION_LIMIT.key, DurationInMinutes.Disabled)
     val hapticFeedback = LocalHapticFeedback.current
@@ -349,6 +350,12 @@ fun HomeSongs(
     val blacklisted = remember {
         Database.blacklisted(listOf(BlacklistType.Song.name, BlacklistType.Video.name, BlacklistType.Folder.name))
     }.collectAsState(initial = null, context = Dispatchers.IO)
+
+    LaunchedEffect(isNetworkConnected) {
+        if (!isNetworkConnected && builtInPlaylist !in listOf(BuiltInPlaylist.OnDevice,
+                BuiltInPlaylist.MusicVault))
+            builtInPlaylist = BuiltInPlaylist.MusicVault
+    }
 
     // Database Loading Logic
     when (builtInPlaylist) {
@@ -845,7 +852,7 @@ fun HomeSongs(
                                             }
                                         },
                                         onAddToPreferites = {
-                                            if (!isNetworkConnected() && isYtSyncEnabled()) {
+                                            if (!isNetworkConnected && isYtSyncEnabled()) {
                                                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
                                             } else if (!isYtSyncEnabled()) {
                                                 if (listMediaItems.isNotEmpty()) {
@@ -863,7 +870,7 @@ fun HomeSongs(
                                         },
                                         showonAddToPreferitesYoutube = isYtSyncEnabled(),
                                         onAddToPreferitesYoutube = {
-                                            if (!isNetworkConnected()) { SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error) }
+                                            if (!isNetworkConnected) { SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error) }
                                             else { showRiPlayLikeYoutubeLikeConfirmDialog = true }
                                         },
                                         onAddToPlaylist = { playlistPreview ->

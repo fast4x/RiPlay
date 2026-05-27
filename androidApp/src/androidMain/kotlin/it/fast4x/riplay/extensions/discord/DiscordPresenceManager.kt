@@ -23,6 +23,7 @@ import it.fast4x.environment.Environment
 import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
+import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISCORD_PERSONAL_ACCESS_TOKEN
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_DISCORD_PRESENCE_ENABLED
 import it.fast4x.riplay.extensions.preferences.preferences

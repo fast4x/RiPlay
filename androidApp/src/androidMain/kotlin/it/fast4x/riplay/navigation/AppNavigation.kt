@@ -49,6 +49,7 @@ import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.data.models.Mood
 import it.fast4x.riplay.data.models.SearchQuery
+import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.ui.screens.player.common.Queue
 import it.fast4x.riplay.ui.screens.blacklist.BlacklistScreen
 import it.fast4x.riplay.extensions.listenerlevel.ListenerLevelCharts
@@ -141,6 +142,7 @@ fun AppNavigation(
 
     var showOnBoardingScreen by rememberPreference(SHOW_ON_BOARDING_SCREEN.key, true)
 
+    val isNetworkConnected = rememberIsNetworkConnected()
 
     NavHost(
         navController = navController,
@@ -248,12 +250,20 @@ fun AppNavigation(
             if (navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED) navController.popBackStack()
         }
 
-        composable(route = NavRoutes.home.name) {
+        composable(
+            route = "${NavRoutes.home.name}?tab={tab}",
+            arguments = listOf(
+                navArgument("tab") {
+                    type = NavType.IntType
+                    defaultValue = if (isNetworkConnected) -1 else 1
+                }
+            )
+        ) { backStackEntry ->
             HomeScreen(
                 navController = navController,
                 onPlaylistUrl = navigateToPlaylist,
                 miniPlayer = miniPlayer,
-                openTabFromShortcut = openTabFromShortcut
+                openTabFromShortcut = backStackEntry.arguments?.getInt("tab") ?: openTabFromShortcut
             )
         }
 

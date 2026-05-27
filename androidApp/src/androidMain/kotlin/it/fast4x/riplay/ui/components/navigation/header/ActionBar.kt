@@ -51,6 +51,7 @@ import it.fast4x.riplay.LocalRiTuneSheetState
 import it.fast4x.riplay.cast.CastButton
 import it.fast4x.riplay.cast.CastHelper
 import it.fast4x.riplay.enums.CastType
+import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.CAST_TYPE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LISTENER_LEVELS
 import it.fast4x.riplay.utils.GlobalSharedData
@@ -71,6 +72,9 @@ private fun HamburgerMenu(
     val internalEqualizer = LocalPlayerServiceBinder.current?.equalizer
     val launchSystemEqualizer by rememberSystemEqualizerLauncher(audioSessionId = {0})
     val showListenerLevels by rememberPreference(SHOW_LISTENER_LEVELS.key, true)
+    var offlineModeEnabled by rememberPreference(PreferenceKey.OFFLINE_MODE_ENABLED.key, false)
+
+    var menuIndex = 0
 
     DropdownMenu(
         expanded = expanded,
@@ -94,7 +98,7 @@ private fun HamburgerMenu(
 
 
                 ModernMenuItem(
-                    index = 0,
+                    index = menuIndex++,
                     iconRes = R.drawable.music_equalizer,
                     textRes = R.string.equalizer,
                     onClick = {
@@ -113,7 +117,7 @@ private fun HamburgerMenu(
 
 
                 ModernMenuItem(
-                    index = 1,
+                    index = menuIndex++,
                     iconRes = R.drawable.alarm,
                     textRes = R.string.events,
                     onClick = {
@@ -123,7 +127,7 @@ private fun HamburgerMenu(
 
 
                 ModernMenuItem(
-                    index = 2,
+                    index = menuIndex++,
                     iconRes = R.drawable.alert_circle,
                     textRes = R.string.blacklist,
                     onClick = { onItemClick(NavRoutes.blacklist) }
@@ -131,7 +135,7 @@ private fun HamburgerMenu(
 
 
                 ModernMenuItem(
-                    index = 3,
+                    index = menuIndex++,
                     iconRes = R.drawable.history,
                     textRes = R.string.history,
                     onClick = { onItemClick(NavRoutes.history) }
@@ -139,7 +143,7 @@ private fun HamburgerMenu(
 
 
                 ModernMenuItem(
-                    index = 4,
+                    index = menuIndex++,
                     iconRes = R.drawable.stats_chart,
                     textRes = R.string.statistics,
                     onClick = { onItemClick(NavRoutes.statistics) }
@@ -148,7 +152,7 @@ private fun HamburgerMenu(
 
                 if (showListenerLevels)
                     ModernMenuItem(
-                        index = 5,
+                        index = menuIndex++,
                         iconRes = R.drawable.trophy,
                         textRes = R.string.listener_levels,
                         onClick = { onItemClick(NavRoutes.listenerLevel) }
@@ -156,7 +160,7 @@ private fun HamburgerMenu(
 
 
                 ModernMenuItem(
-                    index = 6,
+                    index = menuIndex++,
                     iconRes = R.drawable.stat_year,
                     textRes = R.string.rewinds,
                     onClick = { onItemClick(NavRoutes.rewind) }
@@ -165,13 +169,25 @@ private fun HamburgerMenu(
 
                 if (isPipSupported && enablePictureInPicture) {
                     ModernMenuItem(
-                        index = 7,
+                        index = menuIndex++,
                         iconRes = R.drawable.picture,
                         textRes = R.string.menu_go_to_picture_in_picture,
                         onClick = { pipHandler.enterPictureInPictureMode() }
                     )
                 }
 
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp),
+                    color = colorPalette().accent.copy(alpha = 0.7f)
+                )
+
+                ModernMenuCheckboxItem(
+                    index = menuIndex++,
+                    iconRes = R.drawable.airplane,
+                    textRes = R.string.offline,
+                    checked = offlineModeEnabled,
+                    onCheckedChange = { offlineModeEnabled = it }
+                )
 
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp),
@@ -180,7 +196,7 @@ private fun HamburgerMenu(
 
 
                 ModernMenuItem(
-                    index = 8,
+                    index = menuIndex++,
                     iconRes = R.drawable.settings,
                     textRes = R.string.settings,
                     onClick = { onItemClick(NavRoutes.settings) },
@@ -266,6 +282,86 @@ private fun ModernMenuItem(
                 color = colorPalette().text
             )
         }
+    }
+}
+
+@Composable
+fun ModernMenuCheckboxItem(
+    index: Int,
+    @androidx.annotation.DrawableRes iconRes: Int,
+    @androidx.annotation.StringRes textRes: Int,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    isLast: Boolean = false
+) {
+    var isVisible by remember { mutableStateOf(false) }
+
+    val alpha by animateFloatAsState(
+        targetValue = if (isVisible) 1f else 0f,
+        animationSpec = tween(
+            durationMillis = 300,
+            delayMillis = index * 30,
+            easing = FastOutSlowInEasing
+        ), label = "alpha"
+    )
+
+    val offsetX by animateIntAsState(
+        targetValue = if (isVisible) 0 else -20,
+        animationSpec = tween(
+            durationMillis = 300,
+            delayMillis = index * 30
+        ), label = "offsetX"
+    )
+
+    LaunchedEffect(Unit) { isVisible = true }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onCheckedChange(!checked) }
+            .padding(
+                horizontal = 12.dp,
+                vertical = 8.dp
+            )
+            .padding(bottom = if (isLast) 0.dp else 4.dp)
+            .offset { IntOffset(offsetX, 0) }
+            .alpha(alpha)
+    ) {
+        Surface(
+            shape = CircleShape,
+            color = colorPalette().accent.copy(alpha = 0.5f),
+            modifier = Modifier.size(36.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = iconRes),
+                contentDescription = null,
+                tint = colorPalette().text,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .size(20.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Text(
+            text = stringResource(id = textRes),
+            style = typography().s,
+            color = colorPalette().text,
+            modifier = Modifier.weight(1f)
+        )
+
+        Checkbox(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = CheckboxDefaults.colors(
+                checkedColor = colorPalette().accent,
+                uncheckedColor = colorPalette().text.copy(alpha = 0.5f),
+                checkmarkColor = colorPalette().text
+            )
+        )
     }
 }
 

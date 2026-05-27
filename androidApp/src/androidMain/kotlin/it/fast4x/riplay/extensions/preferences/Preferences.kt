@@ -669,6 +669,22 @@ fun <T> rememberPreference(key: String, defaultValue: T): MutableState<T> {
         }
     }
 
+    val writeValue: (T) -> Unit = remember(key) {
+        { newValue: T ->
+            prefs.edit {
+                when (newValue) {
+                    is String  -> putString(key, newValue)
+                    is Int     -> putInt(key, newValue)
+                    is Long    -> putLong(key, newValue)
+                    is Boolean -> putBoolean(key, newValue)
+                    is Float   -> putFloat(key, newValue)
+                    is Set<*>  -> putStringSet(key, newValue as Set<String>)
+                    else       -> throw IllegalArgumentException("Type not handled")
+                }
+            }
+        }
+    }
+
     val internalState = remember(key, defaultValue) {
         mutableStateOf(readValue())
     }
@@ -694,26 +710,13 @@ fun <T> rememberPreference(key: String, defaultValue: T): MutableState<T> {
     }
 
     return remember(key, defaultValue) {
-        object : MutableState<T> {
+        object : MutableState<T> by internalState {
             override var value: T
                 get() = internalState.value
                 set(newValue) {
                     internalState.value = newValue
-                    prefs.edit {
-                        @Suppress("UNCHECKED_CAST")
-                        when (newValue) {
-                            is String -> putString(key, newValue)
-                            is Int -> putInt(key, newValue)
-                            is Long -> putLong(key, newValue)
-                            is Boolean -> putBoolean(key, newValue)
-                            is Float -> putFloat(key, newValue)
-                            is Set<*> -> putStringSet(key, newValue as Set<String>)
-                            else -> throw IllegalArgumentException("Type not handled")
-                        }
-                    }
+                    writeValue(newValue)
                 }
-            override fun component1(): T = value
-            override fun component2(): (T) -> Unit = { value = it }
         }
     }
 }

@@ -380,7 +380,8 @@ enum class PreferenceKey(val key: String) {
     ACTIVE_APPEARANCE_PRESET_ID("activeAppearancePresetId"),
     MUSIC_VAULT_PATH("musicVaultPath"),
     MUSIC_VAULT_ENABLED("musicVaultEnabled"),
-    MUSIC_VAULT_DISCLAIMER_ACCEPTED("musicVaultDisclaimerAccepted");
+    MUSIC_VAULT_DISCLAIMER_ACCEPTED("musicVaultDisclaimerAccepted"),
+    OFFLINE_MODE_ENABLED("offlineModeEnabled");
 
     companion object {
         val allKeys: Set<String>

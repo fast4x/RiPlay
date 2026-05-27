@@ -5,10 +5,10 @@ import androidx.compose.ui.res.stringResource
 import it.fast4x.riplay.R
 
 enum class AlbumsType {
+    All,
     Favorites,
     Library,
-    OnDevice,
-    All;
+    OnDevice;
 
     val textName: String
         @Composable
@@ -17,6 +17,14 @@ enum class AlbumsType {
             Library -> stringResource(R.string.library)
             OnDevice -> stringResource(R.string.on_device)
             All -> stringResource(R.string.all)
+        }
+
+    val availableWhenOffline: Boolean
+        get() = when (this) {
+            All -> false
+            Favorites -> false
+            Library -> false
+            OnDevice -> true
         }
 
 }

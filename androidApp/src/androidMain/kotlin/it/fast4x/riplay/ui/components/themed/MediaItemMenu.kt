@@ -141,7 +141,7 @@ import it.fast4x.riplay.utils.removeYTSongFromPlaylist
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.commonutils.setDisLikeState
 import it.fast4x.riplay.enums.ThumbnailRoundness
-import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
+import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.utils.SetupWriteSettingsPermission
@@ -169,6 +169,7 @@ fun InHistoryMediaItemMenu(
     disableScrollingText: Boolean,
     onBlacklist: () -> Unit,
 ) {
+    val isNetworkConnected = rememberIsNetworkConnected()
 
     NonQueuedMediaItemMenu(
         navController = navController,
@@ -177,7 +178,7 @@ fun InHistoryMediaItemMenu(
         onHideFromDatabase = onHideFromDatabase,
         onDeleteFromDatabase = onDeleteFromDatabase,
         onAddToPreferites = {
-            if (!isNetworkConnected() && isYtSyncEnabled()){
+            if (!isNetworkConnected && isYtSyncEnabled()){
                 SmartMessage(globalContext().resources.getString(R.string.no_connection), context = globalContext(), type = PopupType.Error)
             } else if (!isYtSyncEnabled()){
                 Database.asyncTransaction {
@@ -222,6 +223,7 @@ fun InPlaylistMediaItemMenu(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
+    val isNetworkConnected = rememberIsNetworkConnected()
 
     NonQueuedMediaItemMenu(
         navController = navController,
@@ -229,7 +231,7 @@ fun InPlaylistMediaItemMenu(
         mediaItem = song.asMediaItem,
         modifier = modifier,
         onRemoveFromPlaylist = {
-            if (!isNetworkConnected() && playlist?.playlist?.isYoutubePlaylist == true && playlist.playlist.isEditable && isYtSyncEnabled()){
+            if (!isNetworkConnected && playlist?.playlist?.isYoutubePlaylist == true && playlist.playlist.isEditable && isYtSyncEnabled()){
                 SmartMessage(context.resources.getString(R.string.no_connection), context = context, type = PopupType.Error)
             } else if (playlist?.playlist?.isEditable == true) {
 
@@ -258,7 +260,7 @@ fun InPlaylistMediaItemMenu(
             }
         },
         onAddToPreferites = {
-            if (!isNetworkConnected() && isYtSyncEnabled()){
+            if (!isNetworkConnected && isYtSyncEnabled()){
                 SmartMessage(context.resources.getString(R.string.no_connection), context = context, type = PopupType.Error)
             } else if (!isYtSyncEnabled()){
                 Database.asyncTransaction {
@@ -303,7 +305,7 @@ fun NonQueuedMediaItemMenuLibrary(
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
     val selectedQueue = LocalSelectedQueue.current
-
+    val isNetworkConnected = rememberIsNetworkConnected()
     var isHiding by remember {
         mutableStateOf(false)
     }
@@ -370,7 +372,7 @@ fun NonQueuedMediaItemMenuLibrary(
             onHideFromDatabase = { isHiding = true },
             onRemoveFromQuickPicks = onRemoveFromQuickPicks,
             onAddToPreferites = {
-                if (!isNetworkConnected() && isYtSyncEnabled()){
+                if (!isNetworkConnected && isYtSyncEnabled()){
                     SmartMessage(globalContext().resources.getString(R.string.no_connection), context = globalContext(), type = PopupType.Error)
                 } else if (!isYtSyncEnabled()){
                     Database.asyncTransaction {
@@ -412,7 +414,7 @@ fun NonQueuedMediaItemMenuLibrary(
             onHideFromDatabase = { isHiding = true },
             onRemoveFromQuickPicks = onRemoveFromQuickPicks,
             onAddToPreferites = {
-                if (!isNetworkConnected() && isYtSyncEnabled()){
+                if (!isNetworkConnected && isYtSyncEnabled()){
                     SmartMessage(globalContext().resources.getString(R.string.no_connection), context = globalContext(), type = PopupType.Error)
                 } else if (!isYtSyncEnabled()){
                     Database.asyncTransaction {
@@ -557,6 +559,7 @@ fun QueuedMediaItemMenu(
         MENU_STYLE.key,
         MenuStyle.List
     )
+    val isNetworkConnected = rememberIsNetworkConnected()
 
     if (menuStyle == MenuStyle.Grid) {
         BaseMediaItemGridMenu(
@@ -584,7 +587,7 @@ fun QueuedMediaItemMenu(
                 navController.navigate(route = "${NavRoutes.localPlaylist.name}/$it")
             },
             onAddToPreferites = {
-                if (!isNetworkConnected() && isYtSyncEnabled()){
+                if (!isNetworkConnected && isYtSyncEnabled()){
                     SmartMessage(context.resources.getString(R.string.no_connection), context = context, type = PopupType.Error)
                 } else if (!isYtSyncEnabled()){
                     Database.asyncTransaction {
@@ -628,7 +631,7 @@ fun QueuedMediaItemMenu(
                 navController.navigate(route = "${NavRoutes.playlist.name}/$it")
             },
             onAddToPreferites = {
-                if (!isNetworkConnected() && isYtSyncEnabled()){
+                if (!isNetworkConnected && isYtSyncEnabled()){
                     SmartMessage(context.resources.getString(R.string.no_connection), context = context, type = PopupType.Error)
                 } else if (!isYtSyncEnabled()){
                     Database.asyncTransaction {
@@ -1064,6 +1067,7 @@ fun MediaItemMenu(
                     slideOutOfContainer(slideDirection, animationSpec)
         }, label = ""
     ) { currentIsViewingPlaylists ->
+        val isNetworkConnected = rememberIsNetworkConnected()
         if (currentIsViewingPlaylists) {
             val sortBy by rememberPreference(PLAYLIST_SORT_BY.key, PlaylistSortBy.DateAdded)
             val sortOrder by rememberPreference(PLAYLIST_SORT_ORDER.key, SortOrder.Descending)
@@ -1088,7 +1092,7 @@ fun MediaItemMenu(
 
             val pinnedPlaylists = playlistPreviewsFiltered.filter {
                 it.playlist.name.startsWith(PINNED_PREFIX, 0, true)
-                        && if (isNetworkConnected()) !(it.playlist.isYoutubePlaylist && !it.playlist.isEditable) else !it.playlist.isYoutubePlaylist
+                        && if (rememberIsNetworkConnected()) !(it.playlist.isYoutubePlaylist && !it.playlist.isEditable) else !it.playlist.isYoutubePlaylist
             }
             val youtubePlaylists = playlistPreviewsFiltered.filter { it.playlist.isEditable && it.playlist.isYoutubePlaylist && !it.playlist.name.startsWith(PINNED_PREFIX) }
 
@@ -1317,7 +1321,7 @@ fun MediaItemMenu(
                     }
                 }
 
-                if (youtubePlaylists.isNotEmpty() && isNetworkConnected()) {
+                if (youtubePlaylists.isNotEmpty() && rememberIsNetworkConnected()) {
                     BasicText(
                         text = stringResource(R.string.ytm_playlists),
                         style = typography().m.semiBold,
@@ -1458,7 +1462,7 @@ fun MediaItemMenu(
                             icon = getLikeState(mediaItem.mediaId),
                             color = colorPalette().favoritesIcon,
                             onClick = {
-                                if (!isNetworkConnected() && isYtSyncEnabled()) {
+                                if (!isNetworkConnected && isYtSyncEnabled()) {
                                     SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
                                 } else if (!isYtSyncEnabled()){
                                     Database.asyncTransaction {
@@ -1471,7 +1475,7 @@ fun MediaItemMenu(
                                 }
                             },
                             onLongClick = {
-                                if (!isNetworkConnected() && isYtSyncEnabled()) {
+                                if (!isNetworkConnected && isYtSyncEnabled()) {
                                     SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
                                 } else if (!isYtSyncEnabled()){
                                     Database.asyncTransaction {
@@ -2230,7 +2234,7 @@ fun AddToPlaylistItemMenu(
 
     val pinnedPlaylists = playlistPreviews.filter {
         it.playlist.name.startsWith(PINNED_PREFIX, 0, true)
-                && if (isNetworkConnected()) !(it.playlist.isYoutubePlaylist && !it.playlist.isEditable) else !it.playlist.isYoutubePlaylist
+                && if (rememberIsNetworkConnected()) !(it.playlist.isYoutubePlaylist && !it.playlist.isEditable) else !it.playlist.isYoutubePlaylist
     }
 
     val youtubePlaylists = playlistPreviews.filter { it.playlist.isEditable && it.playlist.isYoutubePlaylist && !it.playlist.name.startsWith(PINNED_PREFIX) }
@@ -2325,7 +2329,7 @@ fun AddToPlaylistItemMenu(
             }
         }
 
-        if (youtubePlaylists.isNotEmpty() && isNetworkConnected()) {
+        if (youtubePlaylists.isNotEmpty() && rememberIsNetworkConnected()) {
             BasicText(
                 text = stringResource(R.string.ytm_playlists),
                 style = typography().m.semiBold,
@@ -2462,7 +2466,7 @@ fun AddToPlaylistArtistSongsMenu(
 
     val pinnedPlaylists = playlistPreviews.filter {
         it.playlist.name.startsWith(PINNED_PREFIX, 0, true)
-                && if (isNetworkConnected()) !(it.playlist.isYoutubePlaylist && !it.playlist.isEditable) else !it.playlist.isYoutubePlaylist
+                && if (rememberIsNetworkConnected()) !(it.playlist.isYoutubePlaylist && !it.playlist.isEditable) else !it.playlist.isYoutubePlaylist
     }
 
     val youtubePlaylists = playlistPreviews.filter { it.playlist.isEditable && it.playlist.isYoutubePlaylist && !it.playlist.name.startsWith(PINNED_PREFIX) }
@@ -2561,7 +2565,7 @@ fun AddToPlaylistArtistSongsMenu(
             }
         }
 
-        if (youtubePlaylists.isNotEmpty() && isNetworkConnected()) {
+        if (youtubePlaylists.isNotEmpty() && rememberIsNetworkConnected()) {
             BasicText(
                 text = stringResource(R.string.ytm_playlists),
                 style = typography().m.semiBold,

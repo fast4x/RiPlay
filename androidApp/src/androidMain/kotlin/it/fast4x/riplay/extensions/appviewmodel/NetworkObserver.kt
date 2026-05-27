@@ -13,10 +13,17 @@ import android.net.NetworkCapabilities.TRANSPORT_CELLULAR
 import android.net.NetworkCapabilities.TRANSPORT_ETHERNET
 import android.net.NetworkCapabilities.TRANSPORT_WIFI
 import android.net.NetworkRequest
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.R
 import it.fast4x.riplay.extensions.appviewmodel.models.NetworkConnectivity
 import it.fast4x.riplay.extensions.appviewmodel.models.NetworkType
+import it.fast4x.riplay.extensions.preferences.PreferenceKey
+import it.fast4x.riplay.extensions.preferences.preferences
+import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import kotlinx.coroutines.channels.awaitClose
@@ -98,10 +105,21 @@ private fun getNetworkConnectivity(context: Context): NetworkConnectivity {
     }
 }
 
+@Composable
+fun rememberIsNetworkConnected(): Boolean {
+    val app = LocalContext.current.applicationContext as MainApplication
+    val networkConnectivity by app.networkConnectivity.collectAsStateWithLifecycle()
+    val offlineModeEnabled by rememberPreference(PreferenceKey.OFFLINE_MODE_ENABLED.key, false)
+
+    return !offlineModeEnabled && networkConnectivity is NetworkConnectivity.Connected
+}
+
 fun isNetworkConnected(): Boolean {
     val app = globalContext() as MainApplication
-    return app.networkConnectivity.value is NetworkConnectivity.Connected
+    val offlineModeEnabled = app.preferences.getBoolean(PreferenceKey.OFFLINE_MODE_ENABLED.key, false)
+    return !offlineModeEnabled && app.networkConnectivity.value is NetworkConnectivity.Connected
 }
+
 
 private fun NetworkCapabilities.toNetworkType(): NetworkType = when {
     hasTransport(TRANSPORT_WIFI)      -> NetworkType.WIFI

@@ -106,7 +106,7 @@ import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.commonutils.setLikeState
 import it.fast4x.riplay.enums.ItemSortBy
 import it.fast4x.riplay.enums.SortOrder
-import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
+import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SONG_SORT_ORDER
 import it.fast4x.riplay.ui.components.themed.SortMenu
 import it.fast4x.riplay.utils.typography
@@ -173,6 +173,7 @@ fun ArtistOverviewItems(
     val maxSongsInQueue by rememberPreference(MAX_SONGS_IN_QUEUE.key, MaxSongs.`500`)
 
     val coroutineScope = rememberCoroutineScope()
+    val isNetworkConnected = rememberIsNetworkConnected()
 
     LaunchedEffect(Unit) {
         artistItemsPage = EnvironmentExt.getArtistItemsPage(
@@ -381,7 +382,7 @@ fun ArtistOverviewItems(
                                 enabled = artistSongs?.isNotEmpty() == true,
                                 color = colorPalette().text,
                                 onClick = {
-                                    if (!isNetworkConnected() && isYtSyncEnabled()) {
+                                    if (!isNetworkConnected && isYtSyncEnabled()) {
                                         SmartMessage(
                                             appContext().resources.getString(R.string.no_connection),
                                             context = appContext(),

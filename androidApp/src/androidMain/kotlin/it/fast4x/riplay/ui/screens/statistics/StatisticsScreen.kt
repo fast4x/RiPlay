@@ -60,13 +60,13 @@ fun StatisticsScreen(
                 miniPlayer,
                 transitionEffect = transitionEffect,
                 navBarContent = { item ->
-                    item(0, stringResource(R.string.today), R.drawable.stat_today)
-                    item(1, stringResource(R.string._1_week), R.drawable.stat_week)
-                    item(2, stringResource(R.string._1_month), R.drawable.stat_month)
-                    item(3, stringResource(R.string._3_month), R.drawable.stat_3months)
-                    item(4, stringResource(R.string._6_month), R.drawable.stat_6months)
-                    item(5, stringResource(R.string._1_year), R.drawable.stat_year)
-                    item(6, stringResource(R.string.all), R.drawable.calendar_clear)
+                    item(0, stringResource(R.string.today), R.drawable.stat_today, true)
+                    item(1, stringResource(R.string._1_week), R.drawable.stat_week, true)
+                    item(2, stringResource(R.string._1_month), R.drawable.stat_month, true)
+                    item(3, stringResource(R.string._3_month), R.drawable.stat_3months, true)
+                    item(4, stringResource(R.string._6_month), R.drawable.stat_6months, true)
+                    item(5, stringResource(R.string._1_year), R.drawable.stat_year, true)
+                    item(6, stringResource(R.string.all), R.drawable.calendar_clear, true)
                 }
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {

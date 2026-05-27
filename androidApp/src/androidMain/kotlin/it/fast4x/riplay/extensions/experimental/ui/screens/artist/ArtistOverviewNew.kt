@@ -88,7 +88,7 @@ import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.defaultQueue
-import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
+import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
@@ -266,6 +266,8 @@ fun ArtistOverviewNew(
         content = artist ?: return
     )
 
+    val isNetworkConnected = rememberIsNetworkConnected()
+
     Box(
         modifier = Modifier
             .background(colorPalette().background0)
@@ -433,7 +435,7 @@ fun ArtistOverviewNew(
                             )
                             .combinedClickable(
                                 onClick = {
-                                    if (isYtSyncEnabled() && !isNetworkConnected()) {
+                                    if (isYtSyncEnabled() && !isNetworkConnected) {
                                         SmartMessage(context.resources.getString(R.string.no_connection), context = context, type = PopupType.Error)
                                     } else {
                                         val bookmarkedAt = if (artist?.bookmarkedAt == null) System.currentTimeMillis() else null

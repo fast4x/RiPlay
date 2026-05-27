@@ -98,16 +98,16 @@ fun SettingsScreen(
         //miniPlayer,
         transitionEffect = transitionEffect,
         navBarContent = { item ->
-            item(0, stringResource(R.string.tab_general), R.drawable.app_icon)
-            item(1, stringResource(R.string.ui_tab), R.drawable.ui)
-            item(2, stringResource(R.string.player_appearance), R.drawable.color_palette)
-            item(3, if (!isYtLoggedIn()) stringResource(R.string.home)
+            item(0, stringResource(R.string.tab_general), R.drawable.app_icon, true)
+            item(1, stringResource(R.string.ui_tab), R.drawable.ui, true)
+            item(2, stringResource(R.string.player_appearance), R.drawable.color_palette, true)
+            item(3, if (!isYtLoggedIn()) stringResource(R.string.home, true)
             else stringResource(R.string.home), if (!isYtLoggedIn()) R.drawable.sparkles
-            else R.drawable.home)
-            item(4, stringResource(R.string.tab_data), R.drawable.server)
-            item(5, stringResource(R.string.tab_accounts), R.drawable.person)
-            item(6, stringResource(R.string.tab_miscellaneous), R.drawable.equalizer)
-            item(7, stringResource(R.string.about), R.drawable.information)
+            else R.drawable.home, true)
+            item(4, stringResource(R.string.tab_data), R.drawable.server, true)
+            item(5, stringResource(R.string.tab_accounts), R.drawable.person, true)
+            item(6, stringResource(R.string.tab_miscellaneous), R.drawable.equalizer, true)
+            item(7, stringResource(R.string.about), R.drawable.information, true)
 
         }
     ) { currentTabIndex ->

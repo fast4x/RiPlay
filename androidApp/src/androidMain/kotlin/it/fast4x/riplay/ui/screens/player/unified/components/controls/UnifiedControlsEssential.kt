@@ -69,7 +69,7 @@ import it.fast4x.riplay.enums.PlayerControlsType
 import it.fast4x.riplay.enums.PlayerPlayButtonType
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.QueueLoopType
-import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
+import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_NAME
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.EFFECT_ROTATION
@@ -134,6 +134,8 @@ fun UnifiedInfoAlbumAndArtistEssential(
     var textoutline by rememberPreference(TEXT_OUTLINE.key, false)
     val playerBackgroundColors by rememberPreference(PLAYER_BACKGROUND_COLORS.key,PlayerBackgroundColors.BlurredCoverColor)
     var likeButtonWidth by remember{ mutableStateOf(0.dp) }
+
+    val isNetworkConnected = rememberIsNetworkConnected()
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -261,7 +263,7 @@ fun UnifiedInfoAlbumAndArtistEssential(
                         color = colorPalette().favoritesIcon,
                         icon = getLikeState(mediaItem.mediaId),
                         onClick = {
-                            if (!isNetworkConnected() && isYtSyncEnabled()) {
+                            if (!isNetworkConnected && isYtSyncEnabled()) {
                                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
                             } else if (!isYtSyncEnabled()){
                                 Database.asyncTransaction {
@@ -277,7 +279,7 @@ fun UnifiedInfoAlbumAndArtistEssential(
                             if (effectRotationEnabled) isRotated = !isRotated
                         },
                         onLongClick = {
-                            if (!isNetworkConnected() && isYtSyncEnabled()) {
+                            if (!isNetworkConnected && isYtSyncEnabled()) {
                                 SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
                             } else if (!isYtSyncEnabled()){
                                 Database.asyncTransaction {
@@ -444,6 +446,7 @@ fun UnifiedControlsEssential(
     var jumpPrevious by rememberPreference(JUMP_PREVIOUS.key,"3")
     val currentMediaItem = playerState.mediaInfo?.mediaItem
     var lightTheme = colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
+    val isNetworkConnected = rememberIsNetworkConnected()
 
     val binder = LocalPlayerServiceBinder.current
     binder?.player?.DisposableListener {
@@ -465,7 +468,7 @@ fun UnifiedControlsEssential(
                 color = colorPalette().favoritesIcon,
                 icon = getLikeState(playerState.mediaInfo?.mediaItem?.mediaId ?: ""),
                 onClick = {
-                    if (!isNetworkConnected() && isYtSyncEnabled()) {
+                    if (!isNetworkConnected && isYtSyncEnabled()) {
                         SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
                     } else if (!isYtSyncEnabled()){
                         Database.asyncTransaction {
@@ -483,7 +486,7 @@ fun UnifiedControlsEssential(
                     if (effectRotationEnabled) isRotated = !isRotated
                 },
                 onLongClick = {
-                    if (!isNetworkConnected() && isYtSyncEnabled()) {
+                    if (!isNetworkConnected && isYtSyncEnabled()) {
                         SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
                     } else if (!isYtSyncEnabled()){
                         Database.asyncTransaction {

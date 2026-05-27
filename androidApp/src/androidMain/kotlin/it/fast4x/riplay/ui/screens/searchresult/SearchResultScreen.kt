@@ -208,13 +208,13 @@ fun SearchResultScreen(
                 miniPlayer,
                 transitionEffect = transitionEffect,
                 navBarContent = { item ->
-                    item(0, stringResource(R.string.songs), R.drawable.musical_notes)
-                    item(1, stringResource(R.string.albums), R.drawable.music_album)
-                    item(2, stringResource(R.string.artists), R.drawable.music_artist)
-                    item(3, stringResource(R.string.videos), R.drawable.video)
-                    item(4, stringResource(R.string.playlists), R.drawable.playlist)
-                    item(5, stringResource(R.string.featured), R.drawable.featured_playlist)
-                    item(6, stringResource(R.string.podcasts), R.drawable.podcast)
+                    item(0, stringResource(R.string.songs), R.drawable.musical_notes, true)
+                    item(1, stringResource(R.string.albums), R.drawable.music_album, true)
+                    item(2, stringResource(R.string.artists), R.drawable.music_artist, true)
+                    item(3, stringResource(R.string.videos), R.drawable.video, true)
+                    item(4, stringResource(R.string.playlists), R.drawable.playlist, true)
+                    item(5, stringResource(R.string.featured), R.drawable.featured_playlist, true)
+                    item(6, stringResource(R.string.podcasts), R.drawable.podcast, true)
                 }
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(currentTabIndex) {

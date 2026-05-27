@@ -7,6 +7,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +33,8 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.data.models.toUiMood
 import it.fast4x.riplay.enums.HomePagetype
 import it.fast4x.riplay.enums.TransitionEffect
+import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
+import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.CHECK_UPDATE_STATE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_MUSIC_IDENTIFIER
@@ -52,6 +55,7 @@ import it.fast4x.riplay.ui.screens.home.homepages.HomePage
 import it.fast4x.riplay.ui.screens.home.homepages.HomePageExtended
 import it.fast4x.riplay.utils.CheckForNewVersion
 import kotlinx.serialization.ExperimentalSerializationApi
+import timber.log.Timber
 import kotlin.system.exitProcess
 
 
@@ -93,6 +97,12 @@ fun HomeScreen(
 
     var (tabIndex, onTabChanged) = rememberPreference(HOME_SCREEN_TAB_INDEX.key, initialtabIndex)
 
+    LaunchedEffect(openTabFromShortcut) {
+        if (openTabFromShortcut >= 0) {
+            onTabChanged(openTabFromShortcut)
+        }
+    }
+
     val isEnabledMusicIdentifier by rememberPreference(
         ENABLE_MUSIC_IDENTIFIER.key,
         false
@@ -112,6 +122,8 @@ fun HomeScreen(
         }
     }
 
+    val isNetworkConnected = rememberIsNetworkConnected()
+
     ScreenContainer(
         navController,
         tabIndex,
@@ -119,14 +131,14 @@ fun HomeScreen(
         miniPlayer,
         transitionEffect = transitionEffect,
         navBarContent = { Item ->
-//            Item(0, if (!isLoggedIn())
-//                stringResource(R.string.quick_picks) else stringResource(R.string.home),
-//                if (!isLoggedIn()) R.drawable.sparkles else R.drawable.internet)
-            Item(0, stringResource(R.string.home), R.drawable.home)
-            Item(1, stringResource(R.string.songs), R.drawable.musical_notes)
-            Item(2, stringResource(R.string.artists), R.drawable.music_artist)
-            Item(3, stringResource(R.string.albums), R.drawable.music_album)
-            Item(4, stringResource(R.string.playlists), R.drawable.music_library)
+            //Timber.d("RECOMPOSE navBarContent lambda - offlineModeEnabled: $offlineModeEnabled")
+
+            Item(0, stringResource(R.string.home), R.drawable.home, isNetworkConnected)
+            Item(1, stringResource(R.string.songs), R.drawable.musical_notes, true)
+            Item(2, stringResource(R.string.artists), R.drawable.music_artist, true)
+            Item(3, stringResource(R.string.albums), R.drawable.music_album, true)
+            Item(4, stringResource(R.string.playlists), R.drawable.music_library, true)
+
         }
     ) { currentTabIndex ->
         saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {

@@ -70,6 +70,7 @@ import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.enums.AlbumsType
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.ui.components.ButtonsRow
@@ -88,6 +89,7 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
 import kotlinx.coroutines.flow.map
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ViewType
+import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.utils.getViewType
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.Search
@@ -156,7 +158,12 @@ fun HomeArtists(
         }
     }
 
-    val buttonsList = ArtistsType.entries.map { it to it.textName }
+    val isNetworkConnected = rememberIsNetworkConnected()
+
+    val buttonsList = ArtistsType.entries.map { it to it.textName }.filter {
+        if (isNetworkConnected) true else it.first.availableWhenOffline
+    }
+
     val coroutineScope = rememberCoroutineScope()
 
     // Gestione Ordinamento
@@ -166,6 +173,11 @@ fun HomeArtists(
         targetValue = if (sortOrder == SortOrder.Ascending) 0f else 180f,
         animationSpec = tween(durationMillis = 400, easing = LinearEasing), label = ""
     )
+
+    LaunchedEffect(isNetworkConnected) {
+        if (!isNetworkConnected && artistType !in listOf(ArtistsType.OnDevice))
+            artistType = ArtistsType.OnDevice
+    }
 
     // Caricamento Dati
     LaunchedEffect(Unit, sortBy, sortOrder, artistType) {

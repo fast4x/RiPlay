@@ -123,8 +123,10 @@ import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.utils.importYTMPrivatePlaylists
 import it.fast4x.riplay.extensions.preferences.Preference.HOME_LIBRARY_ITEM_SIZE
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.enums.ArtistsType
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.SortOrder
+import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHORT_ON_DEVICE_FOLDER_NAME
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.tab.ToolbarMenuButton
@@ -338,6 +340,13 @@ fun HomePlaylists(
         animationSpec = tween(durationMillis = 400, easing = LinearEasing), label = ""
     )
 
+    val isNetworkConnected = rememberIsNetworkConnected()
+
+    LaunchedEffect(isNetworkConnected) {
+        if (!isNetworkConnected && playlistType !in listOf(PlaylistType.OnDevicePlaylist))
+            playlistType = PlaylistType.OnDevicePlaylist
+    }
+
     LaunchedEffect(sortBy, sortOrder, playlistType) {
         if (playlistType == PlaylistType.OnDevicePlaylist) {
             onDeviceViewModel.audioFoldersAsPlaylists().collect { folders ->
@@ -386,11 +395,14 @@ fun HomePlaylists(
     val showMonthlyPlaylists by rememberPreference(SHOW_MONTHLY_PLAYLISTS.key, true)
     val showPipedPlaylists by rememberPreference(SHOW_PIPED_PLAYLISTS.key, true)
 
-    val buttonsList = mutableListOf(PlaylistType.Playlist to stringResource(R.string.playlists))
-    buttonsList += PlaylistType.YTPlaylist to stringResource(R.string.library)
-    buttonsList += PlaylistType.PodcastPlaylist to stringResource(R.string.podcasts)
-    if (showPinnedPlaylists) buttonsList += PlaylistType.PinnedPlaylist to stringResource(R.string.pinned_playlists)
-    if (showMonthlyPlaylists) buttonsList += PlaylistType.MonthlyPlaylist to stringResource(R.string.monthly_playlists)
+    val buttonsList = (if (isNetworkConnected) mutableListOf(PlaylistType.Playlist to stringResource(R.string.playlists)) else emptyList()).toMutableList()
+    if (isNetworkConnected) {
+        buttonsList += PlaylistType.YTPlaylist to stringResource(R.string.library)
+        buttonsList += PlaylistType.PodcastPlaylist to stringResource(R.string.podcasts)
+        if (showPinnedPlaylists) buttonsList += PlaylistType.PinnedPlaylist to stringResource(R.string.pinned_playlists)
+        if (showMonthlyPlaylists) buttonsList += PlaylistType.MonthlyPlaylist to stringResource(R.string.monthly_playlists)
+    }
+
     buttonsList += PlaylistType.OnDevicePlaylist to stringResource(R.string.on_device)
 
     newPlaylistDialog.Render()

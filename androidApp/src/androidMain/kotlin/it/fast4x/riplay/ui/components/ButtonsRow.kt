@@ -65,7 +65,7 @@ fun <E> ButtonsRow(
                 .horizontalScroll(scrollState)
                 .padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.Start
         ) {
             Spacer(Modifier.width(8.dp))
 
