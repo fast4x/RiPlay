@@ -88,7 +88,6 @@ fun HomeScreen(
     val isNetworkConnected = rememberIsNetworkConnected()
 
     val openTabFromShortcut1 by remember{
-        Timber.d("HomeScreen openTabFromShortcut $openTabFromShortcut")
         mutableIntStateOf(openTabFromShortcut)
     }
 
@@ -136,7 +135,6 @@ fun HomeScreen(
         miniPlayer,
         transitionEffect = transitionEffect,
         navBarContent = { Item ->
-            //Timber.d("RECOMPOSE navBarContent lambda - offlineModeEnabled: $offlineModeEnabled")
 
             Item(0, stringResource(R.string.home), R.drawable.home, isNetworkConnected)
             Item(1, stringResource(R.string.songs), R.drawable.musical_notes, true)

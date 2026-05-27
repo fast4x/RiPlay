@@ -40,7 +40,7 @@ fun MusicVaultButton(
     val songState by Database.song(song.id)
         .collectAsState(initial = song)
 
-    if (songState?.isLocal == true || songState?.isMusicVault == true) return // Già local o vault quindi il bottone non serve
+    if (songState?.isLocal == true) return // Già local quindi il bottone non serve
 
     val dbState = songState?.musicVaultState ?: MusicVaultState.NONE
 

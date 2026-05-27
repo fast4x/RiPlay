@@ -208,6 +208,7 @@ import it.fast4x.riplay.ui.components.tab.TabHeader
 import it.fast4x.riplay.ui.components.themed.EnumsMenu
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
+import it.fast4x.riplay.utils.isMusicVault
 import kotlinx.coroutines.delay
 import kotlinx.serialization.ExperimentalSerializationApi
 
@@ -339,7 +340,7 @@ fun HomeSongs(
 
     if (showFavoritesPlaylist && isNetworkConnected) buttonsList += BuiltInPlaylist.Favorites to stringResource(R.string.favorites)
     if (showMyTopPlaylist && isNetworkConnected) buttonsList += BuiltInPlaylist.Top to String.format(stringResource(R.string.my_playlist_top), maxTopPlaylistItems.number)
-    buttonsList += BuiltInPlaylist.MusicVault to "Music Vault"
+    buttonsList += BuiltInPlaylist.MusicVault to stringResource(R.string.settings_music_vault_title)
     if (showOnDevicePlaylist) buttonsList += BuiltInPlaylist.OnDevice to stringResource(R.string.on_device)
     if (showDislikedPlaylist && isNetworkConnected) buttonsList += BuiltInPlaylist.Disliked to stringResource(R.string.disliked)
 
@@ -359,13 +360,18 @@ fun HomeSongs(
 
     // Database Loading Logic
     when (builtInPlaylist) {
-        BuiltInPlaylist.All -> {
-            LaunchedEffect(sortBy, sortOrder, filter, showHiddenSongs, includeLocalSongs) {
+        BuiltInPlaylist.All, BuiltInPlaylist.MusicVault -> {
+            LaunchedEffect(sortBy, builtInPlaylist, sortOrder, filter, showHiddenSongs, includeLocalSongs) {
                 Database.songs(sortBy, sortOrder, showHiddenSongs)
-                    .collect { items = it.filter { item -> blacklisted.value?.map { it.path }?.contains(item.song.id) == false } }
+                    .collect {
+                        items = it.filter { item -> blacklisted.value?.map { it.path }?.contains(item.song.id) == false }
+                            .filter {
+                                if (builtInPlaylist == BuiltInPlaylist.All ) true else it.song.isMusicVault
+                            }
+                    }
             }
         }
-        BuiltInPlaylist.Favorites, BuiltInPlaylist.Top, BuiltInPlaylist.Disliked, BuiltInPlaylist.MusicVault -> {
+        BuiltInPlaylist.Favorites, BuiltInPlaylist.Top, BuiltInPlaylist.Disliked -> {
             LaunchedEffect(Unit, builtInPlaylist, sortBy, sortOrder, filter, topPlaylistPeriod) {
                 if (builtInPlaylist == BuiltInPlaylist.Favorites) {
                     Database.songsFavorites(sortBy, sortOrder)
