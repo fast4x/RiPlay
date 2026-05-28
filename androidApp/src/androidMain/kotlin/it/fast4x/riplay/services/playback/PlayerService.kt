@@ -3149,6 +3149,10 @@ private var pausedByZeroVolume = false
 
 
     open inner class Binder : AndroidBinder() {
+
+        val coroutineScope: CoroutineScope
+            get() = this@PlayerService.serviceScope
+
         val player: ExoPlayer
             get() = this@PlayerService.player
 

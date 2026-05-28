@@ -127,7 +127,7 @@ fun AppTitle(
                     contentDescription = null,
                     colorFilter = ColorFilter.tint(colorPalette().text),
                     modifier = Modifier
-                        .size(9.dp)
+                        .size(24.dp)
                 )
 
 

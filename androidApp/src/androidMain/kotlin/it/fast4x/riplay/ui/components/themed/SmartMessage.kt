@@ -1,6 +1,8 @@
 package it.fast4x.riplay.ui.components.themed
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.compose.ui.graphics.Color
@@ -14,6 +16,9 @@ import it.fast4x.riplay.extensions.preferences.preferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicReference
+
+private val currentToast = AtomicReference<Toast?>(null)
 
 @OptIn(UnstableApi::class)
 fun SmartMessage(
@@ -23,21 +28,31 @@ fun SmartMessage(
     durationLong: Boolean = false,
     context: Context,
 ) {
-    CoroutineScope(Dispatchers.Main).launch {
-        val length = if (durationLong) Toast.LENGTH_LONG else Toast.LENGTH_SHORT
+    val length = if (durationLong) Toast.LENGTH_LONG else Toast.LENGTH_SHORT
 
-        if (context.preferences.getEnum(MESSAGE_TYPE.key, MessageType.Modern) == MessageType.Modern) {
+    // Handler diretto: zero overhead, esecuzione immediata sul Main thread
+    Handler(Looper.getMainLooper()).post {
+
+        // Cancella il toast in coda prima di mostrarne uno nuovo
+        currentToast.getAndSet(null)?.cancel()
+
+        val toast = if (context.preferences.getEnum(
+                MESSAGE_TYPE.key, MessageType.Modern
+            ) == MessageType.Modern
+        ) {
             when (type) {
-                PopupType.Info -> Toasty.info(context, message, length, true).show()
-                PopupType.Success -> Toasty.success(context, message, length, true).show()
-                PopupType.Error -> Toasty.error(context, message, length, true).show()
-                PopupType.Warning -> Toasty.warning(context, message, length, true).show()
-                null -> Toasty.normal(context, message, length).show()
+                PopupType.Info    -> Toasty.info(context, message, length, true)
+                PopupType.Success -> Toasty.success(context, message, length, true)
+                PopupType.Error   -> Toasty.error(context, message, length, true)
+                PopupType.Warning -> Toasty.warning(context, message, length, true)
+                null              -> Toasty.normal(context, message, length)
             }
+        } else {
+            Toasty.normal(context, message, length)
+        }
 
-        } else
-        //if (durationLong == true) context.toastLong(message) else context.toast(message)
-        Toasty.normal(context, message, length).show()
+        currentToast.set(toast)
+        toast.show()
     }
 }
 

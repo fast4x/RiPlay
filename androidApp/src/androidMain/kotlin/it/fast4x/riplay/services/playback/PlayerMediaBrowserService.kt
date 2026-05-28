@@ -47,6 +47,7 @@ import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.commonutils.removePrefix
 import it.fast4x.riplay.commonutils.toThumbnail
+import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.enums.HomeItemSize
 import it.fast4x.riplay.enums.PlaylistSongSortBy
 import it.fast4x.riplay.enums.PlaylistSortBy
@@ -81,6 +82,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.also
 
 @UnstableApi
@@ -89,9 +92,14 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
     SharedPreferences.OnSharedPreferenceChangeListener {
 
     companion object {
-        var lastSongs = emptyList<Song>()
+        private val _currentBrowseContext = AtomicReference<List<Song>>(emptyList())
+        var currentBrowseContext: List<Song>
+            get() = _currentBrowseContext.get()
+            set(value) { _currentBrowseContext.set(value) }
+
         var searchedSongs = emptyList<Song>()
     }
+
     private var playlistSongsSortBy: PlaylistSongSortBy = PlaylistSongSortBy.DateAdded
     private var songsSortBy: SongSortBy = SongSortBy.DateAdded
     private var playlistSortBy: PlaylistSortBy = PlaylistSortBy.DateAdded
@@ -320,7 +328,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                         Database
                             .songsFavorites(songsSortBy, songSortOrder)
                             .first()
-                            .also { lastSongs = it.map { it.song }}
+                            .also { currentBrowseContext = it.map(SongEntity::song) }
                             .map { it.song.asBrowserMediaItem }
                             .toMutableList()
                             .apply {
@@ -355,12 +363,18 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                         Database
                             .songsOnDevice()
                             .first()
-                            .also { lastSongs = it }
+                            .also { currentBrowseContext = it }
                             .map { it.asBrowserMediaItem }
                             .toMutableList()
                     }
 
-                    MediaId.SONGS_SHUFFLE -> lastSongs.shuffled().map { it.asBrowserMediaItem }.toMutableList()
+                    MediaId.SONGS_SHUFFLE -> {
+                        val shuffled = currentBrowseContext.shuffled()
+                        currentBrowseContext = shuffled
+                        shuffled
+                            .map { it.asBrowserMediaItem }
+                            .toMutableList()
+                    }
 
                     MediaId.SONGS_ALL -> {
 
@@ -368,7 +382,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                             .songs(songsSortBy, songSortOrder, 0)
                             .first()
                             .take(500)
-                            .also { lastSongs = it.map { it.song } }
+                            .also { currentBrowseContext = it.map(SongEntity::song) }
                             .map { it.song.asBrowserMediaItem }
                             .toMutableList()
 
@@ -380,7 +394,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
 
                         Database.trending(maxTopSongs)
                             .first()
-                            .also { lastSongs = it }
+                            .also { currentBrowseContext = it }
                             .map { it.asBrowserMediaItem }.toMutableList()
                     }
 
@@ -409,7 +423,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                             Database
                                 .songsPlaylist(id.toLong(), playlistSongsSortBy, songSortOrder)
                                 .first()
-                                .also { lastSongs = it.map { it.song } }
+                                .also { currentBrowseContext = it.map(SongEntity::song) }
                                 .map { it.song.asBrowserMediaItem }
                                 .toMutableList()
                         }
@@ -509,7 +523,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                                 idOnDeviceFolder
                             ).first()
                                 .map { it.song }
-                                .also { lastSongs = it}
+                                .also { currentBrowseContext = it }
                                 .map { it.asBrowserMediaItem }
                                 .toMutableList()
                         }
@@ -531,51 +545,51 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                         } else {
                             val artist = Database.artist(id).first()
                             var songs = emptyList<Song>()
-                                EnvironmentExt.getArtistPage(browseId = id)
-                                    .onSuccess { currentArtistPage ->
-                                        var moreEndPointBrowseId: String? = null
-                                        var moreEndPointParams: String? = null
-                                        currentArtistPage.sections
-                                            .forEach {
-                                                if (it.items.firstOrNull() is Environment.SongItem) {
-                                                    moreEndPointBrowseId = it.moreEndpoint?.browseId
-                                                    moreEndPointParams = it.moreEndpoint?.params
-                                                    Timber.d("PlayerMediaBrowserService onGetchildren artist songs moreEndPointBrowseId $moreEndPointBrowseId")
-                                                }
+                            EnvironmentExt.getArtistPage(browseId = id)
+                                .onSuccess { currentArtistPage ->
+                                    var moreEndPointBrowseId: String? = null
+                                    var moreEndPointParams: String? = null
+                                    currentArtistPage.sections
+                                        .forEach {
+                                            if (it.items.firstOrNull() is Environment.SongItem) {
+                                                moreEndPointBrowseId = it.moreEndpoint?.browseId
+                                                moreEndPointParams = it.moreEndpoint?.params
+                                                Timber.d("PlayerMediaBrowserService onGetchildren artist songs moreEndPointBrowseId $moreEndPointBrowseId")
                                             }
-                                            .also {
-                                                if (moreEndPointBrowseId != null)
-                                                    if (artist != null) {
-                                                        EnvironmentExt.getArtistItemsPage(
-                                                            BrowseEndpoint(
-                                                                browseId = moreEndPointBrowseId,
-                                                                params = moreEndPointParams
+                                        }
+                                        .also {
+                                            if (moreEndPointBrowseId != null)
+                                                if (artist != null) {
+                                                    EnvironmentExt.getArtistItemsPage(
+                                                        BrowseEndpoint(
+                                                            browseId = moreEndPointBrowseId,
+                                                            params = moreEndPointParams
+                                                        )
+                                                    ).completed().getOrNull()
+                                                        ?.items
+                                                        ?.map { it as Environment.SongItem }
+                                                        ?.map { it.asSong }
+                                                        .also {
+                                                            if (it != null) {
+                                                                songs = it
+                                                            }
+                                                        }
+                                                        ?.onEach(Database::insert)
+                                                        ?.map {
+                                                            SongArtistMap(
+                                                                songId = it.id,
+                                                                artistId = artist.id
                                                             )
-                                                        ).completed().getOrNull()
-                                                            ?.items
-                                                            ?.map { it as Environment.SongItem }
-                                                            ?.map { it.asSong }
-                                                            .also {
-                                                                if (it != null) {
-                                                                    songs = it
-                                                                }
-                                                            }
-                                                            ?.onEach(Database::insert)
-                                                            ?.map {
-                                                                SongArtistMap(
-                                                                    songId = it.id,
-                                                                    artistId = artist.id
-                                                                )
-                                                            }
-                                                            ?.onEach(Database::insert)
-                                                    }
+                                                        }
+                                                        ?.onEach(Database::insert)
+                                                }
 
-                                            }
+                                        }
 
-                                    }
+                                }
 
                             songs
-                                .also { lastSongs = it }
+                                .also { currentBrowseContext = it }
                                 .map { it.asBrowserMediaItem }
                                 .toMutableList()
                         }
@@ -592,7 +606,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                         } else {
                             Database.artistTopSongs(id, 100)
                                 .first()
-                                .also { lastSongs = it }
+                                .also { currentBrowseContext = it }
                                 .map { it.asBrowserMediaItem }
                                 .toMutableList()
                         }
@@ -657,7 +671,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                             }
                             Timber.d("PlayerMediaBrowserService onLoadChildren inside artist single in library id $id with songs size ${songs.size}")
                             songs
-                                .also { lastSongs = it }
+                                .also { currentBrowseContext = it }
                                 .map { it.asBrowserMediaItem }
                                 .toMutableList()
                         }
@@ -725,7 +739,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                             }
 
                             songs
-                                .also { lastSongs = it }
+                                .also { currentBrowseContext = it }
                                 .map { it.asBrowserMediaItem }
                                 .toMutableList()
                         }
@@ -744,7 +758,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                             Timber.d("PlayerMediaBrowserService onLoadChildren inside albums SONGS id $id")
                             Database.albumSongs(id)
                                 .first()
-                                .also { lastSongs = it }
+                                .also { currentBrowseContext = it }
                                 .map { it.asBrowserMediaItem }
                                 .toMutableList()
                         }
@@ -808,7 +822,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                             }
 
                             songs
-                                .also { lastSongs = it }
+                                .also { currentBrowseContext = it }
                                 .map { it.asBrowserMediaItem }
                                 .toMutableList()
                         }

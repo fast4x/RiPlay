@@ -7,11 +7,15 @@ import android.view.KeyEvent
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.SessionCommand
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.enums.MaxTopPlaylistItems
+import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -74,6 +78,71 @@ class PlayerMediaSessionCallback (
         if (query.isNullOrBlank()) return
         binder.playFromSearch(query)
     }
+
+    @OptIn(UnstableApi::class)
+    override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
+        Timber.d("MediaSessionCallback onPlayFromMediaId mediaId $mediaId called")
+        val data = mediaId?.split('/') ?: return
+        var index = 0
+
+        Timber.d("MediaSessionCallback onPlayFromMediaId mediaId $mediaId data $data processing")
+
+        binder.coroutineScope.launch(Dispatchers.IO) {
+            var index = 0
+
+            val songs: List<Song>? = when (data.getOrNull(0)) {
+
+                PlayerMediaBrowserService.MediaId.SONGS -> {
+                    val songId = data.getOrNull(1) ?: return@launch
+                    val list = PlayerMediaBrowserService.currentBrowseContext
+                    if (list.isEmpty()) {
+                        Timber.w("onPlayFromMediaId: currentBrowseContext empty")
+                        return@launch
+                    }
+                    index = list.indexOfFirst { it.id == songId }
+                    if (index < 0) {
+                        Timber.w("onPlayFromMediaId: songId $songId not found in currentBrowseContext")
+                        return@launch
+                    }
+                    list
+                }
+
+                PlayerMediaBrowserService.MediaId.SEARCHED -> {
+                    val songId = data.getOrNull(1) ?: return@launch
+                    val list = PlayerMediaBrowserService.searchedSongs
+                    if (list.isEmpty()) {
+                        Timber.w("onPlayFromMediaId: searchedSongs empty")
+                        return@launch
+                    }
+                    index = list.indexOfFirst { it.id == songId }
+                    if (index < 0) {
+                        Timber.w("onPlayFromMediaId: songId $songId not found in searchedSongs")
+                        return@launch
+                    }
+                    list
+                }
+
+                else -> {
+                    Timber.w("onPlayFromMediaId: unhandled mediaId $mediaId")
+                    null
+                }
+            }
+
+            val mediaItems = songs?.map(Song::asMediaItem)
+            if (mediaItems.isNullOrEmpty()) {
+                Timber.w("onPlayFromMediaId: mediaItems empty for mediaId $mediaId, aborting")
+                return@launch
+            }
+
+            Timber.d("onPlayFromMediaId: $mediaId → ${mediaItems.size} items, index $index")
+
+            withContext(Dispatchers.Main) {
+                binder.player.forcePlayAtIndex(mediaItems, index)
+            }
+        }
+    }
+
+    /*
     @OptIn(UnstableApi::class)
     override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
         Timber.d("MediaSessionCallback onPlayFromMediaId mediaId ${mediaId} called")
@@ -165,6 +234,8 @@ class PlayerMediaSessionCallback (
         // END PROCESSING
 
     }
+
+     */
 
     override fun onMediaButtonEvent(mediaButtonEvent: Intent?): Boolean {
         mediaButtonEvent?.let {

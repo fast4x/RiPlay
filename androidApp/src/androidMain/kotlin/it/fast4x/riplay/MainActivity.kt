@@ -1473,7 +1473,13 @@ class MainActivity :
                                             }
 
                                         }
-                                    else SmartMessage("Android Auto is connected", context = this@MainActivity)
+                                    else {
+                                        SmartMessage(
+                                            "Android Auto is connected",
+                                            context = this@MainActivity
+                                        )
+
+                                    }
 
                                     val menuState = LocalGlobalSheetState.current
                                     CustomModalBottomSheet(
