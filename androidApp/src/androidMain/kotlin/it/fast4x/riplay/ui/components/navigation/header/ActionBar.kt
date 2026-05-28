@@ -204,7 +204,7 @@ private fun HamburgerMenu(
                 ModernMenuItem(
                     index = menuIndex++,
                     iconRes = R.drawable.exit,
-                    textRes = R.string.click_to_close,
+                    textRes = R.string.exit_from_riplay,
                     onClick = {
                         val activity = appContext() as? Activity
                         activity?.finishAffinity()

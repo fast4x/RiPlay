@@ -1348,4 +1348,6 @@
     <string name="disclaimer_music_vault_decline">Decline</string>
     <string name="settings_music_vault_folder_music_vault">Folder Music Vault</string>
     <string name="settings_music_vault_restore_default_folder">Restore default folder</string>
+    <string name="offline">Offline</string>
+    <string name="exit_from_riplay">Exit from RiPlay</string>
 </resources>
