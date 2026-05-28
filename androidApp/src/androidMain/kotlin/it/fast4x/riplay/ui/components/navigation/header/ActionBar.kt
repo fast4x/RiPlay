@@ -1,5 +1,6 @@
 package it.fast4x.riplay.ui.components.navigation.header
 
+import android.app.Activity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.height
@@ -55,8 +56,10 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.CAST_TYPE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LISTENER_LEVELS
 import it.fast4x.riplay.utils.GlobalSharedData
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.typography
+import kotlin.system.exitProcess
 
 @Composable
 private fun HamburgerMenu(
@@ -96,7 +99,6 @@ private fun HamburgerMenu(
                 .padding(vertical = 8.dp)
         ) {
             Column(modifier = Modifier.padding(horizontal = 8.dp)) {
-
 
                 ModernMenuItem(
                     index = menuIndex++,
@@ -178,7 +180,20 @@ private fun HamburgerMenu(
                 }
 
                 HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp),
+                    modifier = Modifier.padding(vertical = 4.dp, horizontal = 12.dp),
+                    color = colorPalette().accent.copy(alpha = 0.7f)
+                )
+
+                ModernMenuItem(
+                    index = menuIndex++,
+                    iconRes = R.drawable.settings,
+                    textRes = R.string.settings,
+                    onClick = { onItemClick(NavRoutes.settings) },
+                    isLast = true
+                )
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 4.dp, horizontal = 12.dp),
                     color = colorPalette().accent.copy(alpha = 0.7f)
                 )
 
@@ -193,18 +208,22 @@ private fun HamburgerMenu(
                 )
 
                 HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp),
+                    modifier = Modifier.padding(vertical = 4.dp, horizontal = 12.dp),
                     color = colorPalette().accent.copy(alpha = 0.7f)
                 )
 
-
                 ModernMenuItem(
                     index = menuIndex++,
-                    iconRes = R.drawable.settings,
-                    textRes = R.string.settings,
-                    onClick = { onItemClick(NavRoutes.settings) },
-                    isLast = true
+                    iconRes = R.drawable.exit,
+                    textRes = R.string.click_to_close,
+                    onClick = {
+                        val activity = appContext() as? Activity
+                        activity?.finishAffinity()
+                        // Close app with exit 0 notify that no problem occurred
+                        exitProcess( 0 )
+                    }
                 )
+
             }
         }
     }
