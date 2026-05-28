@@ -38,6 +38,7 @@ import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.CHECK_UPDATE_STATE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.CLOSE_WITH_BACK_BUTTON
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_MUSIC_IDENTIFIER
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.HOME_PAGE_TYPE
@@ -319,6 +320,7 @@ fun HomeScreen(
     val context = LocalContext.current
     var confirmCount by remember { mutableIntStateOf( 0 ) }
     val playerSheetState = LocalPlayerSheetState.current
+    var closeWithBackButton by rememberPreference(CLOSE_WITH_BACK_BUTTON.key, true)
     BackHandler(
         enabled = !playerSheetState.isExpanded
     ) {
@@ -330,23 +332,25 @@ fun HomeScreen(
             return@BackHandler
         }
 
-        if( confirmCount == 0 ) {
-            SmartMessage(
-                context.resources.getString(R.string.press_once_again_to_exit),
-                context = context
-            )
-            confirmCount++
 
-            // Reset confirmCount after 5s
-            CoroutineScope( Dispatchers.Default ).launch {
-                delay( 5000L )
-                confirmCount = 0
+        if (closeWithBackButton)
+            if( confirmCount == 0 ) {
+                SmartMessage(
+                    context.resources.getString(R.string.press_once_again_to_exit),
+                    context = context
+                )
+                confirmCount++
+
+                // Reset confirmCount after 5s
+                CoroutineScope( Dispatchers.Default ).launch {
+                    delay( 5000L )
+                    confirmCount = 0
+                }
+            } else {
+                val activity = context as? Activity
+                activity?.finishAffinity()
+                // Close app with exit 0 notify that no problem occurred
+                exitProcess( 0 )
             }
-        } else {
-            val activity = context as? Activity
-            activity?.finishAffinity()
-            // Close app with exit 0 notify that no problem occurred
-            exitProcess( 0 )
-        }
     }
 }

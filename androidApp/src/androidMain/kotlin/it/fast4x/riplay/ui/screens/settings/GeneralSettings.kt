@@ -1165,7 +1165,6 @@ fun GeneralSettings(
                                 restartActivity = true
                             }
                         )
-                        RestartActivity(restartActivity, onRestart = { restartActivity = false })
                     }
 
                     if (search.input.isBlank() || stringResource(R.string.skip_media_on_error).contains(
