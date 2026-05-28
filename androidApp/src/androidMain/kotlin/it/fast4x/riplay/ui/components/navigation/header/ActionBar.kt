@@ -169,7 +169,6 @@ private fun HamburgerMenu(
                     onClick = { onItemClick(NavRoutes.rewind) }
                 )
 
-
                 if (isPipSupported && enablePictureInPicture) {
                     ModernMenuItem(
                         index = menuIndex++,
@@ -192,11 +191,6 @@ private fun HamburgerMenu(
                     isLast = true
                 )
 
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 4.dp, horizontal = 12.dp),
-                    color = colorPalette().accent.copy(alpha = 0.7f)
-                )
-
                 ModernMenuCheckboxItem(
                     index = menuIndex++,
                     iconRes = R.drawable.airplane,
@@ -205,11 +199,6 @@ private fun HamburgerMenu(
                     onCheckedChange = {
                         offlineModeEnabled = it
                     }
-                )
-
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 4.dp, horizontal = 12.dp),
-                    color = colorPalette().accent.copy(alpha = 0.7f)
                 )
 
                 ModernMenuItem(
