@@ -1804,6 +1804,20 @@ private var pausedByZeroVolume = false
             } else {
                 // Canzone locale o MusicVault — ferma il player online e lascia andare ExoPlayer
                 _internalOnlinePlayer.value?.pause()
+                Timber.d("PlayerService onMediaItemTransition resume playback before firstTimeStarted $firstTimeStarted isResumePlaybackOnStart $isResumePlaybackOnStart")
+                if (firstTimeStarted && isResumePlaybackOnStart) {
+                    resumePlaybackOnStart()
+                    firstTimeStarted = false
+                    Timber.d("PlayerService onMediaItemTransition resume playback inside")
+                    return
+                }
+
+                if (firstTimeStarted && !isResumePlaybackOnStart) {
+                    firstTimeStarted = false
+                    return
+                }
+
+                Timber.d("PlayerService onMediaItemTransition resume playback after")
                 if (!player.isPlaying) {
                     player.play()
                 }
@@ -2443,7 +2457,7 @@ private var pausedByZeroVolume = false
                 isPersistentQueueEnabled = sharedPreferences.getBoolean(key, true)
             }
             RESUME_PLAYBACK_ON_START.key  -> {
-                    isResumePlaybackOnStart = sharedPreferences.getBoolean(key, false)
+                isResumePlaybackOnStart = sharedPreferences.getBoolean(key, false)
             }
             SKIP_SILENCE.key -> {
                 player.skipSilenceEnabled = sharedPreferences.getBoolean(key, false)
