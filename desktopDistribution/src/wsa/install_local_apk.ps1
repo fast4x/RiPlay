@@ -48,6 +48,29 @@ if (-not (Test-Path $apkPath)) {
     exit
 }
 
+# --- CONFIGURAZIONE PORTA WSA ---
+# Se usi una porta statica in WSA (es. 58526), inseriscila qui.
+# Se usi quella dinamica, lascia vuoto o rimuovi la sezione di connessione sotto.
+ $WSA_Port = "58526" 
+ 
+# --- CONNESSIONE FORZATA ---
+if ($WSA_Port) {
+    Write-Host "Tentativo di connessione forzata a 127.0.0.1:$WSA_Port..." -ForegroundColor Yellow
+    # Esegue il comando connect, sopprime l'output standard ma controlla l'errore
+    $connectResult = & $localAdb connect "127.0.0.1:$WSA_Port" 2>&1
+    
+    if ($connectResult -match "connected") {
+        Write-Host "[OK] Connessione stabilita." -ForegroundColor Green
+    } elseif ($connectResult -match "already connected") {
+        Write-Host "[INFO] Già connesso." -ForegroundColor DarkGray
+    } else {
+        Write-Host "[ATTENZIONE] Impossibile connettersi alla porta $WSA_Port." -ForegroundColor Red
+        Write-Host "Verifica che WSA sia acceso e che la porta sia corretta." -ForegroundColor Red
+        # Non facciamo exit, perché magari era già connesso in un altro modo e il comando devices sotto funzionerà comunque
+    }
+    Write-Host ""
+} 
+
 # --- ESECUZIONE COMANDI ADB ---
 # Nota l'uso di & "$localAdb" per eseguire il file specifico trovato sopra
 
