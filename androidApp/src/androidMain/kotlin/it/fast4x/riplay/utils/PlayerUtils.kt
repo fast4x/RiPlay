@@ -151,8 +151,10 @@ fun Player.playAtIndex(mediaItemIndex: Int) {
 @SuppressLint("Range")
 @UnstableApi
 fun Player.forcePlayAtIndex(mediaItems: List<MediaItem>, mediaItemIndex: Int) {
-    val filteredMediaItems = mediaItems
-    setMediaItems(filteredMediaItems, mediaItemIndex, C.TIME_UNSET)
+    // Disabilita shuffle per assicurarti che l'indice sia rispettato
+    shuffleModeEnabled = false
+
+    setMediaItems(mediaItems, mediaItemIndex, C.TIME_UNSET)
 
     //restoreGlobalVolume()
     playWhenReady = true
