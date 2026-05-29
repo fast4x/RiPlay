@@ -430,7 +430,15 @@ class PlayerService : Service(),
         initializeLocalPlayer()
         initializeVariables()
         initializeOnlinePlayer()
+
         initializeUnifiedMediaSession()
+        // Aggiorna subito il mediasession per allineare lo stato delle azioni
+        serviceScope.launch(Dispatchers.Main) {
+            if (!_playerState.value.isPlaying && _internalOnlinePlayer.value == null) {
+                _playerState.update { it.copy(playbackState = PlaybackState.PAUSED) }
+                updateUnifiedMediasession()
+            }
+        }
 
         startForeground()
 
@@ -1091,7 +1099,7 @@ class PlayerService : Service(),
                 when(state) {
                     PlayerConstants.PlayerState.UNSTARTED -> {
                         if (!firstTimeStarted) {
-                            unstartedWatchdogJob = CoroutineScope(Dispatchers.Main).launch {
+                            unstartedWatchdogJob = serviceScope.launch(Dispatchers.Main) {
                                 Timber.d("PlayerService onlinePlayerView: onStateChange UNSTARTED watchdog")
                                 delay(1000)
 
@@ -1892,9 +1900,15 @@ private var pausedByZeroVolume = false
 //        Timber.d("PlayerService notify called from: ${Thread.currentThread().stackTrace.joinToString("\n")}")
         serviceScope.launch {
             withContext(Dispatchers.Main){
-                if (player.mediaItemCount <= 0) return@withContext
-
+                // Aggiorna sempre la sessione per riflettere lo stato reale, anche se vuoto
                 updateUnifiedMediasession()
+
+                if (player.mediaItemCount <= 0 && _playerState.value.playbackState == PlaybackState.IDLE) {
+                    // Nasconde notifica se completamente idle e vuoto, attenzione il sistema potrebbe killare il servizio
+                    // stopForeground(STOP_FOREGROUND_REMOVE)
+                    return@withContext
+                }
+
                 startForeground()
 
 //                val notifyInstance = notification()
@@ -2397,8 +2411,8 @@ private var pausedByZeroVolume = false
     @UnstableApi
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         Timber.d("Playerservice onIsPlayingChanged $isPlaying called")
-        if (localMediaItem?.isLocal == false) return
-        Timber.d("Playerservice onIsPlayingChanged $isPlaying after called")
+//        if (localMediaItem?.isLocal == false) return
+//        Timber.d("Playerservice onIsPlayingChanged $isPlaying after called")
 
         val currentState = _playerState.value
         if (isPlaying) {
@@ -2435,8 +2449,8 @@ private var pausedByZeroVolume = false
                 fadeIn = true
             )
 
-        if (currentMediaItemState.value?.isLocal == true)
-            updateUnifiedNotification()
+        //if (currentMediaItemState.value?.isLocal == true)
+        updateUnifiedNotification()
 
         //notify external equalizer
         if (!isPlaying) sendCloseExternalEqualizerIntent()
@@ -2919,7 +2933,7 @@ private var pausedByZeroVolume = false
         if (!enabled) return
         val wallpaperTarget = preferences.getEnum(WALLPAPER_TYPE.key, WallpaperType.Lockscreen)
 
-        CoroutineScope(Dispatchers.IO).launch {
+        serviceScope.launch {
             val wallpaperManager = WallpaperManager.getInstance(context) ?: return@launch
 
             try {
@@ -2969,7 +2983,7 @@ private var pausedByZeroVolume = false
     fun saveQueue() {
         if (!isPersistentQueueEnabled()) return
 
-        CoroutineScope(Dispatchers.Main).launch {
+        serviceScope.launch(Dispatchers.Main) {
             val mediaItems = player.currentTimeline.mediaItems
             val mediaItemIndex = player.currentMediaItemIndex
             val mediaItemPosition = if (player.currentMediaItem?.isLocal == true) player.currentPosition else (currentSecond.value * 1000).toLong()
@@ -3411,6 +3425,15 @@ private var pausedByZeroVolume = false
                     binder = it,
                     onPlayClick = {
                         Timber.d("PlayerService InitializeUnifiedSessionCallback onPlayClick")
+
+                        // FIX: Se currentMediaItem è nullo, il service sta caricando.
+                        // Non fare nulla o prova a forzare il caricamento, ma non buttarti sull'online player a caso.
+                        if (player.currentMediaItem == null) {
+                            Timber.w("PlayerService PlayClick ignored: No media item loaded yet")
+                            // Opzionale: puoi tentare di ripristinare la coda qui se necessario
+                            return@PlayerMediaSessionCallback
+                        }
+
                         if (player.currentMediaItem?.isLocal == true)
                             it.player.play()
                         else {
@@ -3426,9 +3449,19 @@ private var pausedByZeroVolume = false
                                     )
                                 }
                         }
+                        updateUnifiedNotification()
                     },
                     onPauseClick = {
                         Timber.d("PlayerService InitializeUnifiedSessionCallback onPauseClick")
+
+                        // FIX: Se currentMediaItem è nullo, il service sta caricando.
+                        // Non fare nulla o prova a forzare il caricamento, ma non buttarti sull'online player a caso.
+                        if (player.currentMediaItem == null) {
+                            Timber.w("PlayerService PlayClick ignored: No media item loaded yet")
+                            // Opzionale: puoi tentare di ripristinare la coda qui se necessario
+                            return@PlayerMediaSessionCallback
+                        }
+
                         it.player.pause()
                         if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                             _internalOnlinePlayer.value?.pause()
@@ -3441,6 +3474,7 @@ private var pausedByZeroVolume = false
                                 )
                             }
                         }
+                        updateUnifiedNotification()
                     },
                     onSeekToPos = { second ->
                         val newPosition = (second / 1000).toFloat()
@@ -3459,6 +3493,7 @@ private var pausedByZeroVolume = false
 
                         _currentSecond.value = second.toFloat()
 
+                        updateUnifiedNotification()
                     },
                     onPlayNext = {
                         handlePlayNext()
@@ -3568,12 +3603,7 @@ private var pausedByZeroVolume = false
         const val SLEEPTIMER_NOTIFICATION_ID = 1002
         val SLEEPTIMER_NOTIFICATION_CHANNEL_ID = globalContext().resources.getString(R.string.sleep_timer_notification_channel_id)
 
-        const val ACTION_UPDATE_PHONE_LISTENER = "it.fast4x.riplay.action.UPDATE_PHONE_LISTENER"
-        const val EXTRA_ENABLE_LISTENER = "enable_listener"
-
-
     }
-
 
 }
 
