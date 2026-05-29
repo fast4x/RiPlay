@@ -2543,7 +2543,7 @@ fun UnifiedPlayer(
 
                                             if (!showQueue) {
                                                 //PATH
-                                                pagerStateFS.LaunchedEffectPlayAtIndexOnUserSwipe(
+                                                pagerState.LaunchedEffectPlayAtIndexOnUserSwipe(
                                                     player = binder.player
                                                 )
 //                                                LaunchedEffect(pagerState) {
