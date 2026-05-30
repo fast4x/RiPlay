@@ -123,7 +123,7 @@ repositories {
 
 android {
     namespace = "it.fast4x.riplay.composeapp"
-    compileSdk = 36
+    compileSdk = 37
 }
 
 java {

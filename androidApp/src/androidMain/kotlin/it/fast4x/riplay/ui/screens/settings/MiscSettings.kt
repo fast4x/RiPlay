@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
+import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
@@ -160,50 +161,52 @@ fun MiscSettings() {
                 )
             }
 
-            settingsItem(
-                isHeader = true
-            ) {
-                SettingsGroupSpacer()
-                SettingsEntryGroupText(title = stringResource(R.string.settings_music_vault_title))
-            }
-            settingsItem {
-                SwitchSettingEntry(
-                    title = stringResource(R.string.settings_music_vault_enable_personal_audio_saving),
-                    text = stringResource(R.string.settings_music_vault_save_songs_from_youtube_for_personal_offline_listening),
-                    isChecked = musicVaultEnabled,
-                    onCheckedChange = {
-                        if (it) {
-                            if (disclaimerAccepted) musicVaultEnabled = true
-                            else showDisclaimer = true
-                        } else {
-                            musicVaultEnabled = false
-                            disclaimerAccepted = false
-                        }
-                    }
-                )
-
-                // Disclaimer dialog
-                if (showDisclaimer) {
-                    MusicVaultDisclaimerDialog(
-                        onAccept = {
-                            disclaimerAccepted = true
-                            musicVaultEnabled = true
-                            showDisclaimer = false
-                            CoroutineScope(Dispatchers.IO).launch {
-                                // Disclaimer accettato quindi Music Vault può essere avviato
-                                checkAndStartMusicVault()
+            if (BuildConfig.FLAVOR == "full") {
+                settingsItem(
+                    isHeader = true
+                ) {
+                    SettingsGroupSpacer()
+                    SettingsEntryGroupText(title = stringResource(R.string.settings_music_vault_title))
+                }
+                settingsItem {
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.settings_music_vault_enable_personal_audio_saving),
+                        text = stringResource(R.string.settings_music_vault_save_songs_from_youtube_for_personal_offline_listening),
+                        isChecked = musicVaultEnabled,
+                        onCheckedChange = {
+                            if (it) {
+                                if (disclaimerAccepted) musicVaultEnabled = true
+                                else showDisclaimer = true
+                            } else {
+                                musicVaultEnabled = false
+                                disclaimerAccepted = false
                             }
-                        },
-                        onDecline = {
-                            showDisclaimer = false
                         }
                     )
-                }
 
-                AnimatedVisibility(
-                    visible = musicVaultEnabled && disclaimerAccepted
-                ) {
-                    MusicVaultFolderSetting()
+                    // Disclaimer dialog
+                    if (showDisclaimer) {
+                        MusicVaultDisclaimerDialog(
+                            onAccept = {
+                                disclaimerAccepted = true
+                                musicVaultEnabled = true
+                                showDisclaimer = false
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    // Disclaimer accettato quindi Music Vault può essere avviato
+                                    checkAndStartMusicVault()
+                                }
+                            },
+                            onDecline = {
+                                showDisclaimer = false
+                            }
+                        )
+                    }
+
+                    AnimatedVisibility(
+                        visible = musicVaultEnabled && disclaimerAccepted
+                    ) {
+                        MusicVaultFolderSetting()
+                    }
                 }
             }
 

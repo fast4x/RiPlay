@@ -142,12 +142,12 @@ extensions.configure<ApplicationExtension> {
         resValues = true
     }
 
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "it.fast4x.riplay"
         //minSdk = 24
-        targetSdk = 36
+        targetSdk = 37
 
         versionCode = 82
         versionName = "0.7.81"

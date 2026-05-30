@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.R
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Song
@@ -31,6 +32,8 @@ fun MusicVaultButton(
     context: Context = LocalContext.current,
     size: Dp = 20.dp
 ) {
+
+    if (BuildConfig.FLAVOR == "foss") return
 
     var musicVaultEnabled by rememberPreference(MUSIC_VAULT_ENABLED.key, false)
     if (!musicVaultEnabled) return
