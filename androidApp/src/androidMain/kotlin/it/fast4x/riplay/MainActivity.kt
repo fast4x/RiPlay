@@ -1442,9 +1442,9 @@ class MainActivity :
                                         ThumbnailRoundness.Light
                                     )
 
-                                    val isAndroidAutoConnected by GlobalSharedData.androidAutoConnected
+                                    //val isAndroidAutoConnected by GlobalSharedData.androidAutoConnected
 
-                                    if (!isAndroidAutoConnected)
+                                    //if (!isAndroidAutoConnected)
                                         BottomSheet(
                                             state = localPlayerSheetState,
                                             collapsedContent = {
@@ -1473,13 +1473,13 @@ class MainActivity :
                                             }
 
                                         }
-                                    else {
-                                        SmartMessage(
-                                            "Android Auto is connected",
-                                            context = this@MainActivity
-                                        )
-
-                                    }
+//                                    else {
+//                                        SmartMessage(
+//                                            "Android Auto is connected",
+//                                            context = this@MainActivity
+//                                        )
+//
+//                                    }
 
                                     val menuState = LocalGlobalSheetState.current
                                     CustomModalBottomSheet(
