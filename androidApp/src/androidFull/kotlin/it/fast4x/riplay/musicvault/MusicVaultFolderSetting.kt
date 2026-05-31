@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.musicvalt
+package it.fast4x.riplay.musicvault
 
 import android.content.Intent
 import android.os.Environment

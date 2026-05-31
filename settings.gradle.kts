@@ -54,7 +54,8 @@ include(":lastfm")
 project(":lastfm").projectDir = file("extensions/lastfm")
 include(":simpmusiclyrics")
 project(":simpmusiclyrics").projectDir = file("extensions/simpmusiclyrics")
-
+include(":chaquopy")
+project(":chaquopy").projectDir = file("extensions/chaquopy")
 
 //Custom android youtube player
 include(":ayp")

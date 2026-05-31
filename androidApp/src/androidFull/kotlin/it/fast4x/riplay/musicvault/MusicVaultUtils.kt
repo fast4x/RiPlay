@@ -1,22 +1,10 @@
-package it.fast4x.riplay.extensions.experimental.musicvalt
+package it.fast4x.riplay.musicvault
 
-import android.content.Context
-import android.os.Environment
-import androidx.work.Constraints
-import androidx.work.ExistingWorkPolicy
-import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.workDataOf
-import com.chaquo.python.Python
-import com.chaquo.python.android.AndroidPlatform
-import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_VAULT_DISCLAIMER_ACCEPTED
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_VAULT_ENABLED
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.utils.appContext
 import timber.log.Timber
-import java.io.File
 
 fun checkAndStartMusicVault(){
     val context = appContext()
@@ -28,6 +16,8 @@ fun checkAndStartMusicVault(){
 }
 
 private fun testAndStartChaquopy(): Triple<String, String, Boolean> {
+    return engine.testAndStartChaquopy(appContext())
+    /*
     if (!Python.isStarted()) {
         Python.start(AndroidPlatform(appContext()))
     }
@@ -47,4 +37,6 @@ private fun testAndStartChaquopy(): Triple<String, String, Boolean> {
     val ytdlpIsReady = (pyVersion.isNotEmpty() && ytdlpVersion.isNotEmpty())
 
     return Triple(pyVersion, ytdlpVersion, ytdlpIsReady)
+
+     */
 }

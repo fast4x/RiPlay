@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.musicvalt
+package it.fast4x.riplay.musicvault
 
 import android.content.Context
 import android.os.Environment
@@ -6,10 +6,7 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import com.chaquo.python.Python
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.data.models.Song
-import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
 import timber.log.Timber
 import java.io.File
 
@@ -29,6 +26,7 @@ class MusicVaultWorker(
         return try {
             Database.updateMusicVaultState(songId, MusicVaultState.DOWNLOADING)
 
+            /*
             val py = Python.getInstance()
             val result = py.getModule("MusicVault")
                 .callAttr("download_audio", url, privateDir.absolutePath)
@@ -39,6 +37,14 @@ class MusicVaultWorker(
             val title             = result.callAttr("get", "title").toString()
             val duration          = result.callAttr("get", "duration").toInt()
             val artist            = result.callAttr("get", "artist").toString()
+
+             */
+
+            val result = engine.executeScript(url, privateDir.absolutePath)
+            val fileName = result.fileName
+            val path = result.path
+            val title = result.title
+            val thumbnailFileName = result.thumbnailFileName
 
             // Tutto quello che ritorna Python
             Timber.d("MusicVault result keys: $result")

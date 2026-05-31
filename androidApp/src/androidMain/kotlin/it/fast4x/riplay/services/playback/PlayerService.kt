@@ -61,7 +61,6 @@ import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.SimpleCache
-import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER
 import androidx.media3.exoplayer.ExoPlayer
@@ -74,7 +73,6 @@ import androidx.media3.exoplayer.audio.DefaultAudioSink
 import androidx.media3.exoplayer.audio.DefaultAudioSink.DefaultAudioProcessorChain
 import androidx.media3.exoplayer.audio.SilenceSkippingAudioProcessor
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import androidx.media3.extractor.DefaultExtractorsFactory
 import it.fast4x.androidyoutubeplayer.core.player.PlayerConstants
@@ -200,10 +198,10 @@ import it.fast4x.riplay.data.models.QueuedMediaItem
 import it.fast4x.riplay.data.models.defaultQueueId
 import it.fast4x.riplay.enums.AudioQualityFormat
 import it.fast4x.riplay.enums.CastType
-import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultEvent
-import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultEvents
-import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultRepository
-import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultState
+import it.fast4x.riplay.musicvault.MusicVaultEvent
+import it.fast4x.riplay.musicvault.MusicVaultEvents
+import it.fast4x.riplay.musicvault.MusicVaultRepository
+import it.fast4x.riplay.musicvault.MusicVaultState
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.AUDIO_QUALITY_FORMAT
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.CAST_TYPE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.STATE_DURATION
@@ -249,7 +247,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
-import okhttp3.OkHttpClient
 import timber.log.Timber
 import java.io.File
 import java.util.Objects
@@ -1256,6 +1253,7 @@ class PlayerService : Service(),
                                 player.pause()
                                 player.stop()
                             }
+
                             if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                                 youTubePlayer.cueVideo(it.mediaId, playFromSecond)
                             }
@@ -1791,6 +1789,7 @@ private var pausedByZeroVolume = false
                     player.pause()
                     player.stop()
                 }
+
                 if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                     _internalOnlinePlayer.value?.pause()
                     _internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
@@ -3054,10 +3053,10 @@ private var pausedByZeroVolume = false
 
                         val uri = when {
                             isMusicVault && musicVaultFileName != null -> {
-                                if (musicVaultFileName.startsWith("content://")) Uri.parse(musicVaultFileName)
+                                if (musicVaultFileName.startsWith("content://")) musicVaultFileName.toUri()
                                 else File(MusicVaultRepository.getOutputDir(), musicVaultFileName).toUri()
                             }
-                            else -> Uri.parse(song.mediaId)
+                            else -> song.mediaId.toUri()
                         }
 
                         song.buildUpon()
@@ -3565,6 +3564,9 @@ private var pausedByZeroVolume = false
         }
         lastPlayNextTime = now
         Timber.d("PlayerService handlePlayNext executed")
+
+        playFromSecond = 0f
+
         serviceScope.launch {
             withContext(Dispatchers.Main) {
                 player.playNext()

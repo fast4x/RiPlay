@@ -38,8 +38,8 @@ import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultRepository
-import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultState
+import it.fast4x.riplay.musicvault.MusicVaultRepository
+import it.fast4x.riplay.musicvault.MusicVaultState
 import it.fast4x.riplay.extensions.lastfm.sendLoveTrack
 import it.fast4x.riplay.extensions.lastfm.sendUnloveTrack
 import it.fast4x.riplay.ui.components.themed.SmartMessage

@@ -269,7 +269,7 @@ import java.util.Objects
 import kotlin.math.sqrt
 import androidx.compose.ui.platform.LocalLocale
 import it.fast4x.riplay.extensions.appviewmodel.AppViewModelProvider
-import it.fast4x.riplay.extensions.experimental.musicvalt.checkAndStartMusicVault
+import it.fast4x.riplay.musicvault.checkAndStartMusicVault
 import it.fast4x.riplay.extensions.preferences.cleanUpUnusedPreferences
 import it.fast4x.riplay.extensions.preferences.getEnum
 

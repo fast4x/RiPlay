@@ -14,8 +14,8 @@ import it.fast4x.riplay.commonutils.EXPLICIT_PREFIX
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongEntity
-import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultRepository
-import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultState
+import it.fast4x.riplay.musicvault.MusicVaultRepository
+import it.fast4x.riplay.musicvault.MusicVaultState
 import it.fast4x.riplay.services.playback.MediaInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

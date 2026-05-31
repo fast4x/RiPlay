@@ -25,7 +25,7 @@ import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultState
+import it.fast4x.riplay.musicvault.MusicVaultState
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXCLUDE_SONG_IF_IS_VIDEO
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXCLUDE_SONGS_WITH_DURATION_LIMIT
 import it.fast4x.riplay.extensions.preferences.getEnum

@@ -28,9 +28,9 @@ import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultDisclaimerDialog
-import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultFolderSetting
-import it.fast4x.riplay.extensions.experimental.musicvalt.checkAndStartMusicVault
+import it.fast4x.riplay.musicvault.MusicVaultDisclaimerDialog
+import it.fast4x.riplay.musicvault.MusicVaultFolderSetting
+import it.fast4x.riplay.musicvault.checkAndStartMusicVault
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage

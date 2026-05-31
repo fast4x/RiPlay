@@ -273,7 +273,7 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BACKGRO
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.VISUALIZER_ENABLED
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
-import it.fast4x.riplay.extensions.experimental.musicvalt.MusicVaultButton
+import it.fast4x.riplay.musicvault.MusicVaultButton
 import it.fast4x.riplay.ui.screens.player.common.Queue
 import it.fast4x.riplay.ui.components.BottomSheetState
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet

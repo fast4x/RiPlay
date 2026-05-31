@@ -11,7 +11,7 @@ plugins {
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.room)
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.chaquopy)
+    //alias(libs.plugins.chaquopy)
 }
 
 kotlin {
@@ -383,20 +383,20 @@ extensions.configure<ApplicationExtension> {
         resValue("string", "RiPlay_DISCORD_APPLICATION_ID", propertyOrEmpty("RiPlay_DISCORD_APPLICATION_ID"))
 
 
-        ndk {
-            abiFilters += listOf("arm64-v8a", "x86_64")
-        }
+//        ndk {
+//            abiFilters += listOf("arm64-v8a", "x86_64")
+//        }
 
     }
 
-    chaquopy {
-        defaultConfig {
-            version = "3.13"
-            pip {
-                install("yt-dlp")
-            }
-        }
-    }
+//    chaquopy {
+//        defaultConfig {
+//            version = "3.13"
+//            pip {
+//                install("yt-dlp")
+//            }
+//        }
+//    }
 
     packaging {
         jniLibs.keepDebugSymbols.add("**/*.so")
@@ -543,6 +543,7 @@ dependencies {
     "fullImplementation"(libs.media3.ui)
     "fullImplementation"(libs.media3.cast)
     "fullImplementation"(projects.aypcast)
+    "fullImplementation"(projects.chaquopy)
 
     add("kspAndroid", libs.room.compiler)
 //    add("kspDesktop", libs.room.compiler)
