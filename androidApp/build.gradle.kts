@@ -149,8 +149,8 @@ extensions.configure<ApplicationExtension> {
         //minSdk = 24
         targetSdk = 37
 
-        versionCode = 82
-        versionName = "0.7.81"
+        versionCode = 83
+        versionName = "0.7.82"
 
 
         // INIT ENVIRONMENT
