@@ -94,13 +94,25 @@ jobs:
           find androidApp -name "*.apk" -path "*/release/*" -exec cp {} release-apks/ \;
           ls -lah release-apks/
 
-      - name: Copy additional ZIP files
+      - name: Package desktop distribution as 7z
         run: |
-          echo "📦 Copying additional assets..."
-          
-          cp desktopDistribution/redist/*.7z release-apks/
-          
-          # Check if files exists
+          echo "📦 Installing 7zip..."
+          sudo apt-get install -y p7zip-full
+
+          CURRENT_TAG="${{ github.event.inputs.version }}"
+          if [ -z "$CURRENT_TAG" ]; then
+            CURRENT_TAG="${{ github.ref_name }}"
+          fi
+
+          AVD_ARCHIVE="RiPlay-desktop-AVD-${CURRENT_TAG}.7z"
+          WSA_ARCHIVE="RiPlay-desktop-WSA-${CURRENT_TAG}.7z"
+
+          echo "📦 Creating ${AVD_ARCHIVE} (Windows & Linux) from desktopDistribution/src/avd/ ..."
+          7z a "release-apks/${AVD_ARCHIVE}" ./desktopDistribution/src/avd/*
+
+          echo "📦 Creating ${WSA_ARCHIVE} (Windows only) from desktopDistribution/src/wsa/ ..."
+          7z a "release-apks/${WSA_ARCHIVE}" ./desktopDistribution/src/wsa/*
+
           echo "📂 Final content of folder release-apks:"
           ls -lah release-apks/
 
@@ -129,7 +141,7 @@ jobs:
           echo "changelog<<$DELIMITER" >> $GITHUB_OUTPUT
           cat /tmp/changelog.txt >> $GITHUB_OUTPUT
           echo "$DELIMITER" >> $GITHUB_OUTPUT
-          
+
       - name: Create Release Notes
         id: release_notes
         run: |
@@ -151,6 +163,8 @@ jobs:
             echo "### 📦 Downloads"
             echo "- **Full Flavor** (All features)"
             echo "- **FOSS Flavor** (All features less chromecast and check for updates)"
+            echo "- **Desktop AVD** (Windows & Linux)"
+            echo "- **Desktop WSA** (Windows only)"
             echo ""
             echo "### ✨ Build Information"
             echo "- **Build Date**: ${RELEASE_DATE}"
