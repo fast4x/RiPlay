@@ -162,7 +162,7 @@ jobs:
             echo ""
             echo "### 📦 Downloads"
             echo "- **Full Flavor** (All features)"
-            echo "- **FOSS Flavor** (All features less chromecast and check for updates)"
+            echo "- **FOSS Flavor** (All features less chromecast, check for updates, musicvault)"
             echo "- **Desktop AVD** (Windows & Linux)"
             echo "- **Desktop WSA** (Windows only)"
             echo ""
