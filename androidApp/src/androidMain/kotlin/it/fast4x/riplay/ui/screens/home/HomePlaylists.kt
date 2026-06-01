@@ -113,7 +113,7 @@ import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.IDialog
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.navigation.header.TabToolBar
-import it.fast4x.riplay.ui.components.tab.ImportSongsFromCSV
+import it.fast4x.riplay.ui.components.tab.ImportSongsFromSpotifyCSV
 import it.fast4x.riplay.ui.components.tab.ItemSize
 import it.fast4x.riplay.ui.components.tab.TabHeader
 import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
@@ -123,7 +123,6 @@ import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.utils.importYTMPrivatePlaylists
 import it.fast4x.riplay.extensions.preferences.Preference.HOME_LIBRARY_ITEM_SIZE
 import it.fast4x.riplay.data.models.defaultQueue
-import it.fast4x.riplay.enums.ArtistsType
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
@@ -251,7 +250,56 @@ fun HomePlaylists(
     var time by remember { mutableStateOf("") }
     val formattedDate = currentDateTime.format(formatter)
 
-    val importPlaylistDialog = ImportSongsFromCSV.init(
+    val importPlaylistSpotifyDialog = ImportSongsFromSpotifyCSV.init(
+        beforeTransaction = { _, row ->
+            time = formattedDate
+            val playlistName = row["PlaylistName"] ?: "New Playlist $time"
+            plistId = playlistName.let {
+                Database.playlistExistByName(it)
+            }
+
+            if (plistId == 0L)
+                plistId = playlistName.let {
+                    Database.insert(Playlist(plistId, it, row["PlaylistBrowseId"]))
+                }
+        },
+        afterTransaction = { index, song, album, artists ->
+            if (song.id.isBlank()) return@init
+
+            Database.insert(song)
+            Database.insert(
+                SongPlaylistMap(
+                    songId = song.id,
+                    playlistId = plistId,
+                    position = index
+                ).default()
+            )
+
+            if (album.id != "") {
+                Database.insert(
+                    album,
+                    SongAlbumMap(
+                        songId = song.id,
+                        albumId = album.id,
+                        position = null
+                    )
+                )
+            }
+            if (artists.isNotEmpty()) {
+                Database.insert(
+                    artists,
+                    artists.map { artist ->
+                        SongArtistMap(
+                            songId = song.id,
+                            artistId = artist.id
+                        )
+                    }
+                )
+            }
+        }
+    )
+
+    val importPlaylistDialog = ImportSongsFromSpotifyCSV.init(
         beforeTransaction = { _, row ->
             time = formattedDate
             val playlistName = row["PlaylistName"] ?: "New Playlist $time"
