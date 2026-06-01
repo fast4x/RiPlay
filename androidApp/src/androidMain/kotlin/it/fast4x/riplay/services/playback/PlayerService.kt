@@ -1117,6 +1117,7 @@ class PlayerService : Service(),
                                                 player.stop()
                                             }
                                             currentPlayer.pause()
+                                            _internalOnlinePlayer.value?.pause() // Pause also primary instance
                                             currentPlayer.cueVideo(item.mediaId, playFromSecond)
                                         } else {
                                             Timber.w("PlayerService onlinePlayerView: Recovery - _internalOnlinePlayer is not defined, impossible to continue")
@@ -1131,6 +1132,8 @@ class PlayerService : Service(),
                     PlayerConstants.PlayerState.VIDEO_CUED -> {
                         Timber.d("PlayerService onlinePlayerView: onStateChange VIDEO_CUED regular play()")
                         playFromSecond = 0f
+                        _internalOnlinePlayer.value?.pause()
+                        youTubePlayer.pause()
                         if (!firstTimeStarted) {
                             if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                                 youTubePlayer.unMute()
@@ -1255,6 +1258,8 @@ class PlayerService : Service(),
                             }
 
                             if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
+                                _internalOnlinePlayer.value?.pause()
+                                youTubePlayer.pause()
                                 youTubePlayer.cueVideo(it.mediaId, playFromSecond)
                             }
                             else serviceScope.launch {
@@ -1789,9 +1794,8 @@ private var pausedByZeroVolume = false
                     player.pause()
                     player.stop()
                 }
-
+                _internalOnlinePlayer.value?.pause()
                 if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
-                    _internalOnlinePlayer.value?.pause()
                     _internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
                     Timber.d("PlayerService onMediaItemTransition mediaItem not local, inside")
                 }
@@ -1959,10 +1963,9 @@ private var pausedByZeroVolume = false
                     localMediaItem?.let {
                         if(it.isLocal) return@let
 
+                        _internalOnlinePlayer.value?.pause()
                         if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
-                            _internalOnlinePlayer.value?.pause()
                             _internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
-
                             //_internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
                         } else {
                             serviceScope.launch {
@@ -3552,6 +3555,7 @@ private var pausedByZeroVolume = false
     }
 
     fun handlePlayNext() {
+        _internalOnlinePlayer.value?.pause()
         val now = System.currentTimeMillis()
         if (now - lastPlayNextTime < debounceDelayMs) {
             Timber.d("PlayerService handlePlayNext ignored (too fast) play current")
