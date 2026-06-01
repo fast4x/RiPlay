@@ -28,7 +28,7 @@ class ImportSongsFromSpotifyCSV private constructor(
     private val launcher: ManagedActivityResultLauncher<Array<String>, Uri?>
 ): Descriptive, MenuIcon {
 
-    // Intended to import spotify playlist from csv exported by https://exportify.net
+    // Intended to import spotify playlist from csv exported by https://exportify.net https://github.com/pavelkomarov/exportify
 
     companion object {
         private fun openFile(
