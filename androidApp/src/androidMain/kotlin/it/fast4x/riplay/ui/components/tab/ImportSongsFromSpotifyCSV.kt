@@ -24,7 +24,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class ImportSongsFromCSV private constructor(
+class ImportSongsFromSpotifyCSV private constructor(
     private val launcher: ManagedActivityResultLauncher<Array<String>, Uri?>
 ): Descriptive, MenuIcon {
 
@@ -167,7 +167,7 @@ class ImportSongsFromCSV private constructor(
         fun init(
             beforeTransaction: (Int, Map<String, String>) -> Unit = { _,_ -> },
             afterTransaction: ( Int, Song, Album, List<Artist> ) -> Unit = { _,_,_,_ -> }
-        ) = ImportSongsFromCSV(
+        ) = ImportSongsFromSpotifyCSV(
             rememberLauncherForActivityResult(
                 ActivityResultContracts.OpenDocument()
             ) { uri ->
