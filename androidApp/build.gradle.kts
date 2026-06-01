@@ -28,11 +28,9 @@ kotlin {
         implementation(projects.composeApp)
         implementation(libs.navigation)
         implementation(libs.media3.session)
-        //implementation(libs.media3.ui)
         implementation(libs.kotlin.coroutines.guava)
         implementation(libs.kotlin.concurrent.futures)
         implementation(libs.androidx.webkit)
-        //implementation(libs.room.backup)
         implementation(libs.workmanager)
         implementation(libs.accompanist)
 
@@ -49,7 +47,6 @@ kotlin {
         implementation(libs.appcompat)
         implementation(libs.appcompat.resources)
         implementation(libs.support)
-        //implementation(libs.media) migrated to media3-session
         implementation(libs.material)
         implementation(libs.material3)
         implementation(libs.compose.ui.graphics.android)
@@ -146,7 +143,6 @@ extensions.configure<ApplicationExtension> {
 
     defaultConfig {
         applicationId = "it.fast4x.riplay"
-        //minSdk = 24
         targetSdk = 37
 
         versionCode = 83
@@ -471,17 +467,10 @@ extensions.configure<ApplicationExtension> {
             */
         }
     }
-//    productFlavors {
-//        create("accrescent") {
-//            dimension = "version"
-//            //manifestPlaceholders["appName"] = "RiPlay-Acc"
-//            buildConfigField("String", "BUILD_VARIANT", "\"accrescent\"")
 
-//        }
-//    }
     productFlavors {
         create("foss") {
-            minSdk = 24
+            minSdk = 23
             dimension = "version"
             //manifestPlaceholders["appName"] = "RiPlay"
             //buildConfigField("String", "BUILD_VARIANT", "\"foss\"")
