@@ -478,6 +478,9 @@ object EnvironmentExt {
     suspend fun getAlbum(browseId: String, withSongs: Boolean = true): Result<AlbumPage> = runCatching {
         val response = Environment.browse(browseId = browseId).body<BrowseResponse>()
         val playlistId = response.microformat?.microformatDataRenderer?.urlCanonical?.substringAfterLast('=')
+        val songs = playlistId?.let { if (withSongs) getAlbumSongs(it).getOrThrow() else emptyList() } ?: emptyList()
+
+        println("EnvironmentExt getAlbum songs mediaId = ${songs.joinToString { it.key }}")
 
         AlbumPage(
             album = Environment.AlbumItem(
@@ -498,7 +501,7 @@ object EnvironmentExt {
                 year = response.contents?.twoColumnBrowseResultsRenderer?.tabs?.firstOrNull()?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()?.musicResponsiveHeaderRenderer?.subtitle?.runs?.lastOrNull()?.text,
                 thumbnail = response.contents?.twoColumnBrowseResultsRenderer?.tabs?.firstOrNull()?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()?.musicResponsiveHeaderRenderer?.thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails?.getBestQuality(),
             ),
-            songs = playlistId?.let { if (withSongs) getAlbumSongs(it).getOrThrow() else emptyList() } ?: emptyList(),
+            songs = songs,
             otherVersions = response.contents?.twoColumnBrowseResultsRenderer?.secondaryContents?.sectionListRenderer?.contents?.getOrNull(
                 1
             )?.musicCarouselShelfRenderer?.contents
@@ -533,7 +536,7 @@ object EnvironmentExt {
         val songs = contents?.mapNotNull {
             it.musicResponsiveListItemRenderer?.let { it1 -> AlbumPage.getSong(it1) }
         }
-        println("EnvironmentExt getAlbumSongs songs: $songs")
+
         songs ?: emptyList()
     }
 

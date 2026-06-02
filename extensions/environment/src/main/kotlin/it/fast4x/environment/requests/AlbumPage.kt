@@ -90,12 +90,14 @@ data class AlbumPage(
 
         fun getSong(renderer: MusicResponsiveListItemRenderer, album: Environment.AlbumItem? = null): Environment.SongItem {
 
+            val extractRuns = PageHelper.extractRuns(renderer.flexColumns, "MUSIC_VIDEO")
+                .firstOrNull()
+
             return Environment.SongItem(
                 info = Info(
-                    name = PageHelper.extractRuns(renderer.flexColumns, "MUSIC_VIDEO")
-                        .firstOrNull()?.text ?: "",
+                    name = extractRuns?.text ?: "",
                     endpoint = NavigationEndpoint.Endpoint.Watch(
-                        videoId = renderer.playlistItemData?.videoId
+                        videoId = extractRuns?.navigationEndpoint?.watchEndpoint?.videoId
                     )
                 ),
 //                authors = PageHelper.extractRuns(renderer.flexColumns, "MUSIC_PAGE_TYPE_ARTIST")
