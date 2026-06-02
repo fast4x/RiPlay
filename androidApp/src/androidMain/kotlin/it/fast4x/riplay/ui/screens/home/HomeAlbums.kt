@@ -185,13 +185,18 @@ fun HomeAlbums(
         animationSpec = tween(durationMillis = 400, easing = LinearEasing), label = ""
     )
 
-    LaunchedEffect(isNetworkConnected) {
-        if (!isNetworkConnected && albumType !in listOf(AlbumsType.OnDevice))
-            albumType = AlbumsType.OnDevice
-    }
+    LaunchedEffect(isNetworkConnected, sortBy, sortOrder, albumType) {
+        // Determina il tipo effettivo per questo ciclo di raccolta dati
+        val targetAlbumType = if (!isNetworkConnected && albumType !in listOf(AlbumsType.OnDevice)) {
+            AlbumsType.OnDevice
+        } else {
+            albumType
+        }
 
-    LaunchedEffect(sortBy, sortOrder, albumType) {
-        when (albumType) {
+        // Se necessario, aggiorna lo stato esterno (opzionale, a seconda di come gestisci l'UI)
+        // if (albumType != targetAlbumType) albumType = targetAlbumType
+
+        when (targetAlbumType) {
             AlbumsType.Favorites -> Database.albums(sortBy, sortOrder).collect { items = it }
             AlbumsType.Library -> Database.albumsInLibrary(sortBy, sortOrder).collect { items = it.filter { it.isYoutubeAlbum } }
             AlbumsType.OnDevice -> Database.albumsOnDevice(sortBy, sortOrder).collect { items = it }

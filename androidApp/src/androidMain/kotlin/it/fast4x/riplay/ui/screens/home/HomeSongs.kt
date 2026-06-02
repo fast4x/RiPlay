@@ -164,6 +164,7 @@ import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DEFAULT_FOLDER
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.commonutils.durationTextToMillis
+import it.fast4x.riplay.enums.ArtistsType
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.utils.enqueue
@@ -356,65 +357,100 @@ fun HomeSongs(
         Database.blacklisted(listOf(BlacklistType.Song.name, BlacklistType.Video.name, BlacklistType.Folder.name))
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
-    LaunchedEffect(isNetworkConnected) {
-        if (!isNetworkConnected && builtInPlaylist !in listOf(BuiltInPlaylist.OnDevice,
-                BuiltInPlaylist.MusicVault))
-            builtInPlaylist = BuiltInPlaylist.MusicVault
-    }
+    LaunchedEffect(isNetworkConnected, sortByOnDevice, sortOrderOnDevice,
+        sortBy,
+        builtInPlaylist,
+        sortOrder,
+        filter,
+        showHiddenSongs,
+        includeLocalSongs,
+        Unit,
+        topPlaylistPeriod) {
 
-    // Database Loading Logic
-    when (builtInPlaylist) {
-        BuiltInPlaylist.All, BuiltInPlaylist.MusicVault -> {
-            LaunchedEffect(sortBy, builtInPlaylist, sortOrder, filter, showHiddenSongs, includeLocalSongs) {
+        val targetBuiltInPlaylist = if (!isNetworkConnected && builtInPlaylist !in listOf(
+                BuiltInPlaylist.OnDevice,
+                BuiltInPlaylist.MusicVault
+            )) {
+            BuiltInPlaylist.MusicVault
+        } else {
+            builtInPlaylist
+        }
+
+
+
+        // Database Loading Logic
+        when (targetBuiltInPlaylist) {
+            BuiltInPlaylist.All, BuiltInPlaylist.MusicVault -> {
                 Database.songs(sortBy, sortOrder, showHiddenSongs)
                     .collect {
-                        items = it.filter { item -> blacklisted.value?.map { it.path }?.contains(item.song.id) == false }
+                        items = it.filter { item ->
+                            blacklisted.value?.map { it.path }?.contains(item.song.id) == false
+                        }
                             .filter {
-                                if (builtInPlaylist == BuiltInPlaylist.All ) true else it.song.isMusicVault
+                                if (builtInPlaylist == BuiltInPlaylist.All) true else it.song.isMusicVault
                             }
                     }
+
             }
-        }
-        BuiltInPlaylist.Favorites, BuiltInPlaylist.Top, BuiltInPlaylist.Disliked -> {
-            LaunchedEffect(Unit, builtInPlaylist, sortBy, sortOrder, filter, topPlaylistPeriod) {
-                if (builtInPlaylist == BuiltInPlaylist.Favorites) {
-                    Database.songsFavorites(sortBy, sortOrder)
-                        .collect { items = (if (autoShuffle) it.shuffled() else it).filter { item -> blacklisted.value?.map { it.path }?.contains(item.song.id) == false } }
-                }
-                if (builtInPlaylist == BuiltInPlaylist.Disliked) {
-                    Database.songsDisliked(sortBy, sortOrder)
-                        .collect { items = (if (autoShuffle) it.shuffled() else it).filter { item -> blacklisted.value?.map { it.path }?.contains(item.song.id) == false } }
-                }
-                if (builtInPlaylist == BuiltInPlaylist.Top) {
-                    if (topPlaylistPeriod.duration == Duration.INFINITE) {
-                        Database.songsEntityByPlayTimeWithLimitDesc(limit = maxTopPlaylistItems.number.toInt())
+
+            BuiltInPlaylist.Favorites, BuiltInPlaylist.Top, BuiltInPlaylist.Disliked -> {
+                    if (builtInPlaylist == BuiltInPlaylist.Favorites) {
+                        Database.songsFavorites(sortBy, sortOrder)
                             .collect {
+                                items = (if (autoShuffle) it.shuffled() else it).filter { item ->
+                                    blacklisted.value?.map { it.path }
+                                        ?.contains(item.song.id) == false
+                                }
+                            }
+                    }
+                    if (builtInPlaylist == BuiltInPlaylist.Disliked) {
+                        Database.songsDisliked(sortBy, sortOrder)
+                            .collect {
+                                items = (if (autoShuffle) it.shuffled() else it).filter { item ->
+                                    blacklisted.value?.map { it.path }
+                                        ?.contains(item.song.id) == false
+                                }
+                            }
+                    }
+                    if (builtInPlaylist == BuiltInPlaylist.Top) {
+                        if (topPlaylistPeriod.duration == Duration.INFINITE) {
+                            Database.songsEntityByPlayTimeWithLimitDesc(limit = maxTopPlaylistItems.number.toInt())
+                                .collect {
+                                    items = it.filter { item ->
+                                        if (excludeSongWithDurationLimit == DurationInMinutes.Disabled) true
+                                        else (item.song.durationText?.let { durationTextToMillis(it) }
+                                            ?: 0L) < excludeSongWithDurationLimit.minutesInMilliSeconds
+                                    }.filter { item ->
+                                        blacklisted.value?.map { it.path }
+                                            ?.contains(item.song.id) == false
+                                    }
+                                }
+                        } else {
+                            Database.trendingSongEntity(
+                                limit = maxTopPlaylistItems.number.toInt(),
+                                period = topPlaylistPeriod.duration.inWholeMilliseconds
+                            ).collect {
                                 items = it.filter { item ->
                                     if (excludeSongWithDurationLimit == DurationInMinutes.Disabled) true
-                                    else (item.song.durationText?.let { durationTextToMillis(it) } ?: 0L) < excludeSongWithDurationLimit.minutesInMilliSeconds
-                                }.filter { item -> blacklisted.value?.map { it.path }?.contains(item.song.id) == false }
+                                    else (item.song.durationText?.let { durationTextToMillis(it) }
+                                        ?: 0L) < excludeSongWithDurationLimit.minutesInMilliSeconds
+                                }.filter { item ->
+                                    blacklisted.value?.map { it.path }
+                                        ?.contains(item.song.id) == false
+                                }
                             }
-                    } else {
-                        Database.trendingSongEntity(
-                            limit = maxTopPlaylistItems.number.toInt(),
-                            period = topPlaylistPeriod.duration.inWholeMilliseconds
-                        ).collect {
-                            items = it.filter { item ->
-                                if (excludeSongWithDurationLimit == DurationInMinutes.Disabled) true
-                                else (item.song.durationText?.let { durationTextToMillis(it) } ?: 0L) < excludeSongWithDurationLimit.minutesInMilliSeconds
-                            }.filter { item -> blacklisted.value?.map { it.path }?.contains(item.song.id) == false }
                         }
                     }
-                }
+
             }
-        }
-        BuiltInPlaylist.OnDevice -> {
-            items = emptyList()
-            LaunchedEffect(sortByOnDevice, sortOrderOnDevice) {
-                if (hasPermission) {
-                    onDeviceViewModel.sortBy = sortByOnDevice
-                    onDeviceViewModel.sortOrder = sortOrderOnDevice
-                }
+
+            BuiltInPlaylist.OnDevice -> {
+                items = emptyList()
+                    if (hasPermission) {
+                        onDeviceViewModel.sortBy = sortByOnDevice
+                        onDeviceViewModel.sortOrder = sortOrderOnDevice
+                    }
+
             }
         }
     }

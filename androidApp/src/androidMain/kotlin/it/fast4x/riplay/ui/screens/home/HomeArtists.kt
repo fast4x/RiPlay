@@ -174,14 +174,22 @@ fun HomeArtists(
         animationSpec = tween(durationMillis = 400, easing = LinearEasing), label = ""
     )
 
-    LaunchedEffect(isNetworkConnected) {
-        if (!isNetworkConnected && artistType !in listOf(ArtistsType.OnDevice))
-            artistType = ArtistsType.OnDevice
-    }
+    LaunchedEffect(isNetworkConnected, sortBy, sortOrder, artistType) {
+        // 1. Calcolo del tipo effettivo in base alla rete
+        val targetArtistType = if (!isNetworkConnected && artistType !in listOf(ArtistsType.OnDevice)) {
+            ArtistsType.OnDevice
+        } else {
+            artistType
+        }
 
-    // Caricamento Dati
-    LaunchedEffect(Unit, sortBy, sortOrder, artistType) {
-        when (artistType) {
+        // 2. Aggiorno lo stato esterno (se necessario) per far riflettere
+        // la forzatura sull'UI (es. cambiare tab selezionato), senza causare loop infiniti
+//        if (artistType != targetArtistType) {
+//            artistType = targetArtistType
+//        }
+
+        // 3. Caricamento dati usando il tipo effettivo calcolato
+        when (targetArtistType) {
             ArtistsType.Favorites -> Database.artists(sortBy, sortOrder).collect { items = it }
             ArtistsType.Library -> Database.artistsInLibrary(sortBy, sortOrder).collect { items = it.filter { it.isYoutubeArtist } }
             ArtistsType.OnDevice -> Database.artistsOnDevice(sortBy, sortOrder).collect { items = it }
