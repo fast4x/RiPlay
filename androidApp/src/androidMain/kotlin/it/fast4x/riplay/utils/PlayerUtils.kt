@@ -55,6 +55,9 @@ val DataSpec.isLocal
     @OptIn(UnstableApi::class)
     get() = key?.startsWith(LOCAL_KEY_PREFIX) == true
 
+val DataSpec.isMusicVault
+    @OptIn(UnstableApi::class)
+    get() = uri.toString().startsWith("content://com.android.externalstorage.documents/tree")
 
 @get:OptIn(UnstableApi::class)
 val DataSpec.isLocalUri get() = uri.toString().startsWith("content://")

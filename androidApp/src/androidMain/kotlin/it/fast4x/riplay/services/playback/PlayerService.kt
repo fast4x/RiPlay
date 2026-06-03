@@ -28,7 +28,6 @@ import android.media.audiofx.AudioEffect
 import android.media.audiofx.BassBoost
 import android.media.audiofx.LoudnessEnhancer
 import android.media.audiofx.PresetReverb
-import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.support.v4.media.MediaDescriptionCompat

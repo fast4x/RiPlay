@@ -6,56 +6,46 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.ResolvingDataSource
+import it.fast4x.riplay.commonutils.cleanPrefix
+import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.utils.isAtLeastAndroid10
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.isLocalUri
+import it.fast4x.riplay.utils.isMusicVault
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
 import timber.log.Timber
+
+import kotlinx.coroutines.runBlocking
 
 @OptIn(UnstableApi::class)
 internal fun PlayerService.createLocalDataSourceFactory(): DataSource.Factory {
     return ResolvingDataSource.Factory(createCacheDataSource()) { dataSpec ->
 
-        //Timber.d("PlayerService createLocalDataSourceFactory dataSpec: uri ${dataSpec.uri} isLocalUri ${dataSpec.isLocalUri} isLocal: ${dataSpec.isLocal} isMusicVault ${dataSpec.isMusicVault}")
         Timber.d("PlayerService createLocalDataSourceFactory dataSpec: uri=${dataSpec.uri} key=${dataSpec.key}")
 
-        // Get current song from player, is same as current dataSpec
-//        val mediaItem = runBlocking {
-//            withContext(Dispatchers.Main) {
-//                player.currentMediaItem
-//            }
-//        }
+        var song: Song? = null
 
-//        val song = runBlocking {
-//            withContext(Dispatchers.IO) {
-//                Database.song(dataSpec.key).firstOrNull()
-//            }
-//        }
-//
-//        Timber.d("PlayerService createLocalDataSourceFactory mediaId=${song?.id} musicVaultFileName=${song?.musicVaultFileName}")
+        // Se key è null, non facciamo la query
+        if (dataSpec.key != null) {
+            // Blocchiamo il thread corrente finché la query non è finita
+            song = runBlocking {
+                Database.getSong(cleanPrefix(dataSpec.key.toString()))
+            }
+            Timber.d("PlayerService createLocalDataSourceFactory get song from db $song")
+        }
 
-        // Ensure that the song is in database
-//        Database.asyncTransaction {
-//            if (mediaItem != null) {
-//                insert(mediaItem.asSong)
-//            }
-//        }
-
+        Timber.d("PlayerService createLocalDataSourceFactory after get song from db $song")
 
         when {
-            dataSpec.uri.toString().startsWith("content://com.android.externalstorage.documents/tree") -> {
+            dataSpec.isMusicVault || song?.isMusicVault == true -> {
+                // Se qui ti serve usare 'song', ora non sarà più null (se trovato nel DB)
+                Timber.d("PlayerService createLocalDataSourceFactory file as tree > song $song")
                 return@Factory dataSpec
             }
-//            song?.isMusicVault == true -> {
-//                val uri = song.musicVaultFileName?.toUri() // mediaItem.mediaMetadata.extras?.getString("musicVaultFileName")?.toUri()
-//                    ?:  throw PlaybackException(
-//                        "PlayerService createLocalDataSourceFactory File not exists or not on device",
-//                        Throwable(),
-//                        PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND
-//                    )
-//                Timber.d("PlayerService createLocalDataSourceFactory MusicVault: $uri")
-//                return@Factory dataSpec.withUri(uri)
-//            }
             dataSpec.isLocal && dataSpec.isLocalUri -> {
                 Timber.d("PlayerService createLocalDataSourceFactory dataSpec.isLocalUri: YES")
                 return@Factory dataSpec
@@ -77,6 +67,5 @@ internal fun PlayerService.createLocalDataSourceFactory(): DataSource.Factory {
                 )
             }
         }
-
     }
 }

@@ -7,6 +7,8 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.utils.formatAsDuration
 import timber.log.Timber
 import java.io.File
 
@@ -26,35 +28,27 @@ class MusicVaultWorker(
         return try {
             Database.updateMusicVaultState(songId, MusicVaultState.DOWNLOADING)
 
-            /*
-            val py = Python.getInstance()
-            val result = py.getModule("MusicVault")
-                .callAttr("download_audio", url, privateDir.absolutePath)
-
-            val path              = result.callAttr("get", "path").toString()
-            val fileName          = result.callAttr("get", "filename").toString()
-            val thumbnailFileName = result.callAttr("get", "thumbnail_filename").toString()
-            val title             = result.callAttr("get", "title").toString()
-            val duration          = result.callAttr("get", "duration").toInt()
-            val artist            = result.callAttr("get", "artist").toString()
-
-             */
-
             val result = engine.executeScript(url, privateDir.absolutePath)
             val fileName = result.fileName
             val path = result.path
             val title = result.title
             val thumbnailFileName = result.thumbnailFileName
-
-            // Tutto quello che ritorna Python
-            Timber.d("MusicVault result keys: $result")
-            Timber.d("MusicVault filename: $fileName")
-            Timber.d("MusicVault path: $path")
-            Timber.d("MusicVault title: $title")
+            val duration = result.duration
+            val authors = result.artist
 
             // Sposta nella cartella scelta dall'utente (se diversa)
             val finalFileName          = moveToUserFolder(context, fileName, privateDir)
             val finalThumbnailFileName = moveToUserFolder(context, thumbnailFileName, privateDir)
+
+            val song = Song(
+                id = songId,
+                title = title,
+                durationText = formatAsDuration(duration.toLong()),
+                thumbnailUrl = null,
+                artistsText = authors
+            )
+
+            Database.insert(song) // E' già nel db? Forzo..
 
             Database.updateMusicVaultCompleted(
                 id                = songId,
