@@ -1,6 +1,8 @@
 package it.fast4x.riplay.utils
 
+import android.app.UiModeManager
 import android.content.Context
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.os.Build
@@ -18,6 +20,26 @@ val isLandscape
     @Composable
     @ReadOnlyComposable
     get() = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+/**
+ * Controlla se l'app sta girando su una Android TV.
+ * Combina il controllo del UiModeManager e la presenza del feature Leanback
+ * per coprire anche TV Box non ufficialmente certificati.
+ */
+@Composable
+fun isTvMode(): Boolean {
+    val context = LocalContext.current
+
+    // Metodo 1: Controllo tramite UiModeManager (Standard ufficiale Android TV)
+    val uiModeManager = context.getSystemService(Context.UI_MODE_SERVICE) as? UiModeManager
+    val isUiModeTv = uiModeManager?.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
+
+    // Metodo 2: Controllo tramite PackageManager (Verifica se il dispositivo supporta l'interfaccia Leanback)
+    val isLeanbackFeature = context.packageManager?.hasSystemFeature(PackageManager.FEATURE_LEANBACK) == true
+
+    // Se uno dei due è true, siamo su una TV
+    return isUiModeTv || isLeanbackFeature
+}
 
 fun getScreenOrientation(context: Context): Int {
     return when (context.resources.configuration.orientation) {

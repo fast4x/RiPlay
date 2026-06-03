@@ -272,6 +272,8 @@ import it.fast4x.riplay.extensions.appviewmodel.AppViewModelProvider
 import it.fast4x.riplay.musicvault.checkAndStartMusicVault
 import it.fast4x.riplay.extensions.preferences.cleanUpUnusedPreferences
 import it.fast4x.riplay.extensions.preferences.getEnum
+import it.fast4x.riplay.ui.screens.player.unified.TvUnifiedPlayer
+import it.fast4x.riplay.utils.isTvMode
 
 
 @UnstableApi
@@ -1444,6 +1446,8 @@ class MainActivity :
                                         ThumbnailRoundness.Light
                                     )
 
+                                    val useTvInterface = isTvMode()
+
                                     //val isAndroidAutoConnected by GlobalSharedData.androidAutoConnected
 
                                     //if (!isAndroidAutoConnected)
@@ -1457,21 +1461,38 @@ class MainActivity :
                                             contentAlwaysAvailable = true
                                         ) {
                                             navController?.let {
-                                                UnifiedPlayer(
-                                                    navController = it,
-                                                    onlineCore = {
-                                                        binder?.player?.currentMediaItem?.let {
-                                                            UnifiedPlayerView(
-                                                                onlinePlayerView = onlinePlayerView,
-                                                                mediaItem = it,
-                                                            )
-                                                        }
-                                                    },
-                                                    playerSheetState = localPlayerSheetState,
-                                                    onDismiss = {
-                                                        localPlayerSheetState.collapseSoft()
-                                                    },
-                                                )
+                                                if (useTvInterface) {
+                                                    TvUnifiedPlayer(
+                                                        navController = it,
+                                                        onlineCore = {
+                                                            binder?.player?.currentMediaItem?.let {
+                                                                UnifiedPlayerView(
+                                                                    onlinePlayerView = onlinePlayerView,
+                                                                    mediaItem = it,
+                                                                )
+                                                            }
+                                                        },
+                                                        onDismiss = {
+                                                            localPlayerSheetState.collapseSoft()
+                                                        },
+                                                    )
+                                                } else {
+                                                    UnifiedPlayer(
+                                                        navController = it,
+                                                        onlineCore = {
+                                                            binder?.player?.currentMediaItem?.let {
+                                                                UnifiedPlayerView(
+                                                                    onlinePlayerView = onlinePlayerView,
+                                                                    mediaItem = it,
+                                                                )
+                                                            }
+                                                        },
+                                                        playerSheetState = localPlayerSheetState,
+                                                        onDismiss = {
+                                                            localPlayerSheetState.collapseSoft()
+                                                        },
+                                                    )
+                                                }
                                             }
 
                                         }
