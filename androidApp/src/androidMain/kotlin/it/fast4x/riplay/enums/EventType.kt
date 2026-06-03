@@ -12,8 +12,8 @@ enum class EventType {
     val textName: String
         @Composable
         get() = when( this ) {
-            NewArtistsRelease -> "New Release"
-            CheckUpdate -> stringResource(R.string.check_update)
-            AutoBackup -> "Auto Backup"
+            NewArtistsRelease -> stringResource(R.string.event_new_release)            
+            CheckUpdate -> stringResource(R.string.check_update)            
+            AutoBackup -> stringResource(R.string.event_auto_backup)
         }
 }

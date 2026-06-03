@@ -1214,6 +1214,8 @@ Volume BAS : titre précédent</string>
     <string name="aa_show_favorites_playlists">Afficher les playlists favorites</string>
     <string name="aa_info_show_favorites_playlists_in_playlists_screen">Afficher les playlists favorites dans l\'écran des playlists</string>
     <string name="events">Événements</string>
+    <string name="event_new_release">New Release</string>
+    <string name="event_auto_backup">Auto Backup</string>
     <string name="event_notification_for_new_release">Notification de nouveautés</string>
     <string name="event_from_your_favorites_artists">de vos artistes préférés</string>
     <string name="event_scheduled">Programmée</string>

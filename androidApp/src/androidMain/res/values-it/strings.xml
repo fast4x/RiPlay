@@ -1211,6 +1211,8 @@
     <string name="aa_show_favorites_playlists">Mostra Playlist Preferite</string>
     <string name="aa_info_show_favorites_playlists_in_playlists_screen">Mostra Playlist Preferite nella schermata playlist</string>
     <string name="events">Eventi</string>
+    <string name="event_new_release">New Release</string>
+    <string name="event_auto_backup">Auto Backup</string>
     <string name="event_notification_for_new_release">Notifica per una nuova release</string>
     <string name="event_from_your_favorites_artists">Dai tuoi artisti preferiti</string>
     <string name="event_scheduled">Schedulato</string>
