@@ -1,8 +1,12 @@
 package it.fast4x.riplay.ui.components.tab
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.GlobalSheetState
@@ -12,6 +16,8 @@ import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
 import it.fast4x.riplay.enums.HomeItemSize
 import it.fast4x.riplay.extensions.preferences.Preference
+import it.fast4x.riplay.ui.styling.semiBold
+import it.fast4x.riplay.utils.typography
 
 class ItemSize private constructor(
     val globalSheetState: GlobalSheetState,
@@ -55,6 +61,12 @@ class ItemSize private constructor(
     override fun onShortClick() {
         globalSheetState.display {
             Menu {
+                BasicText(
+                    text = stringResource(messageId),
+                    style = typography().s.semiBold,
+                    modifier = Modifier
+                        .padding(vertical = 8.dp, horizontal = 24.dp)
+                )
                 HomeItemSize.entries.forEach { Entry(it) }
             }
         }

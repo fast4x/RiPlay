@@ -381,7 +381,8 @@ enum class PreferenceKey(val key: String) {
     MUSIC_VAULT_PATH("musicVaultPath"),
     MUSIC_VAULT_ENABLED("musicVaultEnabled"),
     MUSIC_VAULT_DISCLAIMER_ACCEPTED("musicVaultDisclaimerAccepted"),
-    OFFLINE_MODE_ENABLED("offlineModeEnabled");
+    OFFLINE_MODE_ENABLED("offlineModeEnabled"),
+    IMPORT_PLAYLIST_TYPE("importPlaylistType");
 
     companion object {
         val allKeys: Set<String>
