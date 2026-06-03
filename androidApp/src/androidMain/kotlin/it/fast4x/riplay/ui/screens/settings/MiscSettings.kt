@@ -28,6 +28,7 @@ import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
+import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.musicvault.MusicVaultDisclaimerDialog
 import it.fast4x.riplay.musicvault.MusicVaultFolderSetting
 import it.fast4x.riplay.musicvault.checkAndStartMusicVault
@@ -208,6 +209,17 @@ fun MiscSettings() {
                         MusicVaultFolderSetting()
                     }
                 }
+            }
+
+            settingsItem(
+                isHeader = true
+            ) {
+                SettingsGroupSpacer()
+                SettingsEntryGroupText(title = stringResource(R.string.settings_title_on_device_music_folder))
+            }
+
+            settingsItem {
+                FolderSetting(PreferenceKey.DEFAULT_FOLDER, "")
             }
 
 
