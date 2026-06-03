@@ -1350,4 +1350,5 @@
     <string name="settings_music_vault_restore_default_folder">Restore default folder</string>
     <string name="offline">Offline</string>
     <string name="exit_from_riplay">Exit from RiPlay</string>
+    <string name="settings_title_on_device_music_folder">On device music folder</string>
 </resources>
