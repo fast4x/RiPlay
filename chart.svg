@@ -1,0 +1,22 @@
+<svg width="600" height="150" viewBox="0 0 600 150" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadow2" x="-2%" y="-2%" width="104%" height="108%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.1" />
+    </filter>
+    <linearGradient id="fillGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0366d6" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#0366d6" stop-opacity="0.02"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="150" rx="12" fill="#ffffff" filter="url(#shadow2)" stroke="#e1e4e8" stroke-width="1"/>
+  <text x="20" y="24" fill="#2b3137" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" font-weight="600">📈 Download Growth (Actual: 66.9k)</text>
+  
+  <!-- Area sotto la linea -->
+  <polygon fill="url(#fillGrad)" points="30.0,120.0,120 30.0,120.0 30.0,120.0,120" />
+  
+  <!-- Linea principale -->
+  <polyline fill="none" stroke="#0366d6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="30.0,120.0" />
+  
+  <!-- Punto finale luminoso -->
+  <circle cx="30.0" cy="120.0" r="4" fill="#ffffff" stroke="#0366d6" stroke-width="2.5" />
+</svg>
