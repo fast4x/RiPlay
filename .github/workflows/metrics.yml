@@ -1,9 +1,9 @@
-name: Metrics Card
+name: Build Metrics Card
 
 on:
   schedule:
     - cron: '0 0 * * *' # Si aggiorna automaticamente ogni giorno
-  workflow_dispatch: # Ti permette di aggiornarlo a mano quando pubblichi una release
+  workflow_dispatch: # Ti permette di aggiornarlo a mano
 
 permissions:
   contents: write
@@ -16,15 +16,11 @@ jobs:
         with:
           token: ${{ secrets.METRICS_TOKEN }}
           filename: metrics.svg
-          
-          # Nasconde tutto il resto e mostra solo i plugin
+          # Diciamo di non mostrare il profilo base, solo i plugin
           base: ""
-          
-          # Mostra i download
-          plugin_downloads: yes
-          plugin_downloads_sections: total, latest
-          plugin_downloads_uploads: yes
-          
-          # Opzionale: aggiunge un'animazione carina quando la card si aggiorna
-          plugin_achievements: no
-          plugin_notable: no
+        env:
+          # Qui passiamo i comandi dei download come variabili d'ambiente
+          # In questo modo GitHub Actions non li blocca!
+          METRICS_PLUGIN_DOWNLOADS: "yes"
+          METRICS_PLUGIN_DOWNLOADS_SECTIONS: "total,latest"
+          METRICS_PLUGIN_DOWNLOADS_UPLOADS: "yes"
