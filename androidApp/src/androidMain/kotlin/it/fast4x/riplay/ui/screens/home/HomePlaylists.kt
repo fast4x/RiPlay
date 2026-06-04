@@ -255,9 +255,9 @@ fun HomePlaylists(
     val formattedDate = currentDateTime.format(formatter)
 
     val importPlaylistSpotifyDialog = ImportSongsFromSpotifyCSV.init(
-        beforeTransaction = { _, row ->
+        beforeTransaction = { _, row, pname ->
             time = formattedDate
-            val playlistName = row["PlaylistName"] ?: "New Playlist $time"
+            val playlistName = row["PlaylistName"] ?: "${pname?.substringBeforeLast('.')} $time"
             plistId = playlistName.let {
                 Database.playlistExistByName(it)
             }
@@ -362,7 +362,7 @@ fun HomePlaylists(
                 importType = ImportPlaylistType.entries[it.ordinal]
                 when(importType) {
                     ImportPlaylistType.Riplay -> importPlaylistDialog.onShortClick()
-                    else -> SmartMessage("Wait, not available", context = context)   // importPlaylistSpotifyDialog.onShortClick()
+                    else -> importPlaylistSpotifyDialog.onShortClick() //SmartMessage("Wait, not available", context = context)
                 }
             },
             values = ImportPlaylistType.entries.map { it.menuItem },

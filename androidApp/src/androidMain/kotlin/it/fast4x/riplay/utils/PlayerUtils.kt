@@ -50,6 +50,15 @@ import java.util.ArrayDeque
 
 const val LOCAL_KEY_PREFIX = "local:"
 const val MUSIC_VAULT_KEY_PREFIX = "musicvault:"
+const val SPOTIFY_TRACK_KEY_PREFIX = "spotify:track:"
+
+val String.isSpotifyTrack: Boolean
+        get() = this.startsWith(SPOTIFY_TRACK_KEY_PREFIX)
+
+
+val Song.isSpotifyTrack: Boolean
+    get() = this.id.startsWith(SPOTIFY_TRACK_KEY_PREFIX)
+
 
 val DataSpec.isLocal
     @OptIn(UnstableApi::class)

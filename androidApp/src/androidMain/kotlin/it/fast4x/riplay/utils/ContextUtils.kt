@@ -18,6 +18,10 @@ import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.media3.exoplayer.offline.DownloadService
 import androidx.media3.exoplayer.offline.DownloadService.sendAddDownload
 import androidx.media3.exoplayer.offline.DownloadService.sendRemoveDownload
+import android.net.Uri
+import android.provider.OpenableColumns
+import timber.log.Timber
+import java.io.File
 
 inline fun <reified T> Context.intent(): Intent =
     Intent(this, T::class.java)
@@ -126,4 +130,38 @@ fun Context.findActivity(): Activity {
         context = context.baseContext
     }
     error("Should be called in the context of an Activity")
+}
+
+fun Context.getFileNameFromUri(uri: Uri): String? {
+    // Caso 1: Uri di tipo "file://" (es. /storage/emulated/0/Music/canzone.mp3)
+    if (uri.scheme == "file") {
+        return uri.lastPathSegment ?: File(uri.path ?: return null).name
+    }
+
+    // Caso 2: Uri di tipo "content://" (es. content://media/external/audio/media/123 o SAF)
+    if (uri.scheme == "content") {
+        return try {
+            contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    // La colonna DISPLAY_NAME contiene il nome del file con estensione
+                    val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    if (nameIndex >= 0) {
+                        return cursor.getString(nameIndex)
+                    }
+                }
+                null
+            }
+        } catch (e: Exception) {
+            // Se la query fallisce (es. permessi mancanti o Uri non più valida)
+            //Timber.e("${ e.printStackTrace() }")
+            null
+        }
+
+        // Fallback se la query non funziona: tentiamo di prendere l'ultimo segmento del path
+        // Es. content://com.android.externalstorage.documents/document/primary%3AMusic%2Fsong.mp3
+        return uri.lastPathSegment?.substringAfterLast("/")
+    }
+
+    // Caso 3: Altri schemi (es. http/https)
+    return uri.lastPathSegment ?: uri.path?.substringAfterLast("/")
 }

@@ -83,6 +83,7 @@ import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.isExclusivelyLocal
 import it.fast4x.riplay.utils.isRelated
+import it.fast4x.riplay.utils.isSpotifyTrack
 import kotlinx.serialization.ExperimentalSerializationApi
 
 
@@ -439,7 +440,7 @@ fun SongItem(
 
                 Spacer(modifier = Modifier.padding(horizontal = 4.dp))
 
-                // MusicVaultButton isolato: non partecipa al layout della Row
+                // Icona isolata: non partecipa al layout della Row
                 Box(
                     modifier = Modifier
                         .size(20.dp)
@@ -447,12 +448,17 @@ fun SongItem(
                 ) {
                     val song = mediaItem.asSong
                     when {
-                        song.isExclusivelyLocal -> IconButton(
+                        song.isExclusivelyLocal && !song.isSpotifyTrack -> IconButton(
                             icon = R.drawable.folder,
                             color = colorPalette.accent,
                             enabled = true,
                             onClick = noOp,
-                            //modifier = Modifier.size(18.dp)
+                        )
+                        song.isSpotifyTrack -> IconButton(
+                            icon = R.drawable.alert,
+                            color = colorPalette.accent,
+                            enabled = true,
+                            onClick = noOp,
                         )
                         else -> MusicVaultButton(song)
                     }

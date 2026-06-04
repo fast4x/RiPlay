@@ -59,6 +59,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -1779,6 +1780,8 @@ fun SongMatchingDialog(
     playlist : Playlist?,
     onDismiss: (() -> Unit)
 ) {
+    val coroutineScope = rememberCoroutineScope()
+
     Dialog(
         onDismissRequest = { onDismiss() },
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -1813,7 +1816,7 @@ fun SongMatchingDialog(
             val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
 
             LaunchedEffect(Unit,startSearch) {
-                runBlocking(Dispatchers.IO) {
+                withContext(Dispatchers.IO) {
                     val searchQuery = Environment.searchPage(
                         body = SearchBody(
                             query = searchText,
@@ -1887,7 +1890,7 @@ fun SongMatchingDialog(
                                         .clickable(onClick = {
                                             Database.asyncTransaction {
                                                 if (isYtSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable) {
-                                                    CoroutineScope(Dispatchers.IO).launch {
+                                                    coroutineScope.launch {
                                                         if (removeYTSongFromPlaylist(
                                                                 songToRematch.id,
                                                                 playlist.browseId ?: "",
@@ -1929,7 +1932,7 @@ fun SongMatchingDialog(
                                                         position = null
                                                     )
                                                 )
-                                                CoroutineScope(Dispatchers.IO).launch {
+                                                coroutineScope.launch {
                                                     val album = Database.album(
                                                         song.album?.endpoint?.browseId ?: ""
                                                     ).firstOrNull()
@@ -1984,158 +1987,6 @@ fun SongMatchingDialog(
         }
     }
 }
-
-  /*if (isShowingLyrics && !showlyricsthumbnail)
-      DefaultDialog(
-          onDismiss = {
-              scaleValue(blurStrength2)
-              darkenFactorValue(blurDarkenFactor)
-              onDismiss()
-          }
-      ) {
-
-          Row(
-              horizontalArrangement = Arrangement.SpaceBetween,
-              verticalAlignment = Alignment.CenterVertically,
-              modifier = Modifier
-                  .fillMaxWidth()
-          ) {
-              IconButton(
-                  onClick = {
-                      blurStrength2 = defaultStrength2
-                  },
-                  icon = R.drawable.droplet,
-                  color = colorPalette.favoritesIcon,
-                  modifier = Modifier
-                      .size(24.dp)
-              )
-
-              CustomSlider(
-                  modifier = Modifier
-                      .fillMaxWidth()
-                      .padding(horizontal = 5.dp),
-                  value = blurStrength2,
-                  onValueChange = {
-                      blurStrength2 = it
-                  },
-                  valueRange = 0f..50f,
-                  gap = 1,
-                  showIndicator = true,
-                  thumb = { thumbValue ->
-                      CustomSliderDefaults.Thumb(
-                          thumbValue = "%.0f".format(blurStrength2),
-                          color = Color.Transparent,
-                          size = 40.dp,
-                          modifier = Modifier.background(
-                              brush = Brush.linearGradient(
-                                  listOf(
-                                      colorPalette.background1,
-                                      colorPalette.favoritesIcon
-                                  )
-                              ),
-                              shape = CircleShape
-                          )
-                      )
-                  },
-                  track = { sliderPositions ->
-                      Box(
-                          modifier = Modifier
-                              .track()
-                              .border(
-                                  width = 1.dp,
-                                  color = Color.LightGray.copy(alpha = 0.4f),
-                                  shape = CircleShape
-                              )
-                              .background(Color.White)
-                              .padding(1.dp),
-                          contentAlignment = Alignment.CenterStart
-                      ) {
-                          Box(
-                              modifier = Modifier
-                                  .progress(sliderPositions = sliderPositions)
-                                  .background(
-                                      brush = Brush.linearGradient(
-                                          listOf(
-                                              colorPalette.favoritesIcon,
-                                              Color.Red
-                                          )
-                                      )
-                                  )
-                          )
-                      }
-                  }
-              )
-          }
-      }*/
-
-
-
-
-        /*
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 20.dp, start = 4.dp)
-        ) {
-            IconButton(
-                onClick = {
-                    blurDarkenFactor = defaultDarkenFactor
-                },
-                icon = R.drawable.moon,
-                color = colorPalette.favoritesIcon,
-                modifier = Modifier
-                    .size(20.dp)
-            )
-
-            CustomSlider(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 5.dp),
-                value = blurDarkenFactor,
-                onValueChange = {
-                    blurDarkenFactor = it
-                },
-                valueRange = 0f..1f,
-                gap = 1,
-                showIndicator = true,
-                thumb = { thumbValue ->
-                    CustomSliderDefaults.Thumb(
-                        thumbValue = "%.2f".format(blurDarkenFactor),
-                        color = Color.Transparent,
-                        size = 40.dp,
-                        modifier = Modifier.background(
-                            brush = Brush.linearGradient(listOf(colorPalette.background1, colorPalette.favoritesIcon)),
-                            shape = CircleShape
-                        )
-                    )
-                },
-                track = { sliderPositions ->
-                    Box(
-                        modifier = Modifier
-                            .track()
-                            .border(
-                                width = 1.dp,
-                                color = Color.LightGray.copy(alpha = 0.4f),
-                                shape = CircleShape
-                            )
-                            .background(Color.White)
-                            .padding(1.dp),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .progress(sliderPositions = sliderPositions)
-                                .background(
-                                    brush = Brush.linearGradient(listOf(colorPalette.favoritesIcon, Color.Red))
-                                )
-                        )
-                    }
-                }
-            )
-        }
-         */
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable

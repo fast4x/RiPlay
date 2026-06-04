@@ -20,6 +20,7 @@ import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
 import it.fast4x.riplay.utils.formatAsDuration
+import it.fast4x.riplay.utils.getFileNameFromUri
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,19 +34,22 @@ class ImportSongsFromSpotifyCSV private constructor(
     companion object {
         private fun openFile(
             uri: Uri,
-            beforeTransaction: (Int, Map<String, String>) -> Unit = { _,_ -> },
+            beforeTransaction: (Int, Map<String, String>, String?) -> Unit = { _,_,_ -> },
             afterTransaction: ( Int, Song, Album, List<Artist> ) -> Unit = { _,_,_,_ -> }
         ) {
-            appContext().applicationContext
+            val context = appContext()
+            val fileName = context.getFileNameFromUri(uri)
+            context.applicationContext
                 .contentResolver
                 .openInputStream(uri)
                 ?.use { inputStream ->
+
                     csvReader().open(inputStream) {
                         readAllWithHeaderAsSequence().forEachIndexed { index, row: Map<String, String> ->
                             println("mediaItem index song $index")
 
                             Database.asyncTransaction {
-                                beforeTransaction( index, row )
+                                beforeTransaction( index, row, fileName )
 
                                 // Rilevamento del formato: controlliamo se esiste "Track URI" (Spotify)
                                 val isSpotifyFormat = row.containsKey("Track URI")
@@ -167,7 +171,7 @@ class ImportSongsFromSpotifyCSV private constructor(
         @JvmStatic
         @Composable
         fun init(
-            beforeTransaction: (Int, Map<String, String>) -> Unit = { _,_ -> },
+            beforeTransaction: (Int, Map<String, String>, String?) -> Unit = { _,_,_ ->},
             afterTransaction: ( Int, Song, Album, List<Artist> ) -> Unit = { _,_,_,_ -> }
         ) = ImportSongsFromSpotifyCSV(
             rememberLauncherForActivityResult(
