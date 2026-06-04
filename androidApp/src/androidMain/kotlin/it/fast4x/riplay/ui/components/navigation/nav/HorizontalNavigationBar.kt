@@ -59,6 +59,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.R
+import timber.log.Timber
 
 // Shown when "Navigation bar position" is set to "top" or "bottom"
 class HorizontalNavigationBar(
@@ -100,6 +101,8 @@ class HorizontalNavigationBar(
     override fun add(buttons: @Composable (@Composable (Int, String, Int, Boolean) -> Unit) -> Unit) {
         val transition = updateTransition(targetState = tabIndex, label = null)
 
+        buttonList.clear()
+
         buttons { index, text, iconId, visible ->
             if (!visible) return@buttons
 
@@ -116,6 +119,8 @@ class HorizontalNavigationBar(
             val contentModifier = Modifier
                 .clip(getRoundnessShape())
                 .clickable(onClick = { onTabChanged(index) })
+
+
 
             addButton(button, contentModifier)
         }

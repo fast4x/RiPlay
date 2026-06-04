@@ -75,6 +75,8 @@ class VerticalNavigationBar(
         val transition = updateTransition( targetState = tabIndex, label = null )
         val isLandscape: Boolean = isLandscape
 
+        buttonList.clear()
+
         buttons { index, text, iconId, visible ->
             if (!visible) return@buttons
 
