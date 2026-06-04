@@ -5,6 +5,7 @@
   <h2>RiPlay</h2>
   
 <img src="./download-card.svg" />
+<img src="./chart.svg" />
 
 </div>
 
