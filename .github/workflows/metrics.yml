@@ -6,7 +6,7 @@ on:
   workflow_dispatch: # Ti permette di aggiornarlo a mano quando pubblichi una release
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   github-metrics:
