@@ -52,7 +52,6 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_NAME
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.CONTROLS_EXPANDED
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.COVER_THUMBNAIL_ANIMATION
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EFFECT_ROTATION
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_WALLPAPER
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXPANDED_PLAYER
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.FADING_EDGE
@@ -209,7 +208,6 @@ class AutoBackupWorker(context: Context, params: WorkerParameters) : CoroutineWo
             val playerPlayButtonType = context.preferences.getEnum(PLAYER_PLAY_BUTTON_TYPE.key, PlayerPlayButtonType.Disabled)
             val bottomgradient = context.preferences.getBoolean(BOTTOM_GRADIENT.key, false)
             val textoutline = context.preferences.getBoolean(TEXT_OUTLINE.key, false)
-            val effectRotationEnabled = context.preferences.getBoolean(EFFECT_ROTATION.key, true)
             val thumbnailTapEnabled = context.preferences.getBoolean(THUMBNAIL_TAP_ENABLED.key, true)
             val showButtonPlayerAddToPlaylist = context.preferences.getBoolean(SHOW_BUTTON_PLAYER_ADD_TO_PLAYLIST.key, true)
             val showButtonPlayerArrow = context.preferences.getBoolean(SHOW_BUTTON_PLAYER_ARROW.key, true)
@@ -295,7 +293,6 @@ class AutoBackupWorker(context: Context, params: WorkerParameters) : CoroutineWo
                         writeRow("Appearance", appearanceFilename, "playerPlayButtonType", playerPlayButtonType.ordinal)
                         writeRow("Appearance", appearanceFilename, "bottomgradient", bottomgradient)
                         writeRow("Appearance", appearanceFilename, "textoutline", textoutline)
-                        writeRow("Appearance", appearanceFilename, "effectRotationEnabled", effectRotationEnabled)
                         writeRow("Appearance", appearanceFilename, "thumbnailTapEnabled", thumbnailTapEnabled)
                         writeRow("Appearance", appearanceFilename, "showButtonPlayerAddToPlaylist", showButtonPlayerAddToPlaylist)
                         writeRow("Appearance", appearanceFilename, "showButtonPlayerArrow", showButtonPlayerArrow)

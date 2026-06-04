@@ -64,7 +64,6 @@ import it.fast4x.riplay.enums.PlayerPlayButtonType
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EFFECT_ROTATION
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.JUMP_PREVIOUS
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_BACKGROUND_COLORS
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_CONTROLS_TYPE
@@ -114,12 +113,7 @@ fun UnifiedControlsModern(
     onPrevious: () -> Unit,
     playerState: PlayerState,
 ) {
-    var effectRotationEnabled by rememberPreference(EFFECT_ROTATION.key, true)
-    var isRotated by rememberSaveable { mutableStateOf(false) }
-    val rotationAngle by animateFloatAsState(
-        targetValue = if (isRotated) 360F else 0f,
-        animationSpec = tween(durationMillis = 200), label = ""
-    )
+
     var jumpPrevious by rememberPreference(JUMP_PREVIOUS.key, "3")
 
     if (playerPlayButtonType != PlayerPlayButtonType.Disabled) {
@@ -135,7 +129,6 @@ fun UnifiedControlsModern(
                     interactionSource = remember { MutableInteractionSource() },
                     onClick = {
                         onPrevious()
-                        if (effectRotationEnabled) isRotated = !isRotated
                     },
                     onLongClick = {}
                 )
@@ -148,7 +141,6 @@ fun UnifiedControlsModern(
                 modifier = Modifier
                     .padding(10.dp)
                     .size(26.dp)
-                    .rotate(rotationAngle)
             )
         }
 
@@ -166,7 +158,6 @@ fun UnifiedControlsModern(
                             } else {
                                 onPlay()
                             }
-                            if (effectRotationEnabled) isRotated = !isRotated
                         },
                         onLongClick = onShowSpeedPlayerDialog
                     )
@@ -180,8 +171,7 @@ fun UnifiedControlsModern(
                         modifier = Modifier
                             .offset(x = (0).dp, y = (0).dp)
                             .blur(7.dp)
-                            .size(115.dp)
-                            .rotate(rotationAngle),
+                            .size(115.dp),
                         tint = Color.Black.copy(0.75f)
                     )
                 }
@@ -189,7 +179,6 @@ fun UnifiedControlsModern(
                     painter = painterResource(R.drawable.a13shape),
                     colorFilter = ColorFilter.tint(colorPalette().background2.copy(0.95f)),
                     modifier = Modifier
-                        .rotate(rotationAngle)
                         .dropShadow(
                             CircleShape,
                             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) Color.Black.copy(0.75f) else Color.Transparent,
@@ -208,7 +197,6 @@ fun UnifiedControlsModern(
                         contentDescription = null,
                         colorFilter = ColorFilter.tint(colorPalette().text),
                         modifier = Modifier
-                            .rotate(rotationAngle)
                             .align(Alignment.Center)
                             .size(30.dp)
                     )
@@ -231,7 +219,6 @@ fun UnifiedControlsModern(
                             } else {
                                 onPlay()
                             }
-                            if (effectRotationEnabled) isRotated = !isRotated
                         },
                         onLongClick = onShowSpeedPlayerDialog
                     )
@@ -264,7 +251,6 @@ fun UnifiedControlsModern(
                         contentDescription = null,
                         colorFilter = ColorFilter.tint(colorPalette().text),
                         modifier = Modifier
-                            .rotate(rotationAngle)
                             .align(Alignment.Center)
                             .size(30.dp)
                             .bounceClick()
@@ -308,7 +294,6 @@ fun UnifiedControlsModern(
                     interactionSource = remember { MutableInteractionSource() },
                     onClick = {
                         onNext()
-                        if (effectRotationEnabled) isRotated = !isRotated
                     },
                     onLongClick = {}
                 )
@@ -322,7 +307,6 @@ fun UnifiedControlsModern(
                 modifier = Modifier
                     .padding(10.dp)
                     .size(26.dp)
-                    .rotate(rotationAngle)
             )
         }
     }
@@ -345,8 +329,7 @@ fun UnifiedControlsModern(
                     modifier = Modifier
                         .offset(x = (8).dp, y = (8).dp)
                         .blur(4.dp)
-                        .size(38.dp)
-                        .rotate(rotationAngle),
+                        .size(38.dp),
                     tint = Color.Black
                 )
                 Image(
@@ -356,13 +339,11 @@ fun UnifiedControlsModern(
                     modifier = Modifier
                         .padding(10.dp)
                         .size(34.dp)
-                        .rotate(rotationAngle)
                         .combinedClickable(
                             interactionSource = null,
                             indication = null,
                             onClick = {
                                 onPrevious()
-                                if (effectRotationEnabled) isRotated = !isRotated
                             },
                             onLongClick = {}
                         )
@@ -380,8 +361,7 @@ fun UnifiedControlsModern(
                         modifier = Modifier
                             .offset(x = (0).dp, y = (0).dp)
                             .blur(7.dp)
-                            .size(54.dp)
-                            .rotate(rotationAngle),
+                            .size(54.dp),
                         tint = Color.Black
                     )
                     Image(
@@ -389,7 +369,6 @@ fun UnifiedControlsModern(
                         contentDescription = null,
                         colorFilter = ColorFilter.tint(colorPalette().accent),
                         modifier = Modifier
-                            .rotate(rotationAngle)
                             .size(44.dp)
                             .align(Alignment.Center)
                             .combinedClickable(
@@ -401,7 +380,6 @@ fun UnifiedControlsModern(
                                     } else {
                                         onPlay()
                                     }
-                                    if (effectRotationEnabled) isRotated = !isRotated
                                 },
                                 onLongClick = onShowSpeedPlayerDialog
                             )
@@ -423,8 +401,7 @@ fun UnifiedControlsModern(
                     modifier = Modifier
                         .offset(x = (8).dp, y = (8).dp)
                         .blur(4.dp)
-                        .size(38.dp)
-                        .rotate(rotationAngle),
+                        .size(38.dp),
                     tint = Color.Black
                 )
                 Image(
@@ -434,13 +411,11 @@ fun UnifiedControlsModern(
                     modifier = Modifier
                         .padding(10.dp)
                         .size(34.dp)
-                        .rotate(rotationAngle)
                         .combinedClickable(
                             interactionSource = null,
                             indication = null,
                             onClick = {
                                 onNext()
-                                if (effectRotationEnabled) isRotated = !isRotated
                             },
                             onLongClick = {}
                         )
@@ -472,8 +447,7 @@ fun UnifiedInfoAlbumAndArtistModern(
     val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
     val playerControlsType by rememberPreference(PLAYER_CONTROLS_TYPE.key, PlayerControlsType.Essential)
     var showthumbnail by rememberPreference(SHOW_THUMBNAIL.key, true)
-    var effectRotationEnabled by rememberPreference(EFFECT_ROTATION.key, true)
-    var isRotated by rememberSaveable { mutableStateOf(false) }
+
     var showSelectDialog by remember { mutableStateOf(false) }
     val playerBackgroundColors by rememberPreference(PLAYER_BACKGROUND_COLORS.key,PlayerBackgroundColors.BlurredCoverColor)
     val playerInfoShowIcon by rememberPreference(PLAYER_INFO_SHOW_ICONS.key, true)
@@ -611,7 +585,6 @@ fun UnifiedInfoAlbumAndArtistModern(
 
                                 }
                             }
-                            if (effectRotationEnabled) isRotated = !isRotated
                         },
                         onLongClick = {
                             if (!isNetworkConnected && isYtSyncEnabled()) {
@@ -627,7 +600,6 @@ fun UnifiedInfoAlbumAndArtistModern(
                                     removeFromOnlineLikedSong(mediaItem)
                                 }
                             }
-                            if (effectRotationEnabled) isRotated = !isRotated
                         },
                         modifier = Modifier
                             .padding(start = 5.dp)

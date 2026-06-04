@@ -1,6 +1,8 @@
 package it.fast4x.riplay.ui.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -15,6 +17,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -28,6 +32,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.getRoundnessShape
+import kotlinx.coroutines.launch
 
 @Composable
 fun ActionPillButton(
@@ -41,11 +46,8 @@ fun ActionPillButton(
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null,
 ) {
-    val scale by animateFloatAsState(
-        targetValue = if (enabled) 1f else 0.85f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "pillScale"
-    )
+    val coroutineScope = rememberCoroutineScope()
+    val scale = remember { Animatable(1f) }
     val bgColor by animateColorAsState(
         targetValue = if (active && activeColor != Color.Unspecified)
             activeColor.copy(alpha = 0.18f)
@@ -58,13 +60,44 @@ fun ActionPillButton(
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .graphicsLayer { scaleX = scale; scaleY = scale }
+            .graphicsLayer {
+                scaleX = scale.value
+                scaleY = scale.value
+            }
             .clip(getRoundnessShape())
             .background(bgColor)
             .combinedClickable(
                 enabled = enabled,
-                onClick = onClick,
-                onLongClick = onLongClick
+                onClick = {
+                    if (enabled) {
+                        coroutineScope.launch {
+                            // SCALE IN (Rimpicciolisce velocemente)
+                            scale.animateTo(
+                                targetValue = 0.85f,
+                                animationSpec = tween(durationMillis = 80, easing = FastOutLinearInEasing)
+                            )
+                            // SCALE OUT (Rimbalza indietro con la molla)
+                            scale.animateTo(
+                                targetValue = 1f,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioHighBouncy,
+                                    stiffness = Spring.StiffnessMedium
+                                )
+                            )
+                        }
+                    }
+                    onClick()
+                },
+                onLongClick = {
+                    if (enabled) {
+                        coroutineScope.launch {
+                            // Stesso rimbalzo anche per il long click
+                            scale.animateTo(0.85f, tween(80, easing = FastOutLinearInEasing))
+                            scale.animateTo(1f, spring(dampingRatio = Spring.DampingRatioHighBouncy))
+                        }
+                    }
+                    onLongClick?.invoke()
+                }
             )
             .padding(8.dp)
 
@@ -92,11 +125,8 @@ fun ActionPillButton(
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null,
 ) {
-    val scale by animateFloatAsState(
-        targetValue = if (enabled) 1f else 0.85f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "pillScale"
-    )
+    val coroutineScope = rememberCoroutineScope()
+    val scale = remember { Animatable(1f) }
     val bgColor by animateColorAsState(
         targetValue = if (active && activeColor != Color.Unspecified)
             activeColor.copy(alpha = 0.18f)
@@ -109,13 +139,44 @@ fun ActionPillButton(
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .graphicsLayer { scaleX = scale; scaleY = scale }
+            .graphicsLayer {
+                scaleX = scale.value
+                scaleY = scale.value
+            }
             .clip(getRoundnessShape())
             .background(bgColor)
             .combinedClickable(
                 enabled = enabled,
-                onClick = onClick,
-                onLongClick = onLongClick
+                onClick = {
+                    if (enabled) {
+                        coroutineScope.launch {
+                            // SCALE IN (Rimpicciolisce velocemente)
+                            scale.animateTo(
+                                targetValue = 0.85f,
+                                animationSpec = tween(durationMillis = 80, easing = FastOutLinearInEasing)
+                            )
+                            // SCALE OUT (Rimbalza indietro con la molla)
+                            scale.animateTo(
+                                targetValue = 1f,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioHighBouncy,
+                                    stiffness = Spring.StiffnessMedium
+                                )
+                            )
+                        }
+                    }
+                    onClick()
+                },
+                onLongClick = {
+                    if (enabled) {
+                        coroutineScope.launch {
+                            // Stesso rimbalzo anche per il long click
+                            scale.animateTo(0.85f, tween(80, easing = FastOutLinearInEasing))
+                            scale.animateTo(1f, spring(dampingRatio = Spring.DampingRatioHighBouncy))
+                        }
+                    }
+                    onLongClick?.invoke()
+                }
             )
             .padding(8.dp)
 

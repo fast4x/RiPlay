@@ -214,7 +214,6 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.COVER_THUMBNAIL_ANI
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_PLAYER_HORIZONTAL_SWIPE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISCOVER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EFFECT_ROTATION
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXPANDED_PLAYER
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXPANDED_PLAYER_TOGGLE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXTRA_SPACE
@@ -390,8 +389,6 @@ fun UnifiedPlayer(
     )
 
     val menuState = LocalGlobalSheetState.current
-
-    val effectRotationEnabled by rememberPreference(EFFECT_ROTATION.key, true)
 
     val playerThumbnailSize by rememberPreference(
         PLAYER_THUMBNAIL_SIZE.key,
@@ -1971,7 +1968,6 @@ fun UnifiedPlayer(
                                     color = colorPalette().accent,
                                     onClick = {
                                         queueLoopType = setQueueLoopState(queueLoopType)
-                                        if (effectRotationEnabled) isRotated = !isRotated
                                     },
                                     modifier = Modifier
                                         //.padding(horizontal = 4.dp)
@@ -3915,7 +3911,6 @@ fun UnifiedPlayer(
                                                     addToOnlineLikedSong(mediaItem)
                                                 }
                                             }
-                                            if (effectRotationEnabled) isRotated = !isRotated
                                         },
                                         onLongClick = {
                                             if (!isNetworkConnected && isYtSyncEnabled()) {
@@ -3947,7 +3942,6 @@ fun UnifiedPlayer(
                                                     removeFromOnlineLikedSong(mediaItem)
                                                 }
                                             }
-                                            if (effectRotationEnabled) isRotated = !isRotated
                                         },
                                         modifier = Modifier
                                             .size(24.dp)

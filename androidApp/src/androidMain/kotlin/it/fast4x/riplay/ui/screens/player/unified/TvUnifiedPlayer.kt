@@ -98,7 +98,6 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.BLUR_SCALE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.COVER_THUMBNAIL_ANIMATION
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EFFECT_ROTATION
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.JUMP_PREVIOUS
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_BACKGROUND_COLORS
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUEUE_LOOP_TYPE
@@ -930,8 +929,6 @@ private fun SecondaryActionsRow(
     modifier: Modifier = Modifier,
 ) {
     val color = colorPalette()
-    val effectRotationEnabled by rememberPreference(EFFECT_ROTATION.key, true)
-    var isRotated by rememberSaveable { mutableStateOf(false) }
     val binder = LocalPlayerServiceBinder.current
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -949,7 +946,6 @@ private fun SecondaryActionsRow(
             tint = color.accent,
             onClick = {
                 onQueueLoopTypeChange(setQueueLoopState(queueLoopType))
-                if (effectRotationEnabled) isRotated = !isRotated
             },
         )
 

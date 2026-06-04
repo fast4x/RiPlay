@@ -15,7 +15,7 @@ enum class PreferenceKey(val key: String) {
     LANGUAGE_APP("languageApp"),
     OTHER_LANGUAGE_APP("otherLanguageApp"),
     INDEX_NAVIGATION_TAB("indexNavigationTab"),
-    EFFECT_ROTATION("effectRotation"),
+    //EFFECT_ROTATION("effectRotation"),
     PLAYER_THUMBNAIL_SIZE("playerThumbnailSize"),
     PLAYER_THUMBNAIL_SIZE_L("playerThumbnailSizeL"),
     PLAYER_TIMELINE_SIZE("playerTimelineSize"),

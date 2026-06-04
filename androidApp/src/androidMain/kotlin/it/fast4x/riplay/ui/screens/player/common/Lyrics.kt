@@ -168,7 +168,6 @@ import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.LyricsSizeDialog
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_NAME
 import it.fast4x.riplay.utils.applyIf
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EFFECT_ROTATION
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_SHOWING_SYNCHRONIZED_WORD_BY_WORD_LYRICS
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.JUMP_PREVIOUS
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.LANDSCAPE_CONTROLS
@@ -335,7 +334,6 @@ fun Lyrics(
     var showLyricsSizeDialog by rememberSaveable { mutableStateOf(false) }
 
     val lightTheme = colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
-    val effectRotationEnabled by rememberPreference(EFFECT_ROTATION.key, true)
     var landscapeControls by rememberPreference(LANDSCAPE_CONTROLS.key, true)
     var jumpPrevious by rememberPreference(JUMP_PREVIOUS.key, "3")
     var isRotated by rememberSaveable { mutableStateOf(false) }
@@ -885,7 +883,6 @@ fun Lyrics(
                                             binder?.onlinePlayer?.seekTo(0f)
                                         }
                                     } else binder?.player?.playPrevious()
-                                    if (effectRotationEnabled) isRotated = !isRotated
                                 }
                             )
                             .rotate(rotationAngle)
@@ -932,7 +929,6 @@ fun Lyrics(
                                 interactionSource = remember { MutableInteractionSource() },
                                 onClick = {
                                     binder?.player?.playNext()
-                                    if (effectRotationEnabled) isRotated = !isRotated
                                 }
                             )
                             .rotate(rotationAngle)

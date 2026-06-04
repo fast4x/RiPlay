@@ -76,7 +76,6 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.BACKGROUND_PROGRESS
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_CLOSING_PLAYER_SWIPING_DOWN
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EFFECT_ROTATION
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.MINI_PLAYER_TYPE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
@@ -236,7 +235,6 @@ fun UnifiedMiniPlayer(
     )
 
     val backgroundProgress by rememberPreference(BACKGROUND_PROGRESS.key, BackgroundProgress.MiniPlayer)
-    val effectRotationEnabled by rememberPreference(EFFECT_ROTATION.key, true)
     val shouldBePlayingTransition = updateTransition(shouldBePlaying, label = "shouldBePlaying")
     val playPauseRoundness by shouldBePlayingTransition.animateDp(
         transitionSpec = { tween(durationMillis = 100, easing = LinearEasing) },
@@ -428,7 +426,6 @@ fun UnifiedMiniPlayer(
                         color = colorPalette().iconButtonPlayer,
                         onClick = {
                             binder.player.playPrevious()
-                            if (effectRotationEnabled) isRotated = !isRotated
                         },
                         modifier = Modifier
                             .rotate(rotationAngle)
@@ -472,7 +469,6 @@ fun UnifiedMiniPlayer(
                                             }
                                     }
                                 }
-                                if (effectRotationEnabled) isRotated = !isRotated
                             }
                             .background(colorPalette().background2)
                             .size(42.dp)
@@ -496,7 +492,6 @@ fun UnifiedMiniPlayer(
                         color = colorPalette().iconButtonPlayer,
                         onClick = {
                             binder.player.playNext()
-                            if (effectRotationEnabled) isRotated = !isRotated
                         },
                         modifier = Modifier
                             .rotate(rotationAngle)

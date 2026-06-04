@@ -108,7 +108,6 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_ICON_BUTTON
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_PLAYER_HORIZONTAL_SWIPE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISCOVER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EFFECT_ROTATION
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_CREATE_MONTHLY_PLAYLISTS
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXCLUDE_SONGS_WITH_DURATION_LIMIT
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXO_PLAYER_MIN_TIME_FOR_EVENT
@@ -442,8 +441,6 @@ fun DefaultUiSettings() {
     showRemainingSongTime = true
     var disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
     disableScrollingText = false
-    var effectRotationEnabled by rememberPreference(EFFECT_ROTATION.key, true)
-    effectRotationEnabled = true
     var thumbnailTapEnabled by rememberPreference(THUMBNAIL_TAP_ENABLED.key, true)
     thumbnailTapEnabled = true
     var clickLyricsText by rememberPreference(CLICK_ON_LYRICS_TEXT.key, true)
@@ -642,7 +639,6 @@ fun UiSettings(
     var showNextSongsInPlayer by rememberPreference(SHOW_NEXT_SONGS_IN_PLAYER.key, false)
     var showRemainingSongTime by rememberPreference(SHOW_REMAINING_SONG_TIME.key, true)
     var disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
-    var effectRotationEnabled by rememberPreference(EFFECT_ROTATION.key, true)
     var thumbnailTapEnabled by rememberPreference(THUMBNAIL_TAP_ENABLED.key, true)
     var clickLyricsText by rememberPreference(CLICK_ON_LYRICS_TEXT.key, true)
     var backgroundProgress by rememberPreference(
@@ -857,7 +853,6 @@ fun UiSettings(
                                 showRemainingSongTime = false
                                 showNextSongsInPlayer = false
                                 disableScrollingText = false
-                                effectRotationEnabled = true
                                 clickLyricsText = true
                                 playerEnableLyricsPopupMessage = true
                                 backgroundProgress = BackgroundProgress.MiniPlayer

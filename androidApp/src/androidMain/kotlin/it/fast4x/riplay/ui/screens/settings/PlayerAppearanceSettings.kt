@@ -72,7 +72,6 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.CONTROLS_EXPANDED
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.COVER_THUMBNAIL_ANIMATION
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_PLAYER_HORIZONTAL_SWIPE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EFFECT_ROTATION
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_WALLPAPER
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXPANDED_PLAYER
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXPANDED_PLAYER_TOGGLE
@@ -230,8 +229,6 @@ fun DefaultPlayerAppearanceSettings() {
         PlayerTimelineSize.Biggest
     )
     playerTimelineSize = PlayerTimelineSize.Biggest
-    var effectRotationEnabled by rememberPreference(EFFECT_ROTATION.key, true)
-    effectRotationEnabled = true
     var thumbnailTapEnabled by rememberPreference(THUMBNAIL_TAP_ENABLED.key, true)
     thumbnailTapEnabled = true
     var showButtonPlayerAddToPlaylist by rememberPreference(SHOW_BUTTON_PLAYER_ADD_TO_PLAYLIST.key, true)
@@ -426,7 +423,6 @@ fun PlayerAppearanceSettings(
     )
     //
 
-    var effectRotationEnabled by rememberPreference(EFFECT_ROTATION.key, true)
 
     var thumbnailTapEnabled by rememberPreference(THUMBNAIL_TAP_ENABLED.key, true)
 
@@ -605,7 +601,6 @@ fun PlayerAppearanceSettings(
                         writeRow("Appearance", appearanceFilename, "playerPlayButtonType", playerPlayButtonType.ordinal)
                         writeRow("Appearance", appearanceFilename, "bottomgradient", bottomgradient)
                         writeRow("Appearance", appearanceFilename, "textoutline", textoutline)
-                        writeRow("Appearance", appearanceFilename, "effectRotationEnabled", effectRotationEnabled)
                         writeRow("Appearance", appearanceFilename, "thumbnailTapEnabled", thumbnailTapEnabled)
                         writeRow("Appearance", appearanceFilename, "showButtonPlayerAddToPlaylist", showButtonPlayerAddToPlaylist)
                         writeRow("Appearance", appearanceFilename, "showButtonPlayerArrow", showButtonPlayerArrow)
@@ -819,9 +814,6 @@ fun PlayerAppearanceSettings(
                                     }
                                     "textoutline" -> {
                                         textoutline = row["Value"].toBoolean()
-                                    }
-                                    "effectRotationEnabled" -> {
-                                        effectRotationEnabled = row["Value"].toBoolean()
                                     }
                                     "thumbnailTapEnabled" -> {
                                         thumbnailTapEnabled = row["Value"].toBoolean()
@@ -2142,18 +2134,6 @@ fun PlayerAppearanceSettings(
                             text = stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.disable_vertical_swipe_secondary else R.string.disable_song_switching_via_swipe),
                             isChecked = disablePlayerHorizontalSwipe,
                             onCheckedChange = { disablePlayerHorizontalSwipe = it }
-                        )
-
-                    if (search.input.isBlank() || stringResource(R.string.player_rotating_buttons).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.player_rotating_buttons),
-                            text = stringResource(R.string.player_enable_rotation_buttons),
-                            isChecked = effectRotationEnabled,
-                            onCheckedChange = { effectRotationEnabled = it }
                         )
 
                     if (search.input.isBlank() || stringResource(R.string.toggle_lyrics).contains(

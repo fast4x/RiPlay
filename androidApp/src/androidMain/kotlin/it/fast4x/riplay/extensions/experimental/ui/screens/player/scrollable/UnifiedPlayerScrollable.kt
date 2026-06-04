@@ -213,7 +213,7 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.COVER_THUMBNAIL_ANI
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_PLAYER_HORIZONTAL_SWIPE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISCOVER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EFFECT_ROTATION
+//import it.fast4x.riplay.extensions.preferences.PreferenceKey.EFFECT_ROTATION
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXPANDED_PLAYER
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXPANDED_PLAYER_TOGGLE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXTRA_SPACE
@@ -389,8 +389,6 @@ fun UnifiedPlayerScrollable(
 
     val menuState = LocalGlobalSheetState.current
 
-    val effectRotationEnabled by rememberPreference(EFFECT_ROTATION.key, true)
-
     val playerThumbnailSize by rememberPreference(
         PLAYER_THUMBNAIL_SIZE.key,
         PlayerThumbnailSize.Biggest
@@ -414,11 +412,6 @@ fun UnifiedPlayerScrollable(
         mutableStateOf(binder.player.currentMediaItem, neverEqualPolicy())
     }
 
-    var isRotated by rememberSaveable { mutableStateOf(false) }
-    val rotationAngle by animateFloatAsState(
-        targetValue = if (isRotated) 360F else 0f,
-        animationSpec = tween(durationMillis = 200), label = ""
-    )
 
     val visualizerEnabled by rememberPreference(VISUALIZER_ENABLED.key, false)
 
@@ -1452,7 +1445,6 @@ fun UnifiedPlayerScrollable(
                                 .clickable {
                                     showSearchEntity = true
                                 }
-                                .rotate(rotationAngle)
                                 .padding(top = 20.dp, start = 20.dp)
                                 .size(24.dp)
 
@@ -1481,7 +1473,6 @@ fun UnifiedPlayerScrollable(
                                     )
                                 }
                             }
-                            .rotate(rotationAngle)
                             .padding(top = 20.dp, end = 20.dp)
                             .size(24.dp)
 
@@ -1881,12 +1872,17 @@ fun UnifiedPlayerScrollable(
                                 }
                                 //bottom buttons
                                 Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = if (actionspacedevenly) Arrangement.SpaceEvenly else Arrangement.SpaceBetween,
                                     modifier = Modifier
-                                        .padding(horizontal = 12.dp)
                                         .fillMaxWidth()
-                                        .height(50.dp)
+                                        .padding(horizontal = 16.dp, vertical = 12.dp) // Margine per staccarlo dai bordi
+                                        .background(
+                                            color = Color.Black.copy(alpha = 0.4f), // Sfondo scuro semitrasparente
+                                            shape = RoundedCornerShape(50.dp)        // Forma a pillola!
+                                        )
+                                        .padding(vertical = 8.dp, horizontal = 16.dp) // Padding interno alla pillola
+                                        .conditional(tapqueue) { clickable { showQueue = true } },
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween // Distanza uguale tra gli iconi
                                 ) {
                                     if (showButtonPlayerVideo)
                                         IconButton(
@@ -1971,7 +1967,6 @@ fun UnifiedPlayerScrollable(
                                             color = colorPalette().accent,
                                             onClick = {
                                                 queueLoopType = setQueueLoopState(queueLoopType)
-                                                if (effectRotationEnabled) isRotated = !isRotated
                                             },
                                             modifier = Modifier
                                                 //.padding(horizontal = 4.dp)
@@ -3306,7 +3301,6 @@ fun UnifiedPlayerScrollable(
                                             .clickable {
                                                 onDismiss()
                                             }
-                                            .rotate(rotationAngle)
                                             //.padding(10.dp)
                                             .size(24.dp)
                                     )
@@ -3374,7 +3368,6 @@ fun UnifiedPlayerScrollable(
                                                         )
                                                     }
                                                 }
-                                                .rotate(rotationAngle)
                                                 //.padding(10.dp)
                                                 .size(24.dp)
 
@@ -3907,8 +3900,6 @@ fun UnifiedPlayerScrollable(
                                                             addToOnlineLikedSong(mediaItem)
                                                         }
                                                     }
-                                                    if (effectRotationEnabled) isRotated =
-                                                        !isRotated
                                                 },
                                                 onLongClick = {
                                                     if (!isNetworkConnected && isYtSyncEnabled()) {
@@ -3942,8 +3933,7 @@ fun UnifiedPlayerScrollable(
                                                             removeFromOnlineLikedSong(mediaItem)
                                                         }
                                                     }
-                                                    if (effectRotationEnabled) isRotated =
-                                                        !isRotated
+
                                                 },
                                                 modifier = Modifier
                                                     .size(24.dp)

@@ -72,7 +72,6 @@ import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_NAME
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EFFECT_ROTATION
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.JUMP_PREVIOUS
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_BACKGROUND_COLORS
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_CONTROLS_TYPE
@@ -128,8 +127,7 @@ fun UnifiedInfoAlbumAndArtistEssential(
 ) {
     val playerControlsType by rememberPreference(PLAYER_CONTROLS_TYPE.key, PlayerControlsType.Essential)
     val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
-    var effectRotationEnabled by rememberPreference(EFFECT_ROTATION.key, true)
-    var isRotated by rememberSaveable { mutableStateOf(false) }
+
     var showSelectDialog by remember { mutableStateOf(false) }
     var textoutline by rememberPreference(TEXT_OUTLINE.key, false)
     val playerBackgroundColors by rememberPreference(PLAYER_BACKGROUND_COLORS.key,PlayerBackgroundColors.BlurredCoverColor)
@@ -276,7 +274,6 @@ fun UnifiedInfoAlbumAndArtistEssential(
                                     addToOnlineLikedSong(mediaItem)
                                 }
                             }
-                            if (effectRotationEnabled) isRotated = !isRotated
                         },
                         onLongClick = {
                             if (!isNetworkConnected && isYtSyncEnabled()) {
@@ -297,7 +294,6 @@ fun UnifiedInfoAlbumAndArtistEssential(
                                     removeFromOnlineLikedSong(mediaItem)
                                 }
                             }
-                            if (effectRotationEnabled) isRotated = !isRotated
                         },
                         modifier = Modifier
                             .padding(start = 5.dp)
@@ -428,12 +424,7 @@ fun UnifiedControlsEssential(
 
     val colorPaletteName by rememberPreference(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
     val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
-    var effectRotationEnabled by rememberPreference(EFFECT_ROTATION.key, true)
-    var isRotated by rememberSaveable { mutableStateOf(false) }
-    val rotationAngle by animateFloatAsState(
-        targetValue = if (isRotated) 360F else 0f,
-        animationSpec = tween(durationMillis = 200), label = ""
-    )
+
     val shouldBePlayingTransition = updateTransition(playerState.isPlaying, label = "shouldBePlaying")
     val playPauseRoundness by shouldBePlayingTransition.animateDp(
         transitionSpec = { tween(durationMillis = 100, easing = LinearEasing) },
@@ -483,7 +474,6 @@ fun UnifiedControlsEssential(
                             }
                         }
                     }
-                    if (effectRotationEnabled) isRotated = !isRotated
                 },
                 onLongClick = {
                     if (!isNetworkConnected && isYtSyncEnabled()) {
@@ -505,7 +495,6 @@ fun UnifiedControlsEssential(
                             }
                         }
                     }
-                    if (effectRotationEnabled) isRotated = !isRotated
                 },
                 modifier = Modifier
                     .size(26.dp)
@@ -545,12 +534,9 @@ fun UnifiedControlsEssential(
                 interactionSource = remember { MutableInteractionSource() },
                 onClick = {
                     onPrevious()
-
-                    if (effectRotationEnabled) isRotated = !isRotated
                 },
                 onLongClick = {}
             )
-            .rotate(rotationAngle)
             .padding(10.dp)
             .size(26.dp)
 
@@ -569,7 +555,6 @@ fun UnifiedControlsEssential(
                     } else {
                         onPlay()
                     }
-                    if (effectRotationEnabled) isRotated = !isRotated
                 },
                 onLongClick = onShowSpeedPlayerDialog
             )
@@ -607,7 +592,6 @@ fun UnifiedControlsEssential(
                 ),
                 modifier = Modifier
                     .fillMaxSize()
-                    .rotate(rotationAngle)
                     .bounceClick(),
                 contentDescription = "Background Image",
                 contentScale = ContentScale.Fit
@@ -620,7 +604,6 @@ fun UnifiedControlsEssential(
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(if (playerPlayButtonType == PlayerPlayButtonType.Disabled || playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient) colorPalette().accent else colorPalette().text),
                 modifier = Modifier
-                    .rotate(rotationAngle)
                     .align(Alignment.Center)
                     .size(imgSize)
                     .bounceClick()
@@ -661,11 +644,9 @@ fun UnifiedControlsEssential(
                 interactionSource = remember { MutableInteractionSource() },
                 onClick = {
                     onNext()
-                    if (effectRotationEnabled) isRotated = !isRotated
                 },
                 onLongClick = {}
             )
-            .rotate(rotationAngle)
             .padding(10.dp)
             .size(26.dp)
 
