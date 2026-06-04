@@ -6,7 +6,7 @@
 
 <a href="https://trendshift.io/repositories/17289" target="_blank"><img src="https://trendshift.io/api/badge/repositories/17289" alt="fast4x%2FRiPlay | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 
-<img src="./metrics.svg" />
+<img src="./download-card.svg" />
 
 <!--
   <a href="https://github.com/fast4x/RiPlay/releases"><img src="https://img.shields.io/github/downloads/fast4x/RiPlay/total?label=Total%20Downloads&color=blue"></a>
