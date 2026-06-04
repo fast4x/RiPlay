@@ -3,20 +3,9 @@
 <div align="center">
   <img src="./assets/design/latest/app_icon.svg" width="120" height="120" alt="RiPlay Icon"/>
   <h2>RiPlay</h2>
-
-<a href="https://trendshift.io/repositories/17289" target="_blank"><img src="https://trendshift.io/api/badge/repositories/17289" alt="fast4x%2FRiPlay | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
-
+  
 <img src="./download-card.svg" />
 
-<!--
-  <a href="https://github.com/fast4x/RiPlay/releases"><img src="https://img.shields.io/github/downloads/fast4x/RiPlay/total?label=Total%20Downloads&color=blue"></a>
-  <a href="https://github.com/fast4x/RiPlay/releases/latest"><img src="https://img.shields.io/github/downloads/fast4x/RiPlay/latest/total?label=Latest%20Release&color=green"></a>
-  <a href="https://github.com/fast4x/RiPlay/releases/latest"><img src="https://img.shields.io/github/v/release/fast4x/RiPlay?label=Version"></a>
-  <a href="https://github.com/fast4x/RiPlay/blob/main/LICENSE"><img src="https://img.shields.io/github/license/fast4x/RiPlay?label=License"></a>
-  <a href="https://github.com/fast4x/RiPlay/pulls"><img src="https://img.shields.io/github/issues-pr/fast4x/RiPlay?label=Pull%20Requests"></a>
-  <a href="https://github.com/fast4x/RiPlay/issues"><img src="https://img.shields.io/github/issues/fast4x/RiPlay?label=Issues"></a>
--->
-  
 </div>
 
 ---
