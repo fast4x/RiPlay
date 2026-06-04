@@ -1,11 +1,11 @@
-name: Update Project Stats Card
+name: Update Project Stats and Chart
 
 on:
   release:
     types: [published]
   workflow_dispatch:
   schedule:
-  - cron: '0 */2 * * *'
+    - cron: '0 */2 * * *' # Ogni 2 ore
 
 permissions:
   contents: write
@@ -17,24 +17,24 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Generate Stats Card
+      - name: Fetch Data and Update History
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # 1. Scarica i dati generali del repo (Stars e Forks)
+          # 1. Scarica dati generali
           REPO_DATA=$(curl -s -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/fast4x/RiPlay")
           STARS=$(echo "$REPO_DATA" | jq '.stargazers_count')
           FORKS=$(echo "$REPO_DATA" | jq '.forks_count')
           
-          # 2. Scarica i dati dell'ultima release (Versione e Download ultima versione)
+          # 2. Scarica dati ultima release
           LATEST_DATA=$(curl -s -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/fast4x/RiPlay/releases/latest")
           LATEST_VERSION=$(echo "$LATEST_DATA" | jq -r '.tag_name')
           LATEST_DOWNLOADS=$(echo "$LATEST_DATA" | jq '[.assets[].download_count] | add // 0')
           
-          # 3. Scarica i download totali (tutte le release)
+          # 3. Scarica download totali
           TOTAL_DOWNLOADS=$(curl -s -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/fast4x/RiPlay/releases" | jq '[.[].assets[].download_count] | add // 0')
           
-          # Formatta i numeri
+          # Formatta numeri per la Card
           format_number() {
             local num=$1
             if [ "$num" -ge 1000000 ]; then echo "$(echo "scale=1; $num/1000000" | bc)M";
@@ -48,7 +48,19 @@ jobs:
           STARS_FMT=$(format_number $STARS)
           FORKS_FMT=$(format_number $FORKS)
           
-          # Genera la Card SVG allargata (600px) con 3 sezioni
+          # 4. Gestione Storico (history.json)
+          LAST_SAVED=$(jq '.[-1].downloads // empty' history.json)
+          
+          # Salva il nuovo punto SOLO se il numero è cambiato rispetto all'ultima volta
+          if [ "$LAST_SAVED" != "$TOTAL_DOWNLOADS" ]; then
+            TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M")
+            jq --arg time "$TIMESTAMP" --argjson dl "$TOTAL_DOWNLOADS" '. += [{"time": $time, "downloads": $dl}]' history.json > tmp.json && mv tmp.json history.json
+            echo "UPDATE_NEEDED=true" >> $GITHUB_ENV
+          else
+            echo "UPDATE_NEEDED=false" >> $GITHUB_ENV
+          fi
+          
+          # 5. Genera la Card principale (sempre aggiornata per sicurezza)
           cat > download-card.svg << EOF
           <svg width="600" height="120" viewBox="0 0 600 120" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -60,39 +72,90 @@ jobs:
                 <stop offset="100%" stop-color="#383e45" />
               </linearGradient>
             </defs>
-            
-            <!-- Sfondo della Card -->
             <rect width="600" height="120" rx="12" fill="#ffffff" filter="url(#shadow)" stroke="#e1e4e8" stroke-width="1"/>
-            
-            <!-- Header -->
             <rect width="600" height="35" rx="12" fill="url(#headerGrad)" />
             <rect y="20" width="600" height="15" fill="url(#headerGrad)" />
             <text x="20" y="24" fill="#ffffff" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" font-weight="600">📊 RiPlay Project Stats</text>
-            
-            <!-- COLONNA 1: Download Totali -->
             <text x="30" y="60" fill="#586069" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="11" font-weight="500">TOTAL DOWNLOADS</text>
             <text x="30" y="85" fill="#0366d6" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="24" font-weight="700">${TOTAL_FMT}</text>
-            
-            <!-- Separatore 1 -->
             <line x1="210" y1="45" x2="210" y2="110" stroke="#e1e4e8" stroke-width="1" />
-            
-            <!-- COLONNA 2: Ultima Versione -->
             <text x="230" y="60" fill="#586069" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="11" font-weight="500">LATEST RELEASE</text>
             <text x="230" y="85" fill="#6f42c1" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="18" font-weight="700">${LATEST_VERSION}</text>
             <text x="230" y="108" fill="#28a745" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="13" font-weight="600">📥 ${LATEST_FMT} downloads</text>
-            
-            <!-- Separatore 2 -->
             <line x1="410" y1="45" x2="410" y2="110" stroke="#e1e4e8" stroke-width="1" />
-            
-            <!-- COLONNA 3: Community (Stelle e Fork) -->
             <text x="430" y="60" fill="#586069" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="11" font-weight="500">COMMUNITY</text>
             <text x="430" y="85" fill="#e3b341" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="18" font-weight="700">⭐ ${STARS_FMT}</text>
             <text x="430" y="108" fill="#586069" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="13" font-weight="600">🍽️ ${FORKS_FMT} forks</text>
           </svg>
           EOF
 
-      - name: Commit and Push Card
+      - name: Generate History Chart
+        if: env.UPDATE_NEEDED == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Creiamo lo script Python per disegnare il grafico
+          cat > plot_chart.py << 'PYEOF'
+          import json
+          
+          with open('history.json', 'r') as f:
+              data = json.load(f)
+          
+          if not data:
+              exit()
+          
+          width, height, padding = 600, 150, 30
+          chart_w = width - 2 * padding
+          chart_h = height - 2 * padding
+          
+          values = [d['downloads'] for d in data]
+          min_v, max_v = min(values), max(values)
+          if min_v == max_v: max_v += 1
+          range_v = max_v - min_v
+          
+          points = []
+          for i, d in enumerate(data):
+              x = padding + (i / (len(data) - 1)) * chart_w if len(data) > 1 else padding
+              y = padding + chart_h - ((d['downloads'] - min_v) / range_v) * chart_h
+              points.append(f"{x:.1f},{y:.1f}")
+              
+          # Formatta il numero finale per il titolo
+          def fmt(n):
+              if n >= 1000000: return f"{n/1000000:.1f}M"
+              if n >= 1000: return f"{n/1000:.1f}k"
+              return str(n)
+              
+          svg = f'''<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <filter id="shadow2" x="-2%" y="-2%" width="104%" height="108%">
+                <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.1" />
+              </filter>
+              <linearGradient id="fillGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#0366d6" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#0366d6" stop-opacity="0.02"/>
+              </linearGradient>
+            </defs>
+            <rect width="{width}" height="{height}" rx="12" fill="#ffffff" filter="url(#shadow2)" stroke="#e1e4e8" stroke-width="1"/>
+            <text x="20" y="24" fill="#2b3137" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" font-weight="600">📈 Download Growth (Actual: {fmt(max_v)})</text>
+            
+            <!-- Area sotto la linea -->
+            <polygon fill="url(#fillGrad)" points="{points[0]},{height - padding} {' '.join(points)} {points[-1]},{height - padding}" />
+            
+            <!-- Linea principale -->
+            <polyline fill="none" stroke="#0366d6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="{' '.join(points)}" />
+            
+            <!-- Punto finale luminoso -->
+            <circle cx="{points[-1].split(',')[0]}" cy="{points[-1].split(',')[1]}" r="4" fill="#ffffff" stroke="#0366d6" stroke-width="2.5" />
+          </svg>'''
+          
+          with open('chart.svg', 'w') as f:
+              f.write(svg)
+          PYEOF
+          
+          python3 plot_chart.py
+
+      - name: Commit and Push Updates
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Update project stats card [skip ci]"
-          file_pattern: download-card.svg
+          commit_message: "Update stats and chart [skip ci]"
+          file_pattern: download-card.svg chart.svg history.json
