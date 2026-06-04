@@ -1,0 +1,32 @@
+<svg width="400" height="100" viewBox="0 0 400 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadow" x="-2%" y="-2%" width="104%" height="108%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.1" />
+    </filter>
+    <linearGradient id="headerGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#2b3137" />
+      <stop offset="100%" stop-color="#383e45" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Sfondo della Card con ombra -->
+  <rect width="400" height="100" rx="12" fill="#ffffff" filter="url(#shadow)" stroke="#e1e4e8" stroke-width="1"/>
+  
+  <!-- Header Scurto -->
+  <rect width="400" height="35" rx="12" fill="url(#headerGrad)" />
+  <rect y="20" width="400" height="15" fill="url(#headerGrad)" />
+  
+  <!-- Titolo -->
+  <text x="20" y="24" fill="#ffffff" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" font-weight="600">📥 RiPlay Downloads</text>
+  
+  <!-- Sezione Totale -->
+  <text x="20" y="60" fill="#586069" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12">TOTAL DOWNLOADS</text>
+  <text x="20" y="82" fill="#0366d6" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="20" font-weight="700">66.8k</text>
+  
+  <!-- Linea di separazione -->
+  <line x1="200" y1="45" x2="200" y2="90" stroke="#e1e4e8" stroke-width="1" />
+  
+  <!-- Sezione Ultima Versione -->
+  <text x="220" y="60" fill="#586069" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12">LATEST RELEASE</text>
+  <text x="220" y="82" fill="#28a745" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="20" font-weight="700">2.1k</text>
+</svg>
