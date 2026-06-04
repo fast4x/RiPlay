@@ -1,26 +1,80 @@
-name: Build Metrics Card
+name: Download Card
 
 on:
+  release:
+    types: [published] # Si aggiorna automaticamente quando pubblichi una release
+  workflow_dispatch:  # Puoi aggiornarlo a mano quando vuoi
   schedule:
-    - cron: '0 0 * * *' # Si aggiorna automaticamente ogni giorno
-  workflow_dispatch: # Ti permette di aggiornarlo a mano
+    - cron: '0 0 * * *' # Aggiornamento sicurezza ogni giorno a mezzanotte
 
 permissions:
   contents: write
 
 jobs:
-  github-metrics:
+  update-card:
     runs-on: ubuntu-latest
     steps:
-      - uses: lowlighter/metrics@latest
-        with:
-          token: ${{ secrets.METRICS_TOKEN }}
-          filename: metrics.svg
-          # Diciamo di non mostrare il profilo base, solo i plugin
-          base: ""
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Generate Modern Download Card
         env:
-          # Qui passiamo i comandi dei download come variabili d'ambiente
-          # In questo modo GitHub Actions non li blocca!
-          METRICS_PLUGIN_DOWNLOADS: "yes"
-          METRICS_PLUGIN_DOWNLOADS_SECTIONS: "total,latest"
-          METRICS_PLUGIN_DOWNLOADS_UPLOADS: "yes"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Usa il token interno di GitHub, illimitato e sicuro
+        run: |
+          # Scarica i dati in modo autenticato
+          TOTAL_DOWNLOADS=$(curl -s -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/fast4x/RiPlay/releases" | jq '[.[].assets[].download_count] | add // 0')
+          LATEST_DOWNLOADS=$(curl -s -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/fast4x/RiPlay/releases/latest" | jq '[.assets[].download_count] | add // 0')
+          
+          # Formatta i numeri in modo intelligente (es. 15000 -> 15k)
+          format_number() {
+            local num=$1
+            if [ "$num" -ge 1000000 ]; then echo "$(echo "scale=1; $num/1000000" | bc)M";
+            elif [ "$num" -ge 1000 ]; then echo "$(echo "scale=1; $num/1000" | bc)k";
+            else echo "$num";
+            fi
+          }
+          
+          TOTAL_FMT=$(format_number $TOTAL_DOWNLOADS)
+          LATEST_FMT=$(format_number $LATEST_DOWNLOADS)
+          
+          # Genera la Card SVG moderna con ombre e sfumature
+          cat > download-card.svg << EOF
+          <svg width="400" height="100" viewBox="0 0 400 100" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <filter id="shadow" x="-2%" y="-2%" width="104%" height="108%">
+                <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.1" />
+              </filter>
+              <linearGradient id="headerGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#2b3137" />
+                <stop offset="100%" stop-color="#383e45" />
+              </linearGradient>
+            </defs>
+            
+            <!-- Sfondo della Card con ombra -->
+            <rect width="400" height="100" rx="12" fill="#ffffff" filter="url(#shadow)" stroke="#e1e4e8" stroke-width="1"/>
+            
+            <!-- Header Scurto -->
+            <rect width="400" height="35" rx="12" fill="url(#headerGrad)" />
+            <rect y="20" width="400" height="15" fill="url(#headerGrad)" />
+            
+            <!-- Titolo -->
+            <text x="20" y="24" fill="#ffffff" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" font-weight="600">📥 RiPlay Downloads</text>
+            
+            <!-- Sezione Totale -->
+            <text x="20" y="60" fill="#586069" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12">TOTAL DOWNLOADS</text>
+            <text x="20" y="82" fill="#0366d6" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="20" font-weight="700">${TOTAL_FMT}</text>
+            
+            <!-- Linea di separazione -->
+            <line x1="200" y1="45" x2="200" y2="90" stroke="#e1e4e8" stroke-width="1" />
+            
+            <!-- Sezione Ultima Versione -->
+            <text x="220" y="60" fill="#586069" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="12">LATEST RELEASE</text>
+            <text x="220" y="82" fill="#28a745" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="20" font-weight="700">${LATEST_FMT}</text>
+          </svg>
+          EOF
+
+      - name: Commit and Push Card
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update download card [skip ci]"
+          file_pattern: download-card.svg
