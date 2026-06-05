@@ -1,5 +1,6 @@
 package it.fast4x.riplay.services.playback
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.app.Notification
@@ -15,6 +16,7 @@ import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.IntentFilter
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.database.SQLException
 import android.graphics.Bitmap
@@ -23,6 +25,8 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.media.AudioDeviceCallback
+import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.media.audiofx.AudioEffect
 import android.media.audiofx.BassBoost
@@ -145,7 +149,7 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYBACK_SPEED
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.putEnum
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUEUE_LOOP_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_BT
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.RESUME_PLAYBACK_ON_START
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHAKE_EVENT_ENABLED
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SKIP_SILENCE
@@ -197,6 +201,7 @@ import it.fast4x.riplay.data.models.QueuedMediaItem
 import it.fast4x.riplay.data.models.defaultQueueId
 import it.fast4x.riplay.enums.AudioQualityFormat
 import it.fast4x.riplay.enums.CastType
+import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.musicvault.MusicVaultEvent
 import it.fast4x.riplay.musicvault.MusicVaultEvents
 import it.fast4x.riplay.musicvault.MusicVaultRepository
@@ -402,6 +407,26 @@ class PlayerService : Service(),
 
     lateinit var audioQualityFormat: AudioQualityFormat
 
+    private var audioDeviceCallback: AudioDeviceCallback? = null
+    private val handler = Handler(Looper.getMainLooper())
+    private val bluetoothDeviceTypes = buildSet {
+        add(AudioDeviceInfo.TYPE_BLUETOOTH_A2DP)
+        add(AudioDeviceInfo.TYPE_BLUETOOTH_SCO)
+        if (isAtLeastAndroid12) {
+            add(AudioDeviceInfo.TYPE_BLE_HEADSET)
+        }
+    }
+
+    private val wiredDeviceTypes = buildSet {
+        add(AudioDeviceInfo.TYPE_WIRED_HEADSET)
+        add(AudioDeviceInfo.TYPE_WIRED_HEADPHONES)
+        if (isAtLeastAndroid8) {
+            add(AudioDeviceInfo.TYPE_USB_HEADSET)
+        }
+        add(AudioDeviceInfo.TYPE_LINE_ANALOG)
+        add(AudioDeviceInfo.TYPE_LINE_DIGITAL)
+    }
+
 
     override fun onBind(intent: Intent?): AndroidBinder {
         return binder
@@ -446,7 +471,8 @@ class PlayerService : Service(),
         initializeAudioEqualizer()
         initializeLegacyNotificationActionReceiver()
 
-        initializeBluetoothConnect()
+        //initializeBluetoothConnect()
+        initializeAudioDeviceCallback()
         initializeNormalizeVolume()
         initializeBassBoost()
         initializeReverb()
@@ -1504,9 +1530,6 @@ class PlayerService : Service(),
             }
         }
 
-        //initializeTelephonyManager(false)
-
-        serviceScope.cancel()
 
         try {
             unregisterReceiver(legacyActionReceiver)
@@ -1543,6 +1566,7 @@ class PlayerService : Service(),
             Timber.e("PlayerService Error in online player release: ${e.message}")
         }
 
+        serviceScope.cancel()
 
         runCatching {
 
@@ -1551,7 +1575,7 @@ class PlayerService : Service(),
             cache.release()
             loudnessEnhancer?.release()
             audioVolumeObserver.unregister()
-            bluetoothReceiver?.unregister()
+            //bluetoothReceiver?.unregister()
             discordPresenceManager?.onStop()
 
             endedObserverJob?.cancel()
@@ -1569,7 +1593,7 @@ class PlayerService : Service(),
 
             notificationManager?.cancelAll()
             //coroutineScope.launch { delay(500) }
-
+            unregisterAudioDeviceCallback()
 
 
         }.onFailure {
@@ -2097,9 +2121,98 @@ private var pausedByZeroVolume = false
         audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
     }
 
+    @kotlin.OptIn(ExperimentalCoroutinesApi::class)
+    private fun initializeAudioDeviceCallback() {
+        if (!isAtLeastAndroid6) return
+
+        val resumeOnBt = preferences.getBoolean(RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_BT.key, false)
+        val resumeOnWired = preferences.getBoolean(PreferenceKey.RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_WIRED.key, false)
+
+        // Se l'utente ha disabilitato entrambe, rimuovo il callback e risparmiiamo risorse
+        if (!resumeOnBt && !resumeOnWired) {
+            unregisterAudioDeviceCallback()
+            return
+        }
+
+        // Evitiamo di ricreare il callback se è già registrato
+        if (audioDeviceCallback != null) return
+
+        // Verifica permesso Bluetooth (Android 12+)
+        val hasBtPermission = if (isAtLeastAndroid12) {
+            ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+        } else true
+
+        audioDeviceCallback = object : AudioDeviceCallback() {
+
+            private fun isBluetoothSink(device: AudioDeviceInfo): Boolean {
+                return device.isSink && device.type in bluetoothDeviceTypes
+            }
+
+            private fun isWiredSink(device: AudioDeviceInfo): Boolean {
+                return device.isSink && device.type in wiredDeviceTypes
+            }
+
+            override fun onAudioDevicesAdded(addedDevices: Array<AudioDeviceInfo>) {
+                if (_playerState.value.isPlaying) return // Se suona già, non facciamo nulla
+
+                val hasNewBt = addedDevices.any(::isBluetoothSink)
+                val hasNewWired = addedDevices.any(::isWiredSink)
+
+                // Logica di Play: rispettiamo le preferenze dell'utente
+                val shouldPlay = (hasNewBt && resumeOnBt && hasBtPermission) ||
+                        (hasNewWired && resumeOnWired)
+
+                if (shouldPlay) {
+                    if (currentSong.value?.isLocal == true) {
+                        player.play()
+                    } else {
+                        if (_internalOnlinePlayer.value == null)
+                            initializeOnlinePlayer()
+
+                        _internalOnlinePlayer.value?.play()
+                    }
+                    SmartMessage(getString(R.string.music_resumed_headphones_connected), context = this@PlayerService)
+                }
+            }
+
+            override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo>) {
+                if (!player.isPlaying) return // Se è già in pausa, non facciamo nulla
+
+                val removedBt = removedDevices.any(::isBluetoothSink)
+                val removedWired = removedDevices.any(::isWiredSink)
+
+                if (removedBt || removedWired) {
+                    // Prima di mettere in pausa, controllo se ci sono ALTRI dispositivi collegati
+                    val currentDevices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+                    val hasRemainingBt = currentDevices?.any(::isBluetoothSink) == true
+                    val hasRemainingWired = currentDevices?.any(::isWiredSink) == true
+
+                    // Mettiamo in pausa SOLO se non ci sono più dispositivi di output validi.
+                    // Questo evita che la musica si feermi se scollego il jack
+                    // ma ho ancora le cuffie BT collegate.
+                    if (!hasRemainingBt && !hasRemainingWired) {
+                        player.pause()
+                        _internalOnlinePlayer.value?.pause()
+
+                        SmartMessage(getString(R.string.music_paused_headphones_disconnected), context = this@PlayerService)
+                    }
+                }
+            }
+        }
+
+        audioManager.registerAudioDeviceCallback(audioDeviceCallback, handler)
+    }
+
+
+    fun unregisterAudioDeviceCallback() {
+        audioManager.unregisterAudioDeviceCallback(audioDeviceCallback)
+        audioDeviceCallback = null
+    }
+
+    /*
     @ExperimentalCoroutinesApi
     private fun initializeBluetoothConnect() {
-        if (!preferences.getBoolean(RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE.key, false)) return
+        if (!preferences.getBoolean(RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_BT.key, false)) return
 
         bluetoothReceiver = BluetoothConnectHelper(
             context = this,
@@ -2125,6 +2238,8 @@ private var pausedByZeroVolume = false
         bluetoothReceiver?.register()
 
     }
+
+     */
 
     @UnstableApi
     private fun sendOpenExternalEqualizerIntent() {
@@ -2514,7 +2629,8 @@ private var pausedByZeroVolume = false
                 minTimeForEvent = sharedPreferences.getEnum(key,
                     MinTimeForEvent.`20s`)
             }
-            RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE.key -> initializeBluetoothConnect()
+            RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_BT.key,
+            PreferenceKey.RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_WIRED.key -> initializeAudioDeviceCallback()
             BASSBOOST_LEVEL.key, BASSBOOST_ENABLED.key -> initializeBassBoost()
             AUDIO_REVERB_PRESET.key -> initializeReverb()
             VOLUME_NORMALIZATION.key, LOUDNESS_BASE_GAIN.key, VOLUME_BOOST_LEVEL.key -> initializeNormalizeVolume()
@@ -3253,7 +3369,7 @@ private var pausedByZeroVolume = false
             val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
             activityManager?.appTasks?.forEach { it.finishAndRemoveTask() }
 
-            Handler(Looper.getMainLooper()).postDelayed({
+            handler.postDelayed({
                 exitProcess(0)
             }, 300L)
         }

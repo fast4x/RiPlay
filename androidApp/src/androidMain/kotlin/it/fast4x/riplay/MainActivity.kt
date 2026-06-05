@@ -232,7 +232,7 @@ import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
 import it.fast4x.riplay.extensions.htmlreader.shazamSongInfoExtractor
 import it.fast4x.riplay.extensions.nsd.discoverNsdServices
 import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_BT
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SNOWFALL_EFFECT
 import it.fast4x.riplay.cast.ritune.models.toRiTuneDevice
 import it.fast4x.riplay.cast.ritune.RiTuneCastSelector
@@ -388,7 +388,7 @@ class MainActivity :
             permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
         }
 
-        if (isAtLeastAndroid12 && preferences.getBoolean(RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE.key, false))
+        if (isAtLeastAndroid12 && preferences.getBoolean(RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_BT.key, false))
             permissionsToRequest.add(Manifest.permission.BLUETOOTH_CONNECT)
 
 

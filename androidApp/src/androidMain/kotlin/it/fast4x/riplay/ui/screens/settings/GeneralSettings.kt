@@ -147,6 +147,7 @@ import it.fast4x.riplay.enums.CastType
 import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.enums.EqualizerType
+import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.CAST_TYPE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.CHECK_UPDATE_STATE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.CLOSE_PLAYER_SERVICE_AFTER_MINUTES
@@ -158,7 +159,7 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.FILTER_CONTENT_TYPE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.PAUSE_SEARCH_HISTORY
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.RESUME_OR_PAUSE_PLAYBACK_WHEN_CALL
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_BT
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_ALL_SONGS_AA
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FAVORITES_SONGS_AA
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_GRID_AA
@@ -213,8 +214,12 @@ fun GeneralSettings(
 //    )
 
     var closeWithBackButton by rememberPreference(CLOSE_WITH_BACK_BUTTON.key, true)
-    var resumeOrPausePlaybackWhenDevice by rememberPreference(
-        RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE.key,
+    var resumeOrPausePlaybackWhenDeviceBt by rememberPreference(
+        RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_BT.key,
+        false
+    )
+    var resumeOrPausePlaybackWhenDeviceWired by rememberPreference(
+        PreferenceKey.RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_WIRED.key,
         false
     )
 
@@ -1540,26 +1545,35 @@ fun GeneralSettings(
 
                 }
 
-
                 settingsItem(
                     isHeader = true
                 ) {
                     SettingsGroupSpacer()
-                    SettingsEntryGroupText(title = stringResource(R.string.playback_events))
+                    SettingsEntryGroupText(title = stringResource(R.string.settings_automatic_playback))
                 }
+
                 settingsItem {
-                    if (search.input.isBlank() || stringResource(R.string.resume_or_pause_playback).contains(
+                    if (search.input.isBlank() || stringResource(R.string.settings_automatic_playback).contains(
                             search.input,
                             true
                         )
                     ) {
                         if (isAtLeastAndroid6) {
                             SwitchSettingEntry(
-                                title = stringResource(R.string.play_or_pause_when_device_is_connected_or_disconnected),
-                                text = "", //stringResource(R.string.resume_or_pause_playback),
-                                isChecked = resumeOrPausePlaybackWhenDevice,
+                                title = stringResource(R.string.settings_bt_title_bluetooth_audio_devices),
+                                text = stringResource(R.string.settings_bt_info_resume_playback_when_connected_pause_when_disconnected),
+                                isChecked = resumeOrPausePlaybackWhenDeviceBt,
                                 onCheckedChange = {
-                                    resumeOrPausePlaybackWhenDevice = it
+                                    resumeOrPausePlaybackWhenDeviceBt = it
+                                    restartService = true
+                                }
+                            )
+                            SwitchSettingEntry(
+                                title = stringResource(R.string.settings_wired_title_wired_audio_devices),
+                                text = stringResource(R.string.settings_wired_info_resume_playback_when_plugged_pause_when_unplugged),
+                                isChecked = resumeOrPausePlaybackWhenDeviceWired,
+                                onCheckedChange = {
+                                    resumeOrPausePlaybackWhenDeviceWired = it
                                     restartService = true
                                 }
                             )
@@ -1568,6 +1582,15 @@ fun GeneralSettings(
                                 onRestart = { restartService = false })
                         }
                     }
+                }
+
+                settingsItem(
+                    isHeader = true
+                ) {
+                    SettingsGroupSpacer()
+                    SettingsEntryGroupText(title = stringResource(R.string.playback_events))
+                }
+                settingsItem {
 
                     if (search.input.isBlank() || stringResource(R.string.player_pause_listen_history).contains(
                             search.input,
