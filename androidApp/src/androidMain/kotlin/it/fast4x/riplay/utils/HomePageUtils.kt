@@ -119,6 +119,7 @@ object HomeDataCache {
     var homePage: HomePage? = null
     var discoverPage: Environment.DiscoverPage? = null
     var relatedPage: Environment.RelatedPage? = null
+    var chartsPage: Environment.ChartsPage? = null
     var trending: Song? = null
 
     var lastCountryCode: String? = null
@@ -128,6 +129,7 @@ object HomeDataCache {
         homePage = null
         discoverPage = null
         relatedPage = null
+        chartsPage = null
         trending = null
         lastCountryCode = null
         lastPlayEventType = null

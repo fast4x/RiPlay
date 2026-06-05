@@ -67,6 +67,7 @@ import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PlayEventsType
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.data.models.Artist
+import it.fast4x.riplay.data.models.Blacklist
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.listenerlevel.HomepageListenerLevelBadges
@@ -124,6 +125,8 @@ import it.fast4x.riplay.utils.toMediaItem
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
@@ -174,103 +177,102 @@ fun HomePage(
         Database.blacklisted(listOf(BlacklistType.Song.name, BlacklistType.Video.name))
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
-    //var loadedData by rememberPreference(loadedDataKey.key, false)
+    val loadDataMutex = Mutex()
+
+    fun Environment.RelatedPage?.copyFiltered(blacklist: List<Blacklist>?): Environment.RelatedPage? {
+        val blacklistedPaths = blacklist?.map { it.path }
+        return this?.copy(
+            songs = songs?.filter { blacklistedPaths?.contains(it.key) == false },
+            artists = artists?.filter { blacklistedPaths?.contains(it.key) == false },
+            playlists = playlists?.filter { blacklistedPaths?.contains(it.key) == false },
+            albums = albums?.filter { blacklistedPaths?.contains(it.key) == false }
+        )
+    }
 
     suspend fun loadData() {
+        loadDataMutex.withLock {
+            try {
+                withContext(Dispatchers.IO) {
 
-        runCatching {
-            refreshScope.launch(Dispatchers.IO) {
-
-                if (homePage == null) {
-                    val result = EnvironmentExt.getHomePage(setLogin = isYtLoggedIn()).getOrNull()
-                    homePage = result
-                    HomeDataCache.homePage = result
-                }
-
-                if (showNewAlbums || showNewAlbumsArtists || showMoodsAndGenres) {
-                    if (discoverPage == null) {
-                        val result = Environment.discoverPage().getOrNull()
-                        discoverPage = result
-                        HomeDataCache.discoverPage = result
+                    //  Leggo  dalla cache, POI la chiamata
+                    if (homePage == null && HomeDataCache.homePage != null) {
+                        homePage = HomeDataCache.homePage
                     }
-                }
+                    if (homePage == null) {
+                        val result = EnvironmentExt.getHomePage(setLogin = isYtLoggedIn()).getOrNull()
+                        homePage = result
+                        HomeDataCache.homePage = result
+                    }
 
-                when (playEventType) {
-                    PlayEventsType.MostPlayed -> {
-                        val songs = Database.trending(3).distinctUntilChanged().first()
-                        val song = songs.firstOrNull { item ->
-                            blacklisted.value?.map { it.path }?.contains(item.id) == false
+                    if (showNewAlbums || showNewAlbumsArtists || showMoodsAndGenres) {
+                        if (discoverPage == null && HomeDataCache.discoverPage != null) {
+                            discoverPage = HomeDataCache.discoverPage
                         }
-                        val songId = if (song?.isLocal == true) song.mediaId else song?.id
+                        if (discoverPage == null) {
+                            val result = Environment.discoverPage().getOrNull()
+                            discoverPage = result
+                            HomeDataCache.discoverPage = result
+                        }
+                    }
 
-                        if (relatedPage == null || trending?.id != song?.id || trending?.mediaId != song?.id) {
-                            relatedPage = Environment.relatedPage(
-                                NextBody(
-                                    videoId = (songId ?: "HZnNt9nnEhw")
-                                )
-                            )?.getOrNull().let {
-                                it?.copy(
-                                    songs = it.songs?.filter { item ->
-                                        blacklisted.value?.map { it.path }?.contains(item.key) == false
-                                    },
-                                    artists = it.artists?.filter { item ->
-                                        blacklisted.value?.map { it.path }?.contains(item.key) == false
-                                    },
-                                    playlists = it.playlists?.filter { item ->
-                                        blacklisted.value?.map { it.path }?.contains(item.key) == false
-                                    },
-                                    albums = it.albums?.filter { item ->
-                                        blacklisted.value?.map { it.path }?.contains(item.key) == false
-                                    }
-                                )
+                    when (playEventType) {
+                        PlayEventsType.MostPlayed -> {
+                            val songs = Database.trending(3).distinctUntilChanged().first()
+                            val song = songs.firstOrNull { item ->
+                                blacklisted.value?.map { it.path }?.contains(item.id) == false
                             }
-                            HomeDataCache.relatedPage = relatedPage
-                        }
-                        trending = song
-                        HomeDataCache.trending = trending
-                    }
+                            val songId = if (song?.isLocal == true) song.mediaId else song?.id
 
-                    PlayEventsType.LastPlayed, PlayEventsType.CasualPlayed -> {
-                        val numSongs = if (playEventType == PlayEventsType.LastPlayed) 3 else 50
-                        val songs = Database.lastPlayed(numSongs).distinctUntilChanged().first()
-                        val song = (if (playEventType == PlayEventsType.LastPlayed) songs
-                        else songs.shuffled()).firstOrNull { item ->
-                            blacklisted.value?.map { it.path }?.contains(item.id) == false
-                        }
-                        val songId = if (song?.isLocal == true) song.mediaId else song?.id
-
-                        if (relatedPage == null || trending?.id != song?.id || trending?.mediaId != song?.id) {
-                            relatedPage =
-                                Environment.relatedPage(
-                                    NextBody(
-                                        videoId = (songId ?: "HZnNt9nnEhw")
-                                    )
-                                )?.getOrNull().let {
-                                    it?.copy(
-                                        songs = it.songs?.filter { item ->
-                                            blacklisted.value?.map { it.path }?.contains(item.key) == false
-                                        },
-                                        artists = it.artists?.filter { item ->
-                                            blacklisted.value?.map { it.path }?.contains(item.key) == false
-                                        },
-                                        playlists = it.playlists?.filter { item ->
-                                            blacklisted.value?.map { it.path }?.contains(item.key) == false
-                                        },
-                                        albums = it.albums?.filter { item ->
-                                            blacklisted.value?.map { it.path }?.contains(item.key) == false
-                                        }
-                                    )
+                            if (relatedPage == null || trending?.id != song?.id || trending?.mediaId != song?.id) {
+                                // Leggo relatedPage dalla cache se disponibile
+                                if (relatedPage == null && HomeDataCache.relatedPage != null
+                                    && trending?.id == HomeDataCache.trending?.id) {
+                                    relatedPage = HomeDataCache.relatedPage
+                                    trending = HomeDataCache.trending
+                                } else {
+                                    relatedPage = Environment.relatedPage(
+                                        NextBody(videoId = (songId ?: "HZnNt9nnEhw"))
+                                    )?.getOrNull().let { result ->
+                                        result?.copyFiltered(blacklisted.value)
+                                    }
+                                    HomeDataCache.relatedPage = relatedPage
                                 }
-                            HomeDataCache.relatedPage = relatedPage
+                            }
+                            trending = song
+                            HomeDataCache.trending = trending
                         }
-                        trending = song
-                        HomeDataCache.trending = trending
-                    }
 
+                        PlayEventsType.LastPlayed, PlayEventsType.CasualPlayed -> {
+                            val numSongs = if (playEventType == PlayEventsType.LastPlayed) 3 else 50
+                            val songs = Database.lastPlayed(numSongs).distinctUntilChanged().first()
+                            val song = (if (playEventType == PlayEventsType.LastPlayed) songs
+                            else songs.shuffled()).firstOrNull { item ->
+                                blacklisted.value?.map { it.path }?.contains(item.id) == false
+                            }
+                            val songId = if (song?.isLocal == true) song.mediaId else song?.id
+
+                            if (relatedPage == null || trending?.id != song?.id || trending?.mediaId != song?.id) {
+                                if (relatedPage == null && HomeDataCache.relatedPage != null
+                                    && trending?.id == HomeDataCache.trending?.id) {
+                                    relatedPage = HomeDataCache.relatedPage
+                                    trending = HomeDataCache.trending
+                                } else {
+                                    relatedPage = Environment.relatedPage(
+                                        NextBody(videoId = (songId ?: "HZnNt9nnEhw"))
+                                    )?.getOrNull().let { result ->
+                                        result?.copyFiltered(blacklisted.value)
+                                    }
+                                    HomeDataCache.relatedPage = relatedPage
+                                }
+                            }
+                            trending = song
+                            HomeDataCache.trending = trending
+                        }
+                    }
                 }
+            } catch (e: Exception) {
+                Timber.e("HomePage loadData failed: ${e.message}")
             }
-        }.onFailure {
-            Timber.e("HomePage loadData failed")
         }
     }
 

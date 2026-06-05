@@ -71,7 +71,6 @@ import it.fast4x.riplay.ui.screens.welcome.WelcomeMessage
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.HOME_TYPE
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.LOADED_DATA
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAY_EVENTS_TYPE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUICK_PICS_DISCOVER_PAGE
@@ -101,7 +100,11 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LISTENER_LEVEL
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.ui.components.ButtonsRow
 import it.fast4x.riplay.ui.components.themed.IconButton
+import it.fast4x.riplay.utils.HomeDataCache
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 
@@ -131,22 +134,14 @@ fun HomePageExtended(
     var playEventType by rememberPreference(PLAY_EVENTS_TYPE.key, PlayEventsType.MostPlayed)
 
     var trending by remember { mutableStateOf<Song?>(null) }
-    val trendingInit by remember { mutableStateOf<Song?>(null) }
-    var trendingPreference by rememberPreference(QUICK_PICS_TRENDING_SONG.key, trendingInit)
 
-    var relatedPageResult by remember { mutableStateOf<Result<Environment.RelatedPage?>?>(null) }
-    var relatedInit by remember { mutableStateOf<Environment.RelatedPage?>(null) }
-    var relatedPreference by rememberPreference(QUICK_PICS_RELATED_PAGE.key, relatedInit)
+    var relatedPage by remember { mutableStateOf<Environment.RelatedPage?>(null) }
 
-    var discoverPageResult by remember { mutableStateOf<Result<Environment.DiscoverPage?>?>(null) }
-    var discoverPageInit by remember { mutableStateOf<Environment.DiscoverPage?>(null) }
-    var discoverPagePreference by rememberPreference(QUICK_PICS_DISCOVER_PAGE.key, discoverPageInit)
+    var discoverPage by remember { mutableStateOf<Environment.DiscoverPage?>(null) }
 
-    var homePageResult by remember { mutableStateOf<Result<HomePage?>?>(null) }
-    var homePageInit by remember { mutableStateOf<HomePage?>(null) }
-    var homePagePreference by rememberPreference(QUICK_PICS_HOME_PAGE.key, homePageInit)
+    var homePage by remember { mutableStateOf<HomePage?>(null) }
 
-    var chartsPageResult by remember { mutableStateOf<Result<Environment.ChartsPage?>?>(null) }
+    var chartsPage by remember { mutableStateOf<Environment.ChartsPage?>(null) }
     var chartsPageInit by remember { mutableStateOf<Environment.ChartsPage?>(null) }
 
     var preferitesArtists by remember { mutableStateOf<List<Artist>>(emptyList()) }
@@ -179,71 +174,127 @@ fun HomePageExtended(
         Database.blacklisted(listOf(BlacklistType.Song.name, BlacklistType.Video.name))
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
-    var loadedData by rememberPreference(LOADED_DATA.key, false)
+    val loadDataMutex = Mutex()
 
     suspend fun loadData() {
+        loadDataMutex.withLock {
+            try {
+                withContext(Dispatchers.IO) {
 
-        if (showCharts)
-            chartsPageResult =
-                Environment.chartsPageComplete(countryCode = selectedCountryCode.name)
+                    // 1. Charts
+                    if (showCharts) {
+                        val countryChanged = HomeDataCache.lastCountryCode != selectedCountryCode.name
 
-        if (loadedData) return
-
-        runCatching {
-            refreshScope.launch(Dispatchers.IO) {
-                when (playEventType) {
-                    PlayEventsType.MostPlayed -> {
-                        val songs = Database.trending(3).distinctUntilChanged().first()
-                        val song = songs.firstOrNull { item ->
-                            blacklisted.value?.map { it.path }?.contains(item.id) == false
+                        if (chartsPage == null || countryChanged) {
+                            // Provo a leggere dalla cache se il paese non è cambiato
+                            if (!countryChanged && HomeDataCache.chartsPage != null) {
+                                chartsPage = HomeDataCache.chartsPage
+                            } else {
+                                // Chiamata API con .getOrNull()
+                                val result = Environment.chartsPageComplete(countryCode = selectedCountryCode.name).getOrNull()
+                                chartsPage = result
+                                // Salvo in cache solo se la chiamata ha avuto successo
+                                if (result != null) {
+                                    HomeDataCache.chartsPage = result
+                                    HomeDataCache.lastCountryCode = selectedCountryCode.name
+                                }
+                            }
                         }
-                        val songId = if (song?.isLocal == true) song.mediaId else song?.id
-                        if (relatedPageResult == null || trending?.id != song?.id || trending?.mediaId != song?.id) {
-                            relatedPageResult = Environment.relatedPage(
-                                NextBody(
-                                    videoId = (songId ?: "HZnNt9nnEhw")
-                                )
-                            )
-                        }
-                        trending = song
-
                     }
 
-                    PlayEventsType.LastPlayed, PlayEventsType.CasualPlayed -> {
-                        val numSongs = if (playEventType == PlayEventsType.LastPlayed) 3 else 50
-                        val songs = Database.lastPlayed(numSongs).distinctUntilChanged().first()
-                        val song = (if (playEventType == PlayEventsType.LastPlayed) songs
+                    // 2. Controllo se è necessario caricare i dati
+                    val needsLoading = homePage == null ||
+                            ((showNewAlbums || showNewAlbumsArtists || showMoodsAndGenres) && discoverPage == null) ||
+                            relatedPage == null
+
+                    if (!needsLoading) return@withContext
+
+                    // 3. Play Events
+                    when (playEventType) {
+                        PlayEventsType.MostPlayed -> {
+                            val songs = Database.trending(3).distinctUntilChanged().first()
+                            val song = songs.firstOrNull { item ->
+                                blacklisted.value?.map { it.path }?.contains(item.id) == false
+                            }
+                            val songId = if (song?.isLocal == true) song.mediaId else song?.id
+
+                            if (relatedPage == null || trending?.id != song?.id || trending?.mediaId != song?.id) {
+                                // Leggo dalla cache se la canzone corrisponde
+                                if (HomeDataCache.relatedPage != null && HomeDataCache.trending?.id == song?.id) {
+                                    relatedPage = HomeDataCache.relatedPage
+                                } else {
+                                    // Chiamata API con .getOrNull()
+                                    val result = Environment.relatedPage(
+                                        NextBody(videoId = (songId ?: "HZnNt9nnEhw"))
+                                    )?.getOrNull()
+                                    relatedPage = result
+                                    if (result != null) {
+                                        HomeDataCache.relatedPage = result
+                                    }
+                                }
+                            }
+                            trending = song
+                            HomeDataCache.trending = trending
+                        }
+
+                        PlayEventsType.LastPlayed, PlayEventsType.CasualPlayed -> {
+                            val numSongs = if (playEventType == PlayEventsType.LastPlayed) 3 else 50
+                            val songs = Database.lastPlayed(numSongs).distinctUntilChanged().first()
+                            val song = (if (playEventType == PlayEventsType.LastPlayed) songs
                             else songs.shuffled()).firstOrNull { item ->
-                            blacklisted.value?.map { it.path }?.contains(item.id) == false
-                        }
-                        val songId = if (song?.isLocal == true) song.mediaId else song?.id
-                        Timber.d("HomePage Last played song $song relatedPageResult $relatedPageResult songId $songId")
-                        if (relatedPageResult == null || trending?.id != song?.id || trending?.mediaId != song?.id) {
-                            relatedPageResult =
-                                Environment.relatedPage(
-                                    NextBody(
-                                        videoId = (songId ?: "HZnNt9nnEhw")
-                                    )
-                                )
-                        }
-                        trending = song
+                                blacklisted.value?.map { it.path }?.contains(item.id) == false
+                            }
+                            val songId = if (song?.isLocal == true) song.mediaId else song?.id
 
+                            if (relatedPage == null || trending?.id != song?.id || trending?.mediaId != song?.id) {
+                                // Leggo dalla cache se la canzone corrisponde
+                                if (HomeDataCache.relatedPage != null && HomeDataCache.trending?.id == song?.id) {
+                                    relatedPage = HomeDataCache.relatedPage
+                                } else {
+                                    // Chiamata API con .getOrNull()
+                                    val result = Environment.relatedPage(
+                                        NextBody(videoId = (songId ?: "HZnNt9nnEhw"))
+                                    )?.getOrNull()
+                                    relatedPage = result
+                                    if (result != null) {
+                                        HomeDataCache.relatedPage = result
+                                    }
+                                }
+                            }
+                            trending = song
+                            HomeDataCache.trending = trending
+                        }
                     }
 
+                    // 4. Discover Page
+                    if (showNewAlbums || showNewAlbumsArtists || showMoodsAndGenres) {
+                        if (discoverPage == null && HomeDataCache.discoverPage != null) {
+                            discoverPage = HomeDataCache.discoverPage
+                        } else if (discoverPage == null) {
+                            // Chiamata API con .getOrNull()
+                            val result = Environment.discoverPage().getOrNull()
+                            discoverPage = result
+                            if (result != null) {
+                                HomeDataCache.discoverPage = result
+                            }
+                        }
+                    }
+
+                    // 5. Home Page
+                    if (homePage == null && HomeDataCache.homePage != null) {
+                        homePage = HomeDataCache.homePage
+                    } else if (homePage == null) {
+                        // Chiamata API con .getOrNull()
+                        val result = EnvironmentExt.getHomePage(setLogin = isYtLoggedIn()).getOrNull()
+                        homePage = result
+                        if (result != null) {
+                            HomeDataCache.homePage = result
+                        }
+                    }
                 }
+            } catch (e: Exception) {
+                Timber.e("Explore loadData failed: ${e.message}")
             }
-
-            if (showNewAlbums || showNewAlbumsArtists || showMoodsAndGenres) {
-                discoverPageResult = Environment.discoverPage()
-            }
-
-            homePageResult = EnvironmentExt.getHomePage(setLogin = isYtLoggedIn())
-
-
-        }.onFailure {
-            loadedData = false
-        }.onSuccess {
-            loadedData = true
         }
     }
 
@@ -251,9 +302,6 @@ fun HomePageExtended(
 
     fun refresh() {
         if (refreshing) return
-        loadedData = false
-        relatedPageResult = null
-        relatedInit = null
         trending = null
         refreshScope.launch(Dispatchers.IO) {
             refreshing = true
@@ -264,9 +312,7 @@ fun HomePageExtended(
     }
 
     LaunchedEffect(Unit, playEventType, selectedCountryCode) {
-        loadedData = false
         loadData()
-        loadedData = true
     }
 
 
@@ -341,70 +387,6 @@ fun HomePageExtended(
                 if (isLandscape && maxWidth * 0.475f >= 320.dp) 0.475f else 0.9f
             val itemWidth = maxWidth * moodItemWidthFactor
 
-            LaunchedEffect(loadedData) {
-                /*   Load data from url or from saved preference   */
-                if (trendingPreference != null) {
-                    when (loadedData) {
-                        true -> trending = trendingPreference
-                        else -> trendingPreference = trending
-                    }
-                } else trendingPreference = trending
-
-                if (relatedPreference != null) {
-                    when (loadedData) {
-                        true -> {
-                            relatedPageResult = Result.success(relatedPreference)
-                            relatedInit = relatedPageResult?.getOrNull()
-                        }
-                        else -> {
-                            relatedInit = relatedPageResult?.getOrNull()
-                            relatedPreference = relatedInit
-                        }
-                    }
-                } else {
-                    relatedInit = relatedPageResult?.getOrNull()
-                    relatedPreference = relatedInit
-                }
-
-                if (discoverPagePreference != null) {
-                    when (loadedData) {
-                        true -> {
-                            discoverPageResult = Result.success(discoverPagePreference)
-                            discoverPageInit = discoverPageResult?.getOrNull()
-                        }
-                        else -> {
-                            discoverPageInit = discoverPageResult?.getOrNull()
-                            discoverPagePreference = discoverPageInit
-                        }
-
-                    }
-                } else {
-                    discoverPageInit = discoverPageResult?.getOrNull()
-                    discoverPagePreference = discoverPageInit
-                }
-
-                // Not saved/cached to preference
-                chartsPageInit = chartsPageResult?.getOrNull()
-
-                if (homePagePreference != null) {
-                    when (loadedData) {
-                        true -> {
-                            homePageResult = Result.success(homePagePreference)
-                            homePageInit = homePageResult?.getOrNull()
-                        }
-                        else -> {
-                            homePageInit = homePageResult?.getOrNull()
-                            homePagePreference = homePageInit
-                        }
-
-                    }
-                } else {
-                    homePageInit = homePageResult?.getOrNull()
-                    homePagePreference = homePageInit
-                }
-
-                /*   Load data from url or from saved preference   */
-            }
 
             Column(
                 modifier = Modifier
@@ -484,8 +466,8 @@ fun HomePageExtended(
             onPlayEventTypeClick = { playEventType = it },
             binder = binder,
             trending = trending,
-            relatedInit = relatedInit,
-            discoverPageInit = discoverPageInit,
+            relatedInit = relatedPage,
+            discoverPageInit = discoverPage,
             playEventType = playEventType,
             quickPicksLazyGridState = quickPicksLazyGridState,
             songThumbnailSizeDp = songThumbnailSizeDp,
@@ -515,12 +497,12 @@ fun HomePageExtended(
         visible = homePageSection == HomePageSection.Other || homeType == HomeType.Classic
     ) {
         MoodAndGenresPart(
-            homePageInit = homePageInit,
+            homePageInit = homePage,
             chipsLazyGridState = chipsLazyGridState,
             endPaddingValues = endPaddingValues,
             onChipClick = onChipClick,
             showMoodsAndGenres = showMoodsAndGenres,
-            discoverPageInit = discoverPageInit,
+            discoverPageInit = discoverPage,
             navController = navController,
             moodAndGenresLazyGridState = moodAngGenresLazyGridState,
             onMoodAndGenresClick = onMoodAndGenresClick,
@@ -556,7 +538,7 @@ fun HomePageExtended(
                     visible = homePageSection == HomePageSection.ForYou || homeType == HomeType.Classic
                 ) {
                     ForYouPart(
-                        homePageInit = homePageInit,
+                        homePageInit = homePage,
                         endPaddingValues = endPaddingValues,
                         disableScrollingText = disableScrollingText,
                         navController = navController,
