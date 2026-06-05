@@ -9,13 +9,13 @@
     </linearGradient>
   </defs>
   <rect width="600" height="150" rx="12" fill="#ffffff" filter="url(#shadow2)" stroke="#e1e4e8" stroke-width="1"/>
-  <text x="20" y="24" fill="#2b3137" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" font-weight="600">📈 Download Growth (Actual: 67.8k)</text>
+  <text x="20" y="24" fill="#2b3137" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" font-weight="600">📈 Download Growth (Actual: 67.9k)</text>
   
   <!-- Area sotto la linea -->
-  <polygon fill="url(#fillGrad)" points="30.0,120.0,120 30.0,120.0 79.1,109.6 128.2,98.2 177.3,88.4 226.4,85.7 275.5,80.5 324.5,68.4 373.6,60.3 422.7,54.9 471.8,42.5 520.9,36.2 570.0,30.0 570.0,30.0,120" />
+  <polygon fill="url(#fillGrad)" points="30.0,120.0,120 30.0,120.0 75.0,110.0 120.0,99.1 165.0,89.6 210.0,87.1 255.0,82.1 300.0,70.4 345.0,62.7 390.0,57.5 435.0,45.5 480.0,39.5 525.0,33.5 570.0,30.0 570.0,30.0,120" />
   
   <!-- Linea principale -->
-  <polyline fill="none" stroke="#0366d6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="30.0,120.0 79.1,109.6 128.2,98.2 177.3,88.4 226.4,85.7 275.5,80.5 324.5,68.4 373.6,60.3 422.7,54.9 471.8,42.5 520.9,36.2 570.0,30.0" />
+  <polyline fill="none" stroke="#0366d6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="30.0,120.0 75.0,110.0 120.0,99.1 165.0,89.6 210.0,87.1 255.0,82.1 300.0,70.4 345.0,62.7 390.0,57.5 435.0,45.5 480.0,39.5 525.0,33.5 570.0,30.0" />
   
   <!-- Punto finale luminoso -->
   <circle cx="570.0" cy="30.0" r="4" fill="#ffffff" stroke="#0366d6" stroke-width="2.5" />
