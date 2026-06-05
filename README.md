@@ -180,6 +180,7 @@ RiPlay wouldn't be possible without the amazing work of these projects and contr
 - [HypnoticCanvas](https://mikepenz.github.io/HypnoticCanvas/) – shaders for Compose  
 - [AudioTag.info](https://audiotag.info) – music recognition API
 - [WSABuilds](https://github.com/MustardChef/WSABuilds) - Run Windows Subsystem For Android on your Windows 10 and Windows 11 PC using prebuilt binaries
+- [Waydroid](https://github.com/waydroid/waydroid) - A container-based approach to boot a full Android system on a regular GNU/Linux system like Ubuntu.
 
 ---
 
