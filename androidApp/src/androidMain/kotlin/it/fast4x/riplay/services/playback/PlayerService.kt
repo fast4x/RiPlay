@@ -2176,7 +2176,7 @@ private var pausedByZeroVolume = false
             }
 
             override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo>) {
-                if (!player.isPlaying) return // Se è già in pausa, non facciamo nulla
+                if (!_playerState.value.isPlaying) return // Se è già in pausa, non facciamo nulla
 
                 val removedBt = removedDevices.any(::isBluetoothSink)
                 val removedWired = removedDevices.any(::isWiredSink)
