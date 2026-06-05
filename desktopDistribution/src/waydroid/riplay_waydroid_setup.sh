@@ -3,14 +3,14 @@
 # ==============================================================================
 # Installazione e provisioning WayDroid e RiPlay su Linux
 # Autore: Fast4x
-# Descrizione: Installa WayDroid, inizializza il container Android e installa
-#              un APK direttamente da un URL GitHub.
+# Descrizione: Installa WayDroid, inizializza il container Android,
+#              scarica e installa RiPlay da GitHub.
 # ==============================================================================
 
 set -e # Esci immediatamente se un comando fallisce
 
 # --- CONFIGURAZIONE ---
-# Sostituisci questo URL con l'URL diretto del tuo APK su GitHub Releases
+# Sostituisci questo URL con l'URL diretto della versione APK su GitHub Releases
 APK_URL="https://github.com/fast4x/RiPlay/releases/download/v0.7.83/RiPlay-full-release-0.7.83.apk"
 APK_NAME="RiPlay-full-release-0.7.83.apk"
 
