@@ -70,7 +70,7 @@ jobs:
           echo "$KEYSTORE_BASE64" | base64 -d > ${{ runner.temp }}/keystore/RiPlayKeystore.jks
           chmod 600 ${{ runner.temp }}/keystore/RiPlayKeystore.jks
 
-      - name: Build Release APK -  Flavor
+      - name: Build Release APK - FULL Flavor
         env:
           SIGNING_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
@@ -106,12 +106,16 @@ jobs:
 
           AVD_ARCHIVE="RiPlay-desktop-AVD-${CURRENT_TAG}.7z"
           WSA_ARCHIVE="RiPlay-desktop-WSA-${CURRENT_TAG}.7z"
+          WAYDROID_ARCHIVE="RiPlay-desktop-WAYDROID-${CURRENT_TAG}.7z"
 
           echo "📦 Creating ${AVD_ARCHIVE} (Windows & Linux) from desktopDistribution/src/avd/ ..."
           7z a "release-apks/${AVD_ARCHIVE}" ./desktopDistribution/src/avd/*
 
           echo "📦 Creating ${WSA_ARCHIVE} (Windows only) from desktopDistribution/src/wsa/ ..."
           7z a "release-apks/${WSA_ARCHIVE}" ./desktopDistribution/src/wsa/*
+          
+          echo "📦 Creating ${WAYDROID_ARCHIVE} (Linux only) from desktopDistribution/src/waydroid/ ..."
+          7z a "release-apks/${WAYDROID_ARCHIVE}" ./desktopDistribution/src/waydroid/*
 
           echo "📂 Final content of folder release-apks:"
           ls -lah release-apks/
@@ -165,6 +169,7 @@ jobs:
             echo "- **FOSS Flavor** (All features less chromecast, check for updates, musicvault)"
             echo "- **Desktop AVD** (Windows & Linux)"
             echo "- **Desktop WSA** (Windows only)"
+            echo "- **Desktop WAYDROID** (Linux only)"
             echo ""
             echo "### ✨ Build Information"
             echo "- **Build Date**: ${RELEASE_DATE}"
