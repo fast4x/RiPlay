@@ -9,13 +9,13 @@
     </linearGradient>
   </defs>
   <rect width="600" height="150" rx="12" fill="#ffffff" filter="url(#shadow2)" stroke="#e1e4e8" stroke-width="1"/>
-  <text x="20" y="24" fill="#2b3137" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" font-weight="600">📈 Download Growth (Actual: 68.4k)</text>
+  <text x="20" y="24" fill="#2b3137" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" font-weight="600">📈 Download Growth (Actual: 68.5k)</text>
   
   <!-- Area sotto la linea -->
-  <polygon fill="url(#fillGrad)" points="30.0,120.0,120 30.0,120.0 57.0,113.5 84.0,106.4 111.0,100.2 138.0,98.5 165.0,95.3 192.0,87.7 219.0,82.6 246.0,79.2 273.0,71.4 300.0,67.5 327.0,63.6 354.0,61.3 381.0,57.8 408.0,52.5 435.0,46.9 462.0,42.6 489.0,39.7 516.0,37.6 543.0,34.1 570.0,30.0 570.0,30.0,120" />
+  <polygon fill="url(#fillGrad)" points="30.0,120.0,120 30.0,120.0 55.7,113.7 81.4,106.9 107.1,100.9 132.9,99.4 158.6,96.2 184.3,88.9 210.0,84.1 235.7,80.8 261.4,73.3 287.1,69.5 312.9,65.8 338.6,63.6 364.3,60.2 390.0,55.1 415.7,49.7 441.4,45.6 467.1,42.8 492.9,40.8 518.6,37.5 544.3,33.5 570.0,30.0 570.0,30.0,120" />
   
   <!-- Linea principale -->
-  <polyline fill="none" stroke="#0366d6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="30.0,120.0 57.0,113.5 84.0,106.4 111.0,100.2 138.0,98.5 165.0,95.3 192.0,87.7 219.0,82.6 246.0,79.2 273.0,71.4 300.0,67.5 327.0,63.6 354.0,61.3 381.0,57.8 408.0,52.5 435.0,46.9 462.0,42.6 489.0,39.7 516.0,37.6 543.0,34.1 570.0,30.0" />
+  <polyline fill="none" stroke="#0366d6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="30.0,120.0 55.7,113.7 81.4,106.9 107.1,100.9 132.9,99.4 158.6,96.2 184.3,88.9 210.0,84.1 235.7,80.8 261.4,73.3 287.1,69.5 312.9,65.8 338.6,63.6 364.3,60.2 390.0,55.1 415.7,49.7 441.4,45.6 467.1,42.8 492.9,40.8 518.6,37.5 544.3,33.5 570.0,30.0" />
   
   <!-- Punto finale luminoso -->
   <circle cx="570.0" cy="30.0" r="4" fill="#ffffff" stroke="#0366d6" stroke-width="2.5" />
