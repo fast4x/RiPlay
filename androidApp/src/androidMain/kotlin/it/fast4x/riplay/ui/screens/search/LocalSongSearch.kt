@@ -132,11 +132,12 @@ fun LocalSongSearch(
         ) {
             LazyColumn(
                 state = lazyListState,
-                contentPadding = LocalPlayerAwareWindowInsets.current
-                    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
+//                contentPadding = LocalPlayerAwareWindowInsets.current
+//                    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
                 modifier = Modifier
                     .fillMaxSize()
             ) {
+                /*
                 item(
                     key = "header",
                     contentType = 0
@@ -167,11 +168,12 @@ fun LocalSongSearch(
                     )
                 }
 
+                 */
+
                 items(
                     items = items,
                     key = Song::id,
                 ) { song ->
-                    //val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
                     SongItem(
                         song = song,
                         thumbnailSizePx = thumbnailSizePx,

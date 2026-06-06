@@ -40,7 +40,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.github.doyaaaaaken.kotlincsv.client.KotlinCsvExperimental
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import it.fast4x.riplay.commonutils.cleanString
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Chip
 import it.fast4x.riplay.enums.NavRoutes
@@ -67,13 +66,10 @@ import it.fast4x.riplay.ui.screens.ondevice.OnDeviceArtistScreen
 import it.fast4x.riplay.ui.screens.playlist.PlaylistScreen
 import it.fast4x.riplay.ui.screens.podcast.PodcastScreen
 import it.fast4x.riplay.ui.screens.search.SearchScreen
-import it.fast4x.riplay.ui.screens.searchresult.SearchResultScreen
 import it.fast4x.riplay.ui.screens.settings.SettingsScreen
 import it.fast4x.riplay.ui.screens.statistics.StatisticsScreen
 import it.fast4x.riplay.ui.screens.welcome.WelcomeScreen
 import it.fast4x.riplay.utils.ShowVideoOrSongInfo
-import it.fast4x.riplay.extensions.preferences.clearPreference
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.HOME_SCREEN_TAB_INDEX
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.PAUSE_SEARCH_HISTORY
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.rememberPreference
@@ -482,48 +478,9 @@ fun AppNavigation(
         ) { navBackStackEntry ->
             val context = LocalContext.current
             val text = navBackStackEntry.arguments?.getString("text") ?: ""
-
             SearchScreen(
                 navController = navController,
                 miniPlayer = miniPlayer,
-                initialTextInput = text,
-                onViewPlaylist = {},
-                onSearch = { query ->
-
-                    navController.navigate(
-                        route = "${NavRoutes.searchResults.name}/${
-                            cleanString(
-                                query
-                            )
-                        }"
-                    )
-
-                    if (!context.preferences.getBoolean(PAUSE_SEARCH_HISTORY.key, false)) {
-                        Database.asyncTransaction {
-                            insert(SearchQuery(query = query))
-                        }
-                    }
-                },
-
-                )
-        }
-
-        composable(
-            route = "${NavRoutes.searchResults.name}/{query}",
-            arguments = listOf(
-                navArgument(
-                    name = "query",
-                    builder = { type = NavType.StringType }
-                )
-            )
-        ) { navBackStackEntry ->
-            val query = navBackStackEntry.arguments?.getString("query") ?: ""
-
-            SearchResultScreen(
-                navController = navController,
-                miniPlayer = miniPlayer,
-                query = query,
-                onSearchAgain = {}
             )
         }
 
@@ -605,29 +562,6 @@ fun AppNavigation(
             NewreleasesScreen(
                 navController = navController,
                 miniPlayer = miniPlayer,
-            )
-        }
-
-        composable(
-            "searchScreenRoute/{query}"
-        ) { backStackEntry ->
-            val context = LocalContext.current
-            val query = backStackEntry.arguments?.getString("query")?: ""
-            SearchScreen(
-                navController = navController,
-                miniPlayer = miniPlayer,
-                initialTextInput = query ,
-                onViewPlaylist = {},
-                onSearch = { newQuery ->
-                    val encodedQuery = URLEncoder.encode(newQuery, "UTF-8")
-                    navController.navigate(route = "${NavRoutes.searchResults.name}/${encodedQuery}")
-
-                    if (!context.preferences.getBoolean(PAUSE_SEARCH_HISTORY.key, false)) {
-                        Database.asyncTransaction {
-                            insert(SearchQuery(query = encodedQuery))
-                        }
-                    }
-                },
             )
         }
 

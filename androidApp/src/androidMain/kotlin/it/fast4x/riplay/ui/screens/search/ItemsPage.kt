@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens.searchresult
+package it.fast4x.riplay.ui.screens.search
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
@@ -27,7 +27,6 @@ import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.environment.Environment
 import it.fast4x.environment.utils.plus
 import it.fast4x.riplay.enums.NavigationBarPosition
-import it.fast4x.riplay.ui.components.ShimmerHost
 import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.center

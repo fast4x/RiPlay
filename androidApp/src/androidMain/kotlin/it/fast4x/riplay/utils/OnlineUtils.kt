@@ -69,7 +69,7 @@ import it.fast4x.riplay.ui.components.themed.Title2Actions
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.items.VideoItem
 import it.fast4x.riplay.ui.items.VideoItemPlaceholder
-import it.fast4x.riplay.ui.screens.searchresult.ItemsPage
+import it.fast4x.riplay.ui.screens.search.ItemsPage
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.styling.secondary

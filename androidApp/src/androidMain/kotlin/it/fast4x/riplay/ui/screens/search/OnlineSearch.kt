@@ -184,11 +184,12 @@ fun OnlineSearch(
         ) {
             LazyColumn(
                 state = lazyListState,
-                contentPadding = LocalPlayerAwareWindowInsets.current
-                    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
+//                contentPadding = LocalPlayerAwareWindowInsets.current
+//                    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
                 modifier = Modifier
                     .fillMaxSize()
             ) {
+                /*
                 item(
                     key = "header",
                     contentType = 0
@@ -225,6 +226,7 @@ fun OnlineSearch(
                         actionsContent = {},
                     )
                 }
+                */
 
                 suggestionsResult?.getOrNull()?.let { suggestions ->
 
