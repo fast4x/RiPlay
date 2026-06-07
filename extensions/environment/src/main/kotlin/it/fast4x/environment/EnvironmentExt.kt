@@ -20,6 +20,7 @@ import it.fast4x.environment.requests.HomePage
 import it.fast4x.environment.requests.NewReleaseAlbumPage
 import it.fast4x.environment.requests.PlaylistContinuationPage
 import it.fast4x.environment.requests.PlaylistPage
+import it.fast4x.environment.utils.ArtistDiscography
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlin.random.Random
 
@@ -265,9 +266,6 @@ object EnvironmentExt {
                             )
                         }
                     } ?: emptyList(),
-//                continuation = response.contents.singleColumnBrowseResultsRenderer.tabs.firstOrNull()
-//                    ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
-//                    ?.musicPlaylistShelfRenderer?.continuations?.getContinuation()
                 continuation = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
                     ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
                     ?.musicPlaylistShelfRenderer?.contents?.lastOrNull()
@@ -577,4 +575,55 @@ object EnvironmentExt {
     }.onFailure {
         println("EnvironmentExt addPlaybackToHistory error: ${it.stackTraceToString()}")
     }
+
+
+    suspend fun getArtistMore(
+        browseId: String,
+        type: ArtistDiscography = ArtistDiscography.Album
+    ) = runCatching {
+        val response = Environment.getArtistDiscography(browseId, type).body<BrowseResponse>()
+        println("EnvironmentExt getArtistAlbumOrSingleMore browseId $browseId response $response")
+
+        val gridRenderer = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
+            ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
+            ?.gridRenderer
+
+        val artiItemsPage = if (gridRenderer != null) {
+            ArtistItemsPage(
+                title = gridRenderer.header?.gridHeaderRenderer?.title?.runs?.firstOrNull()?.text.orEmpty(),
+                items = gridRenderer.items?.mapNotNull {
+                    it.musicTwoRowItemRenderer?.let { renderer ->
+                        ArtistItemsPage.fromMusicTwoRowItemRenderer(renderer)
+                    }
+                } ?: emptyList(),
+                continuation = gridRenderer.continuations?.getContinuation()
+            )
+        } else {
+            ArtistItemsPage(
+                title = response.header?.musicHeaderRenderer?.title?.runs?.firstOrNull()?.text ?: "",
+                items = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
+                    ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
+                    ?.musicPlaylistShelfRenderer?.contents?.mapNotNull {
+                        it.musicResponsiveListItemRenderer?.let { it1 ->
+                            ArtistItemsPage.fromMusicResponsiveListItemRenderer(
+                                it1
+                            )
+                        }
+                    } ?: emptyList(),
+                continuation = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
+                    ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
+                    ?.musicPlaylistShelfRenderer?.contents?.lastOrNull()
+                    ?.continuationItemRenderer?.continuationEndpoint?.continuationCommand?.token
+            )
+        }
+
+        println("EnvironmentExt getArtistMore ArtistItemsPage ${artiItemsPage.items.joinToString { (it as Environment.AlbumItem).year.toString() }}")
+
+    }.onFailure {
+        println("EnvironmentExt getArtistMore error: ${it.stackTraceToString()}")
+    }
+
+
+
+
 }

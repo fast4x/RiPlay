@@ -4,7 +4,9 @@ import androidx.compose.runtime.Immutable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import it.fast4x.riplay.enums.LinkType
+import kotlinx.serialization.Serializable
 
+@Serializable
 @Immutable
 @Entity
 data class Album(

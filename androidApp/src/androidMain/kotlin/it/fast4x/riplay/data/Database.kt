@@ -46,6 +46,7 @@ import it.fast4x.riplay.enums.SongSortBy
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.Artist
+import it.fast4x.riplay.data.models.ArtistDiscography
 import it.fast4x.riplay.data.models.Blacklist
 import it.fast4x.riplay.data.models.Event
 import it.fast4x.riplay.data.models.EventWithSong
@@ -81,6 +82,7 @@ import it.fast4x.riplay.utils.isExplicit
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.json.Json
 import org.intellij.lang.annotations.MagicConstant
 import kotlin.collections.sortedBy
 
@@ -3189,12 +3191,13 @@ interface Database {
         Lyrics::class,
         Queues::class,
         ExternalApp::class,
-        Blacklist::class
+        Blacklist::class,
+        ArtistDiscography::class
     ],
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 44,
+    version = 45,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -3230,6 +3233,7 @@ interface Database {
         AutoMigration(from = 40, to = 41),
         AutoMigration(from = 41, to = 42),
         AutoMigration(from = 42, to = 43),
+        AutoMigration(from = 44, to = 45),
     ],
 )
 @TypeConverters(Converters::class)
@@ -3582,5 +3586,23 @@ object Converters {
     @JvmStatic
     fun toMusicVaultState(value: String): MusicVaultState =
         MusicVaultState.valueOf(value)
+
+    // Configura Json per essere più flessibile e sicuro
+    val RoomJson = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+    }
+
+    @TypeConverter
+    @JvmStatic
+    fun fromAlbumList(value: List<Album>): String {
+        return RoomJson.encodeToString(value) // Serializza in JSON String
+    }
+
+    @TypeConverter
+    @JvmStatic
+    fun toAlbumList(value: String): List<Album> {
+        return RoomJson.decodeFromString(value) // Deserializza da JSON String a Lista
+    }
 
 }

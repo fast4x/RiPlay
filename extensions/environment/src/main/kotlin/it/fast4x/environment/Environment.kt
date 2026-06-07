@@ -10,7 +10,6 @@ import io.ktor.client.plugins.compression.ContentEncoding
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.HttpRequestBuilder
-import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.headers
@@ -51,6 +50,7 @@ import it.fast4x.environment.models.bodies.NextBody
 import it.fast4x.environment.models.bodies.PlayerBody
 import it.fast4x.environment.models.bodies.PlaylistDeleteBody
 import it.fast4x.environment.models.bodies.SubscribeBody
+import it.fast4x.environment.utils.ArtistDiscography
 import it.fast4x.environment.utils.EnvironmentLocale
 import it.fast4x.environment.utils.EnvironmentPreferences
 import it.fast4x.environment.utils.ProxyPreferences
@@ -80,6 +80,8 @@ const val YT_ALBUM_SHARE_BASEURL = "https://www.youtube.com/browse/"
 const val YTM_ALBUM_SHARE_BASEURL = "https://music.youtube.com/browse/"
 
 private val VISITOR_DATA_SUFFIX = Regex("^Cg[t|s]")
+
+
 
 object Environment {
 
@@ -244,6 +246,9 @@ object Environment {
     internal const val musicResponsiveListItemRendererMask = "musicResponsiveListItemRenderer(flexColumns,fixedColumns,thumbnail,navigationEndpoint,badges)"
     internal const val musicTwoRowItemRendererMask = "musicTwoRowItemRenderer(thumbnailRenderer,title,subtitle,navigationEndpoint)"
     const val playlistPanelVideoRendererMask = "playlistPanelVideoRenderer(title,navigationEndpoint,longBylineText,shortBylineText,thumbnail,lengthText)"
+
+    const val ARTIST_DISCOGRAPHY_ALBUM_PARAMS = "ggMIegYIARoCAQI%3D"
+    const val ARTIST_DISCOGRAPHY_SINGLE_PARAMS = "ggMIegYIAhoCAQI%3D"
 
     internal fun HttpRequestBuilder.mask(value: String = "*") =
         header("X-Goog-FieldMask", value)
@@ -1109,6 +1114,17 @@ object Environment {
         }.onFailure {
             println("Environment spotifyThumbnail error ${it.message}")
         }
+
+    suspend fun getArtistDiscography(
+        browseId: String,
+        type: ArtistDiscography = ArtistDiscography.Album
+    ) = browse(
+        browseId = "MPAD$browseId",
+        params = when (type) {
+            ArtistDiscography.Album -> ARTIST_DISCOGRAPHY_ALBUM_PARAMS
+            ArtistDiscography.Single -> ARTIST_DISCOGRAPHY_SINGLE_PARAMS
+        }
+    )
 
 }
 

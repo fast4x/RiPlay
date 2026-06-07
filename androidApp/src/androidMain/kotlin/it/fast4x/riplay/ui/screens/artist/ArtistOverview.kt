@@ -62,6 +62,7 @@ import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.BrowseEndpoint
 import it.fast4x.environment.requests.ArtistPage
+import it.fast4x.environment.utils.ArtistDiscography
 import it.fast4x.environment.utils.completed
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
@@ -197,7 +198,7 @@ fun ArtistOverview(
             artist = currentArtist
 
             if (artistPage == null) {
-                CoroutineScope(Dispatchers.IO).launch {
+                withContext(Dispatchers.IO) {
                     EnvironmentExt.getArtistPage(browseId = browseId)
                         .onSuccess { currentArtistPage ->
                             artistPage = currentArtistPage
@@ -216,6 +217,11 @@ fun ArtistOverview(
                 }
             }
         }
+    }
+
+    LaunchedEffect(Unit) {
+        EnvironmentExt.getArtistMore(browseId).getOrNull()
+        EnvironmentExt.getArtistMore(browseId, ArtistDiscography.Single).getOrNull()
     }
 
     FastShare(
