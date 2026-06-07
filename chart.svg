@@ -9,13 +9,13 @@
     </linearGradient>
   </defs>
   <rect width="600" height="150" rx="12" fill="#ffffff" filter="url(#shadow2)" stroke="#e1e4e8" stroke-width="1"/>
-  <text x="20" y="24" fill="#2b3137" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" font-weight="600">📈 Download Growth (Actual: 68.6k)</text>
+  <text x="20" y="24" fill="#2b3137" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" font-weight="600">📈 Download Growth (Actual: 68.8k)</text>
   
   <!-- Area sotto la linea -->
-  <polygon fill="url(#fillGrad)" points="30.0,120.0,120 30.0,120.0 53.5,114.1 77.0,107.6 100.4,101.9 123.9,100.5 147.4,97.5 170.9,90.6 194.3,86.0 217.8,82.9 241.3,75.8 264.8,72.2 288.3,68.7 311.7,66.6 335.2,63.3 358.7,58.6 382.2,53.5 405.7,49.5 429.1,46.9 452.6,45.0 476.1,41.8 499.6,38.1 523.0,34.8 546.5,33.2 570.0,30.0 570.0,30.0,120" />
+  <polygon fill="url(#fillGrad)" points="30.0,120.0,120 30.0,120.0 52.5,114.7 75.0,109.0 97.5,103.9 120.0,102.6 142.5,100.0 165.0,93.8 187.5,89.7 210.0,87.0 232.5,80.7 255.0,77.5 277.5,74.3 300.0,72.5 322.5,69.6 345.0,65.4 367.5,60.8 390.0,57.3 412.5,55.0 435.0,53.3 457.5,50.5 480.0,47.1 502.5,44.2 525.0,42.8 547.5,40.0 570.0,30.0 570.0,30.0,120" />
   
   <!-- Linea principale -->
-  <polyline fill="none" stroke="#0366d6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="30.0,120.0 53.5,114.1 77.0,107.6 100.4,101.9 123.9,100.5 147.4,97.5 170.9,90.6 194.3,86.0 217.8,82.9 241.3,75.8 264.8,72.2 288.3,68.7 311.7,66.6 335.2,63.3 358.7,58.6 382.2,53.5 405.7,49.5 429.1,46.9 452.6,45.0 476.1,41.8 499.6,38.1 523.0,34.8 546.5,33.2 570.0,30.0" />
+  <polyline fill="none" stroke="#0366d6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="30.0,120.0 52.5,114.7 75.0,109.0 97.5,103.9 120.0,102.6 142.5,100.0 165.0,93.8 187.5,89.7 210.0,87.0 232.5,80.7 255.0,77.5 277.5,74.3 300.0,72.5 322.5,69.6 345.0,65.4 367.5,60.8 390.0,57.3 412.5,55.0 435.0,53.3 457.5,50.5 480.0,47.1 502.5,44.2 525.0,42.8 547.5,40.0 570.0,30.0" />
   
   <!-- Punto finale luminoso -->
   <circle cx="570.0" cy="30.0" r="4" fill="#ffffff" stroke="#0366d6" stroke-width="2.5" />
