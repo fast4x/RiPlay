@@ -2153,14 +2153,12 @@ private var pausedByZeroVolume = false
             }
 
             override fun onAudioDevicesAdded(addedDevices: Array<AudioDeviceInfo>) {
-                if (_playerState.value.isPlaying) return // Se suona già, non facciamo nulla
 
                 val hasNewBt = addedDevices.any(::isBluetoothSink)
                 val hasNewWired = addedDevices.any(::isWiredSink)
 
                 // Logica di Play: rispettiamo le preferenze dell'utente
-                val shouldPlay = (hasNewBt && resumeOnBt && hasBtPermission) ||
-                        (hasNewWired && resumeOnWired)
+                val shouldPlay = (hasNewBt && resumeOnBt) || (hasNewWired && resumeOnWired)
 
                 if (shouldPlay) {
                     if (currentSong.value?.isLocal == true) {
@@ -2176,7 +2174,6 @@ private var pausedByZeroVolume = false
             }
 
             override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo>) {
-                if (!_playerState.value.isPlaying) return // Se è già in pausa, non facciamo nulla
 
                 val removedBt = removedDevices.any(::isBluetoothSink)
                 val removedWired = removedDevices.any(::isWiredSink)
@@ -2187,8 +2184,8 @@ private var pausedByZeroVolume = false
                     val hasRemainingBt = currentDevices?.any(::isBluetoothSink) == true
                     val hasRemainingWired = currentDevices?.any(::isWiredSink) == true
 
-                    // Mettiamo in pausa SOLO se non ci sono più dispositivi di output validi.
-                    // Questo evita che la musica si feermi se scollego il jack
+                    // Mettiamo in pausa SOLO se non ci sono più dispositivi di output validi ??
+                    // Questo evita che la musica si fermi se scollego il jack
                     // ma ho ancora le cuffie BT collegate.
                     if (!hasRemainingBt && !hasRemainingWired) {
                         player.pause()
