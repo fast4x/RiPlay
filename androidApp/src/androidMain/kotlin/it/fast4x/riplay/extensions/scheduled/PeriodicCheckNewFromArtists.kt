@@ -16,8 +16,8 @@ fun periodicCheckNewFromArtists(context: Context, weeklyOrDaily: Boolean = false
 
     val calendar = Calendar.getInstance().apply {
         if (!weeklyOrDaily) {
-            set(Calendar.HOUR_OF_DAY, 20)
-            set(Calendar.MINUTE,29)
+            set(Calendar.HOUR_OF_DAY, 9)
+            set(Calendar.MINUTE,0)
             set(Calendar.SECOND, 0)
         } else {
             set(Calendar.DAY_OF_YEAR, Calendar.MONDAY)
