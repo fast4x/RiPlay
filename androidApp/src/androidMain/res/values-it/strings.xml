@@ -1231,7 +1231,7 @@
     <string name="event_if_there_are_new_releases_you_will_be_notified_with_a_system_notification_even_if_the_app_is_not_open">Se ci sono nuove versioni, verrai avvisato con una notifica di sistema, anche se l\'applicazione non è aperta.</string>
     <string name="formattedtime_within_days_and_hours">Entro %1$d giorni e %2$d ore</string>
     <string name="formattedtime_within_hours">Entro %1$d ore</string>
-    <string name="formattedtime_soon">Prossimamente</string>
+    <string name="formattedtime_soon">A breve</string>
     <string name="genres">Genres</string>
     <string name="reset_playback_events">Reset playback events</string>
     <string name="no_playback_events">No playback events</string>
@@ -1358,4 +1358,7 @@
     <string name="settings_bt_info_resume_playback_when_connected_pause_when_disconnected">Resume playback when connected, pause when disconnected</string>
     <string name="settings_wired_title_wired_audio_devices">Wired audio devices</string>
     <string name="settings_wired_info_resume_playback_when_plugged_pause_when_unplugged">Resume playback when plugged in, pause when unplugged</string>
+    <string name="event_total_new_releases_from_artists">%1$d new releases from %2$d artists</string>
+    <string name="event_notify_channel_name_favorites_artists_updates">Favorite Artist Updates</string>
+    <string name="event_notify_channel_desc_check_new_releases_from_favorite_artists">Check new releases from favorite artists</string>
 </resources>

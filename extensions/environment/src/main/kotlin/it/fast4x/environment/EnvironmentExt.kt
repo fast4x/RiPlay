@@ -20,7 +20,7 @@ import it.fast4x.environment.requests.HomePage
 import it.fast4x.environment.requests.NewReleaseAlbumPage
 import it.fast4x.environment.requests.PlaylistContinuationPage
 import it.fast4x.environment.requests.PlaylistPage
-import it.fast4x.environment.utils.ArtistDiscography
+import it.fast4x.environment.utils.ArtistDiscographyType
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlin.random.Random
 
@@ -577,9 +577,9 @@ object EnvironmentExt {
     }
 
 
-    suspend fun getArtistMore(
+    suspend fun getArtistDiscography(
         browseId: String,
-        type: ArtistDiscography = ArtistDiscography.Album
+        type: ArtistDiscographyType = ArtistDiscographyType.Album
     ) = runCatching {
         val response = Environment.getArtistDiscography(browseId, type).body<BrowseResponse>()
         println("EnvironmentExt getArtistAlbumOrSingleMore browseId $browseId response $response")
@@ -617,7 +617,9 @@ object EnvironmentExt {
             )
         }
 
-        println("EnvironmentExt getArtistMore ArtistItemsPage ${artiItemsPage.items.joinToString { (it as Environment.AlbumItem).year.toString() }}")
+        //println("EnvironmentExt getArtistMore ArtistItemsPage ${artiItemsPage.items.joinToString { (it as Environment.AlbumItem).year.toString() }}")
+
+        artiItemsPage
 
     }.onFailure {
         println("EnvironmentExt getArtistMore error: ${it.stackTraceToString()}")

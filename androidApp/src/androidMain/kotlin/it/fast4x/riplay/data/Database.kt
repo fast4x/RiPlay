@@ -84,6 +84,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 import org.intellij.lang.annotations.MagicConstant
+import timber.log.Timber
 import kotlin.collections.sortedBy
 
 @Dao
@@ -2900,7 +2901,13 @@ interface Database {
     @Query("SELECT * FROM Song WHERE musicVaultState = 'COMPLETED'")
     fun musicVaultSongs(): Flow<List<Song>>
 
+    // ArtistDiscography
+    @Query("SELECT * FROM ArtistDiscography WHERE id = :artistId")
+    fun getArtistDiscography(artistId: String): Flow<ArtistDiscography?>
 
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(artistDiscography: ArtistDiscography)
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(blacklist: Blacklist)
 
@@ -3076,6 +3083,8 @@ interface Database {
     @Upsert
     fun upsert(queue: Queues)
 
+    @Delete
+    fun delete(artistDiscography: ArtistDiscography)
     @Delete
     fun delete(blacklist: Blacklist)
 
@@ -3550,31 +3559,48 @@ object Converters {
     @TypeConverter
     @JvmStatic
     @UnstableApi
-    fun mediaItemFromByteArray(value: ByteArray?): MediaItem? {
-        return value?.let { byteArray ->
-            runCatching {
-                val parcel = Parcel.obtain()
-                parcel.unmarshall(byteArray, 0, byteArray.size)
-                parcel.setDataPosition(0)
-                val bundle = parcel.readBundle(MediaItem::class.java.classLoader)
-                parcel.recycle()
+    fun mediaItemToByteArray(mediaItem: MediaItem?): ByteArray? {
+        if (mediaItem == null) return null
 
-                bundle?.let(MediaItem::fromBundle)
-            }.getOrNull()
+        val parcel = Parcel.obtain()
+        return try {
+            @Suppress("DEPRECATION") // Necessario finché Media3 non fornisce un'alternativa a toBundle
+            val bundle = mediaItem.toBundle()
+
+            parcel.writeBundle(bundle)
+            parcel.marshall()
+        } catch (e: Exception) {
+            //Timber.e("TypeConverter Errore serializzazione MediaItem ${e.message}")
+            null
+        } finally {
+            parcel.recycle() // Fondamentale!
         }
     }
 
     @TypeConverter
     @JvmStatic
     @UnstableApi
-    fun mediaItemToByteArray(mediaItem: MediaItem?): ByteArray? {
-        return mediaItem?.toBundle()?.let { persistableBundle ->
-            val parcel = Parcel.obtain()
-            parcel.writeBundle(persistableBundle)
-            val bytes = parcel.marshall()
-            parcel.recycle()
+    fun mediaItemFromByteArray(value: ByteArray?): MediaItem? {
+        if (value == null) return null
 
-            bytes
+        val parcel = Parcel.obtain()
+        return try {
+            parcel.unmarshall(value, 0, value.size)
+            parcel.setDataPosition(0)
+
+            // ClassLoader sicuro con fallback
+            val classLoader = MediaItem::class.java.classLoader
+                ?: Thread.currentThread().contextClassLoader
+
+            val bundle = parcel.readBundle(classLoader)
+
+            @Suppress("DEPRECATION")
+            bundle?.let(MediaItem::fromBundle)
+        } catch (e: Exception) {
+            //Timber.e("TypeConverter Errore deserializzazione MediaItem ${e.message}")
+            null
+        } finally {
+            parcel.recycle()
         }
     }
 

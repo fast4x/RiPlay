@@ -62,7 +62,7 @@ import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.BrowseEndpoint
 import it.fast4x.environment.requests.ArtistPage
-import it.fast4x.environment.utils.ArtistDiscography
+import it.fast4x.environment.utils.ArtistDiscographyType
 import it.fast4x.environment.utils.completed
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
@@ -80,6 +80,7 @@ import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.Artist
+import it.fast4x.riplay.data.models.ArtistDiscography
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
@@ -122,6 +123,7 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.ui.components.themed.LayoutWithAdaptiveThumbnail
 import it.fast4x.riplay.ui.components.themed.LoaderScreen
+import it.fast4x.riplay.utils.asAlbum
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.isPrimaryAction
@@ -132,6 +134,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
+import timber.log.Timber
 import kotlin.random.Random
 
 @ExperimentalSerializationApi
@@ -219,9 +222,32 @@ fun ArtistOverview(
         }
     }
 
-    LaunchedEffect(Unit) {
-        EnvironmentExt.getArtistMore(browseId).getOrNull()
-        EnvironmentExt.getArtistMore(browseId, ArtistDiscography.Single).getOrNull()
+    var updateDiscografyIfBookmarked by remember { mutableStateOf(false) }
+
+    LaunchedEffect(updateDiscografyIfBookmarked) {
+        if (updateDiscografyIfBookmarked) {
+            val onlineAlbumsDiscography = EnvironmentExt.getArtistDiscography(browseId).getOrNull()
+            Timber.d("ArtistOverview onlineAlbumsDiscography: $onlineAlbumsDiscography")
+
+            val onlineSinglesDiscography = EnvironmentExt.getArtistDiscography(browseId,
+                ArtistDiscographyType.Single).getOrNull()
+            Timber.d("ArtistOverview onlineSinglesDiscography: $onlineSinglesDiscography")
+            if (onlineAlbumsDiscography == null && onlineSinglesDiscography == null) {
+                return@LaunchedEffect
+            }
+            val albums = onlineAlbumsDiscography?.items?.filterIsInstance<Environment.AlbumItem>()?.map { it.asAlbum } ?: emptyList()
+            val singles = onlineSinglesDiscography?.items?.filterIsInstance<Environment.AlbumItem>()?.map { it.asAlbum } ?: emptyList()
+
+            if (albums.isEmpty() && singles.isEmpty()) return@LaunchedEffect
+
+            Timber.d("ArtistOverview save to database albums $albums singles $singles")
+
+            withContext(Dispatchers.IO) {
+                Database.insert(ArtistDiscography(browseId, albums, singles))
+            }
+
+            updateDiscografyIfBookmarked = false
+        }
     }
 
     FastShare(
@@ -262,7 +288,7 @@ fun ArtistOverview(
                         modifier = Modifier
                             .size(40.dp)
                             .padding(all = 5.dp)
-                            .offset(10.dp,10.dp),
+                            .offset(10.dp, 10.dp),
                         contentDescription = "Background Image",
                         contentScale = ContentScale.Fit
                     )
@@ -362,7 +388,9 @@ fun ArtistOverview(
                         )
 
                         FastPlayActionsBar(
-                            modifier = Modifier.fillMaxWidth(.5f).align(Alignment.BottomCenter)
+                            modifier = Modifier
+                                .fillMaxWidth(.5f)
+                                .align(Alignment.BottomCenter)
                                 .padding(bottom = 50.dp),
                             onPlayNowClick = {
                                 CoroutineScope(Dispatchers.IO).launch {
@@ -463,6 +491,10 @@ fun ArtistOverview(
                                         artist?.copy(bookmarkedAt = bookmarkedAt)
                                             ?.let(::update)
                                     }
+
+                                    if (bookmarkedAt != null) // Aggiorna discografia
+                                        updateDiscografyIfBookmarked = true
+
                                     if (isYtSyncEnabled())
                                         CoroutineScope(Dispatchers.IO).launch {
                                             if (bookmarkedAt == null)

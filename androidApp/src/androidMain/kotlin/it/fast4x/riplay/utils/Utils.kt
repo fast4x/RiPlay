@@ -200,3 +200,11 @@ fun formatTime(seconds: Float): String {
     val secs = (seconds % 60).toInt()
     return String.format("%02d:%02d", mins, secs)
 }
+
+
+// Ritorna gli elementi non presenti in ambedue le parti
+infix fun <E> Collection<E>.symmetricDifference(other: Collection<E>): Set<E> {
+    val left = this subtract other
+    val right = other subtract this
+    return left union right
+}

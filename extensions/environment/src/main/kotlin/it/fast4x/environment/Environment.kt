@@ -50,7 +50,7 @@ import it.fast4x.environment.models.bodies.NextBody
 import it.fast4x.environment.models.bodies.PlayerBody
 import it.fast4x.environment.models.bodies.PlaylistDeleteBody
 import it.fast4x.environment.models.bodies.SubscribeBody
-import it.fast4x.environment.utils.ArtistDiscography
+import it.fast4x.environment.utils.ArtistDiscographyType
 import it.fast4x.environment.utils.EnvironmentLocale
 import it.fast4x.environment.utils.EnvironmentPreferences
 import it.fast4x.environment.utils.ProxyPreferences
@@ -1117,12 +1117,12 @@ object Environment {
 
     suspend fun getArtistDiscography(
         browseId: String,
-        type: ArtistDiscography = ArtistDiscography.Album
+        type: ArtistDiscographyType = ArtistDiscographyType.Album
     ) = browse(
         browseId = "MPAD$browseId",
         params = when (type) {
-            ArtistDiscography.Album -> ARTIST_DISCOGRAPHY_ALBUM_PARAMS
-            ArtistDiscography.Single -> ARTIST_DISCOGRAPHY_SINGLE_PARAMS
+            ArtistDiscographyType.Album -> ARTIST_DISCOGRAPHY_ALBUM_PARAMS
+            ArtistDiscographyType.Single -> ARTIST_DISCOGRAPHY_SINGLE_PARAMS
         }
     )
 

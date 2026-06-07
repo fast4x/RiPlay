@@ -1,6 +1,6 @@
 package it.fast4x.environment.utils
 
-enum class ArtistDiscography {
+enum class ArtistDiscographyType {
     Album,
     Single
 }
