@@ -3,10 +3,13 @@ package it.fast4x.riplay.extensions.databasebackup
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import androidx.annotation.OptIn
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import it.fast4x.riplay.extensions.audiotag.AudioTagViewModel
+import androidx.media3.common.util.UnstableApi
+import it.fast4x.riplay.enums.RestoreMode
+import it.fast4x.riplay.services.playback.PlayerService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -57,7 +60,8 @@ class BackupViewModel(
         }
     }
 
-    fun performRestore(restoreUri: Uri?) {
+    @OptIn(UnstableApi::class)
+    fun performRestore(restoreUri: Uri?, mode: RestoreMode = RestoreMode.REPLACE) {
         if (restoreUri == null) {
             _uiState.value = BackupUiState.Error("Please select a right file.")
             return
@@ -65,8 +69,10 @@ class BackupViewModel(
 
         viewModelScope.launch {
             _uiState.value = BackupUiState.Restoring
+            context.stopService(Intent(context, PlayerService::class.java))
+            delay(500)
             try {
-                backupManager.smartRestoredatabase(restoreUri)
+                backupManager.smartRestoredatabase(restoreUri, mode)
                 _uiState.value = BackupUiState.Success("Database restored, wait app will restart...")
                 delay(5000)
                 val packageManager = context.packageManager

@@ -4,6 +4,8 @@ import android.content.Context
 import android.net.Uri
 import androidx.sqlite.db.SupportSQLiteDatabase
 import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.data.DatabaseInitializer
+import it.fast4x.riplay.enums.RestoreMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -54,7 +56,7 @@ class DatabaseBackupManager(
     }
 
     // smart restore
-    fun smartRestoredatabase(restoreUri: Uri) {
+    fun smartRestoredatabase(restoreUri: Uri, mode: RestoreMode) {
         database.close()
 
         val internalBackupFile = File(context.cacheDir, "temp_restore_${System.currentTimeMillis()}.db")
@@ -98,7 +100,7 @@ class DatabaseBackupManager(
             cursor.close()
 
             for (tableName in tablesInBackup) {
-                importTableData(db, tableName)
+                importTableData(db, tableName, mode)
             }
 
             db.setTransactionSuccessful()
@@ -112,11 +114,15 @@ class DatabaseBackupManager(
             } catch (e: Exception) {}
             db.execSQL("PRAGMA foreign_keys = ON;")
 
+            db.close()
+
             internalBackupFile.delete()
         }
+
+        DatabaseInitializer.reload()
     }
 
-    private fun importTableData(db: SupportSQLiteDatabase, tableName: String) {
+    private fun importTableData(db: SupportSQLiteDatabase, tableName: String, mode: RestoreMode) {
         val currentCursor = db.query("SELECT name FROM sqlite_master WHERE type='table' AND name='$tableName'")
         if (!currentCursor.moveToFirst()) {
             currentCursor.close()
@@ -137,16 +143,25 @@ class DatabaseBackupManager(
 
         val columnsStr = commonColumns.joinToString(",")
 
-        db.delete(tableName, null, null)
+        //db.delete(tableName, null, null)
+
+
 
         val insertSql = "INSERT INTO $tableName ($columnsStr) SELECT $columnsStr FROM backup_db.$tableName"
 
         try {
+            if (mode == RestoreMode.REPLACE)
+                db.execSQL("DELETE FROM $tableName")
+            //val recordsBefore = db.query("SELECT * FROM $tableName")
+            //val countBefore = recordsBefore.count
             db.execSQL(insertSql)
-            Timber.d("DatabaseBackupManager importTableData Imported data table $tableName (columns: $columnsStr)")
+            val recordsAfter = db.query("SELECT * FROM $tableName")
+            val countAfter = recordsAfter.count
+            Timber.d("DatabaseBackupManager importTableData Imported records $countAfter data table $tableName (columns: $columnsStr)")
         } catch (e: Exception) {
             Timber.e("DatabaseBackupManager importTableData Error data table $tableName (columns: $columnsStr): ${e.message}")
         }
+
     }
 
     private fun getColumnNames(db: SupportSQLiteDatabase, qualifiedTableName: String): List<String> {
