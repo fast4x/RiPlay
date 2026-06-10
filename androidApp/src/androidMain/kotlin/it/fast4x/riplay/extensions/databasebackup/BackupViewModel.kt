@@ -41,6 +41,7 @@ class BackupViewModel(
     private val _uiState = MutableStateFlow<BackupUiState>(BackupUiState.Idle)
     val uiState: StateFlow<BackupUiState> = _uiState.asStateFlow()
 
+    @OptIn(UnstableApi::class)
     fun performBackup(backupUri: Uri?) {
         if (backupUri == null) {
             _uiState.value = BackupUiState.Error("Please select a right file.")
@@ -49,6 +50,8 @@ class BackupViewModel(
 
         viewModelScope.launch {
             _uiState.value = BackupUiState.BackingUp
+            context.stopService(Intent(context, PlayerService::class.java))
+            delay(500)
             try {
                 backupManager.backupDatabase(backupUri)
                 _uiState.value = BackupUiState.Success("Backup completed!")

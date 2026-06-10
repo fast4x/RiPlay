@@ -22,14 +22,28 @@ class DatabaseBackupManager(
     suspend fun backupDatabase(backupUri: Uri) {
         withContext(Dispatchers.IO) {
             try {
+                // 1. Svuota il WAL nel file principale (usiamo TRUNCATE per sicurezza massima)
                 database.checkpoint()
 
-                context.applicationContext.contentResolver.openOutputStream(backupUri)?.use { outputStream ->
-                        FileInputStream( database.path() ).use { inputStream ->
+                // 2. CHIUDI IL DATABASE (Fondamentale per evitare scritture concorrenti)
+                database.close()
+
+                // 3. COPIA A FREDDO: Ora nessuno sta scrivendo sul file
+                try {
+                    val dbPath = database.path()
+                    context.applicationContext.contentResolver.openOutputStream(backupUri)?.use { outputStream ->
+                        FileInputStream(dbPath).use { inputStream ->
                             inputStream.copyTo(outputStream)
                         }
                     }
+                } finally {
+                    // 4. RIAPRI IL DATABASE: Qualsiasi cosa accada, l'app deve poter funzionare
+                    DatabaseInitializer.reload()
+                }
+
             } catch (e: IOException) {
+                // Assicuriamoci di riaprire il DB anche se la copia fallisce
+                DatabaseInitializer.reload()
                 throw e
             }
         }
@@ -40,7 +54,7 @@ class DatabaseBackupManager(
         withContext(Dispatchers.IO) {
             Timber.d("DatabaseBackupManager restoreDatabase close db")
             try {
-                database.checkpoint()
+                database.openHelper().writableDatabase.execSQL("PRAGMA wal_checkpoint(TRUNCATE);")
                 database.close()
 
                 context.applicationContext.contentResolver.openInputStream(restoreUri)
@@ -80,7 +94,41 @@ class DatabaseBackupManager(
 
         val safePath = internalBackupFile.absolutePath.replace("'", "''")
 
-        db.execSQL("ATTACH DATABASE '$safePath' AS backup_db;")
+        //db.execSQL("ATTACH DATABASE '$safePath' AS backup_db;")
+
+        // TENTIAMO L'ATTACH
+        try {
+            db.execSQL("ATTACH DATABASE '$safePath' AS backup_db;")
+        } catch (e: Exception) {
+            Timber.e("DatabaseBackupManager Il file di backup è corrotto o non è un DB valido: ${e.message}")
+            db.execSQL("PRAGMA foreign_keys = ON;")
+            db.close()
+            DatabaseInitializer.reload()
+            internalBackupFile.delete()
+            return // USCITA IMMEDIATA
+        }
+
+        // CHECK DI INTEGRITÀ
+        try {
+            val cursor = db.query("PRAGMA backup_db.integrity_check;")
+            if (cursor.moveToFirst()) {
+                val result = cursor.getString(0)
+                cursor.close()
+                if (result != "ok") {
+                    throw Exception("DatabaseBackupManager Integrity check failed: $result")
+                }
+            } else {
+                cursor.close()
+            }
+        } catch (e: Exception) {
+            Timber.e("DatabaseBackupManager Integrity check fallito, DB corrotto: ${e.message}")
+            try { db.execSQL("DETACH DATABASE backup_db;") } catch (_: Exception) {}
+            db.execSQL("PRAGMA foreign_keys = ON;")
+            db.close()
+            DatabaseInitializer.reload()
+            internalBackupFile.delete()
+            return // USCITA IMMEDIATA
+        }
 
         db.beginTransaction()
 

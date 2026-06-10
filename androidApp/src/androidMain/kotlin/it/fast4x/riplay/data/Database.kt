@@ -1608,6 +1608,9 @@ interface Database {
     @Query("SELECT * FROM Artist WHERE id = :id")
     fun artist(id: String): Flow<Artist?>
 
+    @Query("SELECT * FROM Artist WHERE name = :name")
+    fun artistByName(name: String): Flow<Artist?>
+
     @Query("SELECT * FROM Artist WHERE bookmarkedAt IS NOT NULL ORDER BY name COLLATE NOCASE ASC")
     fun preferitesArtistsByName(): Flow<List<Artist>>
 
@@ -3174,7 +3177,8 @@ interface Database {
     fun raw(supportSQLiteQuery: SupportSQLiteQuery): Int
 
     fun checkpoint() {
-        raw(SimpleSQLiteQuery("PRAGMA wal_checkpoint(FULL)"))
+        //raw(SimpleSQLiteQuery("PRAGMA wal_checkpoint(FULL)"))
+        raw(SimpleSQLiteQuery("PRAGMA wal_checkpoint(TRUNCATE);"))
     }
 
     fun path() = _internal.openHelper.writableDatabase.path
@@ -3206,7 +3210,7 @@ interface Database {
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 45,
+    version = 46,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -3243,6 +3247,7 @@ interface Database {
         AutoMigration(from = 41, to = 42),
         AutoMigration(from = 42, to = 43),
         AutoMigration(from = 44, to = 45),
+        AutoMigration(from = 45, to = 46),
     ],
 )
 @TypeConverters(Converters::class)
@@ -3274,7 +3279,8 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
                 From31To32Migration(),
                 From38To39Migration(),
                 From40To41Migration(),
-                From43To44Migration()
+                From43To44Migration(),
+                From45To46Migration(),
             )
             .build()
 
@@ -3538,11 +3544,42 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
         }
     }
 
+    class From45To46Migration : Migration(45, 46) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            try {
+                db.execSQL("ALTER TABLE Album ADD COLUMN genres TEXT;")
+            } catch (e: Exception) {
+                println("Database From45To46Migration error ${e.stackTraceToString()}")
+            }
+            try {
+                db.execSQL("ALTER TABLE Artist ADD COLUMN genres TEXT;")
+            } catch (e: Exception) {
+                println("Database From45To46Migration error ${e.stackTraceToString()}")
+            }
+            try {
+                db.execSQL("ALTER TABLE Song ADD COLUMN genres TEXT;")
+            } catch (e: Exception) {
+                println("Database From45To46Migration error ${e.stackTraceToString()}")
+            }
+
+        }
+    }
+
 }
 
 
 @TypeConverters
 object Converters {
+
+    @TypeConverter
+    fun fromStringList(value: List<String>?): String? {
+        return value?.joinToString(",")
+    }
+
+    @TypeConverter
+    fun toStringList(value: String?): List<String>? {
+        return value?.split(",")?.filter { it.isNotBlank() }
+    }
 
     @TypeConverter
     @JvmStatic
