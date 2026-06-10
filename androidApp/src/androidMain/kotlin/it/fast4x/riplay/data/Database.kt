@@ -3210,7 +3210,7 @@ interface Database {
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 46,
+    version = 48,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -3248,6 +3248,8 @@ interface Database {
         AutoMigration(from = 42, to = 43),
         AutoMigration(from = 44, to = 45),
         AutoMigration(from = 45, to = 46),
+        AutoMigration(from = 46, to = 47),
+        AutoMigration(from = 47, to = 48),
     ],
 )
 @TypeConverters(Converters::class)

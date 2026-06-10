@@ -227,7 +227,9 @@ fun AlbumDetails(
                                 timestamp = System.currentTimeMillis(),
                                 bookmarkedAt = album?.bookmarkedAt,
                                 isYoutubeAlbum = album?.isYoutubeAlbum == true,
-                                genres = album?.genres
+                                genres = album?.genres,
+                                originalYear = album?.originalYear,
+                                albumType = album?.albumType
                             )
 
                             val songAlbumMaps = mediaItems.mapIndexed { position, mediaItem ->
@@ -282,14 +284,16 @@ fun AlbumDetails(
                 id = browseId,
                 title = if (album?.title?.startsWith(MODIFIED_PREFIX) == true) album?.title else currentPage.album?.title,
                 thumbnailUrl = if (album?.thumbnailUrl?.startsWith(MODIFIED_PREFIX) == true) album?.thumbnailUrl else currentPage.album?.thumbnail?.url,
-                year = currentPage.album?.year,
+                year = currentPage.album.year,
                 authorsText = if (album?.authorsText?.startsWith(MODIFIED_PREFIX) == true) album?.authorsText else currentPage.album?.authors
                     ?.joinToString(", ") { it.name ?: "" }, // Aggiunto separatore virgola
                 shareUrl = currentPage.url,
                 timestamp = System.currentTimeMillis(),
                 bookmarkedAt = album?.bookmarkedAt,
                 isYoutubeAlbum = album?.isYoutubeAlbum == true,
-                genres = album?.genres
+                genres = album?.genres,
+                originalYear = album?.originalYear,
+                albumType = album?.albumType
             )
 
             mediaItems.forEach { mediaItem ->
@@ -708,6 +712,26 @@ fun AlbumDetails(
                                     )
                                 }
                             }
+
+                        album?.albumInfoText?.let {
+                            item(
+                                key = "infoAlbumExtended"
+                            ) {
+                                Row(
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 4.dp)
+                                ) {
+                                    BasicText(
+                                        text = it,
+                                        style = typography().xs.medium,
+                                        maxLines = 1
+                                    )
+                                }
+                            }
+                        }
 
                         item(
                             key = "actions",

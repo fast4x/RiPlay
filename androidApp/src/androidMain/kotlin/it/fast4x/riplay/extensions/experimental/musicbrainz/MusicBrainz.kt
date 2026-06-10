@@ -8,12 +8,13 @@ import io.ktor.client.plugins.compression.ContentEncoding
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.*
-import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.json
 import it.fast4x.musicbrainz.utils.ProxyPreferences
 import it.fast4x.musicbrainz.utils.getProxy
 import it.fast4x.riplay.BuildConfig
+import it.fast4x.riplay.extensions.experimental.musicbrainz.models.MBAlbumMetadata
 import it.fast4x.riplay.extensions.experimental.musicbrainz.models.MBArtistDetailResponse
+import it.fast4x.riplay.extensions.experimental.musicbrainz.models.MBArtistMetadata
 import it.fast4x.riplay.extensions.experimental.musicbrainz.models.MBReleaseGroupDetailResponse
 import it.fast4x.riplay.extensions.experimental.musicbrainz.models.MBSearchArtistResponse
 import it.fast4x.riplay.extensions.experimental.musicbrainz.models.MBSearchReleaseGroupResponse
@@ -75,24 +76,34 @@ class MusicBrainz {
     }
 
     // Cerca i generi dell'artista
-    suspend fun fetchArtistGenres(artistName: String): List<String> {
+    suspend fun fetchArtistMetadata(artistName: String): MBArtistMetadata {
         return makeRateLimitedRequest {
             // 1. Cerca l'artista per ottenere l'MBID
             val searchResponse = client.get("$baseUrl/artist?query=$artistName&fmt=json") {
                 header("User-Agent", userAgent)
             }
             val searchResult = searchResponse.body<MBSearchArtistResponse>()
-            val mbid = searchResult.artists.maxByOrNull { it.score }?.id ?: return@makeRateLimitedRequest emptyList()
+            val mbid = searchResult.artists.maxByOrNull { it.score }?.id ?: return@makeRateLimitedRequest MBArtistMetadata(emptyList(), null, null, null)
 
-            // 2. Ottieni dettagli con generi
+            // 2. Ottiene dettagli con generi
             val detailResponse = client.get("$baseUrl/artist/$mbid?inc=genres&fmt=json") {
                 header("User-Agent", userAgent)
             }
             val detailResult = detailResponse.body<MBArtistDetailResponse>()
 
-            detailResult.genres
+            val genres = detailResult.genres
                 .sortedByDescending { it.count }
                 .map { it.name.lowercase() }
+
+            val beginYear = detailResult.lifeSpan?.begin?.take(4)?.toIntOrNull()
+
+            MBArtistMetadata(
+                genres = genres,
+                artistType = detailResult.type,
+                countryCode = detailResult.country,
+                beginYear = beginYear
+            )
+
         }
     }
 
@@ -107,7 +118,7 @@ class MusicBrainz {
             val searchResult = searchResponse.body<MBSearchReleaseGroupResponse>()
             val mbid = searchResult.releaseGroups.maxByOrNull { it.score }?.id ?: return@makeRateLimitedRequest emptyList()
 
-            // 2. Ottieni dettagli con generi
+            // 2. Ottiene dettagli con generi
             val detailResponse = client.get("$baseUrl/release-group/$mbid?inc=genres&fmt=json") {
                 header("User-Agent", userAgent)
             }
@@ -116,6 +127,48 @@ class MusicBrainz {
             detailResult.genres
                 .sortedByDescending { it.count }
                 .map { it.name.lowercase() }
+        }
+    }
+
+
+    suspend fun fetchAlbumMetadata(albumTitle: String, artistName: String): MBAlbumMetadata {
+        return makeRateLimitedRequest {
+            // 1. Cerca il Release Group
+            val query = URLEncoder.encode("releasegroup:\"$albumTitle\" AND artist:\"$artistName\"", "UTF-8")
+            val searchResponse = client.get("$baseUrl/release-group?query=$query&fmt=json") {
+                header("User-Agent", userAgent)
+            }
+            val searchResult = searchResponse.body<MBSearchReleaseGroupResponse>()
+            val mbid = searchResult.releaseGroups.maxByOrNull { it.score }?.id
+                ?: return@makeRateLimitedRequest MBAlbumMetadata(emptyList(), null, null)
+
+            // 2. Ottiene dettagli
+            val detailResponse = client.get("$baseUrl/release-group/$mbid?inc=genres&fmt=json") {
+                header("User-Agent", userAgent)
+            }
+            val detailResult = detailResponse.body<MBReleaseGroupDetailResponse>()
+
+            // 3. Estrae e formatta i nuovi dati
+            val genres = detailResult.genres
+                .sortedByDescending { it.count }
+                .map { it.name.lowercase() }
+
+            // Logica per il tipo: se è un Album ma è anche Live, preferiamo scrivere "Live"
+            val albumType = when {
+                detailResult.secondaryTypes.contains("Live") -> "Live"
+                detailResult.secondaryTypes.contains("Compilation") -> "Compilation"
+                detailResult.secondaryTypes.contains("Remix") -> "Remix"
+                else -> detailResult.primaryType // "Album", "Single", "EP"
+            }
+
+            // Estrae l'anno dalla data YYYY
+            val originalYear = detailResult.firstReleaseDate?.take(4)?.toIntOrNull()
+
+            MBAlbumMetadata(
+                genres = genres,
+                albumType = albumType,
+                originalYear = originalYear
+            )
         }
     }
 

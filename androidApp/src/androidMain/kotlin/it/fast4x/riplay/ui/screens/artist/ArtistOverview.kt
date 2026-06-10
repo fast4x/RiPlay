@@ -129,6 +129,7 @@ import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.ui.components.themed.GenreChips
 import it.fast4x.riplay.ui.components.themed.LayoutWithAdaptiveThumbnail
 import it.fast4x.riplay.ui.components.themed.LoaderScreen
+import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.utils.asAlbum
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.forcePlayFromBeginning
@@ -219,7 +220,10 @@ fun ArtistOverview(
                                 timestamp = System.currentTimeMillis(),
                                 bookmarkedAt = artist?.bookmarkedAt,
                                 isYoutubeArtist = artist?.isYoutubeArtist == true,
-                                genres = artist?.genres
+                                genres = artist?.genres,
+                                artistType = artist?.artistType,
+                                countryCode = artist?.countryCode,
+                                beginYear = artist?.beginYear
                             )
                         )
                     }
@@ -473,6 +477,23 @@ fun ArtistOverview(
                                 maxLines = 1
                             )
                         }
+                    }
+
+                    artist?.artistInfoText?.let {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 4.dp)
+                        ) {
+                            BasicText(
+                                text = it,
+                                style = typography().xs.medium,
+                                maxLines = 1
+                            )
+                        }
+
                     }
 
 

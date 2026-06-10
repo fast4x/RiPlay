@@ -6,6 +6,7 @@ import androidx.room.PrimaryKey
 import it.fast4x.riplay.commonutils.YTM_ARTIST_SHARE_BASEURL
 import it.fast4x.riplay.commonutils.YT_ARTIST_SHARE_BASEURL
 import it.fast4x.riplay.enums.LinkType
+import it.fast4x.riplay.utils.toFlagEmoji
 
 @Immutable
 @Entity
@@ -16,7 +17,10 @@ data class Artist(
     val timestamp: Long? = null,
     val bookmarkedAt: Long? = null,
     val isYoutubeArtist: Boolean = false,
-    val genres: List<String>? = null // null = da cercare, emptyList = cercato ma assenti
+    val genres: List<String>? = null, // null = da cercare, emptyList = cercato ma assenti
+    val artistType: String? = null,   // Single, Band
+    val countryCode: String? = null,
+    val beginYear: Int? = null,
 ) {
 
     fun shareUrlByType(typeOfUrl: LinkType): String? {
@@ -30,5 +34,12 @@ data class Artist(
         get() = id.let { "$YT_ARTIST_SHARE_BASEURL$it" }
     val shareYTMUrl: String?
         get() = id.let { "$YTM_ARTIST_SHARE_BASEURL$it" }
+
+    val artistInfoText: String
+        get() = buildList {
+            artistType?.let { add(it) }
+            beginYear?.let { add(it) }
+            countryCode?.let { add(it.toFlagEmoji()) }
+        }.joinToString(" · ")
 
 }

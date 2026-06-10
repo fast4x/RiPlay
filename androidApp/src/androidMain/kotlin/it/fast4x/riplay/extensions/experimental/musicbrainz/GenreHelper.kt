@@ -20,16 +20,25 @@ class Genrehelper(
         val artist = Database.artist(artistId).first() ?: return
 
         // Se è null, non abbiamo ancora cercato. Se è emptyList, abbiamo già cercato ma non c'erano.
-        if (artist.genres != null || artist.name == null) return
+        if ((artist.genres != null && artist.artistType != null
+                    && artist.countryCode != null && artist.beginYear != null)
+            || artist.name == null) return
 
         try {
-            val apiGenres = mbClient.fetchArtistGenres(artist.name)
-            Timber.d("Genrehelper onArtistViewed genres fetched $apiGenres")
+            val metadata = mbClient.fetchArtistMetadata(artist.name)
+            Timber.d("Genrehelper onArtistViewed genres fetched $metadata")
             // Se l'API ritorna vuoto, salviamo emptyList per non ripetere la chiamata in futuro
             coroutineScope.launch {
-                Database.update(artist.copy(genres = apiGenres.ifEmpty { emptyList() }))
+                Database.update(
+                    artist.copy(
+                        genres = metadata.genres.ifEmpty { emptyList() },
+                        artistType = metadata.artistType ?: artist.artistType,
+                        countryCode = metadata.countryCode ?: artist.countryCode,
+                        beginYear = metadata.beginYear ?: artist.beginYear
+                    )
+                )
             }
-            Timber.d("Genrehelper onArtistViewed genres updated $apiGenres")
+            Timber.d("Genrehelper onArtistViewed genres updated $metadata")
         } catch (e: Exception) {
             // Errore di rete: non facciamo nulla, genres rimarrà null e riproverà la prossima volta
             Timber.e("Genrehelper onArtistViewed error ${e.stackTraceToString()}")
@@ -41,30 +50,32 @@ class Genrehelper(
      */
     suspend fun onAlbumViewed(albumId: String) {
         val album = Database.album(albumId).first() ?: return
-        if (album.genres != null || album.title == null || album.authorsText == null) return
+        if ((album.genres != null && album.albumType != null && album.originalYear != null) || album.title == null || album.authorsText == null) return
 
         val artist = Database.artistByName(album.authorsText).first() ?: return
 
         try {
             // Proviamo a prendere i generi specifici dell'album
-            val apiGenres = mbClient.fetchAlbumGenres(album.title, artist?.name ?: "")
+            val metadata  = mbClient.fetchAlbumMetadata(album.title, artist.name ?: "")
 
-            Timber.d("Genrehelper onAlbumViewed genres fetched $apiGenres")
+            Timber.d("Genrehelper onAlbumViewed metadata fetched $metadata")
 
-            if (apiGenres.isNotEmpty()) {
-                // L'album ha generi propri, usiamo quelli
-                coroutineScope.launch {
-                    Database.update(album.copy(genres = apiGenres))
-                }
-                Timber.d("Genrehelper onAlbumViewed genres updated $apiGenres")
-            } else {
-                // L'album non ha generi su MB. Fallback: usiamo quelli dell'artista
-                val artistGenres = getOrFetchArtistGenres(artist)
-                coroutineScope.launch {
-                    Database.update(album.copy(genres = artistGenres.ifEmpty { emptyList() }))
-                }
-                Timber.d("Genrehelper onAlbumViewed genres updated from artistGenres $artistGenres")
+            val finalGenres = metadata.genres.ifEmpty {
+                getOrFetchArtistGenres(artist).ifEmpty { emptyList() }
             }
+
+            // L'album ha generi propri, usiamo quelli
+            coroutineScope.launch {
+                Database.update(
+                    album.copy(
+                        genres = finalGenres,
+                        albumType = metadata.albumType ?: album.albumType,
+                        originalYear = metadata.originalYear ?: album.originalYear
+                    )
+                )
+            }
+            Timber.d("Genrehelper onAlbumViewed genres updated $finalGenres")
+
         } catch (e: Exception) {
             // Errore di rete
             Timber.e("Genrehelper onAlbumViewed error ${e.stackTraceToString()}")

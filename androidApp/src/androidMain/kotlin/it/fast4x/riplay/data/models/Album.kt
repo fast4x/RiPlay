@@ -19,7 +19,9 @@ data class Album(
     val timestamp: Long? = null,
     val bookmarkedAt: Long? = null,
     val isYoutubeAlbum: Boolean = false,
-    val genres: List<String>? = null
+    val genres: List<String>? = null,
+    val originalYear: Int? = null, // L'anno reale di uscita secondo MB
+    val albumType: String? = null, // "Album", "EP", "Live", secondo MB
 ) {
 
     fun shareUrlByType(typeOfUrl: LinkType): String? {
@@ -40,4 +42,11 @@ data class Album(
             bookmarkedAt = if (bookmarkedAt == null) System.currentTimeMillis() else null
         )
     }
+
+    val albumInfoText: String
+        get() = buildList {
+        originalYear?.let { add(it.toString()) }
+        albumType?.let { add(it) } // Aggiunge "Album", "Live", "EP"
+    }.joinToString(" · ")
+
 }
