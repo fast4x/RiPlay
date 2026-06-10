@@ -16,6 +16,7 @@ data class Artist(
     val timestamp: Long? = null,
     val bookmarkedAt: Long? = null,
     val isYoutubeArtist: Boolean = false,
+    val genres: List<String>? = null // null = da cercare, emptyList = cercato ma assenti
 ) {
 
     fun shareUrlByType(typeOfUrl: LinkType): String? {

@@ -148,6 +148,7 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 **How to?**
 - [Installer AVD and RiPlay - Windows and Linux](/desktopDistribution/redist/Installer%20AVD%20and%20RiPlay%20-%20Windows%20and%20Linux.7z)
 - [Installer WSA and RiPlay - Only Windows](/desktopDistribution/redist/Installer%20WSA%20and%20RiPlay%20-%20Only%20Windows.7z)
+- [Installer WAYDROID and RiPlay - Only Linux](/desktopDistribution/redist/Installer%20WAYDROID%20and%20RiPlay%20-%20Only%20Linux.7z)
 
 
 ## ❓ Need Help?
@@ -181,6 +182,7 @@ RiPlay wouldn't be possible without the amazing work of these projects and contr
 - [AudioTag.info](https://audiotag.info) – music recognition API
 - [WSABuilds](https://github.com/MustardChef/WSABuilds) - Run Windows Subsystem For Android on your Windows 10 and Windows 11 PC using prebuilt binaries
 - [Waydroid](https://github.com/waydroid/waydroid) - A container-based approach to boot a full Android system on a regular GNU/Linux system like Ubuntu.
+- [MusicBrainz](https://musicbrainz.org/) - MusicBrainz is an open music encyclopedia that collects music metadata and makes it available to the public.
 
 ---
 

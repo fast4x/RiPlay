@@ -1,4 +1,5 @@
 import com.android.build.api.dsl.ApplicationExtension
+import org.gradle.kotlin.dsl.implementation
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
@@ -106,6 +107,13 @@ kotlin {
         implementation(libs.fastscroller.indicator)
 
         implementation (libs.jaudiotagger)
+
+        implementation(libs.ktor.client.core)
+        implementation(libs.ktor.client.okhttp)
+        implementation(libs.ktor.client.content.negotiation)
+        implementation(libs.ktor.client.encoding)
+        implementation(libs.ktor.client.serialization)
+        implementation(libs.ktor.serialization.json)
     }
 }
 

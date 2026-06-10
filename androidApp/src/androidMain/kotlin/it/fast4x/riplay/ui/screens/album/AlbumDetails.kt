@@ -135,10 +135,13 @@ import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
+import it.fast4x.riplay.extensions.experimental.musicbrainz.Genrehelper
+import it.fast4x.riplay.extensions.experimental.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
+import it.fast4x.riplay.ui.components.themed.GenreChips
 import it.fast4x.riplay.ui.components.themed.Loader
 import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import it.fast4x.riplay.ui.components.themed.QueuesDialog
@@ -265,6 +268,11 @@ fun AlbumDetails(
         }
     }
 
+    LaunchedEffect(Unit) {
+        val mbclient = MusicBrainz()
+        val genreHelper = Genrehelper(mbclient)
+        genreHelper.onAlbumViewed(browseId)
+    }
 
     fun update() {
         if(!isNetworkConnected) {
@@ -1213,6 +1221,20 @@ fun AlbumDetails(
                                     )
                                 }
 
+                            }
+                        }
+
+                        album?.genres?.let { genres ->
+                            item {
+                                Title(
+                                    title = stringResource(R.string.genres),
+                                )
+                                Row(
+                                    modifier = Modifier
+                                        .padding(vertical = 4.dp, horizontal = 16.dp)
+                                ) {
+                                    GenreChips(genres)
+                                }
                             }
                         }
 

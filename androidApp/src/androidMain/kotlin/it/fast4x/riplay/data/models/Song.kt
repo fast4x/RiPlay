@@ -37,6 +37,8 @@ data class Song(
     val musicVaultState: MusicVaultState = MusicVaultState.NONE,
     val musicVaultFileName: String? = null,
     val musicVaultThumbnailFileName: String? = null,
+
+    val genres: List<String>? = null
 ) {
 
     fun shareUrlByType(typeOfUrl: LinkType): String? {

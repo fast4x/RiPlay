@@ -64,6 +64,7 @@ import it.fast4x.environment.models.BrowseEndpoint
 import it.fast4x.environment.requests.ArtistPage
 import it.fast4x.environment.utils.ArtistDiscographyType
 import it.fast4x.environment.utils.completed
+import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -84,6 +85,8 @@ import it.fast4x.riplay.data.models.ArtistDiscography
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
+import it.fast4x.riplay.extensions.experimental.musicbrainz.Genrehelper
+import it.fast4x.riplay.extensions.experimental.musicbrainz.MusicBrainz
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
@@ -121,6 +124,7 @@ import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
+import it.fast4x.riplay.ui.components.themed.GenreChips
 import it.fast4x.riplay.ui.components.themed.LayoutWithAdaptiveThumbnail
 import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import it.fast4x.riplay.utils.asAlbum
@@ -220,6 +224,12 @@ fun ArtistOverview(
                 }
             }
         }
+    }
+
+    LaunchedEffect(Unit) {
+        val mbclient = MusicBrainz()
+        val genreHelper = Genrehelper(mbclient)
+        genreHelper.onArtistViewed(browseId)
     }
 
     var updateDiscografyIfBookmarked by remember { mutableStateOf(false) }
@@ -640,6 +650,20 @@ fun ArtistOverview(
                             )
                         }
 
+                    }
+                }
+
+                artist?.genres?.let { genres ->
+                    item {
+                        Title(
+                            title = stringResource(R.string.genres),
+                        )
+                        Row(
+                            modifier = Modifier
+                                .padding(vertical = 4.dp, horizontal = 16.dp)
+                        ) {
+                            GenreChips(genres)
+                        }
                     }
                 }
 

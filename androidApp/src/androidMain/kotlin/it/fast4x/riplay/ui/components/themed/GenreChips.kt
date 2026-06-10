@@ -1,0 +1,49 @@
+package it.fast4x.riplay.ui.components.themed
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.SuggestionChipDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import it.fast4x.riplay.utils.colorPalette
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun GenreChips(
+    genres: List<String>?,
+    onGenreClick: (String) -> Unit = {}
+) {
+    if (genres.isNullOrEmpty()) return
+
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.padding(vertical = 4.dp)
+    ) {
+        genres.forEach { genre ->
+            SuggestionChip(
+                onClick = { onGenreClick(genre) },
+                label = {
+                    Text(
+                        text = genre.split(" ").joinToString(" ") { word ->
+                            word.replaceFirstChar { it.uppercase() }
+                        },
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                },
+                colors = SuggestionChipDefaults.suggestionChipColors(
+                    containerColor = colorPalette().background1,
+                    labelColor = colorPalette().text
+                ),
+                border = BorderStroke(1.dp, colorPalette().text)
+            )
+        }
+    }
+}
