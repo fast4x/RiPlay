@@ -201,6 +201,8 @@ import it.fast4x.riplay.data.models.QueuedMediaItem
 import it.fast4x.riplay.data.models.defaultQueueId
 import it.fast4x.riplay.enums.AudioQualityFormat
 import it.fast4x.riplay.enums.CastType
+import it.fast4x.riplay.extensions.experimental.musicbrainz.Genrehelper
+import it.fast4x.riplay.extensions.experimental.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.musicvault.MusicVaultEvent
 import it.fast4x.riplay.musicvault.MusicVaultEvents
@@ -1765,11 +1767,6 @@ private var pausedByZeroVolume = false
 
         _currentSecond.value = 0F
 
-//        if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
-//            Timber.d("PlayerService: MediaItem transition ignored (Reason: Playlist Changed)")
-//            return
-//        }
-
         val newMediaId = mediaItem.mediaId
 
         if (lastOnlineMediaId == newMediaId) {
@@ -1834,6 +1831,13 @@ private var pausedByZeroVolume = false
                     }
 
                 _internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
+
+                // Recupera genere
+                val mbclient = MusicBrainz()
+                val genreHelper = Genrehelper(mbclient)
+                serviceScope.launch {
+                    genreHelper.onSongPlayed(it.mediaId)
+                }
 
             } else {
                 // Canzone locale o MusicVault — ferma il player online e lascia andare ExoPlayer
@@ -3118,18 +3122,18 @@ private var pausedByZeroVolume = false
                 }.let { queuedMediaItems ->
                     if (queuedMediaItems.isEmpty()) return@let
 
-                    try {
+
                         Database.asyncTransaction {
-                            clearQueuedMediaItems()
-                            //insert(queuedMediaItems)
-                            //Timber.d("SaveMasterQueue QueuePersistentEnabled Saved mediaItems ${queuedMediaItems.size}")
-                            queuedMediaItems.forEach {
-                                insert(it)
+                            try {
+                                clearQueuedMediaItems()
+                                queuedMediaItems.forEach {
+                                    insert(it)
+                                }
+                            } catch (e: Exception) {
+                                Timber.e("SaveQueue QueuePersistentEnabled Error: ${e.message}")
                             }
                         }
-                    } catch (e: Exception) {
-                        Timber.e("SaveQueue QueuePersistentEnabled Error: ${e.message}")
-                    }
+
 
                 }
             }
