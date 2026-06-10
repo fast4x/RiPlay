@@ -51,7 +51,7 @@ class BackupViewModel(
         viewModelScope.launch {
             _uiState.value = BackupUiState.BackingUp
             context.stopService(Intent(context, PlayerService::class.java))
-            delay(5000)
+            delay(1500)
             try {
                 backupManager.backupDatabase(backupUri)
                 _uiState.value = BackupUiState.Success("Backup completed!")
@@ -73,11 +73,11 @@ class BackupViewModel(
         viewModelScope.launch {
             _uiState.value = BackupUiState.Restoring
             context.stopService(Intent(context, PlayerService::class.java))
-            delay(5000)
+            delay(1500)
             try {
                 backupManager.smartRestoredatabase(restoreUri, mode)
                 _uiState.value = BackupUiState.Success("Database restored, wait app will restart...")
-                delay(5000)
+                delay(1500)
                 val packageManager = context.packageManager
                 val launchIntent = packageManager.getLaunchIntentForPackage(context.packageName)
                 val restartIntent = Intent.makeRestartActivityTask(launchIntent?.component)

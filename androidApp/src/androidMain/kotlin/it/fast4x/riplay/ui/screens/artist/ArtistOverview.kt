@@ -31,8 +31,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -178,8 +180,10 @@ fun ArtistOverview(
 
     val context = LocalContext.current
 
-    var artist by persist<Artist?>("artist/$browseId/artist")
-    var artistPage by persist<ArtistPage?>("artist/$browseId/artistPage")
+    val artist by Database.artist(browseId)
+        .collectAsState(initial = null)
+
+    var artistPage by remember { mutableStateOf<ArtistPage?>(null) }
 
     var itemsBrowseId by remember { mutableStateOf("") }
     var itemsParams by remember { mutableStateOf("") }
@@ -200,36 +204,33 @@ fun ArtistOverview(
 
     LoaderScreen(show = artistPage == null)
 
-    LaunchedEffect(Unit) {
-        Database.artist(browseId).distinctUntilChanged().collect { currentArtist ->
-            artist = currentArtist
+    LaunchedEffect(browseId) {
+        if (artistPage == null) {
+            launch(Dispatchers.IO) {
+                EnvironmentExt.getArtistPage(browseId = browseId)
+                    .onSuccess { currentArtistPage ->
+                        artistPage = currentArtistPage
 
-            if (artistPage == null) {
-                withContext(Dispatchers.IO) {
-                    EnvironmentExt.getArtistPage(browseId = browseId)
-                        .onSuccess { currentArtistPage ->
-                            artistPage = currentArtistPage
-
-                            Database.upsert(
-                                Artist(
-                                    id = browseId,
-                                    name = currentArtistPage.artist.info?.name,
-                                    thumbnailUrl = currentArtistPage.artist.thumbnail?.url,
-                                    timestamp = System.currentTimeMillis(),
-                                    bookmarkedAt = currentArtist?.bookmarkedAt,
-                                    isYoutubeArtist = currentArtist?.isYoutubeArtist == true
-                                )
+                        Database.upsert(
+                            Artist(
+                                id = browseId,
+                                name = currentArtistPage.artist.info?.name,
+                                thumbnailUrl = currentArtistPage.artist.thumbnail?.url,
+                                timestamp = System.currentTimeMillis(),
+                                bookmarkedAt = artist?.bookmarkedAt,
+                                isYoutubeArtist = artist?.isYoutubeArtist == true,
+                                genres = artist?.genres
                             )
-                        }
-                }
+                        )
+                    }
             }
         }
-    }
 
-    LaunchedEffect(Unit) {
-        val mbclient = MusicBrainz()
-        val genreHelper = Genrehelper(mbclient)
-        genreHelper.onArtistViewed(browseId)
+        launch(Dispatchers.IO) {
+            val mbclient = MusicBrainz()
+            val genreHelper = Genrehelper(mbclient)
+            genreHelper.onArtistViewed(browseId)
+        }
     }
 
     var updateDiscografyIfBookmarked by remember { mutableStateOf(false) }
@@ -331,7 +332,7 @@ fun ArtistOverview(
                     Box(
                         modifier = modifierArt
                     ) {
-                        //if (artistPage != null) {
+
                         if (!isLandscape)
                             Box {
                                 AsyncImage(
@@ -662,7 +663,13 @@ fun ArtistOverview(
                             modifier = Modifier
                                 .padding(vertical = 4.dp, horizontal = 16.dp)
                         ) {
-                            GenreChips(genres)
+                            if (genres.isNotEmpty())
+                                GenreChips(genres)
+                            else Text(
+                                text = "No genres available",
+                                style = typography().xs.semiBold,
+                                color = colorPalette().text
+                            )
                         }
                     }
                 }

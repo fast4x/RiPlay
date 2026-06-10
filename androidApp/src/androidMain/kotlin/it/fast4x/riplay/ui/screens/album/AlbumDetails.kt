@@ -32,8 +32,10 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.Checkbox
 import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -156,6 +158,7 @@ import it.fast4x.riplay.utils.mediaItemSetLiked
 import it.fast4x.riplay.utils.isPrimaryAction
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
@@ -181,134 +184,119 @@ fun AlbumDetails(
     val context = LocalContext.current
     val selectedQueue = LocalSelectedQueue.current
     var songs by persistList<Song>("album/$browseId/songs")
-    var album by persist<Album?>("album/$browseId")
+    val album by Database.album(browseId)
+        .collectAsState(initial = null)
+    var albumPage by remember { mutableStateOf<AlbumPage?>(null) }
+
     val parentalControlEnabled by rememberPreference(PARENTAL_CONTROL_ENABLED.key, false)
     val disableScrollingText by rememberPreference(PreferenceKey.DISABLE_SCROLLING_TEXT.key, false)
     val isNetworkConnected = rememberIsNetworkConnected()
     LoaderScreen(show = songs.isEmpty())
 
-    //var albumPage by persist<AlbumPage?>("album/$browseId/albumPage")
-    var albumPage by remember { mutableStateOf<AlbumPage?>(null) }
+    LaunchedEffect(browseId) {
+        if (albumPage == null) {
+            launch(Dispatchers.IO) {
+                EnvironmentExt.getAlbum(browseId)
+                    .onSuccess { currentAlbumPage ->
+                        albumPage = currentAlbumPage
 
-    LaunchedEffect(Unit) {
-        // Usiamo collectLatest: se il DB emette valori velocemente, cancella la raccolta precedente
-        Database.album(browseId).collectLatest { currentAlbum ->
-            album = currentAlbum
+                        try {
+                            val mediaItems = currentAlbumPage.songs
+                                .distinct()
+                                .map { it.asMediaItem }
 
-            // Controlliamo se dobbiamo fare la chiamata di rete
-            if (albumPage == null) {
-                // Spostiamoci sul thread IO per la rete e il DB usando withContext
-                withContext(Dispatchers.IO) {
-                    EnvironmentExt.getAlbum(browseId)
-                        .onSuccess { currentAlbumPage ->
-                            albumPage = currentAlbumPage
+                            Timber.d("AlbumDetails mediaItems ${mediaItems.map { it.mediaMetadata.title }}")
 
-                            try {
-                                // 1. Mappiamo i MediaItem e li inseriamo nel DB
-                                val mediaItems = currentAlbumPage.songs
-                                    .distinct()
-                                    .map { it.asMediaItem }
-
-                                Timber.d("AlbumDetails mediaItems ${mediaItems.map { it.mediaMetadata.title }}")
-
-                                // Salviamo le canzoni (se insert è suspend, aspetta; se è sincrono, va bene lo stesso)
-                                mediaItems.forEach {
-                                    try {
-                                        Database.insert(it)
-                                        Timber.d("AlbumDetails Mediaitem ${it.mediaId}")
-                                    } catch (e: Exception) {
-                                        Timber.e("AlbumDetails insert song error ${e.message}")
-                                    }
-
+                            mediaItems.forEach {
+                                try {
+                                    Database.insert(it)
+                                } catch (e: Exception) {
+                                    Timber.e("AlbumDetails insert song error ${e.message}")
                                 }
-
-                                // 2. Creiamo l'oggetto Album
-                                val albumToSave = Album(
-                                    id = browseId,
-                                    title = album?.title ?: currentAlbumPage.album.title,
-                                    thumbnailUrl = if (album?.thumbnailUrl?.startsWith(MODIFIED_PREFIX) == true)
-                                        album?.thumbnailUrl else currentAlbumPage.album.thumbnail?.url,
-                                    year = currentAlbumPage.album.year,
-                                    authorsText = if (album?.authorsText?.startsWith(MODIFIED_PREFIX) == true)
-                                        album?.authorsText else currentAlbumPage.album.authors?.joinToString(", ") { it.name ?: "" },
-                                    shareUrl = currentAlbumPage.url,
-                                    timestamp = System.currentTimeMillis(),
-                                    bookmarkedAt = album?.bookmarkedAt,
-                                    isYoutubeAlbum = album?.isYoutubeAlbum == true
-                                )
-
-                                // 3. Creiamo la lista di SongAlbumMap
-                                val songAlbumMaps = mediaItems.mapIndexed { position, mediaItem ->
-                                    SongAlbumMap(
-                                        songId = mediaItem.mediaId,
-                                        albumId = browseId,
-                                        position = position
-                                    )
-                                }
-
-                                // 4. Salviamo Album e Mappe (assicurati che questo upsert gestisca bene le transazioni)
-                                // Se hai rinominato la funzione come ti ho suggerito prima:
-                                //Database.upsert(albumToSave)
-                                //Database.upsert(songAlbumMaps)
-
-                                // OPPURE se hai un unico metodo upsert(Album, List<SongAlbumMap>):
-                                Database.upsert(albumToSave, songAlbumMaps)
-
-                            } catch (e: Exception) {
-                                // FONDAMENTLE: Se il DB fallisce, lo logghiamo.
-                                // Prima questo errore veniva ingoiato silenziosamente!
-                                Timber.e("AlbumDetails Errore salvataggio DB Album/Songs: ${e.stackTraceToString()}")
                             }
+
+                            val albumToSave = Album(
+                                id = browseId,
+                                title = album?.title ?: currentAlbumPage.album.title,
+                                thumbnailUrl = if (album?.thumbnailUrl?.startsWith(MODIFIED_PREFIX) == true)
+                                    album?.thumbnailUrl else currentAlbumPage.album.thumbnail?.url,
+                                year = currentAlbumPage.album.year,
+                                authorsText = if (album?.authorsText?.startsWith(MODIFIED_PREFIX) == true)
+                                    album?.authorsText else currentAlbumPage.album.authors?.joinToString(", ") { it.name ?: "" },
+                                shareUrl = currentAlbumPage.url,
+                                timestamp = System.currentTimeMillis(),
+                                bookmarkedAt = album?.bookmarkedAt,
+                                isYoutubeAlbum = album?.isYoutubeAlbum == true,
+                                genres = album?.genres
+                            )
+
+                            val songAlbumMaps = mediaItems.mapIndexed { position, mediaItem ->
+                                SongAlbumMap(
+                                    songId = mediaItem.mediaId,
+                                    albumId = browseId,
+                                    position = position
+                                )
+                            }
+
+
+                            Database.upsert(albumToSave, songAlbumMaps)
+
+                        } catch (e: Exception) {
+                            Timber.e("AlbumDetails Errore salvataggio DB Album/Songs: ${e.stackTraceToString()}")
                         }
-                        .onFailure {
-                            Timber.e("AlbumDetails network error ${it.stackTraceToString()}")
-                        }
-                }
+                    }
+                    .onFailure {
+                        Timber.e("AlbumDetails network error ${it.stackTraceToString()}")
+                    }
             }
         }
-    }
 
-    LaunchedEffect(Unit) {
-        val mbclient = MusicBrainz()
-        val genreHelper = Genrehelper(mbclient)
-        genreHelper.onAlbumViewed(browseId)
+        launch(Dispatchers.IO) {
+            val mbclient = MusicBrainz()
+            val genreHelper = Genrehelper(mbclient)
+            genreHelper.onAlbumViewed(browseId)
+        }
     }
 
     fun update() {
         if(!isNetworkConnected) {
             return
         }
-        runBlocking(Dispatchers.IO) {
-            withContext(Dispatchers.IO) {
-                Database.asyncTransaction {
+        val currentPage = albumPage ?: return
 
-                    Database.upsert(
-                        Album(
-                            id = browseId,
-                            title = if (album?.title?.startsWith(MODIFIED_PREFIX) == true) album?.title else albumPage?.album?.title,
-                            thumbnailUrl = if (album?.thumbnailUrl?.startsWith(MODIFIED_PREFIX) == true) album?.thumbnailUrl else albumPage?.album?.thumbnail?.url,
-                            year = albumPage?.album?.year,
-                            authorsText = if (album?.authorsText?.startsWith(MODIFIED_PREFIX) == true) album?.authorsText else albumPage?.album?.authors
-                                ?.joinToString("") { it.name ?: "" },
-                            shareUrl = albumPage?.url,
-                            timestamp = System.currentTimeMillis(),
-                            bookmarkedAt = album?.bookmarkedAt,
-                            isYoutubeAlbum = album?.isYoutubeAlbum == true
-                        ),
-                        albumPage
-                            ?.songs?.distinct()
-                            ?.map(Environment.SongItem::asMediaItem)
-                            ?.onEach(Database::insert)
-                            ?.mapIndexed { position, mediaItem ->
-                                SongAlbumMap(
-                                    songId = mediaItem.mediaId,
-                                    albumId = browseId,
-                                    position = position
-                                )
-                            } ?: emptyList()
-                    )
-                }
+        Database.asyncTransaction {
+
+            val mediaItems = currentPage.songs
+                .distinct()
+                .map(Environment.SongItem::asMediaItem)
+
+            val songAlbumMaps = mediaItems.mapIndexed { position, mediaItem ->
+                SongAlbumMap(
+                    songId = mediaItem.mediaId,
+                    albumId = browseId,
+                    position = position
+                )
             }
+
+            val albumToSave = Album(
+                id = browseId,
+                title = if (album?.title?.startsWith(MODIFIED_PREFIX) == true) album?.title else currentPage.album?.title,
+                thumbnailUrl = if (album?.thumbnailUrl?.startsWith(MODIFIED_PREFIX) == true) album?.thumbnailUrl else currentPage.album?.thumbnail?.url,
+                year = currentPage.album?.year,
+                authorsText = if (album?.authorsText?.startsWith(MODIFIED_PREFIX) == true) album?.authorsText else currentPage.album?.authors
+                    ?.joinToString(", ") { it.name ?: "" }, // Aggiunto separatore virgola
+                shareUrl = currentPage.url,
+                timestamp = System.currentTimeMillis(),
+                bookmarkedAt = album?.bookmarkedAt,
+                isYoutubeAlbum = album?.isYoutubeAlbum == true,
+                genres = album?.genres
+            )
+
+            mediaItems.forEach { mediaItem ->
+                Database.insert(mediaItem)
+            }
+
+            Database.upsert(albumToSave, songAlbumMaps)
         }
     }
 
@@ -332,10 +320,6 @@ fun AlbumDetails(
             songs = if (parentalControlEnabled)
                 it.filter { s -> !s.title.startsWith(EXPLICIT_PREFIX) || s.mediaId?.isNotEmpty() == true } else it
         }
-    }
-
-    LaunchedEffect(Unit) {
-        Database.album(browseId).collect { album = it }
     }
 
     val thumbnailSizeDp = Dimensions.thumbnails.song
@@ -1233,7 +1217,13 @@ fun AlbumDetails(
                                     modifier = Modifier
                                         .padding(vertical = 4.dp, horizontal = 16.dp)
                                 ) {
-                                    GenreChips(genres)
+                                    if (genres.isNotEmpty())
+                                        GenreChips(genres)
+                                    else Text(
+                                        text = "No genres available",
+                                        style = typography().xs.semiBold,
+                                        color = colorPalette().text
+                                    )
                                 }
                             }
                         }
