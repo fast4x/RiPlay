@@ -1,6 +1,7 @@
 package it.fast4x.riplay.ui.screens.artist
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -10,6 +11,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -59,14 +61,12 @@ import androidx.compose.ui.unit.sp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.BrowseEndpoint
 import it.fast4x.environment.requests.ArtistPage
 import it.fast4x.environment.utils.ArtistDiscographyType
 import it.fast4x.environment.utils.completed
-import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -127,8 +127,10 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.ui.components.themed.GenreChips
+import it.fast4x.riplay.ui.components.themed.KeywordChips
 import it.fast4x.riplay.ui.components.themed.LayoutWithAdaptiveThumbnail
 import it.fast4x.riplay.ui.components.themed.LoaderScreen
+import it.fast4x.riplay.ui.components.themed.RatingBar
 import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.utils.asAlbum
 import it.fast4x.riplay.utils.forcePlay
@@ -136,7 +138,6 @@ import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.isPrimaryAction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -228,7 +229,8 @@ fun ArtistOverview(
                                 rating = artist?.rating,
                                 ratingVotes = artist?.ratingVotes,
                                 wikipediaUrl = artist?.wikipediaUrl,
-                                description = artist?.description
+                                description = artist?.description,
+                                disambiguation = artist?.disambiguation
                             )
                         )
                     }
@@ -484,24 +486,6 @@ fun ArtistOverview(
                         }
                     }
 
-                    artist?.artistInfoText?.let {
-                        Row(
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 4.dp)
-                        ) {
-                            BasicText(
-                                text = it,
-                                style = typography().xs.medium,
-                                maxLines = 1
-                            )
-                        }
-
-                    }
-
-
                     Row(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically,
@@ -602,29 +586,81 @@ fun ArtistOverview(
                 }
 
                 item {
-                    artistPage?.description?.let { description ->
-                        val attributionsIndex = description.lastIndexOf("\n\nFrom Wikipedia")
-
+                    Column(
+                        modifier = Modifier
+                            .background(colorPalette().background1.copy(alpha = 0.7f))
+                    ) {
                         Title(
-                            title = stringResource(R.string.information),
+                            title = stringResource(R.string.title_info_and_community),
                             icon = if (readMore) R.drawable.chevron_up else R.drawable.chevron_down,
                             onClick = {
                                 readMore = !readMore
                             },
                         )
-
-                        Row(
+                        Column(
                             modifier = Modifier
-                                .padding(vertical = 16.dp, horizontal = 8.dp)
+                                .padding(horizontal = 16.dp)
                         ) {
-                            BasicText(
-                                text = "“",
-                                style = typography().xxl.semiBold,
+                            Row(
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
-                                    .offset(y = (-8).dp)
-                                    .align(Alignment.Top)
-                            )
+                                    .padding(bottom = 8.dp)
+                                    .fillMaxWidth()
+                                    .clickable{
+                                        readMore = !readMore
+                                    }
+                            ) {
+                                RatingBar(artist?.rating, 0)
+                                Spacer(modifier = Modifier.padding(horizontal = 12.dp))
+                                artist?.info?.let {
+                                    BasicText(
+                                        text = it,
+                                        style = typography().xs.medium,
+                                        maxLines = 1
+                                    )
+                                }
+                            }
 
+                            AnimatedVisibility(readMore) {
+                                /*
+                            artist?.disambiguation?.let {
+                                if (it.isNotEmpty())
+                                    Text(
+                                        text = it,
+                                        style = typography().xs.semiBold,
+                                        color = colorPalette().text,
+                                        modifier = Modifier.padding(vertical = 4.dp)
+                                    )
+                            }
+                             */
+
+                                artist?.keywords?.let { keywords ->
+                                    Row(
+                                        modifier = Modifier
+                                            .padding(vertical = 4.dp)
+                                    ) {
+                                        if (keywords.isNotEmpty())
+                                            KeywordChips(keywords)
+                                        else Text(
+                                            text = "No keyworks available",
+                                            style = typography().xs.semiBold,
+                                            color = colorPalette().text
+                                        )
+                                    }
+                                }
+                            }
+
+                            AnimatedVisibility(readMore) {
+                                artistPage?.description?.let { description ->
+                                    val attributionsIndex =
+                                        description.lastIndexOf("\n\nFrom Wikipedia")
+                                    Row(
+                                        modifier = Modifier
+                                            .padding(vertical = 8.dp)
+                                    ) {
+
+                                        /*
                             if (!readMore)
                                 BasicText(
                                     text = description.substring(
@@ -640,62 +676,52 @@ fun ArtistOverview(
                                         }
                                 )
 
-                            if (readMore)
-                                BasicText(
-                                    text = if (attributionsIndex == -1) {
-                                        description
-                                    } else {
-                                        description.substring(0, attributionsIndex)
-                                    },
-                                    style = typography().xxs.secondary.align(TextAlign.Justify),
-                                    modifier = Modifier
-                                        .padding(horizontal = 8.dp)
-                                        .weight(1f)
-                                        .clickable {
-                                            readMore = !readMore
+                             */
+
+                                        BasicText(
+                                            text = "“",
+                                            style = typography().xxs.semiBold,
+                                            modifier = Modifier
+                                                .offset(y = (-8).dp)
+                                                .align(Alignment.Top)
+                                        )
+
+                                        BasicText(
+                                            text = if (attributionsIndex == -1) {
+                                                description
+                                            } else {
+                                                description.substring(0, attributionsIndex)
+                                            },
+                                            style = typography().xxs.secondary.align(TextAlign.Justify),
+                                            modifier = Modifier
+                                                .padding(horizontal = 8.dp)
+                                                .weight(1f)
+//                                                .clickable {
+//                                                    readMore = !readMore
+//                                                }
+                                        )
+                                        BasicText(
+                                            text = "„",
+                                            style = typography().xxs.semiBold,
+                                            modifier = Modifier
+                                                .offset(y = 4.dp)
+                                                .align(Alignment.Bottom)
+                                        )
+
+                                        if (attributionsIndex != -1) {
+                                            BasicText(
+                                                text = stringResource(R.string.from_wikipedia_cca),
+                                                style = typography().xxs.color(colorPalette().textDisabled)
+                                                    .align(TextAlign.Start),
+                                                modifier = Modifier
+                                                    .padding(horizontal = 16.dp)
+                                                    .padding(bottom = 16.dp)
+                                            )
                                         }
-                                )
 
-
-                            BasicText(
-                                text = "„",
-                                style = typography().xxl.semiBold,
-                                modifier = Modifier
-                                    .offset(y = 4.dp)
-                                    .align(Alignment.Bottom)
-                            )
-                        }
-
-                        if (attributionsIndex != -1) {
-                            BasicText(
-                                text = stringResource(R.string.from_wikipedia_cca),
-                                style = typography().xxs.color(colorPalette().textDisabled)
-                                    .align(TextAlign.Start),
-                                modifier = Modifier
-                                    .padding(horizontal = 16.dp)
-                                    .padding(bottom = 16.dp)
-                            )
-                        }
-
-                    }
-                }
-
-                artist?.genres?.let { genres ->
-                    item {
-                        Title(
-                            title = stringResource(R.string.genres),
-                        )
-                        Row(
-                            modifier = Modifier
-                                .padding(vertical = 4.dp, horizontal = 16.dp)
-                        ) {
-                            if (genres.isNotEmpty())
-                                GenreChips(genres)
-                            else Text(
-                                text = "No genres available",
-                                style = typography().xs.semiBold,
-                                color = colorPalette().text
-                            )
+                                    }
+                                }
+                            }
                         }
                     }
                 }

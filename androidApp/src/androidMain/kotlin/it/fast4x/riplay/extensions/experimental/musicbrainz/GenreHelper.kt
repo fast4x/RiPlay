@@ -34,7 +34,12 @@ class Genrehelper(
                         genres = metadata.genres.ifEmpty { emptyList() },
                         artistType = metadata.artistType ?: artist.artistType,
                         countryCode = metadata.countryCode ?: artist.countryCode,
-                        beginYear = metadata.beginYear ?: artist.beginYear
+                        beginYear = metadata.beginYear ?: artist.beginYear,
+                        tags = metadata.topTags ?: artist.tags,
+                        rating = metadata.ratingValue ?: artist.rating,
+                        ratingVotes = metadata.ratingVotes ?: artist.ratingVotes,
+                        wikipediaUrl = metadata.wikipediaUrl ?: artist.wikipediaUrl,
+                        disambiguation = metadata.disambiguation ?: artist.disambiguation
                     )
                 )
             }

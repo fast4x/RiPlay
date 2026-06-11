@@ -81,7 +81,8 @@ data class MBArtistDetailResponse(
     val tags: List<MBTag>? = null,
     val rating: MBRating? = null,
 
-    @SerialName("relation-list") val relationList: List<MBRelationList>? = null
+    @SerialName("relation-list") val relationList: List<MBRelationList>? = null,
+    val disambiguation: String? = null,
 )
 
 @Serializable
@@ -121,5 +122,6 @@ data class MBArtistMetadata(
     val topTags: List<String>,
     val ratingValue: Float?,       // Es. 4.5
     val ratingVotes: Int?,         // Es. 150
-    val wikipediaUrl: String?      // Link alla bio
+    val wikipediaUrl: String?,      // Link alla bio
+    val disambiguation: String?,   // Info addizionali su artista
 )

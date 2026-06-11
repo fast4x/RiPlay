@@ -83,7 +83,7 @@ class MusicBrainz {
                 header("User-Agent", userAgent)
             }
             val searchResult = searchResponse.body<MBSearchArtistResponse>()
-            val mbid = searchResult.artists.maxByOrNull { it.score }?.id ?: return@makeRateLimitedRequest MBArtistMetadata(emptyList(), null, null, null, emptyList(), null, null, null)
+            val mbid = searchResult.artists.maxByOrNull { it.score }?.id ?: return@makeRateLimitedRequest MBArtistMetadata(emptyList(), null, null, null, emptyList(), null, null, null, null)
 
             // 2. Ottiene dettagli con generi
             val detailResponse = client.get("$baseUrl/artist/$mbid?inc=genres+tags+ratings+url-rels&fmt=json") {
@@ -120,7 +120,8 @@ class MusicBrainz {
                 topTags = topTags,
                 ratingValue = ratingValue,
                 ratingVotes = ratingVotes,
-                wikipediaUrl = wikiUrl
+                wikipediaUrl = wikiUrl,
+                disambiguation = detailResult.disambiguation
             )
 
         }

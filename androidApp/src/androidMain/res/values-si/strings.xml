@@ -1362,4 +1362,5 @@ CC-BY-SA 3.0</string>
     <string name="event_total_new_releases_from_artists">%1$d new releases from %2$d artists</string>
     <string name="event_notify_channel_name_favorites_artists_updates">Favorite Artist Updates</string>
     <string name="event_notify_channel_desc_check_new_releases_from_favorite_artists">Check new releases from favorite artists</string>
+    <string name="title_info_and_community">Info and Community</string>
 </resources>

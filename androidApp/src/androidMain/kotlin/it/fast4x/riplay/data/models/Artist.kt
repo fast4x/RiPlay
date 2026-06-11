@@ -25,7 +25,8 @@ data class Artist(
     val rating: Float? = null,
     val ratingVotes: Int? = null,
     val wikipediaUrl: String? = null,
-    val description: String? = null
+    val description: String? = null,
+    val disambiguation: String? = null,
 ) {
 
     fun shareUrlByType(typeOfUrl: LinkType): String? {
@@ -40,11 +41,16 @@ data class Artist(
     val shareYTMUrl: String?
         get() = id.let { "$YTM_ARTIST_SHARE_BASEURL$it" }
 
-    val artistInfoText: String
+    val info: String
         get() = buildList {
             artistType?.let { add(it) }
             beginYear?.let { add(it) }
             countryCode?.let { add(it.toFlagEmoji()) }
-        }.joinToString(" · ")
+        }.joinToString(" . ")
+
+    val keywords: List<String>
+        get() = (genres.orEmpty() + tags.orEmpty())
+        .distinctBy { it.lowercase() } // Evita "Rock" e "rock"
+        .take(8)
 
 }
