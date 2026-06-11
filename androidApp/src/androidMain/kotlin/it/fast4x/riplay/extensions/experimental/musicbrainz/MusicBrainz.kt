@@ -83,10 +83,10 @@ class MusicBrainz {
                 header("User-Agent", userAgent)
             }
             val searchResult = searchResponse.body<MBSearchArtistResponse>()
-            val mbid = searchResult.artists.maxByOrNull { it.score }?.id ?: return@makeRateLimitedRequest MBArtistMetadata(emptyList(), null, null, null)
+            val mbid = searchResult.artists.maxByOrNull { it.score }?.id ?: return@makeRateLimitedRequest MBArtistMetadata(emptyList(), null, null, null, emptyList(), null, null, null)
 
             // 2. Ottiene dettagli con generi
-            val detailResponse = client.get("$baseUrl/artist/$mbid?inc=genres&fmt=json") {
+            val detailResponse = client.get("$baseUrl/artist/$mbid?inc=genres+tags+ratings+url-rels&fmt=json") {
                 header("User-Agent", userAgent)
             }
             val detailResult = detailResponse.body<MBArtistDetailResponse>()
@@ -97,11 +97,30 @@ class MusicBrainz {
 
             val beginYear = detailResult.lifeSpan?.begin?.take(4)?.toIntOrNull()
 
+            val topTags = detailResult.tags
+                ?.sortedByDescending { it.count }
+                ?.take(5)
+                ?.map { it.name.lowercase() }
+                ?: emptyList()
+
+            val ratingValue = detailResult.rating?.value
+            val ratingVotes = detailResult.rating?.votesCount
+
+            val wikiUrl = detailResult.relationList
+                ?.filter { it.targetType == "url" }
+                ?.flatMap { it.relations }
+                ?.firstOrNull { it.url?.resource?.contains("wikipedia") == true }
+                ?.url?.resource
+
             MBArtistMetadata(
                 genres = genres,
                 artistType = detailResult.type,
                 countryCode = detailResult.country,
-                beginYear = beginYear
+                beginYear = beginYear,
+                topTags = topTags,
+                ratingValue = ratingValue,
+                ratingVotes = ratingVotes,
+                wikipediaUrl = wikiUrl
             )
 
         }

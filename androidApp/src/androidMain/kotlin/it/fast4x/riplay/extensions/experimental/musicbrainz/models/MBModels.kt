@@ -37,6 +37,35 @@ data class MBLifeSpan(
 )
 
 @Serializable
+data class MBRating(
+    val value: Float? = null, // Es. 4.5 (su 5) o 85 (su 100)
+    @SerialName("votes-count") val votesCount: Int? = null
+)
+
+@Serializable
+data class MBRelationList(
+    @SerialName("target-type") val targetType: String? = null,
+    val relations: List<MBRelation> = emptyList()
+)
+
+@Serializable
+data class MBRelation(
+    val type: String? = null,
+    val url: MBRelatedUrl? = null // Ignoriamo l'artista, ci serve solo l'URL
+)
+
+@Serializable
+data class MBRelatedUrl(
+    val resource: String // L'URL es: "https://en.wikipedia.org/wiki/Nirvana_(band)"
+)
+
+@Serializable
+data class MBTag(
+    val name: String,
+    val count: Int
+)
+
+@Serializable
 data class MBArtistDetailResponse(
     val id: String,
     val name: String,
@@ -48,6 +77,11 @@ data class MBArtistDetailResponse(
     // L'oggetto life-span annidato
     @SerialName("life-span")
     val lifeSpan: MBLifeSpan? = null,
+
+    val tags: List<MBTag>? = null,
+    val rating: MBRating? = null,
+
+    @SerialName("relation-list") val relationList: List<MBRelationList>? = null
 )
 
 @Serializable
@@ -82,5 +116,10 @@ data class MBArtistMetadata(
     val genres: List<String>,
     val artistType: String?,  // Es. "Person", "Group"
     val countryCode: String?, // Es. "JP", "IT"
-    val beginYear: Int?       // Es. "1994"
+    val beginYear: Int? ,      // Es. "1994"
+
+    val topTags: List<String>,
+    val ratingValue: Float?,       // Es. 4.5
+    val ratingVotes: Int?,         // Es. 150
+    val wikipediaUrl: String?      // Link alla bio
 )

@@ -21,6 +21,11 @@ data class Artist(
     val artistType: String? = null,   // Single, Band
     val countryCode: String? = null,
     val beginYear: Int? = null,
+    val tags: List<String>? = null,
+    val rating: Float? = null,
+    val ratingVotes: Int? = null,
+    val wikipediaUrl: String? = null,
+    val description: String? = null
 ) {
 
     fun shareUrlByType(typeOfUrl: LinkType): String? {

@@ -223,7 +223,12 @@ fun ArtistOverview(
                                 genres = artist?.genres,
                                 artistType = artist?.artistType,
                                 countryCode = artist?.countryCode,
-                                beginYear = artist?.beginYear
+                                beginYear = artist?.beginYear,
+                                tags = artist?.tags,
+                                rating = artist?.rating,
+                                ratingVotes = artist?.ratingVotes,
+                                wikipediaUrl = artist?.wikipediaUrl,
+                                description = artist?.description
                             )
                         )
                     }
