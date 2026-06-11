@@ -87,7 +87,7 @@ import it.fast4x.riplay.data.models.ArtistDiscography
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
-import it.fast4x.riplay.extensions.experimental.musicbrainz.Genrehelper
+import it.fast4x.riplay.extensions.experimental.musicbrainz.MBMetadataHelper
 import it.fast4x.riplay.extensions.experimental.musicbrainz.MusicBrainz
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
@@ -125,12 +125,14 @@ import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
+import it.fast4x.riplay.ui.components.themed.ExternalLinksSection
 import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
-import it.fast4x.riplay.ui.components.themed.GenreChips
+import it.fast4x.riplay.ui.components.themed.InfoBar
 import it.fast4x.riplay.ui.components.themed.KeywordChips
 import it.fast4x.riplay.ui.components.themed.LayoutWithAdaptiveThumbnail
 import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import it.fast4x.riplay.ui.components.themed.RatingBar
+import it.fast4x.riplay.ui.components.themed.TitleMiniSection
 import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.utils.asAlbum
 import it.fast4x.riplay.utils.forcePlay
@@ -230,7 +232,9 @@ fun ArtistOverview(
                                 ratingVotes = artist?.ratingVotes,
                                 wikipediaUrl = artist?.wikipediaUrl,
                                 description = artist?.description,
-                                disambiguation = artist?.disambiguation
+                                disambiguation = artist?.disambiguation,
+                                wikipediaBio = artist?.wikipediaBio,
+                                links = artist?.links
                             )
                         )
                     }
@@ -239,7 +243,7 @@ fun ArtistOverview(
 
         launch(Dispatchers.IO) {
             val mbclient = MusicBrainz()
-            val genreHelper = Genrehelper(mbclient)
+            val genreHelper = MBMetadataHelper(mbclient)
             genreHelper.onArtistViewed(browseId)
         }
     }
@@ -490,7 +494,7 @@ fun ArtistOverview(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(top = 10.dp)
+                            .padding(top = 10.dp, bottom = 8.dp)
                             .fillMaxWidth()
                     ) {
                         SecondaryTextButton(
@@ -607,118 +611,105 @@ fun ArtistOverview(
                                 modifier = Modifier
                                     .padding(bottom = 8.dp)
                                     .fillMaxWidth()
-                                    .clickable{
+                                    .clickable {
                                         readMore = !readMore
                                     }
                             ) {
                                 RatingBar(artist?.rating, 0)
-                                Spacer(modifier = Modifier.padding(horizontal = 12.dp))
-                                artist?.info?.let {
-                                    BasicText(
-                                        text = it,
-                                        style = typography().xs.medium,
-                                        maxLines = 1
-                                    )
-                                }
+                                if (artist?.rating != null)
+                                    Spacer(modifier = Modifier.padding(horizontal = 20.dp))
+
+                                InfoBar(artist?.beginYear, artist?.countryCode)
                             }
 
-                            AnimatedVisibility(readMore) {
-                                /*
-                            artist?.disambiguation?.let {
-                                if (it.isNotEmpty())
-                                    Text(
-                                        text = it,
-                                        style = typography().xs.semiBold,
-                                        color = colorPalette().text,
-                                        modifier = Modifier.padding(vertical = 4.dp)
-                                    )
-                            }
-                             */
-
+                            AnimatedVisibility(readMore && artist?.keywords?.isNotEmpty() == true) {
                                 artist?.keywords?.let { keywords ->
-                                    Row(
+                                    Column(
                                         modifier = Modifier
-                                            .padding(vertical = 4.dp)
+                                            .padding(horizontal = 12.dp, vertical = 4.dp)
                                     ) {
-                                        if (keywords.isNotEmpty())
-                                            KeywordChips(keywords)
-                                        else Text(
-                                            text = "No keyworks available",
-                                            style = typography().xs.semiBold,
-                                            color = colorPalette().text
+                                        Text(
+                                            text = stringResource(R.string.title_keywords),
+                                            color = colorPalette().text,
+                                            style =  typography().xs.semiBold,
                                         )
+
+                                        KeywordChips(keywords)
                                     }
                                 }
                             }
 
-                            AnimatedVisibility(readMore) {
-                                artistPage?.description?.let { description ->
-                                    val attributionsIndex =
-                                        description.lastIndexOf("\n\nFrom Wikipedia")
-                                    Row(
-                                        modifier = Modifier
-                                            .padding(vertical = 8.dp)
-                                    ) {
-
-                                        /*
-                            if (!readMore)
-                                BasicText(
-                                    text = description.substring(
-                                        0,
-                                        if (description.length >= 100) 100 else description.length
-                                    ).plus("..."),
-                                    style = typography().xxs.secondary.align(TextAlign.Justify),
+                            AnimatedVisibility(readMore && artist?.links?.isNotEmpty() == true) {
+                                Column(
                                     modifier = Modifier
-                                        .padding(horizontal = 8.dp)
-                                        .weight(1f)
-                                        .clickable {
-                                            readMore = !readMore
-                                        }
-                                )
+                                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.title_external_links),
+                                        color = colorPalette().text,
+                                        style = typography().xs.semiBold,
+                                    )
+                                    ExternalLinksSection(artist?.links)
+                                }
+                            }
 
-                             */
-
-                                        BasicText(
-                                            text = "“",
-                                            style = typography().xxs.semiBold,
+                            val artistBio = artist?.wikipediaBio ?: artistPage?.description
+                            AnimatedVisibility(readMore && artistBio?.isNotEmpty() == true) {
+                                Column(
+                                    modifier = Modifier
+                                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.title_bio),
+                                        color = colorPalette().text,
+                                        style = typography().xs.semiBold,
+                                    )
+                                    artistBio?.let { description ->
+                                        val attributionsIndex =
+                                            description.lastIndexOf("\n\nFrom Wikipedia")
+                                        Row(
                                             modifier = Modifier
-                                                .offset(y = (-8).dp)
-                                                .align(Alignment.Top)
-                                        )
+                                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                                        ) {
 
-                                        BasicText(
-                                            text = if (attributionsIndex == -1) {
-                                                description
-                                            } else {
-                                                description.substring(0, attributionsIndex)
-                                            },
-                                            style = typography().xxs.secondary.align(TextAlign.Justify),
-                                            modifier = Modifier
-                                                .padding(horizontal = 8.dp)
-                                                .weight(1f)
-//                                                .clickable {
-//                                                    readMore = !readMore
-//                                                }
-                                        )
-                                        BasicText(
-                                            text = "„",
-                                            style = typography().xxs.semiBold,
-                                            modifier = Modifier
-                                                .offset(y = 4.dp)
-                                                .align(Alignment.Bottom)
-                                        )
-
-                                        if (attributionsIndex != -1) {
                                             BasicText(
-                                                text = stringResource(R.string.from_wikipedia_cca),
-                                                style = typography().xxs.color(colorPalette().textDisabled)
-                                                    .align(TextAlign.Start),
+                                                text = "“",
+                                                style = typography().xxs.semiBold,
                                                 modifier = Modifier
-                                                    .padding(horizontal = 16.dp)
-                                                    .padding(bottom = 16.dp)
+                                                    .offset(y = (-8).dp)
+                                                    .align(Alignment.Top)
                                             )
-                                        }
 
+                                            BasicText(
+                                                text = if (attributionsIndex == -1) {
+                                                    description
+                                                } else {
+                                                    description.substring(0, attributionsIndex)
+                                                },
+                                                style = typography().xxs.secondary.align(TextAlign.Justify),
+                                                modifier = Modifier
+                                                    .padding(horizontal = 8.dp)
+                                                    .weight(1f)
+                                            )
+                                            BasicText(
+                                                text = "„",
+                                                style = typography().xxs.semiBold,
+                                                modifier = Modifier
+                                                    .offset(y = 4.dp)
+                                                    .align(Alignment.Bottom)
+                                            )
+
+                                            if (attributionsIndex != -1) {
+                                                BasicText(
+                                                    text = stringResource(R.string.from_wikipedia_cca),
+                                                    style = typography().xxs.color(colorPalette().textDisabled)
+                                                        .align(TextAlign.Start),
+                                                    modifier = Modifier
+                                                        .align(Alignment.Bottom)
+                                                )
+                                            }
+
+                                        }
                                     }
                                 }
                             }

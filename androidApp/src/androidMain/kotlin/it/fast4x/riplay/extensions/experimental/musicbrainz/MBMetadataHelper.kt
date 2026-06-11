@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-class Genrehelper(
+class MBMetadataHelper(
     private val mbClient: MusicBrainz
 ) {
     val coroutineScope = CoroutineScope(Dispatchers.IO)
@@ -20,13 +20,29 @@ class Genrehelper(
         val artist = Database.artist(artistId).first() ?: return
 
         // Se è null, non abbiamo ancora cercato. Se è emptyList, abbiamo già cercato ma non c'erano.
-        if ((artist.genres != null && artist.artistType != null
-                    && artist.countryCode != null && artist.beginYear != null)
+        if ((artist.genres != null && artist.artistType != null && artist.countryCode != null
+                    && artist.beginYear != null && artist.links != null
+                    && artist.wikipediaBio != null && artist.wikipediaUrl != null)
             || artist.name == null) return
 
         try {
-            val metadata = mbClient.fetchArtistMetadata(artist.name)
-            Timber.d("Genrehelper onArtistViewed genres fetched $metadata")
+            var metadata = mbClient.fetchArtistMetadata(artist.name)
+            Timber.d("MBMetadataHelper onArtistViewed metadata fetched $metadata")
+
+            // Se l'artista non ha un url di wikipedia provo a cercarlo direttamente da wikipedia
+            if (metadata.wikipediaUrl == null) {
+                val searchArtistTerm = if (artist.artistType == "Group") {
+                    "${artist.name} band" // Cerca "Nirvana band"
+                } else if (artist.artistType == "Person") {
+                    "${artist.name} singer" // Cerca "Adele singer"
+                } else {
+                    artist.name
+                }
+                val wikipediaResult = mbClient.fetchWikipediaExtractByArtist(searchArtistTerm)
+                metadata = metadata.copy(wikipediaBio = wikipediaResult?.bio, wikipediaUrl = wikipediaResult?.url)
+                Timber.d("MBMetadataHelper onArtistViewed wikipediaBio fetched $metadata")
+            }
+
             // Se l'API ritorna vuoto, salviamo emptyList per non ripetere la chiamata in futuro
             coroutineScope.launch {
                 Database.update(
@@ -35,18 +51,20 @@ class Genrehelper(
                         artistType = metadata.artistType ?: artist.artistType,
                         countryCode = metadata.countryCode ?: artist.countryCode,
                         beginYear = metadata.beginYear ?: artist.beginYear,
-                        tags = metadata.topTags ?: artist.tags,
+                        tags = metadata.topTags.ifEmpty { emptyList() },
                         rating = metadata.ratingValue ?: artist.rating,
                         ratingVotes = metadata.ratingVotes ?: artist.ratingVotes,
                         wikipediaUrl = metadata.wikipediaUrl ?: artist.wikipediaUrl,
-                        disambiguation = metadata.disambiguation ?: artist.disambiguation
+                        disambiguation = metadata.disambiguation ?: artist.disambiguation,
+                        wikipediaBio = metadata.wikipediaBio ?: artist.wikipediaBio,
+                        links = metadata.links ?: artist.links
                     )
                 )
             }
-            Timber.d("Genrehelper onArtistViewed genres updated $metadata")
+            Timber.d("MBMetadataHelper onArtistViewed metadata updated $metadata")
         } catch (e: Exception) {
             // Errore di rete: non facciamo nulla, genres rimarrà null e riproverà la prossima volta
-            Timber.e("Genrehelper onArtistViewed error ${e.stackTraceToString()}")
+            Timber.e("MBMetadataHelper onArtistViewed error ${e.stackTraceToString()}")
         }
     }
 
@@ -63,7 +81,7 @@ class Genrehelper(
             // Proviamo a prendere i generi specifici dell'album
             val metadata  = mbClient.fetchAlbumMetadata(album.title, artist.name ?: "")
 
-            Timber.d("Genrehelper onAlbumViewed metadata fetched $metadata")
+            Timber.d("MBMetadataHelper onAlbumViewed metadata fetched $metadata")
 
             val finalGenres = metadata.genres.ifEmpty {
                 getOrFetchArtistGenres(artist).ifEmpty { emptyList() }
@@ -79,11 +97,11 @@ class Genrehelper(
                     )
                 )
             }
-            Timber.d("Genrehelper onAlbumViewed genres updated $finalGenres")
+            Timber.d("MBMetadataHelper onAlbumViewed genres updated $finalGenres")
 
         } catch (e: Exception) {
             // Errore di rete
-            Timber.e("Genrehelper onAlbumViewed error ${e.stackTraceToString()}")
+            Timber.e("MBMetadataHelper onAlbumViewed error ${e.stackTraceToString()}")
         }
     }
 
@@ -91,21 +109,21 @@ class Genrehelper(
      * Chiamato quando l'utente ascolta una canzone
      */
     suspend fun onSongPlayed(songId: String) {
-        Timber.d("Genrehelper onSongPlayed $songId")
+        Timber.d("MBMetadataHelper onSongPlayed $songId")
         val song = Database.song(songId).first() ?: return
         if (song.genres != null || song.artistsText == null) return
 
         val artist = Database.artistByName(song.artistsText).first() ?: return
-        Timber.d("Genrehelper onSongPlayed artist $artist")
+        Timber.d("MBMetadataHelper onSongPlayed artist $artist")
 
         val artistGenres = getOrFetchArtistGenres(artist)
-        Timber.d("Genrehelper onSongPlayed genres fetched $artistGenres")
+        Timber.d("MBMetadataHelper onSongPlayed genres fetched $artistGenres")
 
         // La canzone eredita i generi dell'artista
         coroutineScope.launch {
             Database.upsert(song.copy(genres = artistGenres.ifEmpty { emptyList() }))
         }
-        Timber.d("Genrehelper onSongPlayed genres updated from artistGenres $artistGenres")
+        Timber.d("MBMetadataHelper onSongPlayed genres updated from artistGenres $artistGenres")
     }
 
     /**
@@ -122,4 +140,5 @@ class Genrehelper(
         // Rileggiamo l'artista dal DB ora che è aggiornato
         return Database.artist(artist.id).first()?.genres ?: emptyList()
     }
+
 }

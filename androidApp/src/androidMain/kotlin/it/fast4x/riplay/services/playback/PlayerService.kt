@@ -201,7 +201,7 @@ import it.fast4x.riplay.data.models.QueuedMediaItem
 import it.fast4x.riplay.data.models.defaultQueueId
 import it.fast4x.riplay.enums.AudioQualityFormat
 import it.fast4x.riplay.enums.CastType
-import it.fast4x.riplay.extensions.experimental.musicbrainz.Genrehelper
+import it.fast4x.riplay.extensions.experimental.musicbrainz.MBMetadataHelper
 import it.fast4x.riplay.extensions.experimental.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.musicvault.MusicVaultEvent
@@ -1834,7 +1834,7 @@ private var pausedByZeroVolume = false
 
                 // Recupera genere
                 val mbclient = MusicBrainz()
-                val genreHelper = Genrehelper(mbclient)
+                val genreHelper = MBMetadataHelper(mbclient)
                 serviceScope.launch {
                     genreHelper.onSongPlayed(it.mediaId)
                 }

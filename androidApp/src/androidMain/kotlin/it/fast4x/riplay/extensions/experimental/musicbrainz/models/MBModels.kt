@@ -50,8 +50,8 @@ data class MBRelationList(
 
 @Serializable
 data class MBRelation(
-    val type: String? = null,
-    val url: MBRelatedUrl? = null // Ignoriamo l'artista, ci serve solo l'URL
+    val type: String? = null, // Es. wikipedia wikidata
+    val url: MBRelatedUrl? = null
 )
 
 @Serializable
@@ -81,7 +81,7 @@ data class MBArtistDetailResponse(
     val tags: List<MBTag>? = null,
     val rating: MBRating? = null,
 
-    @SerialName("relation-list") val relationList: List<MBRelationList>? = null,
+    val relations: List<MBRelation>? = null,
     val disambiguation: String? = null,
 )
 
@@ -123,5 +123,19 @@ data class MBArtistMetadata(
     val ratingValue: Float?,       // Es. 4.5
     val ratingVotes: Int?,         // Es. 150
     val wikipediaUrl: String?,      // Link alla bio
+    val wikipediaBio: String?,     // Artist bio fetched from wikipedia
     val disambiguation: String?,   // Info addizionali su artista
+    val links: List<ExternalLink>? = null
+)
+
+data class WikiBioResult(
+    val bio: String,      // Il testo della biografia
+    val url: String       // L'URL completo di Wikipedia
+)
+
+@Serializable
+data class ExternalLink(
+    val type: String,      // Es. "social network", "streaming", "youtube"
+    val url: String,       // Es. "https://instagram.com/..."
+    val platform: String   // Es. "instagram", "spotify"
 )

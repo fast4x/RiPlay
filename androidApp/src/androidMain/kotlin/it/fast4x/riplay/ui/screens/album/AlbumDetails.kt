@@ -66,7 +66,6 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import dev.rebelonion.translator.Language
 import dev.rebelonion.translator.Translator
-import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
@@ -137,7 +136,7 @@ import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
-import it.fast4x.riplay.extensions.experimental.musicbrainz.Genrehelper
+import it.fast4x.riplay.extensions.experimental.musicbrainz.MBMetadataHelper
 import it.fast4x.riplay.extensions.experimental.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.utils.typography
@@ -157,9 +156,6 @@ import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.utils.mediaItemSetLiked
 import it.fast4x.riplay.utils.isPrimaryAction
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 
@@ -255,7 +251,7 @@ fun AlbumDetails(
 
         launch(Dispatchers.IO) {
             val mbclient = MusicBrainz()
-            val genreHelper = Genrehelper(mbclient)
+            val genreHelper = MBMetadataHelper(mbclient)
             genreHelper.onAlbumViewed(browseId)
         }
     }

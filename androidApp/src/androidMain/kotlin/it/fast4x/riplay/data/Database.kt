@@ -67,6 +67,7 @@ import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.data.models.SongWithContentLength
 import it.fast4x.riplay.data.models.SortedSongPlaylistMap
+import it.fast4x.riplay.extensions.experimental.musicbrainz.models.ExternalLink
 import it.fast4x.riplay.musicvault.MusicVaultState
 import it.fast4x.riplay.extensions.rewind.data.AlbumMostListened
 import it.fast4x.riplay.extensions.rewind.data.AlbumsListenedCount
@@ -3210,7 +3211,7 @@ interface Database {
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 50,
+    version = 52,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -3252,6 +3253,8 @@ interface Database {
         AutoMigration(from = 47, to = 48),
         AutoMigration(from = 48, to = 49),
         AutoMigration(from = 49, to = 50),
+        AutoMigration(from = 50, to = 51),
+        AutoMigration(from = 51, to = 52),
     ],
 )
 @TypeConverters(Converters::class)
@@ -3670,6 +3673,16 @@ object Converters {
     @JvmStatic
     fun toAlbumList(value: String): List<Album> {
         return RoomJson.decodeFromString(value) // Deserializza da JSON String a Lista
+    }
+
+    @TypeConverter
+    fun fromExternalLinkList(value: List<ExternalLink>?): String? {
+        return value?.let { RoomJson.encodeToString(it) }
+    }
+
+    @TypeConverter
+    fun toExternalLinkList(value: String?): List<ExternalLink>? {
+        return value?.let { RoomJson.decodeFromString<List<ExternalLink>>(it) }
     }
 
 }

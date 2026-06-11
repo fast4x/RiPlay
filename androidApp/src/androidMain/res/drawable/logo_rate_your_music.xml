@@ -1,0 +1,84 @@
+<!--
+  ~ Copyright (C) 2026 The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="143dp"
+    android:height="143dp"
+    android:viewportWidth="143"
+    android:viewportHeight="143">
+  <path
+      android:pathData="M85.79,43.01C96.65,47.4 115.86,46.77 127.77,45.73C117.95,24.22 96.23,9.18 71.17,9.18C59.06,9.18 47.99,12.52 38.39,18.58C59.27,8.76 69.29,36.12 85.79,43.01Z"
+      android:fillColor="#E6E4E5"/>
+  <path
+      android:pathData="M142.17,71.41C142.17,110.67 110.43,142.41 71.17,142.41C31.92,142.41 0.17,110.67 0.17,71.41C0.17,32.15 31.92,0.41 71.17,0.41C110.43,0.41 142.17,32.36 142.17,71.41Z"
+      android:fillColor="#E6E4E5"/>
+  <path
+      android:pathData="M107.72,67.86C117.32,68.49 126.09,65.98 132.78,63.06C131.94,56.79 130.27,50.95 127.76,45.52C115.86,46.56 96.65,47.19 85.79,42.8C69.29,35.91 58.43,8.14 38.39,18.37C20.64,29.44 8.94,48.86 8.94,71.41C8.94,77.26 9.78,82.9 11.24,88.12C21.06,79.35 41.73,62.85 60.31,57.84C85.37,51.16 87.04,66.61 107.72,67.86Z">
+    <aapt:attr name="android:fillColor">
+      <gradient
+          android:startX="70.83"
+          android:startY="57.94"
+          android:endX="70.83"
+          android:endY="17.91"
+          android:type="linear">
+        <item android:offset="0" android:color="#FF88C6EB"/>
+        <item android:offset="1" android:color="#FF2392CC"/>
+      </gradient>
+    </aapt:attr>
+  </path>
+  <path
+      android:pathData="M132.78,63.27C126.1,66.19 117.32,68.49 107.72,68.07C87.04,66.82 85.37,51.15 60.11,58.05C41.73,63.06 21.06,79.76 11.03,88.33C13.12,95.43 16.25,102.11 20.64,108.16C27.32,102.53 35.47,97.3 44.44,95.43C70.13,90 70.13,108.37 91.85,105.87C103.75,104.4 120.04,92.92 132.36,82.9C132.99,79.35 133.4,75.59 133.4,71.83C133.4,68.7 133.2,65.98 132.78,63.27Z">
+    <aapt:attr name="android:fillColor">
+      <gradient
+          android:startX="76.83"
+          android:startY="109.07"
+          android:endX="70.59"
+          android:endY="66.17"
+          android:type="linear">
+        <item android:offset="0" android:color="#FF2383C6"/>
+        <item android:offset="1" android:color="#FF33519F"/>
+      </gradient>
+    </aapt:attr>
+  </path>
+  <path
+      android:pathData="M44.44,95.22C35.46,97.1 27.32,102.32 20.64,107.96C31.91,123.62 50.29,133.85 71.17,133.85C101.87,133.85 127.14,111.71 132.36,82.69C120.04,92.71 103.75,104.2 91.85,105.66C70.13,108.16 70.13,89.58 44.44,95.22Z">
+    <aapt:attr name="android:fillColor">
+      <gradient
+          android:startX="76.51"
+          android:startY="128.01"
+          android:endX="76.51"
+          android:endY="94.94"
+          android:type="linear">
+        <item android:offset="0" android:color="#FF1E4999"/>
+        <item android:offset="1" android:color="#FF1B3B6C"/>
+      </gradient>
+    </aapt:attr>
+  </path>
+  <path
+      android:pathData="M97.28,83.1C99.78,89.37 97.49,96.26 91.64,98.77C86,101.06 79.32,97.93 76.6,91.88C74.1,85.61 76.39,78.72 82.24,76.21C88.09,73.71 94.77,76.84 97.28,83.1Z">
+    <aapt:attr name="android:fillColor">
+      <gradient
+          android:startX="88.77"
+          android:startY="102.59"
+          android:endX="85.75"
+          android:endY="75.53"
+          android:type="linear">
+        <item android:offset="0" android:color="#FF1E4999"/>
+        <item android:offset="1" android:color="#FF1B3B6C"/>
+      </gradient>
+    </aapt:attr>
+  </path>
+</vector>

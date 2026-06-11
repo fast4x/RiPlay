@@ -1362,4 +1362,7 @@
     <string name="event_notify_channel_name_favorites_artists_updates">Favorite Artist Updates</string>
     <string name="event_notify_channel_desc_check_new_releases_from_favorite_artists">Check new releases from favorite artists</string>
     <string name="title_info_and_community">Info and Community</string>
+    <string name="title_keywords">Keywords</string>
+    <string name="title_external_links">External links</string>
+    <string name="title_bio">Bio</string>
 </resources>

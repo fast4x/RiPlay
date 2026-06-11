@@ -12,7 +12,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.typography
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -35,7 +37,7 @@ fun KeywordChips(
                         text = keyword.split(" ").joinToString(" ") { word ->
                             word.replaceFirstChar { it.uppercase() }
                         },
-                        style = MaterialTheme.typography.labelMedium
+                        style = typography().xxs.semiBold
                     )
                 },
                 colors = SuggestionChipDefaults.suggestionChipColors(
