@@ -105,12 +105,22 @@ data class MBReleaseGroupDetailResponse(
 
     @SerialName("first-release-date")
     val firstReleaseDate: String? = null, // Es. "1994-03-08" o "1994"
+
+    val tags: List<MBTag>? = null,
+    val rating: MBRating? = null,
+    val relations: List<MBRelation>? = null
 )
 
 data class MBAlbumMetadata(
     val genres: List<String>,
     val albumType: String?, // Es. "Album", "EP", "Live"
-    val originalYear: Int?  // Es. 1994
+    val originalYear: Int?,  // Es. 1994
+    val topTags: List<String>,
+    val ratingValue: Float?,
+    val ratingVotes: Int?,
+    val wikipediaUrl: String?,
+    val wikipediaInfo: String? = null,
+    val links: List<ExternalLink>? = null
 )
 
 data class MBArtistMetadata(
@@ -128,8 +138,8 @@ data class MBArtistMetadata(
     val links: List<ExternalLink>? = null
 )
 
-data class WikiBioResult(
-    val bio: String,      // Il testo della biografia
+data class WikiInfoResult(
+    val info: String,      // Il testo della biografia
     val url: String       // L'URL completo di Wikipedia
 )
 

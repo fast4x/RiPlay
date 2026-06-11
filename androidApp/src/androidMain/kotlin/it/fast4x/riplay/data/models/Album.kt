@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import it.fast4x.riplay.enums.LinkType
+import it.fast4x.riplay.extensions.experimental.musicbrainz.models.ExternalLink
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -22,6 +23,13 @@ data class Album(
     val genres: List<String>? = null,
     val originalYear: Int? = null, // L'anno reale di uscita secondo MB
     val albumType: String? = null, // "Album", "EP", "Live", secondo MB
+
+    val tags: List<String>? = null,
+    val rating: Float? = null,
+    val ratingVotes: Int? = null,
+    val wikipediaUrl: String? = null,
+    val wikipediaInfo: String? = null,
+    val links: List<ExternalLink>? = null
 ) {
 
     fun shareUrlByType(typeOfUrl: LinkType): String? {
@@ -43,10 +51,15 @@ data class Album(
         )
     }
 
-    val albumInfoText: String
+    val info: String
         get() = buildList {
         originalYear?.let { add(it.toString()) }
         albumType?.let { add(it) } // Aggiunge "Album", "Live", "EP"
-    }.joinToString(" · ")
+    }.joinToString("    ")
+
+    val keywords: List<String>
+        get() = (genres.orEmpty() + tags.orEmpty())
+            .distinctBy { it.lowercase() } // Evita "Rock" e "rock"
+            .take(8)
 
 }

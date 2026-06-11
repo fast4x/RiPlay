@@ -20,8 +20,8 @@ import it.fast4x.riplay.utils.toFlagEmoji
 import it.fast4x.riplay.utils.typography
 
 @Composable
-fun InfoBar(year: Int?, countryCode: String?) {
-    if (year == null || countryCode == null) return
+fun InfoBar(year: String?, countryCode: String?) {
+    if (year == null) return
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -37,18 +37,20 @@ fun InfoBar(year: Int?, countryCode: String?) {
         Spacer(modifier = Modifier.width(4.dp))
 
         Text(
-            text = year.toString(),
+            text = year,
             style = typography().xs.semiBold,
             color = colorPalette().text
         )
 
-        Spacer(modifier = Modifier.width(6.dp))
+        if (countryCode != null) {
+            Spacer(modifier = Modifier.width(6.dp))
 
-        Text(
-            text = countryCode.toFlagEmoji(),
-            style = typography().xxs.semiBold,
-            color = colorPalette().text
-        )
+            Text(
+                text = countryCode.toFlagEmoji(),
+                style = typography().xxs.semiBold,
+                color = colorPalette().text
+            )
+        }
 
     }
 }

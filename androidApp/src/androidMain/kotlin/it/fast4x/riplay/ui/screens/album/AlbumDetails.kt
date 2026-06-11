@@ -1,6 +1,7 @@
 package it.fast4x.riplay.ui.screens.album
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -141,17 +142,22 @@ import it.fast4x.riplay.extensions.experimental.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.PullToRefreshBox
+import it.fast4x.riplay.ui.components.themed.ExternalLinksSection
 import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.ui.components.themed.GenreChips
+import it.fast4x.riplay.ui.components.themed.InfoBar
+import it.fast4x.riplay.ui.components.themed.KeywordChips
 import it.fast4x.riplay.ui.components.themed.Loader
 import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import it.fast4x.riplay.ui.components.themed.QueuesDialog
+import it.fast4x.riplay.ui.components.themed.RatingBar
 import it.fast4x.riplay.ui.components.themed.Title
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.utils.CustomHttpClient
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.addToYtPlaylist
+import it.fast4x.riplay.utils.cleanWikipediaText
 import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.utils.mediaItemSetLiked
 import it.fast4x.riplay.utils.isPrimaryAction
@@ -225,7 +231,13 @@ fun AlbumDetails(
                                 isYoutubeAlbum = album?.isYoutubeAlbum == true,
                                 genres = album?.genres,
                                 originalYear = album?.originalYear,
-                                albumType = album?.albumType
+                                albumType = album?.albumType,
+                                tags = album?.tags,
+                                rating = album?.rating,
+                                ratingVotes = album?.ratingVotes,
+                                wikipediaUrl = album?.wikipediaUrl,
+                                wikipediaInfo = album?.wikipediaInfo,
+                                links = album?.links
                             )
 
                             val songAlbumMaps = mediaItems.mapIndexed { position, mediaItem ->
@@ -289,7 +301,13 @@ fun AlbumDetails(
                 isYoutubeAlbum = album?.isYoutubeAlbum == true,
                 genres = album?.genres,
                 originalYear = album?.originalYear,
-                albumType = album?.albumType
+                albumType = album?.albumType,
+                tags = album?.tags,
+                rating = album?.rating,
+                ratingVotes = album?.ratingVotes,
+                wikipediaUrl = album?.wikipediaUrl,
+                wikipediaInfo = album?.wikipediaInfo,
+                links = album?.links
             )
 
             mediaItems.forEach { mediaItem ->
@@ -709,26 +727,6 @@ fun AlbumDetails(
                                 }
                             }
 
-                        album?.albumInfoText?.let {
-                            item(
-                                key = "infoAlbumExtended"
-                            ) {
-                                Row(
-                                    horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 4.dp)
-                                ) {
-                                    BasicText(
-                                        text = it,
-                                        style = typography().xs.medium,
-                                        maxLines = 1
-                                    )
-                                }
-                            }
-                        }
-
                         item(
                             key = "actions",
                             contentType = 0
@@ -1117,147 +1115,123 @@ fun AlbumDetails(
                             }
                         }
 
-                        albumPage?.description?.let { description ->
-                            item(
-                                key = "albumInfo"
+                        item {
+                            Column(
+                                modifier = Modifier
+                                    .background(colorPalette().background1.copy(alpha = 0.7f))
                             ) {
-
-                                val attributionsIndex =
-                                    description.lastIndexOf("\n\nFrom Wikipedia")
-
                                 Title(
-                                    title = stringResource(R.string.information),
+                                    title = stringResource(R.string.title_info_and_community),
                                     icon = if (readMore) R.drawable.chevron_up else R.drawable.chevron_down,
                                     onClick = {
                                         readMore = !readMore
                                     },
                                 )
-
-                                Row(
+                                Column(
                                     modifier = Modifier
-                                        .padding(vertical = 16.dp, horizontal = 8.dp)
+                                        .padding(horizontal = 16.dp)
                                 ) {
-
-                                    BasicText(
-                                        text = "“",
-                                        style = typography().xxl.semiBold,
+                                    Row(
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically,
                                         modifier = Modifier
-                                            .offset(y = (-8).dp)
-                                            .align(Alignment.Top)
-                                    )
-
-                                    var translatedText by remember { mutableStateOf("") }
-                                    val nonTranslatedText by remember {
-                                        mutableStateOf(
-                                            if (attributionsIndex == -1) {
-                                                description
-                                            } else {
-                                                description.substring(0, attributionsIndex)
+                                            .padding(bottom = 8.dp)
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                readMore = !readMore
                                             }
-                                        )
+                                    ) {
+                                        RatingBar(album?.rating, 0)
+                                        if (album?.rating != null)
+                                            Spacer(modifier = Modifier.padding(horizontal = 20.dp))
+
+                                        InfoBar(album?.year, null)
                                     }
 
+                                    AnimatedVisibility(readMore && album?.keywords?.isNotEmpty() == true) {
+                                        album?.keywords?.let { keywords ->
+                                            Column(
+                                                modifier = Modifier
+                                                    .padding(horizontal = 12.dp, vertical = 4.dp)
+                                            ) {
+                                                Text(
+                                                    text = stringResource(R.string.title_keywords),
+                                                    color = colorPalette().text,
+                                                    style =  typography().xs.semiBold,
+                                                )
 
-                                    if (translateEnabled == true) {
-                                        LaunchedEffect(Unit) {
-                                            val result = withContext(Dispatchers.IO) {
-                                                try {
-                                                    translator.translate(
-                                                        nonTranslatedText,
-                                                        languageDestination,
-                                                        Language.AUTO
-                                                    ).translatedText
-                                                } catch (e: Exception) {
-                                                    e.printStackTrace()
+                                                KeywordChips(keywords)
+                                            }
+                                        }
+                                    }
+
+                                    AnimatedVisibility(readMore && album?.links?.isNotEmpty() == true) {
+                                        Column(
+                                            modifier = Modifier
+                                                .padding(horizontal = 12.dp, vertical = 4.dp)
+                                        ) {
+                                            Text(
+                                                text = stringResource(R.string.title_external_links),
+                                                color = colorPalette().text,
+                                                style = typography().xs.semiBold,
+                                            )
+                                            ExternalLinksSection(album?.links)
+                                        }
+                                    }
+
+                                    val albumInfo = (album?.wikipediaInfo ?: albumPage?.description)?.cleanWikipediaText()
+                                    AnimatedVisibility(readMore && albumInfo?.isNotEmpty() == true) {
+                                        Column(
+                                            modifier = Modifier
+                                                .padding(horizontal = 12.dp, vertical = 4.dp)
+                                        ) {
+                                            Text(
+                                                text = stringResource(R.string.information),
+                                                color = colorPalette().text,
+                                                style = typography().xs.semiBold,
+                                            )
+                                            albumInfo?.let { description ->
+                                                Row(
+                                                    modifier = Modifier
+                                                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                                                ) {
+
+                                                    BasicText(
+                                                        text = "“",
+                                                        style = typography().xxs.semiBold,
+                                                        modifier = Modifier
+                                                            .offset(y = (-8).dp)
+                                                            .align(Alignment.Top)
+                                                    )
+
+                                                    BasicText(
+                                                        text = description,
+                                                        style = typography().xxs.secondary.align(TextAlign.Justify),
+                                                        modifier = Modifier
+                                                            .padding(horizontal = 8.dp)
+                                                            .weight(1f)
+                                                    )
+                                                    BasicText(
+                                                        text = "„",
+                                                        style = typography().xxs.semiBold,
+                                                        modifier = Modifier
+                                                            .offset(y = 4.dp)
+                                                            .align(Alignment.Bottom)
+                                                    )
+
                                                 }
                                             }
-                                            translatedText =
-                                                if (result.toString() == "kotlin.Unit") "" else result.toString()
                                         }
-                                    } else translatedText = nonTranslatedText
-
-                                    if (!readMore)
-                                        BasicText(
-                                            text = translatedText.take(if (translatedText.length >= 100) 100 else translatedText.length)
-                                                .plus("..."),
-                                            style = typography().xxs.secondary.align(TextAlign.Justify),
-                                            modifier = Modifier
-                                                .padding(horizontal = 8.dp)
-                                                .weight(1f)
-                                                .clickable {
-                                                    readMore = !readMore
-                                                }
-                                        )
-
-                                    if (readMore)
-                                        BasicText(
-                                            text = translatedText,
-                                            style = typography().xxs.secondary.align(TextAlign.Justify),
-                                            modifier = Modifier
-                                                .padding(horizontal = 8.dp)
-                                                .weight(1f)
-                                                .clickable {
-                                                    readMore = !readMore
-                                                }
-                                        )
-
-                                    BasicText(
-                                        text = "„",
-                                        style = typography().xxl.semiBold,
-                                        modifier = Modifier
-                                            .offset(y = 4.dp)
-                                            .align(Alignment.Bottom)
-                                    )
-                                }
-
-                                if (attributionsIndex != -1) {
-                                    BasicText(
-                                        text = stringResource(R.string.from_wikipedia_cca),
-                                        style = typography().xxs.color(
-                                            colorPalette()
-                                                .textDisabled
-                                        ).align(
-                                            TextAlign.Start
-                                        ),
-                                        modifier = Modifier
-                                            .padding(horizontal = 16.dp)
-                                            .padding(bottom = 16.dp)
-                                    )
-                                }
-
-                            }
-                        }
-
-                        album?.genres?.let { genres ->
-                            item {
-                                Title(
-                                    title = stringResource(R.string.genres),
-                                )
-                                Row(
-                                    modifier = Modifier
-                                        .padding(vertical = 4.dp, horizontal = 16.dp)
-                                ) {
-                                    if (genres.isNotEmpty())
-                                        GenreChips(genres)
-                                    else Text(
-                                        text = "No genres available",
-                                        style = typography().xs.semiBold,
-                                        color = colorPalette().text
-                                    )
+                                    }
                                 }
                             }
                         }
+
 
                         item(
                             key = "songsTitle"
                         ) {
                             Title(title = stringResource(R.string.songs),)
-//                            BasicText(
-//                                text = stringResource(R.string.songs),
-//                                style = typography().m.semiBold.align(TextAlign.Start),
-//                                modifier = sectionTextModifier
-//                                    .fillMaxWidth()
-//                            )
                         }
                         itemsIndexed(
                             items = songs,

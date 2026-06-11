@@ -217,3 +217,42 @@ fun String.toFlagEmoji(): String {
     val secondLetter = Character.codePointAt(countryCode, 1) - 0x41 + 0x1F1E6
     return String(Character.toChars(firstLetter)) + String(Character.toChars(secondLetter))
 }
+
+fun String.cleanWikipediaText(): String {
+    return this
+        // 1. Rimuoviamo i caratteri invisibili più comuni di Wikipedia
+        // \u200B-\u200D: Zero-width spaces
+        // \uFEFF: Byte Order Mark
+        .replace(Regex("[\\u200B-\\u200D\\uFEFF]"), "")
+
+        // 2. Convertiamo gli spazi unificatori (NBSP) e spazi strani in spazi normali
+        .replace(Regex("[\\u00A0\\u202F]"), " ")
+
+        // 3. Gestiamo i separatori di linea/paragrafo Unicode (che mandano a capo)
+        .replace(Regex("[\\u2028\\u2029]"), "\n")
+
+        // 4. Normalizziamo i ritorni a capo classici
+        .replace("\r\n", "\n")
+        .replace("\r", "\n")
+
+        // 5. Proteggiamo i doppi ritorni a capo (veri cambi di paragrafo)
+        .replace(Regex("\n{2,}"), "[PARAGRAPH_BREAK]")
+
+        // 6. Uniamo le righe interrotte: sostituiamo i singoli \n con uno spazio
+        .replace("-\n", "") // Se una parola è divisa da un trattino alla fine della riga
+        .replace("\n", " ")
+
+        // 7. Ripristiniamo i paragrafi reali
+        .replace("[PARAGRAPH_BREAK]", "\n\n")
+
+        // 8. Rimuoviamo eventuali spazi multipli creati dalle sostituzioni
+        .replace(Regex(" +"), " ")
+
+        // 9. Pulizia degli spazi a inizio e fine di ogni riga
+        .lines().joinToString("\n") { it.trim() }
+
+        // 10. BONUS: Rimuoviamo la nota finale di Wikipedia che di solito fa solo casino
+        .replace(Regex("\\s*From Wikipedia.*$"), "")
+
+        .trim()
+}

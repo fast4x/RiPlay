@@ -22,7 +22,8 @@ class MBMetadataHelper(
         // Se è null, non abbiamo ancora cercato. Se è emptyList, abbiamo già cercato ma non c'erano.
         if ((artist.genres != null && artist.artistType != null && artist.countryCode != null
                     && artist.beginYear != null && artist.links != null
-                    && artist.wikipediaBio != null && artist.wikipediaUrl != null)
+                    && artist.wikipediaBio != null && artist.wikipediaUrl != null
+                    && artist.rating != null)
             || artist.name == null) return
 
         try {
@@ -39,7 +40,7 @@ class MBMetadataHelper(
                     artist.name
                 }
                 val wikipediaResult = mbClient.fetchWikipediaExtractByArtist(searchArtistTerm)
-                metadata = metadata.copy(wikipediaBio = wikipediaResult?.bio, wikipediaUrl = wikipediaResult?.url)
+                metadata = metadata.copy(wikipediaBio = wikipediaResult?.info, wikipediaUrl = wikipediaResult?.url)
                 Timber.d("MBMetadataHelper onArtistViewed wikipediaBio fetched $metadata")
             }
 
@@ -73,18 +74,28 @@ class MBMetadataHelper(
      */
     suspend fun onAlbumViewed(albumId: String) {
         val album = Database.album(albumId).first() ?: return
-        if ((album.genres != null && album.albumType != null && album.originalYear != null) || album.title == null || album.authorsText == null) return
+        if ((album.genres != null && album.albumType != null && album.originalYear != null
+                    && album.links != null && album.wikipediaInfo != null && album.tags != null
+                    && album.rating != null) || album.title == null || album.authorsText == null) return
 
         val artist = Database.artistByName(album.authorsText).first() ?: return
 
         try {
             // Proviamo a prendere i generi specifici dell'album
-            val metadata  = mbClient.fetchAlbumMetadata(album.title, artist.name ?: "")
+            var metadata  = mbClient.fetchAlbumMetadata(album.title, artist.name ?: "")
 
             Timber.d("MBMetadataHelper onAlbumViewed metadata fetched $metadata")
 
             val finalGenres = metadata.genres.ifEmpty {
                 getOrFetchArtistGenres(artist).ifEmpty { emptyList() }
+            }
+
+            // Se l'artista non ha un url di wikipedia provo a cercarlo direttamente da wikipedia
+            if (metadata.wikipediaUrl == null) {
+                val searchAlbumTerm = "${album.title} ${album.authorsText} album"
+                val wikipediaResult = mbClient.fetchWikipediaExtractByArtist(searchAlbumTerm)
+                metadata = metadata.copy(wikipediaInfo = wikipediaResult?.info, wikipediaUrl = wikipediaResult?.url)
+                Timber.d("MBMetadataHelper onAlbumViewed wikipediaInfo fetched $metadata")
             }
 
             // L'album ha generi propri, usiamo quelli
@@ -93,7 +104,13 @@ class MBMetadataHelper(
                     album.copy(
                         genres = finalGenres,
                         albumType = metadata.albumType ?: album.albumType,
-                        originalYear = metadata.originalYear ?: album.originalYear
+                        originalYear = metadata.originalYear ?: album.originalYear,
+                        tags = metadata.topTags ?: album.tags,
+                        rating = metadata.ratingValue ?: album.rating,
+                        ratingVotes = metadata.ratingVotes ?: album.ratingVotes,
+                        wikipediaUrl = metadata.wikipediaUrl ?: album.wikipediaUrl,
+                        wikipediaInfo = metadata.wikipediaInfo ?: album.wikipediaInfo,
+                        links = metadata.links ?: album.links
                     )
                 )
             }

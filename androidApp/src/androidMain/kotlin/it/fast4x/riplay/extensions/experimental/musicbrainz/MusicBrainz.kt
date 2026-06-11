@@ -21,7 +21,8 @@ import it.fast4x.riplay.extensions.experimental.musicbrainz.models.MBArtistMetad
 import it.fast4x.riplay.extensions.experimental.musicbrainz.models.MBReleaseGroupDetailResponse
 import it.fast4x.riplay.extensions.experimental.musicbrainz.models.MBSearchArtistResponse
 import it.fast4x.riplay.extensions.experimental.musicbrainz.models.MBSearchReleaseGroupResponse
-import it.fast4x.riplay.extensions.experimental.musicbrainz.models.WikiBioResult
+import it.fast4x.riplay.extensions.experimental.musicbrainz.models.WikiInfoResult
+import it.fast4x.riplay.utils.cleanWikipediaText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -120,7 +121,7 @@ class MusicBrainz {
             }
 
             val links = detailResult.relations
-                ?.filter { it.url != null && (it.type == "social network" || it.type == "official homepage")} // Prendiamo solo le relazioni che hanno un URL
+                ?.filter { it.url != null && (it.type == "social network" || it.type == "official homepage")}
                 ?.map { relation ->
                     val url = relation.url!!.resource
                     ExternalLink(
@@ -185,10 +186,10 @@ class MusicBrainz {
             }
             val searchResult = searchResponse.body<MBSearchReleaseGroupResponse>()
             val mbid = searchResult.releaseGroups.maxByOrNull { it.score }?.id
-                ?: return@makeRateLimitedRequest MBAlbumMetadata(emptyList(), null, null)
+                ?: return@makeRateLimitedRequest MBAlbumMetadata(emptyList(), null, null, emptyList(), null, null, null)
 
             // 2. Ottiene dettagli
-            val detailResponse = client.get("$baseUrl/release-group/$mbid?inc=genres&fmt=json") {
+            val detailResponse = client.get("$baseUrl/release-group/$mbid?inc=genres+tags+ratings+url-rels&fmt=json") {
                 header("User-Agent", userAgent)
             }
             val detailResult = detailResponse.body<MBReleaseGroupDetailResponse>()
@@ -209,15 +210,50 @@ class MusicBrainz {
             // Estrae l'anno dalla data YYYY
             val originalYear = detailResult.firstReleaseDate?.take(4)?.toIntOrNull()
 
+            val topTags = detailResult.tags
+                ?.sortedByDescending { it.count }
+                ?.take(5)
+                ?.map { it.name.lowercase() }
+                ?: emptyList()
+
+
+            val ratingValue = detailResult.rating?.value
+            val ratingVotes = detailResult.rating?.votesCount
+
+
+            val wikiUrl = detailResult.relations
+                ?.firstOrNull { it.url?.resource?.contains("wikipedia.org") == true }
+                ?.url?.resource
+
+            detailResult.relations?.forEach { relation ->
+                Timber.d("MBMetadataHelper MB_RELATION - Type: ${relation.type} | URL: ${relation.url?.resource}")
+            }
+
+            val links = detailResult.relations
+                ?.filter { it.url != null && (it.type == "social network" || it.type == "official homepage")}
+                ?.map { relation ->
+                    val url = relation.url!!.resource
+                    ExternalLink(
+                        type = relation.type ?: "unknown",
+                        url = url,
+                        platform = extractPlatformFromUrl(url, relation.type)
+                    )
+                } ?: emptyList()
+
             MBAlbumMetadata(
                 genres = genres,
                 albumType = albumType,
-                originalYear = originalYear
+                originalYear = originalYear,
+                topTags = topTags,
+                ratingValue = ratingValue,
+                ratingVotes = ratingVotes,
+                wikipediaUrl = wikiUrl,
+                links = links
             )
         }
     }
 
-    suspend fun fetchWikipediaExtractByArtist(artistTerm: String): WikiBioResult? {
+    suspend fun fetchWikipediaExtractByArtist(artistTerm: String): WikiInfoResult? {
         return try {
             val cleanName = artistTerm
                 .replace(Regex("(?i)VEVO$|- Topic$|Official"), "")
@@ -260,14 +296,14 @@ class MusicBrainz {
                 val formattedTitle = title.replace(" ", "_")
                 val wikiUrl = "https://en.wikipedia.org/wiki/${formattedTitle.encodeURLParameter()}"
 
-                val wikiBioResult = WikiBioResult(
-                    bio = bio,
+                val wikiInfoResult = WikiInfoResult(
+                    info = bio.cleanWikipediaText(),
                     url = wikiUrl
                 )
 
                 //Timber.d("MBMetadataHelper fetchWikipediaExtractByArtist WikiBioResult $wikiBioResult ")
 
-                wikiBioResult
+                wikiInfoResult
             } else {
                 null
             }

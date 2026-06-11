@@ -135,6 +135,7 @@ import it.fast4x.riplay.ui.components.themed.RatingBar
 import it.fast4x.riplay.ui.components.themed.TitleMiniSection
 import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.utils.asAlbum
+import it.fast4x.riplay.utils.cleanWikipediaText
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.isPrimaryAction
@@ -619,7 +620,8 @@ fun ArtistOverview(
                                 if (artist?.rating != null)
                                     Spacer(modifier = Modifier.padding(horizontal = 20.dp))
 
-                                InfoBar(artist?.beginYear, artist?.countryCode)
+                                if ((artist?.beginYear ?: 0) > 0)
+                                    InfoBar(artist?.beginYear.toString(), artist?.countryCode)
                             }
 
                             AnimatedVisibility(readMore && artist?.keywords?.isNotEmpty() == true) {
@@ -653,7 +655,7 @@ fun ArtistOverview(
                                 }
                             }
 
-                            val artistBio = artist?.wikipediaBio ?: artistPage?.description
+                            val artistBio = (artist?.wikipediaBio ?: artistPage?.description)?.cleanWikipediaText()
                             AnimatedVisibility(readMore && artistBio?.isNotEmpty() == true) {
                                 Column(
                                     modifier = Modifier
@@ -665,8 +667,6 @@ fun ArtistOverview(
                                         style = typography().xs.semiBold,
                                     )
                                     artistBio?.let { description ->
-                                        val attributionsIndex =
-                                            description.lastIndexOf("\n\nFrom Wikipedia")
                                         Row(
                                             modifier = Modifier
                                                 .padding(horizontal = 12.dp, vertical = 8.dp)
@@ -681,11 +681,7 @@ fun ArtistOverview(
                                             )
 
                                             BasicText(
-                                                text = if (attributionsIndex == -1) {
-                                                    description
-                                                } else {
-                                                    description.substring(0, attributionsIndex)
-                                                },
+                                                text = description,
                                                 style = typography().xxs.secondary.align(TextAlign.Justify),
                                                 modifier = Modifier
                                                     .padding(horizontal = 8.dp)
@@ -698,16 +694,6 @@ fun ArtistOverview(
                                                     .offset(y = 4.dp)
                                                     .align(Alignment.Bottom)
                                             )
-
-                                            if (attributionsIndex != -1) {
-                                                BasicText(
-                                                    text = stringResource(R.string.from_wikipedia_cca),
-                                                    style = typography().xxs.color(colorPalette().textDisabled)
-                                                        .align(TextAlign.Start),
-                                                    modifier = Modifier
-                                                        .align(Alignment.Bottom)
-                                                )
-                                            }
 
                                         }
                                     }
