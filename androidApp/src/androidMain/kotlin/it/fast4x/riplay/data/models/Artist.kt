@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 import it.fast4x.riplay.commonutils.YTM_ARTIST_SHARE_BASEURL
 import it.fast4x.riplay.commonutils.YT_ARTIST_SHARE_BASEURL
 import it.fast4x.riplay.enums.LinkType
-import it.fast4x.riplay.extensions.experimental.musicbrainz.models.ExternalLink
+import it.fast4x.riplay.extensions.musicbrainz.models.ExternalLink
 import it.fast4x.riplay.utils.toFlagEmoji
 
 @Immutable

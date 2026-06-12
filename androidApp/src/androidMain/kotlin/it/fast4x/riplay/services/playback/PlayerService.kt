@@ -201,8 +201,8 @@ import it.fast4x.riplay.data.models.QueuedMediaItem
 import it.fast4x.riplay.data.models.defaultQueueId
 import it.fast4x.riplay.enums.AudioQualityFormat
 import it.fast4x.riplay.enums.CastType
-import it.fast4x.riplay.extensions.experimental.musicbrainz.MBMetadataHelper
-import it.fast4x.riplay.extensions.experimental.musicbrainz.MusicBrainz
+import it.fast4x.riplay.extensions.musicbrainz.MBMetadataHelper
+import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.musicvault.MusicVaultEvent
 import it.fast4x.riplay.musicvault.MusicVaultEvents

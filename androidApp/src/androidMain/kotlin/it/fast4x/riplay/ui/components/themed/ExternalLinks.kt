@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
-import it.fast4x.riplay.extensions.experimental.musicbrainz.models.ExternalLink
+import it.fast4x.riplay.extensions.musicbrainz.models.ExternalLink
 import it.fast4x.riplay.utils.colorPalette
 
 @Composable

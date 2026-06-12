@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.musicbrainz
+package it.fast4x.riplay.extensions.musicbrainz
 
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -14,14 +14,14 @@ import io.ktor.serialization.kotlinx.json.json
 import it.fast4x.musicbrainz.utils.ProxyPreferences
 import it.fast4x.musicbrainz.utils.getProxy
 import it.fast4x.riplay.BuildConfig
-import it.fast4x.riplay.extensions.experimental.musicbrainz.models.ExternalLink
-import it.fast4x.riplay.extensions.experimental.musicbrainz.models.MBAlbumMetadata
-import it.fast4x.riplay.extensions.experimental.musicbrainz.models.MBArtistDetailResponse
-import it.fast4x.riplay.extensions.experimental.musicbrainz.models.MBArtistMetadata
-import it.fast4x.riplay.extensions.experimental.musicbrainz.models.MBReleaseGroupDetailResponse
-import it.fast4x.riplay.extensions.experimental.musicbrainz.models.MBSearchArtistResponse
-import it.fast4x.riplay.extensions.experimental.musicbrainz.models.MBSearchReleaseGroupResponse
-import it.fast4x.riplay.extensions.experimental.musicbrainz.models.WikiInfoResult
+import it.fast4x.riplay.extensions.musicbrainz.models.ExternalLink
+import it.fast4x.riplay.extensions.musicbrainz.models.MBAlbumMetadata
+import it.fast4x.riplay.extensions.musicbrainz.models.MBArtistDetailResponse
+import it.fast4x.riplay.extensions.musicbrainz.models.MBArtistMetadata
+import it.fast4x.riplay.extensions.musicbrainz.models.MBReleaseGroupDetailResponse
+import it.fast4x.riplay.extensions.musicbrainz.models.MBSearchArtistResponse
+import it.fast4x.riplay.extensions.musicbrainz.models.MBSearchReleaseGroupResponse
+import it.fast4x.riplay.extensions.musicbrainz.models.WikiInfoResult
 import it.fast4x.riplay.utils.cleanWikipediaText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex

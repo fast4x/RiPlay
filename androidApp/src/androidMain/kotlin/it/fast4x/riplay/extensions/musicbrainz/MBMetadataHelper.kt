@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.musicbrainz
+package it.fast4x.riplay.extensions.musicbrainz
 
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Artist

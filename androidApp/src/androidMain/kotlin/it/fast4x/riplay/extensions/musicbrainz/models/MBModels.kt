@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.musicbrainz.models
+package it.fast4x.riplay.extensions.musicbrainz.models
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
