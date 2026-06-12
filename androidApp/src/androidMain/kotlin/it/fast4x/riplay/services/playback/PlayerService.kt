@@ -488,7 +488,52 @@ class PlayerService : Service(),
         initializeDiscordPresence()
 
         // INITIALIZATION
+        if (isPersistentQueueEnabled) {
 
+            serviceScope.launch {
+
+                // Caricamento iniziale: OBBLIGATORIO sul Main thread per toccare ExoPlayer
+                withContext(Dispatchers.Main) {
+                    loadQueue()
+                    resumePlaybackOnStart()
+                }
+
+                // Un unico ciclo di polling
+                var secondsWhilePaused = 0
+
+                while (isActive) {
+                    delay(10.seconds) // Iteriamo ogni 10 secondi
+
+                    val isPlaying = _playerState.value.isPlaying
+
+                    if (isPlaying) {
+                        // --- STATO: IN RIPRODUZIONE ---
+                        secondsWhilePaused = 0 // Resetta il contatore
+                        saveQueue() // Chiamata diretta! Essendo suspend, gestisce i thread in autonomia
+                        Timber.d("PlayerService saveQueue when playing")
+
+                    } else {
+                        // --- STATO: IN PAUSA ---
+                        secondsWhilePaused += 10 // Aggiunge i 10 secondi appena passati
+
+                        if (secondsWhilePaused >= 60) {
+                            secondsWhilePaused = 0 // Resetta il contatore
+                            saveQueue()
+                            Timber.d("PlayerService saveQueue periodic when not playing")
+                        }
+                    }
+
+                    // Update online history
+                    if (_currentSecond.value >= minTimeForEvent.seconds && lastMediaIdInHistory != currentSong.value?.id) {
+                        currentSong.value?.let {
+                            updateOnlineHistory(it.asMediaItem)
+                            lastMediaIdInHistory = it.id
+                        }
+                    }
+                }
+            }
+        }
+        /*
         if (isPersistentQueueEnabled) {
 
             serviceScope.launch {
@@ -526,6 +571,8 @@ class PlayerService : Service(),
             }
 
         }
+
+         */
 
         currentSong.debounce(1000).conflate().collect(serviceScope) { song ->
             if (song == null) return@collect
@@ -1234,7 +1281,7 @@ class PlayerService : Service(),
                 if (localMediaItem == null || localMediaItem?.isLocal == true) return
 
                 if (isPersistentQueueEnabled)
-                    saveQueue()
+                    serviceScope.launch { saveQueue() }
 
 
                 if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
@@ -1510,7 +1557,8 @@ class PlayerService : Service(),
             player.shuffleOrder = DefaultShuffleOrder(shuffledIndices, System.currentTimeMillis())
         }
         updateUnifiedNotification()
-        saveQueue()
+
+        serviceScope.launch { saveQueue() }
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
@@ -1526,11 +1574,7 @@ class PlayerService : Service(),
 
         sendCloseExternalEqualizerIntent()
 
-        serviceScope.launch {
-            withContext(Dispatchers.Main) {
-                saveQueue()
-            }
-        }
+        serviceScope.launch { saveQueue() }
 
 
         try {
@@ -1877,7 +1921,7 @@ private var pausedByZeroVolume = false
 
         updateDiscordPresence()
 
-        saveQueue()
+        serviceScope.launch { saveQueue() }
 
         if (preferences.getBoolean(IS_ENABLED_LASTFM.key, false)) {
             preferences.getString(LASTFM_SESSION_TOKEN.key, "")?.let {
@@ -1921,7 +1965,7 @@ private var pausedByZeroVolume = false
         val isLowMemory = level == TRIM_MEMORY_RUNNING_CRITICAL
         Timber.d("PlayerService onTrimMemory level $level isLowMemory $isLowMemory")
         if (isLowMemory)
-            saveQueue()
+            serviceScope.launch { saveQueue() }
     }
 
 
@@ -3097,8 +3141,53 @@ private var pausedByZeroVolume = false
         }
     }
 
+    suspend fun saveQueue() {
+        if (!isPersistentQueueEnabled()) return
 
-    fun saveQueue() {
+        // SINCRONIZZAZIONE OBBLIGATORIA: withContext è sincrono rispetto alla coroutine.
+        val mediaItems: List<MediaItem>
+        val mediaItemIndex: Int
+        val mediaItemPosition: Long
+
+        // Sincronizzato al thread principale
+        withContext(Dispatchers.Main) {
+            mediaItems = player.currentTimeline.mediaItems
+            mediaItemIndex = player.currentMediaItemIndex
+            mediaItemPosition = if (player.currentMediaItem?.isLocal == true) {
+                player.currentPosition
+            } else {
+                (currentSecond.value * 1000).toLong()
+            }
+        }
+
+        if (mediaItems.isEmpty()) return
+
+        // Lavoro pesante sul thread IO
+        withContext(Dispatchers.IO) {
+            mediaItems.mapIndexed { index, mediaItem ->
+                QueuedMediaItem(
+                    mediaItem = mediaItem,
+                    mediaId = mediaItem.mediaId,
+                    position = if (index == mediaItemIndex) mediaItemPosition else -1,
+                    idQueue = mediaItem.mediaMetadata.extras?.getLong("idQueue", defaultQueueId())
+                )
+            }.let { queuedMediaItems ->
+                if (queuedMediaItems.isEmpty()) return@let
+
+                Database.asyncTransaction {
+                    try {
+                        clearQueuedMediaItems()
+                        queuedMediaItems.forEach { insert(it) }
+                    } catch (e: Exception) {
+                        Timber.e("SaveQueue QueuePersistentEnabled Error: ${e.message}")
+                    }
+                }
+            }
+        }
+    }
+
+    /*
+    suspend fun saveQueue() {
         if (!isPersistentQueueEnabled()) return
 
         serviceScope.launch(Dispatchers.Main) {
@@ -3139,6 +3228,8 @@ private var pausedByZeroVolume = false
             }
         }
     }
+
+     */
 
     @OptIn(UnstableApi::class)
     fun loadQueue() {
@@ -3353,7 +3444,7 @@ private var pausedByZeroVolume = false
         fun executeStopServiceLogic() {
             preferences.edit { putLong(TIMER_END_TIME.key, 0) }
 
-            saveQueue()
+            serviceScope.launch { saveQueue() }
 
             val notification = NotificationCompat
                 .Builder(this@PlayerService, SLEEPTIMER_NOTIFICATION_CHANNEL_ID)
