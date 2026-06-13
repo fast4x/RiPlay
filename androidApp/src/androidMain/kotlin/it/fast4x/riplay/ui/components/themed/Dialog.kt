@@ -95,6 +95,7 @@ import coil.request.ImageRequest
 import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.bodies.SearchBody
+import it.fast4x.environment.models.responses.CachedAccountProfile
 import it.fast4x.environment.requests.searchPage
 import it.fast4x.environment.utils.from
 import it.fast4x.riplay.data.Database
@@ -165,6 +166,7 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_SPACING_L
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.getUpdateDownloadUrl
 import it.fast4x.riplay.utils.isLocal
+import it.fast4x.riplay.utils.thumbnailShape
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
@@ -172,6 +174,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlin.collections.forEach
+import kotlin.toString
 
 
 @Composable
@@ -2959,5 +2963,118 @@ fun AccountInfoDialog(
             Spacer(modifier = Modifier.height(10.dp))
         }
 
+    }
+}
+
+@Composable
+fun CachedAccountsSelectorDialog(
+    cachedAccounts: List<CachedAccountProfile>,
+    modifier: Modifier = Modifier,
+    onDismiss: () -> Unit,
+    title: String,
+    titleSecondary: String? = null,
+    onValueSelected: (CachedAccountProfile) -> Unit,
+    valueText: @Composable (CachedAccountProfile) -> String = { it.toString() }
+){
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            modifier = modifier,
+            shape = getRoundnessShape(),
+            tonalElevation = 6.dp,
+            color = colorPalette().background1
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(vertical = 24.dp)
+            ) {
+                // Header
+                Text(
+                    text = title,
+                    style = typography().s.semiBold,
+                    modifier = Modifier.padding(horizontal = 24.dp)
+                )
+
+                if (titleSecondary != null) {
+                    Text(
+                        text = titleSecondary,
+                        style = typography().xxs.semiBold,
+                        color = colorPalette().background1,
+                        modifier = Modifier
+                            .padding(horizontal = 24.dp)
+                            .padding(top = 8.dp)
+                    )
+                }
+
+                // Divider
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 12.dp),
+                    color = colorPalette().accent
+                )
+
+                // List
+                Column(
+                    modifier = Modifier
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    cachedAccounts.forEach { account ->
+                        val isSelected = account.isSelected
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .selectable(
+                                    selected = isSelected == true,
+                                    onClick = {
+                                        onValueSelected(account)
+                                        onDismiss()
+                                    },
+                                    role = androidx.compose.ui.semantics.Role.RadioButton
+                                )
+                                .padding(horizontal = 24.dp, vertical = 8.dp)
+                        ) {
+
+                            RadioButton(
+                                selected = isSelected == true,
+                                onClick = null,
+                                colors = RadioButtonDefaults.colors(
+                                    selectedColor = colorPalette().accent,
+                                    unselectedColor = colorPalette().text
+                                )
+                            )
+
+                            Spacer(Modifier.width(12.dp))
+                            AsyncImage(
+                                model = account.thumbnailUrl,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .height(45.dp)
+                                    .clip(thumbnailShape())
+                            )
+
+                            Spacer(Modifier.width(12.dp))
+
+                            Text(
+                                text = account.name.toString(),
+                                style = typography().xs.medium.merge(
+                                    TextStyle(color = if (isSelected == true) colorPalette().accent else colorPalette().text)
+                                )
+                            )
+                        }
+                    }
+                }
+
+                // Footer
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .padding(end = 24.dp, top = 12.dp)
+                ) {
+                    TextButton (onClick = onDismiss) {
+                        Text(stringResource(R.string.cancel), color = colorPalette().text)
+                    }
+                }
+            }
+        }
     }
 }

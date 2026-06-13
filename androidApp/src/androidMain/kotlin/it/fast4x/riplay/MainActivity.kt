@@ -269,6 +269,7 @@ import java.util.Objects
 import kotlin.math.sqrt
 import androidx.compose.ui.platform.LocalLocale
 import it.fast4x.riplay.extensions.appviewmodel.AppViewModelProvider
+import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.musicvault.checkAndStartMusicVault
 import it.fast4x.riplay.extensions.preferences.cleanUpUnusedPreferences
 import it.fast4x.riplay.extensions.preferences.getEnum
@@ -875,6 +876,11 @@ class MainActivity :
                 val customDnsUrl = if (customDnsIsOk == true) customDnsOverHttpsServer else null
                 Environment.customDnsToUse = customDnsUrl
                 Environment.dnsToUse = getDnsOverHttpsType().type
+
+                val pageId = preferences.getString(PreferenceKey.YT_PAGEID.key, "")
+                val authUser = preferences.getString(PreferenceKey.YT_AUTHUSER.key, "")
+                Environment.pageId = pageId
+                Environment.authUser = authUser
 
                 // Recreate appearance whenever theme mode or light/dark flag changes
                 var appearance by rememberSaveable(

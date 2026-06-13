@@ -19,6 +19,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -38,6 +39,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import it.fast4x.environment.Environment
+import it.fast4x.environment.models.responses.CachedAccountProfile
 import it.fast4x.environment.utils.parseCookieString
 import it.fast4x.riplay.LocalAudioTagger
 import it.fast4x.riplay.R
@@ -52,7 +54,7 @@ import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ValidationType
 import it.fast4x.riplay.extensions.discord.DiscordLoginAndGetToken
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISCORD_ACCOUNT_NAME
-import it.fast4x.riplay.extensions.youtubelogin.YouTubeLogin
+import it.fast4x.riplay.extensions.accountlogin.AccountLogin
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
@@ -77,17 +79,20 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_VISITOR_DATA
 import it.fast4x.riplay.ui.components.themed.AccountInfoDialog
 import it.fast4x.riplay.extensions.encryptedpreferences.rememberEncryptedPreference
 import it.fast4x.riplay.extensions.lastfm.LastFmAuthScreen
+import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_MUSIC_IDENTIFIER
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_ENABLED_LASTFM
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.LASTFM_SCRUBBLE_TYPE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.LASTFM_SESSION_TOKEN
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_IDENTIFIER_API_KEY
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_IDENTIFIER_PROVIDER
+import it.fast4x.riplay.ui.components.themed.DefaultDialog
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import timber.log.Timber
 
 @UnstableApi
@@ -159,7 +164,13 @@ fun AccountsSettings() {
                     "LOGIN_INFO" in parseCookieString(cookie)
         }
 
-
+        var jsonCachedAccounts by rememberPreference(PreferenceKey.YT_CACHED_ACCOUNTS.key, "")
+        var cachedAccounts = try {
+            Json.decodeFromString<List<CachedAccountProfile>>(jsonCachedAccounts)
+        } catch (e: Exception) {
+            Timber.e(e, "Errore nel parsing della cache account")
+            emptyList()
+        }
 
 
 
@@ -217,6 +228,8 @@ fun AccountsSettings() {
                                         accountChannelHandle = ""
                                         accountEmail = ""
                                         accountThumbnail = ""
+                                        jsonCachedAccounts = ""
+                                        cachedAccounts = emptyList()
                                         loginYouTube = false
                                         val cookieManager = CookieManager.getInstance()
                                         cookieManager.removeAllCookies(null)
@@ -228,16 +241,18 @@ fun AccountsSettings() {
                             )
 
                             if (isLoggedIn) {
-                                ButtonBarSettingEntry(
-                                    isEnabled = true,
-                                    title = stringResource(R.string.login_switch_account),
-                                    text = stringResource(R.string.login_info_you_can_switch_to_another_account_without_completely_disconnecting),
-                                    icon = R.drawable.switch_user,
-                                    iconColor = colorPalette().text,
-                                    onClick = {
-                                        loginYouTube = true
-                                    }
-                                )
+
+                                if (cachedAccounts.isNotEmpty())
+                                    ButtonBarSettingEntry(
+                                        isEnabled = true,
+                                        title = stringResource(R.string.login_switch_account),
+                                        text = stringResource(R.string.login_info_you_can_switch_to_another_account_without_completely_disconnecting),
+                                        icon = R.drawable.switch_user,
+                                        iconColor = colorPalette().text,
+                                        onClick = {
+                                            loginYouTube = true
+                                        }
+                                    )
 
                                 ButtonBarSettingEntry(
                                     isEnabled = true,
@@ -290,8 +305,8 @@ fun AccountsSettings() {
                                 },
                                 shape = thumbnailRoundness.shape()
                             ) {
-                                YouTubeLogin(onLogin = {})
-                               }
+                                AccountLogin(onLogin = { loginYouTube = false })
+                            }
 
                         }
 

@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.youtubelogin
+package it.fast4x.riplay.extensions.accountlogin
 
 import android.webkit.CookieManager
 import android.webkit.WebView
@@ -19,13 +19,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.edit
 import it.fast4x.environment.Environment
+import it.fast4x.environment.models.responses.CachedAccountProfile
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.R
+import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_ACCOUNT_CHANNEL_HANDLE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_ACCOUNT_EMAIL
@@ -34,12 +37,15 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_ACCOUNT_THUMBNAI
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_COOKIE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_DATA_SYNC_ID
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_VISITOR_DATA
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.ui.components.themed.CachedAccountsSelectorDialog
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.restartApp
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import org.json.JSONTokener
 import timber.log.Timber
 
@@ -63,19 +69,69 @@ private fun String?.fromJavascriptString(): String? {
 }
 
 @Composable
-fun YouTubeLogin(
+fun AccountLogin(
     onLogin: (String) -> Unit
 ) {
 
     val scope = rememberCoroutineScope()
     var webView: WebView? = null
-
     var showConfirmButton by remember { mutableStateOf(false) }
-    var confirmAction by remember { mutableStateOf<(() -> Unit)?>(null) }
+    var restartAction by remember { mutableStateOf<(() -> Unit)?>(null) }
+    var loadSessionAction by remember { mutableStateOf<(() -> Unit)?>(null) }
+    val localContext = LocalContext.current
+
+    var signinUrl by remember { mutableStateOf("") }
+    var showSelectorDialog by remember { mutableStateOf(false) }
+
+    val jsonCachedAccounts by rememberPreference(PreferenceKey.YT_CACHED_ACCOUNTS.key, "")
+    Timber.d("AccountLogin INITIAL CachedAccountProfile jsonString $jsonCachedAccounts ")
+    val cachedAccounts = remember(jsonCachedAccounts) {
+        try {
+            Json.decodeFromString<List<CachedAccountProfile>>(jsonCachedAccounts)
+        } catch (e: Exception) {
+            Timber.e(e, "Errore nel parsing della cache account")
+            emptyList()
+        }
+    }
+    Timber.d("AccountLogin INITIAL CachedAccountProfile cachedAccounts $cachedAccounts ")
+
 
     Box(modifier = Modifier
         .fillMaxSize()
-        .windowInsetsPadding(LocalPlayerAwareWindowInsets.current)) {
+        .windowInsetsPadding(LocalPlayerAwareWindowInsets.current))
+    {
+        if (cachedAccounts.isNotEmpty() && showSelectorDialog) {
+            CachedAccountsSelectorDialog(
+                onDismiss = { showSelectorDialog = false },
+                title = stringResource(R.string.login_select_account),
+                cachedAccounts = cachedAccounts,
+                onValueSelected = { account ->
+                    Timber.d("AccountLogin selected account $account")
+                    scope.launch {
+                        delay(200)
+
+                        Timber.d("AccountLogin: save login preferences")
+                        localContext.preferences.edit {putString(PreferenceKey.YT_PAGEID.key, account.pageId)}
+                        localContext.preferences.edit {putString(PreferenceKey.YT_AUTHUSER.key, account.authUser)}
+                        localContext.preferences.edit {putString(PreferenceKey.YT_ACCOUNT_NAME.key, account.name)}
+                        localContext.preferences.edit {putString(PreferenceKey.YT_ACCOUNT_EMAIL.key, account.email)}
+                        localContext.preferences.edit {putString(PreferenceKey.YT_ACCOUNT_CHANNEL_HANDLE.key, account.channelHandle)}
+                        localContext.preferences.edit {putString(PreferenceKey.YT_ACCOUNT_THUMBNAIL.key, account.thumbnailUrl)}
+                        delay(200)
+
+                        signinUrl = "https://music.youtube.com${account.signinUrl.toString()}"
+
+                        Environment.pageId = account.pageId
+                        Environment.authUser = account.authUser
+
+                        showSelectorDialog = false
+                        onLogin("")
+                        //restartAction?.invoke()
+                    }
+                }
+            )
+        }
+
         AndroidView(
             modifier = Modifier
                 .fillMaxSize(),
@@ -117,7 +173,15 @@ fun YouTubeLogin(
                         override fun onPageFinished(view: WebView, url: String?) {
                             refreshYouTubeConfig()
 
-                            showConfirmButton = url?.startsWith("https://music.youtube.com") == true
+                            val destinationLoaded = url?.startsWith("https://music.youtube.com") == true
+                            if (destinationLoaded)
+                                loadSessionAction?.invoke()
+
+                            showSelectorDialog = true
+//                            if (signinUrl.isNotEmpty()) // account switched, restart
+//                                restartAction?.invoke()
+
+                            //showConfirmButton = url?.startsWith("https://music.youtube.com") == true
                         }
 
                         override fun doUpdateVisitedHistory(
@@ -153,30 +217,30 @@ fun YouTubeLogin(
 
                     loadUrl(url)
 
-                    confirmAction = {
+                    loadSessionAction = {
                         val currentUrl = this.url
                         val freshCookie = CookieManager.getInstance().getCookie(currentUrl)
 
-                        Timber.d("YouTubeLogin: User confirmed login.")
+                        Timber.d("AccountLogin: User confirmed login.")
 
                         refreshYouTubeConfig { refreshedVisitorData, refreshedDataSyncId ->
                             scope.launch {
                                 delay(200)
 
-                                Timber.d("YouTubeLogin: save login preferences")
+                                Timber.d("AccountLogin: save login preferences")
                                 context.preferences.edit { putString(YT_VISITOR_DATA.key, refreshedVisitorData) }
                                 context.preferences.edit { putString(YT_DATA_SYNC_ID.key, refreshedDataSyncId) }
                                 context.preferences.edit { putString(YT_COOKIE.key, freshCookie) }
                                 delay(200)
 
-                                Timber.d("YouTubeLogin: Initialize Environment")
-                                Timber.d("YouTubeLogin: freshCookie $freshCookie")
+                                Timber.d("AccountLogin: Initialize Environment")
+                                Timber.d("AccountLogin: freshCookie $freshCookie")
 
                                 Environment.cookie = freshCookie
                                 Environment.dataSyncId = refreshedDataSyncId
                                 Environment.visitorData = refreshedVisitorData
 
-                                Timber.d("YouTubeLogin: Initialized, get account info")
+                                Timber.d("AccountLogin: Initialized, get account info")
 
                                 Environment.accountInfo().onSuccess {
                                     context.preferences.edit { putString(YT_ACCOUNT_NAME.key, it?.name.orEmpty()) }
@@ -185,37 +249,65 @@ fun YouTubeLogin(
                                     context.preferences.edit { putString(YT_ACCOUNT_THUMBNAIL.key, it?.thumbnailUrl.orEmpty()) }
                                     delay(200)
 
-                                    Timber.d("YouTubeLogin: Logged in as ${it?.name}, restarting app...")
+                                    Timber.d("AccountLogin: Logged in as ${it?.name}, restarting app...")
 
                                 }.onFailure {
-                                    Timber.e(it, "YouTubeLogin: Authentication error")
+                                    Timber.e(it, "AccountLogin: Authentication error")
                                 }
 
-                                webView.apply {
-                                    stopLoading()
-                                    clearHistory()
-                                    clearCache(true)
-                                    clearFormData()
+                                /*
+                                Environment.getRawAccountListWithPageId().onSuccess {
+                                    saveFileToInternalStorage(context, "AccountSwitcherResponse", it)
+                                }.onFailure {
+                                    Timber.e(it, "AccountLogin: getRawAccountListWithPageId error ${it.message}")
                                 }
-
-                                Timber.d("YouTubeLogin: Restart app")
-                                restartApp(context)
+                                 */
+                                Environment.getAccountsList().onSuccess {
+                                    Timber.d("AccountLogin: getAccountsList $it")
+                                    val jsonString = Json.encodeToString(it)
+                                    Timber.d("AccountLogin: getAccountsList salva jsonString $jsonString")
+                                    context.preferences.edit { putString(PreferenceKey.YT_CACHED_ACCOUNTS.key, jsonString) }
+                                    delay(200)
+                                }.onFailure {
+                                    Timber.e(it, "AccountLogin: getAccountsList error ${it.message}")
+                                }
 
                             }
                         }
                     }
+
+                    restartAction = {
+                        webView.apply {
+                            stopLoading()
+                            clearHistory()
+                            clearCache(true)
+                            clearFormData()
+                        }
+
+                        Timber.d("AccountLogin: Restart app")
+                        restartApp(context)
+                    }
+
+                }
+            },
+            update = { webView ->
+                if (signinUrl.isNotEmpty()) {
+                    Timber.d("AccountLogin carico signinUrl nella webview per lo switch -> $signinUrl")
+                    webView.loadUrl(signinUrl)
+
+                    signinUrl = ""
                 }
             }
         )
 
-        if (showConfirmButton && confirmAction != null) {
+        if (showConfirmButton && restartAction != null) {
             Button(
                 shape = getRoundnessShape(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = colorPalette().accent,
                     contentColor = colorPalette().onAccent
                 ),
-                onClick = { confirmAction?.invoke() },
+                onClick = { restartAction?.invoke() },
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(24.dp)

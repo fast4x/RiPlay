@@ -1368,4 +1368,5 @@ Mach dich bereit, deine unvergesslichsten musikalischen Momente noch einmal zu e
     <string name="title_keywords">Keywords</string>
     <string name="title_external_links">External links</string>
     <string name="title_bio">Bio</string>
+    <string name="login_select_account">Select account</string>
 </resources>

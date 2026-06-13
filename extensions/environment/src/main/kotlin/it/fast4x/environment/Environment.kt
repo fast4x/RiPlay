@@ -1,5 +1,6 @@
 package it.fast4x.environment
 
+import it.fast4x.environment.models.responses.AccountSwitcherEndpointResponse
 import it.fast4x.environment.requests.LibraryContinuationPage
 import it.fast4x.environment.requests.LibraryPage
 import io.ktor.client.HttpClient
@@ -50,6 +51,9 @@ import it.fast4x.environment.models.bodies.NextBody
 import it.fast4x.environment.models.bodies.PlayerBody
 import it.fast4x.environment.models.bodies.PlaylistDeleteBody
 import it.fast4x.environment.models.bodies.SubscribeBody
+import it.fast4x.environment.models.responses.CachedAccountProfile
+import it.fast4x.environment.models.responses.SwitchAccountPayload
+import it.fast4x.environment.models.responses.toCachedProfiles
 import it.fast4x.environment.utils.ArtistDiscographyType
 import it.fast4x.environment.utils.EnvironmentLocale
 import it.fast4x.environment.utils.EnvironmentPreferences
@@ -113,16 +117,23 @@ object Environment {
     val _rjH3trYO7G = EnvironmentPreferences.preference?.p41 ?: ""
     val _0y2BrSeuzt = EnvironmentPreferences.preference?.p15 ?: ""
 
+    val envJson =
+        Json {
+            ignoreUnknownKeys = true
+            explicitNulls = false
+            encodeDefaults = true
+        }
     private fun buildClient() = HttpClient(OkHttp) {
 
         expectSuccess = true
 
         install(ContentNegotiation) {
-            json(Json {
-                ignoreUnknownKeys = true
-                explicitNulls = false
-                encodeDefaults = true
-            })
+            json(envJson)
+//            json(Json {
+//                ignoreUnknownKeys = true
+//                explicitNulls = false
+//                encodeDefaults = true
+//            })
         }
 
         install(ContentEncoding) {
@@ -242,6 +253,9 @@ object Environment {
             cookieMap = if (value == null) emptyMap() else parseCookieString(value)
         }
     private var cookieMap = emptyMap<String, String>()
+
+    var pageId: String? = null
+    var authUser: String? = null
 
     internal const val musicResponsiveListItemRendererMask = "musicResponsiveListItemRenderer(flexColumns,fixedColumns,thumbnail,navigationEndpoint,badges)"
     internal const val musicTwoRowItemRendererMask = "musicTwoRowItemRenderer(thumbnailRenderer,title,subtitle,navigationEndpoint)"
@@ -571,17 +585,6 @@ object Environment {
         maxByOrNull { (it.width ?: 0) * (it.height ?: 0) }
 
 
-    suspend fun accountInfo(): Result<AccountInfo?> = runCatching {
-
-        accountMenu()
-            .body<AccountMenuResponse>()
-            .actions?.firstOrNull()?.openPopupAction?.popup?.multiPageMenuRenderer
-            ?.header?.activeAccountHeaderRenderer
-            ?.toAccountInfo()
-    }.onFailure {
-        println("Error YoutubeLogin accountInfo(): ${it.stackTraceToString()}")
-    }
-
 
     suspend fun accountMenu(): HttpResponse {
         val response =
@@ -592,6 +595,60 @@ object Environment {
 
         return response
     }
+
+    suspend fun accountInfo(): Result<AccountInfo?> = runCatching {
+        accountMenu()
+            .body<AccountMenuResponse>()
+            .actions?.firstOrNull()?.openPopupAction?.popup?.multiPageMenuRenderer
+            ?.header?.activeAccountHeaderRenderer
+            ?.toAccountInfo()
+    }.onFailure {
+        println("Error YoutubeLogin accountInfo(): ${it.stackTraceToString()}")
+    }
+
+    suspend fun getAccountSwitcherEndpoint(): HttpResponse {
+        val response = client.get("https://music.youtube.com/getAccountSwitcherEndpoint") {
+            setLogin(setLogin = true)
+        }
+        return response
+    }
+
+    suspend fun getRawAccountListWithPageId(): Result<String> = runCatching {
+        val res = getAccountSwitcherEndpoint()
+            .bodyAsText()
+            .removePrefix(")]}'\n")
+        res
+    }.onFailure {
+        println("Environment Error in getAccountListWithPageId(): ${it.stackTraceToString()}")
+    }
+    suspend fun getAccountsList(): Result<List<CachedAccountProfile>> = runCatching {
+            val res = getAccountSwitcherEndpoint()
+                    .bodyAsText()
+                    .removePrefix(")]}'\n")
+            val accountSwitcherEndpointResponse = envJson.decodeFromString<AccountSwitcherEndpointResponse>(res)
+            println("YoutubeLoginAccount getAccountListWithPageId Response: $accountSwitcherEndpointResponse")
+            accountSwitcherEndpointResponse.toCachedProfiles()
+    }.onFailure {
+        println("Environment Error in getAccountListWithPageId(): ${it.stackTraceToString()}")
+    }
+
+    /*
+    suspend fun switchAccount(
+        ytClient: Client = DefaultWeb.client,
+        switchPayload: SwitchAccountPayload,
+    ) = runCatching {
+        val call = client.post("/youtubei/v1/account/select_active_identity") {
+            val jsonPayload = Json.encodeToString(SwitchAccountPayload.serializer(), switchPayload)
+            setLogin(ytClient, true, switchPayload.pageIdToken?.pageId)
+            setBody(jsonPayload)
+        }
+        val response = call.bodyAsText()
+        println("Environment switchAccount response $response")
+    }.onFailure {
+        println("Environment Error in SwitchAccount(): ${it.stackTraceToString()}")
+    }
+
+     */
 
     suspend fun getSwJsData() = client.get("https://$_1Vv31MecRl/sw.js_data")
 
@@ -619,19 +676,31 @@ object Environment {
                 append("Referer", clientType.referer)
             }
             if (setLogin && clientType.loginSupported) {
+
+                pageId?.let {
+                    if (it.isNotEmpty())
+                        append("X-Goog-PageId", it)
+                }
+                authUser?.let {
+                    if (it.isNotEmpty())
+                        append("X-Goog-Authuser", it)
+                }
+
+                println("Environment setLogin pageId $pageId authUser $authUser")
+
                 cookie?.let { cookieData ->
 
                     cookieMap = parseCookieString(cookieData)
-//                    append("X-Goog-Authuser", "0")
+
 //                    append("X-Goog-Visitor-Id", visitorData ?: "")
                     append("Cookie", cookieData)
                     if ("SAPISID" !in cookieMap) return@let
                     val currentTime = System.currentTimeMillis() / 1000
                     val sapisidCookie = cookieMap["SAPISID"]
                     val sapisidHash = sha1("$currentTime $sapisidCookie $_XsHo8IdebO")
-                    println("HttpRequestBuilder.setLogin currentTime ${currentTime}")
-                    println("HttpRequestBuilder.setLogin sapisidCookie ${sapisidCookie}")
-                    println("HttpRequestBuilder.setLogin sapisidHash ${sapisidHash}")
+//                    println("HttpRequestBuilder.setLogin currentTime ${currentTime}")
+//                    println("HttpRequestBuilder.setLogin sapisidCookie ${sapisidCookie}")
+//                    println("HttpRequestBuilder.setLogin sapisidHash ${sapisidHash}")
                     append("Authorization", "SAPISIDHASH ${currentTime}_$sapisidHash")
                 }
             }
