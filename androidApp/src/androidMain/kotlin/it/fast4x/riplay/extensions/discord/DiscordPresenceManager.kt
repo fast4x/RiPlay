@@ -69,6 +69,9 @@ class DiscordPresenceManager(
         private const val TEMP_FILE_HOST = "https://litterbox.catbox.moe/resources/internals/api.php"
         private const val MAX_DIMENSION = 1024                           // Per Discord's guidelines
         private const val MAX_FILE_SIZE_BYTES = 2L * 1024 * 1024     // 2 MB in bytes
+        // Clear the Discord presence after this many ms of continuous pause so a
+        // paused activity is not re-asserted forever by the refresh loop (issue #238).
+        private const val PAUSE_CLEAR_TIMEOUT_MS = 5 * 60 * 1000L     // 5 minutes
     }
 
     private var rpc: KizzyRPC? = null
@@ -328,6 +331,10 @@ class DiscordPresenceManager(
             rpc?.closeRPC()
             rpc = KizzyRPC(token)
             lastToken = token
+        } else if (rpc == null) {
+            // The RPC was torn down (e.g. by a prolonged-pause clear); reconnect
+            // so a subsequent play event can re-create the presence cleanly.
+            rpc = KizzyRPC(token)
         }
         val largeImageUrl = getLargeImageUrl(mediaItem.mediaMetadata.artworkUri)
         val smallImageUrl = getSmallImageUrl()
@@ -364,6 +371,25 @@ class DiscordPresenceManager(
         }.onFailure {
             // Log the error but don't show it to the user to avoid disturbance
             Timber.tag("DiscordPresence").w("Error setting Discord activity: ${it.message}")
+        }
+    }
+
+    /**
+     * Clear the current Discord presence by closing the RPC connection.
+     *
+     * Used when a track has been paused for longer than [PAUSE_CLEAR_TIMEOUT_MS]
+     * so a paused activity is not left visible in Discord indefinitely (issue #238).
+     * The next play event re-instantiates [rpc] via the null-guard in [sendActivity].
+     */
+    private fun clearPresence() {
+        if (isStopped) return
+        discordScope.launch {
+            runCatching {
+                rpc?.closeRPC()
+            }.onFailure {
+                Timber.tag("DiscordPresence").w("Error clearing Discord presence: ${it.message}")
+            }
+            rpc = null
         }
     }
 
@@ -434,6 +460,9 @@ class DiscordPresenceManager(
         startTime: Long
     ) {
         refreshJob = discordScope.launch {
+            // Wall-clock time at which the current continuous pause began.
+            // -1 means "not currently paused".
+            var pauseStartedAt = -1L
             while (isActive && !isStopped) {
                 delay(15_000L)
                 if (!isNetworkConnected()) {
@@ -441,10 +470,23 @@ class DiscordPresenceManager(
                 }
                 val isPlaying = isPlayingProvider()
                 if (isPlaying) {
+                    // Resumed: reset the pause timer so only the latest
+                    // continuous pause is measured.
+                    pauseStartedAt = -1L
                     val pos = getCurrentPosition()
                     sendPlayingPresence(mediaItem, pos, duration, startTime)
                 } else {
-                    sendPausedPresence(duration, System.currentTimeMillis(), pausedPosition)
+                    val now = System.currentTimeMillis()
+                    if (pauseStartedAt < 0L) {
+                        pauseStartedAt = now
+                    }
+                    if (now - pauseStartedAt >= PAUSE_CLEAR_TIMEOUT_MS) {
+                        // Paused long enough: clear the presence and stop the
+                        // refresh loop so it is not re-asserted forever (issue #238).
+                        clearPresence()
+                        break
+                    }
+                    sendPausedPresence(duration, now, pausedPosition)
                 }
             }
         }
