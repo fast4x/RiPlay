@@ -104,10 +104,10 @@ fun AccountLogin(
         .fillMaxSize()
         .windowInsetsPadding(LocalPlayerAwareWindowInsets.current))
     {
-        if (cachedAccounts.isEmpty() || loading)
-            DefaultDialog(onDismiss = {}) {
-                Loader()
-            }
+//        if (loading)
+//            DefaultDialog(onDismiss = {}) {
+//                Loader()
+//            }
 
 
         if (cachedAccounts.isNotEmpty() && showSelectorDialog) {
