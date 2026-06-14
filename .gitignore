@@ -31,3 +31,4 @@ androidApp/APK keystore/
 /fastlane/it.fast4x.riplay.txt
 /androidApp/full/
 /androidApp/foss/
+/gradle/gradle-daemon-jvm.properties

@@ -1,12 +1,12 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 53,
-    "identityHash": "7f194a87c7c9e98cbd5c995be7801081",
+    "version": 54,
+    "identityHash": "a230733526db107c53dff39518f172bb",
     "entities": [
       {
         "tableName": "Song",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `mediaId` TEXT, `title` TEXT NOT NULL, `artistsText` TEXT, `durationText` TEXT, `thumbnailUrl` TEXT, `likedAt` INTEGER, `totalPlayTimeMs` INTEGER NOT NULL, `isAudioOnly` INTEGER NOT NULL DEFAULT 1, `isPodcast` INTEGER NOT NULL DEFAULT 0, `folder` TEXT, `musicVaultState` TEXT NOT NULL DEFAULT '', `musicVaultFileName` TEXT, `musicVaultThumbnailFileName` TEXT, `genres` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `mediaId` TEXT, `title` TEXT NOT NULL, `artistsText` TEXT, `durationText` TEXT, `thumbnailUrl` TEXT, `likedAt` INTEGER, `totalPlayTimeMs` INTEGER NOT NULL, `isAudioOnly` INTEGER NOT NULL DEFAULT 1, `isPodcast` INTEGER NOT NULL DEFAULT 0, `folder` TEXT, `musicVaultState` TEXT NOT NULL, `musicVaultFileName` TEXT, `musicVaultThumbnailFileName` TEXT, `genres` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -74,8 +74,7 @@
             "fieldPath": "musicVaultState",
             "columnName": "musicVaultState",
             "affinity": "TEXT",
-            "notNull": true,
-            "defaultValue": "''"
+            "notNull": true
           },
           {
             "fieldPath": "musicVaultFileName",
@@ -1013,7 +1012,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7f194a87c7c9e98cbd5c995be7801081')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a230733526db107c53dff39518f172bb')"
     ]
   }
 }
