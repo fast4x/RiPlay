@@ -3210,7 +3210,7 @@ interface Database {
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 54,
+    version = 55,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -3289,6 +3289,7 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
                 From40To41Migration(),
                 From43To44Migration(),
                 From45To46Migration(),
+                From54To55Migration(),
             )
             .fallbackToDestructiveMigration(false)
             .build()
@@ -3577,48 +3578,41 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
     class From54To55Migration : Migration(54, 55) {
         override fun migrate(db: SupportSQLiteDatabase) {
             try {
+                // 1. Crea la nuova tabella con il DEFAULT 'NONE'
                 db.execSQL("""
-                    CREATE TABLE song_new (
+                    CREATE TABLE Song_new (
                         id TEXT NOT NULL PRIMARY KEY,
                         mediaId TEXT,
                         title TEXT NOT NULL,
                         artistsText TEXT,
-                        durationText TEXT NOT NULL,
+                        durationText TEXT,
                         thumbnailUrl TEXT,
                         likedAt INTEGER,
                         totalPlayTimeMs INTEGER NOT NULL DEFAULT 0,
                         isAudioOnly INTEGER NOT NULL DEFAULT 1,
                         isPodcast INTEGER NOT NULL DEFAULT 0,
-                        folder TEXT,                        
-                       
-                        musicVaultState TEXT NOT NULL DEFAULT 'NONE', 
+                        folder TEXT,
+                        musicVaultState TEXT NOT NULL DEFAULT 'NONE',
                         musicVaultFileName TEXT,
                         musicVaultThumbnailFileName TEXT,
-                        
                         genres TEXT
                     )
                 """)
-            } catch (e: Exception) {
-                println("Database From54To55Migration create table song_new error ${e.stackTraceToString()}")
-            }
-            try {
+
+                // 2. Copia i dati
                 db.execSQL("""
-                    INSERT INTO song_new (
-                        id, mediaId, title, artistsText, durationText, thumbnailUrl, likedAt, 
-                        totalPlayTimeMs, isAudioOnly, isPodcast, folder, 
-                        musicVaultState, musicVaultFileName, musicVaultThumbnailFileName, genres
-                    )
-                    SELECT 
-                        id, mediaId, title, artistsText, durationText, thumbnailUrl, likedAt, 
-                        totalPlayTimeMs, isAudioOnly, isPodcast, folder, 
-                        musicVaultState, musicVaultFileName, musicVaultThumbnailFileName, genres
-                    FROM song
+                    INSERT INTO Song_new (id, mediaId, title, artistsText, durationText, thumbnailUrl, likedAt, totalPlayTimeMs, isAudioOnly, isPodcast, folder, musicVaultState, musicVaultFileName, musicVaultThumbnailFileName, genres)
+                    SELECT id, mediaId, title, artistsText, durationText, thumbnailUrl, likedAt, totalPlayTimeMs, isAudioOnly, isPodcast, folder, musicVaultState, musicVaultFileName, musicVaultThumbnailFileName, genres
+                    FROM Song
                 """)
 
-                db.execSQL("DROP TABLE song")
-                db.execSQL("ALTER TABLE song_new RENAME TO song")
+                // 3. Rimuovi la vecchia tabella
+                db.execSQL("DROP TABLE Song")
+
+                // 4. Rinomina la nuova tabella
+                db.execSQL("ALTER TABLE Song_new RENAME TO Song")
             } catch (e: Exception) {
-                println("Database From54To55Migration import songs error ${e.stackTraceToString()}")
+                println("Database From54To55Migration error ${e.stackTraceToString()}")
             }
         }
     }

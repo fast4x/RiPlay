@@ -34,6 +34,7 @@ data class Song(
     val folder: String? = null,
 
     // --- MusicVault ---
+    @ColumnInfo(defaultValue = "NONE")
     val musicVaultState: MusicVaultState = MusicVaultState.NONE,
     val musicVaultFileName: String? = null,
     val musicVaultThumbnailFileName: String? = null,
