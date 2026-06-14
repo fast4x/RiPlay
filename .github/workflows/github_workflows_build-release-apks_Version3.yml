@@ -133,10 +133,10 @@ jobs:
           
           if [ -z "$PREVIOUS_TAG" ]; then
             echo "⚠️  No previous tag found - showing all commits"
-            git log --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))" --reverse | head -20 > /tmp/changelog.txt
+            git log --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))" --reverse | grep -v "Update stats and chart \[skip ci\]" | head -20 > /tmp/changelog.txt
           else
             echo "📋 Changes between $PREVIOUS_TAG and $CURRENT_TAG"
-            git log ${PREVIOUS_TAG}..HEAD --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))" > /tmp/changelog.txt
+            git log ${PREVIOUS_TAG}..HEAD --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))" | grep -v "Update stats and chart \[skip ci\]" > /tmp/changelog.txt
           fi
           
           echo "" >> /tmp/changelog.txt
