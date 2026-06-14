@@ -79,8 +79,6 @@ fun getUiType() = appContext().preferences.getEnum(UI_TYPE.key, UiType.RiPlay)
 fun getKeepPlayerMinimized() = appContext().preferences.getBoolean(KEEP_PLAYER_MINIMIZED.key, false)
 fun getlastFmSessionKey() = appContext().preferences.getString(LASTFM_SESSION_TOKEN.key, "")
 fun getRoundnessShape() = appContext().preferences.getEnum(THUMBNAIL_ROUNDNESS.key,ThumbnailRoundness.Light).shape()
-
-
 fun ytAccountName() = appContext().preferences.getString(YT_ACCOUNT_NAME.key, "")
 fun ytAccountThumbnail() = appContext().preferences.getString(YT_ACCOUNT_THUMBNAIL.key, "")
 fun isHandleAudioFocusEnabled() = appContext().preferences.getBoolean(HANDLE_AUDIO_FOCUS_ENABLED.key, true)

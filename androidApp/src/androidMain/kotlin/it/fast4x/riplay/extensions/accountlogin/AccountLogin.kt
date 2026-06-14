@@ -39,6 +39,9 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_DATA_SYNC_ID
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_VISITOR_DATA
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.components.themed.CachedAccountsSelectorDialog
+import it.fast4x.riplay.ui.components.themed.DefaultDialog
+import it.fast4x.riplay.ui.components.themed.Loader
+import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.restartApp
@@ -75,13 +78,14 @@ fun AccountLogin(
 
     val scope = rememberCoroutineScope()
     var webView: WebView? = null
-    var showConfirmButton by remember { mutableStateOf(false) }
-    var restartAction by remember { mutableStateOf<(() -> Unit)?>(null) }
+    //var showConfirmButton by remember { mutableStateOf(false) }
+    //var restartAction by remember { mutableStateOf<(() -> Unit)?>(null) }
     var loadSessionAction by remember { mutableStateOf<(() -> Unit)?>(null) }
     val localContext = LocalContext.current
 
     var signinUrl by remember { mutableStateOf("") }
     var showSelectorDialog by remember { mutableStateOf(false) }
+    var loading by remember { mutableStateOf(true) }
 
     val jsonCachedAccounts by rememberPreference(PreferenceKey.YT_CACHED_ACCOUNTS.key, "")
     Timber.d("AccountLogin INITIAL CachedAccountProfile jsonString $jsonCachedAccounts ")
@@ -100,6 +104,12 @@ fun AccountLogin(
         .fillMaxSize()
         .windowInsetsPadding(LocalPlayerAwareWindowInsets.current))
     {
+        if (cachedAccounts.isEmpty() || loading)
+            DefaultDialog(onDismiss = {}) {
+                Loader()
+            }
+
+
         if (cachedAccounts.isNotEmpty() && showSelectorDialog) {
             CachedAccountsSelectorDialog(
                 onDismiss = { showSelectorDialog = false },
@@ -142,6 +152,9 @@ fun AccountLogin(
 
                 WebView(context).apply {
                     fun refreshYouTubeConfig(onComplete: ((String, String) -> Unit)? = null) {
+
+                        loading = true
+
                         var refreshedVisitorData = visitorData
                         var refreshedDataSyncId = dataSyncId
                         var pendingCallbacks = 2
@@ -178,6 +191,7 @@ fun AccountLogin(
                                 loadSessionAction?.invoke()
 
                             showSelectorDialog = true
+                            loading = false
 //                            if (signinUrl.isNotEmpty()) // account switched, restart
 //                                restartAction?.invoke()
 
@@ -276,6 +290,7 @@ fun AccountLogin(
                         }
                     }
 
+                    /*
                     restartAction = {
                         webView.apply {
                             stopLoading()
@@ -287,11 +302,13 @@ fun AccountLogin(
                         Timber.d("AccountLogin: Restart app")
                         restartApp(context)
                     }
+                     */
 
                 }
             },
             update = { webView ->
                 if (signinUrl.isNotEmpty()) {
+                    loading = true
                     Timber.d("AccountLogin carico signinUrl nella webview per lo switch -> $signinUrl")
                     webView.loadUrl(signinUrl)
 
@@ -300,6 +317,7 @@ fun AccountLogin(
             }
         )
 
+        /*
         if (showConfirmButton && restartAction != null) {
             Button(
                 shape = getRoundnessShape(),
@@ -318,6 +336,8 @@ fun AccountLogin(
                 )
             }
         }
+
+         */
     }
 
     BackHandler(enabled = webView?.canGoBack() == true) {

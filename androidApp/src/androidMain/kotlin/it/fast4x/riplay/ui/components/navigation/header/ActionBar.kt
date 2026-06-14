@@ -55,6 +55,7 @@ import it.fast4x.riplay.enums.CastType
 import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.CAST_TYPE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LISTENER_LEVELS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_ACCOUNT_THUMBNAIL
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.getRoundnessShape
@@ -505,6 +506,8 @@ fun ActionBar(
     var expanded by remember { mutableStateOf(false) }
     val sheet = LocalGlobalSheetState.current
 
+    val accountThumbnail by rememberPreference(YT_ACCOUNT_THUMBNAIL.key, "")
+
     var castType by rememberPreference(CAST_TYPE.key, CastType.RITUNECAST )
     if (castType == CastType.RITUNECAST) {
         val showCastScreen = LocalRiTuneSheetState.current
@@ -555,9 +558,9 @@ fun ActionBar(
     }
 
     if (isYtLoggedIn()) {
-        if (ytAccountThumbnail() != "")
+        if (accountThumbnail!= "")
             AsyncImage(
-                model = ytAccountThumbnail(),
+                model = accountThumbnail,
                 contentDescription = null,
                 modifier = Modifier
                     .height(40.dp)
