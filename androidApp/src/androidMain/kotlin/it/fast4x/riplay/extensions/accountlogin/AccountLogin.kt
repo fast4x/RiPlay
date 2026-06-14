@@ -1,6 +1,7 @@
 package it.fast4x.riplay.extensions.accountlogin
 
 import android.webkit.CookieManager
+import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
@@ -104,10 +105,10 @@ fun AccountLogin(
         .fillMaxSize()
         .windowInsetsPadding(LocalPlayerAwareWindowInsets.current))
     {
-//        if (loading)
-//            DefaultDialog(onDismiss = {}) {
-//                Loader()
-//            }
+        if (loading)
+            DefaultDialog(onDismiss = {}) {
+                LoaderScreen()
+            }
 
 
         if (cachedAccounts.isNotEmpty() && showSelectorDialog) {
@@ -153,8 +154,6 @@ fun AccountLogin(
                 WebView(context).apply {
                     fun refreshYouTubeConfig(onComplete: ((String, String) -> Unit)? = null) {
 
-                        loading = true
-
                         var refreshedVisitorData = visitorData
                         var refreshedDataSyncId = dataSyncId
                         var pendingCallbacks = 2
@@ -183,6 +182,10 @@ fun AccountLogin(
                     }
 
                     webViewClient = object : WebViewClient() {
+                        override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
+                            super.onPageStarted(view, url, favicon)
+                            loading = true
+                        }
                         override fun onPageFinished(view: WebView, url: String?) {
                             refreshYouTubeConfig()
 
@@ -191,7 +194,7 @@ fun AccountLogin(
                                 loadSessionAction?.invoke()
 
                             showSelectorDialog = true
-                            loading = false
+
 //                            if (signinUrl.isNotEmpty()) // account switched, restart
 //                                restartAction?.invoke()
 
@@ -205,6 +208,12 @@ fun AccountLogin(
                         ) {
                             super.doUpdateVisitedHistory(view, url, isReload)
                             refreshYouTubeConfig()
+                        }
+                    }
+
+                    webChromeClient = object : WebChromeClient() {
+                        override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                            loading = newProgress < 100
                         }
                     }
 
