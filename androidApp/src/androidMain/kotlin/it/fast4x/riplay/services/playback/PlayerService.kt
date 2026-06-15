@@ -241,9 +241,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
@@ -320,10 +322,16 @@ class PlayerService : Service(),
 
     var currentMediaItemState = MutableStateFlow<MediaItem?>(null)
 
-    @ExperimentalCoroutinesApi
-    private val currentSong = currentMediaItemState.flatMapLatest { mediaItem ->
-        Database.song(mediaItem?.mediaId)
-    }.stateIn(serviceScope, SharingStarted.Lazily, null)
+    @kotlin.OptIn(ExperimentalCoroutinesApi::class)
+    private val currentSong = currentMediaItemState
+        .flatMapLatest { mediaItem ->
+            Database.song(mediaItem?.mediaId)
+                .catch { e ->
+                    Timber.e("PlayerService CurrentSong Errore nel recupero della canzone $e")
+                    emit(null)
+                }
+        }
+        .stateIn(serviceScope, SharingStarted.Lazily, null)
 
     lateinit var sleepTimerListener: SleepTimerListener
 
@@ -574,7 +582,7 @@ class PlayerService : Service(),
 
          */
 
-        currentSong.debounce(1000).conflate().collect(serviceScope) { song ->
+        currentSong.collect(serviceScope) { song ->
             if (song == null) return@collect
 
             Timber.d("PlayerService onCreate update currentSong $song mediaItemState ${currentMediaItemState.value}")
@@ -596,7 +604,7 @@ class PlayerService : Service(),
 
 
             val format = Database.format(currentMediaId).first()
-            if (format == null && currentSong.value?.isLocal == false) {
+            if (format == null && !song.isLocal) {
                 getOnlineMetadata(currentMediaId)
                     ?.let {
                         Timber.d("PlayerService onCreate update currentSong onlinemetadata it $it")
@@ -1809,6 +1817,10 @@ private var pausedByZeroVolume = false
 
         if (mediaItem == null) return
 
+        currentMediaItemState.value = mediaItem
+        localMediaItem = mediaItem
+        _internalOnlinePlayer.value?.pause() // stop online player latency
+
         _currentSecond.value = 0F
 
         val newMediaId = mediaItem.mediaId
@@ -1846,10 +1858,6 @@ private var pausedByZeroVolume = false
         }
 
         mediaItem.let {
-
-            currentMediaItemState.value = it
-
-            localMediaItem = it
 
             if (!it.isLocal){
                 Timber.d("PlayerService onMediaItemTransition mediaItem not local, before")
