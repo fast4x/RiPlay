@@ -460,7 +460,8 @@ class PlayerService : Service(),
 
         initializeLocalPlayer()
         initializeVariables()
-        initializeOnlinePlayer()
+        serviceScope.launch { initializeOnlinePlayer() }
+
 
         initializeUnifiedMediaSession()
         // Aggiorna subito il mediasession per allineare lo stato delle azioni
@@ -481,7 +482,6 @@ class PlayerService : Service(),
         initializeAudioEqualizer()
         initializeLegacyNotificationActionReceiver()
 
-        //initializeBluetoothConnect()
         initializeAudioDeviceCallback()
         initializeNormalizeVolume()
         initializeBassBoost()
@@ -1055,7 +1055,7 @@ class PlayerService : Service(),
     @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     fun recreateOnlinePlayerView() {
         initializeVariables()
-        initializeOnlinePlayer()
+        serviceScope.launch { initializeOnlinePlayer() }
     }
 
     private fun initializeLocalPlayer() {
@@ -1101,7 +1101,7 @@ class PlayerService : Service(),
     }
 
     @ExperimentalCoroutinesApi
-    private fun initializeOnlinePlayer() {
+    suspend private fun initializeOnlinePlayer() {
 
         val listener = object : AbstractYouTubePlayerListener() {
 
@@ -2217,13 +2217,15 @@ private var pausedByZeroVolume = false
                 val shouldPlay = (hasNewBt && resumeOnBt) || (hasNewWired && resumeOnWired)
 
                 if (shouldPlay) {
-                    if (currentSong.value?.isLocal == true) {
+                    val local = currentSong.value?.isLocal == true
+                    Timber.d("PlayerService AudioDeviceAdded song local = $local _internalOnlinePlayer = ${_internalOnlinePlayer.value}")
+                    if (local) {
                         player.play()
                     } else {
-                        if (_internalOnlinePlayer.value == null)
-                            initializeOnlinePlayer()
-
-                        _internalOnlinePlayer.value?.play()
+                        serviceScope.launch {
+                            val onlinePlayer = getOrInitializeOnlinePlayer()
+                            onlinePlayer.play()
+                        }
                     }
                     SmartMessage(getString(R.string.music_resumed_headphones_connected), context = this@PlayerService)
                 }
@@ -2262,37 +2264,16 @@ private var pausedByZeroVolume = false
         audioDeviceCallback = null
     }
 
-    /*
-    @ExperimentalCoroutinesApi
-    private fun initializeBluetoothConnect() {
-        if (!preferences.getBoolean(RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_BT.key, false)) return
+    @kotlin.OptIn(ExperimentalCoroutinesApi::class)
+    private suspend fun getOrInitializeOnlinePlayer(): YouTubePlayer {
+        // Se il player esiste già, lo prendo
+        _internalOnlinePlayer.value?.let { return it }
 
-        bluetoothReceiver = BluetoothConnectHelper(
-            context = this,
-            onDeviceConnected = {
-                if (currentSong.value?.isLocal == true) {
-                    player.play()
-                } else {
-                    if (_internalOnlinePlayer.value == null)
-                        initializeOnlinePlayer()
-
-                    _internalOnlinePlayer.value?.play()
-                }
-                SmartMessage(getString(R.string.music_resumed_headphones_connected), context = this)
-            },
-            onDeviceDisconnected = {
-                player.pause()
-                _internalOnlinePlayer.value?.pause()
-
-                SmartMessage(getString(R.string.music_paused_headphones_disconnected), context = this)
-            }
-
-        )
-        bluetoothReceiver?.register()
-
+        // Altrimenti si inizializza.
+        initializeOnlinePlayer()
+        // Attendo che sia stato inizializzato prima di andare avanti
+        return _internalOnlinePlayer.first { it != null }!!
     }
-
-     */
 
     @UnstableApi
     private fun sendOpenExternalEqualizerIntent() {
