@@ -255,14 +255,15 @@ fun AlbumDetails(
                     .onFailure {
                         Timber.e("AlbumDetails network error ${it.stackTraceToString()}")
                     }
+            }.invokeOnCompletion {
+                launch(Dispatchers.IO) {
+                    val mbclient = MusicBrainz()
+                    val mdHelper = MBMetadataHelper(mbclient)
+                    mdHelper.onAlbumViewed(browseId)
+                }
             }
         }
 
-        launch(Dispatchers.IO) {
-            val mbclient = MusicBrainz()
-            val genreHelper = MBMetadataHelper(mbclient)
-            genreHelper.onAlbumViewed(browseId)
-        }
     }
 
     fun update() {

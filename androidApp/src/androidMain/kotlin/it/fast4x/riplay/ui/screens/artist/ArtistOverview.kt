@@ -236,14 +236,18 @@ fun ArtistOverview(
                             )
                         )
                     }
+            }.invokeOnCompletion {
+                launch(Dispatchers.IO) {
+                    val mbclient = MusicBrainz()
+                    val mdHelper = MBMetadataHelper(mbclient)
+                    mdHelper.onArtistViewed(browseId)
+                }
             }
         }
 
-        launch(Dispatchers.IO) {
-            val mbclient = MusicBrainz()
-            val genreHelper = MBMetadataHelper(mbclient)
-            genreHelper.onArtistViewed(browseId)
-        }
+
+
+
     }
 
     var updateDiscografyIfBookmarked by remember { mutableStateOf(false) }

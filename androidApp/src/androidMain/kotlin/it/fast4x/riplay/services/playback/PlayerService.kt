@@ -3331,7 +3331,7 @@ private var pausedByZeroVolume = false
             get() = this@PlayerService.playerState
 
         val onlinePlayer: YouTubePlayer?
-            get() = this@PlayerService.internalOnlinePlayer.value
+            get() = this@PlayerService._internalOnlinePlayer.value // todo controlla se è ok
 
         val onlinePlayerPlayingState: Boolean
             get() = this@PlayerService.playerState.value.isPlaying
