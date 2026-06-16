@@ -245,7 +245,6 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
@@ -541,46 +540,6 @@ class PlayerService : Service(),
                 }
             }
         }
-        /*
-        if (isPersistentQueueEnabled) {
-
-            serviceScope.launch {
-
-                withContext(Dispatchers.Main) {
-                    loadQueue()
-                    resumePlaybackOnStart()
-                }
-
-                while (isActive) {
-                    delay(60.seconds)
-                    if (!_playerState.value.isPlaying) {
-                        saveQueue()
-                        Timber.d("PlayerService saveQueue periodic when not playing")
-                    }
-
-                    if (_currentSecond.value >= minTimeForEvent.seconds && lastMediaIdInHistory != currentSong.value?.id) {
-                        currentSong.value?.let {
-                            updateOnlineHistory(it.asMediaItem)
-                            lastMediaIdInHistory = it.id
-                        }
-                    }
-
-                }
-            }
-
-            serviceScope.launch {
-                while (isActive) {
-                    delay(10.seconds)
-                    if (_playerState.value.isPlaying) {
-                        saveQueue()
-                        Timber.d("PlayerService saveQueue when playing")
-                    }
-                }
-            }
-
-        }
-
-         */
 
         currentSong.collect(serviceScope) { song ->
             if (song == null) return@collect
@@ -1055,7 +1014,7 @@ class PlayerService : Service(),
     @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     fun recreateOnlinePlayerView() {
         initializeVariables()
-        serviceScope.launch { initializeOnlinePlayer() }
+        serviceScope.launch { ensureOnlinePlayerInitialized() }
     }
 
     private fun initializeLocalPlayer() {
@@ -2223,7 +2182,7 @@ private var pausedByZeroVolume = false
                         player.play()
                     } else {
                         serviceScope.launch {
-                            val onlinePlayer = getOrInitializeOnlinePlayer()
+                            val onlinePlayer = ensureOnlinePlayerInitialized()
                             onlinePlayer.play()
                         }
                     }
@@ -2265,7 +2224,7 @@ private var pausedByZeroVolume = false
     }
 
     @kotlin.OptIn(ExperimentalCoroutinesApi::class)
-    private suspend fun getOrInitializeOnlinePlayer(): YouTubePlayer {
+    private suspend fun ensureOnlinePlayerInitialized(): YouTubePlayer {
         // Se il player esiste già, lo prendo
         _internalOnlinePlayer.value?.let { return it }
 
