@@ -1014,7 +1014,7 @@ class PlayerService : Service(),
     @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     fun recreateOnlinePlayerView() {
         initializeVariables()
-        serviceScope.launch { ensureOnlinePlayerInitialized() }
+        serviceScope.launch { initializeOnlinePlayer() }
     }
 
     private fun initializeLocalPlayer() {
