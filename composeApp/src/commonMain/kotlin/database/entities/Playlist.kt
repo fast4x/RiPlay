@@ -11,7 +11,7 @@ import it.fast4x.riplay.commonutils.YT_PLAYLIST_SHARE_BASEURL
 
 @Immutable
 @Entity
-data class Playlist(
+data class _Playlist(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
     val browseId: String? = null,

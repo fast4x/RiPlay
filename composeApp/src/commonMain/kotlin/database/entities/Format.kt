@@ -5,18 +5,19 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 
+/*
 @Immutable
 @Entity(
     foreignKeys = [
         ForeignKey(
-            entity = Song::class,
+            entity = _Song::class,
             parentColumns = ["id"],
             childColumns = ["songId"],
             onDelete = ForeignKey.CASCADE
         )
     ]
 )
-data class Format(
+data class _Format(
     @PrimaryKey val songId: String,
     val itag: Int? = null,
     val mimeType: String? = null,
@@ -26,3 +27,6 @@ data class Format(
     val loudnessDb: Float? = null,
     val playbackUrl: String? = null,
 )
+
+
+ */

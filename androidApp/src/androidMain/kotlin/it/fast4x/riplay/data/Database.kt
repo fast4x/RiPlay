@@ -47,18 +47,22 @@ import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.ArtistDiscography
+import it.fast4x.riplay.data.models.ArtistRelation
 import it.fast4x.riplay.data.models.Blacklist
 import it.fast4x.riplay.data.models.Event
 import it.fast4x.riplay.data.models.EventWithSong
 import it.fast4x.riplay.data.models.ExternalApp
 import it.fast4x.riplay.data.models.Format
 import it.fast4x.riplay.data.models.Info
+import it.fast4x.riplay.data.models.KeywordWeight
 import it.fast4x.riplay.data.models.Lyrics
+import it.fast4x.riplay.data.models.MBAlbum
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.data.models.PlaylistWithSongs
 import it.fast4x.riplay.data.models.QueuedMediaItem
 import it.fast4x.riplay.data.models.Queues
+import it.fast4x.riplay.data.models.Recommendation
 import it.fast4x.riplay.data.models.SearchQuery
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongAlbumMap
@@ -67,6 +71,9 @@ import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.data.models.SongWithContentLength
 import it.fast4x.riplay.data.models.SortedSongPlaylistMap
+import it.fast4x.riplay.data.models.UserArtistAffinity
+import it.fast4x.riplay.data.models.UserEraAffinity
+import it.fast4x.riplay.data.models.UserKeywordAffinity
 import it.fast4x.riplay.extensions.musicbrainz.models.ExternalLink
 import it.fast4x.riplay.musicvault.MusicVaultState
 import it.fast4x.riplay.extensions.rewind.data.AlbumMostListened
@@ -2909,6 +2916,339 @@ interface Database {
     fun getArtistDiscography(artistId: String): Flow<ArtistDiscography?>
 
 
+    // ********** Recommendation Strategy ******************
+    @Query("SELECT * FROM user_artist_affinity WHERE userId = :userId ORDER BY score DESC LIMIT :limit")
+    suspend fun getTopArtists(userId: String, limit: Int): List<UserArtistAffinity>
+
+    @Query("SELECT artistId FROM user_artist_affinity WHERE userId = :userId AND score >= :minScore")
+    suspend fun getTopArtistIds(userId: String, minScore: Float = 0.1f): List<String>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertUserArtistAffinity(items: List<UserArtistAffinity>)
+
+    @Query("DELETE FROM user_artist_affinity WHERE userId = :userId")
+    suspend fun deleteArtistForUser(userId: String)
+
+    @Query("SELECT * FROM user_keyword_affinity WHERE userId = :userId ORDER BY weight DESC LIMIT :limit")
+    suspend fun getTopKeywords(userId: String, limit: Int): List<UserKeywordAffinity>
+
+    @Query("SELECT keyword, weight FROM user_keyword_affinity WHERE userId = :userId")
+    suspend fun getKeywordVector(userId: String): List<KeywordWeight>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertUserKeywordAffinity(items: List<UserKeywordAffinity>)
+
+    @Query("DELETE FROM user_keyword_affinity WHERE userId = :userId")
+    suspend fun deleteKeysForUser(userId: String)
+
+    @Query("SELECT * FROM user_era_affinity WHERE userId = :userId ORDER BY weight DESC")
+    suspend fun getAll(userId: String): List<UserEraAffinity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertUserEraAffinity(items: List<UserEraAffinity>)
+
+    @Query("DELETE FROM user_era_affinity WHERE userId = :userId")
+    suspend fun deleteEraAffinityAllForUser(userId: String)
+
+    @Query("""
+        SELECT r.* FROM recommendation r
+        INNER JOIN song s ON s.id = r.songId
+        WHERE r.userId = :userId
+          AND r.strategyId = :strategyId
+          AND r.rejectedAt IS NULL
+          AND (r.consumed = 0 OR r.consumedAt IS NULL OR r.consumedAt < :consumedBefore)
+        ORDER BY r.score DESC
+        LIMIT :limit
+    """)
+    suspend fun getActiveByStrategy(
+        userId: String,
+        strategyId: String,
+        consumedBefore: Long,
+        limit: Int
+    ): List<Recommendation>
+
+    @Query("DELETE FROM recommendation WHERE userId = :userId AND strategyId = :strategyId")
+    suspend fun deleteByStrategy(userId: String, strategyId: String)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertRecommendation(items: List<Recommendation>)
+
+    @Query("UPDATE recommendation SET consumed = 1, consumedAt = :now WHERE userId = :userId AND songId = :songId AND strategyId = :strategyId")
+    suspend fun markConsumed(userId: String, songId: String, strategyId: String, now: Long)
+
+    @Query("UPDATE recommendation SET rejectedAt = :now WHERE userId = :userId AND songId = :songId")
+    suspend fun markRejected(userId: String, songId: String, now: Long)
+
+    @Query("""
+        SELECT * FROM artist_relation
+        WHERE fromArtistId = :artistId OR toArtistId = :artistId
+    """)
+    suspend fun getBidirectional(artistId: String): List<ArtistRelation>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertArtistRelation(items: List<ArtistRelation>)
+
+    @Query("""
+    SELECT * FROM song
+    WHERE likedAt IS NOT NULL
+      AND likedAt > 0
+      AND isPodcast = 0
+      AND totalPlayTimeMs > 0
+    ORDER BY totalPlayTimeMs DESC
+    LIMIT :limit
+""")
+    suspend fun getLikedSongs(limit: Int): List<Song>
+
+    @Query("""
+    SELECT * FROM song
+    WHERE likedAt IS NOT NULL
+      AND likedAt > 0
+      AND isPodcast = 0
+      AND id IN (
+        SELECT songId FROM event
+        WHERE timestamp < :olderThan
+        GROUP BY songId
+        ORDER BY MAX(timestamp) DESC
+      )
+    LIMIT :limit
+""")
+    suspend fun getLikedSongsNotPlayedSince(olderThan: Long, limit: Int): List<Song>
+
+    @Query("""
+    SELECT MAX(timestamp) FROM event WHERE songId = :songId
+""")
+    suspend fun getLastPlayedAt(songId: String): Long?
+
+    /* La userò dopo
+    @Query("""
+    SELECT s.* FROM song s
+    INNER JOIN song_artist_cross_ref sac ON sac.songId = s.id
+    WHERE sac.artistId = :artistId
+      AND s.isPodcast = 0
+      AND s.totalPlayTimeMs = 0
+    LIMIT :limit
+""")
+    suspend fun getUnplayedSongsByArtist(artistId: String, limit: Int): List<Song>
+
+*/
+
+    @Query("""
+    SELECT * FROM album
+    WHERE rating >= :minRating
+      AND ratingVotes >= :minVotes
+      AND originalYear IS NOT NULL
+    ORDER BY rating DESC, ratingVotes DESC
+    LIMIT :limit
+""")
+    suspend fun getTopRatedAlbums(minRating: Float, minVotes: Int, limit: Int): List<Album>
+
+    @Query("SELECT * FROM event WHERE timestamp >= :since ORDER BY timestamp ASC")
+    suspend fun getEventsSince(since: Long): List<Event>
+
+    @Query("SELECT * FROM event ORDER BY timestamp ASC")
+    suspend fun getAllEvents(): List<Event>
+
+
+    @Query("SELECT COUNT(*) FROM artist")
+    suspend fun countArtists(): Int?
+
+    @Query("""
+        SELECT COUNT(*) FROM artist
+        WHERE genres LIKE '%' || :keyword || '%'
+           OR tags LIKE '%' || :keyword || '%'
+    """)
+    suspend fun countArtistsByKeyword(keyword: String): Int?
+
+
+    @Query("SELECT * FROM song WHERE id = :songId")
+    suspend fun getById(songId: String): Song?
+
+    // Per gating UI
+    @Query("SELECT COUNT(*) FROM song WHERE totalPlayTimeMs > 0 AND isPodcast = 0")
+    suspend fun countPlayedSongs(): Int
+
+    @Query("SELECT COUNT(DISTINCT songId) FROM event")
+    suspend fun countDistinctPlayedSongs(): Int
+
+    // SongDao.kt
+    @Query("SELECT COUNT(*) FROM song")
+    suspend fun countSongsTotal(): Int
+
+    @Query("SELECT COUNT(*) FROM song WHERE genres IS NOT NULL AND genres != '[]' AND genres != ''")
+    suspend fun countSongsWithGenres(): Int
+
+    @Query("SELECT COUNT(*) FROM song WHERE likedAt IS NOT NULL AND likedAt > 0")
+    suspend fun countSongsLiked(): Int
+
+    @Query("""
+    SELECT COUNT(DISTINCT e.songId) 
+    FROM event e 
+    LEFT JOIN song s ON s.id = e.songId 
+    WHERE s.id IS NULL
+""")
+    suspend fun countOrphanEvents(): Int
+
+    @Query("""
+    SELECT * FROM song
+    WHERE isPodcast = 0
+      AND (genres IS NULL OR genres = '[]' OR genres = '')
+    ORDER BY totalPlayTimeMs DESC
+    LIMIT :limit
+""")
+    suspend fun getTopSongsWithoutGenres(limit: Int): List<Song>
+
+    @Query("""
+    SELECT s.* FROM song s
+    INNER JOIN (
+        SELECT songId, MAX(timestamp) as lastPlayed
+        FROM event
+        WHERE timestamp < :olderThan
+        GROUP BY songId
+    ) e ON e.songId = s.id
+    WHERE s.isPodcast = 0
+      AND s.totalPlayTimeMs > :minTotalPlayMs
+    ORDER BY e.lastPlayed ASC
+    LIMIT :limit
+""")
+    suspend fun getForgottenSongs(
+        olderThan: Long,
+        minTotalPlayMs: Long = 60_000L,  // almeno 1 minuto ascoltato cumulativo
+        limit: Int
+    ): List<Song>
+
+    @Query("SELECT COUNT(*) FROM event WHERE playTime > 0")
+    suspend fun countEventsWithPlayTime(): Int
+
+    @Query("SELECT * FROM song WHERE genres IS NOT NULL AND genres != '[]' AND genres != '' LIMIT 1")
+    suspend fun getFirstWithGenres(): Song?
+
+     @Query("SELECT COUNT(*) FROM album")
+     suspend fun countAlbumsTotal(): Int
+
+     @Query("SELECT COUNT(*) FROM album WHERE rating IS NOT NULL")
+     suspend fun countAlbumsWithRating(): Int
+
+     @Query("SELECT COUNT(*) FROM album WHERE ratingVotes IS NOT NULL AND ratingVotes > 0")
+     suspend fun countAlbumsWithVotes(): Int
+
+     @Query("SELECT * FROM album LIMIT :limit")
+     suspend fun getAlbums(limit: Int): List<Album>
+
+    // Aggiungi a AlbumDao
+    @Query("""
+        SELECT COUNT(*) FROM album 
+        WHERE rating IS NOT NULL 
+           OR genres IS NOT NULL 
+           OR originalYear IS NOT NULL
+    """)
+    suspend fun countAlbumsEnriched(): Int
+
+    @Query("""
+        SELECT * FROM album 
+        WHERE rating IS NOT NULL 
+           OR genres IS NOT NULL 
+           OR originalYear IS NOT NULL
+        LIMIT 5
+    """)
+    suspend fun getAlbumsEnrichedSample(): List<Album>
+
+    // AlbumDao
+    @Query("""
+    SELECT * FROM album 
+    WHERE (rating IS NULL OR genres IS NULL OR originalYear IS NULL)
+      AND title IS NOT NULL 
+      AND authorsText IS NOT NULL
+      AND title NOT IN ('Audio', 'WhatsApp Audio', 'Unknown Album')
+      AND title NOT LIKE 'Audio %'
+    ORDER BY timestamp DESC
+    LIMIT :limit
+""")
+    suspend fun getAlbumsToEnrich(limit: Int): List<Album>
+
+    //************* INIZIO MBALBUM *****************
+    @Query("""
+        SELECT * FROM mb_album
+        WHERE
+            (rating IS NOT NULL AND rating >= :minRating AND ratingVotes >= :minVotes)
+            OR (tags IS NOT NULL AND (length(tags) - length(replace(tags, ',', '')) >= 4))
+        ORDER BY popularityScore DESC, rating DESC, ratingVotes DESC
+        LIMIT :limit
+    """)
+    suspend fun getQualityAlbums(
+        minRating: Float = 3.5f,
+        minVotes: Int = 1,
+        limit: Int
+    ): List<MBAlbum>
+
+    @Query("""
+        SELECT * FROM mb_album
+        WHERE 
+            -- Album con metadati MB popolati (anche senza rating)
+            (genres IS NOT NULL AND genres != '[]')
+            OR (tags IS NOT NULL AND tags != '[]')
+            OR (rating IS NOT NULL)
+        ORDER BY popularityScore DESC, originalYear DESC
+        LIMIT :limit
+    """)
+    suspend fun getAlbumsWithMetadata(limit: Int): List<MBAlbum>
+
+    @Query("SELECT * FROM mb_album WHERE id = :mbid")
+    suspend fun getMBAlbumById(mbid: String): MBAlbum?
+
+    @Query("""
+        SELECT * FROM mb_album
+        WHERE artistCredit LIKE '%' || :artistName || '%'
+        ORDER BY originalYear ASC
+    """)
+    suspend fun findByArtistName(artistName: String): List<MBAlbum>
+
+    @Query("SELECT * FROM mb_album WHERE matchedAlbumId IS NULL LIMIT :limit")
+    suspend fun getUnmatched(limit: Int): List<MBAlbum>
+
+    @Query("UPDATE mb_album SET matchedAlbumId = :albumId, matchScore = :score, matchedAt = :now WHERE id = :mbid")
+    suspend fun setMatch(mbid: String, albumId: String?, score: Float, now: Long)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(item: MBAlbum)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertAll(items: List<MBAlbum>)
+
+    @Query("SELECT COUNT(*) FROM mb_album")
+    suspend fun count(): Int
+
+    @Query("SELECT COUNT(*) FROM mb_album WHERE rating IS NOT NULL AND ratingVotes >= 1")
+    suspend fun countWithRating(): Int
+
+    @Query("SELECT COUNT(*) FROM mb_album WHERE matchedAlbumId IS NOT NULL AND matchedAlbumId != ''")
+    suspend fun countMatched(): Int
+
+     @Query("SELECT * FROM mb_album ORDER BY fetchedAt DESC LIMIT :limit")
+     suspend fun getRecent(limit: Int): List<MBAlbum>
+
+    @Query("""
+        SELECT * FROM mb_album
+        WHERE 
+            -- Album con metadati minimi
+            (genres IS NOT NULL AND genres != '[]' AND genres != '')
+            OR (tags IS NOT NULL AND tags != '[]' AND tags != '')
+            OR (rating IS NOT NULL)
+        ORDER BY 
+            popularityScore DESC,
+            CASE WHEN rating IS NOT NULL THEN rating ELSE 2.5 END DESC,
+            ratingVotes DESC
+        LIMIT :limit
+    """)
+    suspend fun getQualityAlbumsV2(limit: Int): List<MBAlbum>
+
+    @Query("DELETE FROM mb_album")
+    suspend fun deleteMBAlbumsAll(): Int
+
+    //************* FINE MBALBUM *****************
+
+    //************* RECOMENDATION STRATEGY ********************************************
+
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(artistDiscography: ArtistDiscography)
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -3205,12 +3545,18 @@ interface Database {
         Queues::class,
         ExternalApp::class,
         Blacklist::class,
-        ArtistDiscography::class
+        ArtistDiscography::class,
+        UserArtistAffinity::class,
+        UserKeywordAffinity::class,
+        UserEraAffinity::class,
+        Recommendation::class,
+        ArtistRelation::class,
+        MBAlbum::class,
     ],
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 55,
+    version = 57,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -3290,8 +3636,16 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
                 From43To44Migration(),
                 From45To46Migration(),
                 From54To55Migration(),
+                From55To56Migration(),
+                From56To57Migration()
             )
-            .fallbackToDestructiveMigration(false)
+            //.fallbackToDestructiveMigration(false)
+            .addCallback(object : Callback() {
+                override fun onOpen(db: SupportSQLiteDatabase) {
+                    super.onOpen(db)
+                    db.execSQL("PRAGMA foreign_keys = ON")  // ← In automatico non viene attivato da room
+                }
+            })
             .build()
 
 
@@ -3613,6 +3967,131 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
                 db.execSQL("ALTER TABLE Song_new RENAME TO Song")
             } catch (e: Exception) {
                 println("Database From54To55Migration error ${e.stackTraceToString()}")
+            }
+        }
+    }
+
+    class From55To56Migration : Migration(55, 56) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            try {
+                // Profilo utente
+                db.execSQL("""
+            CREATE TABLE IF NOT EXISTS user_artist_affinity (
+                userId TEXT NOT NULL,
+                artistId TEXT NOT NULL,
+                score REAL NOT NULL,
+                playCount INTEGER NOT NULL,
+                totalPlayTimeMs INTEGER NOT NULL,
+                lastPlayedAt INTEGER NOT NULL,
+                likedSongs INTEGER NOT NULL,
+                dislikedSongs INTEGER NOT NULL,
+                bookmarked INTEGER NOT NULL,
+                updatedAt INTEGER NOT NULL,
+                PRIMARY KEY(userId, artistId)
+            )
+        """.trimIndent())
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_user_artist_affinity_userId_score ON user_artist_affinity(userId, score)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_user_artist_affinity_artistId ON user_artist_affinity(artistId)")
+
+                db.execSQL("""
+            CREATE TABLE IF NOT EXISTS user_keyword_affinity (
+                userId TEXT NOT NULL,
+                keyword TEXT NOT NULL,
+                weight REAL NOT NULL,
+                playCount INTEGER NOT NULL,
+                updatedAt INTEGER NOT NULL,
+                PRIMARY KEY(userId, keyword)
+            )
+        """.trimIndent())
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_user_keyword_affinity_userId_weight ON user_keyword_affinity(userId, weight)")
+
+                db.execSQL("""
+            CREATE TABLE IF NOT EXISTS user_era_affinity (
+                userId TEXT NOT NULL,
+                decade INTEGER NOT NULL,
+                weight REAL NOT NULL,
+                playCount INTEGER NOT NULL,
+                updatedAt INTEGER NOT NULL,
+                PRIMARY KEY(userId, decade)
+            )
+        """.trimIndent())
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_user_era_affinity_userId_weight ON user_era_affinity(userId, weight)")
+
+                // Recommendation
+                db.execSQL("""
+            CREATE TABLE IF NOT EXISTS recommendation (
+                userId TEXT NOT NULL,
+                songId TEXT NOT NULL,
+                strategyId TEXT NOT NULL,
+                score REAL NOT NULL,
+                reasonsJson TEXT NOT NULL,
+                generatedAt INTEGER NOT NULL,
+                consumed INTEGER NOT NULL DEFAULT 0,
+                consumedAt INTEGER,
+                rejectedAt INTEGER,
+                PRIMARY KEY(userId, songId, strategyId)
+            )
+        """.trimIndent())
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_recommendation_userId_strategyId_score ON recommendation(userId, strategyId, score)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_recommendation_userId_consumed ON recommendation(userId, consumed)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_recommendation_userId_rejectedAt ON recommendation(userId, rejectedAt)")
+
+                // Artist relation (anticipata)
+                db.execSQL("""
+            CREATE TABLE IF NOT EXISTS artist_relation (
+                fromArtistId TEXT NOT NULL,
+                toArtistId TEXT NOT NULL,
+                relationType TEXT NOT NULL,
+                direction TEXT NOT NULL DEFAULT 'bidirectional',
+                fetchedAt INTEGER NOT NULL,
+                PRIMARY KEY(fromArtistId, toArtistId, relationType)
+            )
+        """.trimIndent())
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_artist_relation_fromArtistId ON artist_relation(fromArtistId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_artist_relation_toArtistId ON artist_relation(toArtistId)")
+            } catch (e: Exception) {
+                println("Database From55To56Migration error ${e.stackTraceToString()}")
+            }
+        }
+    }
+
+    class From56To57Migration : Migration(56, 57) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            try {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS mb_album (
+                        id TEXT NOT NULL PRIMARY KEY,
+                        title TEXT NOT NULL,
+                        primaryType TEXT,
+                        secondaryTypes TEXT,
+                        firstReleaseDate TEXT,
+                        originalYear INTEGER,
+                        genres TEXT,
+                        tags TEXT,
+                        rating REAL,
+                        ratingVotes INTEGER,
+                        wikipediaUrl TEXT,
+                        links TEXT,
+                        artistCredit TEXT,
+                        artistMbIds TEXT,
+                        matchedAlbumId TEXT,
+                        matchScore REAL,
+                        matchedAt INTEGER,
+                        fetchedAt INTEGER NOT NULL,
+                        popularityScore REAL NOT NULL DEFAULT 0
+                    )
+                """.trimIndent()
+                )
+
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_mb_album_rating_ratingVotes ON mb_album(rating, ratingVotes)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_mb_album_originalYear ON mb_album(originalYear)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_mb_album_primaryType ON mb_album(primaryType)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_mb_album_fetchedAt ON mb_album(fetchedAt)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_mb_album_matchedAlbumId ON mb_album(matchedAlbumId)")
+
+            } catch (e: Exception) {
+                println("Database From55To56Migration error ${e.stackTraceToString()}")
             }
         }
     }

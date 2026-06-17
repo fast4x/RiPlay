@@ -14,7 +14,7 @@ import it.fast4x.riplay.commonutils.setLikeState
 
 @Immutable
 @Entity
-data class Song(
+data class _Song(
     @PrimaryKey val id: String,
     val title: String,
     val artistsText: String? = null,
@@ -59,14 +59,14 @@ data class Song(
 
 
 
-    fun toggleLike(): Song {
+    fun toggleLike(): _Song {
         return copy(
             //likedAt = if (likedAt == null) System.currentTimeMillis() else null
             likedAt = setLikeState(likedAt)
         )
     }
 
-    fun toggleDislike(): Song {
+    fun toggleDislike(): _Song {
         return copy(
             likedAt = setDisLikeState(likedAt)
         )

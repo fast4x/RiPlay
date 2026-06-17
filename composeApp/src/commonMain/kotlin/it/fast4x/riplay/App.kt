@@ -1,10 +1,12 @@
 package it.fast4x.riplay
 
 import androidx.compose.runtime.Composable
-import database.MusicDatabaseDao
+
 
 @Composable
-fun App(db: MusicDatabaseDao) {
+fun App(
+    //db: MusicDatabaseDao
+) {
 /*
     DesktopTheme {
         DesktopApp()

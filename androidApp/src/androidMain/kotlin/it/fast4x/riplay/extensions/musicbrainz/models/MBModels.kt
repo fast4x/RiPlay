@@ -108,7 +108,25 @@ data class MBReleaseGroupDetailResponse(
 
     val tags: List<MBTag>? = null,
     val rating: MBRating? = null,
-    val relations: List<MBRelation>? = null
+    val relations: List<MBRelation>? = null,
+
+    @SerialName("artist-credit")
+    val artistCredit: List<MBArtistCredit>? = null
+)
+
+@Serializable
+data class MBArtistCredit(
+    val name: String? = null,
+    val joinpath: String? = null,
+    val artist: MBArtistCreditArtist? = null
+)
+
+@Serializable
+data class MBArtistCreditArtist(
+    val id: String? = null,    // MBID dell'artista
+    val name: String? = null,
+    @SerialName("sort-name")
+    val sortName: String? = null
 )
 
 data class MBAlbumMetadata(

@@ -70,6 +70,8 @@ import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Blacklist
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.NavRoutes
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.RecommendationService
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.ui.RecommendationsBlock
 import it.fast4x.riplay.extensions.listenerlevel.HomepageListenerLevelBadges
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.PullToRefreshBox
@@ -104,6 +106,7 @@ import it.fast4x.riplay.ui.components.themed.Menu
 import it.fast4x.riplay.ui.components.themed.MenuEntry
 import it.fast4x.riplay.ui.components.themed.MoodItemColored
 import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenu
+import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.components.themed.Title
 import it.fast4x.riplay.ui.components.themed.Title2Actions
 import it.fast4x.riplay.ui.components.themed.TitleMiniSection
@@ -116,6 +119,7 @@ import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.HomeDataCache
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.asVideoMediaItem
@@ -149,12 +153,15 @@ fun HomePage(
     onSearchClick: () -> Unit,
     onMoodAndGenresClick: (mood: Environment.Mood.Item) -> Unit,
     onChipClick: (chip: Environment.Chip) -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    recommendationService: RecommendationService
 ) {
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalGlobalSheetState.current
     val windowInsets = LocalPlayerAwareWindowInsets.current
     var playEventType by rememberPreference(PLAY_EVENTS_TYPE.key, PlayEventsType.MostPlayed)
+
+    val scope = rememberCoroutineScope()
 
     var trending by remember { mutableStateOf(HomeDataCache.trending) }
     var relatedPage by remember { mutableStateOf(HomeDataCache.relatedPage) }
@@ -417,6 +424,34 @@ fun HomePage(
                     endPaddingValues = endPaddingValues,
                     disableScrollingText = disableScrollingText
                 )
+
+                BasicText(
+                    text = "Recommendations",
+                    style = typography().l.bold,
+                    modifier = sectionTextModifier
+                )
+                RecommendationsBlock(
+                    recommendationService,
+                    onPlayItem = { item ->
+                        // Play del brano + marca come consumato
+                        scope.launch {
+                            item.song?.let { song ->
+                                binder?.player?.forcePlay(song.asMediaItem)
+                                recommendationService.markConsumed(item.strategyId, song.id)
+                            }
+                        }
+                    },
+                    onRejectItem = { item ->
+                        // Long-press: mostra dialog "non interessato"
+                        item.song?.let { song ->
+                            scope.launch {
+                                recommendationService.markRejected(song.id)
+                            }
+                        }
+                        SmartMessage("Non interessato", context = appContext())
+                    }
+                )
+
 
                 if (showTips) {
                     Title2Actions(

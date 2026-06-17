@@ -5,12 +5,13 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 
+/*
 @Immutable
 @Entity(
     primaryKeys = ["songId", "playlistId"],
     foreignKeys = [
         ForeignKey(
-            entity = Song::class,
+            entity = _Song::class,
             parentColumns = ["id"],
             childColumns = ["songId"],
             onDelete = ForeignKey.CASCADE
@@ -36,3 +37,6 @@ data class SongPlaylistMap(
         )
     }
 }
+
+
+ */

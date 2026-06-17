@@ -1,6 +1,7 @@
 package it.fast4x.riplay.ui.screens.home
 
 import android.app.Activity
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -19,14 +20,15 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.core.content.edit
 import androidx.lifecycle.Lifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.BuildConfig
+import it.fast4x.riplay.Dependencies
 import it.fast4x.riplay.commonutils.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.LocalPlayerSheetState
 import it.fast4x.riplay.R
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.toUiChip
 import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.HomeScreenTabs
@@ -56,6 +58,7 @@ import it.fast4x.riplay.ui.components.ScreenContainer
 import it.fast4x.riplay.ui.screens.home.homepages.HomePage
 import it.fast4x.riplay.ui.screens.home.homepages.HomePageExtended
 import it.fast4x.riplay.utils.CheckForNewVersion
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 import kotlin.system.exitProcess
@@ -76,6 +79,8 @@ fun HomeScreen(
     miniPlayer: @Composable () -> Unit = {},
     openTabFromShortcut: Int
 ) {
+
+    val recommendationService = Dependencies.application.recommendationService
 
     var showNewversionDialog by rememberSaveable { mutableStateOf(true) }
 
@@ -182,6 +187,7 @@ fun HomeScreen(
                     )
 
                     HomePagetype.Classic -> HomePage(
+                        recommendationService = recommendationService,
                         onAlbumClick = {
                             navController.navigate(route = "${NavRoutes.album.name}/$it")
                         },

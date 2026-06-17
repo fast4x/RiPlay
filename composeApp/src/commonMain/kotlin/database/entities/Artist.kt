@@ -6,9 +6,10 @@ import androidx.room.PrimaryKey
 import it.fast4x.riplay.commonutils.YTM_ARTIST_SHARE_BASEURL
 import it.fast4x.riplay.commonutils.YT_ARTIST_SHARE_BASEURL
 
+/*
 @Immutable
 @Entity
-data class Artist(
+data class _Artist(
     @PrimaryKey val id: String,
     val name: String? = null,
     val thumbnailUrl: String? = null,
@@ -22,3 +23,6 @@ data class Artist(
         get() = id.let { "$YTM_ARTIST_SHARE_BASEURL$it" }
 
 }
+
+
+ */

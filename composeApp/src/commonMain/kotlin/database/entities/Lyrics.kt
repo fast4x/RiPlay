@@ -5,19 +5,23 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 
+/*
 @Immutable
 @Entity(
     foreignKeys = [
         ForeignKey(
-            entity = Song::class,
+            entity = _Song::class,
             parentColumns = ["id"],
             childColumns = ["songId"],
             onDelete = ForeignKey.CASCADE,
         )
     ]
 )
-class Lyrics(
+class _Lyrics(
     @PrimaryKey val songId: String,
     val fixed: String?,
     val synced: String?,
 )
+
+
+ */

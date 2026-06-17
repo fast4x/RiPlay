@@ -1,5 +1,6 @@
 package it.fast4x.riplay.extensions.musicbrainz
 
+import android.util.Log
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.okhttp.OkHttp
@@ -19,6 +20,7 @@ import it.fast4x.riplay.extensions.musicbrainz.models.MBAlbumMetadata
 import it.fast4x.riplay.extensions.musicbrainz.models.MBArtistDetailResponse
 import it.fast4x.riplay.extensions.musicbrainz.models.MBArtistMetadata
 import it.fast4x.riplay.extensions.musicbrainz.models.MBReleaseGroupDetailResponse
+import it.fast4x.riplay.extensions.musicbrainz.models.MBReleaseGroupSearchResult
 import it.fast4x.riplay.extensions.musicbrainz.models.MBSearchArtistResponse
 import it.fast4x.riplay.extensions.musicbrainz.models.MBSearchReleaseGroupResponse
 import it.fast4x.riplay.extensions.musicbrainz.models.WikiInfoResult
@@ -189,10 +191,21 @@ class MusicBrainz {
                 ?: return@makeRateLimitedRequest MBAlbumMetadata(emptyList(), null, null, emptyList(), null, null, null)
 
             // 2. Ottiene dettagli
+//            val detailResponse = client.get("$baseUrl/release-group/$mbid?inc=genres+tags+ratings+url-rels&fmt=json") {
+//                header("User-Agent", userAgent)
+//            }
+//            val detailResult = detailResponse.body<MBReleaseGroupDetailResponse>()
             val detailResponse = client.get("$baseUrl/release-group/$mbid?inc=genres+tags+ratings+url-rels&fmt=json") {
                 header("User-Agent", userAgent)
             }
+            val rawBody = detailResponse.bodyAsText()
+            Timber.tag("MB_DEBUG").d("=== RAW MB RESPONSE for $mbid ===")
+            Timber.tag("MB_DEBUG").d(rawBody)
+            Timber.tag("MB_DEBUG").d("=== END RAW ===")
+
             val detailResult = detailResponse.body<MBReleaseGroupDetailResponse>()
+            Timber.tag("MB_DEBUG")
+                .d("Parsed: rating=${detailResult.rating?.value}, votes=${detailResult.rating?.votesCount}, genres=${detailResult.genres.size}")
 
             // 3. Estrae e formatta i nuovi dati
             val genres = detailResult.genres
@@ -312,6 +325,48 @@ class MusicBrainz {
             Timber.e(e, "MBMetadataHelper Errore nel fetch della biografia Wikipedia per $artistTerm")
             null
         }
+    }
+
+    suspend fun searchReleaseGroupByTag(
+        tag: String,
+        limit: Int = 50
+    ): List<MBReleaseGroupSearchResult> {
+        val encodedTag = URLEncoder.encode(tag, "UTF-8")
+        val response = client.get("$baseUrl/release-group/?query=tag:\"$encodedTag\"&limit=$limit&fmt=json") {
+            header("User-Agent", userAgent)
+        }
+        val searchResponse = response.body<MBSearchReleaseGroupResponse>()
+        // Filtra per score alto (match relevance)
+        return searchResponse.releaseGroups.filter { it.score >= 60 }
+    }
+
+    /**
+     * Cerca per genere con combinazione tag + release group type.
+     * Più efficace di searchReleaseGroupByTag perché filtra per tipo "Album".
+     */
+    suspend fun searchAlbumsByGenre(
+        genre: String,
+        limit: Int = 50
+    ): List<MBReleaseGroupSearchResult> {
+        val encodedGenre = URLEncoder.encode(genre, "UTF-8")
+        // Usa genre: invece di tag: — più curato
+        val response = client.get(
+            "$baseUrl/release-group/?query=genre:\"$encodedGenre\" AND primarytype:Album&limit=$limit&fmt=json"
+        ) {
+            header("User-Agent", userAgent)
+        }
+        val searchResponse = response.body<MBSearchReleaseGroupResponse>()
+        return searchResponse.releaseGroups.filter { it.score >= 50 }
+    }
+
+    /**
+     * Fetch dettagli release group con artist credit incluso.
+     * Usa la tua funzione esistente se già fa questo.
+     */
+    suspend fun getReleaseGroupDetailWithArtist(mbid: String): MBReleaseGroupDetailResponse {
+        return client.get("$baseUrl/release-group/$mbid?inc=genres+tags+ratings+url-rels+artist-credits&fmt=json") {
+            header("User-Agent", userAgent)
+        }.body()
     }
 
     // Helper per dedurre la piattaforma dall'URL
