@@ -705,7 +705,7 @@ fun OnDevicePlaylist(
                                                     }
                                                 },
                                                 showOnSyncronize = false,
-                                                showLinkUnlink = false,
+                                                showUnlink = false,
                                                 onAddToPlaylist = { toPlaylistPreview ->
                                                     position = toPlaylistPreview.songCount.minus(1)
                                                     //Log.d("mediaItem", " maxPos in Playlist $it ${position}")

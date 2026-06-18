@@ -1508,47 +1508,19 @@ fun LocalPlaylistSongs(
                                                     }
                                                 },
                                                 showOnSyncronize = !playlistPreview.playlist.browseId.isNullOrBlank(),
-                                                showLinkUnlink = rememberIsNetworkConnected() && (!playlistPreview.playlist.browseId.isNullOrBlank()),
+                                                showUnlink = (!playlistPreview.playlist.browseId.isNullOrBlank()),
                                                 onSyncronize = { sync() },
-                                                onLinkUnlink = {
-                                                    if (!isNetworkConnected && playlistPreview.playlist.isYoutubePlaylist && playlistPreview.playlist.isEditable && isYtSyncEnabled()) {
-                                                        SmartMessage(
-                                                            context.resources.getString(R.string.no_connection),
-                                                            context = context,
-                                                            type = PopupType.Error
+                                                onUnlink = {
+                                                    CoroutineScope(Dispatchers.IO).launch {
+                                                        Database.update(
+                                                            playlistPreview.playlist.copy(
+                                                                browseId = null,
+                                                                isYoutubePlaylist = false,
+                                                                isEditable = false
+                                                            )
                                                         )
-                                                    } else if (playlistPreview.playlist.isYoutubePlaylist) {
-                                                        CoroutineScope(Dispatchers.IO).launch {
-                                                            if (playlistPreview.playlist.isEditable) {
-                                                                playlistPreview.playlist.browseId.let {
-                                                                    EnvironmentExt.deletePlaylist(
-                                                                        it ?: ""
-                                                                    )
-                                                                }
-                                                            } else {
-                                                                playlistPreview.playlist.browseId.let {
-                                                                    EnvironmentExt.removelikePlaylistOrAlbum(
-                                                                        it ?: ""
-                                                                    )
-                                                                }
-                                                            }
-                                                            Database.update(
-                                                                playlistPreview.playlist.copy(
-                                                                    browseId = null,
-                                                                    isYoutubePlaylist = false,
-                                                                    isEditable = false
-                                                                )
-                                                            )
-                                                        }
-                                                    } else {
-                                                        CoroutineScope(Dispatchers.IO).launch {
-                                                            Database.update(
-                                                                playlistPreview.playlist.copy(
-                                                                    browseId = null
-                                                                )
-                                                            )
-                                                        }
                                                     }
+
                                                 },
                                                 onRename = {
                                                     if (!isNetworkConnected && playlistPreview.playlist.isYoutubePlaylist && (playlistPreview.playlist.isEditable) && isYtSyncEnabled()) {

@@ -103,7 +103,7 @@ fun PlaylistsItemGridMenu(
     onEditThumbnail: (() -> Unit)? = null,
     onResetThumbnail: (() -> Unit)? = null,
     onGoToPlaylist: ((Long) -> Unit)? = null,
-    onLinkUnlink: (() -> Unit)? = null,
+    onUnlink: (() -> Unit)? = null,
     onBlacklist: (() -> Unit)? = null,
     disableScrollingText: Boolean
     ) {
@@ -496,10 +496,10 @@ fun PlaylistsItemGridMenu(
                     )
                 }
 
-                if (showLinkUnlink) onLinkUnlink?.let { onLinkUnlink ->
+                if (showLinkUnlink) onUnlink?.let { onLinkUnlink ->
                     GridMenuItem(
                         icon = R.drawable.link,
-                        title = if (playlist?.playlist?.isYoutubePlaylist == true) R.string.unlink_from_ytm else R.string.unlink_from_yt,
+                        title = R.string.unlink_from_yt,
                         colorIcon = colorPalette.text,
                         colorText = colorPalette.text,
                         onClick = {

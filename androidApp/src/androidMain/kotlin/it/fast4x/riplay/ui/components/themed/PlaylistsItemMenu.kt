@@ -85,7 +85,7 @@ fun PlaylistsItemMenu(
     showonAddToPreferitesYoutube: Boolean = false,
     onAddToPreferitesYoutube: (() -> Unit)? = null,
     showOnSyncronize: Boolean = false,
-    showLinkUnlink: Boolean = false,
+    showUnlink: Boolean = false,
     onSyncronize: (() -> Unit)? = null,
     onRenumberPositions: (() -> Unit)? = null,
     onDelete: (() -> Unit)? = null,
@@ -98,7 +98,7 @@ fun PlaylistsItemMenu(
     onEditThumbnail: (() -> Unit)? = null,
     onResetThumbnail: (() -> Unit)? = null,
     onGoToPlaylist: ((Long) -> Unit)? = null,
-    onLinkUnlink: (() -> Unit)? = null,
+    onUnlink: (() -> Unit)? = null,
     onBlacklist: (() -> Unit)? = null,
     disableScrollingText: Boolean,
 ) {
@@ -132,9 +132,9 @@ fun PlaylistsItemMenu(
             onAddToPreferites = onAddToPreferites,
             onAddToPreferitesYoutube = onAddToPreferitesYoutube,
             showOnSyncronize = showOnSyncronize,
-            showLinkUnlink = showLinkUnlink,
+            showLinkUnlink = showUnlink,
             onSyncronize = onSyncronize,
-            onLinkUnlink = onLinkUnlink,
+            onUnlink = onUnlink,
             onBlacklist = onBlacklist,
             onRenumberPositions = onRenumberPositions,
             onDelete = onDelete,
@@ -575,10 +575,10 @@ fun PlaylistsItemMenu(
                         )
                     }
 
-                    if (showLinkUnlink) onLinkUnlink?.let { onLinkUnlink ->
+                    if (showUnlink) onUnlink?.let { onLinkUnlink ->
                         MenuEntry(
                             icon = R.drawable.link,
-                            text = if (playlist?.playlist?.isYoutubePlaylist == true) stringResource(R.string.unlink_from_ytm) else stringResource(R.string.unlink_from_yt),
+                            text = stringResource(R.string.unlink_from_yt),
                             onClick = {
                                 onDismiss()
                                 onLinkUnlink()
