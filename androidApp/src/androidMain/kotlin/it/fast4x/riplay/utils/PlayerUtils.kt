@@ -146,7 +146,7 @@ fun Player.forcePlay(mediaItem: MediaItem, replace: Boolean = false) {
     //restoreGlobalVolume()
     playWhenReady = true
     prepare()
-    Timber.d("PlayerService-forcePlay withReplace $replace mediaItem: ${mediaItem.mediaId} currentMediaItemIndex: $currentMediaItemIndex shuffleModeEnabled $shuffleModeEnabled repeatMode $repeatMode")
+    //Timber.d("PlayerService-forcePlay withReplace $replace mediaItem: ${mediaItem.mediaId} currentMediaItemIndex: $currentMediaItemIndex shuffleModeEnabled $shuffleModeEnabled repeatMode $repeatMode")
 }
 
 fun Player.playAtIndex(mediaItemIndex: Int) {
@@ -298,84 +298,144 @@ fun Player.findMediaItemIndexById(mediaId: String): Int {
     return -1
 }
 
-fun Player.excludeMediaItems(mediaItems: List<MediaItem>, context: Context): List<MediaItem> {
-    var filteredMediaItems = mediaItems
 
+fun Player.excludeMediaItems(mediaItems: List<MediaItem>, context: Context): List<MediaItem> {
+    return try {
         val preferences = context.preferences
+
+        var filteredMediaItems = mediaItems
+
+        // --- Escludi Video ---
         val excludeIfIsVideo = preferences.getBoolean(EXCLUDE_SONG_IF_IS_VIDEO.key, false)
         if (excludeIfIsVideo) {
-            filteredMediaItems = mediaItems.filter { !it.isVideo }
+            filteredMediaItems = filteredMediaItems.filter { !it.isVideo }
         }
 
-        val excludeSongWithDurationLimit =
-            preferences.getEnum(EXCLUDE_SONGS_WITH_DURATION_LIMIT.key, DurationInMinutes.Disabled)
+        // --- Escludi per Durata ---
+        val excludeSongWithDurationLimit = preferences.getEnum(
+            EXCLUDE_SONGS_WITH_DURATION_LIMIT.key,
+            DurationInMinutes.Disabled
+        )
 
         if (excludeSongWithDurationLimit != DurationInMinutes.Disabled) {
-            filteredMediaItems = mediaItems.filter {
-                it.mediaMetadata.extras?.getString("durationText")?.let { it1 ->
-                    durationTextToMillis(it1)
-                }!! < excludeSongWithDurationLimit.minutesInMilliSeconds
-            }
+            filteredMediaItems = filteredMediaItems.filter { item ->
+                try {
+                    val durationMillis = item.mediaMetadata.extras
+                        ?.getString("durationText")
+                        ?.let { durationTextToMillis(it) }
+                        ?: 0L
 
+                    durationMillis < excludeSongWithDurationLimit.minutesInMilliSeconds
+                } catch (e: Exception) {
+                    Timber.w(e, "Errore parsing durata per ${item.mediaId}")
+                    false
+                }
+            }
         }
 
-        // CHECK il blacklisted
-        filteredMediaItems = filteredMediaItems.filter { mediaItem ->
-            val listed = runBlocking(Dispatchers.IO) {
-                Database.blacklisted(mediaItem.mediaId)
-            }
+        // --- Blacklist (DB) ---
+        filteredMediaItems = filteredMediaItems.filter { item ->
+            try {
+                if (item.mediaId.isEmpty()) return@filter true
 
-            val filtered = listed == 0L
-            Timber.d("ExcludeMediaitems: ${mediaItem.mediaId} listed: $listed filtered: $filtered")
-            filtered
+                val isBlacklisted = runBlocking(Dispatchers.IO) {
+                    Database.blacklisted(item.mediaId)
+                } != 0L
+
+                // Mantieni l'item se NON è blacklistato
+                !isBlacklisted
+            } catch (e: Exception) {
+                Timber.e(e, "Errore DB blacklist per ${item.mediaId}")
+                true
+            }
         }
 
+        // --- FEEDBACK VISIVO ---
         val excludedSongs = mediaItems.size - filteredMediaItems.size
-        if (excludedSongs > 0)
-            CoroutineScope(Dispatchers.Main).launch {
-                    SmartMessage(context.resources.getString(R.string.message_excluded_s_songs).format(excludedSongs), context = context)
-            }
+        if (excludedSongs > 0) {
+            showExcludedMessage(context, R.string.message_excluded_s_songs, excludedSongs)
+        }
 
-    return filteredMediaItems
+        filteredMediaItems
+    } catch (e: Exception) {
+        Timber.e(e, "Errore generico in excludeMediaItems")
+        mediaItems
+    }
 }
-fun Player.excludeMediaItem(mediaItem: MediaItem, context: Context): Boolean {
 
+fun Player.excludeMediaItem(mediaItem: MediaItem, context: Context): Boolean {
+    return try {
         val preferences = context.preferences
+
+        // --- CHECK VIDEO ---
         val excludeIfIsVideo = preferences.getBoolean(EXCLUDE_SONG_IF_IS_VIDEO.key, false)
         if (excludeIfIsVideo && mediaItem.isVideo) {
-            CoroutineScope(Dispatchers.Main).launch {
-                SmartMessage(context.resources.getString(R.string.message_excluded_videos).format(1), context = context)
-            }
+            showExcludedMessage(context, R.string.message_excluded_videos, 1)
             return true
         }
 
-        val excludeSongWithDurationLimit =
-            preferences.getEnum(EXCLUDE_SONGS_WITH_DURATION_LIMIT.key, DurationInMinutes.Disabled)
+        // --- CHECK DURATA ---
+        val excludeSongWithDurationLimit = preferences.getEnum(
+            EXCLUDE_SONGS_WITH_DURATION_LIMIT.key,
+            DurationInMinutes.Disabled
+        )
+
         if (excludeSongWithDurationLimit != DurationInMinutes.Disabled) {
-            val excludedSong = mediaItem.mediaMetadata.extras?.getString("durationText")?.let { it1 ->
-                durationTextToMillis(it1)
-                }!! <= excludeSongWithDurationLimit.minutesInMilliSeconds
+            val durationMillis = try {
+                mediaItem.mediaMetadata.extras
+                    ?.getString("durationText")
+                    ?.let { durationTextToMillis(it) }
+                    ?: 0L
+            } catch (e: Exception) {
+                Timber.w(e, "Errore nel parsing della durata mediaItem")
+                0L
+            }
 
-            if (excludedSong)
-                CoroutineScope(Dispatchers.Main).launch {
-                    SmartMessage(context.resources.getString(R.string.message_excluded_s_songs).format(1), context = context)
-                }
+            val excludedSong = durationMillis <= excludeSongWithDurationLimit.minutesInMilliSeconds
 
+            if (excludedSong) {
+                showExcludedMessage(context, R.string.message_excluded_s_songs, 1)
+            }
             return excludedSong
         }
 
-        // CHECK il blacklisted
-        val listed = runBlocking(Dispatchers.IO) {
-            Database.blacklisted(mediaItem.mediaId)
-        } != 0L
-
-        if (listed)
-            CoroutineScope(Dispatchers.Main).launch {
-                SmartMessage(context.resources.getString(R.string.message_excluded_s_songs).format(1), context = context)
+        // --- CHECK BLACKLIST (Database) ---
+        val listed = try {
+            if (mediaItem.mediaId.isNotEmpty()) {
+                runBlocking(Dispatchers.IO) {
+                    Database.blacklisted(mediaItem.mediaId)
+                } != 0L
+            } else {
+                false
             }
+        } catch (e: Exception) {
+            Timber.e(e, "Errore durante il controllo della blacklist sul Database")
+            false
+        }
 
-        return listed
+        if (listed) {
+            showExcludedMessage(context, R.string.message_excluded_s_songs,1)
+        }
 
+        listed
+    } catch (e: Exception) {
+        Timber.e(e, "Errore critico imprevisto in excludeMediaItem")
+        false
+    }
+}
+
+
+private fun showExcludedMessage(context: Context, messageResId: Int, count: Int) {
+    CoroutineScope(Dispatchers.Main).launch {
+        try {
+            SmartMessage(
+                context.resources.getString(messageResId).format(count),
+                context = context
+            )
+        } catch (e: Exception) {
+            Timber.e(e, "Impossibile mostrare messaggio esclusione lista")
+        }
+    }
 }
 
 val Player.mediaItems: List<MediaItem>
