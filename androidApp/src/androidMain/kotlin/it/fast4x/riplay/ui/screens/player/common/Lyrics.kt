@@ -51,6 +51,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -706,11 +707,22 @@ fun Lyrics(
 
                     var translatedText by remember { mutableStateOf("") }
                     if (showSecondLine || translateEnabled || romanization != Romanization.Off) {
-                        val mutState = remember { mutableStateOf("") }
-                        // todo  To improve actually not stable
-                        if (translateEnabled)
-                            translateLyrics(mutState, lyricsText, false, languageDestination)
-                        translatedText = mutState.value
+                        val translatedLines = mutableListOf<String>()
+                        val lyricsLines = remember(lyricsText) { lyricsText.lines() }
+                        lyricsLines.forEachIndexed { index, line ->
+                            key(index) {
+                                if (line.isBlank()) {
+                                    translatedLines.add(line)
+                                } else {
+                                    val mutState = remember { mutableStateOf("") }
+                                    // todo  To improve actually not stable
+                                    if (translateEnabled)
+                                        translateLyrics(mutState, line, false, languageDestination)
+                                    translatedLines.add(mutState.value)
+                                }
+                            }
+                        }
+                        translatedText = translatedLines.joinToString("\n")
                     } else { translatedText = lyricsText }
 
                     Column(modifier = Modifier
