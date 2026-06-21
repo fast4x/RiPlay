@@ -2,9 +2,11 @@ package it.fast4x.riplay.data.models
 
 import it.fast4x.riplay.extensions.musicbrainz.models.ExternalLink
 import androidx.compose.runtime.Immutable
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import it.fast4x.riplay.enums.AlbumNature
 
 @Immutable
 @Entity(
@@ -14,7 +16,8 @@ import androidx.room.PrimaryKey
         Index(value = ["originalYear"]),
         Index(value = ["primaryType"]),
         Index(value = ["fetchedAt"]),
-        Index(value = ["matchedAlbumId"])
+        Index(value = ["matchedAlbumId"]),
+        Index(value = ["nature"])
     ]
 )
 data class MBAlbum(
@@ -48,7 +51,9 @@ data class MBAlbum(
 
     // Tracking fetch
     val fetchedAt: Long,
-    val popularityScore: Float = 0f              // precomputato per sorting
+    val popularityScore: Float = 0f,              // precomputato per sorting
+    @ColumnInfo(defaultValue = "UNKNOWN")
+    val nature: AlbumNature = AlbumNature.UNKNOWN
 ) {
     /**
      * Conta i tag per sorting/proxy qualità.

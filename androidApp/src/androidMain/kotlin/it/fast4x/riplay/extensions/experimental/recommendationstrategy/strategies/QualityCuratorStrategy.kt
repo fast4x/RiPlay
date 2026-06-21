@@ -1,6 +1,7 @@
 package it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategies
 
 import android.util.Log
+import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.MBAlbum
@@ -29,11 +30,13 @@ class QualityCuratorStrategy() : RecommendationStrategy {
 
         // Usa TUTTE le keyword del profilo, non solo le top 5
         val userKeywords = profile.keywordVector.keys
-        Timber.tag("REC_DEBUG")
-            .d("QualityCurator: userKeywords (${userKeywords.size}) = $userKeywords")
+        if (BuildConfig.DEBUG)
+            Timber.tag("REC_DEBUG")
+                .d("QualityCurator: userKeywords (${userKeywords.size}) = $userKeywords")
 
         val candidates = Database.getQualityAlbumsV2(limit = limit * 5)
-        Timber.tag("REC_DEBUG").d("QualityCurator: ${candidates.size} candidates from DB")
+        if (BuildConfig.DEBUG)
+            Timber.tag("REC_DEBUG").d("QualityCurator: ${candidates.size} candidates from DB")
 
         val results = candidates
             .map { mbAlbum -> scoreAlbum(mbAlbum, userKeywords, profile) }
@@ -41,7 +44,9 @@ class QualityCuratorStrategy() : RecommendationStrategy {
             .sortedByDescending { it.score }
             .take(limit)
 
-        Timber.tag("REC_DEBUG").d("QualityCurator: ${results.size} final results")
+        if (BuildConfig.DEBUG)
+            Timber.tag("REC_DEBUG").d("QualityCurator: ${results.size} final results")
+
         results
     }
 
@@ -87,7 +92,8 @@ class QualityCuratorStrategy() : RecommendationStrategy {
             return emptyScore(mbAlbum)
         }
 
-        if (mbAlbum.id.hashCode() % 6 == 0) {
+
+        if (mbAlbum.id.hashCode() % 6 == 0 && BuildConfig.DEBUG) {
             Timber.tag("REC_DEBUG").d("    matched: $matchedKeywords")
         }
 

@@ -1,15 +1,25 @@
 package it.fast4x.riplay.data.models
 
 import androidx.compose.runtime.Immutable
+import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
+import it.fast4x.riplay.enums.AlbumNature
 import it.fast4x.riplay.enums.LinkType
 import it.fast4x.riplay.extensions.musicbrainz.models.ExternalLink
 import kotlinx.serialization.Serializable
 
 @Serializable
 @Immutable
-@Entity
+@Entity(
+    //tableName = "album",
+    indices = [
+        Index(value = ["mbId"]),
+        Index(value = ["youtubeAlbumId"]),
+        Index(value = ["title", "authorsText"])
+    ]
+)
 data class Album(
     @PrimaryKey val id: String,
     val title: String? = null,
@@ -29,7 +39,12 @@ data class Album(
     val ratingVotes: Int? = null,
     val wikipediaUrl: String? = null,
     val wikipediaInfo: String? = null,
-    val links: List<ExternalLink>? = null
+    val links: List<ExternalLink>? = null,
+
+    val mbId: String? = null,
+    val youtubeAlbumId: String? = null,
+    @ColumnInfo(defaultValue = "UNKNOWN")
+    val nature: AlbumNature = AlbumNature.UNKNOWN
 ) {
 
     fun shareUrlByType(typeOfUrl: LinkType): String? {

@@ -1,16 +1,27 @@
 package it.fast4x.riplay.data.models
 
 import androidx.compose.runtime.Immutable
+import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import it.fast4x.riplay.commonutils.YTM_ARTIST_SHARE_BASEURL
 import it.fast4x.riplay.commonutils.YT_ARTIST_SHARE_BASEURL
+import it.fast4x.riplay.enums.ArtistNature
 import it.fast4x.riplay.enums.LinkType
 import it.fast4x.riplay.extensions.musicbrainz.models.ExternalLink
 import it.fast4x.riplay.utils.toFlagEmoji
 
+
 @Immutable
-@Entity
+@Entity(
+    //tableName = "artist",
+    indices = [
+        Index(value = ["mbId"]),
+        Index(value = ["youtubeChannelId"]),
+        Index(value = ["name"])
+    ]
+)
 data class Artist(
     @PrimaryKey val id: String,
     val name: String? = null,
@@ -29,7 +40,12 @@ data class Artist(
     val wikipediaBio: String? = null,
     val description: String? = null,
     val disambiguation: String? = null,
-    val links: List<ExternalLink>? = null
+    val links: List<ExternalLink>? = null,
+
+    val mbId: String? = null, // id di MusicBrainz
+    val youtubeChannelId: String? = null,
+    @ColumnInfo(defaultValue = "UNKNOWN")
+    val nature: ArtistNature = ArtistNature.UNKNOWN
 ) {
 
     fun shareUrlByType(typeOfUrl: LinkType): String? {

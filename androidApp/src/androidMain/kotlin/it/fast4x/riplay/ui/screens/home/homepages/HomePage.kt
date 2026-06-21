@@ -134,6 +134,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
+import java.net.URLEncoder
 
 @ExperimentalSerializationApi
 @OptIn(ExperimentalMaterial3Api::class)
@@ -433,11 +434,30 @@ fun HomePage(
                 RecommendationsBlock(
                     recommendationService,
                     onPlayItem = { item ->
-                        // Play del brano + marca come consumato
                         scope.launch {
-                            item.song?.let { song ->
-                                binder?.player?.forcePlay(song.asMediaItem)
-                                recommendationService.markConsumed(item.strategyId, song.id)
+                            when {
+                                // Brano riproducibile diretto
+                                item.song != null -> {
+                                    binder?.player?.forcePlay(item.song.asMediaItem)
+                                    recommendationService.markConsumed(item.strategyId, item.song.id)
+                                }
+                                // Album MB
+                                item.album?.id?.startsWith("mb-") == true -> {
+                                    // ... tua logica esistente per album MB
+                                }
+                                // Artista MB (NUOVO per MBGraphWalk)
+                                item.artist?.id?.startsWith("mb-") == true -> {
+                                    val mbId = item.artist.id.removePrefix("mb-")
+                                    // Apri schermata artista o cerca su YTM
+                                    val query = item.artist.name ?: ""
+                                    navController.navigate("search?query=${URLEncoder.encode(query, "UTF-8")}")
+                                    recommendationService.markConsumed(item.strategyId, item.artist.id)
+                                }
+                                // Album YTM
+                                item.album != null -> {
+                                    //openAlbum(item.album.id)
+                                    recommendationService.markConsumed(item.strategyId, item.album.id)
+                                }
                             }
                         }
                     },

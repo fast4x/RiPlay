@@ -3,6 +3,7 @@ package it.fast4x.riplay.data.models
 import androidx.compose.runtime.Immutable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import it.fast4x.riplay.commonutils.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.commonutils.YTM_VIDEOORSONG_SHARE_BASEURL
@@ -17,7 +18,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @Immutable
-@Entity
+@Entity(
+    indices = [
+        Index(value = ["albumId"])
+    ]
+)
 data class Song(
     @PrimaryKey val id: String,
     val mediaId: String? = null,
@@ -33,13 +38,14 @@ data class Song(
     val isPodcast: Int = 0,
     val folder: String? = null,
 
-    // --- MusicVault ---
     @ColumnInfo(defaultValue = "NONE")
     val musicVaultState: MusicVaultState = MusicVaultState.NONE,
     val musicVaultFileName: String? = null,
     val musicVaultThumbnailFileName: String? = null,
 
-    val genres: List<String>? = null
+    val genres: List<String>? = null,
+
+    val albumId: String? = null
 ) {
 
     fun shareUrlByType(typeOfUrl: LinkType): String? {

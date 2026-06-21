@@ -1,6 +1,7 @@
 package it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategies
 
 import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.RecommendationConstants
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.RecommendationStrategy
@@ -24,17 +25,15 @@ class ForgottenGemsStrategy() : RecommendationStrategy {
         val now = System.currentTimeMillis()
         val olderThan = now - (RecommendationConstants.FORGOTTEN_GEMS_MIN_AGE_DAYS * 24L * 3_600_000L)
 
-        // Prendi più candidati del necessario, poi filtra e ordina
-        //val candidates = Database.getLikedSongsNotPlayedSince(olderThan, limit * 5)
-        val candidates = Database.getForgottenSongs(
+        val candidates = Database.songDao().getForgottenSongs(
             olderThan = olderThan,
-            minTotalPlayMs = 60_000L,  // soglia: brano degno di nota
+            minTotalPlayMs = 60_000L,
             limit = limit * 5
         )
 
         candidates
             .map { song -> scoreCandidate(song, profile, now) }
-            .filter { it.score > 0.1f }      // soglia minima di rilevanza
+            .filter { it.score > 0.1f }
             .sortedByDescending { it.score }
             .take(limit)
     }
@@ -46,11 +45,6 @@ class ForgottenGemsStrategy() : RecommendationStrategy {
     ): ScoredRecommendation {
         val lastPlayedAt = Database.getLastPlayedAt(song.id)
 
-        // Score basato su:
-        // - Tempo passato dall'ultimo ascolto (più tempo = più "dimenticato")
-        // - Quanto era amato (totalPlayTimeMs)
-        // - Match con profilo attuale (se abbiamo keywords)
-
         val ageDays = lastPlayedAt?.let { (now - it) / (24L * 3_600_000L) } ?: 365L
         val forgottenBonus = when {
             ageDays > 365 -> 1.0f
@@ -59,27 +53,50 @@ class ForgottenGemsStrategy() : RecommendationStrategy {
             else -> 0.3f
         }
 
-        // Quanto era amato: totalPlayTimeMs in ore
         val playHours = song.totalPlayTimeMs / 3_600_000f
-        val loveAffinity = (playHours / 5f).coerceIn(0f, 1f)  // 5h = massimo amore
+        val loveAffinity = (playHours / 5f).coerceIn(0f, 1f)
 
-        // Match con profilo (anche con keywordVector vuoto, score è 0 — non rompe)
         val keywordScore = ScoringUtils.keywordSimilarity(song.genres, profile.keywordVector)
 
-        val score = (0.4f * forgottenBonus +
-                0.4f * loveAffinity +
-                0.2f * keywordScore).coerceIn(0f, 1f)
+        // ★ NUOVO: artista virtuale basato su artistsText
+        val artist = song.artistsText?.trim()?.let { artistName ->
+            // Cerca artista reale nel profilo utente per score aggiuntivo
+            val virtualId = "virtual::$artistName"
+            val profileAffinity = profile.topArtists.find { it.artistId == virtualId }
+
+            Artist(
+                id = virtualId,
+                name = artistName,
+                timestamp = System.currentTimeMillis(),
+                isYoutubeArtist = false
+            ).also {
+                // Se l'artista è nei top dell'utente, alza lo score
+                // (lo usiamo solo come signal, non come storage)
+            }
+        }
+
+        // ★ NUOVO: bonus se l'artista è nei top dell'utente
+        val artistMatchBonus = artist?.let { a ->
+            val virtualId = a.id
+            if (profile.topArtists.any { it.artistId == virtualId }) 0.2f else 0f
+        } ?: 0f
+
+        val score = (0.3f * forgottenBonus +
+                0.3f * loveAffinity +
+                0.2f * keywordScore +
+                0.2f * artistMatchBonus).coerceIn(0f, 1f)
 
         val reasons = buildList {
-            add("Non lo ascolti da ${ageDays} giorni")
+            add("Non lo ascolti da ${ageDays.toInt()} giorni")
             if (playHours > 1f) add("Lo ascoltavi molto in passato")
             if (keywordScore > 0.3f) add("Match con i tuoi gusti attuali")
+            if (artistMatchBonus > 0f) add("Artista che ami")
         }
 
         return ScoredRecommendation(
             song = song,
             album = null,
-            artist = null,
+            artist = artist,
             score = score,
             reasons = reasons,
             strategyId = id

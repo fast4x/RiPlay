@@ -232,7 +232,8 @@ fun ArtistOverview(
                                 description = artist?.description,
                                 disambiguation = artist?.disambiguation,
                                 wikipediaBio = artist?.wikipediaBio,
-                                links = artist?.links
+                                links = artist?.links,
+                                mbId = artist?.mbId
                             )
                         )
                     }

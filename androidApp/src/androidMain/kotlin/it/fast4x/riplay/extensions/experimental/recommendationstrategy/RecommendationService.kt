@@ -1,5 +1,6 @@
 package it.fast4x.riplay.extensions.experimental.recommendationstrategy
 
+import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Recommendation
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.ui.RecommendationSection
@@ -49,7 +50,8 @@ class RecommendationService(
             val enoughArtists = profile.topArtists.size >= 3 // proxy senza cross-ref
             val hasNonEmptySection = sections.any { it.items.isNotEmpty() }
 
-            Timber.d("RecommendationService shouldShowSection topArtists ${profile.topArtists} enoughArtists $enoughArtists sections $sections ")
+            if (BuildConfig.DEBUG)
+                Timber.d("RecommendationService shouldShowSection topArtists ${profile.topArtists} enoughArtists $enoughArtists sections $sections ")
 
             enoughSongs && enoughArtists && hasNonEmptySection
         }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), false)

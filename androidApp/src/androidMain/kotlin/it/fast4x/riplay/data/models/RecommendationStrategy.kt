@@ -3,6 +3,7 @@ package it.fast4x.riplay.data.models
 import androidx.compose.runtime.Immutable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
@@ -96,3 +97,37 @@ data class ArtistRelation(
 )
 
 data class KeywordWeight(val keyword: String, val weight: Float)
+
+
+@Immutable
+@Entity(
+    tableName = "song_artist_cross_ref",
+    primaryKeys = ["songId", "artistId"],
+    indices = [
+        Index(value = ["songId"]),
+        Index(value = ["artistId"])
+    ],
+    foreignKeys = [
+        ForeignKey(
+            entity = Song::class,
+            parentColumns = ["id"],
+            childColumns = ["songId"],
+            onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = Artist::class,
+            parentColumns = ["id"],
+            childColumns = ["artistId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
+data class SongArtistCrossRef(
+    val songId: String,
+    val artistId: String,
+    @ColumnInfo(defaultValue = "main")
+    val role: String = "main",     // "main", "feature", "remixer"
+    @ColumnInfo(defaultValue = "0")
+    val order: Int = 0,            // per ordinare nella visualizzazione
+    val createdAt: Long = System.currentTimeMillis()
+)

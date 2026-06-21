@@ -153,7 +153,8 @@ data class MBArtistMetadata(
     val wikipediaUrl: String?,      // Link alla bio
     val wikipediaBio: String?,     // Artist bio fetched from wikipedia
     val disambiguation: String?,   // Info addizionali su artista
-    val links: List<ExternalLink>? = null
+    val links: List<ExternalLink>? = null,
+    val mbId: String?,
 )
 
 data class WikiInfoResult(
@@ -166,4 +167,23 @@ data class ExternalLink(
     val type: String,      // Es. "social network", "streaming", "youtube"
     val url: String,       // Es. "https://instagram.com/..."
     val platform: String   // Es. "instagram", "spotify"
+)
+
+@Serializable
+data class MBArtistRelationResponse(
+    val relations: List<MBArtistRelationEntry> = emptyList()
+)
+
+@Serializable
+data class MBArtistRelationEntry(
+    val type: String? = null,
+    val direction: String? = null,
+    val artist: MBArtistRelationTarget? = null  // l'artista correlato
+)
+
+@Serializable
+data class MBArtistRelationTarget(
+    val id: String,
+    val name: String? = null,
+    val type: String? = null  // "Person", "Group", "Orchestra"
 )

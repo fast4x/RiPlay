@@ -17,8 +17,11 @@ import it.fast4x.musicbrainz.utils.getProxy
 import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.extensions.musicbrainz.models.ExternalLink
 import it.fast4x.riplay.extensions.musicbrainz.models.MBAlbumMetadata
+import it.fast4x.riplay.extensions.musicbrainz.models.MBArtist
 import it.fast4x.riplay.extensions.musicbrainz.models.MBArtistDetailResponse
 import it.fast4x.riplay.extensions.musicbrainz.models.MBArtistMetadata
+import it.fast4x.riplay.extensions.musicbrainz.models.MBArtistRelationEntry
+import it.fast4x.riplay.extensions.musicbrainz.models.MBArtistRelationResponse
 import it.fast4x.riplay.extensions.musicbrainz.models.MBReleaseGroupDetailResponse
 import it.fast4x.riplay.extensions.musicbrainz.models.MBReleaseGroupSearchResult
 import it.fast4x.riplay.extensions.musicbrainz.models.MBSearchArtistResponse
@@ -95,7 +98,7 @@ class MusicBrainz {
             }
             val searchResult = searchResponse.body<MBSearchArtistResponse>()
             val mbid = searchResult.artists.maxByOrNull { it.score }?.id
-                ?: return@makeRateLimitedRequest MBArtistMetadata(emptyList(), null, null, null, emptyList(), null, null, null, null,null, emptyList())
+                ?: return@makeRateLimitedRequest MBArtistMetadata(emptyList(), null, null, null, emptyList(), null, null, null, null,null, emptyList(), null)
 
             // 2. Ottiene dettagli con generi
             val detailResponse = client.get("$baseUrl/artist/$mbid?inc=genres+tags+ratings+url-rels&fmt=json") {
@@ -149,10 +152,26 @@ class MusicBrainz {
                 wikipediaUrl = wikiUrl,
                 disambiguation = detailResult.disambiguation,
                 wikipediaBio = null,
-                links = links
+                links = links,
+                mbId = mbid
             )
 
         }
+    }
+    suspend fun searchArtistByName(name: String): List<MBArtist> {
+        val encoded = URLEncoder.encode(name, "UTF-8")
+        val response = client.get("$baseUrl/artist/?query=artist:\"$encoded\"&limit=5&fmt=json") {
+            header("User-Agent", userAgent)
+        }
+        return response.body<MBSearchArtistResponse>().artists
+            .filter { it.score >= 80 }  // match rilevante
+    }
+
+    suspend fun fetchArtistDetail(mbId: String): MBArtistDetailResponse {
+        val response = client.get("$baseUrl/artist/$mbId?inc=genres+tags+ratings+url-rels&fmt=json") {
+            header("User-Agent", userAgent)
+        }
+        return response.body()
     }
 
     // Cerca i generi dell'album (Release Group)
@@ -367,6 +386,13 @@ class MusicBrainz {
         return client.get("$baseUrl/release-group/$mbid?inc=genres+tags+ratings+url-rels+artist-credits&fmt=json") {
             header("User-Agent", userAgent)
         }.body()
+    }
+
+    suspend fun fetchArtistRelations(artistMbId: String): List<MBArtistRelationEntry> {
+        val response = client.get("$baseUrl/artist/$artistMbId?inc=artist-rels&fmt=json") {
+            header("User-Agent", userAgent)
+        }
+        return response.body<MBArtistRelationResponse>().relations
     }
 
     // Helper per dedurre la piattaforma dall'URL

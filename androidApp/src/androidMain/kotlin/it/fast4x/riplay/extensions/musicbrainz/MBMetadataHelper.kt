@@ -58,7 +58,8 @@ class MBMetadataHelper(
                         wikipediaUrl = metadata.wikipediaUrl ?: artist.wikipediaUrl,
                         disambiguation = metadata.disambiguation ?: artist.disambiguation,
                         wikipediaBio = metadata.wikipediaBio ?: artist.wikipediaBio,
-                        links = metadata.links ?: artist.links
+                        links = metadata.links ?: artist.links,
+                        mbId = metadata.mbId ?: artist.mbId
                     )
                 )
             }

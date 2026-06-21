@@ -12,6 +12,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.DeleteColumn
 import androidx.room.DeleteTable
+import androidx.room.Ignore
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -37,6 +38,9 @@ import it.fast4x.riplay.commonutils.EXPLICIT_PREFIX
 import it.fast4x.riplay.commonutils.MONTHLY_PREFIX
 import it.fast4x.riplay.commonutils.PINNED_PREFIX
 import it.fast4x.riplay.commonutils.PIPED_PREFIX
+import it.fast4x.riplay.data.dao.ArtistDao
+import it.fast4x.riplay.data.dao.SongArtistCrossRefDao
+import it.fast4x.riplay.data.dao.SongDao
 import it.fast4x.riplay.enums.AlbumSortBy
 import it.fast4x.riplay.enums.ArtistSortBy
 import it.fast4x.riplay.enums.BuiltInPlaylist
@@ -66,6 +70,7 @@ import it.fast4x.riplay.data.models.Recommendation
 import it.fast4x.riplay.data.models.SearchQuery
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongAlbumMap
+import it.fast4x.riplay.data.models.SongArtistCrossRef
 import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.data.models.SongPlaylistMap
@@ -74,6 +79,8 @@ import it.fast4x.riplay.data.models.SortedSongPlaylistMap
 import it.fast4x.riplay.data.models.UserArtistAffinity
 import it.fast4x.riplay.data.models.UserEraAffinity
 import it.fast4x.riplay.data.models.UserKeywordAffinity
+import it.fast4x.riplay.enums.AlbumNature
+import it.fast4x.riplay.enums.ArtistNature
 import it.fast4x.riplay.extensions.musicbrainz.models.ExternalLink
 import it.fast4x.riplay.musicvault.MusicVaultState
 import it.fast4x.riplay.extensions.rewind.data.AlbumMostListened
@@ -96,13 +103,26 @@ import kotlin.collections.sortedBy
 
 @Dao
 interface Database {
-    companion object : Database by DatabaseInitializer.createProxy()
-
     private val _internal: RoomDatabase
         get() = DatabaseInitializer.Instance
 
     val getInstance: RoomDatabase
         get() = _internal
+
+    // Proxy
+    companion object : Database by DatabaseInitializer.createProxy() {
+        // Lista Dao esposti
+        fun songArtistCrossRefDao(): SongArtistCrossRefDao {
+            return (DatabaseInitializer.Instance).songArtistCrossRefDao()
+        }
+        fun songDao(): SongDao {
+            return (DatabaseInitializer.Instance).songDao()
+        }
+        fun artistDao(): ArtistDao {
+            return (DatabaseInitializer.Instance).artistDao()
+        }
+    }
+
 
     //**********************************************
     @Transaction
@@ -1961,7 +1981,7 @@ interface Database {
     }
 
     @Query("SELECT * FROM Album A WHERE A.id in ( " +
-            "SELECT DISTINCT albumId FROM SongAlbumMap INNER JOIN Song ON Song.id = SongAlbumMap.songId " +
+            "SELECT DISTINCT SongAlbumMap.albumId FROM SongAlbumMap INNER JOIN Song ON Song.id = SongAlbumMap.songId " +
             "INNER JOIN SongArtistMap ON Song.id = SongArtistMap.songId " +
             "AND SongArtistMap.artistId = :artistId " +
             ") " +
@@ -1970,7 +1990,7 @@ interface Database {
 
 
     @Query("SELECT * FROM Album A WHERE A.id in (" +
-            "SELECT DISTINCT albumId FROM SongAlbumMap INNER JOIN Song " +
+            "SELECT DISTINCT SongAlbumMap.albumId FROM SongAlbumMap INNER JOIN Song " +
             "ON Song.id = SongAlbumMap.songId " +
             "LEFT JOIN SongPlaylistMap ON Song.id = SongPlaylistMap.songId " +
             "WHERE (Song.totalPlayTimeMs > 0 AND Song.likedAt > 0) OR SongPlaylistMap.playlistId IS NOT NULL " +
@@ -1979,7 +1999,7 @@ interface Database {
     fun albumsInLibraryByTitleAsc(): Flow<List<Album>>
 
     @Query("SELECT * FROM Album A WHERE A.id in (" +
-            "SELECT DISTINCT albumId FROM SongAlbumMap INNER JOIN Song " +
+            "SELECT DISTINCT SongAlbumMap.albumId FROM SongAlbumMap INNER JOIN Song " +
             "ON Song.id = SongAlbumMap.songId " +
             "LEFT JOIN SongPlaylistMap ON Song.id = SongPlaylistMap.songId " +
             "WHERE (Song.totalPlayTimeMs > 0 AND Song.likedAt > 0) OR SongPlaylistMap.playlistId IS NOT NULL " +
@@ -1988,7 +2008,7 @@ interface Database {
     fun albumsInLibraryByTitleDesc(): Flow<List<Album>>
 
     @Query("SELECT * FROM Album A WHERE A.id in (" +
-            "SELECT DISTINCT albumId FROM SongAlbumMap INNER JOIN Song " +
+            "SELECT DISTINCT SongAlbumMap.albumId FROM SongAlbumMap INNER JOIN Song " +
             "ON Song.id = SongAlbumMap.songId " +
             "LEFT JOIN SongPlaylistMap ON Song.id = SongPlaylistMap.songId " +
             "WHERE (Song.totalPlayTimeMs > 0 AND Song.likedAt > 0) OR SongPlaylistMap.playlistId IS NOT NULL " +
@@ -1997,7 +2017,7 @@ interface Database {
     fun albumsInLibraryByYearAsc(): Flow<List<Album>>
 
     @Query("SELECT * FROM Album A WHERE A.id in (" +
-            "SELECT DISTINCT albumId FROM SongAlbumMap INNER JOIN Song " +
+            "SELECT DISTINCT SongAlbumMap.albumId FROM SongAlbumMap INNER JOIN Song " +
             "ON Song.id = SongAlbumMap.songId " +
             "LEFT JOIN SongPlaylistMap ON Song.id = SongPlaylistMap.songId " +
             "WHERE (Song.totalPlayTimeMs > 0 AND Song.likedAt > 0) OR SongPlaylistMap.playlistId IS NOT NULL " +
@@ -2006,7 +2026,7 @@ interface Database {
     fun albumsInLibraryByYearDesc(): Flow<List<Album>>
 
     @Query("SELECT * FROM Album A WHERE A.id in (" +
-            "SELECT DISTINCT albumId FROM SongAlbumMap INNER JOIN Song " +
+            "SELECT DISTINCT SongAlbumMap.albumId FROM SongAlbumMap INNER JOIN Song " +
             "ON Song.id = SongAlbumMap.songId " +
             "LEFT JOIN SongPlaylistMap ON Song.id = SongPlaylistMap.songId " +
             "WHERE (Song.totalPlayTimeMs > 0 AND Song.likedAt > 0) OR SongPlaylistMap.playlistId IS NOT NULL " +
@@ -2015,7 +2035,7 @@ interface Database {
     fun albumsInLibraryByRowIdAsc(): Flow<List<Album>>
 
     @Query("SELECT * FROM Album A WHERE A.id in (" +
-            "SELECT DISTINCT albumId FROM SongAlbumMap INNER JOIN Song " +
+            "SELECT DISTINCT SongAlbumMap.albumId FROM SongAlbumMap INNER JOIN Song " +
             "ON Song.id = SongAlbumMap.songId " +
             "LEFT JOIN SongPlaylistMap ON Song.id = SongPlaylistMap.songId " +
             "WHERE (Song.totalPlayTimeMs > 0 AND Song.likedAt > 0) OR SongPlaylistMap.playlistId IS NOT NULL " +
@@ -2024,7 +2044,7 @@ interface Database {
     fun albumsInLibraryByRowIdDesc(): Flow<List<Album>>
 
     @Query("SELECT * FROM Album A WHERE A.id in (" +
-            "SELECT DISTINCT albumId FROM SongAlbumMap INNER JOIN Song " +
+            "SELECT DISTINCT SongAlbumMap.albumId FROM SongAlbumMap INNER JOIN Song " +
             "ON Song.id = SongAlbumMap.songId " +
             "LEFT JOIN SongPlaylistMap ON Song.id = SongPlaylistMap.songId " +
             "WHERE (Song.totalPlayTimeMs > 0 AND Song.likedAt > 0) OR SongPlaylistMap.playlistId IS NOT NULL " +
@@ -2033,7 +2053,7 @@ interface Database {
     fun albumsInLibraryByArtistAsc(): Flow<List<Album>>
 
     @Query("SELECT * FROM Album A WHERE A.id in (" +
-            "SELECT DISTINCT albumId FROM SongAlbumMap INNER JOIN Song " +
+            "SELECT DISTINCT SongAlbumMap.albumId FROM SongAlbumMap INNER JOIN Song " +
             "ON Song.id = SongAlbumMap.songId " +
             "LEFT JOIN SongPlaylistMap ON Song.id = SongPlaylistMap.songId " +
             "WHERE (Song.totalPlayTimeMs > 0 AND Song.likedAt > 0) OR SongPlaylistMap.playlistId IS NOT NULL " +
@@ -2043,7 +2063,7 @@ interface Database {
 
     @Query("SELECT *, (SELECT COUNT(*) FROM SongAlbumMap WHERE albumId = A.id) as songCount FROM Album A " +
             "WHERE A.id in (" +
-            "SELECT DISTINCT albumId FROM SongAlbumMap INNER JOIN Song " +
+            "SELECT DISTINCT SongAlbumMap.albumId FROM SongAlbumMap INNER JOIN Song " +
             "ON Song.id = SongAlbumMap.songId " +
                 "LEFT JOIN SongPlaylistMap ON Song.id = SongPlaylistMap.songId " +
                 "WHERE (Song.totalPlayTimeMs > 0 AND Song.likedAt > 0) OR SongPlaylistMap.playlistId IS NOT NULL " +
@@ -2054,7 +2074,7 @@ interface Database {
 
     @Query("SELECT *, (SELECT COUNT(*) FROM SongAlbumMap WHERE albumId = A.id) as songCount FROM Album A " +
             "WHERE A.id in (" +
-            "SELECT DISTINCT albumId FROM SongAlbumMap INNER JOIN Song " +
+            "SELECT DISTINCT SongAlbumMap.albumId FROM SongAlbumMap INNER JOIN Song " +
             "ON Song.id = SongAlbumMap.songId " +
             "LEFT JOIN SongPlaylistMap ON Song.id = SongPlaylistMap.songId " +
             "WHERE (Song.totalPlayTimeMs > 0 AND Song.likedAt > 0) OR SongPlaylistMap.playlistId IS NOT NULL " +
@@ -2707,10 +2727,10 @@ interface Database {
     @Query("SELECT albumId AS id, Album.title AS name, 0 AS size FROM SongAlbumMap LEFT JOIN Album ON id=albumId WHERE songId = :songId")
     fun songAlbumInfo(songId: String): Info?
 
-    @Query("SELECT thumbnailUrl FROM Song LEFT JOIN SongAlbumMap ON id=songId WHERE albumId = :albumId")
+    @Query("SELECT thumbnailUrl FROM Song LEFT JOIN SongAlbumMap ON id=songId WHERE SongAlbumMap.albumId = :albumId")
     fun albumThumbnailFromSong(albumId: String): String?
 
-    @Query("SELECT id, name, 0 AS size FROM Artist LEFT JOIN SongArtistMap ON id = artistId WHERE songId = :songId")
+    @Query("SELECT id, name, 0 AS size FROM Artist LEFT JOIN SongArtistMap ON id = SongArtistMap.artistId WHERE songId = :songId")
     fun songArtistInfo(songId: String): List<Info>
 
     /*
@@ -3019,19 +3039,6 @@ interface Database {
 """)
     suspend fun getLastPlayedAt(songId: String): Long?
 
-    /* La userò dopo
-    @Query("""
-    SELECT s.* FROM song s
-    INNER JOIN song_artist_cross_ref sac ON sac.songId = s.id
-    WHERE sac.artistId = :artistId
-      AND s.isPodcast = 0
-      AND s.totalPlayTimeMs = 0
-    LIMIT :limit
-""")
-    suspend fun getUnplayedSongsByArtist(artistId: String, limit: Int): List<Song>
-
-*/
-
     @Query("""
     SELECT * FROM album
     WHERE rating >= :minRating
@@ -3134,7 +3141,51 @@ interface Database {
      @Query("SELECT * FROM album LIMIT :limit")
      suspend fun getAlbums(limit: Int): List<Album>
 
-    // Aggiungi a AlbumDao
+    // In SongDao.kt
+
+    @Query("""
+    SELECT * FROM song 
+    WHERE albumId = :albumId 
+      AND isPodcast = 0
+    ORDER BY id
+    LIMIT :limit
+""")
+    suspend fun getSongsByAlbum(albumId: String, limit: Int): List<Song>
+
+    @Query("""
+    SELECT * FROM song 
+    WHERE albumId = :albumId 
+      AND isPodcast = 0
+      AND totalPlayTimeMs = 0
+    ORDER BY id
+    LIMIT :limit
+""")
+    suspend fun getUnplayedSongsByAlbum(albumId: String, limit: Int): List<Song>
+
+    @Query("""
+    SELECT * FROM song
+    WHERE albumId IS NULL 
+      AND isPodcast = 0
+      AND artistsText IS NOT NULL
+      AND totalPlayTimeMs > 0
+    ORDER BY totalPlayTimeMs DESC
+    LIMIT :limit
+""")
+    suspend fun getTopSongsWithoutAlbum(limit: Int): List<Song>
+
+    // SongDao.kt
+    @Query("""
+    SELECT * FROM song 
+    WHERE artistsText IS NOT NULL 
+      AND artistsText != ''
+      AND isPodcast = 0
+      AND id NOT IN (SELECT DISTINCT songId FROM song_artist_cross_ref)
+    ORDER BY totalPlayTimeMs DESC
+    LIMIT :limit
+""")
+    suspend fun getSongsWithArtistsText(limit: Int): List<Song>
+
+    // In AlbumDao
     @Query("""
         SELECT COUNT(*) FROM album 
         WHERE rating IS NOT NULL 
@@ -3164,6 +3215,18 @@ interface Database {
     LIMIT :limit
 """)
     suspend fun getAlbumsToEnrich(limit: Int): List<Album>
+
+    // In AlbumDao.kt
+    @Query("""
+    SELECT * FROM album 
+    WHERE bookmarkedAt IS NOT NULL
+    ORDER BY bookmarkedAt DESC
+    LIMIT :limit
+""")
+    suspend fun getBookmarkedAlbums(limit: Int): List<Album>
+
+    @Query("SELECT COUNT(*) FROM album WHERE bookmarkedAt IS NOT NULL")
+    suspend fun countBookmarked(): Int
 
     //************* INIZIO MBALBUM *****************
     @Query("""
@@ -3245,6 +3308,17 @@ interface Database {
     suspend fun deleteMBAlbumsAll(): Int
 
     //************* FINE MBALBUM *****************
+
+    // Artist dao
+    // In ArtistDao.kt
+    @Query("SELECT * FROM artist WHERE lower(name) = lower(:name) LIMIT 1")
+    suspend fun findByNameIgnoreCase(name: String): Artist?
+
+    @Query("SELECT * FROM artist WHERE lower(name) LIKE lower(:pattern) LIMIT 5")
+    suspend fun findByNameLike(pattern: String): List<Artist>
+
+    @Query("SELECT * FROM artist WHERE bookmarkedAt IS NOT NULL ORDER BY bookmarkedAt DESC LIMIT :limit")
+    suspend fun getBookmarkedArtists(limit: Int): List<Artist>
 
     //************* RECOMENDATION STRATEGY ********************************************
 
@@ -3552,11 +3626,12 @@ interface Database {
         Recommendation::class,
         ArtistRelation::class,
         MBAlbum::class,
+        SongArtistCrossRef::class
     ],
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 57,
+    version = 60,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -3602,6 +3677,7 @@ interface Database {
         AutoMigration(from = 51, to = 52),
         AutoMigration(from = 52, to = 53),
         AutoMigration(from = 53, to = 54),
+
     ],
 )
 @TypeConverters(Converters::class)
@@ -3637,7 +3713,10 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
                 From45To46Migration(),
                 From54To55Migration(),
                 From55To56Migration(),
-                From56To57Migration()
+                From56To57Migration(),
+                From57To58Migration(),
+                From58To59Migration(),
+                From59To60Migration(),
             )
             //.fallbackToDestructiveMigration(false)
             .addCallback(object : Callback() {
@@ -3658,6 +3737,13 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
         }
     }
 
+    // Lista Dao dichiarati
+    abstract fun songArtistCrossRefDao(): SongArtistCrossRefDao
+    abstract fun songDao(): SongDao
+    abstract fun artistDao(): ArtistDao
+
+
+    // Crud da migrare in dao
     @DeleteTable.Entries(DeleteTable(tableName = "QueuedMediaItem"))
     class From3To4Migration : AutoMigrationSpec
 
@@ -4096,6 +4182,81 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
         }
     }
 
+    class From57To58Migration : Migration(57, 58) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            try {
+                db.execSQL("ALTER TABLE song ADD COLUMN albumId TEXT")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_song_albumId ON song(albumId)")
+
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS song_artist_cross_ref (
+                        songId TEXT NOT NULL,
+                        artistId TEXT NOT NULL,
+                        role TEXT NOT NULL DEFAULT 'main',
+                        "order" INTEGER NOT NULL DEFAULT 0,
+                        createdAt INTEGER NOT NULL,
+                        PRIMARY KEY(songId, artistId),
+                        FOREIGN KEY(songId) REFERENCES Song(id) ON DELETE CASCADE,
+                        FOREIGN KEY(artistId) REFERENCES Artist(id) ON DELETE CASCADE
+                    )
+                """.trimIndent()
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_song_artist_cross_ref_songId ON song_artist_cross_ref(songId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_song_artist_cross_ref_artistId ON song_artist_cross_ref(artistId)")
+            } catch (e: Exception) {
+                println("Database From57To58Migration error ${e.stackTraceToString()}")
+            }
+        }
+    }
+
+    class From58To59Migration : Migration(58, 59) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            try {
+                db.execSQL("ALTER TABLE Artist ADD COLUMN mbId TEXT")
+            } catch (e: Exception) {
+                println("Database From58To59Migration error ${e.stackTraceToString()}")
+            }
+        }
+    }
+
+    class From59To60Migration : Migration(59, 60) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            try {
+                // === Artist ===
+                // IMPORTANTE: DEFAULT NULL esplicito per matchare @ColumnInfo(defaultValue = "NULL")
+
+                db.execSQL("ALTER TABLE Artist ADD COLUMN youtubeChannelId TEXT")
+                // IMPORTANTE: NOT NULL per matchare il campo Kotlin non-nullable
+                db.execSQL("ALTER TABLE Artist ADD COLUMN nature TEXT NOT NULL DEFAULT 'UNKNOWN'")
+
+                // Popola youtubeChannelId per artisti YT esistenti
+                db.execSQL("UPDATE Artist SET youtubeChannelId = id")
+
+                // Indici non-unique
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_artist_mbId ON Artist(mbId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_artist_youtubeChannelId ON Artist(youtubeChannelId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_artist_name ON Artist(name)")
+
+                // === Album ===
+                db.execSQL("ALTER TABLE Album ADD COLUMN mbId TEXT")
+                db.execSQL("ALTER TABLE Album ADD COLUMN youtubeAlbumId TEXT")
+                db.execSQL("ALTER TABLE Album ADD COLUMN nature TEXT NOT NULL DEFAULT 'UNKNOWN'")
+
+                db.execSQL("UPDATE Album SET youtubeAlbumId = id")
+
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_album_mbId ON Album(mbId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_album_youtubeAlbumId ON Album(youtubeAlbumId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_album_title_authorsText ON Album(title, authorsText)")
+
+                // === MBAlbum ===
+                db.execSQL("ALTER TABLE mb_album ADD COLUMN nature TEXT NOT NULL DEFAULT 'UNKNOWN'")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_mb_album_nature ON mb_album(nature)")
+            } catch (e: Exception) {
+                println("Database From59To60Migration error ${e.stackTraceToString()}")
+            }
+        }
+    }
 }
 
 
@@ -4208,5 +4369,19 @@ object Converters {
     fun toExternalLinkList(value: String?): List<ExternalLink>? {
         return value?.let { RoomJson.decodeFromString<List<ExternalLink>>(it) }
     }
+
+    @TypeConverter
+    fun artistNatureToString(nature: ArtistNature?): String? = nature?.name
+
+    @TypeConverter
+    fun stringToArtistNature(value: String?): ArtistNature? =
+        value?.let { try { ArtistNature.valueOf(it) } catch (e: IllegalArgumentException) { ArtistNature.UNKNOWN } }
+
+    @TypeConverter
+    fun albumNatureToString(nature: AlbumNature?): String? = nature?.name
+
+    @TypeConverter
+    fun stringToAlbumNature(value: String?): AlbumNature? =
+        value?.let { try { AlbumNature.valueOf(it) } catch (e: IllegalArgumentException) { AlbumNature.UNKNOWN } }
 
 }
