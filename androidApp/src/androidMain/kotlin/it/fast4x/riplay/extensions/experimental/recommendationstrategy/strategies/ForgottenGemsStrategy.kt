@@ -18,21 +18,26 @@ class ForgottenGemsStrategy() : RecommendationStrategy {
     override val displayName: String = "Dimenticati nel tempo"
     override val displaySubtitle: String = "Brani che amavi ma non ascolti da mesi"
 
+    val songDao = Database.songDao()
+    val artistDao = Database.artistDao()
+
     override suspend fun generate(
         profile: UserProfile,
-        limit: Int
+        limit: Int,
+        excludedIds: Set<String>
     ): List<ScoredRecommendation> = withContext(Dispatchers.IO) {
 
         val now = System.currentTimeMillis()
         val olderThan = now - (RecommendationConstants.FORGOTTEN_GEMS_MIN_AGE_DAYS * 24L * 3_600_000L)
 
-        val candidates = Database.songDao().getForgottenSongs(
+        val candidates = songDao.getForgottenSongs(
             olderThan = olderThan,
             minTotalPlayMs = 60_000L,
             limit = limit * 5
         )
 
         candidates
+            .filter { it.id !in excludedIds }  // ★ filtro excluded
             .map { song -> scoreCandidate(song, profile, now) }
             .filter { it.score > 0.1f }
             .sortedByDescending { it.score }
@@ -44,7 +49,7 @@ class ForgottenGemsStrategy() : RecommendationStrategy {
         profile: UserProfile,
         now: Long
     ): ScoredRecommendation {
-        val lastPlayedAt = Database.getLastPlayedAt(song.id)
+        val lastPlayedAt = songDao.getLastPlayedAt(song.id)
 
         val ageDays = lastPlayedAt?.let { (now - it) / (24L * 3_600_000L) } ?: 365L
         val forgottenBonus = when {
@@ -59,20 +64,17 @@ class ForgottenGemsStrategy() : RecommendationStrategy {
 
         val keywordScore = ScoringUtils.keywordSimilarity(song.genres, profile.keywordVector)
 
-        // ★ NUOVO: artista virtuale basato su artistsText
         val artist = song.artistsText?.trim()?.let { artistName ->
-            // Cerca nel DB per nome (case-insensitive)
-            val realArtist = Database.artistDao().findByNameExactIgnoreCase(artistName)
+            val realArtist = artistDao.findByNameExactIgnoreCase(artistName)
             realArtist ?: Artist(
                 id = "virtual::$artistName",
                 name = artistName,
                 timestamp = System.currentTimeMillis(),
                 isYoutubeArtist = false,
-                nature = ArtistNature.UNKNOWN  // fallback
+                nature = ArtistNature.UNKNOWN
             )
         }
 
-        // ★ NUOVO: bonus se l'artista è nei top dell'utente
         val artistMatchBonus = artist?.let { a ->
             val virtualId = a.id
             if (profile.topArtists.any { it.artistId == virtualId }) 0.2f else 0f

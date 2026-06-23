@@ -6,9 +6,13 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.Artist
+import it.fast4x.riplay.data.models.Song
 
 @Dao
 interface AlbumDao {
+
+    @Query("SELECT * FROM album WHERE id = :albumId")
+    suspend fun getById(albumId: String): Album?
 
     @Query("SELECT * FROM album WHERE mbId = :mbId LIMIT 1")
     suspend fun getByMbId(mbId: String): Album?

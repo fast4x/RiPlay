@@ -50,6 +50,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.environment.Environment
@@ -435,15 +436,19 @@ fun HomePage(
                     recommendationService,
                     onPlayItem = { item ->
                         scope.launch {
+                            val itemId = item.song?.id ?: item.album?.id ?: item.artist?.id ?: ""
+                            if (itemId.isBlank()) return@launch
                             when {
                                 // Brano riproducibile diretto
                                 item.song != null -> {
                                     binder?.player?.forcePlay(item.song.asMediaItem)
+                                    Log.d("REC_DEBUG", "Marking consumed: strategy=${item.strategyId}, itemId=$itemId")
                                     recommendationService.markConsumed(item.strategyId, item.song.id)
                                 }
                                 // Album MB
                                 item.album?.id?.startsWith("mb-") == true -> {
                                     // ... tua logica esistente per album MB
+                                    recommendationService.markConsumed(item.strategyId, item.album.id)
                                 }
                                 // Artista MB (NUOVO per MBGraphWalk)
                                 item.artist?.id?.startsWith("mb-") == true -> {
@@ -460,15 +465,6 @@ fun HomePage(
                                 }
                             }
                         }
-                    },
-                    onRejectItem = { item ->
-                        // Long-press: mostra dialog "non interessato"
-                        item.song?.let { song ->
-                            scope.launch {
-                                recommendationService.markRejected(song.id)
-                            }
-                        }
-                        SmartMessage("Non interessato", context = appContext())
                     }
                 )
 

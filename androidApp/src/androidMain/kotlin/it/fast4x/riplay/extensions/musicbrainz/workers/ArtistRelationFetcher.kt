@@ -61,7 +61,7 @@ class ArtistRelationFetcher() {
                 }
 
                 if (entities.isNotEmpty()) {
-                    Database.upsertArtistRelation(entities)
+                    Database.relationDao().upsertArtistRelation(entities)
                     totalSaved += entities.size
                     Timber.tag("RelFetcher")
                         .i("  ✓ ${artist.name} ($mbId): ${entities.size} relations")

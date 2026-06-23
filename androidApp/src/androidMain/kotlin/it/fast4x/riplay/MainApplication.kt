@@ -89,7 +89,7 @@ class MainApplication : Application(), ImageLoaderFactory {
         builder = profileBuilder,
     )
     //Si inizializza recommendationService senza strategie, in attesa che il db venga inizializzato in onCreate
-    var recommendationService = RecommendationService(profileRepository, emptyList())
+    lateinit var recommendationService: RecommendationService
 
 
     @OptIn(UnstableApi::class)

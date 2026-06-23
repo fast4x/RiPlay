@@ -40,6 +40,8 @@ import it.fast4x.riplay.commonutils.PIPED_PREFIX
 import it.fast4x.riplay.data.dao.AlbumDao
 import it.fast4x.riplay.data.dao.ArtistDao
 import it.fast4x.riplay.data.dao.MBAlbumDao
+import it.fast4x.riplay.data.dao.RecommendationDao
+import it.fast4x.riplay.data.dao.RelationDao
 import it.fast4x.riplay.data.dao.SongArtistCrossRefDao
 import it.fast4x.riplay.data.dao.SongDao
 import it.fast4x.riplay.enums.AlbumSortBy
@@ -127,6 +129,12 @@ interface Database {
         }
         fun mbAlbumDao(): MBAlbumDao {
             return (DatabaseInitializer.Instance).mbAlbumDao()
+        }
+        fun recommendationDao(): RecommendationDao {
+            return (DatabaseInitializer.Instance).recommendationDao()
+        }
+        fun relationDao(): RelationDao {
+            return (DatabaseInitializer.Instance).relationDao()
         }
     }
 
@@ -2994,26 +3002,12 @@ interface Database {
         limit: Int
     ): List<Recommendation>
 
-    @Query("DELETE FROM recommendation WHERE userId = :userId AND strategyId = :strategyId")
-    suspend fun deleteByStrategy(userId: String, strategyId: String)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun upsertRecommendation(items: List<Recommendation>)
 
     @Query("UPDATE recommendation SET consumed = 1, consumedAt = :now WHERE userId = :userId AND songId = :songId AND strategyId = :strategyId")
     suspend fun markConsumed(userId: String, songId: String, strategyId: String, now: Long)
 
     @Query("UPDATE recommendation SET rejectedAt = :now WHERE userId = :userId AND songId = :songId")
     suspend fun markRejected(userId: String, songId: String, now: Long)
-
-    @Query("""
-        SELECT * FROM artist_relation
-        WHERE fromArtistId = :artistId OR toArtistId = :artistId
-    """)
-    suspend fun getBidirectional(artistId: String): List<ArtistRelation>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun upsertArtistRelation(items: List<ArtistRelation>)
 
     @Query("""
     SELECT * FROM song
@@ -3040,11 +3034,6 @@ interface Database {
     LIMIT :limit
 """)
     suspend fun getLikedSongsNotPlayedSince(olderThan: Long, limit: Int): List<Song>
-
-    @Query("""
-    SELECT MAX(timestamp) FROM event WHERE songId = :songId
-""")
-    suspend fun getLastPlayedAt(songId: String): Long?
 
     @Query("""
     SELECT * FROM album
@@ -3296,20 +3285,6 @@ interface Database {
      @Query("SELECT * FROM mb_album ORDER BY fetchedAt DESC LIMIT :limit")
      suspend fun getRecent(limit: Int): List<MBAlbum>
 
-    @Query("""
-        SELECT * FROM mb_album
-        WHERE 
-            -- Album con metadati minimi
-            (genres IS NOT NULL AND genres != '[]' AND genres != '')
-            OR (tags IS NOT NULL AND tags != '[]' AND tags != '')
-            OR (rating IS NOT NULL)
-        ORDER BY 
-            popularityScore DESC,
-            CASE WHEN rating IS NOT NULL THEN rating ELSE 2.5 END DESC,
-            ratingVotes DESC
-        LIMIT :limit
-    """)
-    suspend fun getQualityAlbumsV2(limit: Int): List<MBAlbum>
 
     @Query("DELETE FROM mb_album")
     suspend fun deleteMBAlbumsAll(): Int
@@ -3750,6 +3725,8 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
     abstract fun artistDao(): ArtistDao
     abstract fun albumDao(): AlbumDao
     abstract fun mbAlbumDao(): MBAlbumDao
+    abstract fun recommendationDao(): RecommendationDao
+    abstract fun relationDao(): RelationDao
 
 
     // Crud da migrare in dao

@@ -9,9 +9,16 @@ interface RecommendationStrategy {
     val displayName: String
     val displaySubtitle: String
 
+    /**
+     * Genera suggerimenti per il profilo utente.
+     * @param profile profilo utente corrente
+     * @param limit numero massimo di suggerimenti da restituire
+     * @param excludedIds set di ID da escludere (brani/album/artisti già consumati o rifiutati)
+     */
     suspend fun generate(
         profile: UserProfile,
-        limit: Int
+        limit: Int,
+        excludedIds: Set<String> = emptySet()
     ): List<ScoredRecommendation>
 }
 

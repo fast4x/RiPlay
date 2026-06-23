@@ -1,5 +1,6 @@
 package it.fast4x.riplay.extensions.experimental.recommendationstrategy
 
+import android.util.Log
 import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Recommendation
@@ -56,24 +57,35 @@ class RecommendationService(
             enoughSongs && enoughArtists && hasNonEmptySection
         }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), false)
 
+    val recommendationDao = Database.recommendationDao()
+
     /**
-     * Rigenera tutte le strategie. Chiamato:
-     * - All'avvio (se profilo esiste già)
-     * - Dopo un rebuild del profilo
-     * - Su refresh manuale dall'UI (pull-to-refresh)
+     * Rigenera tutte le strategie. Chiamato all'avvio, dopo rebuild profilo,
+     * o su refresh manuale dall'UI.
      */
     suspend fun refreshAll(userId: String = RecommendationConstants.USER_ID_SELF) {
         refreshMutex.withLock {
-            // Assicurati che il profilo sia aggiornato
             val profile = profileRepo.profile.value ?: run {
                 profileRepo.rebuildFull(userId)
                 profileRepo.profile.value
             } ?: return@withLock
 
+            val now = System.currentTimeMillis()
+            // Cutoff: 14 giorni per consumati, 30 giorni per rejected
+            val consumedCutoff = now - (14L * 24 * 3600 * 1000)
+            val rejectedCutoff = now - (30L * 24 * 3600 * 1000)
+
             // Genera tutte le strategie in parallelo
             val sections = strategies.map { strategy ->
                 scope.async {
-                    generateSection(strategy, profile, userId, limit = 10)
+                    generateSection(
+                        strategy = strategy,
+                        profile = profile,
+                        userId = userId,
+                        limit = 10,
+                        consumedCutoff = consumedCutoff,
+                        rejectedCutoff = rejectedCutoff
+                    )
                 }
             }.awaitList()
 
@@ -85,19 +97,37 @@ class RecommendationService(
         strategy: RecommendationStrategy,
         profile: UserProfile,
         userId: String,
-        limit: Int
+        limit: Int,
+        consumedCutoff: Long,
+        rejectedCutoff: Long
     ): RecommendationSection {
         return try {
-            val recommendations = strategy.generate(profile, limit)
-
-            // Persist per tracking consumed/rejected
             val now = System.currentTimeMillis()
-            Database.deleteByStrategy(userId, strategy.id)
-            Database.upsertRecommendation(
-                recommendations.map { rec ->
+
+            val excludedIds = recommendationDao.getRecentlyConsumedOrRejectedIds(
+                userId = userId,
+                consumedCutoffMs = consumedCutoff,
+                rejectedCutoffMs = rejectedCutoff
+            ).toSet()
+
+            Timber.tag("REC_DEBUG")
+                .d("Strategy ${strategy.id}: excludedIds size = ${excludedIds.size}")
+            if (excludedIds.isNotEmpty()) {
+                Timber.tag("REC_DEBUG").d("  Excluded: ${excludedIds.take(5)}")
+            }
+
+            val candidates = strategy.generate(profile, limit * 3, excludedIds)
+            Timber.tag("REC_DEBUG")
+                .d("Strategy ${strategy.id}: ${candidates.size} candidates after filtering")
+
+            // Persist per tracking futuro
+            recommendationDao.deleteByStrategy(userId, strategy.id)
+            recommendationDao.upsertRecommendation(
+                candidates.map { rec ->
+                    val itemId = rec.song?.id ?: rec.album?.id ?: rec.artist?.id ?: ""
                     Recommendation(
                         userId = userId,
-                        songId = rec.song?.id ?: rec.album?.id ?: rec.artist?.id ?: "",
+                        songId = itemId,
                         strategyId = strategy.id,
                         score = rec.score,
                         reasonsJson = encodeReasons(rec.reasons),
@@ -110,11 +140,10 @@ class RecommendationService(
                 id = strategy.id,
                 title = strategy.displayName,
                 subtitle = strategy.displaySubtitle,
-                items = recommendations,
+                items = candidates.take(limit),  // ★ take limit qui perché la strategia può restituire più del necessario
                 updatedAt = now
             )
         } catch (e: Exception) {
-            // Log.error("Strategy ${strategy.id} failed", e)
             RecommendationSection(
                 id = strategy.id,
                 title = strategy.displayName,
@@ -126,29 +155,43 @@ class RecommendationService(
     }
 
     /**
-     * Marca un suggerimento come consumato (utente ha avviato il brano).
+     * Marca come consumato (utente ha aperto il brano).
      */
-    suspend fun markConsumed(strategyId: String, songId: String) {
-        Database.markConsumed(
-            userId = RecommendationConstants.USER_ID_SELF,
-            songId = songId,
-            strategyId = strategyId,
-            now = System.currentTimeMillis()
-        )
+    suspend fun markConsumed(strategyId: String, itemId: String) {
+
+        Timber.tag("REC_DEBUG").d("markConsumed called: strategyId=$strategyId, itemId=$itemId")
+
+        val userId = RecommendationConstants.USER_ID_SELF
+        val now = System.currentTimeMillis()
+
+        // Verifica se la riga esiste prima dell'update
+        val exists = recommendationDao.checkIfExists(userId, strategyId, itemId)
+        Timber.tag("REC_DEBUG").d("  Row exists before update? $exists")
+
+        recommendationDao.markConsumed(userId, strategyId, itemId, now)
+
+        // Verifica dopo
+        val consumed = recommendationDao.checkIfConsumed(userId, strategyId, itemId)
+        Timber.tag("REC_DEBUG").d("  Consumed after update? $consumed")
+
     }
 
     /**
-     * Marca come rifiutato (utente ha detto "non interessato").
+     * Marca come rejected (utente ha detto "Non mi interessa").
+     * Aggiorna tutte le strategie per quell'item.
      */
-    suspend fun markRejected(songId: String) {
-        Database.markRejected(
+    suspend fun markRejected(itemId: String) {
+        recommendationDao.markRejected(
             userId = RecommendationConstants.USER_ID_SELF,
-            songId = songId,
+            itemId = itemId,
             now = System.currentTimeMillis()
         )
         // Rimuovi dal flow in-memory per feedback immediato
         _sections.value = _sections.value.map { section ->
-            section.copy(items = section.items.filterNot { it.song?.id == songId })
+            section.copy(items = section.items.filterNot { item ->
+                val id = item.song?.id ?: item.album?.id ?: item.artist?.id
+                id == itemId
+            })
         }
     }
 

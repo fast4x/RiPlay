@@ -21,33 +21,27 @@ class QualityCuratorStrategy() : RecommendationStrategy {
     override val displayName: String = "Capolavori del genere"
     override val displaySubtitle: String = "Album acclamati dalla community che potresti apprezzare"
 
+    val mbAlbumDao = Database.mbAlbumDao()
+    val albumDao = Database.albumDao()
+    val songDao = Database.songDao()
+
     override suspend fun generate(
         profile: UserProfile,
-        limit: Int
+        limit: Int,
+        excludedIds: Set<String>
     ): List<ScoredRecommendation> = withContext(Dispatchers.IO) {
 
         if (profile.keywordVector.isEmpty()) return@withContext emptyList()
 
-        // Usa TUTTE le keyword del profilo, non solo le top 5
         val userKeywords = profile.keywordVector.keys
-        if (BuildConfig.DEBUG)
-            Timber.tag("REC_DEBUG")
-                .d("QualityCurator: userKeywords (${userKeywords.size}) = $userKeywords")
+        val candidates = mbAlbumDao.getQualityAlbumsV2(limit = limit * 5)
 
-        val candidates = Database.getQualityAlbumsV2(limit = limit * 5)
-        if (BuildConfig.DEBUG)
-            Timber.tag("REC_DEBUG").d("QualityCurator: ${candidates.size} candidates from DB")
-
-        val results = candidates
+        candidates
+            .filter { "mb-${it.id}" !in excludedIds }  // ★ filtro excluded (MBAlbum ha id con prefisso)
             .map { mbAlbum -> scoreAlbum(mbAlbum, userKeywords, profile) }
             .filter { it.score > 0.2f }
             .sortedByDescending { it.score }
             .take(limit)
-
-        if (BuildConfig.DEBUG)
-            Timber.tag("REC_DEBUG").d("QualityCurator: ${results.size} final results")
-
-        results
     }
 
     private suspend fun scoreAlbum(
@@ -59,51 +53,16 @@ class QualityCuratorStrategy() : RecommendationStrategy {
             .map { it.lowercase().trim() }
             .toSet()
 
-        // LOG DIAGNOSTICO per i primi 5 album (limita per non spammar log)
-        if (mbAlbum.id.hashCode() % 6 == 0) {
-            Timber.tag("REC_DEBUG").d("  Album '${mbAlbum.title}' by ${mbAlbum.artistCredit}")
-            Timber.tag("REC_DEBUG").d("    albumKeywords: $albumKeywords")
-        }
-
-        // Filtro compilation - "Various Artists" è rumore per discovery
-        val isCompilation = mbAlbum.artistCredit?.let {
-            it.contains("Various Artists", ignoreCase = true) ||
-                    it.contains("Varios Artistas", ignoreCase = true) ||
-                    it.contains("V.A.", ignoreCase = true) ||
-                    it.contains("V/A", ignoreCase = true)
-        } ?: false
-
-        if (isCompilation) {
-            return emptyScore(mbAlbum)
-        }
-
-        // Filtro secondary type Compilation
-        if (mbAlbum.secondaryTypes?.any {
-                it.equals("Compilation", ignoreCase = true) ||
-                        it.equals("Live", ignoreCase = true)
-            } == true) {
-            return emptyScore(mbAlbum)
-        }
-
-        // Intersezione con TUTTE le keyword utente
         val matchedKeywords = albumKeywords.intersect(userKeywords)
-
         if (matchedKeywords.isEmpty()) {
             return emptyScore(mbAlbum)
         }
 
-
-        if (mbAlbum.id.hashCode() % 6 == 0 && BuildConfig.DEBUG) {
-            Timber.tag("REC_DEBUG").d("    matched: $matchedKeywords")
-        }
-
-        // Score: somma dei pesi delle keyword matchate (normalizzato)
         val genreMatchScore = matchedKeywords
             .sumOf { (profile.keywordVector[it] ?: 0f).toDouble() }
             .toFloat()
             .coerceIn(0f, 1f)
 
-        // Quality: bayesian rating se c'è, altrimenti popularityScore
         val qualityBonus = if (mbAlbum.rating != null && (mbAlbum.ratingVotes ?: 0) > 0) {
             ScoringUtils.mbQualityBonus(mbAlbum.rating, mbAlbum.ratingVotes)
         } else {
@@ -118,6 +77,9 @@ class QualityCuratorStrategy() : RecommendationStrategy {
         val score = (0.5f * genreMatchScore +
                 0.3f * qualityBonus +
                 0.2f * eraScore).coerceIn(0f, 1f)
+
+        val album = mbAlbum.matchedAlbumId?.takeIf { it.isNotEmpty() }
+            ?.let { albumDao.getById(it) }
 
         val reasons = buildList {
             if (mbAlbum.rating != null && (mbAlbum.ratingVotes ?: 0) > 0) {
@@ -137,7 +99,7 @@ class QualityCuratorStrategy() : RecommendationStrategy {
 
         return ScoredRecommendation(
             song = null,
-            album = mapMbAlbumToAlbum(mbAlbum),
+            album = album ?: mapMbAlbumToAlbum(mbAlbum),
             artist = null,
             score = score,
             reasons = reasons,

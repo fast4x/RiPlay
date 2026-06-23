@@ -50,6 +50,11 @@ interface SongDao {
         limit: Int
     ): List<Song>
 
+    @Query("""
+    SELECT MAX(timestamp) FROM event WHERE songId = :songId
+""")
+    suspend fun getLastPlayedAt(songId: String): Long?
+
 }
 // Helper extension
 suspend fun SongDao.getSongsByDecade(decade: Int, limit: Int): List<Song> =
