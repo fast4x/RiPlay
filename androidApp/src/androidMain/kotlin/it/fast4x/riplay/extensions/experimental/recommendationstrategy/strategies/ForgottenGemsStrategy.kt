@@ -3,6 +3,7 @@ package it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategi
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.enums.ArtistNature
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.RecommendationConstants
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.RecommendationStrategy
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.ScoredRecommendation
@@ -60,19 +61,15 @@ class ForgottenGemsStrategy() : RecommendationStrategy {
 
         // ★ NUOVO: artista virtuale basato su artistsText
         val artist = song.artistsText?.trim()?.let { artistName ->
-            // Cerca artista reale nel profilo utente per score aggiuntivo
-            val virtualId = "virtual::$artistName"
-            val profileAffinity = profile.topArtists.find { it.artistId == virtualId }
-
-            Artist(
-                id = virtualId,
+            // Cerca nel DB per nome (case-insensitive)
+            val realArtist = Database.artistDao().findByNameExactIgnoreCase(artistName)
+            realArtist ?: Artist(
+                id = "virtual::$artistName",
                 name = artistName,
                 timestamp = System.currentTimeMillis(),
-                isYoutubeArtist = false
-            ).also {
-                // Se l'artista è nei top dell'utente, alza lo score
-                // (lo usiamo solo come signal, non come storage)
-            }
+                isYoutubeArtist = false,
+                nature = ArtistNature.UNKNOWN  // fallback
+            )
         }
 
         // ★ NUOVO: bonus se l'artista è nei top dell'utente

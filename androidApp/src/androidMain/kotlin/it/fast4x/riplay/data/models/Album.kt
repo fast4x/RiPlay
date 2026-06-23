@@ -5,10 +5,12 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.AlbumNature
 import it.fast4x.riplay.enums.LinkType
 import it.fast4x.riplay.extensions.musicbrainz.models.ExternalLink
 import kotlinx.serialization.Serializable
+import java.util.UUID
 
 @Serializable
 @Immutable
@@ -78,3 +80,4 @@ data class Album(
             .take(8)
 
 }
+

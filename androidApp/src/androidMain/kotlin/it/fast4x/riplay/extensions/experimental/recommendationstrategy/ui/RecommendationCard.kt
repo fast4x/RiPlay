@@ -98,6 +98,14 @@ fun RecommendationCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+
+                // Nature badge
+                NatureBadge(
+                    artistNature = item.artist?.nature,
+                    albumNature = item.album?.nature,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+
                 Spacer(Modifier.height(4.dp))
                 // Reason principale (primo della lista)
                 item.reasons.firstOrNull()?.let { reason ->

@@ -38,7 +38,9 @@ import it.fast4x.riplay.commonutils.EXPLICIT_PREFIX
 import it.fast4x.riplay.commonutils.MONTHLY_PREFIX
 import it.fast4x.riplay.commonutils.PINNED_PREFIX
 import it.fast4x.riplay.commonutils.PIPED_PREFIX
+import it.fast4x.riplay.data.dao.AlbumDao
 import it.fast4x.riplay.data.dao.ArtistDao
+import it.fast4x.riplay.data.dao.MBAlbumDao
 import it.fast4x.riplay.data.dao.SongArtistCrossRefDao
 import it.fast4x.riplay.data.dao.SongDao
 import it.fast4x.riplay.enums.AlbumSortBy
@@ -120,6 +122,12 @@ interface Database {
         }
         fun artistDao(): ArtistDao {
             return (DatabaseInitializer.Instance).artistDao()
+        }
+        fun albumDao(): AlbumDao {
+            return (DatabaseInitializer.Instance).albumDao()
+        }
+        fun mbAlbumDao(): MBAlbumDao {
+            return (DatabaseInitializer.Instance).mbAlbumDao()
         }
     }
 
@@ -3741,6 +3749,8 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
     abstract fun songArtistCrossRefDao(): SongArtistCrossRefDao
     abstract fun songDao(): SongDao
     abstract fun artistDao(): ArtistDao
+    abstract fun albumDao(): AlbumDao
+    abstract fun mbAlbumDao(): MBAlbumDao
 
 
     // Crud da migrare in dao

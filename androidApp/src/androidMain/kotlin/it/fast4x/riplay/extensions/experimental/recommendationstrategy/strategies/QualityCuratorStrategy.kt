@@ -158,7 +158,8 @@ class QualityCuratorStrategy() : RecommendationStrategy {
         wikipediaUrl = mb.wikipediaUrl,
         links = mb.links,
         isYoutubeAlbum = false,
-        timestamp = mb.fetchedAt
+        timestamp = mb.fetchedAt,
+        nature = mb.nature
     )
 
     private fun emptyScore(mb: MBAlbum) = ScoredRecommendation(

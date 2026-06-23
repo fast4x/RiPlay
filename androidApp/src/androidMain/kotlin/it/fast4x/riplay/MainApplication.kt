@@ -19,6 +19,7 @@ import coil.memory.MemoryCache
 import coil.request.CachePolicy
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.DatabaseInitializer
+import it.fast4x.riplay.enums.ArtistNature
 import it.fast4x.riplay.enums.CoilDiskCacheMaxSize
 import it.fast4x.riplay.extensions.appviewmodel.AppViewModel
 import it.fast4x.riplay.extensions.appviewmodel.models.NetworkConnectivity
@@ -42,6 +43,7 @@ import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategie
 import it.fast4x.riplay.extensions.musicbrainz.MBMetadataHelper
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.musicbrainz.fillers.ArtistMbIdBackfiller
+import it.fast4x.riplay.extensions.musicbrainz.fillers.NatureBackfiller
 import it.fast4x.riplay.extensions.musicbrainz.fillers.SongArtistBackfiller
 import it.fast4x.riplay.extensions.musicbrainz.workers.ArtistRelationFetcher
 import it.fast4x.riplay.extensions.musicbrainz.workers.MBAlbumsByGenreFetcher
@@ -79,26 +81,16 @@ class MainApplication : Application(), ImageLoaderFactory {
         AppViewModel.factory(this)
     }
 
-    // Inizializza RecommendationService
-    // Builder
-    private val profileBuilder = UserProfileBuilder()
+
+    // Prepara Profile Builder
+    val profileBuilder = UserProfileBuilder()
     // Repository
     val profileRepository = UserProfileRepository(
         builder = profileBuilder,
     )
-    // Strategie
-    val strategies = listOf(
-        ForgottenGemsStrategy(),
-        QualityCuratorStrategy(),
-        DeepCutsStrategy(),
-        EraExplorerStrategy(),
-        MBGraphWalkStrategy()
-    )
-    // Service
-    val recommendationService = RecommendationService(
-        profileRepo = profileRepository,
-        strategies = strategies,
-    )
+    //Si inizializza recommendationService senza strategie, in attesa che il db venga inizializzato in onCreate
+    var recommendationService = RecommendationService(profileRepository, emptyList())
+
 
     @OptIn(UnstableApi::class)
     override fun onCreate() {
@@ -140,6 +132,146 @@ class MainApplication : Application(), ImageLoaderFactory {
         }
         /**** LOG *********/
 
+
+        // Strategie, viene chiamato dopo l'inizializzazione  del database
+        val strategies = listOf(
+            ForgottenGemsStrategy(),
+            QualityCuratorStrategy(),
+            DeepCutsStrategy(),
+            EraExplorerStrategy(),
+            MBGraphWalkStrategy()
+        )
+
+        // Inizializza Service con le strategie
+
+        recommendationService = RecommendationService(
+            profileRepo = profileRepository,
+            strategies = strategies,
+        )
+
+
+        appScopeIO.launch {
+            val backfiller = NatureBackfiller()
+            val result = backfiller.backfillAll()
+            Timber.tag("REC_DEBUG").d("Nature backfill: $result")
+
+            // Verifica artisti riclassificati
+            val humanCount = Database.artistDao().getArtistsByNature(ArtistNature.HUMAN).size
+            val aiCount = Database.artistDao().getArtistsByNature(ArtistNature.AI_GENERATED).size
+            Timber.tag("REC_DEBUG").d("After reclassify: HUMAN=$humanCount, AI=$aiCount")
+
+            // Refresh recommendations
+            recommendationService.refreshAll()
+            delay(500)
+
+            // Verifica nature nei suggerimenti
+            val sections = recommendationService.sections.value
+            sections.forEach { section ->
+                Timber.tag("REC_DEBUG").d("=== ${section.id} ===")
+                section.items.take(3).forEach { item ->
+                    Timber.tag("REC_DEBUG").d("  • ${item.primaryTitle}")
+                    Timber.tag("REC_DEBUG")
+                        .d("    artist=${item.artist?.name}, nature=${item.artist?.nature}")
+                    Timber.tag("REC_DEBUG")
+                        .d("    album=${item.album?.title}, nature=${item.album?.nature}")
+                }
+            }
+        }
+
+        appScopeIO.launch {
+            profileRepository.loadFromDb()
+            recommendationService.refreshAll()
+        }
+
+
+        /*
+        appScopeIO.launch {
+            recommendationService.refreshAll()
+            delay(500)
+
+            val sections = recommendationService.sections.value
+            sections.forEach { section ->
+                Timber.tag("REC_DEBUG").d("=== ${section.id} ===")
+                section.items.take(3).forEach { item ->
+                    val artistNature = item.artist?.nature
+                    val albumNature = item.album?.nature
+                    Timber.tag("REC_DEBUG").d("  • ${item.primaryTitle}")
+                    Timber.tag("REC_DEBUG")
+                        .d("    artist=${item.artist?.name}, nature=$artistNature")
+                    Timber.tag("REC_DEBUG").d("    album=${item.album?.title}, nature=$albumNature")
+                }
+            }
+        }
+        */
+
+        /*
+        appScopeIO.launch {
+            Timber.tag("REC_DEBUG").d("=== NATURE DATA CHECK ===")
+
+            // Artisti con nature != UNKNOWN
+            val aiArtists = Database.artistDao().getArtistsByNature(ArtistNature.AI_GENERATED)
+            val humanArtists = Database.artistDao().getArtistsByNature(ArtistNature.HUMAN)
+            val compilationArtists = Database.artistDao().getArtistsByNature(ArtistNature.COMPILATION)
+            Timber.tag("REC_DEBUG")
+                .d("Artists: AI=${aiArtists.size}, HUMAN=${humanArtists.size}, COMPILATION=${compilationArtists.size}")
+
+            // Album con nature != UNKNOWN
+            val albumStats = Database.getInstance.openHelper.readableDatabase.query("""
+        SELECT nature, COUNT(*) FROM Album WHERE nature != 'UNKNOWN' GROUP BY nature
+    """.trimIndent()).use { cursor ->
+                val map = mutableMapOf<String, Int>()
+                while (cursor.moveToNext()) {
+                    map[cursor.getString(0)] = cursor.getInt(1)
+                }
+                map
+            }
+            Timber.tag("REC_DEBUG").d("Album natures: $albumStats")
+
+            // MBAlbum con nature
+            val mbStats = Database.getInstance.openHelper.readableDatabase.query("""
+        SELECT nature, COUNT(*) FROM mb_album WHERE nature != 'UNKNOWN' GROUP BY nature
+    """.trimIndent()).use { cursor ->
+                val map = mutableMapOf<String, Int>()
+                while (cursor.moveToNext()) {
+                    map[cursor.getString(0)] = cursor.getInt(1)
+                }
+                map
+            }
+            Timber.tag("REC_DEBUG").d("MBAlbum natures: $mbStats")
+        }
+
+         */
+
+        /*
+        appScopeIO.launch {
+            Timber.tag("REC_DEBUG").d("=== NATURE BACKFILL START ===")
+
+            val backfiller = NatureBackfiller()
+            val result = backfiller.backfillAll()
+
+            Timber.tag("REC_DEBUG").d("=== NATURE BACKFILL DONE ===")
+            Timber.tag("REC_DEBUG").d("Artists classified: ${result.artistsClassified}")
+            Timber.tag("REC_DEBUG").d("Albums classified: ${result.albumsClassified}")
+            Timber.tag("REC_DEBUG").d("MBAlbums classified: ${result.mbAlbumsClassified}")
+
+            // Verifica campionamento AI artists
+            val aiArtists = Database.artistDao().getArtistsByNature(ArtistNature.AI_GENERATED)
+            Timber.tag("REC_DEBUG").d("=== AI ARTISTS FOUND: ${aiArtists.size} ===")
+            aiArtists.take(5).forEach {
+                Timber.tag("REC_DEBUG").d("  🤖 ${it.name} (genres: ${it.genres?.take(3)})")
+            }
+
+            // Verifica campionamento Human artists
+            val humanArtists = Database.artistDao().getArtistsByNature(ArtistNature.HUMAN)
+            Timber.tag("REC_DEBUG").d("=== HUMAN ARTISTS SAMPLE ===")
+            humanArtists.take(3).forEach {
+                Timber.tag("REC_DEBUG").d("  🎸 ${it.name}")
+            }
+        }
+        */
+
+        /*
+        // Genera struttura db
         appScopeIO.launch {
             val db = Database.getInstance.openHelper.readableDatabase
 
@@ -188,6 +320,8 @@ class MainApplication : Application(), ImageLoaderFactory {
                 .d("Artist has youtubeChannelId: ${"youtubeChannelId" in artistCols}")
             Timber.tag("DB_DEBUG").d("Artist has nature: ${"nature" in artistCols}")
         }
+
+         */
 
         /*
         // Verifica tutte le strategie e le sezioni create
@@ -329,6 +463,6 @@ object Dependencies {
         this.application = application
         DatabaseInitializer()
         InitializeEnvironment( this.application ) // android initialization
-        //initializeEnvironment() // multiplatform initialization
+
     }
 }

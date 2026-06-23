@@ -10,6 +10,7 @@ import it.fast4x.riplay.extensions.experimental.recommendationstrategy.Recommend
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.ScoredRecommendation
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.UserProfile
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
+import it.fast4x.riplay.extensions.musicbrainz.repository.ArtistRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -22,6 +23,9 @@ class MBGraphWalkStrategy() : RecommendationStrategy {
     override val id: String = "mb_graph_walk"
     override val displayName: String = "Dallo stesso universo"
     override val displaySubtitle: String = "Artisti correlati a quelli che ami"
+
+    val artistRepository = ArtistRepository()
+    val artistDao = Database.artistDao()
 
     override suspend fun generate(
         profile: UserProfile,
@@ -205,7 +209,7 @@ class MBGraphWalkStrategy() : RecommendationStrategy {
             delay(1100)
             val mbArtist = mbClient.fetchArtistDetail(mbId)
             val artist = Artist(
-                id = "mb-$mbId",
+                id = "",
                 name = mbArtist.name,
                 mbId = mbId,
                 timestamp = System.currentTimeMillis(),
@@ -216,12 +220,13 @@ class MBGraphWalkStrategy() : RecommendationStrategy {
                 beginYear = mbArtist.lifeSpan?.begin?.substring(0, 4)?.toIntOrNull(),
                 tags = mbArtist.tags?.map { it.name }?.takeIf { it.isNotEmpty() }
             )
-            Database.artistDao().upsert(artist)
+            val savedId = artistRepository.upsertSmart(artist)
+            val savedArtist = artistDao.getById(savedId) ?: return null
 
             if (BuildConfig.DEBUG)
                 Timber.tag("REC_DEBUG").d("    Fetched stub: ${artist.name} ($mbId)")
 
-            artist
+            savedArtist
         } catch (e: Exception) {
             Timber.tag("REC_DEBUG").w("    Failed to fetch artist $mbId: ${e.message}")
             null

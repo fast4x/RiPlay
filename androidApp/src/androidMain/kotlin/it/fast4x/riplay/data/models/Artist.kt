@@ -7,10 +7,12 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import it.fast4x.riplay.commonutils.YTM_ARTIST_SHARE_BASEURL
 import it.fast4x.riplay.commonutils.YT_ARTIST_SHARE_BASEURL
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.ArtistNature
 import it.fast4x.riplay.enums.LinkType
 import it.fast4x.riplay.extensions.musicbrainz.models.ExternalLink
 import it.fast4x.riplay.utils.toFlagEmoji
+import java.util.UUID
 
 
 @Immutable

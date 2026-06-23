@@ -395,6 +395,54 @@ class MusicBrainz {
         return response.body<MBArtistRelationResponse>().relations
     }
 
+    // In MBClient.kt
+
+    /**
+     * Cerca release groups su MusicBrainz per titolo e artista.
+     * Ritorna una lista di risultati ordinati per relevance score (0-100).
+     */
+    suspend fun searchReleaseGroup(
+        title: String,
+        artist: String,
+        limit: Int = 10
+    ): List<MBReleaseGroupSearchResult> {
+        val encodedTitle = URLEncoder.encode(title, "UTF-8")
+        val encodedArtist = URLEncoder.encode(artist, "UTF-8")
+
+        // Query combinata: titolo + artista per match più preciso
+        val query = "releasegroup:\"$encodedTitle\" AND artist:\"$encodedArtist\""
+        val encodedQuery = URLEncoder.encode(query, "UTF-8")
+
+        val response = client.get("$baseUrl/release-group/?query=$encodedQuery&limit=$limit&fmt=json") {
+            header("User-Agent", userAgent)
+        }
+
+        val searchResponse = response.body<MBSearchReleaseGroupResponse>()
+
+        // Filtra per score rilevante (MB assegna score 0-100)
+        return searchResponse.releaseGroups.filter { it.score >= 70 }
+    }
+
+    /**
+     * Cerca release groups su MusicBrainz solo per titolo (senza artista).
+     * Utile come fallback quando l'artista non matcha.
+     */
+    suspend fun searchReleaseGroupByTitle(
+        title: String,
+        limit: Int = 10
+    ): List<MBReleaseGroupSearchResult> {
+        val encodedTitle = URLEncoder.encode(title, "UTF-8")
+        val query = "releasegroup:\"$encodedTitle\""
+        val encodedQuery = URLEncoder.encode(query, "UTF-8")
+
+        val response = client.get("$baseUrl/release-group/?query=$encodedQuery&limit=$limit&fmt=json") {
+            header("User-Agent", userAgent)
+        }
+
+        val searchResponse = response.body<MBSearchReleaseGroupResponse>()
+        return searchResponse.releaseGroups.filter { it.score >= 70 }
+    }
+
     // Helper per dedurre la piattaforma dall'URL
     private fun extractPlatformFromUrl(url: String, type: String?): String {
         return when {

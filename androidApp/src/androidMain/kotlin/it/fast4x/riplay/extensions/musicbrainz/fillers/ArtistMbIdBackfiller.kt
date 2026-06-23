@@ -3,6 +3,7 @@ package it.fast4x.riplay.extensions.musicbrainz.fillers
 import android.util.Log
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
+import it.fast4x.riplay.extensions.musicbrainz.repository.ArtistRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -11,6 +12,7 @@ import timber.log.Timber
 class ArtistMbIdBackfiller() {
 
     val mbClient = MusicBrainz()
+    val artistRepository = ArtistRepository()
 
     suspend fun backfill(limit: Int = 50): Result = withContext(Dispatchers.IO) {
         val artists = Database.artistDao().getArtistsWithoutMbId(limit)
@@ -26,7 +28,7 @@ class ArtistMbIdBackfiller() {
                 val mbid = searchResult.firstOrNull()?.id
 
                 if (mbid != null) {
-                    Database.update(artist.copy(mbId = mbid))
+                    artistRepository.upsertSmart(artist.copy(mbId = mbid))
                     success++
                     Timber.tag("MbIdBackfill").i("  ✓ ${artist.name} → $mbid")
                 } else {

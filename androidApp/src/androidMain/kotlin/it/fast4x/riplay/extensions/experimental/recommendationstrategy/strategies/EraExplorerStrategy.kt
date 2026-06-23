@@ -4,6 +4,7 @@ import android.util.Log
 import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.dao.getSongsByDecade
+import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.RecommendationStrategy
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.ScoredRecommendation
@@ -55,14 +56,18 @@ class EraExplorerStrategy() : RecommendationStrategy {
                 // Vogliamo ALMENO 1 match (per非 essere rilevanti) MA NON più di 2 (per essere cross-genre)
                 if (matchingGenres.isEmpty() || matchingGenres.size > 2) continue
 
-                val score = scoreCandidate(song, decade, profile, matchingGenres)
+                // Cerca artista reale via cross-ref
+                val artists = Database.songArtistCrossRefDao().getArtistsForSong(song.id)
+                val primaryArtist = artists.firstOrNull()
+
+                val score = scoreCandidate(song, decade, profile, matchingGenres, primaryArtist)
                 results.add(score)
             }
 
             if (results.size >= limit * 2) break
         }
 
-        Log.d("REC_DEBUG", "EraExplorer: ${results.size} candidates")
+        Timber.tag("REC_DEBUG").d("EraExplorer: ${results.size} candidates")
 
         results
             .sortedByDescending { it.score }
@@ -73,7 +78,8 @@ class EraExplorerStrategy() : RecommendationStrategy {
         song: Song,
         decade: Int,
         profile: UserProfile,
-        matchingGenres: Set<String>
+        matchingGenres: Set<String>,
+        artist: Artist?
     ): ScoredRecommendation {
         val eraWeight = profile.eraVector[decade] ?: 0f
 
@@ -102,7 +108,7 @@ class EraExplorerStrategy() : RecommendationStrategy {
         return ScoredRecommendation(
             song = song,
             album = null,
-            artist = null,
+            artist = artist,
             score = score,
             reasons = reasons,
             strategyId = id

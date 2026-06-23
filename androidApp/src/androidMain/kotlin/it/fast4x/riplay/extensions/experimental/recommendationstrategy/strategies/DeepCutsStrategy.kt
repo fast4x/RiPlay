@@ -3,6 +3,7 @@ package it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategi
 import android.util.Log
 import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.ArtistAffinity
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.RecommendationStrategy
@@ -42,8 +43,11 @@ class DeepCutsStrategy() : RecommendationStrategy {
                 limit = 5
             )
 
+            // Cerca l'artista reale per ottenere nature
+            val artist = Database.artistDao().getById(affinity.artistId)
+
             for (song in unplayedSongs) {
-                val score = scoreCandidate(song, affinity)
+                val score = scoreCandidate(song, affinity, artist)
                 if (score.score > 0.2f) {
                     results.add(score)
                 }
@@ -62,7 +66,8 @@ class DeepCutsStrategy() : RecommendationStrategy {
 
     private fun scoreCandidate(
         song: Song,
-        artistAffinity: ArtistAffinity
+        artistAffinity: ArtistAffinity,
+        artist: Artist?
     ): ScoredRecommendation {
         // Score basato su:
         // - Affinità artista (più alto = più rilevante)
@@ -82,7 +87,7 @@ class DeepCutsStrategy() : RecommendationStrategy {
         return ScoredRecommendation(
             song = song,
             album = null,
-            artist = null,  // potresti caricarlo via DAO se serve
+            artist = artist,
             score = score,
             reasons = reasons,
             strategyId = id
