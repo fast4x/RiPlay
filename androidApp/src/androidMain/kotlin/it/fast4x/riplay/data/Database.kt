@@ -12,7 +12,6 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.DeleteColumn
 import androidx.room.DeleteTable
-import androidx.room.Ignore
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -3480,9 +3479,9 @@ interface Database {
     @Transaction
     fun upsert(album: Album)
 
-//    @Upsert
-//    @Transaction
-//    fun upsert(songAlbumMaps: List<SongAlbumMap>)
+    @Upsert
+    @Transaction
+    fun upsertSongsAlbumMaps(songAlbumMaps: List<SongAlbumMap>)
 
     @Upsert
     fun upsert(artist: Artist, songArtistMap: SongArtistMap)

@@ -83,6 +83,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
+import it.fast4x.riplay.extensions.musicbrainz.repository.ArtistRepository
 import kotlinx.serialization.ExperimentalSerializationApi
 
 @UnstableApi
@@ -402,7 +403,16 @@ suspend fun updateOnlineArtist(browseId: String) {
 
             Environment.artistPage(BrowseBody(browseId = browseId))
                 ?.onSuccess { page ->
-
+                    val artist = Artist(
+                        id = browseId,
+                        youtubeChannelId = browseId,
+                        name = page.name,
+                        thumbnailUrl = page.thumbnail?.url,
+                        timestamp = System.currentTimeMillis(),
+                        bookmarkedAt = currentArtist?.bookmarkedAt
+                    )
+                    ArtistRepository().upsertSmart(artist)
+                    /*
                     Database.upsert(
                         Artist(
                             id = browseId,
@@ -412,6 +422,8 @@ suspend fun updateOnlineArtist(browseId: String) {
                             bookmarkedAt = currentArtist?.bookmarkedAt
                         )
                     )
+
+                     */
                 }
         }
     }

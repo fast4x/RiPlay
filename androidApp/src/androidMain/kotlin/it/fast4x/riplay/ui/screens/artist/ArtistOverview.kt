@@ -89,6 +89,7 @@ import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.extensions.musicbrainz.MBMetadataHelper
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
+import it.fast4x.riplay.extensions.musicbrainz.repository.ArtistRepository
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
@@ -212,10 +213,34 @@ fun ArtistOverview(
                 EnvironmentExt.getArtistPage(browseId = browseId)
                     .onSuccess { currentArtistPage ->
                         artistPage = currentArtistPage
-
+                        val artist = Artist(
+                            id = browseId,
+                            youtubeChannelId = browseId,
+                            name = currentArtistPage.artist.info?.name,
+                            thumbnailUrl = currentArtistPage.artist.thumbnail?.url,
+                            timestamp = System.currentTimeMillis(),
+                            bookmarkedAt = artist?.bookmarkedAt,
+                            isYoutubeArtist = artist?.isYoutubeArtist == true,
+                            genres = artist?.genres,
+                            artistType = artist?.artistType,
+                            countryCode = artist?.countryCode,
+                            beginYear = artist?.beginYear,
+                            tags = artist?.tags,
+                            rating = artist?.rating,
+                            ratingVotes = artist?.ratingVotes,
+                            wikipediaUrl = artist?.wikipediaUrl,
+                            description = artist?.description,
+                            disambiguation = artist?.disambiguation,
+                            wikipediaBio = artist?.wikipediaBio,
+                            links = artist?.links,
+                            mbId = artist?.mbId,
+                        )
+                        ArtistRepository().upsertSmart(artist)
+                        /*
                         Database.upsert(
                             Artist(
                                 id = browseId,
+                                youtubeChannelId = browseId,
                                 name = currentArtistPage.artist.info?.name,
                                 thumbnailUrl = currentArtistPage.artist.thumbnail?.url,
                                 timestamp = System.currentTimeMillis(),
@@ -233,9 +258,11 @@ fun ArtistOverview(
                                 disambiguation = artist?.disambiguation,
                                 wikipediaBio = artist?.wikipediaBio,
                                 links = artist?.links,
-                                mbId = artist?.mbId
+                                mbId = artist?.mbId,
                             )
                         )
+
+                         */
                     }
             }.invokeOnCompletion {
                 launch(Dispatchers.IO) {

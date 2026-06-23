@@ -137,6 +137,7 @@ import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.extensions.musicbrainz.MBMetadataHelper
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
+import it.fast4x.riplay.extensions.musicbrainz.repository.AlbumRepository
 import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.PullToRefreshBox
@@ -216,6 +217,7 @@ fun AlbumDetails(
 
                             val albumToSave = Album(
                                 id = browseId,
+                                youtubeAlbumId = browseId,
                                 title = album?.title ?: currentAlbumPage.album.title,
                                 thumbnailUrl = if (album?.thumbnailUrl?.startsWith(MODIFIED_PREFIX) == true)
                                     album?.thumbnailUrl else currentAlbumPage.album.thumbnail?.url,
@@ -245,8 +247,10 @@ fun AlbumDetails(
                                 )
                             }
 
+                            AlbumRepository().upsertSmart(albumToSave)
+                            Database.upsertSongsAlbumMaps(songAlbumMaps)
 
-                            Database.upsert(albumToSave, songAlbumMaps)
+                            //Database.upsert(albumToSave, songAlbumMaps)
 
                         } catch (e: Exception) {
                             Timber.e("AlbumDetails Errore salvataggio DB Album/Songs: ${e.stackTraceToString()}")
@@ -288,6 +292,7 @@ fun AlbumDetails(
 
             val albumToSave = Album(
                 id = browseId,
+                youtubeAlbumId = browseId,
                 title = if (album?.title?.startsWith(MODIFIED_PREFIX) == true) album?.title else currentPage.album?.title,
                 thumbnailUrl = if (album?.thumbnailUrl?.startsWith(MODIFIED_PREFIX) == true) album?.thumbnailUrl else currentPage.album?.thumbnail?.url,
                 year = currentPage.album.year,
@@ -311,8 +316,12 @@ fun AlbumDetails(
             mediaItems.forEach { mediaItem ->
                 Database.insert(mediaItem)
             }
+            CoroutineScope(Dispatchers.IO).launch {
+                AlbumRepository().upsertSmart(albumToSave)
+            }
+            Database.upsertSongsAlbumMaps(songAlbumMaps)
 
-            Database.upsert(albumToSave, songAlbumMaps)
+            //Database.upsert(albumToSave, songAlbumMaps)
         }
     }
 

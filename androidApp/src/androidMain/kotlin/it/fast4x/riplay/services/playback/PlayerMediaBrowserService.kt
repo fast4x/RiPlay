@@ -52,6 +52,7 @@ import it.fast4x.riplay.enums.HomeItemSize
 import it.fast4x.riplay.enums.PlaylistSongSortBy
 import it.fast4x.riplay.enums.PlaylistSortBy
 import it.fast4x.riplay.enums.SongSortBy
+import it.fast4x.riplay.extensions.musicbrainz.repository.AlbumRepository
 import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUM_SORT_BY
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUM_SORT_ORDER
@@ -82,7 +83,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.also
 
@@ -714,6 +714,28 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                                                     position = position
                                                 )
                                             }
+
+                                        val album = Album(
+                                            id = id,
+                                            title = album?.title ?: currentAlbumPage.album.title,
+                                            thumbnailUrl = if (album?.thumbnailUrl?.startsWith(
+                                                    MODIFIED_PREFIX
+                                                ) == true
+                                            ) album.thumbnailUrl else currentAlbumPage.album.thumbnail?.url,
+                                            year = currentAlbumPage.album.year,
+                                            authorsText = if (album?.authorsText?.startsWith(
+                                                    MODIFIED_PREFIX
+                                                ) == true
+                                            ) album.authorsText else currentAlbumPage.album.authors
+                                                ?.joinToString(", ") { it.name ?: "" },
+                                            shareUrl = currentAlbumPage.url,
+                                            timestamp = System.currentTimeMillis(),
+                                            bookmarkedAt = album?.bookmarkedAt,
+                                            isYoutubeAlbum = album?.isYoutubeAlbum == true
+                                        )
+                                        AlbumRepository().upsertSmart(album)
+                                        Database.upsertSongsAlbumMaps(innerSongsAlbumMap)
+                                        /*
                                         Database.upsert(
                                             Album(
                                                 id = id,
@@ -735,6 +757,8 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                                             ),
                                             innerSongsAlbumMap
                                         )
+
+                                         */
                                     }
                             }
 
@@ -797,6 +821,27 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                                                     position = position
                                                 )
                                             }
+                                        val album = Album(
+                                            id = id,
+                                            title = album?.title ?: currentAlbumPage.album.title,
+                                            thumbnailUrl = if (album?.thumbnailUrl?.startsWith(
+                                                    MODIFIED_PREFIX
+                                                ) == true
+                                            ) album.thumbnailUrl else currentAlbumPage.album.thumbnail?.url,
+                                            year = currentAlbumPage.album.year,
+                                            authorsText = if (album?.authorsText?.startsWith(
+                                                    MODIFIED_PREFIX
+                                                ) == true
+                                            ) album.authorsText else currentAlbumPage.album.authors
+                                                ?.joinToString(", ") { it.name ?: "" },
+                                            shareUrl = currentAlbumPage.url,
+                                            timestamp = System.currentTimeMillis(),
+                                            bookmarkedAt = album?.bookmarkedAt,
+                                            isYoutubeAlbum = album?.isYoutubeAlbum == true
+                                        )
+                                        AlbumRepository().upsertSmart(album)
+                                        Database.upsertSongsAlbumMaps(innerSongsAlbumMap)
+                                        /*
                                         Database.upsert(
                                             Album(
                                                 id = id,
@@ -818,6 +863,8 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                                             ),
                                             innerSongsAlbumMap
                                         )
+
+                                         */
                                     }
                             }
 
