@@ -39,6 +39,7 @@ import it.fast4x.riplay.commonutils.PINNED_PREFIX
 import it.fast4x.riplay.commonutils.PIPED_PREFIX
 import it.fast4x.riplay.data.dao.AlbumDao
 import it.fast4x.riplay.data.dao.ArtistDao
+import it.fast4x.riplay.data.dao.EventDao
 import it.fast4x.riplay.data.dao.MBAlbumDao
 import it.fast4x.riplay.data.dao.RecommendationDao
 import it.fast4x.riplay.data.dao.RelationDao
@@ -135,6 +136,9 @@ interface Database {
         }
         fun relationDao(): RelationDao {
             return (DatabaseInitializer.Instance).relationDao()
+        }
+        fun eventDao(): EventDao {
+            return (DatabaseInitializer.Instance).eventDao()
         }
     }
 
@@ -3727,6 +3731,7 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
     abstract fun mbAlbumDao(): MBAlbumDao
     abstract fun recommendationDao(): RecommendationDao
     abstract fun relationDao(): RelationDao
+    abstract fun eventDao(): EventDao
 
 
     // Crud da migrare in dao

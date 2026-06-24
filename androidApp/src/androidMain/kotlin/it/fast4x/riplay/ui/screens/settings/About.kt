@@ -64,7 +64,7 @@ fun About() {
                 .fillMaxSize()
         ) {
             BasicText(
-                text = "RiPlay ${BuildConfig.VERSION_NAME} (${BuildConfig.FLAVOR}) by fast4x",
+                text = "RiPlay ${BuildConfig.VERSION_NAME} (${BuildConfig.FLAVOR}${if(BuildConfig.DEBUG) " DEBUG" else ""})  by fast4x",
                 style = typography().s.secondary
             )
         }

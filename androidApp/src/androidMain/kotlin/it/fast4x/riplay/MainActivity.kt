@@ -269,6 +269,8 @@ import java.util.Objects
 import kotlin.math.sqrt
 import androidx.compose.ui.platform.LocalLocale
 import it.fast4x.riplay.extensions.appviewmodel.AppViewModelProvider
+import it.fast4x.riplay.extensions.musicbrainz.viewmodels.AlbumInsightsViewModel
+import it.fast4x.riplay.extensions.musicbrainz.viewmodels.ArtistInsightsViewModel
 import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.musicvault.checkAndStartMusicVault
 import it.fast4x.riplay.extensions.preferences.cleanUpUnusedPreferences
@@ -354,6 +356,13 @@ class MainActivity :
 
     private val onDeviceViewModel: OnDeviceViewModel by viewModels {
         OnDeviceViewModel(application)
+    }
+
+    private val artistInsightsViewModel: ArtistInsightsViewModel by viewModels {
+        ArtistInsightsViewModel(application)
+    }
+    private val albumInsightsViewModel: AlbumInsightsViewModel by viewModels {
+        AlbumInsightsViewModel(application)
     }
 
     private var showAutostartPermissionDialog = false
@@ -1387,6 +1396,8 @@ class MainActivity :
                                 LocalOnDeviceViewModel provides onDeviceViewModel,
                                 //LocalCastSheetState provides castSheetState,
                                 LocalRiTuneSheetState provides castSheetState,
+                                LocalArtistInsights provides artistInsightsViewModel,
+                                LocalAlbumInsights provides albumInsightsViewModel,
                                 //LocalOnlinePlayerPlayingState provides onlinePlayerPlayingState,
                                 //LocalGlobalQueue provides globalQueueViewModel,
                                 //LocalInternetAvailable provides isInternetAvailable
@@ -1990,3 +2001,6 @@ val LocalOnDeviceViewModel = staticCompositionLocalOf<OnDeviceViewModel> { error
 
 val LocalRiTuneSheetState = staticCompositionLocalOf<BottomSheetState> { error("No RiTune sheet provided") }
 
+val LocalArtistInsights = staticCompositionLocalOf<ArtistInsightsViewModel> { error("No artist insights provided")}
+
+val LocalAlbumInsights = staticCompositionLocalOf<AlbumInsightsViewModel> { error("No album insights provided")}

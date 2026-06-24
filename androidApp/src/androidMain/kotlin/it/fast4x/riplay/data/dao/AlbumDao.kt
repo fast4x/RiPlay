@@ -47,6 +47,24 @@ interface AlbumDao {
 """)
     suspend fun getYtAlbumsWithoutMbId(limit: Int): List<Album>
 
+    @Query("""
+    SELECT a.* FROM Album a
+    WHERE a.authorsText LIKE '%' || :artistName || '%'
+    ORDER BY a.originalYear ASC
+""")
+    suspend fun getAlbumsByArtistName(artistName: String): List<Album>
+
+    // recupera album per artista via cross-ref
+    @Query("""
+    SELECT a.* FROM Album a
+    INNER JOIN song_artist_cross_ref sac ON sac.songId IN (SELECT id FROM Song WHERE albumId = a.id)
+    WHERE sac.artistId = :artistId
+    GROUP BY a.id
+    ORDER BY a.originalYear ASC
+""")
+    suspend fun getAlbumsByArtist(artistId: String): List<Album>
+
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(album: Album)
 

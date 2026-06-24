@@ -40,21 +40,19 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.github.doyaaaaaken.kotlincsv.client.KotlinCsvExperimental
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Chip
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.StatisticsType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.data.models.Mood
-import it.fast4x.riplay.data.models.SearchQuery
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.ui.screens.player.common.Queue
 import it.fast4x.riplay.ui.screens.blacklist.BlacklistScreen
 import it.fast4x.riplay.extensions.listenerlevel.ListenerLevelCharts
+import it.fast4x.riplay.extensions.musicbrainz.ui.AlbumInsightsScreen
+import it.fast4x.riplay.extensions.musicbrainz.ui.ArtistInsightsScreen
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
-import it.fast4x.riplay.ui.screens.album.AlbumScreen
-import it.fast4x.riplay.ui.screens.artist.ArtistScreen
 import it.fast4x.riplay.ui.screens.history.HistoryScreen
 import it.fast4x.riplay.ui.screens.home.HomeScreen
 import it.fast4x.riplay.ui.screens.ondevice.OnDeviceAlbumScreen
@@ -70,20 +68,19 @@ import it.fast4x.riplay.ui.screens.settings.SettingsScreen
 import it.fast4x.riplay.ui.screens.statistics.StatisticsScreen
 import it.fast4x.riplay.ui.screens.welcome.WelcomeScreen
 import it.fast4x.riplay.utils.ShowVideoOrSongInfo
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PAUSE_SEARCH_HISTORY
-import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_ON_BOARDING_SCREEN
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSITION_EFFECT
 import it.fast4x.riplay.extensions.rewind.RewindListScreen
 import it.fast4x.riplay.extensions.rewind.RewindScreen
+import it.fast4x.riplay.ui.screens.album.AlbumScreen
+import it.fast4x.riplay.ui.screens.artist.ArtistScreen
 import it.fast4x.riplay.ui.screens.moodandchip.ChipListScreen
 import it.fast4x.riplay.ui.screens.onboarding.OnboardingScreen
 import it.fast4x.riplay.ui.screens.ondevice.OnDevicePlaylistScreen
 import it.fast4x.riplay.utils.MusicIdentifier
 import kotlinx.serialization.ExperimentalSerializationApi
-import java.net.URLEncoder
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class,
     ExperimentalMaterialApi::class, ExperimentalTextApi::class, ExperimentalComposeUiApi::class,
@@ -347,6 +344,27 @@ fun AppNavigation(
         }
 
         composable(
+            route = "${NavRoutes.artistInsights.name}/{id}",
+            arguments = listOf(
+                navArgument(
+                    name = "id",
+                    builder = { type = NavType.StringType }
+                )
+            )
+        ) { navBackStackEntry ->
+            val id = navBackStackEntry.arguments?.getString("id") ?: ""
+            val showModalBottomSheetPage = rememberSaveable { mutableStateOf(true) }
+            modalBottomSheetPage(showSheet = showModalBottomSheetPage.value) {
+                ArtistInsightsScreen(
+                    id,
+                    onArtistClick = {},
+                    onAlbumClick = {},
+                    onBack = {}
+                )
+            }
+        }
+
+        composable(
             route = "${NavRoutes.onDeviceArtist.name}/{id}",
             arguments = listOf(
                 navArgument(
@@ -379,6 +397,30 @@ fun AppNavigation(
                 miniPlayer = miniPlayer,
             )
         }
+
+        composable(
+            route = "${NavRoutes.albumInsights.name}/{id}",
+            arguments = listOf(
+                navArgument(
+                    name = "id",
+                    builder = { type = NavType.StringType }
+                )
+            )
+        ) { navBackStackEntry ->
+            val id = navBackStackEntry.arguments?.getString("id") ?: ""
+            val showModalBottomSheetPage = rememberSaveable { mutableStateOf(true) }
+            modalBottomSheetPage(showSheet = showModalBottomSheetPage.value) {
+                AlbumInsightsScreen(
+                    id,
+                    onBack = {},
+                    onAlbumClick = {},
+                    onArtistClick = {},
+                    onSongClick = {}
+                )
+            }
+        }
+
+
 
         composable(
             route = "${NavRoutes.onDeviceAlbum.name}/{id}",

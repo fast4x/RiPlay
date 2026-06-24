@@ -55,6 +55,21 @@ interface SongDao {
 """)
     suspend fun getLastPlayedAt(songId: String): Long?
 
+    @Query("""
+    SELECT * FROM Song 
+    WHERE albumId = :albumId 
+      AND isPodcast = 0
+    ORDER BY id ASC
+    LIMIT :limit
+""")
+    suspend fun getSongsByAlbum(albumId: String, limit: Int = 100): List<Song>
+
+    @Query("""
+    SELECT COUNT(*) FROM Song 
+    WHERE albumId = :albumId AND isPodcast = 0
+""")
+    suspend fun countSongsByAlbum(albumId: String): Int
+
 }
 // Helper extension
 suspend fun SongDao.getSongsByDecade(decade: Int, limit: Int): List<Song> =

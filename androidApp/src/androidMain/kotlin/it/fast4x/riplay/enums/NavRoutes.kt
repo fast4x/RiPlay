@@ -29,7 +29,9 @@ enum class NavRoutes {
     chip,
     onDevicePlaylist,
     blacklist,
-    onBoarding;
+    onBoarding,
+    albumInsights,
+    artistInsights;
 
     companion object {
         fun current( navController: NavController ) = navController.currentBackStackEntry?.destination?.route
