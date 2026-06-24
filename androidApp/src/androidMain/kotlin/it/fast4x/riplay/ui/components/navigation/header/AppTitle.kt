@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,6 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.appviewmodel.LocalAppViewModel
@@ -63,9 +66,14 @@ private fun AppLogoText( navController: NavController ) {
             navController.popBackStack(route = NavRoutes.home.name, inclusive = false)
     }
 
+    val isDebugModeEnabled by rememberPreference(LOG_DEBUG_ENABLED.key, false)
+
+    val appTitle by remember { mutableStateOf(
+        "Play${if (BuildConfig.DEBUG || isDebugModeEnabled) " DEBUG" else ""}"
+    ) }
 
     Text(
-        text = "Play",
+        text = appTitle,
         style = typography().xxl.copy(
             color = colorPalette().text
         ),
@@ -142,6 +150,7 @@ fun AppTitle(
                 )
             }
 
+            /*
             val isDebugModeEnabled by rememberPreference(LOG_DEBUG_ENABLED.key, false)
             if (isDebugModeEnabled)
                 Image(
@@ -152,6 +161,8 @@ fun AppTitle(
                         .size(8.dp)
                        // .align(Alignment.BottomEnd)
                 )
+
+             */
         }
 
         if(isParentalControlEnabled())
