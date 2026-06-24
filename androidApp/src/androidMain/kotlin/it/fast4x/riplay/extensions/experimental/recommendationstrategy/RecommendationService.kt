@@ -4,6 +4,7 @@ import android.util.Log
 import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Recommendation
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategies.RecommendationCopy
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.ui.RecommendationSection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -136,11 +137,13 @@ class RecommendationService(
                 }
             )
 
+            val (title, subtitle) = RecommendationCopy.getCopyForStrategy(strategy.id)
+
             RecommendationSection(
                 id = strategy.id,
-                title = strategy.displayName,
-                subtitle = strategy.displaySubtitle,
-                items = candidates.take(limit),  // ★ take limit qui perché la strategia può restituire più del necessario
+                title = title,        // copy rotante
+                subtitle = subtitle,  // copy rotante
+                items = candidates.take(limit),
                 updatedAt = now
             )
         } catch (e: Exception) {

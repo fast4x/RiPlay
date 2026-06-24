@@ -201,6 +201,7 @@ import it.fast4x.riplay.data.models.QueuedMediaItem
 import it.fast4x.riplay.data.models.defaultQueueId
 import it.fast4x.riplay.enums.AudioQualityFormat
 import it.fast4x.riplay.enums.CastType
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.DiscoveryInfo
 import it.fast4x.riplay.extensions.musicbrainz.MBMetadataHelper
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.preferences.PreferenceKey
@@ -435,6 +436,9 @@ class PlayerService : Service(),
         add(AudioDeviceInfo.TYPE_LINE_ANALOG)
         add(AudioDeviceInfo.TYPE_LINE_DIGITAL)
     }
+
+    private val _currentDiscoveryReason = MutableStateFlow<DiscoveryInfo?>(null)
+    val currentDiscoveryReason: StateFlow<DiscoveryInfo?> = _currentDiscoveryReason
 
 
     override fun onBind(intent: Intent?): AndroidBinder {
@@ -1775,6 +1779,11 @@ private var pausedByZeroVolume = false
         Timber.d("PlayerService onMediaItemTransition mediaId=${mediaItem?.mediaId} uri=${mediaItem?.localConfiguration?.uri} musicVaultState=${mediaItem?.mediaMetadata?.extras?.getString("musicVaultState")} musicVaultFileName=${mediaItem?.mediaMetadata?.extras?.getString("musicVaultFileName")}")
 
         if (mediaItem == null) return
+
+        if (_currentDiscoveryReason.value?.itemId != mediaItem.mediaId) {
+            binder.clearDiscoverySource()
+        }
+
 
         currentMediaItemState.value = mediaItem
         localMediaItem = mediaItem
@@ -3367,6 +3376,9 @@ private var pausedByZeroVolume = false
         val sleepTimerMillisLeft: StateFlow<Long?>?
             get() = timerJob?.millisLeft
 
+        val currentDiscoveryReason: StateFlow<DiscoveryInfo?>
+            get() = this@PlayerService.currentDiscoveryReason
+
         private var radioJob: Job? = null
 
         var isLoadingRadio by mutableStateOf(false)
@@ -3556,6 +3568,25 @@ private var pausedByZeroVolume = false
         }
 
         fun loadQueue() = this@PlayerService.loadQueue()
+
+        /**
+         * Chiamato quando l'utente avvia un brano dai suggerimenti.
+         */
+        fun setDiscoverySource(strategyId: String, strategyName: String, reasons: List<String>, itemId: String) {
+            this@PlayerService._currentDiscoveryReason.value = DiscoveryInfo(
+                strategyId = strategyId,
+                strategyDisplayName = strategyName,
+                reasons = reasons,
+                itemId = itemId
+            )
+        }
+
+        /**
+         * Chiamato quando l'utente avvia un brano da altra fonte (ricerca, library, etc.).
+         */
+        fun clearDiscoverySource() {
+            _currentDiscoveryReason.value = null
+        }
 
     }
 

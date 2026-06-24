@@ -14,12 +14,14 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategies.RecommendationCopy
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
 
@@ -29,6 +31,9 @@ fun RecommendationHeader(
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // ★ Copy rotante
+    val (title, subtitle) = remember { RecommendationCopy.getMainHeader() }
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -44,11 +49,11 @@ fun RecommendationHeader(
         Spacer(Modifier.width(8.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "Per te dal tuo ascolto",
+                text = title,
                 style = typography().s
             )
             Text(
-                text = "Suggerimenti basati sulla tua libreria",
+                text = subtitle,
                 style = typography().xs,
                 color = colorPalette().text
             )

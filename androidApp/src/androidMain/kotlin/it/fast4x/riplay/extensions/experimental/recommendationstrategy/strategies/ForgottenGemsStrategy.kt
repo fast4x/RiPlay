@@ -98,7 +98,8 @@ class ForgottenGemsStrategy() : RecommendationStrategy {
             artist = artist,
             score = score,
             reasons = reasons,
-            strategyId = id
+            strategyId = id,
+            strategyDisplayName = displayName
         )
     }
 }

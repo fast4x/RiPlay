@@ -103,7 +103,8 @@ class QualityCuratorStrategy() : RecommendationStrategy {
             artist = null,
             score = score,
             reasons = reasons,
-            strategyId = id
+            strategyId = id,
+            strategyDisplayName = displayName
         )
     }
 

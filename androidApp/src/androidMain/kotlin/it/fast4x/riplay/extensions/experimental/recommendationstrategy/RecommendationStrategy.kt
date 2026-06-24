@@ -44,7 +44,8 @@ data class ScoredRecommendation(
     val artist: Artist?,
     val score: Float,
     val reasons: List<String>,
-    val strategyId: String
+    val strategyId: String,
+    val strategyDisplayName: String = ""
 ) {
     val primaryTitle: String
         get() = song?.title ?: album?.title ?: artist?.name ?: "—"
@@ -52,3 +53,10 @@ data class ScoredRecommendation(
     val primarySubtitle: String
         get() = song?.artistsText ?: album?.authorsText ?: artist?.info ?: ""
 }
+
+data class DiscoveryInfo(
+    val strategyId: String,
+    val strategyDisplayName: String,
+    val reasons: List<String>,
+    val itemId: String
+)

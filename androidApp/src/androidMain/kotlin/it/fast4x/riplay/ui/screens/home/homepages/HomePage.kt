@@ -438,6 +438,14 @@ fun HomePage(
                         scope.launch {
                             val itemId = item.song?.id ?: item.album?.id ?: item.artist?.id ?: ""
                             if (itemId.isBlank()) return@launch
+
+                            binder?.setDiscoverySource(
+                                strategyId = item.strategyId,
+                                strategyName = item.strategyDisplayName,
+                                reasons = item.reasons,
+                                itemId = itemId
+                            )
+
                             when {
                                 // Brano riproducibile diretto
                                 item.song != null -> {

@@ -181,7 +181,8 @@ class MBGraphWalkStrategy() : RecommendationStrategy {
             artist = otherArtist,
             score = score,
             reasons = reasons,
-            strategyId = id
+            strategyId = id,
+            strategyDisplayName = displayName
         )
     }
 }

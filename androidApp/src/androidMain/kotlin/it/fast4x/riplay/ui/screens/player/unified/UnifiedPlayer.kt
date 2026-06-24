@@ -272,6 +272,7 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BACKGRO
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.VISUALIZER_ENABLED
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.ui.DiscoveryBadge
 import it.fast4x.riplay.musicvault.MusicVaultButton
 import it.fast4x.riplay.ui.screens.player.common.Queue
 import it.fast4x.riplay.ui.components.BottomSheetState
@@ -1561,6 +1562,8 @@ fun UnifiedPlayer(
     val contentPadding = PaddingValues(bottom = bottomInset)
 
     val isNetworkConnected = rememberIsNetworkConnected()
+
+    val currentDiscoveryReason = binder.currentDiscoveryReason.collectAsState()
 
     Box(
         modifier = Modifier
@@ -2918,6 +2921,11 @@ fun UnifiedPlayer(
                                     .rotate(rotationAngle)
                                     //.padding(10.dp)
                                     .size(24.dp)
+                            )
+
+                            DiscoveryBadge(
+                                discoveryInfo = currentDiscoveryReason.value,
+                                //modifier = Modifier.padding(bottom = 8.dp)
                             )
 
                             Column(

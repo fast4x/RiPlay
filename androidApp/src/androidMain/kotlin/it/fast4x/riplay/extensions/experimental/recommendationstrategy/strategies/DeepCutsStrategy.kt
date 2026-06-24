@@ -32,6 +32,8 @@ class DeepCutsStrategy() : RecommendationStrategy {
 
         if (profile.topArtists.isEmpty()) return@withContext emptyList()
 
+
+
         val topArtists = profile.topArtists
             .filter { !it.artistId.startsWith("virtual::") }
             .take(10)
@@ -82,7 +84,8 @@ class DeepCutsStrategy() : RecommendationStrategy {
             artist = artist,
             score = score,
             reasons = reasons,
-            strategyId = id
+            strategyId = id,
+            strategyDisplayName = displayName
         )
     }
 }
