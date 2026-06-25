@@ -1234,6 +1234,14 @@ fun AlbumDetails(
                             }
                         }
 
+                        item {
+                            Title(
+                                title = "MusicBrainz Insights",
+                                onClick = {
+                                    navController.navigate(route = "${NavRoutes.albumInsights.name}/$browseId")
+                                },
+                            )
+                        }
 
                         item(
                             key = "songsTitle"

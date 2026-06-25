@@ -427,6 +427,7 @@ fun HomePage(
                     disableScrollingText = disableScrollingText
                 )
 
+                /* todo to implement new suggestions
                 BasicText(
                     text = "Recommendations",
                     style = typography().l.bold,
@@ -475,6 +476,8 @@ fun HomePage(
                         }
                     }
                 )
+
+                 */
 
 
                 if (showTips) {

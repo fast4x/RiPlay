@@ -2923,10 +2923,11 @@ fun UnifiedPlayer(
                                     .size(24.dp)
                             )
 
-                            DiscoveryBadge(
-                                discoveryInfo = currentDiscoveryReason.value,
-                                //modifier = Modifier.padding(bottom = 8.dp)
-                            )
+                            // todo add permanent badge
+//                            DiscoveryBadge(
+//                                discoveryInfo = currentDiscoveryReason.value,
+//                                //modifier = Modifier.padding(bottom = 8.dp)
+//                            )
 
                             Column(
                                 verticalArrangement = Arrangement.Center,

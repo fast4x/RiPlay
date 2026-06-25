@@ -2,6 +2,7 @@ package it.fast4x.riplay
 
 import android.app.Application
 import android.content.ComponentName
+import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
 import androidx.annotation.OptIn
@@ -49,6 +50,8 @@ import it.fast4x.riplay.extensions.musicbrainz.workers.ArtistRelationFetcher
 import it.fast4x.riplay.extensions.musicbrainz.workers.MBAlbumsByGenreFetcher
 import it.fast4x.riplay.extensions.musicbrainz.workers.MBAlbumsByGenreWorker
 import it.fast4x.riplay.extensions.musicbrainz.workers.MBMetadataBackfillWorker
+import it.fast4x.riplay.extensions.musicbrainz.workers.WorkScheduler
+import it.fast4x.riplay.extensions.musicbrainz.workers.WorkerDependencies
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.utils.InitializeEnvironment
 import kotlinx.coroutines.CoroutineScope
@@ -149,7 +152,34 @@ class MainApplication : Application(), ImageLoaderFactory {
             strategies = strategies,
         )
 
+        // Inizializza WorkerDependencies
+        WorkerDependencies.initialize(
+            database = Database,
+            mbClient = MusicBrainz(),
+            profileRepository = profileRepository
+        )
 
+        // Schedula job periodici
+        WorkScheduler.scheduleAll(this)
+
+        // Avvia caricamento profilo + refresh UI
+        appScopeIO.launch {
+            profileRepository.loadFromDb()
+
+            // Se il profilo è vecchio (>24h) o non c'è, forza rebuild
+            val lastRefresh = profileRepository.profile.value?.lastRefreshedAt ?: 0L
+            val now = System.currentTimeMillis()
+            val oneDayMs = 24L * 3600 * 1000
+
+            if (now - lastRefresh > oneDayMs) {
+                profileRepository.rebuildFull()
+            }
+
+            recommendationService.refreshAll()
+        }
+
+
+        /*
         appScopeIO.launch {
             val backfiller = NatureBackfiller()
             val result = backfiller.backfillAll()
@@ -177,6 +207,8 @@ class MainApplication : Application(), ImageLoaderFactory {
                 }
             }
         }
+
+         */
 
         appScopeIO.launch {
             profileRepository.loadFromDb()

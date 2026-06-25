@@ -734,6 +734,15 @@ fun ArtistOverview(
 
                 item {
                     Title(
+                        title = "MusicBrainz Insights",
+                        onClick = {
+                            navController.navigate(route = "${NavRoutes.artistInsights.name}/$browseId")
+                        },
+                    )
+                }
+
+                item {
+                    Title(
                         title = stringResource(R.string.library),
                         onClick = {
                             showArtistSongsInLibrary = true
