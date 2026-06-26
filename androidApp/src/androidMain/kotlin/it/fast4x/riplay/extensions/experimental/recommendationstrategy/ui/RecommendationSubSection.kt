@@ -15,7 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import it.fast4x.riplay.extensions.experimental.recommendationstrategy.ScoredRecommendation
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.ScoredRecommendation
 
 @Composable
 fun RecommendationSubSection(

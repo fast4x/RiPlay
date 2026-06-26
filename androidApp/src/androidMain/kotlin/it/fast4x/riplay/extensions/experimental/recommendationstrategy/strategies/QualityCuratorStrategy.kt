@@ -8,9 +8,9 @@ import it.fast4x.riplay.data.models.MBAlbum
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.RecommendationConstants
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.RecommendationStrategy
-import it.fast4x.riplay.extensions.experimental.recommendationstrategy.ScoredRecommendation
-import it.fast4x.riplay.extensions.experimental.recommendationstrategy.ScoringUtils
-import it.fast4x.riplay.extensions.experimental.recommendationstrategy.UserProfile
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.ScoredRecommendation
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.utils.ScoringUtils
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.UserProfile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber

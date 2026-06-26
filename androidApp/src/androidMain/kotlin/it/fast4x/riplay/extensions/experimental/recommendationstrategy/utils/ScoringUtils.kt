@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.recommendationstrategy
+package it.fast4x.riplay.extensions.experimental.recommendationstrategy.utils
 
 import it.fast4x.riplay.data.models.Song
 import kotlin.math.sqrt

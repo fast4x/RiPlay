@@ -27,7 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import it.fast4x.riplay.R
-import it.fast4x.riplay.extensions.experimental.recommendationstrategy.ScoredRecommendation
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.ScoredRecommendation
 import it.fast4x.riplay.utils.colorPalette
 
 @Composable

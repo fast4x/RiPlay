@@ -33,8 +33,8 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.LOG_DEBUG_ENABLED
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.USE_PLACEHOLDER_IN_IMAGE_LOADER
 import it.fast4x.riplay.extensions.crashreporter.CrashReporter
-import it.fast4x.riplay.extensions.experimental.recommendationstrategy.RecommendationService
-import it.fast4x.riplay.extensions.experimental.recommendationstrategy.UserProfileRepository
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.service.RecommendationService
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.repository.UserProfileRepository
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.builders.UserProfileBuilder
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategies.DeepCutsStrategy
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategies.EraExplorerStrategy

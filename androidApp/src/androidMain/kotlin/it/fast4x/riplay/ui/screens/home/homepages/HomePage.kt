@@ -71,7 +71,7 @@ import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Blacklist
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.NavRoutes
-import it.fast4x.riplay.extensions.experimental.recommendationstrategy.RecommendationService
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.service.RecommendationService
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.ui.RecommendationsBlock
 import it.fast4x.riplay.extensions.listenerlevel.HomepageListenerLevelBadges
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState

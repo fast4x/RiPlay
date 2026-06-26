@@ -1,27 +1,31 @@
-package it.fast4x.riplay.extensions.experimental.recommendationstrategy
+package it.fast4x.riplay.extensions.experimental.recommendationstrategy.service
 
-import android.util.Log
 import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Recommendation
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.RecommendationConstants
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.RecommendationStrategy
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.UserProfile
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.repository.UserProfileRepository
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategies.RecommendationCopy
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.ui.RecommendationSection
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import timber.log.Timber
+import kotlin.collections.emptyList
 
 class RecommendationService(
     private val profileRepo: UserProfileRepository,
@@ -39,7 +43,7 @@ class RecommendationService(
      */
     val visibleSections: StateFlow<List<RecommendationSection>> =
         _sections.map { all -> all.filter { it.items.isNotEmpty() } }
-            .stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList())
+            .stateIn(scope, SharingStarted.Companion.WhileSubscribed(5_000), emptyList())
 
     /**
      * Gating: l'utente ha abbastanza storico per ricevere suggerimenti?
@@ -53,12 +57,12 @@ class RecommendationService(
             val hasNonEmptySection = sections.any { it.items.isNotEmpty() }
 
             if (BuildConfig.DEBUG)
-                Timber.d("RecommendationService shouldShowSection topArtists ${profile.topArtists} enoughArtists $enoughArtists sections $sections ")
+                Timber.Forest.d("RecommendationService shouldShowSection topArtists ${profile.topArtists} enoughArtists $enoughArtists sections $sections ")
 
             enoughSongs && enoughArtists && hasNonEmptySection
-        }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), false)
+        }.stateIn(scope, SharingStarted.Companion.WhileSubscribed(5_000), false)
 
-    val recommendationDao = Database.recommendationDao()
+    val recommendationDao = Database.Companion.recommendationDao()
 
     /**
      * Rigenera tutte le strategie. Chiamato all'avvio, dopo rebuild profilo,
@@ -111,14 +115,14 @@ class RecommendationService(
                 rejectedCutoffMs = rejectedCutoff
             ).toSet()
 
-            Timber.tag("REC_DEBUG")
+            Timber.Forest.tag("REC_DEBUG")
                 .d("Strategy ${strategy.id}: excludedIds size = ${excludedIds.size}")
             if (excludedIds.isNotEmpty()) {
-                Timber.tag("REC_DEBUG").d("  Excluded: ${excludedIds.take(5)}")
+                Timber.Forest.tag("REC_DEBUG").d("  Excluded: ${excludedIds.take(5)}")
             }
 
             val candidates = strategy.generate(profile, limit * 3, excludedIds)
-            Timber.tag("REC_DEBUG")
+            Timber.Forest.tag("REC_DEBUG")
                 .d("Strategy ${strategy.id}: ${candidates.size} candidates after filtering")
 
             // Persist per tracking futuro
@@ -162,20 +166,20 @@ class RecommendationService(
      */
     suspend fun markConsumed(strategyId: String, itemId: String) {
 
-        Timber.tag("REC_DEBUG").d("markConsumed called: strategyId=$strategyId, itemId=$itemId")
+        Timber.Forest.tag("REC_DEBUG").d("markConsumed called: strategyId=$strategyId, itemId=$itemId")
 
         val userId = RecommendationConstants.USER_ID_SELF
         val now = System.currentTimeMillis()
 
         // Verifica se la riga esiste prima dell'update
         val exists = recommendationDao.checkIfExists(userId, strategyId, itemId)
-        Timber.tag("REC_DEBUG").d("  Row exists before update? $exists")
+        Timber.Forest.tag("REC_DEBUG").d("  Row exists before update? $exists")
 
         recommendationDao.markConsumed(userId, strategyId, itemId, now)
 
         // Verifica dopo
         val consumed = recommendationDao.checkIfConsumed(userId, strategyId, itemId)
-        Timber.tag("REC_DEBUG").d("  Consumed after update? $consumed")
+        Timber.Forest.tag("REC_DEBUG").d("  Consumed after update? $consumed")
 
     }
 
@@ -200,7 +204,7 @@ class RecommendationService(
 
     private suspend fun hasEnoughHistory(): Boolean {
         return try {
-            val count = Database.countDistinctPlayedSongs() ?: 0
+            val count = Database.Companion.countDistinctPlayedSongs() ?: 0
             count >= RecommendationConstants.MIN_SONGS_PLAYED
         } catch (e: Exception) {
             false
@@ -212,6 +216,6 @@ class RecommendationService(
         return reasons.joinToString(separator = "||") { it.replace("|", "") }
     }
 
-    private suspend fun <T> List<kotlinx.coroutines.Deferred<T>>.awaitList(): List<T> =
+    private suspend fun <T> List<Deferred<T>>.awaitList(): List<T> =
         awaitAll()
 }

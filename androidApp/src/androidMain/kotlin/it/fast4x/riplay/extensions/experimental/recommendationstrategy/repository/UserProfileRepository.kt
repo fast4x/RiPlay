@@ -1,11 +1,13 @@
-package it.fast4x.riplay.extensions.experimental.recommendationstrategy
+package it.fast4x.riplay.extensions.experimental.recommendationstrategy.repository
 
-import android.util.Log
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Event
 import it.fast4x.riplay.data.models.UserArtistAffinity
 import it.fast4x.riplay.data.models.UserEraAffinity
 import it.fast4x.riplay.data.models.UserKeywordAffinity
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.ArtistAffinity
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.RecommendationConstants
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.UserProfile
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.builders.UserProfileBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -79,9 +81,9 @@ class UserProfileRepository(
         val now = profile.lastRefreshedAt
 
         // Pulizia + reinserimento (più semplice che fare diff)
-        Database.deleteEraAffinityAllForUser(userId)
+        Database.Companion.deleteEraAffinityAllForUser(userId)
 
-        Database.upsertUserArtistAffinity(
+        Database.Companion.upsertUserArtistAffinity(
             profile.topArtists.map { aff ->
                 UserArtistAffinity(
                     userId = userId,
@@ -98,7 +100,7 @@ class UserProfileRepository(
             }
         )
 
-        Database.upsertUserKeywordAffinity(
+        Database.Companion.upsertUserKeywordAffinity(
             profile.keywordVector.entries.map { (kw, weight) ->
                 UserKeywordAffinity(
                     userId = userId,
@@ -110,7 +112,7 @@ class UserProfileRepository(
             }
         )
 
-        Database.upsertUserEraAffinity(
+        Database.Companion.upsertUserEraAffinity(
             profile.eraVector.entries.map { (decade, weight) ->
                 UserEraAffinity(
                     userId = userId,
@@ -172,9 +174,9 @@ class UserProfileRepository(
      * Chiamare in Application.onCreate.
      */
     suspend fun loadFromDb(userId: String = RecommendationConstants.USER_ID_SELF) {
-        val artists = Database.getTopArtists(userId, 50)
-        val keywords = Database.getTopKeywords(userId, 1000)
-        val eras = Database.getAll(userId)
+        val artists = Database.Companion.getTopArtists(userId, 50)
+        val keywords = Database.Companion.getTopKeywords(userId, 1000)
+        val eras = Database.Companion.getAll(userId)
 
         if (artists.isEmpty() && keywords.isEmpty() && eras.isEmpty()) {
             // Nessun profilo persistito — resta null, verrà creato al primo rebuild
@@ -199,7 +201,7 @@ class UserProfileRepository(
 
         _profile.value = profile
         lastRefreshedAt = profile.lastRefreshedAt
-        Timber.tag("REC_DEBUG")
+        Timber.Forest.tag("REC_DEBUG")
             .d("Profile loaded from DB: ${artists.size} artists, ${keywords.size} keywords")
     }
 }

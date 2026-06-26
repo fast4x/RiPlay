@@ -17,8 +17,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import it.fast4x.riplay.extensions.experimental.recommendationstrategy.RecommendationService
-import it.fast4x.riplay.extensions.experimental.recommendationstrategy.ScoredRecommendation
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.service.RecommendationService
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.ScoredRecommendation
 import kotlinx.coroutines.launch
 import timber.log.Timber
 

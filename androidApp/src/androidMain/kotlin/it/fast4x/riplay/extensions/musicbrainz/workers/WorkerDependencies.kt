@@ -1,7 +1,7 @@
 package it.fast4x.riplay.extensions.musicbrainz.workers
 
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.extensions.experimental.recommendationstrategy.UserProfileRepository
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.repository.UserProfileRepository
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
 
 /**

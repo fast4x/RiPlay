@@ -7,8 +7,8 @@ import it.fast4x.riplay.data.dao.getSongsByDecade
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.RecommendationStrategy
-import it.fast4x.riplay.extensions.experimental.recommendationstrategy.ScoredRecommendation
-import it.fast4x.riplay.extensions.experimental.recommendationstrategy.UserProfile
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.ScoredRecommendation
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.UserProfile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
