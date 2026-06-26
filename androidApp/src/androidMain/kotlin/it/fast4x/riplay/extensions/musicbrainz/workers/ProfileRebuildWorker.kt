@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import it.fast4x.riplay.extensions.experimental.recommendationstrategy.RecommendationConstants
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.utils.RecommendationConstants
 import timber.log.Timber
 
 // Ricalcola profilo utente (giornaliero)

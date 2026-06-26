@@ -3,7 +3,7 @@ package it.fast4x.riplay.extensions.experimental.recommendationstrategy.service
 import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Recommendation
-import it.fast4x.riplay.extensions.experimental.recommendationstrategy.RecommendationConstants
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.utils.RecommendationConstants
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.RecommendationStrategy
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.UserProfile
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.repository.UserProfileRepository

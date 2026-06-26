@@ -4,7 +4,7 @@ import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.enums.ArtistNature
-import it.fast4x.riplay.extensions.experimental.recommendationstrategy.RecommendationConstants
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.utils.RecommendationConstants
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.RecommendationStrategy
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.ScoredRecommendation
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.utils.ScoringUtils

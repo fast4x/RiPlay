@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.recommendationstrategy
+package it.fast4x.riplay.extensions.experimental.recommendationstrategy.utils
 
 object RecommendationConstants {
     const val USER_ID_SELF = "self"

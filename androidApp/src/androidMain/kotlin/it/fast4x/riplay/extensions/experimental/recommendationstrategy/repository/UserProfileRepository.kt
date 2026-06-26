@@ -6,7 +6,7 @@ import it.fast4x.riplay.data.models.UserArtistAffinity
 import it.fast4x.riplay.data.models.UserEraAffinity
 import it.fast4x.riplay.data.models.UserKeywordAffinity
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.ArtistAffinity
-import it.fast4x.riplay.extensions.experimental.recommendationstrategy.RecommendationConstants
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.utils.RecommendationConstants
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.UserProfile
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.builders.UserProfileBuilder
 import kotlinx.coroutines.CoroutineScope
