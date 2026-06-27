@@ -27,6 +27,50 @@ interface MBAlbumDao {
     """)
     suspend fun getQualityAlbumsV2(limit: Int): List<MBAlbum>
 
+    /**
+     * Album usciti dopo una certa data, opzionalmente filtrati per genere.
+     */
+    @Query("""
+    SELECT * FROM mb_album
+    WHERE firstReleaseDate IS NOT NULL
+      AND firstReleaseDate >= :sinceDate
+      AND (
+        :genreFilter = '' 
+        OR lower(genres) LIKE '%' || lower(:genreFilter) || '%'
+        OR lower(tags) LIKE '%' || lower(:genreFilter) || '%'
+      )
+    ORDER BY firstReleaseDate DESC
+    LIMIT :limit
+""")
+    suspend fun getRecentAlbums(
+        sinceDate: String,
+        genreFilter: String = "",
+        limit: Int
+    ): List<MBAlbum>
+
+    /**
+     * Album con artistCredit matching (per "novità dei tuoi artisti").
+     */
+    @Query("""
+    SELECT * FROM mb_album
+    WHERE firstReleaseDate IS NOT NULL
+      AND firstReleaseDate >= :sinceDate
+      AND artistCredit IS NOT NULL
+    ORDER BY firstReleaseDate DESC
+    LIMIT :limit
+""")
+    suspend fun getRecentAlbumsWithArtist(sinceDate: String, limit: Int): List<MBAlbum>
+
+    /**
+     * Conta album usciti negli ultimi N giorni.
+     */
+    @Query("""
+    SELECT COUNT(*) FROM mb_album
+    WHERE firstReleaseDate IS NOT NULL
+      AND firstReleaseDate >= :sinceDate
+""")
+    suspend fun countRecentAlbums(sinceDate: String): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(mbAlbum: MBAlbum)
 

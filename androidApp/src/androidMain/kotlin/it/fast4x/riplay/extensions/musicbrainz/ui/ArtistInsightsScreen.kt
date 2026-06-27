@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.CompareArrows
 import androidx.compose.material.icons.filled.Album
 import androidx.compose.material.icons.filled.Article
+import androidx.compose.material.icons.filled.CompareArrows
 import androidx.compose.material.icons.filled.Equalizer
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Info
@@ -29,6 +31,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,6 +43,8 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import it.fast4x.riplay.LocalArtistInsights
 import it.fast4x.riplay.data.models.Artist
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.RelatedArtist
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.service.RelatedItemsService
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.ui.NatureBadgeLarge
 import it.fast4x.riplay.extensions.musicbrainz.models.ArtistStats
 import it.fast4x.riplay.extensions.musicbrainz.ui.components.InfoCard
@@ -59,8 +66,13 @@ fun ArtistInsightsScreen(
     val viewModel = LocalArtistInsights.current
     val state by viewModel.state.collectAsState()
 
+    val relatedItemsService = remember { RelatedItemsService() }
+    var relatedArtists  by remember(artistId) { mutableStateOf<List<RelatedArtist>>(emptyList())}
+
     LaunchedEffect(artistId) {
         viewModel.loadArtist(artistId)
+
+        relatedArtists = relatedItemsService.getRelatedArtists(artistId)
     }
 /*
     Scaffold(
@@ -91,6 +103,20 @@ fun ArtistInsightsScreen(
             ) {
                 // === HEADER ===
                 item { ArtistHeader(artist) }
+
+                if (relatedArtists.isNotEmpty()) {
+                    item {
+                        InfoCard(title = "Artisti simili", icon = Icons.Default.CompareArrows) {
+                            relatedArtists.forEach { related ->
+                                RelatedArtistRow(
+                                    artist = related.artist,
+                                    relationType = related.reason,
+                                    onClick = { onArtistClick(related.artist.id) }
+                                )
+                            }
+                        }
+                    }
+                }
 
                 // === GENERI E TAG ===
                 val keywords = artist.keywords

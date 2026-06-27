@@ -18,6 +18,9 @@ import coil.compose.AsyncImage
 import it.fast4x.riplay.LocalAlbumInsights
 import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.Artist
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.RelatedAlbum
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.RelatedArtist
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.service.RelatedItemsService
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.ui.NatureBadgeLarge
 import it.fast4x.riplay.extensions.musicbrainz.models.AlbumStats
 import it.fast4x.riplay.extensions.musicbrainz.ui.components.InfoCard
@@ -38,8 +41,13 @@ fun AlbumInsightsScreen(
     val viewModel = LocalAlbumInsights.current
     val state by viewModel.state.collectAsState()
 
+    val relatedItemsService = remember { RelatedItemsService() }
+    var relatedAlbums  by remember(albumId) { mutableStateOf<List<RelatedAlbum>>(emptyList())}
+
     LaunchedEffect(albumId) {
         viewModel.loadAlbum(albumId)
+
+        relatedAlbums = relatedItemsService.getRelatedAlbums(albumId)
     }
 
     /*
@@ -71,6 +79,26 @@ fun AlbumInsightsScreen(
             ) {
                 // === HEADER ===
                 item { AlbumHeader(album = album, artist = state.artist) }
+
+                if (relatedAlbums.isNotEmpty()) {
+                    item {
+                        InfoCard(title = "Album simili", icon = Icons.Default.CompareArrows) {
+                            relatedAlbums.forEach { related ->
+                                AlbumRow(
+                                    album = related.album,
+                                    onClick = { onAlbumClick(related.album.id) }
+                                )
+                                // Subtitle con il reason
+                                Text(
+                                    text = related.reason,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(start = 60.dp, bottom = 4.dp)
+                                )
+                            }
+                        }
+                    }
+                }
 
                 // === GENERI E TAG ===
                 val keywords = album.genres.orEmpty() + album.tags.orEmpty()

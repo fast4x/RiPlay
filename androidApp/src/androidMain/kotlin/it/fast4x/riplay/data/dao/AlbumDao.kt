@@ -64,6 +64,16 @@ interface AlbumDao {
 """)
     suspend fun getAlbumsByArtist(artistId: String): List<Album>
 
+    @Query("""
+    SELECT * FROM Album 
+    WHERE originalYear IS NOT NULL 
+      AND originalYear >= :yearStart 
+      AND originalYear <= :yearEnd
+      AND (genres IS NOT NULL OR tags IS NOT NULL)
+    ORDER BY originalYear ASC
+    LIMIT :limit
+""")
+    suspend fun getAlbumsByEraAndGenre(yearStart: Int, yearEnd: Int, limit: Int): List<Album>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(album: Album)

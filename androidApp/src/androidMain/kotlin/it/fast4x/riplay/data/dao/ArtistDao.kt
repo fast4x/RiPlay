@@ -44,6 +44,16 @@ interface ArtistDao {
     @Query("SELECT * FROM Artist WHERE nature = :nature")
     suspend fun getArtistsByNature(nature: ArtistNature): List<Artist>
 
+    @Query("""
+    SELECT * FROM Artist
+    WHERE beginYear IS NOT NULL
+      AND beginYear >= :minYear
+      AND (genres IS NOT NULL OR tags IS NOT NULL)
+    ORDER BY beginYear DESC
+    LIMIT :limit
+""")
+    suspend fun getRecentArtists(minYear: Int, limit: Int): List<Artist>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(artist: Artist)
 

@@ -40,6 +40,7 @@ import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategie
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategies.EraExplorerStrategy
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategies.ForgottenGemsStrategy
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategies.MBGraphWalkStrategy
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategies.NewReleasesStrategy
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategies.QualityCuratorStrategy
 import it.fast4x.riplay.extensions.musicbrainz.MBMetadataHelper
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
@@ -142,7 +143,8 @@ class MainApplication : Application(), ImageLoaderFactory {
             QualityCuratorStrategy(),
             DeepCutsStrategy(),
             EraExplorerStrategy(),
-            MBGraphWalkStrategy()
+            MBGraphWalkStrategy(),
+            NewReleasesStrategy()
         )
 
         // Inizializza Service con le strategie

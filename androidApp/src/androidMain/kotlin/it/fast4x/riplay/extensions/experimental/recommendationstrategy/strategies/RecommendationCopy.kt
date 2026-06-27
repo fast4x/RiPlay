@@ -43,7 +43,14 @@ object RecommendationCopy {
             "Dalla stessa scena" to "Collaborazioni e membri in comune",
             "Universi paralleli" to "Artisti correlati ai tuoi preferiti",
             "Grafo musicale" to "Connessioni scoperte da MusicBrainz"
-        )
+        ),
+        "new_releases" to listOf(
+            "Novità" to "Le ultime uscite che potresti apprezzare",
+            "Appena usciti" to "Novità musicali fresh",
+            "Fresh & New" to "Uscite recenti per i tuoi gusti",
+            "Sullo stereo questa settimana" to "Album usciti di recente",
+            "Nuovo in città" to "Artisti emergenti e uscite recenti"
+        ),
     )
 
     /**

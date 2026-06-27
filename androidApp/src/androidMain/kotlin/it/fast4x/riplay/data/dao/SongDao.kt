@@ -2,6 +2,7 @@ package it.fast4x.riplay.data.dao
 
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.Upsert
 import it.fast4x.riplay.data.models.Song
 
 
@@ -70,7 +71,47 @@ interface SongDao {
 """)
     suspend fun countSongsByAlbum(albumId: String): Int
 
+    @Query("""
+    SELECT * FROM Song 
+    WHERE isPodcast = 0 
+      AND genres IS NOT NULL 
+      AND genres != '[]'
+    LIMIT :limit
+""")
+    suspend fun getSongsWithGenres(limit: Int): List<Song>
+
+    // SongDao.kt — aggiungi
+    @Query("""
+    SELECT * FROM Song 
+    WHERE artistsText LIKE '%' || :artistName || '%'
+      AND id != :excludeSongId
+      AND isPodcast = 0
+    LIMIT :limit
+""")
+    suspend fun getSongsByArtistsTextLike(artistName: String, excludeSongId: String = "", limit: Int): List<Song>
+
+    @Query("""
+    SELECT * FROM Song 
+    WHERE title LIKE '%' || :title || '%'
+      AND id != :excludeSongId
+      AND isPodcast = 0
+    LIMIT :limit
+""")
+    suspend fun getSongsByTitleLike(title: String, excludeSongId: String = "", limit: Int): List<Song>
+
+    @Upsert
+    fun upsert(song: Song)
+
 }
 // Helper extension
 suspend fun SongDao.getSongsByDecade(decade: Int, limit: Int): List<Song> =
     getSongsByDecade(decadeStart = decade, decadeEnd = decade + 10, limit = limit)
+
+// Helper per filtrare per generi in memoria (SQLite non ha array)
+suspend fun SongDao.getSongsByGenres(genres: List<String>, limit: Int): List<Song> {
+    val all = getSongsWithGenres(limit * 5)
+    val genresLower = genres.map { it.lowercase() }.toSet()
+    return all.filter { song ->
+        song.genres.orEmpty().any { it.lowercase() in genresLower }
+    }.take(limit)
+}

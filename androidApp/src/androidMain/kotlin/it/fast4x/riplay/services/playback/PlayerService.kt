@@ -201,7 +201,10 @@ import it.fast4x.riplay.data.models.QueuedMediaItem
 import it.fast4x.riplay.data.models.defaultQueueId
 import it.fast4x.riplay.enums.AudioQualityFormat
 import it.fast4x.riplay.enums.CastType
+import it.fast4x.riplay.enums.PlaybackOrigin
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.DiscoveryInfo
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.service.RelatedItemsService
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.service.SongEnricherService
 import it.fast4x.riplay.extensions.musicbrainz.MBMetadataHelper
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.preferences.PreferenceKey
@@ -439,6 +442,8 @@ class PlayerService : Service(),
 
     private val _currentDiscoveryReason = MutableStateFlow<DiscoveryInfo?>(null)
     val currentDiscoveryReason: StateFlow<DiscoveryInfo?> = _currentDiscoveryReason
+    val songEnricher: SongEnricherService = SongEnricherService()
+    val relatedItemsService: RelatedItemsService = RelatedItemsService()
 
 
     override fun onBind(intent: Intent?): AndroidBinder {
@@ -1780,10 +1785,38 @@ private var pausedByZeroVolume = false
 
         if (mediaItem == null) return
 
-        if (_currentDiscoveryReason.value?.itemId != mediaItem.mediaId) {
-            binder.clearDiscoverySource()
-        }
+        val origin = PlaybackContext.currentOrigin.value
+        val suggestionInfo = PlaybackContext.currentSuggestionInfo.value
+        val isFromSuggestion = origin == PlaybackOrigin.SUGGESTION &&
+                suggestionInfo?.itemId == mediaItem.mediaId
 
+        Timber.d("PlayerService Transition to ${mediaItem.mediaId}, origin=$origin, isSuggestion=$isFromSuggestion")
+
+        // todo in the future save in preferences if enabled
+        serviceScope.launch {
+            if (isFromSuggestion) {
+                binder.setDiscoverySource(
+                    strategyId = suggestionInfo.strategyId,
+                    strategyName = suggestionInfo.strategyName,
+                    reasons = suggestionInfo.reasons,
+                    itemId = mediaItem.mediaId
+                )
+            } else {
+                binder.clearDiscoverySource()
+            }
+
+            // 2. Enrichment (solo se NON è da suggerimento, perché i suggerimenti sono già arricchiti)
+            if (!isFromSuggestion && origin != PlaybackOrigin.RELATED) {
+                Timber.d("PlayerService Triggering enrichment for non-suggestion song")
+                songEnricher.onSongPlayed(mediaItem.mediaId)
+            }
+
+            // 3. Preload related items (in ogni caso, per UI pronta)
+            relatedItemsService.preloadRelated(mediaItem.mediaId)
+
+            // 4. Registra evento di ascolto nel profilo utente
+            recordListeningEvent(mediaItem.mediaId)
+        }
 
         currentMediaItemState.value = mediaItem
         localMediaItem = mediaItem
@@ -1944,6 +1977,22 @@ private var pausedByZeroVolume = false
             serviceScope.launch { saveQueue() }
     }
 
+    suspend fun recordListeningEvent(songId: String) {
+        try {
+            // Crea un Event per il profiling
+            val event = Event(
+                songId = songId,
+                timestamp = System.currentTimeMillis(),
+                playTime = 0L  // verrà aggiornato al termine
+            )
+            Database.eventDao().insert(event)
+
+            // Online update del profilo (debounced)
+            // profileRepository.applyEventAsync(event)
+        } catch (e: Exception) {
+            Timber.w("PlayerEvent Failed to record event: ${e.message}")
+        }
+    }
 
     @ExperimentalCoroutinesApi
     fun updateUnifiedNotification() {

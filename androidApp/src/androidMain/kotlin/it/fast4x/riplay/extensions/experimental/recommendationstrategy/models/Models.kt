@@ -42,3 +42,36 @@ data class DiscoveryInfo(
     val reasons: List<String>,
     val itemId: String
 )
+
+data class RelatedArtist(
+    val artist: Artist,
+    val score: Float,
+    val reason: String,
+    val source: RelatedSource
+)
+
+data class RelatedAlbum(
+    val album: Album,
+    val score: Float,
+    val reason: String,
+    val source: RelatedSource
+)
+
+data class RelatedSong(
+    val song: Song,
+    val score: Float,
+    val reason: String,
+    val source: RelatedSource
+)
+
+enum class RelatedSource {
+    MB_GRAPH,
+    KEYWORD_SIMILARITY,
+    SAME_ARTIST,
+    SAME_ALBUM,
+    SAME_GENRE,
+    SAME_ERA_GENRE,
+    RELATED_ARTIST,
+    MB_QUALITY,
+    TITLE_MATCH
+}

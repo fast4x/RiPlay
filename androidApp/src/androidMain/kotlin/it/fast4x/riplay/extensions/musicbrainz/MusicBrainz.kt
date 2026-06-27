@@ -443,6 +443,43 @@ class MusicBrainz {
         return searchResponse.releaseGroups.filter { it.score >= 70 }
     }
 
+
+    /**
+     * Cerca release groups usciti dopo una certa data.
+     * Usa la query syntax di MB: date:[date TO *]
+     */
+    suspend fun searchRecentReleaseGroups(
+        sinceDate: String,  // formato "YYYY-MM-DD"
+        limit: Int = 100
+    ): List<MBReleaseGroupSearchResult> {
+        val query = "date:[$sinceDate TO *] AND primarytype:Album"
+        val encodedQuery = URLEncoder.encode(query, "UTF-8")
+
+        val response = client.get("$baseUrl/release-group/?query=$encodedQuery&limit=$limit&fmt=json") {
+            header("User-Agent", userAgent)
+        }
+
+        val searchResponse = response.body<MBSearchReleaseGroupResponse>()
+        return searchResponse.releaseGroups
+    }
+
+    /**
+     * Cerca release groups per artista specifico (MBID).
+     */
+    suspend fun searchReleaseGroupsByArtist(
+        artistMbId: String,
+        limit: Int = 20
+    ): List<MBReleaseGroupSearchResult> {
+        val query = "arid:$artistMbId AND primarytype:Album"
+        val encodedQuery = URLEncoder.encode(query, "UTF-8")
+
+        val response = client.get("$baseUrl/release-group/?query=$encodedQuery&limit=$limit&fmt=json") {
+            header("User-Agent", userAgent)
+        }
+
+        return response.body<MBSearchReleaseGroupResponse>().releaseGroups
+    }
+
     // Helper per dedurre la piattaforma dall'URL
     private fun extractPlatformFromUrl(url: String, type: String?): String {
         return when {

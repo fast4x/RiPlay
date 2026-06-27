@@ -17,6 +17,8 @@ object WorkScheduler {
     private const val ARTIST_RELATIONS_WORK_NAME = "artist_relations_fetch"
     private const val SONG_ARTIST_BACKFILL_WORK_NAME = "song_artist_backfill"
 
+    private const val NEW_RELEASES_FETCH = "new_releases_fetch"
+
     /**
      * Registra tutti i job periodici. Da chiamare in Application.onCreate.
      * Idempotente: chiamate successive non duplicano i job.
@@ -88,8 +90,39 @@ object WorkScheduler {
             ExistingPeriodicWorkPolicy.KEEP,
             backfillWork
         )
+
+        // === New Releases Fetch (giornaliero, WiFi) ===
+        val newReleasesWork = PeriodicWorkRequestBuilder<NewReleasesFetcherWorker>(
+            1, TimeUnit.DAYS
+        ).setConstraints(
+            Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.UNMETERED)
+                .setRequiresBatteryNotLow(true)
+                .build()
+        ).setInitialDelay(
+            calculateDelayUntilMorning(),  // alle 8 AM, quando l'utente si sveglia
+            TimeUnit.MILLISECONDS
+        ).build()
+        workManager.enqueueUniquePeriodicWork(
+            NEW_RELEASES_FETCH,
+            ExistingPeriodicWorkPolicy.KEEP,
+            newReleasesWork
+        )
+
+
     }
 
+    private fun calculateDelayUntilMorning(): Long {
+        val now = Calendar.getInstance()
+        val target = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 8)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+            if (before(now)) add(Calendar.DAY_OF_MONTH, 1)
+        }
+        return target.timeInMillis - now.timeInMillis
+    }
     /**
      * Lancia il setup iniziale solo se non è mai stato eseguito.
      * Usa SharedPreferences per tracciare lo stato.
