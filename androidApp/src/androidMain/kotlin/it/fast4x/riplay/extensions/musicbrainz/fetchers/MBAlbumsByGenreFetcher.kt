@@ -1,6 +1,5 @@
-package it.fast4x.riplay.extensions.musicbrainz.workers
+package it.fast4x.riplay.extensions.musicbrainz.fetchers
 
-import android.util.Log
 import it.fast4x.riplay.Dependencies
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.MBAlbum

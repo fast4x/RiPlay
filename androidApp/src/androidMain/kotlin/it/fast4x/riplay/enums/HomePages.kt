@@ -21,11 +21,13 @@ enum class HomePageSection {
 enum class HomePagetype {
     Classic,
     Extended;
+    //Atlas;
 
     val textName: String
     @Composable
     get() = when(this) {
         Classic -> stringResource(R.string.homepage_classic)
         Extended -> stringResource(R.string.homepage_extended)
+        //Atlas -> "Atlas"
     }
 }

@@ -2,17 +2,9 @@ package it.fast4x.riplay
 
 import android.app.Application
 import android.content.ComponentName
-import android.content.Context
 import android.content.pm.PackageManager
-import android.util.Log
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
-import androidx.work.Constraints
-import androidx.work.ExistingWorkPolicy
-import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.WorkerParameters
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
@@ -20,7 +12,6 @@ import coil.memory.MemoryCache
 import coil.request.CachePolicy
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.DatabaseInitializer
-import it.fast4x.riplay.enums.ArtistNature
 import it.fast4x.riplay.enums.CoilDiskCacheMaxSize
 import it.fast4x.riplay.extensions.appviewmodel.AppViewModel
 import it.fast4x.riplay.extensions.appviewmodel.models.NetworkConnectivity
@@ -42,15 +33,8 @@ import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategie
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategies.MBGraphWalkStrategy
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategies.NewReleasesStrategy
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategies.QualityCuratorStrategy
-import it.fast4x.riplay.extensions.musicbrainz.MBMetadataHelper
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
-import it.fast4x.riplay.extensions.musicbrainz.fillers.ArtistMbIdBackfiller
-import it.fast4x.riplay.extensions.musicbrainz.fillers.NatureBackfiller
-import it.fast4x.riplay.extensions.musicbrainz.fillers.SongArtistBackfiller
-import it.fast4x.riplay.extensions.musicbrainz.workers.ArtistRelationFetcher
-import it.fast4x.riplay.extensions.musicbrainz.workers.MBAlbumsByGenreFetcher
-import it.fast4x.riplay.extensions.musicbrainz.workers.MBAlbumsByGenreWorker
-import it.fast4x.riplay.extensions.musicbrainz.workers.MBMetadataBackfillWorker
+import it.fast4x.riplay.extensions.musicbrainz.fetchers.NewReleasesFetcher
 import it.fast4x.riplay.extensions.musicbrainz.workers.WorkScheduler
 import it.fast4x.riplay.extensions.musicbrainz.workers.WorkerDependencies
 import it.fast4x.riplay.services.playback.PlayerService
@@ -59,12 +43,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
 
@@ -178,6 +159,11 @@ class MainApplication : Application(), ImageLoaderFactory {
             }
 
             recommendationService.refreshAll()
+
+
+            //NewReleasesFetcher().fetch()
+            //profileRepository.rebuildFull()
+
         }
 
 

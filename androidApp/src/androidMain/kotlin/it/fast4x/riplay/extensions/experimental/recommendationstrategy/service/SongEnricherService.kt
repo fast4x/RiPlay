@@ -134,6 +134,7 @@ class SongEnricherService() {
                 timestamp = System.currentTimeMillis()
             )
             artistRepository.upsertSmart(artist)
+            Timber.tag("SongEnricherService").d("ensureArtistEnriched artist enriched $artist")
             artist
         } catch (e: Exception) {
             Timber.tag("SongEnricherService").w("Artist fetch failed for '$artistName': ${e.message}")

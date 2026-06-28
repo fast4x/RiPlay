@@ -99,12 +99,7 @@ fun  HomeSettings() {
                             title = stringResource(R.string.homepage_type),
                             selectedValue = homePageType,
                             onValueSelected = { homePageType = it },
-                            valueText = {
-                                when (it) {
-                                    HomePagetype.Classic -> stringResource(R.string.homepage_classic)
-                                    HomePagetype.Extended -> stringResource(R.string.homepage_extended)
-                                }
-                            }
+                            valueText = { it.textName }
                         )
 
                         /*

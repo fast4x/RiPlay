@@ -1,10 +1,10 @@
 package it.fast4x.riplay.extensions.musicbrainz.workers
 
 import android.content.Context
-import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.utils.RecommendationConstants
+import it.fast4x.riplay.extensions.musicbrainz.fetchers.ArtistRelationFetcher
 import it.fast4x.riplay.extensions.musicbrainz.fillers.AlbumMbIdBackfiller
 import it.fast4x.riplay.extensions.musicbrainz.fillers.ArtistMbIdBackfiller
 import it.fast4x.riplay.extensions.musicbrainz.fillers.NatureBackfiller

@@ -56,6 +56,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.ui.components.ScreenContainer
 import it.fast4x.riplay.ui.screens.home.homepages.HomePage
+import it.fast4x.riplay.ui.screens.home.homepages.HomePageAtlas
 import it.fast4x.riplay.ui.screens.home.homepages.HomePageExtended
 import it.fast4x.riplay.utils.CheckForNewVersion
 import kotlinx.coroutines.withContext
@@ -219,6 +220,42 @@ fun HomeScreen(
                         },
                         navController = navController
                     )
+
+                    /*
+                    HomePagetype.Atlas -> HomePageAtlas(
+                            recommendationService = recommendationService,
+                            onAlbumClick = {
+                                navController.navigate(route = "${NavRoutes.album.name}/$it")
+                            },
+                            onArtistClick = {
+                                navController.navigate(route = "${NavRoutes.artist.name}/$it")
+                            },
+                            onPlaylistClick = {
+                                navController.navigate(route = "${NavRoutes.playlist.name}/$it")
+                            },
+                            onSearchClick = {
+                                navController.navigate(NavRoutes.search.name)
+                            },
+                            onMoodAndGenresClick = { mood ->
+                                navController.currentBackStackEntry?.savedStateHandle?.set(
+                                    "mood",
+                                    mood.toUiMood()
+                                )
+                                navController.navigate(NavRoutes.mood.name)
+                            },
+                            onChipClick = { chip ->
+                                navController.currentBackStackEntry?.savedStateHandle?.set(
+                                    "chip",
+                                    chip.toUiChip()
+                                )
+                                navController.navigate(route = NavRoutes.chip.name)
+                            },
+                            onSettingsClick = {
+                                navController.navigate(NavRoutes.settings.name)
+                            },
+                            navController = navController
+                        )
+                        */
 
                 }
 

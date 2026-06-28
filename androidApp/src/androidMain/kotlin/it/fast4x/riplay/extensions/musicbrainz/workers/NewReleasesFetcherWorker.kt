@@ -7,6 +7,7 @@ import androidx.work.WorkerParameters
 import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.MBAlbum
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.classifiers.AlbumClassifier
+import it.fast4x.riplay.extensions.musicbrainz.fetchers.NewReleasesFetcher
 import it.fast4x.riplay.extensions.musicbrainz.models.MBReleaseGroupDetailResponse
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -23,6 +24,10 @@ class NewReleasesFetcherWorker(
         if (!WorkerDependencies.isInitialized) return Result.retry()
 
         return try {
+
+            val fetcher = NewReleasesFetcher()
+            fetcher.fetch()
+            /*
             Timber.tag("NewReleasesWorker").i("=== START ===")
 
             val profile = WorkerDependencies.profileRepository.profile.value
@@ -162,6 +167,7 @@ class NewReleasesFetcherWorker(
 
             Timber.tag("NewReleasesWorker")
                 .i("=== DONE: saved=$totalSaved, failed=$totalFailed ===")
+            */
             Result.success()
         } catch (e: Exception) {
             Timber.tag("NewReleasesWorker").e(e, "Failed")

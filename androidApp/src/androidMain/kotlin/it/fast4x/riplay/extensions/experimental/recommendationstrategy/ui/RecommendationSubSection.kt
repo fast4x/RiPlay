@@ -16,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.ScoredRecommendation
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.typography
 
 @Composable
 fun RecommendationSubSection(
@@ -35,13 +37,13 @@ fun RecommendationSubSection(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = section.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Medium
+                    style = typography().s,
+                    color = colorPalette().text
                 )
                 Text(
                     text = section.subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = typography().s,
+                    color = colorPalette().text
                 )
             }
         }

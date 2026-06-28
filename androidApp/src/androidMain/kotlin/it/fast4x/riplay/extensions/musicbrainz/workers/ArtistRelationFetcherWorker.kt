@@ -4,6 +4,7 @@ import timber.log.Timber
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import it.fast4x.riplay.extensions.musicbrainz.fetchers.ArtistRelationFetcher
 
 // Aggiorna grafo MB (settimanale)
 class ArtistRelationFetcherWorker(
