@@ -13,7 +13,7 @@
   <rect y="20" width="600" height="15" fill="url(#headerGrad)" />
   <text x="20" y="24" fill="#ffffff" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" font-weight="600">📊 RiPlay Project Stats</text>
   <text x="30" y="60" fill="#586069" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="11" font-weight="500">TOTAL DOWNLOADS</text>
-  <text x="30" y="85" fill="#0366d6" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="24" font-weight="700">77.6k</text>
+  <text x="30" y="85" fill="#0366d6" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="24" font-weight="700">77.7k</text>
   <line x1="210" y1="45" x2="210" y2="110" stroke="#e1e4e8" stroke-width="1" />
   <text x="230" y="60" fill="#586069" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="11" font-weight="500">LATEST RELEASE</text>
   <text x="230" y="85" fill="#6f42c1" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="18" font-weight="700">v0.7.84</text>
