@@ -328,6 +328,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                         Database
                             .songsFavorites(songsSortBy, songSortOrder)
                             .first()
+                            .take(500)
                             .also { currentBrowseContext = it.map(SongEntity::song) }
                             .map { it.song.asBrowserMediaItem }
                             .toMutableList()
@@ -363,6 +364,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                         Database
                             .songsOnDevice()
                             .first()
+                            .take(500)
                             .also { currentBrowseContext = it }
                             .map { it.asBrowserMediaItem }
                             .toMutableList()
@@ -423,6 +425,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                             Database
                                 .songsPlaylist(id.toLong(), playlistSongsSortBy, songSortOrder)
                                 .first()
+                                .take(500)
                                 .also { currentBrowseContext = it.map(SongEntity::song) }
                                 .map { it.song.asBrowserMediaItem }
                                 .toMutableList()
