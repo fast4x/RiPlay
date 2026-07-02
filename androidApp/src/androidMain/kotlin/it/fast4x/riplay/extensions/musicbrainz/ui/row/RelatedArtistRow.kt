@@ -18,13 +18,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import it.fast4x.riplay.R
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.enums.ArtistNature
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.ui.NatureBadge
+import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.typography
 
 @Composable
 fun RelatedArtistRow(
@@ -55,13 +59,13 @@ fun RelatedArtistRow(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                    .background(colorPalette().background1),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = artist.name?.firstOrNull()?.uppercase() ?: "?",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = typography().xs,
+                    color = colorPalette().text
                 )
             }
         }
@@ -71,16 +75,15 @@ fun RelatedArtistRow(
         // Nome + tipo relazione
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = artist.name ?: "Unknown",
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
+                text = artist.name ?: stringResource(R.string.unknown_artist),
+                style = typography().xs,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = relationType.replaceFirstChar { it.uppercase() },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = typography().xxs,
+                color = colorPalette().text,
                 maxLines = 1
             )
         }

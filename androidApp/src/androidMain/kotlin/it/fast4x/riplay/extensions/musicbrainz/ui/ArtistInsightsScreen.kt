@@ -1,5 +1,6 @@
 package it.fast4x.riplay.extensions.musicbrainz.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -54,7 +55,11 @@ import it.fast4x.riplay.extensions.musicbrainz.ui.row.AlbumRow
 import it.fast4x.riplay.extensions.musicbrainz.ui.row.ExternalLinkRow
 import it.fast4x.riplay.extensions.musicbrainz.ui.row.RelatedArtistRow
 import it.fast4x.riplay.extensions.musicbrainz.ui.row.SongRow
+import it.fast4x.riplay.ui.components.themed.KeywordChips
+import it.fast4x.riplay.ui.styling.semiBold
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.toFlagEmoji
+import it.fast4x.riplay.utils.typography
 
 @Composable
 fun ArtistInsightsScreen(
@@ -98,7 +103,7 @@ fun ArtistInsightsScreen(
         } else {
             val artist = state.artist ?: return
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().background(colorPalette().background0),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 // === HEADER ===
@@ -111,7 +116,10 @@ fun ArtistInsightsScreen(
                                 RelatedArtistRow(
                                     artist = related.artist,
                                     relationType = related.reason,
-                                    onClick = { onArtistClick(related.artist.id) }
+                                    onClick = {
+                                        onArtistClick(related.artist.id)
+                                        onBack()
+                                    }
                                 )
                             }
                         }
@@ -123,7 +131,8 @@ fun ArtistInsightsScreen(
                 if (keywords.isNotEmpty()) {
                     item {
                         InfoCard(title = "Tag & Generi", icon = Icons.Default.Info) {
-                            TagRow(tags = keywords)
+                            //TagRow(tags = keywords)
+                            KeywordChips(keywords)
                         }
                     }
                 }
@@ -190,7 +199,10 @@ fun ArtistInsightsScreen(
                                 RelatedArtistRow(
                                     artist = rel.artist,
                                     relationType = rel.relationType,
-                                    onClick = { onArtistClick(rel.artist.id) }
+                                    onClick = {
+                                        onArtistClick(rel.artist.id)
+                                        onBack()
+                                    }
                                 )
                             }
                         }
@@ -243,8 +255,7 @@ private fun ArtistHeader(artist: Artist) {
 
         Text(
             text = artist.name ?: "Unknown",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
+            style = typography().s.semiBold,
         )
 
         Spacer(Modifier.height(8.dp))
@@ -258,12 +269,16 @@ private fun ArtistHeader(artist: Artist) {
                 add("$it ${it.toFlagEmoji()}")
             }
             artist.beginYear?.let { year ->
-                val endYear = artist.let { /* leggi endYear se presente */ }
+                add("$year")
+                /*
+                val endYear = artist.let { /* todo implementare endyear */ }
                 if (endYear != null) {
                     add("$year-$endYear")
                 } else {
                     add("$year-presente")
                 }
+
+                 */
             }
             artist.artistType?.let { add(it) }
         }.joinToString(" • ")
@@ -271,8 +286,8 @@ private fun ArtistHeader(artist: Artist) {
         if (infoText.isNotBlank()) {
             Text(
                 text = infoText,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                style = typography().s,
+                color = colorPalette().text
             )
         }
     }
@@ -299,13 +314,12 @@ private fun StatItem(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = value,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
+            style = typography().xs.semiBold,
         )
         Text(
             text = label,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = typography().xs,
+            color = colorPalette().text
         )
     }
 }

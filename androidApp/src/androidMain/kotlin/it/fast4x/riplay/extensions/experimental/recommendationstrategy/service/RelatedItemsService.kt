@@ -111,7 +111,7 @@ class RelatedItemsService() {
                         results.add(RelatedArtist(
                             artist = candidate,
                             score = score * 0.7f,  // peso più basso di MB graph
-                            reason = "${intersection.size} generi in comune",
+                            reason = "${intersection.size} generi in comune", //intersection.joinToString { "$it " },
                             source = RelatedSource.KEYWORD_SIMILARITY
                         ))
                     }

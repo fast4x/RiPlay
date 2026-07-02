@@ -16,6 +16,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.enums.AlbumNature
 import it.fast4x.riplay.enums.ArtistNature
+import it.fast4x.riplay.ui.styling.semiBold
+import it.fast4x.riplay.utils.getRoundnessShape
+import it.fast4x.riplay.utils.typography
 
 @Composable
 fun NatureBadgeLarge(
@@ -35,7 +38,7 @@ fun NatureBadgeLarge(
 
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
+        shape = getRoundnessShape(),
         color = color.copy(alpha = 0.15f)
     ) {
         Row(
@@ -46,9 +49,8 @@ fun NatureBadgeLarge(
             Spacer(Modifier.width(4.dp))
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelMedium,
+                style = typography().s.semiBold,
                 color = color,
-                fontWeight = FontWeight.Bold
             )
         }
     }
@@ -74,7 +76,7 @@ fun NatureBadgeLarge(
 
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
+        shape = getRoundnessShape(),
         color = color.copy(alpha = 0.15f)
     ) {
         Row(
@@ -85,9 +87,8 @@ fun NatureBadgeLarge(
             Spacer(Modifier.width(4.dp))
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelMedium,
+                style = typography().s.semiBold,
                 color = color,
-                fontWeight = FontWeight.Bold
             )
         }
     }

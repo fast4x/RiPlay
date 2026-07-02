@@ -90,6 +90,7 @@ import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.extensions.musicbrainz.MBMetadataHelper
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.musicbrainz.repository.ArtistRepository
+import it.fast4x.riplay.extensions.musicbrainz.ui.ArtistInsightsScreen
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
@@ -736,7 +737,14 @@ fun ArtistOverview(
                     Title(
                         title = "MusicBrainz Insights",
                         onClick = {
-                            navController.navigate(route = "${NavRoutes.artistInsights.name}/$browseId")
+                            menuState.display {
+                                ArtistInsightsScreen(
+                                    browseId,
+                                    onArtistClick = { navController.navigate("${NavRoutes.artist.name}/$it") },
+                                    onAlbumClick = {}
+                                ) { menuState.hide() }
+                            }
+                            //navController.navigate(route = "${NavRoutes.artistInsights.name}/$browseId")
                         },
                     )
                 }
