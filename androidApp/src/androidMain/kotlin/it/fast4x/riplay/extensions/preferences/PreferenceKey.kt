@@ -337,6 +337,7 @@ enum class PreferenceKey(val key: String) {
     NOTIFY_ANDROID_AUTO_TIPS("notifyAandroidAutoTips"),
     RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_BT("resumeOrPausePlaybackWhenDeviceBt"),
     RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_WIRED("resumeOrPausePlaybackWhenDeviceWired"),
+    ANDROID_AUTO_PLAYLIST_LIMIT("androidAutoPlaylistLimit"),
     SHOW_SHUFFLE_SONGS_AA("shuffleSongsAAEnabled"),
     SHOW_MONTHLY_PLAYLISTS_AA("showMonthlyPlaylistsAA"),
     SHOW_IN_LIBRARY_AA("showInLibraryAA"),

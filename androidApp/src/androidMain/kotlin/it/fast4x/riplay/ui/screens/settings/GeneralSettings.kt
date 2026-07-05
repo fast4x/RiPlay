@@ -47,6 +47,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
+import it.fast4x.riplay.enums.AndroidAutoPlaylistLimit
 import it.fast4x.riplay.enums.DurationInMilliseconds
 import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.enums.MinTimeForEvent
@@ -148,6 +149,7 @@ import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.enums.EqualizerType
 import it.fast4x.riplay.extensions.preferences.PreferenceKey
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ANDROID_AUTO_PLAYLIST_LIMIT
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.CAST_TYPE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.CHECK_UPDATE_STATE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.CLOSE_PLAYER_SERVICE_AFTER_MINUTES
@@ -356,6 +358,10 @@ fun GeneralSettings(
     var showPodcastAA by rememberPreference(SHOW_PODCAST_AA.key, true)
     var showPinnedAA by rememberPreference(SHOW_PINNED_AA.key, true)
     var showGridAA by rememberPreference(SHOW_GRID_AA.key, true)
+    var androidAutoPlaylistLimit by rememberPreference(
+        ANDROID_AUTO_PLAYLIST_LIMIT.key,
+        AndroidAutoPlaylistLimit.Unlimited
+    )
 
     var isEnabledVoiceInput by rememberPreference(
         ENABLE_VOICE_INPUT.key,
@@ -1715,6 +1721,22 @@ fun GeneralSettings(
                                     isChecked = showGridAA,
                                     onCheckedChange = {
                                         showGridAA = it
+                                    }
+                                )
+                            }
+
+                            if (search.input.isBlank() || stringResource(R.string.aa_playlist_song_limit).contains(
+                                    search.input,
+                                    true
+                                )
+                            ) {
+                                EnumValueSelectorSettingsEntry(
+                                    title = stringResource(R.string.aa_playlist_song_limit),
+                                    selectedValue = androidAutoPlaylistLimit,
+                                    onValueSelected = { androidAutoPlaylistLimit = it },
+                                    valueText = {
+                                        it.number?.toString()
+                                            ?: stringResource(R.string.aa_playlist_song_limit_unlimited)
                                     }
                                 )
                             }
