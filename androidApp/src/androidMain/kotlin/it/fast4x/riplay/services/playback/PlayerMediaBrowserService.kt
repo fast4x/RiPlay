@@ -39,9 +39,11 @@ import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.enums.AlbumSortBy
+import it.fast4x.riplay.enums.AndroidAutoPlaylistLimit
 import it.fast4x.riplay.enums.ArtistSortBy
 import it.fast4x.riplay.enums.MaxTopPlaylistItems
 import it.fast4x.riplay.enums.SortOrder
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ANDROID_AUTO_PLAYLIST_LIMIT
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.MAX_TOP_PLAYLIST_ITEMS
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.preferences
@@ -328,6 +330,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                         Database
                             .songsFavorites(songsSortBy, songSortOrder)
                             .first()
+                            .take(500)
                             .also { currentBrowseContext = it.map(SongEntity::song) }
                             .map { it.song.asBrowserMediaItem }
                             .toMutableList()
@@ -363,6 +366,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                         Database
                             .songsOnDevice()
                             .first()
+                            .take(500)
                             .also { currentBrowseContext = it }
                             .map { it.asBrowserMediaItem }
                             .toMutableList()
@@ -420,9 +424,17 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                                     if (showInLibraryAA()) add(0,playlistsInLibraryBrowserMediaItem)
                                 }
                         } else {
+                            val playlistLimit = preferences.getEnum(
+                                ANDROID_AUTO_PLAYLIST_LIMIT.key,
+                                AndroidAutoPlaylistLimit.Unlimited
+                            ).number
+
                             Database
                                 .songsPlaylist(id.toLong(), playlistSongsSortBy, songSortOrder)
                                 .first()
+                                .let { songs ->
+                                    playlistLimit?.let { limit -> songs.take(limit) } ?: songs
+                                }
                                 .also { currentBrowseContext = it.map(SongEntity::song) }
                                 .map { it.song.asBrowserMediaItem }
                                 .toMutableList()
