@@ -740,6 +740,7 @@ fun ArtistOverview(
                     }
                 }
 
+                /* todo implement music graph
                 item {
                     Title(
                         title = "MusicBrainz Insights",
@@ -755,6 +756,7 @@ fun ArtistOverview(
                         },
                     )
                 }
+                 */
 
                 item {
                     Title(

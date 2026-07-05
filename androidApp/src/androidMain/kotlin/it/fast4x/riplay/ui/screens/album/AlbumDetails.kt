@@ -1242,6 +1242,7 @@ fun AlbumDetails(
                             }
                         }
 
+                        /* todo implement music graph
                         item {
                             Title(
                                 title = "MusicBrainz Insights",
@@ -1250,6 +1251,7 @@ fun AlbumDetails(
                                 },
                             )
                         }
+                         */
 
                         item(
                             key = "songsTitle"
