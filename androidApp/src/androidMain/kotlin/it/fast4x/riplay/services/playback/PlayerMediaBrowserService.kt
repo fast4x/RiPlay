@@ -426,13 +426,15 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                         } else {
                             val playlistLimit = preferences.getEnum(
                                 ANDROID_AUTO_PLAYLIST_LIMIT.key,
-                                AndroidAutoPlaylistLimit.`500`
+                                AndroidAutoPlaylistLimit.Unlimited
                             ).number
 
                             Database
                                 .songsPlaylist(id.toLong(), playlistSongsSortBy, songSortOrder)
                                 .first()
-                                .take(playlistLimit)
+                                .let { songs ->
+                                    playlistLimit?.let { limit -> songs.take(limit) } ?: songs
+                                }
                                 .also { currentBrowseContext = it.map(SongEntity::song) }
                                 .map { it.song.asBrowserMediaItem }
                                 .toMutableList()

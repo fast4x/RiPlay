@@ -360,7 +360,7 @@ fun GeneralSettings(
     var showGridAA by rememberPreference(SHOW_GRID_AA.key, true)
     var androidAutoPlaylistLimit by rememberPreference(
         ANDROID_AUTO_PLAYLIST_LIMIT.key,
-        AndroidAutoPlaylistLimit.`500`
+        AndroidAutoPlaylistLimit.Unlimited
     )
 
     var isEnabledVoiceInput by rememberPreference(
@@ -1710,7 +1710,10 @@ fun GeneralSettings(
                                     title = stringResource(R.string.aa_playlist_song_limit),
                                     selectedValue = androidAutoPlaylistLimit,
                                     onValueSelected = { androidAutoPlaylistLimit = it },
-                                    valueText = { it.number.toString() }
+                                    valueText = {
+                                        it.number?.toString()
+                                            ?: stringResource(R.string.aa_playlist_song_limit_unlimited)
+                                    }
                                 )
                             }
 

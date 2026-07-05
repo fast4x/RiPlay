@@ -1200,6 +1200,7 @@
     <string name="player_there_s_no_song_to_play">There\'s no song to play</string>
     <string name="aa_show_list_as_grid">Show list as grid</string>
     <string name="aa_playlist_song_limit">Playlist song limit</string>
+    <string name="aa_playlist_song_limit_unlimited">Unlimited</string>
     <string name="aa_show_shuffle_in_songs">Show shuffle in songs</string>
     <string name="aa_show_monthly_playlists">Show monthly playlists</string>
     <string name="aa_show_in_library">Show In Library</string>
