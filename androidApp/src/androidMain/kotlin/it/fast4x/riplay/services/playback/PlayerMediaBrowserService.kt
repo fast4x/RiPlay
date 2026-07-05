@@ -39,9 +39,11 @@ import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.enums.AlbumSortBy
+import it.fast4x.riplay.enums.AndroidAutoPlaylistLimit
 import it.fast4x.riplay.enums.ArtistSortBy
 import it.fast4x.riplay.enums.MaxTopPlaylistItems
 import it.fast4x.riplay.enums.SortOrder
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.ANDROID_AUTO_PLAYLIST_LIMIT
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.MAX_TOP_PLAYLIST_ITEMS
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.preferences
@@ -422,10 +424,15 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                                     if (showInLibraryAA()) add(0,playlistsInLibraryBrowserMediaItem)
                                 }
                         } else {
+                            val playlistLimit = preferences.getEnum(
+                                ANDROID_AUTO_PLAYLIST_LIMIT.key,
+                                AndroidAutoPlaylistLimit.`500`
+                            ).number
+
                             Database
                                 .songsPlaylist(id.toLong(), playlistSongsSortBy, songSortOrder)
                                 .first()
-                                .take(500)
+                                .take(playlistLimit)
                                 .also { currentBrowseContext = it.map(SongEntity::song) }
                                 .map { it.song.asBrowserMediaItem }
                                 .toMutableList()
