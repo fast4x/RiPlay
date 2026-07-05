@@ -58,6 +58,8 @@ jaudiotagger = "3.0.1"
 geckoview = "136.0.20250317200840" # Compatible with sdk 24
 chaquopy = "17.0.0"
 runtime = "1.11.3"
+camerax = "1.6.1"
+zxing = "3.5.4"
 
 
 [libraries]
@@ -145,9 +147,13 @@ jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup"}
 newpipeExt = { module = "com.github.TeamNewPipe:NewPipeExtractor", version.ref = "newpipeExt" }
 recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
 jaudiotagger = {module = "net.jthink:jaudiotagger", version.ref = "jaudiotagger"}
+camerax-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
+camerax-core = { module = "androidx.camera:camera-core", version.ref = "camerax" }
+camerax-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camerax" }
+camerax-camera-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
+zxing-core = { module = "com.google.zxing:core", version.ref = "zxing"}
 
-androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
-
+#androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
 #geckoView = { group = "org.mozilla.geckoview", name = "geckoview", version.ref = "geckoview" }
 
 [plugins]

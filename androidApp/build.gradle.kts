@@ -115,6 +115,13 @@ kotlin {
         implementation(libs.ktor.client.serialization)
         implementation(libs.ktor.serialization.json)
         implementation(libs.material.icons.extended)
+
+        implementation(libs.camerax.lifecycle)
+        implementation(libs.camerax.core)
+        implementation(libs.camerax.camera2)
+        implementation(libs.camerax.camera.view)
+        implementation(libs.zxing.core)
+
     }
 }
 

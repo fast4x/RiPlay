@@ -134,7 +134,9 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.enums.QrType
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
+import it.fast4x.riplay.extensions.qrcodeanalyzer.GenerateQrButton
 import it.fast4x.riplay.extensions.musicbrainz.MBMetadataHelper
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.musicbrainz.repository.AlbumRepository
@@ -645,6 +647,12 @@ fun AlbumDetails(
                                                 )
                                             }
                                         //.padding(bottom = 20.dp)
+                                    )
+
+                                    GenerateQrButton(
+                                        Modifier.align(Alignment.TopCenter)
+                                            .padding(top = 5.dp),
+                                        QrType.album, browseId
                                     )
 
                                     HeaderIconButton(

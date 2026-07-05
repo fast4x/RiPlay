@@ -52,7 +52,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
@@ -271,9 +270,11 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.TOP_PADDING
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.VISUALIZER_ENABLED
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
+import it.fast4x.riplay.enums.QrType
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
-import it.fast4x.riplay.extensions.experimental.recommendationstrategy.ui.DiscoveryBadge
+import it.fast4x.riplay.extensions.qrcodeanalyzer.GenerateQrButton
 import it.fast4x.riplay.musicvault.MusicVaultButton
+import it.fast4x.riplay.ui.components.ActionPillButton
 import it.fast4x.riplay.ui.screens.player.common.Queue
 import it.fast4x.riplay.ui.components.BottomSheetState
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
@@ -1719,7 +1720,9 @@ fun UnifiedPlayer(
                         ) {
                             MusicVaultButton(mediaItem.asSong, size = 28.dp)
 
-                            if (showButtonPlayerVideo) IconButton(icon = R.drawable.left_and_right_arrows, color = colorPalette().accent, enabled = true, onClick = { binder.callPause {}; showSearchEntity = true }, modifier = Modifier.size(28.dp))
+                            if (showButtonPlayerVideo) IconButton(
+                                icon = R.drawable.left_and_right_arrows,
+                                color = colorPalette().accent, enabled = true, onClick = { binder.callPause {}; showSearchEntity = true }, modifier = Modifier.size(28.dp))
 
                             if (showButtonPlayerDiscover) IconButton(
                                 icon = R.drawable.star_brilliant, color = if (discoverIsEnabled) colorPalette().text else colorPalette().textDisabled,
@@ -2429,7 +2432,6 @@ fun UnifiedPlayer(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-
                             if (playerType == PlayerType.Essential || isShowingVisualizer) {
                                 controlsContent(
                                     Modifier
@@ -2910,6 +2912,15 @@ fun UnifiedPlayer(
                                 .height(30.dp)
                         ) {
 
+                            ActionPillButton(
+                                icon = R.drawable.chevron_down,
+                                color = if (playerBackgroundColors == PlayerBackgroundColors.MidnightOdyssey) dynamicColorPalette.background2 else colorPalette().collapsedPlayerProgressBar,
+                                onClick = {
+                                    onDismiss()
+                                },
+                            )
+
+                            /*
                             Image(
                                 painter = painterResource(R.drawable.chevron_down),
                                 contentDescription = null,
@@ -2922,6 +2933,7 @@ fun UnifiedPlayer(
                                     //.padding(10.dp)
                                     .size(24.dp)
                             )
+                             */
 
                             // todo add permanent badge
 //                            DiscoveryBadge(
@@ -2929,6 +2941,18 @@ fun UnifiedPlayer(
 //                                //modifier = Modifier.padding(bottom = 8.dp)
 //                            )
 
+                            GenerateQrButton(
+                                Modifier,
+                                QrType.play, mediaItem.mediaId
+                            )
+
+                            Text(
+                                mediaItem.origin,
+                                color = colorPalette().text,
+                                style = typography().xxs,
+                            )
+
+                            /*
                             Column(
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -2943,12 +2967,14 @@ fun UnifiedPlayer(
                                             navController.navigate(NavRoutes.home.name)
                                         }
                                 )
+
                                 Text(
                                     mediaItem.origin,
                                     color = colorPalette().text,
                                     style = typography().xxs,
                                 )
                             }
+                             */
 
                             /*
                             Image(
@@ -2968,6 +2994,28 @@ fun UnifiedPlayer(
                              */
 
                             if (!showButtonPlayerMenu)
+                                ActionPillButton(
+                                    icon = R.drawable.ellipsis_vertical,
+                                    color = if (playerBackgroundColors == PlayerBackgroundColors.MidnightOdyssey) dynamicColorPalette.background2 else colorPalette().collapsedPlayerProgressBar,
+                                    onClick = {
+                                        menuState.display {
+                                            PlayerMenu(
+                                                navController = navController,
+                                                onDismiss = menuState::hide,
+                                                mediaItem = mediaItem,
+                                                binder = binder,
+                                                onClosePlayer = {
+                                                    onDismiss()
+                                                },
+                                                onInfo = {
+                                                    navController.navigate("${NavRoutes.videoOrSongInfo.name}/${mediaItem.mediaId}")
+                                                },
+                                                disableScrollingText = disableScrollingText
+                                            )
+                                        }
+                                    },
+                                )
+                                /*
                                 Image(
                                     painter = painterResource(R.drawable.ellipsis_vertical),
                                     contentDescription = null,
@@ -2995,6 +3043,8 @@ fun UnifiedPlayer(
                                         .size(24.dp)
 
                                 )
+
+                                 */
 
                         }
 
@@ -3453,7 +3503,7 @@ fun UnifiedPlayer(
                             }
                             .clip(thumbnailRoundness.shape())
 
-                        //use online player core in portrait mpode
+                        //use online player core in portrait mode
                         thumbnailContent(
                             if ((!mediaItem.isVideo || isShowingVisualizer))
                                 Modifier.hide()

@@ -11,8 +11,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.Indication
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -43,7 +41,7 @@ fun HeaderIconButton(
         icon = icon,
         //iconSize = iconSize,
         enabled = enabled,
-        tint = color,
+        color = color,
         onClick = onClick,
         onLongClick = onLongClick
     )

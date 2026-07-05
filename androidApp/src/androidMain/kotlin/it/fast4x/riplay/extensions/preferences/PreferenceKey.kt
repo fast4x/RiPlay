@@ -388,7 +388,9 @@ enum class PreferenceKey(val key: String) {
     OFFLINE_MODE_ENABLED("offlineModeEnabled"),
     IMPORT_PLAYLIST_TYPE("importPlaylistType"),
 
-    INITIAL_SETUP_WORKER_DONE("initialSetupWorkerDone");
+    INITIAL_SETUP_WORKER_DONE("initialSetupWorkerDone"),
+
+    QR_CODE_TO_ACTIONS("qrCodeToActions");
 
     companion object {
         val allKeys: Set<String>

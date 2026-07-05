@@ -1366,4 +1366,10 @@
     <string name="title_external_links">External links</string>
     <string name="title_bio">Bio</string>
     <string name="login_select_account">Select account</string>
+    <string name="title_qrcode_to_actions">QR code to actions</string>
+    <string name="enable_create_and_read_qrcode">Enable create and read QR code</string>
+    <string name="info_create_and_read_qr_code_for_artist_album_playlist_song">Create and read qr code for artist, album, playlist, song</string>
+    <string name="qrcode_export_share_print">Export / Share / Print</string>
+    <string name="qr_code_as_png_format_2048x2048px_ideal_for_printing">QR code as PNG format 2048x2048px, ideal for printing</string>
+    <string name="qr_code_frame_the_qr_code">Frame the QR code</string>
 </resources>

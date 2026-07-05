@@ -86,7 +86,9 @@ import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.ArtistDiscography
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.enums.QrType
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
+import it.fast4x.riplay.extensions.qrcodeanalyzer.GenerateQrButton
 import it.fast4x.riplay.extensions.musicbrainz.MBMetadataHelper
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.musicbrainz.repository.ArtistRepository
@@ -432,6 +434,11 @@ fun ArtistOverview(
 
                         )
 
+                        GenerateQrButton(
+                            Modifier.align(Alignment.TopCenter)
+                                .padding(top = 5.dp),
+                            QrType.artist, browseId
+                        )
 
                         HeaderIconButton(
                             icon = R.drawable.share_social,

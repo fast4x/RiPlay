@@ -177,7 +177,9 @@ import it.fast4x.riplay.utils.saveImageToInternalStorage
 import kotlinx.coroutines.CoroutineScope
 import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.enums.QrType
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
+import it.fast4x.riplay.extensions.qrcodeanalyzer.GenerateQrButton
 import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.FilterMenu
@@ -1425,6 +1427,11 @@ fun LocalPlaylistSongs(
                                         context = context
                                     )
                                 }
+                            )
+
+                            GenerateQrButton(
+                                Modifier,
+                                QrType.localPlaylist, playlistId.toString()
                             )
 
                             if (playlistPreview?.playlist?.browseId != null)

@@ -1,6 +1,7 @@
 package it.fast4x.riplay.ui.components.navigation.header
 
 import android.app.Activity
+import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.height
@@ -35,7 +36,6 @@ import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.ui.screens.events.EventsScreen
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.utils.MusicIdentifier
-import it.fast4x.riplay.utils.ytAccountThumbnail
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -44,14 +44,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.window.PopupProperties
+import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.LocalRiTuneSheetState
 import it.fast4x.riplay.cast.CastButton
 import it.fast4x.riplay.cast.CastHelper
 import it.fast4x.riplay.enums.CastType
+import it.fast4x.riplay.extensions.qrcodeanalyzer.ScanQrScreen
+import it.fast4x.riplay.extensions.qrcodeanalyzer.qrCodeToAction
 import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.CAST_TYPE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LISTENER_LEVELS
@@ -60,6 +64,9 @@ import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.typography
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlin.system.exitProcess
 
 @Composable
@@ -499,6 +506,7 @@ private fun HamburgerMenu(
  */
 
 // START
+@OptIn(UnstableApi::class)
 @Composable
 fun ActionBar(
     navController: NavController,
@@ -507,6 +515,30 @@ fun ActionBar(
     val sheet = LocalGlobalSheetState.current
 
     val accountThumbnail by rememberPreference(YT_ACCOUNT_THUMBNAIL.key, "")
+
+    val enabledQrCodeActions by rememberPreference(PreferenceKey.QR_CODE_TO_ACTIONS.key, true)
+
+    if(enabledQrCodeActions) {
+        val scope = rememberCoroutineScope()
+        val context = LocalContext.current
+        val binder = LocalPlayerServiceBinder.current
+
+        HeaderIcon(R.drawable.qr_code_reader, tint = colorPalette().accent) {
+            sheet.display {
+                SheetBody {
+                    ScanQrScreen(
+                        onQrCodeScanned = {
+                            scope.launch {
+                                val binder = snapshotFlow { binder }.filterNotNull().first()
+                                qrCodeToAction(it, context, binder, navController)
+                            }
+                            sheet.hide()
+                        },
+                    )
+                }
+            }
+        }
+    }
 
     var castType by rememberPreference(CAST_TYPE.key, CastType.RITUNECAST )
     if (castType == CastType.RITUNECAST) {

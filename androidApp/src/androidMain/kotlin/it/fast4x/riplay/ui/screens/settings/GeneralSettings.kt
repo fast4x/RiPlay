@@ -394,6 +394,8 @@ fun GeneralSettings(
 
     val internalEqualizer = LocalPlayerServiceBinder.current?.equalizer
 
+    var enabledQrCodeActions by rememberPreference(PreferenceKey.QR_CODE_TO_ACTIONS.key, true)
+
     LaunchedEffect(Unit) {
         AudioDRCHelper.init(context)
     }
@@ -580,8 +582,30 @@ fun GeneralSettings(
                 settingsItem(
                     isHeader = true
                 ) {
+                    SettingsEntryGroupText(title = stringResource(R.string.title_qrcode_to_actions))
+                }
+                settingsItem {
+                    if (search.input.isBlank() || stringResource(R.string.title_qrcode_to_actions).contains(
+                            search.input,
+                            true
+                        )
+                    ) {
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.enable_create_and_read_qrcode),
+                            text = stringResource(R.string.info_create_and_read_qr_code_for_artist_album_playlist_song),
+                            isChecked = enabledQrCodeActions,
+                            onCheckedChange = { enabledQrCodeActions = it }
+                        )
+                    }
+                }
+
+                settingsItem(
+                    isHeader = true
+                ) {
                     SettingsEntryGroupText(title = stringResource(R.string.title_network))
                 }
+
+
 
 
 //        if (search.input.isBlank() || stringResource(R.string.enable_connection_metered).contains(search.input,true))

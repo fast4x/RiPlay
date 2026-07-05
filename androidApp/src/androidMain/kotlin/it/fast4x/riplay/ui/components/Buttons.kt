@@ -4,7 +4,6 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -42,7 +41,7 @@ fun ActionPillButton(
     enabled: Boolean = true,
     active: Boolean = false,
     activeColor: Color = Color.Unspecified,
-    tint: Color,
+    color: Color,
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null,
 ) {
@@ -52,7 +51,7 @@ fun ActionPillButton(
         targetValue = if (active && activeColor != Color.Unspecified)
             activeColor.copy(alpha = 0.18f)
         else
-            tint.copy(alpha = 0.08f),
+            color.copy(alpha = 0.08f),
         animationSpec = tween(300),
         label = "pillBg"
     )
@@ -99,14 +98,14 @@ fun ActionPillButton(
                     onLongClick?.invoke()
                 }
             )
-            .padding(8.dp)
+            .padding(4.dp)
 
     ) {
         Image(
             painter = painterResource(icon),
             contentDescription = null,
             colorFilter = ColorFilter.tint(
-                if (enabled) tint else tint.copy(alpha = 0.35f)
+                if (enabled) color else color.copy(alpha = 0.35f)
             ),
             modifier = Modifier.size(iconSize ?: 22.dp)
         )

@@ -90,7 +90,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.navigation.NavHostController
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -268,7 +267,9 @@ import java.util.Date
 import java.util.Objects
 import kotlin.math.sqrt
 import androidx.compose.ui.platform.LocalLocale
+import androidx.navigation.NavController
 import it.fast4x.riplay.extensions.appviewmodel.AppViewModelProvider
+import it.fast4x.riplay.extensions.qrcodeanalyzer.qrCodeToAction
 import it.fast4x.riplay.extensions.musicbrainz.viewmodels.AlbumInsightsViewModel
 import it.fast4x.riplay.extensions.musicbrainz.viewmodels.ArtistInsightsViewModel
 import it.fast4x.riplay.extensions.preferences.PreferenceKey
@@ -330,6 +331,7 @@ class MainActivity :
     private var onlinePlayerView: YouTubePlayerView? = null
 
     private var isclosebackgroundPlayerEnabled = false
+
 
     /*
     private var mediaRouter: MediaRouter? = null
@@ -808,7 +810,7 @@ class MainActivity :
 
                 val coroutineScope = rememberCoroutineScope()
                 val isSystemInDarkTheme = isSystemInDarkTheme()
-                var navController: NavHostController? = null
+                var navController: NavController? = null
 
                 var customColor by rememberPreference(CUSTOM_COLOR.key, Color.Green.hashCode())
                 val lightTheme =
@@ -1659,6 +1661,57 @@ class MainActivity :
 
                 LaunchedEffect(intentUriData) {
                     var uri = intentUriData ?: return@LaunchedEffect
+
+                    if (uri.scheme == "riplay") {
+                        val binder = snapshotFlow { binder }.filterNotNull().first()
+                        navController?.let {
+                            qrCodeToAction(uri.toString(), this@MainActivity, binder, it)
+                        }
+                        /*
+                        val parts = uri.toString().split(":")
+
+                        if (parts.size >= 3) {
+                            val action = parts[1]
+                            val isLocal = parts[2] == LOCAL_KEY_PREFIX
+                            val mediaId = if (isLocal) parts[3] else parts[2]
+
+                            Timber.d("MainActivity LaunchedEffect intentUriData scheme riplay parts = $parts")
+                            when(action) {
+                                "play" -> {
+                                    val binder = snapshotFlow { binder }.filterNotNull().first()
+                                    val mediaItem = if (!isLocal)
+                                        Environment.song(mediaId)?.getOrNull()?.asMediaItem
+                                        else Database.songDao().getById(mediaId)?.asMediaItem
+
+                                    mediaItem?.let { media ->
+                                        withContext(Dispatchers.Main) {
+                                            if (!media.isExplicit && !preferences.getBoolean(
+                                                    PARENTAL_CONTROL_ENABLED.key,
+                                                    false
+                                                )
+                                            )
+                                                binder.player.forcePlay(media)
+                                            else
+                                                SmartMessage(
+                                                    "Parental control is enabled",
+                                                    PopupType.Warning,
+                                                    context = this@MainActivity
+                                                )
+                                        }
+                                    }
+                                }
+                                "artist" -> { navController?.navigate(route = "${NavRoutes.artist.name}/$mediaId")}
+                                "album" -> { navController?.navigate(route = "${NavRoutes.album.name}/$mediaId")}
+                                "localPlaylist" -> { navController?.navigate(route = "${NavRoutes.localPlaylist.name}/$mediaId") }
+                                "playlist" -> { navController?.navigate(route = "${NavRoutes.playlist.name}/$mediaId") }
+
+                            }
+
+                        }
+                         */
+                        return@LaunchedEffect
+                    }
+
                     if (uri.host == "www.shazam.com") {
                         uri = "${"https://"}${
                             uri.toString().substringAfter("https://").substringBeforeLast("\"")
@@ -1892,9 +1945,7 @@ class MainActivity :
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         intentUriData = intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri()
-
     }
-
 
     override fun onStop() {
         super.onStop()
