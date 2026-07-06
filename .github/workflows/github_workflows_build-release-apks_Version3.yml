@@ -82,7 +82,7 @@ jobs:
       - name: Dry Run FOSS
         env:
           GRADLE_OPTS: "-Xmx2g -XX:MaxMetaspaceSize=512m"
-        run: ./gradlew assembleFoss -PBUILD_VARIANT=foss --dry-run
+        run: ./gradlew :androidApp:assembleFoss -PBUILD_VARIANT=foss --dry-run
 
       #- name: Build Release APK - FOSS Flavor
       #  env:
