@@ -86,7 +86,7 @@ jobs:
           SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           SIGNING_STORE_FILE: ${{ runner.temp }}/keystore/RiPlayKeystore.jks
         run: |
-          ./gradlew :androidApp:assembleFoss -PBUILD_VARIANT=foss
+          ./gradlew :androidApp:assembleFoss -PBUILD_VARIANT=foss --info --stacktrace
 
       - name: Collect APK files
         run: |
