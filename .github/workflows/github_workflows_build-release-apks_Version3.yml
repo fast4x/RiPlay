@@ -79,17 +79,20 @@ jobs:
         run: |
           ./gradlew :androidApp:assembleFull -PBUILD_VARIANT=
 
-      - name: Build Release APK - FOSS Flavor
+      - name: Dry Run FOSS
         env:
-          SIGNING_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-          SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          SIGNING_STORE_FILE: ${{ runner.temp }}/keystore/RiPlayKeystore.jks
-        run: |
-          ./gradlew :androidApp:assembleFoss -PBUILD_VARIANT=foss \
-          --no-daemon \
-          -Dorg.gradle.jvmargs="-Xmx2g -XX:MaxMetaspaceSize=512m -XX:+UseG1GC" \
-          --info
+          GRADLE_OPTS: "-Xmx2g -XX:MaxMetaspaceSize=512m"
+        run: ./gradlew assembleFoss -PBUILD_VARIANT=foss --dry-run
+
+      #- name: Build Release APK - FOSS Flavor
+      #  env:
+      #    GRADLE_OPTS: "-Xmx2g -XX:MaxMetaspaceSize=512m -XX:+UseG1GC"
+      #    SIGNING_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+      #    SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      #    SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+      #    SIGNING_STORE_FILE: ${{ runner.temp }}/keystore/RiPlayKeystore.jks
+      #  run: |
+      #    ./gradlew :androidApp:assembleFoss -PBUILD_VARIANT=foss
 
       - name: Collect APK files
         run: |
