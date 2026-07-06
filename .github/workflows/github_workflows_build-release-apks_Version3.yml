@@ -86,7 +86,10 @@ jobs:
           SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           SIGNING_STORE_FILE: ${{ runner.temp }}/keystore/RiPlayKeystore.jks
         run: |
-          ./gradlew :androidApp:assembleFoss -PBUILD_VARIANT=foss --info --stacktrace
+          ./gradlew :androidApp:assembleFoss -PBUILD_VARIANT=foss \
+          --no-daemon \
+          -Dorg.gradle.jvmargs="-Xmx2g -XX:MaxMetaspaceSize=512m -XX:+UseG1GC" \
+          --info
 
       - name: Collect APK files
         run: |
