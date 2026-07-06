@@ -1,15 +1,7 @@
 name: Dry run FOSS flavor
 
 on:
-  push:
-    tags:
-      - 'v*'
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version tag (e.g., v1.0.0)'
-        required: true
-        type: string
 
 jobs:
   build-and-release:
