@@ -219,6 +219,7 @@
             </intent-filter>
         </service>
 
+        <!-- REMOVED TEMPORALLY
         <receiver android:name=".ui.widgets.PlayerVerticalWidgetReceiver"
             android:exported="true">
             <intent-filter>
@@ -237,6 +238,7 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/player_horizontal_widget_info" />
         </receiver>
+        -->
 
         <receiver android:name="androidx.media3.session.MediaButtonReceiver"
             android:exported="true">

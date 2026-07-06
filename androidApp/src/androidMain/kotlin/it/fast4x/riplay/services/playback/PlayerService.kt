@@ -157,8 +157,6 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.USE_VOLUME_KEYS_TO_
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.VOLUME_BOOST_LEVEL
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.VOLUME_NORMALIZATION
 import it.fast4x.riplay.ui.screens.player.unified.components.customui.CustomDefaultPlayerUiController
-import it.fast4x.riplay.ui.widgets.PlayerHorizontalWidget
-import it.fast4x.riplay.ui.widgets.PlayerVerticalWidget
 import it.fast4x.riplay.utils.BitmapProvider
 import it.fast4x.riplay.utils.OnlineRadio
 import it.fast4x.riplay.utils.SleepTimerListener
@@ -320,8 +318,8 @@ class PlayerService : Service(),
 
     var legacyActionReceiver: LegacyActionReceiver? = null
 
-    private val playerVerticalWidget = PlayerVerticalWidget()
-    private val playerHorizontalWidget = PlayerHorizontalWidget()
+//    private val playerVerticalWidget = PlayerVerticalWidget()
+//    private val playerHorizontalWidget = PlayerHorizontalWidget()
 
     var currentMediaItemState = MutableStateFlow<MediaItem?>(null)
 
@@ -671,7 +669,7 @@ class PlayerService : Service(),
             }
         }
 
-        updateWidgets()
+        //updateWidgets()
 
     }
 
@@ -2970,6 +2968,7 @@ private var pausedByZeroVolume = false
         }
     }.setExtensionRendererMode(EXTENSION_RENDERER_MODE_PREFER) // prefer extension renderers to opus format
 
+    /*
     fun updateWidgets() {
         val isPlaying = (isPlayingNow || player.isPlaying)
         serviceScope.launch {
@@ -2987,6 +2986,7 @@ private var pausedByZeroVolume = false
             )
         }
     }
+     */
 
     @ExperimentalCoroutinesApi
     private fun incrementOnlineListenedPlaytimeMs() {
