@@ -62,7 +62,7 @@ fun ScanQrScreen(
             ) {
                 if (showRationale) {
                     Text(
-                        text = "Permesso della fotocamera negato.\nPer scansionare il QR Code, devi abilitare la fotocamera dalle impostazioni del telefono.",
+                        text = stringResource(R.string.qr_code_camera_permission_denied._to_scan_the_qr_code,_you_need_to_enable_the_camera_in_your_phone's_settings.),
                         color = Color.Red
                     )
                 } else {
