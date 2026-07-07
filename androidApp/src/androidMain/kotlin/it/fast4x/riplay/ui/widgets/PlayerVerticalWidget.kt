@@ -1,46 +1,45 @@
 package it.fast4x.riplay.ui.widgets
 
 import android.content.Context
-import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
 import androidx.annotation.OptIn
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.glance.GlanceId
-import androidx.glance.GlanceTheme
-import androidx.glance.appwidget.GlanceAppWidget
-import androidx.glance.appwidget.GlanceAppWidgetManager
-import androidx.glance.appwidget.GlanceAppWidgetReceiver
-import androidx.glance.appwidget.provideContent
-import androidx.glance.appwidget.state.updateAppWidgetState
-import androidx.glance.state.GlanceStateDefinition
-import androidx.glance.state.PreferencesGlanceStateDefinition
-import androidx.media3.common.util.UnstableApi
-import it.fast4x.riplay.commonutils.cleanPrefix
-import androidx.core.graphics.createBitmap
-import androidx.datastore.preferences.core.Preferences
 import androidx.glance.GlanceModifier
+import androidx.glance.GlanceTheme
 import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
+import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetReceiver
+import androidx.glance.appwidget.action.actionRunCallback
+import androidx.glance.appwidget.cornerRadius
+import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.currentState
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
+import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
+import androidx.glance.layout.height
 import androidx.glance.layout.padding
+import androidx.glance.layout.width
+import androidx.glance.state.PreferencesGlanceStateDefinition
+import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
+import androidx.glance.text.TextStyle
+import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.R
-import it.fast4x.riplay.services.playback.PlayerService
-import it.fast4x.riplay.utils.isLocal
-import it.fast4x.riplay.utils.playNext
-import it.fast4x.riplay.utils.playPrevious
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @UnstableApi
 class PlayerVerticalWidgetReceiver : GlanceAppWidgetReceiver() {
@@ -48,32 +47,55 @@ class PlayerVerticalWidgetReceiver : GlanceAppWidgetReceiver() {
 }
 
 @UnstableApi
-class PlayerVerticalWidget: GlanceAppWidget() {
-    companion object {
-        val songTitleKey = stringPreferencesKey("songTitleKey")
-        val songArtistKey = stringPreferencesKey("songArtistKey")
-        val isPlayingKey = booleanPreferencesKey("isPlayingKey")
-        var widgetBitmap: Bitmap? = createBitmap(1, 1)
-        lateinit var widgetBinder: PlayerService.Binder
-    }
+class PlayerVerticalWidget : GlanceAppWidget() {
 
-    override val stateDefinition: GlanceStateDefinition<*> = PreferencesGlanceStateDefinition
+    override val stateDefinition = PreferencesGlanceStateDefinition
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-
         provideContent {
+            val prefs = currentState<Preferences>()
+
+            val title = prefs[stringPreferencesKey("title")] ?: ""
+            val artist = prefs[stringPreferencesKey("artist")] ?: ""
+            val isPlaying = prefs[booleanPreferencesKey("isPlaying")] == true
+            val artworkBase64 = prefs[stringPreferencesKey("artworkBase64")]
+            val coverProvider = try {
+                val decodedBytes = Base64.decode(artworkBase64, Base64.DEFAULT)
+                val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+                if (bitmap != null) ImageProvider(bitmap) else ImageProvider(R.drawable.app_icon)
+            } catch (e: Exception) {
+                Timber.e("PlayerHorizontalWidget error ${e.message}")
+                ImageProvider(R.drawable.app_icon)
+            }
+
             GlanceTheme {
-                val preferences = currentState<Preferences>()
                 Column(
-                    modifier = GlanceModifier.fillMaxWidth()
+                    modifier = GlanceModifier.fillMaxSize()
+                        .cornerRadius(16.dp)
                         .background(GlanceTheme.colors.widgetBackground)
-                        .padding(4.dp),
+                        .padding(12.dp),
                     verticalAlignment = Alignment.Top,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(text = preferences[songTitleKey] ?: "", modifier = GlanceModifier)
-                    Text(text = preferences[songArtistKey] ?: "", modifier = GlanceModifier)
-                    //Text(text = "isPlaying: ${preferences[isPlayingKey]}", modifier = GlanceModifier)
+
+                    Text(
+                        text = title,
+                        style = TextStyle(
+                            fontWeight = FontWeight.Bold,
+                            color = GlanceTheme.colors.onSurface
+                        ),
+                        maxLines = 1,
+                    )
+                    Text(
+                        text = artist,
+                        style = TextStyle(
+                            fontWeight = FontWeight.Normal,
+                            // Un colore più "scialbo" per l'artista (dipende dal tuo tema,
+                            // ma di solito si usa un colore secondario)
+                            //color = GlanceTheme.colors.onSurface.copy(alpha = 0.7f)
+                        ),
+                        maxLines = 1,
+                    )
 
                     Row(
                         modifier = GlanceModifier.fillMaxWidth()
@@ -82,96 +104,40 @@ class PlayerVerticalWidget: GlanceAppWidget() {
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-
                         Image(
                             provider = ImageProvider(R.drawable.play_skip_back),
                             contentDescription = "back",
-                            modifier = GlanceModifier
-                                .clickable {
-                                    widgetBinder.player.playPrevious()
-                                }
+                            modifier = GlanceModifier.clickable(actionRunCallback(PreviousAction::class.java))
                         )
 
                         Image(
-                            provider = ImageProvider(
-                                if (preferences[isPlayingKey] == true) {
-                                    R.drawable.pause
-                                } else {
-                                    R.drawable.play
-                                }
-                            ),
+                            provider = ImageProvider(if (isPlaying) R.drawable.pause else R.drawable.play),
                             contentDescription = "play/pause",
                             modifier = GlanceModifier.padding(horizontal = 20.dp)
-                                .clickable {
-                                    if (preferences[isPlayingKey] == true) {
-                                        widgetBinder.player.pause()
-                                        widgetBinder.onlinePlayer?.pause()
-                                    } else {
-                                        if (widgetBinder.currentMediaItemAsSong?.isLocal == true)
-                                            widgetBinder.player.play()
-                                        else
-                                            widgetBinder.onlinePlayer?.play()
-                                    }
-                                }
+                                .clickable(
+                                    if (isPlaying) actionRunCallback(PauseAction::class.java)
+                                    else actionRunCallback(PlayAction::class.java)
+                                )
                         )
 
                         Image(
                             provider = ImageProvider(R.drawable.play_skip_forward),
                             contentDescription = "next",
-                            modifier = GlanceModifier
-                                .clickable {
-                                    widgetBinder.player.playNext()
-                                }
+                            modifier = GlanceModifier.clickable(actionRunCallback(NextAction::class.java))
                         )
-
                     }
 
-
                     Image(
-                        provider = ImageProvider(widgetBitmap!!),
+                        provider = coverProvider,
                         contentDescription = "cover",
                         modifier = GlanceModifier.padding(horizontal = 5.dp)
-                            .clickable (
-                                onClick = actionStartActivity<MainActivity>()
-                            )
-
+                            .width(160.dp).height(160.dp)
+                            .cornerRadius(8.dp)
+                            .clickable(actionStartActivity<MainActivity>())
                     )
-
-
                 }
             }
         }
-    }
-
-    @OptIn(UnstableApi::class)
-    suspend fun updateInfo(
-        context: Context,
-        isPlaying: Boolean,
-        bitmap: Bitmap?,
-        binder: PlayerService.Binder
-    ) {
-
-        val glanceId =
-            GlanceAppWidgetManager(context).getGlanceIds(PlayerVerticalWidget::class.java).firstOrNull()
-                ?: return
-
-        CoroutineScope(Dispatchers.Main).launch {
-            updateAppWidgetState(
-                context,
-                PreferencesGlanceStateDefinition,
-                glanceId
-            ) { preferences ->
-                preferences.toMutablePreferences().apply {
-                    this[songTitleKey] = cleanPrefix(binder.player.mediaMetadata.title.toString())
-                    this[songArtistKey] = binder.player.mediaMetadata.artist.toString()
-                    this[isPlayingKey] = isPlaying
-                }
-            }
-        }
-
-        widgetBitmap = bitmap
-        widgetBinder = binder
-        PlayerVerticalWidget().update(context, glanceId)
     }
 
 }

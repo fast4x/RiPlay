@@ -38,6 +38,7 @@ import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.util.Base64
 import android.view.LayoutInflater
 import androidx.annotation.OptIn
 import androidx.compose.runtime.getValue
@@ -218,6 +219,9 @@ import it.fast4x.riplay.services.helpers.AudioDRCHelper
 import it.fast4x.riplay.services.helpers.BluetoothConnectHelper
 import it.fast4x.riplay.services.helpers.EqualizerHelper
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
+import it.fast4x.riplay.ui.widgets.PlayerHorizontalWidget
+import it.fast4x.riplay.ui.widgets.PlayerVerticalWidget
+import it.fast4x.riplay.ui.widgets.updateState
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.isAtLeastAndroid11
 import it.fast4x.riplay.utils.isAtLeastAndroid7
@@ -265,6 +269,8 @@ import kotlin.math.sqrt
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.seconds
 import android.os.Binder as AndroidBinder
+import androidx.core.graphics.scale
+import java.io.ByteArrayOutputStream
 
 
 @UnstableApi
@@ -318,8 +324,8 @@ class PlayerService : Service(),
 
     var legacyActionReceiver: LegacyActionReceiver? = null
 
-//    private val playerVerticalWidget = PlayerVerticalWidget()
-//    private val playerHorizontalWidget = PlayerHorizontalWidget()
+    private val playerVerticalWidget = PlayerVerticalWidget()
+    private val playerHorizontalWidget = PlayerHorizontalWidget()
 
     var currentMediaItemState = MutableStateFlow<MediaItem?>(null)
 
@@ -669,7 +675,7 @@ class PlayerService : Service(),
             }
         }
 
-        //updateWidgets()
+        updateWidgetState()
 
     }
 
@@ -677,6 +683,14 @@ class PlayerService : Service(),
     @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startForeground()
+        Timber.d("PlayerService onStartCommand intent action ${intent?.action}")
+        when (intent?.action) {
+            Action.play.value -> { if (localMediaItem?.isLocal == true) player.play() else _internalOnlinePlayer.value?.play() }
+            Action.pause.value -> { if (localMediaItem?.isLocal == true) player.pause() else _internalOnlinePlayer.value?.pause() }
+            Action.next.value -> handlePlayNext()
+            Action.previous.value -> player.playPrevious()
+        }
+        updateWidgetState()
 
         return START_STICKY
     }
@@ -1420,6 +1434,8 @@ class PlayerService : Service(),
             PlayerConstants.PlayerState.PAUSED -> currentState.copy(playbackState = PlaybackState.PAUSED)
             PlayerConstants.PlayerState.UNKNOWN -> currentState.copy(playbackState = PlaybackState.IDLE)
         }
+
+        updateWidgetState()
     }
 
     private fun initializeAudioVolumeObserver() {
@@ -1918,6 +1934,8 @@ private var pausedByZeroVolume = false
                 }
             }
         }
+
+        updateWidgetState()
 
         // maybe not needed
         //maybeRecoverPlaybackError()
@@ -2614,7 +2632,7 @@ private var pausedByZeroVolume = false
                 fadeIn = true
             )
 
-        //if (currentMediaItemState.value?.isLocal == true)
+        updateWidgetState()
         updateUnifiedNotification()
 
         //notify external equalizer
@@ -2968,25 +2986,77 @@ private var pausedByZeroVolume = false
         }
     }.setExtensionRendererMode(EXTENSION_RENDERER_MODE_PREFER) // prefer extension renderers to opus format
 
-    /*
-    fun updateWidgets() {
-        val isPlaying = (isPlayingNow || player.isPlaying)
-        serviceScope.launch {
-            playerVerticalWidget.updateInfo(
+    fun updateWidgetState() {
+        Timber.d("PlayerService updateWidgetState _playerState ${_playerState.value.isPlaying}")
+        val isPlaying = _playerState.value.isPlaying
+        val title = cleanPrefix(player.mediaMetadata.title.toString())
+        val artist = player.mediaMetadata.artist.toString()
+
+        serviceScope.launch(Dispatchers.IO) {
+            val artworkBase64 = getOptimizedArtworkBase64(bitmapProvider?.bitmap)
+
+            playerHorizontalWidget.updateState(
                 context = this@PlayerService,
+                title = title,
+                artist = artist,
                 isPlaying = isPlaying,
-                bitmap = bitmapProvider?.bitmap,
-                binder = binder
+                artworkBase64 = artworkBase64
             )
-            playerHorizontalWidget.updateInfo(
+            playerVerticalWidget.updateState(
                 context = this@PlayerService,
+                title = title,
+                artist = artist,
                 isPlaying = isPlaying,
-                bitmap = bitmapProvider?.bitmap,
-                binder = binder
+                artworkBase64 = artworkBase64
             )
         }
     }
-     */
+
+    private suspend fun getOptimizedArtworkBase64(bitmap: Bitmap?): String? {
+        return withContext(Dispatchers.IO) {
+            if (bitmap == null || bitmap.isRecycled) return@withContext null
+
+            if (bitmap.width < 20 || bitmap.height < 20) {
+                return@withContext null
+            }
+
+            var safeBitmap: Bitmap? = null
+            try {
+                safeBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, false)
+
+                val maxSizePx = 200
+                val ratio = safeBitmap.width.toFloat() / safeBitmap.height.toFloat()
+                val width = if (safeBitmap.width >= safeBitmap.height) maxSizePx else (maxSizePx * ratio).toInt()
+                val height = if (safeBitmap.height >= safeBitmap.width) maxSizePx else (maxSizePx / ratio).toInt()
+
+                val resizedBitmap = Bitmap.createScaledBitmap(safeBitmap, width, height, true)
+
+                if (resizedBitmap != safeBitmap) safeBitmap.recycle()
+                safeBitmap = resizedBitmap
+
+                val byteArrayOutputStream = ByteArrayOutputStream()
+                safeBitmap.compress(Bitmap.CompressFormat.JPEG, 75, byteArrayOutputStream)
+                val byteArray = byteArrayOutputStream.toByteArray()
+
+                if (byteArray.size > 400_000) {
+                    safeBitmap.recycle()
+                    return@withContext null
+                }
+
+                val result = Base64.encodeToString(byteArray, Base64.NO_WRAP)
+
+                safeBitmap.recycle()
+
+                result
+
+            } catch (e: Exception) {
+                Timber.e(e, "Errore conversione Base64 Widget (Bitmap probabilmente riciclata da Media3)")
+                null
+            } finally {
+                safeBitmap?.recycle()
+            }
+        }
+    }
 
     @ExperimentalCoroutinesApi
     private fun incrementOnlineListenedPlaytimeMs() {
