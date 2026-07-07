@@ -17,6 +17,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import it.fast4x.riplay.R
 
 @Composable
 fun ScanQrScreen(
@@ -62,7 +64,8 @@ fun ScanQrScreen(
             ) {
                 if (showRationale) {
                     Text(
-                        text = stringResource(R.string.qr_code_camera_permission_denied._to_scan_the_qr_code,_you_need_to_enable_the_camera_in_your_phone's_settings.),
+                        text = stringResource(
+                            R.string.qr_code_camera_permission_denied),
                         color = Color.Red
                     )
                 } else {
