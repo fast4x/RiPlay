@@ -1,6 +1,7 @@
 package it.fast4x.riplay.ui.widgets
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Base64
 import androidx.annotation.OptIn
@@ -59,12 +60,27 @@ class PlayerVerticalWidget : GlanceAppWidget() {
             val artist = prefs[stringPreferencesKey("artist")] ?: ""
             val isPlaying = prefs[booleanPreferencesKey("isPlaying")] == true
             val artworkBase64 = prefs[stringPreferencesKey("artworkBase64")]
-            val coverProvider = try {
-                val decodedBytes = Base64.decode(artworkBase64, Base64.DEFAULT)
-                val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
-                if (bitmap != null) ImageProvider(bitmap) else ImageProvider(R.drawable.app_icon)
-            } catch (e: Exception) {
-                Timber.e("PlayerHorizontalWidget error ${e.message}")
+            val safeBase64 = if (!artworkBase64.isNullOrEmpty() && artworkBase64.length > 2000) {
+                artworkBase64
+            } else {
+                null
+            }
+
+            val coverProvider = if (safeBase64 != null) {
+                try {
+                    val decodedBytes = Base64.decode(safeBase64, Base64.DEFAULT)
+                    val rawBitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+                    if (rawBitmap != null) {
+                        val safeBitmap = rawBitmap.copy(Bitmap.Config.ARGB_8888, true)
+                        rawBitmap.recycle()
+                        ImageProvider(safeBitmap)
+                    } else {
+                        ImageProvider(R.drawable.app_icon)
+                    }
+                } catch (e: Exception) {
+                    ImageProvider(R.drawable.app_icon)
+                }
+            } else {
                 ImageProvider(R.drawable.app_icon)
             }
 

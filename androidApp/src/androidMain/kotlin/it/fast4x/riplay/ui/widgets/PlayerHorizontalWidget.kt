@@ -60,7 +60,7 @@ class PlayerHorizontalWidget : GlanceAppWidget() {
             val artist = prefs[stringPreferencesKey("artist")] ?: ""
             val isPlaying = prefs[booleanPreferencesKey("isPlaying")] == true
             val artworkBase64 = prefs[stringPreferencesKey("artworkBase64")]
-            Timber.d("PlayerHorizontalWidget artworkBase64 lenght ${artworkBase64?.length}")
+            //Timber.d("PlayerHorizontalWidget artworkBase64 lenght ${artworkBase64?.length}")
             val safeBase64 = if (!artworkBase64.isNullOrEmpty() && artworkBase64.length > 2000) {
                 artworkBase64
             } else {
