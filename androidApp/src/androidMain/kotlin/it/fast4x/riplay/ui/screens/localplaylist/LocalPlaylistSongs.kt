@@ -975,14 +975,14 @@ fun LocalPlaylistSongs(
     var totalSongsToUpdate by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit,playlistUpdateDialog){
-        //Database.asyncTransaction {
+        Database.asyncTransaction {
 
             totalSongsToUpdate = if (!isSpotifyPlaylist) playlistAllSongs.filter { it.song.thumbnailUrl?.startsWith("https://lh3.googleusercontent.com/") == true
                     && !((songAlbumInfo(it.asMediaItem.mediaId)?.id != null)
                     && songArtistInfo(it.asMediaItem.mediaId).isNotEmpty()
                     && !it.song.artistsText.isNullOrBlank()) }.size
             else playlistAllSongs.filter { it.song.id.startsWith("spotify") }.size
-        //}
+        }
     }
 
     if (playlistUpdateDialog){

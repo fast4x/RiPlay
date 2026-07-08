@@ -143,7 +143,11 @@ class MainApplication : Application(), ImageLoaderFactory {
         )
 
         // Schedula job periodici
-        WorkScheduler.scheduleAll(this)
+        try {
+            WorkScheduler.scheduleAll(this)
+        } catch (e: Exception) {
+            Timber.e("MainApplication WorkScheduler.scheduleAll error...")
+        }
 
         // Avvia caricamento profilo + refresh UI
         appScopeIO.launch {
