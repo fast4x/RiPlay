@@ -114,16 +114,6 @@ fun SearchScreen(
     val (baseTabIndex, onBaseTabChanged) = rememberSaveable { mutableStateOf(0) }
     val (resultTabIndex, onResultTabChanged) = rememberSaveable { mutableStateOf(0) }
 
-    LaunchedEffect(textFieldValue.text) {
-        if (textFieldValue.text.length > 3) {
-            if (!context.preferences.getBoolean(PreferenceKey.PAUSE_SEARCH_HISTORY.key, false)) {
-                Database.asyncTransaction {
-                    insert(SearchQuery(query = textFieldValue.text))
-                }
-            }
-        }
-    }
-
     val decorationBox: @Composable (@Composable () -> Unit) -> Unit = { innerTextField ->
         Row(
             horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically,
