@@ -177,8 +177,10 @@ import it.fast4x.riplay.utils.saveImageToInternalStorage
 import kotlinx.coroutines.CoroutineScope
 import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.enums.ExportType
 import it.fast4x.riplay.enums.QrType
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
+import it.fast4x.riplay.extensions.experimental.exporter.Exporter
 import it.fast4x.riplay.extensions.qrcodeanalyzer.GenerateQrButton
 import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.ui.components.PullToRefreshBox
@@ -633,9 +635,20 @@ fun LocalPlaylistSongs(
     }
 
     val exportLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
+        rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(ExportType.Csv.mimeExport)) { uri ->
             if (uri == null) return@rememberLauncherForActivityResult
 
+            coroutineScope.launch (Dispatchers.IO){
+                Exporter.exportTo(
+                    ExportType.Csv,
+                    context,
+                    uri,
+                    if(listMediaItems.isEmpty()) playlistSongs.map { it.song } else listMediaItems.map { it.asSong },
+                    playlistPreview?.playlist?.browseId,
+                    plistName
+                )
+            }
+            /*
             coroutineScope.launch (Dispatchers.IO){
                 context.applicationContext.contentResolver.openOutputStream(uri)
                     ?.use { outputStream ->
@@ -690,6 +703,8 @@ fun LocalPlaylistSongs(
                         }
                     }
                 }
+
+             */
         }
 
     val importLauncher =

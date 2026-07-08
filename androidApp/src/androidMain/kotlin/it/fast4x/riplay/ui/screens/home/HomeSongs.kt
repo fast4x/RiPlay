@@ -166,7 +166,9 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_T
 import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.enums.ArtistsType
 import it.fast4x.riplay.enums.BlacklistType
+import it.fast4x.riplay.enums.ExportType
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
+import it.fast4x.riplay.extensions.experimental.exporter.Exporter
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXCLUDE_SONGS_WITH_DURATION_LIMIT
 import it.fast4x.riplay.utils.forcePlayAtIndex
@@ -513,8 +515,20 @@ fun HomeSongs(
     val coroutineScope = rememberCoroutineScope()
 
     // Export Logic
-    val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
+    val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(ExportType.Csv.mimeExport)) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
+
+        coroutineScope.launch (Dispatchers.IO){
+            Exporter.exportTo(
+                ExportType.Csv,
+                context,
+                uri,
+                if(listMediaItems.isEmpty()) items.map { it.song } else listMediaItems.map { it.asSong },
+                "",
+                plistName
+            )
+        }
+        /*
         coroutineScope.launch(Dispatchers.IO) {
             context.applicationContext.contentResolver.openOutputStream(uri)?.use { outputStream ->
                 csvWriter().open(outputStream) {
@@ -535,6 +549,8 @@ fun HomeSongs(
                 }
             }
         }
+
+         */
     }
 
     var isExporting by rememberSaveable { mutableStateOf(false) }
@@ -773,7 +789,7 @@ fun HomeSongs(
                         if (showRiPlayLikeYoutubeLikeConfirmDialog) {
                             Database.asyncTransaction { totalMinutesToLike = formatAsDuration((if (listMediaItems.isNotEmpty()) (listMediaItems.filter { Database.getLikedAt(it.mediaId) !in listOf(-1L, null) }).size else (items.filter { Database.getLikedAt(it.asMediaItem.mediaId) !in listOf(-1L, null) }).size) * 1000.toLong()) }
                             ConfirmationDialog(
-                                text = "$totalMinutesToLike " + stringResource(R.string.do_you_really_want_to_like_all_riplaytoytmusic),
+                                text = "$totalMinutesToLike " + stringResource(R.string.do_you_really_want_to_like_all),
                                 onDismiss = { showRiPlayLikeYoutubeLikeConfirmDialog = false },
                                 onConfirm = {
                                     showRiPlayLikeYoutubeLikeConfirmDialog = false

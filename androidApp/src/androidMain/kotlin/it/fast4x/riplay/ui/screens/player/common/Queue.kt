@@ -112,11 +112,13 @@ import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.data.models.defaultQueueId
 import it.fast4x.riplay.enums.BlacklistType
+import it.fast4x.riplay.enums.ExportType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.enums.QueueType
 import it.fast4x.riplay.enums.ThumbnailRoundness
+import it.fast4x.riplay.extensions.experimental.exporter.Exporter
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISCOVER
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXCLUDE_SONG_IF_IS_VIDEO
@@ -312,8 +314,21 @@ fun Queue(
     val coroutineScope = rememberCoroutineScope()
 
     val exportLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
+        rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(ExportType.Csv.mimeExport)) { uri ->
             if (uri == null) return@rememberLauncherForActivityResult
+
+            coroutineScope.launch (Dispatchers.IO){
+                Exporter.exportTo(
+                    ExportType.Csv,
+                    context,
+                    uri,
+                    if(listMediaItems.isEmpty()) windows.map { it.mediaItem.asSong } else listMediaItems.map { it.asSong },
+                    "",
+                    plistName
+                )
+            }
+
+            /*
             coroutineScope.launch(Dispatchers.IO) {
                 context.applicationContext.contentResolver.openOutputStream(uri)?.use { outputStream ->
                     csvWriter().open(outputStream) {
@@ -340,6 +355,8 @@ fun Queue(
                     }
                 }
             }
+
+             */
         }
 
     var isExporting by rememberSaveable { mutableStateOf(false) }

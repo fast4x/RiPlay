@@ -538,7 +538,7 @@ fun PlaylistsItemGridMenu(
                     if (onAddToPreferitesYoutube != null)
                         GridMenuItem(
                             icon = R.drawable.internet,
-                            title = R.string.add_rimusic_to_ytm_favorites,
+                            title = R.string.sync_favorites_with_ytm_account,
                             colorIcon = colorPalette.text,
                             colorText = colorPalette.text,
                             onClick = {

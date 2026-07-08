@@ -904,8 +904,6 @@
     <string name="please_wait">Mohon Tunggu</string>
     <string name="songs_liked_yt">Lagu disukai di youtube</string>
     <string name="song_unliked_yt">Lagu tidak disukai di youtube</string>
-    <string name="add_rimusic_to_ytm_favorites">seperti rimusic disukai lagu di youtube</string>
-    <string name="do_you_really_want_to_like_all_riplaytoytmusic">(perkiraan waktu) diperlukan untuk menyukai semua lagu. Tindakan ini tidak dapat dilanjutkan jika dibatalkan di tengah jalan. Kamu harus menutup aplikasi untuk membatalkan proses ini. Apakah kamu ingin melanjutkan?</string>
     <string name="do_you_really_want_to_like_all">(perkiraan waktu) diperlukan untuk menyukai semua lagu. Kamu harus menutup aplikasi untuk membatalkan proses ini. Apakah kamu ingin melanjutkan?</string>
     <string name="songs_liked_yt_failed">gagal menyukai lagu di youtube</string>
     <string name="songs_unliked_yt_failed">gagal untuk tidak seperti lagu di youtube</string>
@@ -1375,4 +1373,5 @@
     <string name="qr_code_as_png_format_2048x2048px_ideal_for_printing">QR code as PNG format 2048x2048px, ideal for printing</string>
     <string name="qr_code_frame_the_qr_code">Frame the QR code</string>
     <string name="qr_code_camera_permission_denied">Camera permission denied. To scan the QR code, you need to enable the camera in your phone\'s settings.</string>
+    <string name="sync_favorites_with_ytm_account">Sync favorites with ytm account</string>
 </resources>

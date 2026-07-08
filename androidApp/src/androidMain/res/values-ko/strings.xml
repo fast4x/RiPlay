@@ -904,8 +904,6 @@
     <string name="please_wait">기다려주세요</string>
     <string name="songs_liked_yt">유튜브에서 좋아요 표시됨</string>
     <string name="song_unliked_yt">유튜브에서 좋아요 해제됨</string>
-    <string name="add_rimusic_to_ytm_favorites">Like RiMusic Liked songs in Youtube</string>
-    <string name="do_you_really_want_to_like_all_riplaytoytmusic">모든 노래에 \'좋아요\'를 표시하려면 (estimated time)이 필요합니다. 중간에 취소하면 다시 시작할 수 없습니다. 이 과정을 취소하려면 앱을 닫아야 합니다. 계속하시겠나요?</string>
     <string name="do_you_really_want_to_like_all">모든 노래에 \'좋아요\'를 표시하려면 (estimated time)이 필요합니다. 이 과정을 취소하려면 앱을 닫아야 합니다. 계속하시겠나요?</string>
     <string name="songs_liked_yt_failed">유튜브에서 좋아요 표시에 실패했습니다</string>
     <string name="songs_unliked_yt_failed">유튜브에서 좋아요 해제에 실패했습니다</string>
@@ -1375,4 +1373,5 @@
     <string name="qr_code_as_png_format_2048x2048px_ideal_for_printing">QR code as PNG format 2048x2048px, ideal for printing</string>
     <string name="qr_code_frame_the_qr_code">Frame the QR code</string>
     <string name="qr_code_camera_permission_denied">Camera permission denied. To scan the QR code, you need to enable the camera in your phone\'s settings.</string>
+    <string name="sync_favorites_with_ytm_account">Sync favorites with ytm account</string>
 </resources>

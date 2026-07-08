@@ -904,8 +904,6 @@
     <string name="please_wait">Bitte warten</string>
     <string name="songs_liked_yt">Titel die auf YouTube mit \"Gefällt mir\" markiert sind</string>
     <string name="song_unliked_yt">Der Titel ist auf YouTube nicht mit \"Gefällt mir\" markiert</string>
-    <string name="add_rimusic_to_ytm_favorites">\"Gefällt mir\" Angaben aus RiPlay nach YouTube übertragen</string>
-    <string name="do_you_really_want_to_like_all_riplaytoytmusic">(geschätzte Zeit) ist benötigt um alle Titel mit \"Gefällt mir\" zu markieren. Dieser Prozess kann nach der Beendigung nicht fortgesetzt werden. Möchtest du fortfahren?</string>
     <string name="do_you_really_want_to_like_all">(geschätzte Zeit) ist benötigt um alle Titel mit \"Gefällt mir\" zu markieren. Du musst die App schließen, um diesen Prozess zu beenden. Möchtest du fortfahren?</string>
     <string name="songs_liked_yt_failed">Der Titel konnte auf YouTube nicht mit \"Gefällt mir\" markiert werden</string>
     <string name="songs_unliked_yt_failed">Das \"Gefällt mir\" des Titels konnte auf YouTube nicht entfernt werden</string>
@@ -1378,4 +1376,5 @@ Mach dich bereit, deine unvergesslichsten musikalischen Momente noch einmal zu e
     <string name="qr_code_as_png_format_2048x2048px_ideal_for_printing">QR code as PNG format 2048x2048px, ideal for printing</string>
     <string name="qr_code_frame_the_qr_code">Frame the QR code</string>
     <string name="qr_code_camera_permission_denied">Camera permission denied. To scan the QR code, you need to enable the camera in your phone\'s settings.</string>
+    <string name="sync_favorites_with_ytm_account">Sync favorites with ytm account</string>
 </resources>

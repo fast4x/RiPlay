@@ -611,7 +611,7 @@ fun PlaylistsItemMenu(
                         if (onAddToPreferitesYoutube != null)
                             MenuEntry(
                                 icon = R.drawable.internet,
-                                text = stringResource(R.string.add_rimusic_to_ytm_favorites),
+                                text = stringResource(R.string.sync_favorites_with_ytm_account),
                                 onClick = {
                                     onDismiss()
                                     onAddToPreferitesYoutube()
