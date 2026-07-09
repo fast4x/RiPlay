@@ -166,7 +166,7 @@ import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.ExportType
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
-import it.fast4x.riplay.extensions.experimental.exporter.Exporter
+import it.fast4x.riplay.extensions.exporter.Exporter
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXCLUDE_SONGS_WITH_DURATION_LIMIT
 import it.fast4x.riplay.utils.forcePlayAtIndex

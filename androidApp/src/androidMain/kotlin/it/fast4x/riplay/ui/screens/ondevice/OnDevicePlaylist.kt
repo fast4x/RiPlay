@@ -138,7 +138,7 @@ import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.enums.ExportType
 import it.fast4x.riplay.enums.OnDeviceSongSortBy
-import it.fast4x.riplay.extensions.experimental.exporter.Exporter
+import it.fast4x.riplay.extensions.exporter.Exporter
 import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.utils.addToYtPlaylist

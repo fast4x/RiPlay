@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.exporter
+package it.fast4x.riplay.extensions.exporter
 
 import android.content.Context
 import android.net.Uri

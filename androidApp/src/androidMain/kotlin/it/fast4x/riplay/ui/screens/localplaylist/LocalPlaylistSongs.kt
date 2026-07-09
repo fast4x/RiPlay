@@ -179,7 +179,7 @@ import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.enums.ExportType
 import it.fast4x.riplay.enums.QrType
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
-import it.fast4x.riplay.extensions.experimental.exporter.Exporter
+import it.fast4x.riplay.extensions.exporter.Exporter
 import it.fast4x.riplay.extensions.qrcodeanalyzer.GenerateQrButton
 import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.ui.components.PullToRefreshBox
