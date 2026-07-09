@@ -1,6 +1,6 @@
 package it.fast4x.riplay.enums
 
-enum class ExoPlayerDiskDownloadCacheMaxSize {
+enum class LocalPlayerDiskDownloadCacheMaxSize {
     `Disabled`,
     `32MB`,
     `512MB`,

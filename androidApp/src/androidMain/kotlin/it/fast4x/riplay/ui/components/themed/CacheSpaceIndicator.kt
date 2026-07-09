@@ -18,11 +18,9 @@ import coil.annotation.ExperimentalCoilApi
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.enums.CacheType
 import it.fast4x.riplay.enums.CoilDiskCacheMaxSize
-import it.fast4x.riplay.enums.ExoPlayerDiskCacheMaxSize
-import it.fast4x.riplay.enums.ExoPlayerDiskDownloadCacheMaxSize
+import it.fast4x.riplay.enums.LocalPlayerDiskCacheMaxSize
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.COIL_DISK_CACHE_MAX_SIZE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXO_PLAYER_DISK_CACHE_MAX_SIZE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXO_PLAYER_DISK_DOWNLOAD_CACHE_MAX_SIZE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 
 
@@ -39,20 +37,15 @@ fun CacheSpaceIndicator(
         COIL_DISK_CACHE_MAX_SIZE.key,
         CoilDiskCacheMaxSize.`128MB`
     )
-    val exoPlayerDiskCacheMaxSize by rememberPreference(
+    val localPlayerDiskCacheMaxSize by rememberPreference(
         EXO_PLAYER_DISK_CACHE_MAX_SIZE.key,
-        ExoPlayerDiskCacheMaxSize.`2GB`
-    )
-
-    val exoPlayerDiskDownloadCacheMaxSize by rememberPreference(
-        EXO_PLAYER_DISK_DOWNLOAD_CACHE_MAX_SIZE.key,
-        ExoPlayerDiskDownloadCacheMaxSize.`2GB`
+        LocalPlayerDiskCacheMaxSize.`2GB`
     )
 
     when (cacheType) {
         CacheType.Images -> {}
         CacheType.CachedSongs -> {
-            if (exoPlayerDiskCacheMaxSize == ExoPlayerDiskCacheMaxSize.Unlimited) return
+            if (localPlayerDiskCacheMaxSize == LocalPlayerDiskCacheMaxSize.Unlimited) return
         }
     }
 
@@ -83,7 +76,7 @@ fun CacheSpaceIndicator(
             CacheType.Images -> imageDiskCacheSize?.toFloat()
                 ?.div(coilDiskCacheMaxSize.bytes.coerceAtLeast(1)) ?: 0.0f
             CacheType.CachedSongs -> cachedSongsDiskCacheSize?.toFloat()
-                ?.div(exoPlayerDiskCacheMaxSize.bytes.coerceAtLeast(1)) ?: 0.0f
+                ?.div(localPlayerDiskCacheMaxSize.bytes.coerceAtLeast(1)) ?: 0.0f
         }
     }
 

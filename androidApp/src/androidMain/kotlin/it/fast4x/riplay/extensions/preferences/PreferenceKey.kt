@@ -24,7 +24,6 @@ enum class PreferenceKey(val key: String) {
     THUMBNAIL_ROUNDNESS("thumbnailRoundness"),
     COIL_DISK_CACHE_MAX_SIZE("coilDiskCacheMaxSize"),
     EXO_PLAYER_DISK_CACHE_MAX_SIZE("exoPlayerDiskCacheMaxSize"),
-    EXO_PLAYER_DISK_DOWNLOAD_CACHE_MAX_SIZE("exoPlayerDiskDownloadCacheMaxSize"),
     EXO_PLAYER_MIN_TIME_FOR_EVENT("exoPlayerMinTimeForEvent"),
     EXO_PLAYER_ALTERNATE_CACHE_LOCATION("exoPlayerAlternateCacheLocation"),
     EXO_PLAYER_CACHE_LOCATION("exoPlayerCacheLocationKey"),

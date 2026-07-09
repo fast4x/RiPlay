@@ -1,6 +1,6 @@
 package it.fast4x.riplay.enums
 
-enum class ExoPlayerCacheLocation {
+enum class LocalPlayerCacheLocation {
     System,
     Private
 }
