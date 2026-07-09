@@ -73,13 +73,10 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.github.doyaaaaaken.kotlincsv.client.KotlinCsvExperimental
-import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.riplay.LocalOnDeviceViewModel
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.data.Database.Companion.songAlbumInfo
-import it.fast4x.riplay.data.Database.Companion.songArtistInfo
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
@@ -304,12 +301,12 @@ fun OnDevicePlaylist(
     }
 
     val exportLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(ExportType.Csv.mimeExport)) { uri ->
+        rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(ExportType.CSV.mimeExport)) { uri ->
             if (uri == null) return@rememberLauncherForActivityResult
 
             coroutineScope.launch (Dispatchers.IO){
                 Exporter.exportTo(
-                    ExportType.Csv,
+                    ExportType.CSV,
                     context,
                     uri,
                     if(listMediaItems.isEmpty()) playlistSongs.map { it.song } else listMediaItems.map { it.asSong },

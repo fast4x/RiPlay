@@ -2,13 +2,11 @@ package it.fast4x.riplay.extensions.experimental.exporter
 
 import android.content.Context
 import android.net.Uri
-import androidx.media3.common.MediaItem
+import androidx.core.net.toUri
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.enums.ExportType
-import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.parseDurationToSeconds
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +16,7 @@ import java.io.OutputStreamWriter
 object Exporter {
 
     suspend fun exportTo(
-        exportType: ExportType? = ExportType.Csv,
+        exportType: ExportType? = ExportType.CSV,
         context: Context,
         uri: Uri,
         songs: List<Song>,
@@ -27,10 +25,10 @@ object Exporter {
     ): Result<Unit> = withContext(Dispatchers.IO) {
 
         when(exportType) {
-            ExportType.Csv -> exportToCsv(
+            ExportType.CSV -> exportToCsv(
                 context,uri,songs,browseId,plistName
             )
-            ExportType.M38u -> exportToM3U8(
+            ExportType.M3U8 -> exportToM3U8(
                 context,uri,songs
             )
 

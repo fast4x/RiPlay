@@ -79,7 +79,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.github.doyaaaaaken.kotlincsv.client.KotlinCsvExperimental
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
-import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
@@ -635,12 +634,12 @@ fun LocalPlaylistSongs(
     }
 
     val exportLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(ExportType.Csv.mimeExport)) { uri ->
+        rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(ExportType.CSV.mimeExport)) { uri ->
             if (uri == null) return@rememberLauncherForActivityResult
 
             coroutineScope.launch (Dispatchers.IO){
                 Exporter.exportTo(
-                    ExportType.Csv,
+                    ExportType.CSV,
                     context,
                     uri,
                     if(listMediaItems.isEmpty()) playlistSongs.map { it.song } else listMediaItems.map { it.asSong },

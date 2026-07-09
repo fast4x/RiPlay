@@ -92,7 +92,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
-import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import io.github.oikvpqya.compose.fastscroller.VerticalScrollbar
 import io.github.oikvpqya.compose.fastscroller.rememberScrollbarAdapter
 import it.fast4x.riplay.BuildConfig
@@ -164,7 +163,6 @@ import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DEFAULT_FOLDER
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.commonutils.durationTextToMillis
-import it.fast4x.riplay.enums.ArtistsType
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.ExportType
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
@@ -515,12 +513,12 @@ fun HomeSongs(
     val coroutineScope = rememberCoroutineScope()
 
     // Export Logic
-    val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(ExportType.Csv.mimeExport)) { uri ->
+    val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(ExportType.CSV.mimeExport)) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
 
         coroutineScope.launch (Dispatchers.IO){
             Exporter.exportTo(
-                ExportType.Csv,
+                ExportType.CSV,
                 context,
                 uri,
                 if(listMediaItems.isEmpty()) items.map { it.song } else listMediaItems.map { it.asSong },

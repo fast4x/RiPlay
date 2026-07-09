@@ -101,7 +101,6 @@ import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
-import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.LOCAL_KEY_PREFIX
@@ -314,12 +313,12 @@ fun Queue(
     val coroutineScope = rememberCoroutineScope()
 
     val exportLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(ExportType.Csv.mimeExport)) { uri ->
+        rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(ExportType.CSV.mimeExport)) { uri ->
             if (uri == null) return@rememberLauncherForActivityResult
 
             coroutineScope.launch (Dispatchers.IO){
                 Exporter.exportTo(
-                    ExportType.Csv,
+                    ExportType.CSV,
                     context,
                     uri,
                     if(listMediaItems.isEmpty()) windows.map { it.mediaItem.asSong } else listMediaItems.map { it.asSong },
