@@ -109,7 +109,10 @@ fun AppearancePresetDialog(
                 modifier = Modifier.fillMaxSize()
             ) { index ->
                 Image(
-                    painter = painterResource(images[index]),
+                    painter = painterResource(
+                        if(presets[index].id == "user_custom_legacy_preset")
+                            R.drawable.image
+                        else presets[index].imageRes ?: R.drawable.image),
                     contentDescription = null,
                     contentScale = ContentScale.FillBounds,
                     colorFilter = null,

@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -149,6 +150,9 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.SwipeAnimationNoThumbnail
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.extensions.experimental.appearancepreset.AppearancePreferences
+import it.fast4x.riplay.extensions.experimental.appearancepreset.AppearancePresetDialogHost
+import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearanceSettings
+import it.fast4x.riplay.extensions.experimental.appearancepreset.utils.fromShareString
 import it.fast4x.riplay.utils.getUiType
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.Search
@@ -171,8 +175,10 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_FADE_EX
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_FADE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_SPACING
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.TOP_PADDING
+import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.isAtLeastAndroid13
+import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -691,7 +697,7 @@ fun PlayerAppearanceSettings(
 
             context.applicationContext.contentResolver.openInputStream(uri)
                 ?.use { inputStream ->
-                    /* NEW FEATURE THEMES REPO
+                    // NEW FEATURE THEMES REPO
                     runCatching {
                         val encoded = inputStream.bufferedReader().readText()
                         AppearanceSettings.fromShareString(encoded)
@@ -699,8 +705,9 @@ fun PlayerAppearanceSettings(
                         .onSuccess { settings -> preferences.applyFrom(settings) }
                         .onFailure { Timber.e("PlayerAppearanceSettings failed to load appearance from file") }
 
-                     */
 
+
+                    /*
                     csvReader().open(inputStream) {
                         readAllWithHeaderAsSequence().forEachIndexed { index, row: Map<String, String> ->
                             if (row["SettingsType"] == "Appearance") {
@@ -965,6 +972,7 @@ fun PlayerAppearanceSettings(
 
                         }
                     }
+                    */
 
                 }
         }
@@ -1005,7 +1013,7 @@ fun PlayerAppearanceSettings(
             //keepPlayerMinimized = false
         }
 
-        /* NEW FEATURE THEMES REPO
+        // NEW FEATURE THEMES REPO
         CustomModalBottomSheet(
             showSheet = appearanceChooser,
             onDismissRequest = { appearanceChooser = false },
@@ -1020,9 +1028,10 @@ fun PlayerAppearanceSettings(
         ) {
             AppearancePresetDialogHost(context) { appearanceChooser = false }
         }
-         */
 
 
+
+        /* // OLD CHOOSER
         if (appearanceChooser) {
 
             AppearancePresetDialog(
@@ -1299,6 +1308,7 @@ fun PlayerAppearanceSettings(
                 }
             )
         }
+        */
 
 
         val state = rememberLazyListState()
@@ -1339,7 +1349,8 @@ fun PlayerAppearanceSettings(
                                 style = typography().m.semiBold.copy(color = colorPalette().text),
                                 modifier = Modifier
                                     .padding(all = 12.dp)
-                                    .clickable(onClick = { appearanceChooser = true })
+                                    .clickable(onClick = { appearanceChooser = true
+                                    })
                             )
                             BasicText(
                                 text = stringResource(R.string.appearancepresetssecondary),

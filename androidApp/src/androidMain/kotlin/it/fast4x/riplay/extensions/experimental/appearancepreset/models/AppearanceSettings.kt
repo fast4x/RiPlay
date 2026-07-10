@@ -19,7 +19,9 @@ import it.fast4x.riplay.enums.SongsNumber
 import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ThumbnailType
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class AppearanceSettings(
 
     // PLAYER

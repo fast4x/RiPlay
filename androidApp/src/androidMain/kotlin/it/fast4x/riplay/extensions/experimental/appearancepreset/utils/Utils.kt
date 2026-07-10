@@ -2,6 +2,7 @@ package it.fast4x.riplay.extensions.experimental.appearancepreset.utils
 
 import android.content.Context
 import android.net.Uri
+import it.fast4x.riplay.data.models.AppearancePresetEntity
 import it.fast4x.riplay.enums.AnimatedGradient
 import it.fast4x.riplay.enums.CarouselSize
 import it.fast4x.riplay.enums.ColorPaletteMode
@@ -21,7 +22,10 @@ import it.fast4x.riplay.enums.SongsNumber
 import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ThumbnailType
+import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearancePreset
+import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearancePresetDto
 import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearanceSettings
+import it.fast4x.riplay.extensions.experimental.appearancepreset.models.PresetSource
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.ACTION_EXPANDED
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.ACTIONS_SPACED_EVENLY
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUM_COVER_ROTATION
@@ -100,7 +104,80 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.TOP_PADDING
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BAR
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.VISUALIZER_ENABLED
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
 import kotlin.Boolean
+
+@OptIn(ExperimentalSerializationApi::class)
+val ThemeJson = Json {
+    // Fondamentale: se deserializzo un JSON vecchio che non ha i campi nuovi,
+    // non crasha, ma usa i valori di default del costruttore Kotlin.
+    ignoreUnknownKeys = true
+
+    // Magia pura: se un campo nel JSON corrisponde esattamente al valore
+    // di default nella data class, NON lo scrive nel file JSON.
+    // Questo ridurrà il JSON del preset "Zen" a poche decine di righe.
+    encodeDefaults = false
+
+    // Opzionale: utile per il debug e per file leggibili dagli utenti
+    prettyPrint = true
+
+    // Coerenza dei nomi (se hai usato camelCase in Kotlin,
+    // lo mantiene in JSON invece di convertire in snake_case)
+    namingStrategy = null
+}
+
+// --- Da Domain a Room (Per salvare nel DB) ---
+fun AppearancePreset.toEntity(): AppearancePresetEntity {
+    return AppearancePresetEntity(
+        id = id,
+        name = name,
+        author = author,
+        imageUrl = imageUrl,
+        localImageRes = imageRes,
+        isBuiltIn = source == PresetSource.LOCAL,
+        settingsJson = ThemeJson.encodeToString(settings) // Usiamo il converter
+    )
+}
+
+// --- Da Room a Domain (Per mostrare all'utente) ---
+fun AppearancePresetEntity.toDomain(): AppearancePreset {
+    return AppearancePreset(
+        id = id,
+        name = name,
+        author = author,
+        imageUrl = imageUrl,
+        imageRes = localImageRes,
+        source = if (isBuiltIn) PresetSource.LOCAL else PresetSource.SHARED,
+        settings = ThemeJson.decodeFromString(settingsJson)
+    )
+}
+
+// --- Mappa dal Dominio al DTO (per la serializzazione) ---
+fun AppearancePreset.toDto(): AppearancePresetDto {
+    return AppearancePresetDto(
+        id = id,
+        name = name,
+        imageUrl = imageUrl, // Ignoriamo volutamente imageRes
+        author = author,
+        shareUrl = shareUrl,
+        settings = settings
+    )
+}
+
+// --- Mappa dal DTO al Dominio (dopo la deserializzazione) ---
+fun AppearancePresetDto.toDomain(): AppearancePreset {
+    return AppearancePreset(
+        id = id,
+        name = name,
+        imageRes = null, // Il JSON non ha le risorse locali
+        imageUrl = imageUrl,
+        author = author,
+        shareUrl = shareUrl,
+        source = PresetSource.SHARED, // Lo stiamo importando/condividendo
+        settings = settings
+    )
+}
 
 fun AppearanceSettings.Companion.fromCurrentSettings(context: Context): AppearanceSettings {
     val prefs = context.preferences

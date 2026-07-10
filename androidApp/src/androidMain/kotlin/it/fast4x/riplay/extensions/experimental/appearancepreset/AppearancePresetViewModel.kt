@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -28,17 +29,36 @@ class AppearancePresetViewModel(
     private val _uiState = MutableStateFlow<PresetUiState>(PresetUiState.Loading)
     val uiState: StateFlow<PresetUiState> = _uiState.asStateFlow()
 
-    private val _events = Channel<PresetEvent>(Channel.BUFFERED)
-    val events = _events.receiveAsFlow()
-
-    val activePresetId: StateFlow<String?> = preferences.activePresetIdFlow()
+    val presetList: StateFlow<List<AppearancePreset>> = repository.getAllPresets()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = appContext().preferences.getString(ACTIVE_APPEARANCE_PRESET_ID.key, null)
+            initialValue = emptyList()
         )
 
-    init { loadPresets() }
+    private val _events = Channel<PresetEvent>(Channel.BUFFERED)
+    val events = _events.receiveAsFlow()
+
+    val activePresetId: StateFlow<String?> = repository.getActivePreset()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = "aura"
+        )
+
+    init {
+        viewModelScope.launch {
+            repository.ensurePresetsMigrated() // Migra da sharedPreferences
+            repository.syncRemotePresets().collect() // Aggiorna i preset remoti
+            loadPresetsIntoUiState() // Carica i preset nel UiState
+        }
+    }
+
+    private fun loadPresetsIntoUiState() {
+        viewModelScope.launch {
+            _uiState.value = PresetUiState.Success(presetList.value)
+        }
+    }
 
     fun applyPreset(preset: AppearancePreset) {
         viewModelScope.launch {
@@ -53,21 +73,6 @@ class AppearancePresetViewModel(
             repository.sharePreset(preset)
                 .onSuccess { url -> _events.send(PresetEvent.Shared(url)) }
                 .onFailure { _events.send(PresetEvent.Error(it.message ?: "Errore condivisione")) }
-        }
-    }
-
-    private fun loadPresets() {
-        viewModelScope.launch {
-            repository.remotePresets()
-                .catch { e ->
-                    // Fallback ai soli preset locali in caso di errore rete
-                    _uiState.value = PresetUiState.Success(repository.localPresets())
-                }
-                .collect { remote ->
-                    val all = (repository.localPresets() + remote)
-                        .distinctBy { it.id }
-                    _uiState.value = PresetUiState.Success(all)
-                }
         }
     }
 

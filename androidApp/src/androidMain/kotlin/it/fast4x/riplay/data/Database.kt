@@ -38,6 +38,7 @@ import it.fast4x.riplay.commonutils.MONTHLY_PREFIX
 import it.fast4x.riplay.commonutils.PINNED_PREFIX
 import it.fast4x.riplay.commonutils.PIPED_PREFIX
 import it.fast4x.riplay.data.dao.AlbumDao
+import it.fast4x.riplay.data.dao.AppearancePresetDao
 import it.fast4x.riplay.data.dao.ArtistDao
 import it.fast4x.riplay.data.dao.EventDao
 import it.fast4x.riplay.data.dao.MBAlbumDao
@@ -53,6 +54,8 @@ import it.fast4x.riplay.enums.PlaylistSortBy
 import it.fast4x.riplay.enums.SongSortBy
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.data.models.Album
+import it.fast4x.riplay.data.models.AppSettingsEntity
+import it.fast4x.riplay.data.models.AppearancePresetEntity
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.ArtistDiscography
 import it.fast4x.riplay.data.models.ArtistRelation
@@ -85,6 +88,8 @@ import it.fast4x.riplay.data.models.UserEraAffinity
 import it.fast4x.riplay.data.models.UserKeywordAffinity
 import it.fast4x.riplay.enums.AlbumNature
 import it.fast4x.riplay.enums.ArtistNature
+import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearanceSettings
+import it.fast4x.riplay.extensions.experimental.appearancepreset.utils.ThemeJson
 import it.fast4x.riplay.extensions.musicbrainz.models.ExternalLink
 import it.fast4x.riplay.musicvault.MusicVaultState
 import it.fast4x.riplay.extensions.rewind.data.AlbumMostListened
@@ -139,6 +144,9 @@ interface Database {
         }
         fun eventDao(): EventDao {
             return (DatabaseInitializer.Instance).eventDao()
+        }
+        fun appearancePresetDao(): AppearancePresetDao {
+            return (DatabaseInitializer.Instance).appearancePresetDao()
         }
     }
 
@@ -3612,12 +3620,14 @@ interface Database {
         Recommendation::class,
         ArtistRelation::class,
         MBAlbum::class,
-        SongArtistCrossRef::class
+        SongArtistCrossRef::class,
+        AppearancePresetEntity::class,
+        AppSettingsEntity::class
     ],
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 60,
+    version = 61,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -3703,6 +3713,7 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
                 From57To58Migration(),
                 From58To59Migration(),
                 From59To60Migration(),
+                From60To61Migration(),
             )
             //.fallbackToDestructiveMigration(false)
             .addCallback(object : Callback() {
@@ -3732,6 +3743,7 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
     abstract fun recommendationDao(): RecommendationDao
     abstract fun relationDao(): RelationDao
     abstract fun eventDao(): EventDao
+    abstract fun appearancePresetDao(): AppearancePresetDao
 
 
     // Crud da migrare in dao
@@ -4248,6 +4260,44 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
             }
         }
     }
+
+    class From60To61Migration : Migration(60, 61) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            try {
+                // 1. Creazione della tabella dei Preset
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `appearance_presets` (
+                        `id` TEXT NOT NULL PRIMARY KEY,
+                        `name` TEXT NOT NULL,
+                        `author` TEXT,
+                        `imageUrl` TEXT,
+                        `localImageRes` INTEGER,
+                        `isBuiltIn` INTEGER NOT NULL DEFAULT 0,
+                        `settingsJson` TEXT NOT NULL
+                    )
+                    """.trimIndent()
+                )
+
+                // 2. Creazione della tabella delle Impostazioni Globali (Theme attivo)
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `app_settings` (
+                        `id` INTEGER NOT NULL PRIMARY KEY,
+                        `activePresetId` TEXT NOT NULL DEFAULT 'aura'
+                    )
+                    """.trimIndent()
+                )
+
+                // 3. Inizializziamo la tabella app_settings con la riga di default
+                db.execSQL("INSERT OR IGNORE INTO `app_settings` (`id`, `activePresetId`) VALUES (1, 'aura')")
+
+            } catch (e: Exception) {
+                println("Database From60To61Migration error ${e.stackTraceToString()}")
+            }
+        }
+    }
+
 }
 
 
@@ -4374,5 +4424,18 @@ object Converters {
     @TypeConverter
     fun stringToAlbumNature(value: String?): AlbumNature? =
         value?.let { try { AlbumNature.valueOf(it) } catch (e: IllegalArgumentException) { AlbumNature.UNKNOWN } }
+
+    @TypeConverter
+    fun fromSettingsToString(settings: AppearanceSettings): String {
+        // Usiamo il custom serializer che ignora i default!
+        return ThemeJson.encodeToString(settings)
+    }
+
+    @TypeConverter
+    fun fromStringToSettings(json: String): AppearanceSettings {
+        // Deserializza in modo sicuro. Se il JSON è vecchio e mancante di campi,
+        // usa i default di Kotlin. Zero crash.
+        return ThemeJson.decodeFromString(json)
+    }
 
 }

@@ -26,6 +26,7 @@ fun AppearancePresetDialogHost(
     )
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val presets by viewModel.presetList.collectAsStateWithLifecycle()
     val activePresetId by viewModel.activePresetId.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
