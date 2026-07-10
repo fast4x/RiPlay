@@ -10,6 +10,7 @@ const val PIPED_PREFIX = "piped:"
 const val EXPLICIT_PREFIX = "e:"
 const val LOCAL_KEY_PREFIX = "local:"
 const val YTP_PREFIX = "account:"
+const val MUSIC_VAULT_PREFIX = "musicvault:"
 
 const val YT_PLAYLIST_SHARE_BASEURL = "https://www.youtube.com/playlist?list="
 const val YTM_PLAYLIST_SHARE_BASEURL = "https://music.youtube.com/playlist?list="
@@ -30,7 +31,7 @@ fun cleanPrefix(text: String): String {
     var i = 0
     while (i < splitText.size-1) {
         if ("${splitText[i]}:" !in listOf(PINNED_PREFIX, MODIFIED_PREFIX, MONTHLY_PREFIX, PIPED_PREFIX,
-                EXPLICIT_PREFIX, LOCAL_KEY_PREFIX, YTP_PREFIX)) {
+                EXPLICIT_PREFIX, LOCAL_KEY_PREFIX, YTP_PREFIX, MUSIC_VAULT_PREFIX)) {
             break
         }
         i++

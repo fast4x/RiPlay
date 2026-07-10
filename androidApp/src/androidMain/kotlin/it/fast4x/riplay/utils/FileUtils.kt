@@ -171,3 +171,13 @@ fun getLocalFileUri(mediaId: String): Uri? {
     // Costruisce l'URI in modo standard (es: content://media/external/audio/media/123)
     return ContentUris.withAppendedId(contentUriBase, id)
 }
+
+fun getSafeDefaultDir(context: Context, dir: String): File {
+    /**** CREATE DIRECTORY *****/
+    val dir = context.filesDir.resolve(dir).also {
+        if (it.exists()) return@also
+        it.mkdir()
+    }
+
+    return dir
+}

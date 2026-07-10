@@ -14,27 +14,43 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.io.File
 import androidx.core.net.toUri
+import it.fast4x.riplay.utils.getSafeDefaultDir
 import timber.log.Timber
 
 object MusicVaultRepository {
 
+    private fun getSavedPath(): String? {
+        val path = appContext().preferences.getString(MUSIC_VAULT_PATH.key, "")
+        return path.takeIf { it?.isNotBlank() == true }
+    }
+
     fun getOutputDir(): String {
-        val savedUri = appContext().preferences.getString(MUSIC_VAULT_PATH.key, null)
-        return if (savedUri != null) {
-            // Conversione URI in path per yt-dlp (Python non capisce content://)
-            DocumentFile.fromTreeUri(appContext(), savedUri.toUri())
+        val savedPath = getSavedPath()
+
+        return if (savedPath != null && savedPath.startsWith("content://")) {
+            // L'utente ha scelto una cartella esterna: converto per yt-dlp
+            DocumentFile.fromTreeUri(appContext(), savedPath.toUri())
                 ?.let { getRealPathFromUri(appContext(), it.uri) }
-                ?: appContext().getExternalFilesDir(Environment.DIRECTORY_MUSIC)!!.absolutePath
+                ?: getSafeDefaultDir(appContext(), DEFAULT_MUSICVAULT_DIRECTORY).absolutePath
         } else {
-            appContext().getExternalFilesDir(Environment.DIRECTORY_MUSIC)!!.absolutePath
+            // L'utente non ha scelto niente (""), o ha resettato: uso la cartella sicura dell'app
+            getSafeDefaultDir(appContext(), DEFAULT_MUSICVAULT_DIRECTORY).absolutePath
         }
     }
 
     fun getOutputUri(): Uri? {
-        val savedUri = appContext().preferences.getString(MUSIC_VAULT_PATH.key, null)
-        val uri = savedUri?.toUri()
-        Timber.d("MusicVaultRepository getOutputUri uri $uri")
-        return uri
+        val savedPath = getSavedPath()
+
+        return if (savedPath != null && savedPath.startsWith("content://")) {
+            Timber.d("MusicVaultRepository getOutputUri: savedPath $savedPath")
+            // Cartella esterna: ritorno l'URI content://
+            savedPath.toUri()
+        } else {
+            // Cartella di default: ritorno l'URI file:// della cartella dell'app
+            val uri = Uri.fromFile(getSafeDefaultDir(appContext(), DEFAULT_MUSICVAULT_DIRECTORY))
+            Timber.d("MusicVaultRepository getOutputUri: uri $uri")
+            uri
+        }
     }
 
     private fun getRealPathFromUri(context: Context, uri: Uri): String? {
@@ -68,19 +84,6 @@ object MusicVaultRepository {
                 }
             }
 
-    fun resolveAudioFile(song: Song): Any? {
-        val fileName = song.musicVaultFileName ?: return null
-
-        return if (fileName.startsWith("content://")) {
-            // File nella cartella scelta dall'utente → URI diretto
-            fileName.toUri()
-        } else {
-            // File nella cartella privata → File classico
-            val file = File(getOutputDir(), fileName)
-            if (file.exists()) file else null
-        }
-    }
-
     fun resolveThumbnail(song: Song): Any? {
         song.musicVaultThumbnailFileName?.let { fileName ->
             if (fileName.startsWith("content://")) {
@@ -110,17 +113,25 @@ object MusicVaultRepository {
 
     fun fileExists(context: Context, song: Song): Boolean {
         val fileName = song.musicVaultFileName ?: return false
-        return if (fileName.startsWith("content://")) {
-            // Verifica URI SAF
-            try {
-                val uri = fileName.toUri()
-                DocumentFile.fromSingleUri(context, uri)?.exists() ?: false
-            } catch (e: Exception) {
-                false
+
+        return when {
+            fileName.startsWith("content://") -> {
+                // È un URI SAF esatto: lo controlliamo direttamente (velocissimo)
+                try {
+                    DocumentFile.fromSingleUri(context, fileName.toUri())?.exists() ?: false
+                } catch (e: Exception) {
+                    false // Il permesso SAF potrebbe essere stato revocato dall'utente
+                }
             }
-        } else {
-            // Verifica file privato
-            File(getOutputDir(), fileName).exists()
+            fileName.startsWith("/") || fileName.startsWith("file://") -> {
+                // Percorso assoluto (per retrocompatibilità con vecchie versioni dell'app)
+                val file = if (fileName.startsWith("file://")) File(fileName.toUri().path!!) else File(fileName)
+                file.exists()
+            }
+            else -> {
+                // È un nome file relativo (es. "song.mp3"): è per forza nella cartella di default
+                File(getSafeDefaultDir(context, DEFAULT_MUSICVAULT_DIRECTORY), fileName).exists()
+            }
         }
     }
 
@@ -129,31 +140,52 @@ object MusicVaultRepository {
         deleteFile(song.musicVaultThumbnailFileName)
     }
 
-    private fun deleteFile(fileName: String?) {
+    fun resolveAudioFile(song: Song): Any? {
+        val fileName = song.musicVaultFileName ?: return null
+
+        return when {
+            fileName.startsWith("content://") -> {
+                // URI SAF esatto
+                try {
+                    if (DocumentFile.fromSingleUri(appContext(), fileName.toUri())?.exists() == true)
+                        fileName.toUri()
+                    else null
+                } catch(e: Exception) { null }
+            }
+            fileName.startsWith("/") || fileName.startsWith("file://") -> {
+                // Path assoluto
+                val file = if (fileName.startsWith("file://")) File(fileName.toUri().path!!) else File(fileName)
+                if (file.exists()) file else null
+            }
+            else -> {
+                // Nome file relativo -> Cartella di default
+                val file = File(getSafeDefaultDir(appContext(), DEFAULT_MUSICVAULT_DIRECTORY), fileName)
+                if (file.exists()) file else null
+            }
+        }
+    }
+
+    fun deleteFile(fileName: String?) {
         if (fileName.isNullOrEmpty()) return
 
-        if (fileName.startsWith("content://")) {
-            try {
-                val uri = fileName.toUri()
-
-                // Verifica permessi attivi
-                val permissions = appContext().contentResolver.persistedUriPermissions
-                Timber.d("MusicVaultRepository Permessi attivi: ${permissions.map { it.uri }}")
-                Timber.d("MusicVaultRepository canWrite su uri: ${permissions.any {
-                    it.uri.toString() in uri.toString() && it.isWritePermission
-                }}")
-
-                val docFile = DocumentFile.fromSingleUri(appContext(), uri)
-                Timber.d("MusicVaultRepository docFile exists: ${docFile?.exists()}")
-                Timber.d("MusicVaultRepository docFile canWrite: ${docFile?.canWrite()}")
-                val deleted = docFile?.delete()
-                Timber.d("MusicVaultRepository deleted: $deleted")
-
-            } catch (e: Exception) {
-                Timber.e("MusicVaultRepository deleteFile error: ${e.message}")
+        when {
+            fileName.startsWith("content://") -> {
+                // Cancella tramite SAF
+                try {
+                    DocumentFile.fromSingleUri(appContext(), fileName.toUri())?.delete()
+                } catch (e: Exception) {
+                    Timber.e("MusicVault deleteFile SAF error: ${e.message}")
+                }
             }
-        } else {
-            File(getOutputDir(), fileName).delete()
+            fileName.startsWith("/") || fileName.startsWith("file://") -> {
+                // Cancella path assoluto
+                val file = if (fileName.startsWith("file://")) File(fileName.toUri().path!!) else File(fileName)
+                file.delete()
+            }
+            else -> {
+                // Cancella dalla cartella di default
+                File(getSafeDefaultDir(appContext(), DEFAULT_MUSICVAULT_DIRECTORY), fileName).delete()
+            }
         }
     }
 }
