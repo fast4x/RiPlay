@@ -40,7 +40,10 @@ import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.musicbrainz.fetchers.NewReleasesFetcher
 import it.fast4x.riplay.extensions.musicbrainz.workers.WorkScheduler
 import it.fast4x.riplay.extensions.musicbrainz.workers.WorkerDependencies
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_VAULT_DISCLAIMER_ACCEPTED
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_VAULT_ENABLED
 import it.fast4x.riplay.musicvault.checkAndStartMusicVault
+import it.fast4x.riplay.musicvault.testAndStartChaquopy
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.utils.InitializeEnvironment
 import kotlinx.coroutines.CoroutineScope
@@ -123,10 +126,14 @@ class MainApplication : Application(), ImageLoaderFactory {
 
         if (BuildConfig.FLAVOR == "full") {
             appScopeIO.launch(Dispatchers.IO) {
-                // Controlla che l'utente abbia accettato il disclaimer ed avvia Music Vault
-                if (!Python.isStarted()) {
-                    Python.start(AndroidPlatform(this@MainApplication))
+                // Se l'utente ha attivato music vault ed accettato il disclaimer
+                if (preferences.getBoolean(MUSIC_VAULT_ENABLED.key, false)
+                    && preferences.getBoolean(MUSIC_VAULT_DISCLAIMER_ACCEPTED.key, false)) {
+                    if (!Python.isStarted()) {
+                        Python.start(AndroidPlatform(this@MainApplication))
+                    }
                 }
+
             }
         }
 
