@@ -123,14 +123,9 @@ class MainApplication : Application(), ImageLoaderFactory {
 
         if (BuildConfig.FLAVOR == "full") {
             appScopeIO.launch(Dispatchers.IO) {
-                // Se l'utente ha attivato music vault ed accettato il disclaimer
-                if (preferences.getBoolean(MUSIC_VAULT_ENABLED.key, false)
-                    && preferences.getBoolean(MUSIC_VAULT_DISCLAIMER_ACCEPTED.key, false)) {
-                    if (!Python.isStarted()) {
-                        Python.start(AndroidPlatform(this@MainApplication))
-                    }
+                if (!Python.isStarted()) {
+                    Python.start(AndroidPlatform(this@MainApplication))
                 }
-
             }
         }
 
