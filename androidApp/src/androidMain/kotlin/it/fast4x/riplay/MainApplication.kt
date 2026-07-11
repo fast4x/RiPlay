@@ -37,13 +37,10 @@ import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategie
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategies.NewReleasesStrategy
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategies.QualityCuratorStrategy
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
-import it.fast4x.riplay.extensions.musicbrainz.fetchers.NewReleasesFetcher
 import it.fast4x.riplay.extensions.musicbrainz.workers.WorkScheduler
 import it.fast4x.riplay.extensions.musicbrainz.workers.WorkerDependencies
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_VAULT_DISCLAIMER_ACCEPTED
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_VAULT_ENABLED
-import it.fast4x.riplay.musicvault.checkAndStartMusicVault
-import it.fast4x.riplay.musicvault.testAndStartChaquopy
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.utils.InitializeEnvironment
 import kotlinx.coroutines.CoroutineScope
