@@ -82,8 +82,10 @@ class MusicVaultWorker(
             Result.success(workDataOf("file_name" to finalFileName))
 
         } catch (e: Exception) {
+            Timber.e("MusicVaultWorker doWork() exception: ${e.message}")
             Database.updateMusicVaultState(songId, MusicVaultState.FAILED)
-            if (runAttemptCount < 2) Result.retry() else Result.failure()
+            Result.failure()
+            //if (runAttemptCount < 2) Result.retry() else Result.failure()
         }
     }
 

@@ -1,7 +1,9 @@
 package it.fast4x.riplay
 
 import android.content.Context
+import androidx.annotation.Keep
 
+@Keep
 interface PythonEngine {
     fun executeScript(url: String, privateDir: String): PythonResponse
 

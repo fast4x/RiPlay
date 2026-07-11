@@ -4,12 +4,15 @@ import android.app.Application
 import android.content.ComponentName
 import android.content.pm.PackageManager
 import androidx.annotation.OptIn
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
 import coil.request.CachePolicy
+import com.chaquo.python.Python
+import com.chaquo.python.android.AndroidPlatform
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.DatabaseInitializer
 import it.fast4x.riplay.enums.CoilDiskCacheMaxSize
@@ -37,6 +40,7 @@ import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.musicbrainz.fetchers.NewReleasesFetcher
 import it.fast4x.riplay.extensions.musicbrainz.workers.WorkScheduler
 import it.fast4x.riplay.extensions.musicbrainz.workers.WorkerDependencies
+import it.fast4x.riplay.musicvault.checkAndStartMusicVault
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.utils.InitializeEnvironment
 import kotlinx.coroutines.CoroutineScope
@@ -116,6 +120,15 @@ class MainApplication : Application(), ImageLoaderFactory {
             Timber.plant(Timber.DebugTree())
         }
         /**** LOG *********/
+
+        if (BuildConfig.FLAVOR == "full") {
+            appScopeIO.launch(Dispatchers.IO) {
+                // Controlla che l'utente abbia accettato il disclaimer ed avvia Music Vault
+                if (!Python.isStarted()) {
+                    Python.start(AndroidPlatform(this@MainApplication))
+                }
+            }
+        }
 
 
         // Strategie, viene chiamato dopo l'inizializzazione  del database

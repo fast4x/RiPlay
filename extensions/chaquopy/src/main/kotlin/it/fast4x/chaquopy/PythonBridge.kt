@@ -1,12 +1,14 @@
 package it.fast4x.chaquopy
 
 import android.content.Context
+import androidx.annotation.Keep
 import com.chaquo.python.PyObject
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import it.fast4x.riplay.PythonEngine
 import it.fast4x.riplay.PythonResponse
 
+@Keep
 class PythonEngineImpl : PythonEngine {
     override fun executeScript(url: String, privateDir: String): PythonResponse {
         val py = Python.getInstance()

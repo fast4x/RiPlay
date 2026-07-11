@@ -595,12 +595,12 @@ class MainActivity :
 
         //mediaRouter = MediaRouter.getInstance(this)
 
-        if (BuildConfig.FLAVOR == "full") {
-            lifecycleScope.launch(Dispatchers.IO) {
-                // Controlla che l'utente abbia accettato il disclaimer ed avvia Music Vault
-                checkAndStartMusicVault()
-            }
-        }
+//        if (BuildConfig.FLAVOR == "full") {
+//            lifecycleScope.launch(Dispatchers.IO) {
+//                // Controlla che l'utente abbia accettato il disclaimer ed avvia Music Vault
+//                checkAndStartMusicVault()
+//            }
+//        }
 
         lifecycleScope.launch {
             // Esegue in background la pulizia delle preferenze non utilizzate
