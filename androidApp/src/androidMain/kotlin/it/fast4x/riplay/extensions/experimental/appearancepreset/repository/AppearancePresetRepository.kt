@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.appearancepreset
+package it.fast4x.riplay.extensions.experimental.appearancepreset.repository
 
 import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearancePreset
 import kotlinx.coroutines.flow.Flow

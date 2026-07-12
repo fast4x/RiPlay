@@ -269,11 +269,11 @@ import kotlin.math.sqrt
 import androidx.compose.ui.platform.LocalLocale
 import androidx.navigation.NavController
 import it.fast4x.riplay.extensions.appviewmodel.AppViewModelProvider
+import it.fast4x.riplay.extensions.experimental.appearancepreset.viewmodels.AppearanceSettingsViewModel
 import it.fast4x.riplay.extensions.qrcodeanalyzer.qrCodeToAction
 import it.fast4x.riplay.extensions.musicbrainz.viewmodels.AlbumInsightsViewModel
 import it.fast4x.riplay.extensions.musicbrainz.viewmodels.ArtistInsightsViewModel
 import it.fast4x.riplay.extensions.preferences.PreferenceKey
-import it.fast4x.riplay.musicvault.checkAndStartMusicVault
 import it.fast4x.riplay.extensions.preferences.cleanUpUnusedPreferences
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.ui.screens.player.unified.TvUnifiedPlayer
@@ -365,6 +365,10 @@ class MainActivity :
     }
     private val albumInsightsViewModel: AlbumInsightsViewModel by viewModels {
         AlbumInsightsViewModel(application)
+    }
+
+    private val appearanceSettingsViewModel: AppearanceSettingsViewModel by viewModels {
+        AppearanceSettingsViewModel(application)
     }
 
     private var showAutostartPermissionDialog = false
@@ -1393,6 +1397,7 @@ class MainActivity :
                                 LocalRiTuneSheetState provides castSheetState,
                                 LocalArtistInsights provides artistInsightsViewModel,
                                 LocalAlbumInsights provides albumInsightsViewModel,
+                                LocalAppearanceSettings provides appearanceSettingsViewModel,
                                 //LocalOnlinePlayerPlayingState provides onlinePlayerPlayingState,
                                 //LocalGlobalQueue provides globalQueueViewModel,
                                 //LocalInternetAvailable provides isInternetAvailable
@@ -2048,3 +2053,5 @@ val LocalRiTuneSheetState = staticCompositionLocalOf<BottomSheetState> { error("
 val LocalArtistInsights = staticCompositionLocalOf<ArtistInsightsViewModel> { error("No artist insights provided")}
 
 val LocalAlbumInsights = staticCompositionLocalOf<AlbumInsightsViewModel> { error("No album insights provided")}
+
+val LocalAppearanceSettings = staticCompositionLocalOf<AppearanceSettingsViewModel> { error("No appearance settings provided")}

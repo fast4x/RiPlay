@@ -32,7 +32,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
-import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.BackgroundProgress
@@ -150,13 +149,12 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.SwipeAnimationNoThumbnail
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.extensions.experimental.appearancepreset.AppearancePreferences
-import it.fast4x.riplay.extensions.experimental.appearancepreset.AppearancePresetDialogHost
+import it.fast4x.riplay.extensions.experimental.appearancepreset.ui.AppearancePresetDialogHost
 import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearanceSettings
 import it.fast4x.riplay.extensions.experimental.appearancepreset.utils.fromShareString
 import it.fast4x.riplay.utils.getUiType
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.Search
-import it.fast4x.riplay.ui.components.themed.AppearancePresetDialog
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
 import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
@@ -687,6 +685,7 @@ fun PlayerAppearanceSettings(
         )
     }
 
+    // Used to import old appearance settings from file
     val preferences = remember { AppearancePreferences.getInstance(context) }
 
     val importLauncher =

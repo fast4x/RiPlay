@@ -1,6 +1,7 @@
-package it.fast4x.riplay.extensions.experimental.appearancepreset
+package it.fast4x.riplay.extensions.experimental.appearancepreset.repository
 
 import android.content.Context
+import android.util.Base64
 import it.fast4x.riplay.R
 import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearancePreset
 import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearancePresetDto
@@ -129,7 +130,7 @@ class AppearancePresetRepositoryImpl(
                 ?: throw IllegalArgumentException("URL non valido o mancante del parametro data")
 
             // Decodifica dal Base64
-            val json = String(android.util.Base64.decode(encodedData, android.util.Base64.DEFAULT))
+            val json = String(Base64.decode(encodedData, Base64.DEFAULT))
 
             // Deserializza e mappa al dominio
             val dto = ThemeJson.decodeFromString<AppearancePresetDto>(json)
@@ -149,9 +150,9 @@ class AppearancePresetRepositoryImpl(
             val json = ThemeJson.encodeToString(dto)
 
             // Codifica in Base64 URL-safe per non rompere i link
-            val encoded = android.util.Base64.encodeToString(
+            val encoded = Base64.encodeToString(
                 json.toByteArray(Charsets.UTF_8),
-                android.util.Base64.NO_WRAP or android.util.Base64.URL_SAFE
+                Base64.NO_WRAP or Base64.URL_SAFE
             )
 
             // Ipotesi di url per condividere il preset

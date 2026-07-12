@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.appearancepreset
+package it.fast4x.riplay.extensions.experimental.appearancepreset.ui
 
 import android.content.Context
 import androidx.compose.material3.SnackbarHostState
@@ -10,8 +10,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import it.fast4x.riplay.Dependencies
+import it.fast4x.riplay.LocalAppearanceSettings
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.extensions.experimental.appearancepreset.models.PresetEvent
-import it.fast4x.riplay.ui.components.themed.AppearancePresetDialog
+import it.fast4x.riplay.extensions.experimental.appearancepreset.viewmodels.AppearancePresetViewModel
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -26,10 +29,10 @@ fun AppearancePresetDialogHost(
     )
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val presets by viewModel.presetList.collectAsStateWithLifecycle()
     val activePresetId by viewModel.activePresetId.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val appearanceSettings = LocalAppearanceSettings.current
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -51,8 +54,10 @@ fun AppearancePresetDialogHost(
         activePresetId = activePresetId,
         uiState   = uiState,
         onDismiss = onDismiss,
-        onSelect  = viewModel::applyPreset,
-        onShare   = viewModel::sharePreset
+        onSelect  = {
+            appearanceSettings.applyPreset(it)
+        },
+        onShare   = {} // ex viewModel::sharePreset
     )
 
 }

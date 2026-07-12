@@ -1,5 +1,6 @@
-package it.fast4x.riplay.extensions.experimental.appearancepreset
+package it.fast4x.riplay.extensions.experimental.appearancepreset.ui
 
+import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.animateFloatAsState
@@ -43,7 +44,7 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.typography
 
-@androidx.annotation.OptIn(UnstableApi::class)
+@OptIn(UnstableApi::class)
 @Composable
 fun AppearancePresetDialog(
     activePresetId: String?,

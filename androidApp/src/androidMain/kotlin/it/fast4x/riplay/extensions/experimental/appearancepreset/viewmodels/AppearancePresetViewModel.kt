@@ -1,35 +1,33 @@
-package it.fast4x.riplay.extensions.experimental.appearancepreset
+package it.fast4x.riplay.extensions.experimental.appearancepreset.viewmodels
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import it.fast4x.riplay.extensions.experimental.appearancepreset.AppearancePreferences
+import it.fast4x.riplay.extensions.experimental.appearancepreset.repository.AppearancePresetRepository
+import it.fast4x.riplay.extensions.experimental.appearancepreset.repository.AppearancePresetRepositoryImpl
 import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearancePreset
 import it.fast4x.riplay.extensions.experimental.appearancepreset.models.PresetEvent
 import it.fast4x.riplay.extensions.experimental.appearancepreset.models.PresetUiState
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ACTIVE_APPEARANCE_PRESET_ID
-import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.utils.appContext
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class AppearancePresetViewModel(
-    private val repository: AppearancePresetRepository,
-    private val preferences: AppearancePreferences
+    private val repository: AppearancePresetRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<PresetUiState>(PresetUiState.Loading)
     val uiState: StateFlow<PresetUiState> = _uiState.asStateFlow()
 
-    val presetList: StateFlow<List<AppearancePreset>> = repository.getAllPresets()
+    private val presetList: StateFlow<List<AppearancePreset>> = repository.getAllPresets()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -60,14 +58,6 @@ class AppearancePresetViewModel(
         }
     }
 
-    fun applyPreset(preset: AppearancePreset) {
-        viewModelScope.launch {
-            runCatching { preferences.applyFrom(preset.settings, preset.id) }
-                .onSuccess { _events.send(PresetEvent.Applied(preset.name)) }
-                .onFailure { _events.send(PresetEvent.Error(it.message ?: "Errore")) }
-        }
-    }
-
     fun sharePreset(preset: AppearancePreset) {
         viewModelScope.launch {
             repository.sharePreset(preset)
@@ -82,12 +72,9 @@ class AppearancePresetViewModel(
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T =
                     AppearancePresetViewModel(
-                        repository  = AppearancePresetRepositoryImpl(context),
-                        preferences = AppearancePreferences.getInstance(context)
+                        repository  = AppearancePresetRepositoryImpl(context)
                     ) as T
             }
     }
 
 }
-
-
