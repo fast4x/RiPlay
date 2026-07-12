@@ -15,9 +15,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class AppearanceSettingsViewModel(application: Application) : AndroidViewModel(application),
-ViewModelProvider.Factory {
+    ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(AppearanceSettingsViewModel::class.java)) {
@@ -30,32 +31,52 @@ ViewModelProvider.Factory {
 
     private val daoAppearance = Database.appearancePresetDao()
 
-    // Il preset in memoria da usare nella ui
     private val _activeSettings = MutableStateFlow(AppearanceSettings())
     val activeSettings: StateFlow<AppearanceSettings> = _activeSettings.asStateFlow()
 
-    init {
-        // Al primo avvio, leggo dal DB qual è il tema attivo e lo carico in memoria
-        viewModelScope.launch(Dispatchers.IO) {
-            val activeId = daoAppearance.getActivePreset().first() ?: "aura" // Fallback in caso di errore
+    private val _activeId = MutableStateFlow("aura")
+    val activeId: StateFlow<String> = _activeId.asStateFlow()
 
-            val entity = daoAppearance.getPresetById(activeId)
-            if (entity != null) {
-                // Deserializzo il JSON e lo carico in memoria
-                val settings = ThemeJson.decodeFromString<AppearanceSettings>(entity.settingsJson)
-                _activeSettings.value = settings
+
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                // Leggo l'ID e ASPETTO il risultato
+                val id = daoAppearance.getActivePreset().first() ?: "aura"
+                _activeId.value = id
+                Timber.d("AppearanceSettingsViewModel init: Loaded active ID -> $id")
+
+                val entity = daoAppearance.getPresetById(id)
+                if (entity != null) {
+                    val settings = ThemeJson.decodeFromString<AppearanceSettings>(entity.settingsJson)
+                    Timber.d("AppearanceSettingsViewModel init: Successfully loaded settings for $id")
+                    _activeSettings.value = settings
+                } else {
+                    Timber.w("AppearanceSettingsViewModel init: Preset $id not found in DB, falling back to defaults")
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "AppearanceSettingsViewModel init: Error loading appearance settings from DB")
             }
         }
     }
 
-    // Questo viene chiamato quando l'utente clicca su un preset nella lista
     fun applyPreset(preset: AppearancePreset) {
         viewModelScope.launch(Dispatchers.IO) {
-            // Aggiorno il preset attivo nel DB
             daoAppearance.setActivePreset(preset.id)
-
-            // Carico il nuovo preset in memoria
             _activeSettings.value = preset.settings
+            _activeId.value = preset.id
+            Timber.d("AppearanceSettingsViewModel applyPreset: Applied preset -> ${preset.id}")
+        }
+    }
+
+    fun updatePreset(settings: AppearanceSettings) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val currentId = _activeId.value
+            Timber.d("updatePreset: Saving settings for -> $currentId")
+
+            daoAppearance.updatePresetSettings(currentId, ThemeJson.encodeToString(settings))
+            _activeSettings.value = settings
         }
     }
 }

@@ -100,7 +100,8 @@ data class AppearanceSettings(
     val blackgradient: Boolean                 = false,
     val textoutline: Boolean                   = false,
     val disablePlayerHorizontalSwipe: Boolean  = false,
-    val showLikeButtonBackgroundPlayer: Boolean = true
+    val showLikeButtonBackgroundPlayer: Boolean = true,
+    val isShowingThumbnailInLockscreen: Boolean = true,
 
     // APP
 
@@ -144,7 +145,8 @@ data class AppearanceSettings(
             visualizerEnabled = false,
             showButtonPlayerArrow = false,
             showButtonPlayerStartRadio = false,
-            showButtonPlayerMenu = true
+            showButtonPlayerMenu = true,
+            isShowingThumbnailInLockscreen = true
         )
         val Deck = AppearanceSettings(
             showTopActionsBar = true,
@@ -185,7 +187,8 @@ data class AppearanceSettings(
             visualizerEnabled = false,
             showButtonPlayerArrow = false,
             showButtonPlayerStartRadio = false,
-            showButtonPlayerMenu = true
+            showButtonPlayerMenu = true,
+            isShowingThumbnailInLockscreen = true
         )
 
         val Zen = AppearanceSettings(
@@ -223,7 +226,8 @@ data class AppearanceSettings(
             visualizerEnabled = false,
             showButtonPlayerArrow = false,
             showButtonPlayerStartRadio = false,
-            showButtonPlayerMenu = true
+            showButtonPlayerMenu = true,
+            isShowingThumbnailInLockscreen = true
         )
 
         val Noir = AppearanceSettings(
@@ -265,7 +269,8 @@ data class AppearanceSettings(
             visualizerEnabled = false,
             showButtonPlayerArrow = true,
             showButtonPlayerStartRadio = false,
-            showButtonPlayerMenu = true
+            showButtonPlayerMenu = true,
+            isShowingThumbnailInLockscreen = true
         )
 
         val Prism = AppearanceSettings(
@@ -308,7 +313,8 @@ data class AppearanceSettings(
             visualizerEnabled = false,
             showButtonPlayerArrow = false,
             showButtonPlayerStartRadio = false,
-            showButtonPlayerMenu = true
+            showButtonPlayerMenu = true,
+            isShowingThumbnailInLockscreen = true
         )
 
         val Groove = AppearanceSettings(
@@ -345,7 +351,8 @@ data class AppearanceSettings(
             visualizerEnabled = false,
             showButtonPlayerArrow = false,
             showButtonPlayerStartRadio = false,
-            showButtonPlayerMenu = true
+            showButtonPlayerMenu = true,
+            isShowingThumbnailInLockscreen = true
         )
 
     }

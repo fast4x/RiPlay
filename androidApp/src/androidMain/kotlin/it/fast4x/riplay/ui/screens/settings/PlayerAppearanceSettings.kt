@@ -21,6 +21,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.BackgroundProgress
 import it.fast4x.riplay.enums.CarouselSize
@@ -371,10 +374,17 @@ fun PlayerAppearanceSettings(
     navController: NavController,
 ) {
 
-    var isShowingThumbnailInLockscreen by rememberPreference(
-        IS_SHOWING_THUMBNAIL_IN_LOCKSCREEN.key,
-        true
-    )
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
+    LaunchedEffect(appearanceSettings) {
+        Timber.d("PlayerappearanceSettings: ${appearanceSettings.isShowingThumbnailInLockscreen}")
+    }
+
+//    var isShowingThumbnailInLockscreen by rememberPreference(
+//        IS_SHOWING_THUMBNAIL_IN_LOCKSCREEN.key,
+//        true
+//    )
 
     var showthumbnail by rememberPreference(SHOW_THUMBNAIL.key, true)
     var transparentbar by rememberPreference(TRANSPARENT_BAR.key, true)
@@ -1348,7 +1358,8 @@ fun PlayerAppearanceSettings(
                                 style = typography().m.semiBold.copy(color = colorPalette().text),
                                 modifier = Modifier
                                     .padding(all = 12.dp)
-                                    .clickable(onClick = { appearanceChooser = true
+                                    .clickable(onClick = {
+                                        appearanceChooser = true
                                     })
                             )
                             BasicText(
@@ -2645,23 +2656,26 @@ fun PlayerAppearanceSettings(
                     }
 
 
-        if (search.input.isBlank() || stringResource(R.string.show_song_cover).contains(
-                search.input,
-                true
-            )
-        )
-            if (!isAtLeastAndroid13) {
-                SettingsGroupSpacer()
-
-                SettingsEntryGroupText(title = stringResource(R.string.lockscreen))
-
-                SwitchSettingEntry(
-                    title = stringResource(R.string.show_song_cover),
-                    text = stringResource(R.string.use_song_cover_on_lockscreen),
-                    isChecked = isShowingThumbnailInLockscreen,
-                    onCheckedChange = { isShowingThumbnailInLockscreen = it }
+                if (search.input.isBlank() || stringResource(R.string.show_song_cover).contains(
+                        search.input,
+                        true
+                    )
                 )
-            }
+                    //if (!isAtLeastAndroid13) {
+                        SettingsGroupSpacer()
+
+                        SettingsEntryGroupText(title = stringResource(R.string.lockscreen))
+
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.show_song_cover),
+                            text = stringResource(R.string.use_song_cover_on_lockscreen),
+                            isChecked = appearanceSettings.isShowingThumbnailInLockscreen,
+                            onCheckedChange = {
+                                val new = appearanceSettings.copy(isShowingThumbnailInLockscreen = it)
+                                appearanceSettingsVieModel.updatePreset(new)
+                            }
+                        )
+                    //}
 
                 }
 

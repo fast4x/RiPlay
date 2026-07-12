@@ -30,4 +30,8 @@ interface AppearancePresetDao {
 
     @Query("SELECT activePresetId FROM app_settings WHERE id = 1")
     fun getActivePreset(): Flow<String?>
+
+    @Query("UPDATE appearance_presets SET settingsJson = :jsonSettings WHERE id = :id")
+    suspend fun updatePresetSettings(id: String, jsonSettings: String)
+
 }

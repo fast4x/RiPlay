@@ -133,6 +133,7 @@ fun UnifiedMiniPlayer(
 
     binder?.player ?: return
     if (binder.player.currentTimeline.windowCount == 0) return
+
     val playerState = LocalPlayerServiceState.current
     val shouldBePlaying = playerState.isPlaying
 
