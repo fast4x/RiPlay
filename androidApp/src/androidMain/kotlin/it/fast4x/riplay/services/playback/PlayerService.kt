@@ -466,6 +466,7 @@ class PlayerService : Service(),
 
         initializeLocalPlayer()
         initializeVariables()
+        replaceOnlinePlayerView()
         serviceScope.launch { initializeOnlinePlayer() }
 
 
@@ -719,9 +720,6 @@ class PlayerService : Service(),
             preferences.getBoolean(IS_SHOWING_THUMBNAIL_IN_LOCKSCREEN.key, false)
         medleyDuration = preferences.getFloat(PLAYBACK_DURATION.key, 0f)
 
-        _internalOnlinePlayerView.value = LayoutInflater.from(appContext())
-            .inflate(R.layout.youtube_player, null, false) as YouTubePlayerView
-
         currentMediaItemState.value = player.currentMediaItem
         audioQualityFormat = preferences.getEnum(AUDIO_QUALITY_FORMAT.key, AudioQualityFormat.Auto)
         //isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey.key, false)
@@ -731,6 +729,14 @@ class PlayerService : Service(),
 //        closeServiceWhenPlayerPausedAfterMinutes = preferences.getEnum(
 //            closePlayerServiceWhenPausedAfterMinutesKey.key, DurationInMinutes.Disabled
 //        )
+    }
+
+    private fun replaceOnlinePlayerView() {
+        _internalOnlinePlayer.value?.pause()
+        _internalOnlinePlayer.value = null
+        _internalOnlinePlayerView.value.release()
+        _internalOnlinePlayerView.value = LayoutInflater.from(appContext())
+            .inflate(R.layout.youtube_player, null, false) as YouTubePlayerView
     }
 
     private fun initializePlaybackParameters() {
@@ -1020,8 +1026,8 @@ class PlayerService : Service(),
 
     @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     fun recreateOnlinePlayerView() {
-        initializeVariables()
-        serviceScope.launch { initializeOnlinePlayer() }
+        replaceOnlinePlayerView()
+        serviceScope.launch { initializeOnlinePlayer(skipAutoload = true) }
     }
 
     private fun initializeLocalPlayer() {
@@ -1067,19 +1073,26 @@ class PlayerService : Service(),
     }
 
     @ExperimentalCoroutinesApi
-    suspend private fun initializeOnlinePlayer() {
+    suspend private fun initializeOnlinePlayer(skipAutoload: Boolean = false) {
+
+        val onlinePlayerView = _internalOnlinePlayerView.value
 
         val listener = object : AbstractYouTubePlayerListener() {
 
             override fun onReady(youTubePlayer: YouTubePlayer) {
                 super.onReady(youTubePlayer)
 
+                if (onlinePlayerView !== _internalOnlinePlayerView.value) {
+                    youTubePlayer.pause()
+                    return
+                }
+
                 _internalOnlinePlayer.value = youTubePlayer
 
                 val customUiController =
                     CustomDefaultPlayerUiController(
                         this@PlayerService,
-                        _internalOnlinePlayerView.value,
+                        onlinePlayerView,
                         youTubePlayer,
                         onTap = {}
                     )
@@ -1093,7 +1106,7 @@ class PlayerService : Service(),
                 customUiController.showBufferingProgress(false)
                 customUiController.showYouTubeButton(false)
                 customUiController.showFullscreenButton(false)
-                _internalOnlinePlayerView.value.setCustomPlayerUi(customUiController.rootView)
+                onlinePlayerView.setCustomPlayerUi(customUiController.rootView)
 
                 Timber.d("PlayerService onlinePlayer onReady localmediaItem ${localMediaItem?.mediaId} queue index ${binder.player.currentMediaItemIndex}")
                 Timber.d("PlayerService onlinePlayer onReady isPersistentQueueEnabled $isPersistentQueueEnabled isResumePlaybackOnStart $isResumePlaybackOnStart")
@@ -1103,7 +1116,7 @@ class PlayerService : Service(),
                 if (localMediaItem?.isLocal == true) return
 
                 localMediaItem?.let{
-                    if (isPersistentQueueEnabled && isResumePlaybackOnStart && firstTimeStarted) {
+                    if (isPersistentQueueEnabled && isResumePlaybackOnStart && firstTimeStarted && !skipAutoload) {
                         youTubePlayer.loadVideo(it.mediaId, playFromSecond)
                         playFromSecond = 0f
                         Timber.d("PlayerService onlinePlayer onReady loadVideo ${it.mediaId}")
@@ -1152,24 +1165,19 @@ class PlayerService : Service(),
                                     Timber.e("PlayerService onlinePlayerView: Persistent UNSTARTED state. Probably webView killed. Force to re-initialize.")
 
                                     recreateOnlinePlayerView()
-                                    delay(500)
-                                    val currentPlayer = this@PlayerService._internalOnlinePlayer.value
+                                    val currentPlayer = this@PlayerService._internalOnlinePlayer.first { it != null }!!
 
                                     localMediaItem?.let { item ->
                                         if(item.isLocal) return@let
-                                        if (currentPlayer != null) {
-                                            Timber.d("PlayerService onlinePlayerView: Try reload song/video")
-                                            // Assicura che ExoPlayer sia fermo prima del recovery
-                                            if (player.isPlaying) {
-                                                player.pause()
-                                                player.stop()
-                                            }
-                                            currentPlayer.pause()
-                                            _internalOnlinePlayer.value?.pause() // Pause also primary instance
-                                            currentPlayer.cueVideo(item.mediaId, playFromSecond)
-                                        } else {
-                                            Timber.w("PlayerService onlinePlayerView: Recovery - _internalOnlinePlayer is not defined, impossible to continue")
+                                        Timber.d("PlayerService onlinePlayerView: Try reload song/video")
+                                        // Assicura che ExoPlayer sia fermo prima del recovery
+                                        if (player.isPlaying) {
+                                            player.pause()
+                                            player.stop()
                                         }
+                                        currentPlayer.pause()
+                                        _internalOnlinePlayer.value?.pause() // Pause also primary instance
+                                        currentPlayer.cueVideo(item.mediaId, playFromSecond)
                                     }
 
                                 }
@@ -1388,7 +1396,7 @@ class PlayerService : Service(),
         }
 
         //This initialize the online player view if chromcast isn't connected
-        _internalOnlinePlayerView.value.apply {
+        onlinePlayerView.apply {
             enableAutomaticInitialization = false
 
             enableBackgroundPlayback(true)
@@ -3847,5 +3855,3 @@ private var pausedByZeroVolume = false
     }
 
 }
-
-
