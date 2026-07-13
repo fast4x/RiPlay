@@ -43,6 +43,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.colorPalette
@@ -127,11 +128,14 @@ fun FastShare(
 
     if (urlToShare == "") return
 
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
 
-    val thumbnailRoundness by rememberPreference(
-        THUMBNAIL_ROUNDNESS.key,
-        ThumbnailRoundness.Light
-    )
+//    val thumbnailRoundness by rememberPreference(
+//        THUMBNAIL_ROUNDNESS.key,
+//        ThumbnailRoundness.Light
+//    )
+    val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
     var showAppSelector by remember { mutableStateOf(false) }
 

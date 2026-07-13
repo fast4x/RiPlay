@@ -206,6 +206,7 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SNOWFALL_EFFEC
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.USE_PLACEHOLDER_IN_IMAGE_LOADER
 import it.fast4x.riplay.utils.LazyListContainer
 
+
 @Composable
 fun DefaultUiSettings() {
     var minTimeForEvent by rememberPreference(
@@ -605,81 +606,124 @@ fun UiSettings(
 
 
     /*  ViMusic Mode Settings  */
-    var showTopActionsBar by rememberPreference(SHOW_TOP_ACTIONS_BAR.key, true)
-    var playerControlsType by rememberPreference(PLAYER_CONTROLS_TYPE.key, PlayerControlsType.Essential)
-    var playerInfoType by rememberPreference(PLAYER_INFO_TYPE.key, PlayerInfoType.Essential)
-    var playerType by rememberPreference(PLAYER_TYPE.key, PlayerType.Modern)
-    var queueType by rememberPreference(QUEUE_TYPE.key, QueueType.Modern)
-    var fadingedge by rememberPreference(FADING_EDGE.key, false)
-    var carousel by rememberPreference(CAROUSEL.key, true)
-    var carouselSize by rememberPreference(CAROUSEL_SIZE.key, CarouselSize.Biggest)
-    var thumbnailType by rememberPreference(THUMBNAIL_TYPE.key, ThumbnailType.Modern)
-    var playerTimelineType by rememberPreference(PLAYER_TIMELINE_TYPE.key, PlayerTimelineType.Default)
-    var playerThumbnailSize by rememberPreference(
-        PLAYER_THUMBNAIL_SIZE.key,
-        PlayerThumbnailSize.Biggest
-    )
-    var playerTimelineSize by rememberPreference(
-        PLAYER_TIMELINE_SIZE.key,
-        PlayerTimelineSize.Biggest
-    )
-    var playerInfoShowIcons by rememberPreference(PLAYER_INFO_SHOW_ICONS.key, true)
-    var miniPlayerType by rememberPreference(
-        MINI_PLAYER_TYPE.key,
-        MiniPlayerType.Modern
-    )
-    var playerSwapControlsWithTimeline by rememberPreference(
-        PLAYER_SWAP_CONTROLS_WITH_TIMELINE.key,
-        false
-    )
-    var playerPlayButtonType by rememberPreference(
-        PLAYER_PLAY_BUTTON_TYPE.key,
-        PlayerPlayButtonType.Disabled
-    )
-    var buttonzoomout by rememberPreference(BUTTON_ZOOM_OUT.key, false)
-    var iconLikeType by rememberPreference(ICON_LIKE_TYPE.key, IconLikeType.Essential)
-    var playerBackgroundColors by rememberPreference(
-        PLAYER_BACKGROUND_COLORS.key,
-        PlayerBackgroundColors.BlurredCoverColor
-    )
-    var blackgradient by rememberPreference(BLACK_GRADIENT.key, false)
-    var showTotalTimeQueue by rememberPreference(SHOW_TOTAL_TIME_QUEUE.key, true)
-    var showNextSongsInPlayer by rememberPreference(SHOW_NEXT_SONGS_IN_PLAYER.key, false)
-    var showRemainingSongTime by rememberPreference(SHOW_REMAINING_SONG_TIME.key, true)
-    var disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
-    var thumbnailTapEnabled by rememberPreference(THUMBNAIL_TAP_ENABLED.key, true)
-    var clickLyricsText by rememberPreference(CLICK_ON_LYRICS_TEXT.key, true)
-    var backgroundProgress by rememberPreference(
-        BACKGROUND_PROGRESS.key,
-        BackgroundProgress.MiniPlayer
-    )
-    var transparentBackgroundActionBarPlayer by rememberPreference(
-        TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR.key,
-        true
-    )
-    var actionspacedevenly by rememberPreference(ACTIONS_SPACED_EVENLY.key, false)
-    var tapqueue by rememberPreference(TAP_QUEUE.key, true)
-    var swipeUpQueue by rememberPreference(SWIPE_UP_QUEUE.key, true)
-    var showButtonPlayerAddToPlaylist by rememberPreference(SHOW_BUTTON_PLAYER_ADD_TO_PLAYLIST.key, true)
-    var showButtonPlayerArrow by rememberPreference(SHOW_BUTTON_PLAYER_ARROW.key, true)
+    //var showTopActionsBar by rememberPreference(SHOW_TOP_ACTIONS_BAR.key, true)
+    //val showTopActionsBar = appearanceSettings.showTopActionsBar
+    //var playerControlsType by rememberPreference(PLAYER_CONTROLS_TYPE.key, PlayerControlsType.Essential)
+    val playerControlsType = appearanceSettings.playerControlsType
+    //var playerInfoType by rememberPreference(PLAYER_INFO_TYPE.key, PlayerInfoType.Essential)
+    //var playerType by rememberPreference(PLAYER_TYPE.key, PlayerType.Modern)
+    val playerType = appearanceSettings.playerType
+    //var queueType by rememberPreference(QUEUE_TYPE.key, QueueType.Modern)
+    val queueType = appearanceSettings.queueType
+    //var fadingedge by rememberPreference(FADING_EDGE.key, false)
+    val fadingedge = appearanceSettings.fadingedge
+    //var carousel by rememberPreference(CAROUSEL.key, true)
+    val carousel = appearanceSettings.carousel
+    //var carouselSize by rememberPreference(CAROUSEL_SIZE.key, CarouselSize.Biggest)
+    val carouselSize = appearanceSettings.carouselSize
+    //var thumbnailType by rememberPreference(THUMBNAIL_TYPE.key, ThumbnailType.Modern)
+    val thumbnailType = appearanceSettings.thumbnailType
+    //var playerTimelineType by rememberPreference(PLAYER_TIMELINE_TYPE.key, PlayerTimelineType.Default)
+    val playerTimelineType = appearanceSettings.playerTimelineType
+//    var playerThumbnailSize by rememberPreference(
+//        PLAYER_THUMBNAIL_SIZE.key,
+//        PlayerThumbnailSize.Biggest
+//    )
+    val playerThumbnailSize = appearanceSettings.playerThumbnailSize
+//    var playerTimelineSize by rememberPreference(
+//        PLAYER_TIMELINE_SIZE.key,
+//        PlayerTimelineSize.Biggest
+//    )
+    val playerTimelineSize = appearanceSettings.playerTimelineSize
+    //var playerInfoShowIcons by rememberPreference(PLAYER_INFO_SHOW_ICONS.key, true)
+    val playerInfoShowIcons = appearanceSettings.playerInfoShowIcons
+//    var miniPlayerType by rememberPreference(
+//        MINI_PLAYER_TYPE.key,
+//        MiniPlayerType.Modern
+//    )
+    val miniPlayerType = appearanceSettings.miniPlayerType
+//    var playerSwapControlsWithTimeline by rememberPreference(
+//        PLAYER_SWAP_CONTROLS_WITH_TIMELINE.key,
+//        false
+//    )
+    val playerSwapControlsWithTimeline = appearanceSettings.playerSwapControlsWithTimeline
+//    var playerPlayButtonType by rememberPreference(
+//        PLAYER_PLAY_BUTTON_TYPE.key,
+//        PlayerPlayButtonType.Disabled
+//    )
+    val playerPlayButtonType = appearanceSettings.playerPlayButtonType
+    //var buttonzoomout by rememberPreference(BUTTON_ZOOM_OUT.key, false)
+    val buttonzoomout = appearanceSettings.buttonzoomout
+    //var iconLikeType by rememberPreference(ICON_LIKE_TYPE.key, IconLikeType.Essential)
+    val iconLikeType = appearanceSettings.iconLikeType
+//    var playerBackgroundColors by rememberPreference(
+//        PLAYER_BACKGROUND_COLORS.key,
+//        PlayerBackgroundColors.BlurredCoverColor
+//    )
+    //val playerBackgroundColors = appearanceSettings.playerBackgroundColors
+    //var blackgradient by rememberPreference(BLACK_GRADIENT.key, false)
+    val blackgradient = appearanceSettings.blackgradient
+    //var showTotalTimeQueue by rememberPreference(SHOW_TOTAL_TIME_QUEUE.key, true)
+    val showTotalTimeQueue = appearanceSettings.showTotalTimeQueue
+    //var showNextSongsInPlayer by rememberPreference(SHOW_NEXT_SONGS_IN_PLAYER.key, false)
+    val showNextSongsInPlayer = appearanceSettings.showNextSongsInPlayer
+    //var showRemainingSongTime by rememberPreference(SHOW_REMAINING_SONG_TIME.key, true)
+    val showRemainingSongTime = appearanceSettings.showRemainingSongTime
+    //var disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    val disableScrollingText = appearanceSettings.disableScrollingText
+    //var thumbnailTapEnabled by rememberPreference(THUMBNAIL_TAP_ENABLED.key, true)
+    val thumbnailTapEnabled = appearanceSettings.thumbnailTapEnabled
+    //var clickLyricsText by rememberPreference(CLICK_ON_LYRICS_TEXT.key, true)
+    val clickLyricsText = appearanceSettings.clickLyricsText
+//    var backgroundProgress by rememberPreference(
+//        BACKGROUND_PROGRESS.key,
+//        BackgroundProgress.MiniPlayer
+//    )
+    val backgroundProgress = appearanceSettings.backgroundProgress
+//    var transparentBackgroundActionBarPlayer by rememberPreference(
+//        TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR.key,
+//        true
+//    )
+    val transparentBackgroundActionBarPlayer = appearanceSettings.transparentBackgroundActionBarPlayer
+    //var actionspacedevenly by rememberPreference(ACTIONS_SPACED_EVENLY.key, false)
+    val actionspacedevenly = appearanceSettings.actionsSpacedEvenly
+    //var tapqueue by rememberPreference(TAP_QUEUE.key, true)
+    val tapqueue = appearanceSettings.tapqueue
+    //var swipeUpQueue by rememberPreference(SWIPE_UP_QUEUE.key, true)
+    val swipeUpQueue = appearanceSettings.swipeUpQueue
+    //var showButtonPlayerAddToPlaylist by rememberPreference(SHOW_BUTTON_PLAYER_ADD_TO_PLAYLIST.key, true)
+    val showButtonPlayerAddToPlaylist = appearanceSettings.showButtonPlayerAddToPlaylist
+    //var showButtonPlayerArrow by rememberPreference(SHOW_BUTTON_PLAYER_ARROW.key, true)
+    val showButtonPlayerArrow = appearanceSettings.showButtonPlayerArrow
     //var showButtonPlayerDownload by rememberPreference(showButtonPlayerDownloadKey.key, true)
-    var showButtonPlayerLoop by rememberPreference(SHOW_BUTTON_PLAYER_LOOP.key, true)
-    var showButtonPlayerLyrics by rememberPreference(SHOW_BUTTON_PLAYER_LYRICS.key, true)
-    var expandedplayertoggle by rememberPreference(EXPANDED_PLAYER_TOGGLE.key, true)
-    var showButtonPlayerShuffle by rememberPreference(SHOW_BUTTON_PLAYER_SHUFFLE.key, true)
-    var showButtonPlayerSleepTimer by rememberPreference(SHOW_BUTTON_PLAYER_SLEEP_TIMER.key, false)
-    var showButtonPlayerMenu by rememberPreference(SHOW_BUTTON_PLAYER_MENU.key, false)
-    var showButtonPlayerSystemEqualizer by rememberPreference(
-        SHOW_BUTTON_PLAYER_SYSTEM_EQUALIZER.key,
-        false
-    )
-    var showButtonPlayerDiscover by rememberPreference(SHOW_BUTTON_PLAYER_DISCOVER.key, false)
-    var playerEnableLyricsPopupMessage by rememberPreference(
-        PLAYER_ENABLE_LYRICS_POPUP_MESSAGE.key,
-        true
-    )
-    var visualizerEnabled by rememberPreference(VISUALIZER_ENABLED.key, false)
-    var showthumbnail by rememberPreference(SHOW_THUMBNAIL.key, true)
+    //var showButtonPlayerLoop by rememberPreference(SHOW_BUTTON_PLAYER_LOOP.key, true)
+    val showButtonPlayerLoop = appearanceSettings.showButtonPlayerLoop
+    //var showButtonPlayerLyrics by rememberPreference(SHOW_BUTTON_PLAYER_LYRICS.key, true)
+    val showButtonPlayerLyrics = appearanceSettings.showButtonPlayerLyrics
+    //var expandedplayertoggle by rememberPreference(EXPANDED_PLAYER_TOGGLE.key, true)
+    val expandedplayertoggle = appearanceSettings.expandedPlayerToggle
+    //var showButtonPlayerShuffle by rememberPreference(SHOW_BUTTON_PLAYER_SHUFFLE.key, true)
+    val showButtonPlayerShuffle = appearanceSettings.showButtonPlayerShuffle
+    //var showButtonPlayerSleepTimer by rememberPreference(SHOW_BUTTON_PLAYER_SLEEP_TIMER.key, false)
+    val showButtonPlayerSleepTimer = appearanceSettings.showButtonPlayerSleepTimer
+    //var showButtonPlayerMenu by rememberPreference(SHOW_BUTTON_PLAYER_MENU.key, false)
+    val showButtonPlayerMenu = appearanceSettings.showButtonPlayerMenu
+//    var showButtonPlayerSystemEqualizer by rememberPreference(
+//        SHOW_BUTTON_PLAYER_SYSTEM_EQUALIZER.key,
+//        false
+//    )
+    val showButtonPlayerSystemEqualizer = appearanceSettings.showButtonPlayerSystemEqualizer
+    //var showButtonPlayerDiscover by rememberPreference(SHOW_BUTTON_PLAYER_DISCOVER.key, false)
+    val showButtonPlayerDiscover = appearanceSettings.showButtonPlayerDiscover
+//    var playerEnableLyricsPopupMessage by rememberPreference(
+//        PLAYER_ENABLE_LYRICS_POPUP_MESSAGE.key,
+//        true
+//    )
+    val playerEnableLyricsPopupMessage = appearanceSettings.playerEnableLyricsPopupMessage
+    //var visualizerEnabled by rememberPreference(VISUALIZER_ENABLED.key, false)
+    val visualizerEnabled = appearanceSettings.visualizerEnabled
+    //var showthumbnail by rememberPreference(SHOW_THUMBNAIL.key, true)
+    val showthumbnail = appearanceSettings.showThumbnail
     /*  ViMusic Mode Settings  */
 
     var queueSwipeLeftAction by rememberPreference(
@@ -830,66 +874,119 @@ fun UiSettings(
                         onValueSelected = {
                             uiType = it
                             if (uiType == UiType.ViMusic) {
+                                val new = appearanceSettings.copy(
+                                    showTopActionsBar = false,
+                                    visualizerEnabled = false,
+                                    showThumbnail = true,
+                                    playerBackgroundColors = PlayerBackgroundColors.CoverColorGradient,
+                                    playerTimelineType = PlayerTimelineType.Default,
+                                    playerThumbnailSize = PlayerThumbnailSize.Medium,
+                                    thumbnailTapEnabled = true,
+                                    playerType = PlayerType.Modern,
+                                    queueType = QueueType.Modern,
+                                    fadingedge = false,
+                                    carousel = true,
+                                    carouselSize = CarouselSize.Medium,
+                                    thumbnailType = ThumbnailType.Essential,
+                                    playerTimelineSize = PlayerTimelineSize.Medium,
+                                    playerInfoShowIcons = true,
+                                    miniPlayerType = MiniPlayerType.Modern,
+                                    playerSwapControlsWithTimeline = false,
+                                    transparentBackgroundActionBarPlayer = false,
+                                    playerControlsType = PlayerControlsType.Essential,
+                                    playerPlayButtonType = PlayerPlayButtonType.Disabled,
+                                    buttonzoomout = true,
+                                    iconLikeType = IconLikeType.Essential,
+                                    blackgradient = true,
+                                    showTotalTimeQueue = false,
+                                    showRemainingSongTime = false,
+                                    showNextSongsInPlayer = false,
+                                    disableScrollingText = false,
+                                    clickLyricsText = true,
+                                    playerEnableLyricsPopupMessage = true,
+                                    backgroundProgress = BackgroundProgress.MiniPlayer,
+                                    actionsSpacedEvenly = false,
+                                    tapqueue = false,
+                                    swipeUpQueue = true,
+                                    showButtonPlayerDiscover = false,
+                                    showButtonPlayerAddToPlaylist = false,
+                                    showButtonPlayerLoop = false,
+                                    showButtonPlayerShuffle = false,
+                                    showButtonPlayerLyrics = false,
+                                    showButtonPlayerSleepTimer = false,
+                                    showButtonPlayerSystemEqualizer = false,
+                                    showButtonPlayerArrow = false,
+                                    showButtonPlayerMenu = true,
+                                )
+                                appearanceSettingsVieModel.updatePreset(new)
+
                                 disablePlayerHorizontalSwipe = true
                                 disableIconButtonOnTop = true
-                                playerTimelineType = PlayerTimelineType.Default
-                                visualizerEnabled = false
-                                playerThumbnailSize = PlayerThumbnailSize.Medium
-                                thumbnailTapEnabled = true
+                                //playerTimelineType = PlayerTimelineType.Default
+                                //visualizerEnabled = false
+                                //playerThumbnailSize = PlayerThumbnailSize.Medium
+                                //thumbnailTapEnabled = true
                                 showSearchTab = true
                                 showStatsInNavbar = true
                                 navigationBarPosition = NavigationBarPosition.Left
-                                showTopActionsBar = false
-                                playerType = PlayerType.Modern
-                                queueType = QueueType.Modern
-                                fadingedge = false
-                                carousel = true
-                                carouselSize = CarouselSize.Medium
-                                thumbnailType = ThumbnailType.Essential
-                                playerTimelineSize = PlayerTimelineSize.Medium
-                                playerInfoShowIcons = true
-                                miniPlayerType = MiniPlayerType.Modern
-                                playerSwapControlsWithTimeline = false
-                                transparentBackgroundActionBarPlayer = false
-                                playerControlsType = PlayerControlsType.Essential
-                                playerPlayButtonType = PlayerPlayButtonType.Disabled
-                                buttonzoomout = true
-                                iconLikeType = IconLikeType.Essential
-                                playerBackgroundColors = PlayerBackgroundColors.CoverColorGradient
-                                blackgradient = true
-                                showTotalTimeQueue = false
-                                showRemainingSongTime = false
-                                showNextSongsInPlayer = false
-                                disableScrollingText = false
-                                clickLyricsText = true
-                                playerEnableLyricsPopupMessage = true
-                                backgroundProgress = BackgroundProgress.MiniPlayer
-                                transparentBackgroundActionBarPlayer = true
-                                actionspacedevenly = false
-                                tapqueue = false
-                                swipeUpQueue = true
-                                showButtonPlayerDiscover = false
-                                //showButtonPlayerDownload = false
-                                showButtonPlayerAddToPlaylist = false
-                                showButtonPlayerLoop = false
-                                showButtonPlayerShuffle = false
-                                showButtonPlayerLyrics = false
-                                expandedplayertoggle = false
-                                showButtonPlayerSleepTimer = false
-                                showButtonPlayerSystemEqualizer = false
-                                showButtonPlayerArrow = false
-                                showButtonPlayerShuffle = false
-                                showButtonPlayerMenu = true
-                                showthumbnail = true
+                                //showTopActionsBar = false
+//                                playerType = PlayerType.Modern
+//                                queueType = QueueType.Modern
+//                                fadingedge = false
+//                                carousel = true
+//                                carouselSize = CarouselSize.Medium
+//                                thumbnailType = ThumbnailType.Essential
+//                                playerTimelineSize = PlayerTimelineSize.Medium
+//                                playerInfoShowIcons = true
+//                                miniPlayerType = MiniPlayerType.Modern
+//                                playerSwapControlsWithTimeline = false
+//                                transparentBackgroundActionBarPlayer = false
+//                                playerControlsType = PlayerControlsType.Essential
+//                                playerPlayButtonType = PlayerPlayButtonType.Disabled
+//                                buttonzoomout = true
+//                                iconLikeType = IconLikeType.Essential
+                                //playerBackgroundColors = PlayerBackgroundColors.CoverColorGradient
+//                                blackgradient = true
+//                                showTotalTimeQueue = false
+//                                showRemainingSongTime = false
+//                                showNextSongsInPlayer = false
+//                                disableScrollingText = false
+//                                clickLyricsText = true
+//                                playerEnableLyricsPopupMessage = true
+//                                backgroundProgress = BackgroundProgress.MiniPlayer
+//                                transparentBackgroundActionBarPlayer = true
+//                                actionspacedevenly = false
+//                                tapqueue = false
+//                                swipeUpQueue = true
+//                                showButtonPlayerDiscover = false
+//                                showButtonPlayerAddToPlaylist = false
+//                                showButtonPlayerLoop = false
+//                                showButtonPlayerShuffle = false
+//                                showButtonPlayerLyrics = false
+//                                expandedplayertoggle = false
+//                                showButtonPlayerSleepTimer = false
+//                                showButtonPlayerSystemEqualizer = false
+//                                showButtonPlayerArrow = false
+//                                showButtonPlayerShuffle = false
+//                                showButtonPlayerMenu = true
+                                //showthumbnail = true
                                 keepPlayerMinimized = false
                             } else {
+                                val new = appearanceSettings.copy(
+                                    playerTimelineType = lastPlayerTimelineType,
+                                    playerThumbnailSize = lastPlayerThumbnailSize,
+                                    playerPlayButtonType = lastPlayerPlayButtonType,
+                                )
+                                appearanceSettingsVieModel.updatePreset(new)
+
                                 disablePlayerHorizontalSwipe = false
                                 disableIconButtonOnTop = false
-                                playerTimelineType = lastPlayerTimelineType
-                                playerThumbnailSize = lastPlayerThumbnailSize
-                                playerPlayButtonType = lastPlayerPlayButtonType
+//                                playerTimelineType = lastPlayerTimelineType
+//                                playerThumbnailSize = lastPlayerThumbnailSize
+//                                playerPlayButtonType = lastPlayerPlayButtonType
 
                             }
+
 
                         },
                         valueText = {

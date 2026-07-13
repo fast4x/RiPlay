@@ -42,6 +42,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -88,6 +89,7 @@ import it.fast4x.environment.requests.PlaylistPage
 import it.fast4x.environment.requests.podcastPage
 import it.fast4x.environment.requests.relatedSongs
 import it.fast4x.environment.utils.completed
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.Database.Companion.songAlbumInfo
 import it.fast4x.riplay.data.Database.Companion.songArtistInfo
@@ -225,6 +227,10 @@ fun LocalPlaylistSongs(
     playlistId: Long,
     onDelete: () -> Unit,
 ) {
+
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
     val context = LocalContext.current
     val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
@@ -403,10 +409,11 @@ fun LocalPlaylistSongs(
     }
 
 
-    val thumbnailRoundness by rememberPreference(
-        THUMBNAIL_ROUNDNESS.key,
-        ThumbnailRoundness.Light
-    )
+//    val thumbnailRoundness by rememberPreference(
+//        THUMBNAIL_ROUNDNESS.key,
+//        ThumbnailRoundness.Light
+//    )
+    val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
     val sortOrderIconRotation by animateFloatAsState(
         targetValue = if (sortOrder == SortOrder.Ascending) 0f else 180f,

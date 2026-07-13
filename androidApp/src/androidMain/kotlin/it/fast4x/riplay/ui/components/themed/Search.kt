@@ -18,6 +18,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,6 +37,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.ui.styling.favoritesIcon
@@ -154,10 +156,14 @@ class Search private constructor(
 
     @Composable
     fun SearchBar( columnScope: ColumnScope ) {
-        val thumbnailRoundness by rememberPreference(
-            THUMBNAIL_ROUNDNESS.key,
-            ThumbnailRoundness.Light
-        )
+        val appearanceSettingsVieModel = LocalAppearanceSettings.current
+        val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
+//        val thumbnailRoundness by rememberPreference(
+//            THUMBNAIL_ROUNDNESS.key,
+//            ThumbnailRoundness.Light
+//        )
+        val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
         val focusRequester = remember { FocusRequester() }
 

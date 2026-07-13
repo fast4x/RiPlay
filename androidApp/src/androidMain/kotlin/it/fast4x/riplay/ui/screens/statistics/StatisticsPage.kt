@@ -98,6 +98,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.ui.styling.align
 import it.fast4x.riplay.utils.updateOnlineAlbum
 import it.fast4x.riplay.utils.updateOnlineArtist
@@ -114,12 +115,12 @@ fun StatisticsPage(
     onSwipeToLeft: () -> Unit = {},
     onSwipeToRight: () -> Unit = {}
 ) {
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalGlobalSheetState.current
     val windowInsets = LocalPlayerAwareWindowInsets.current
-
-    val context = LocalContext.current
-
 
     val songThumbnailSizeDp = Dimensions.thumbnails.song
     val songThumbnailSizePx = songThumbnailSizeDp.px
@@ -129,9 +130,11 @@ fun StatisticsPage(
     val playlistThumbnailSizePx = playlistThumbnailSizeDp.px
 
 
-    val thumbnailRoundness by rememberPreference(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
+    //val thumbnailRoundness by rememberPreference(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
+    val thumbnailRoundness = appearanceSettings.thumbnailRoundness
     val showStatsListeningTime by rememberPreference(SHOW_STATS_LISTENING_TIME.key, true)
-    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    //val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    val disableScrollingText = appearanceSettings.disableScrollingText
     val navigationBarPosition by rememberPreference(NAVIGATION_BAR_POSITION.key, NavigationBarPosition.Bottom)
 
     var maxStatisticsItems by rememberPreference(MAX_STATISTICS_ITEMS.key, MaxStatisticsItems.`10`)

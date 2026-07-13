@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -28,6 +29,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import it.fast4x.environment.Environment
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
@@ -42,10 +44,14 @@ fun MoodItemColored(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var thumbnailRoundness by rememberPreference(
-        THUMBNAIL_ROUNDNESS.key,
-        ThumbnailRoundness.Light
-    )
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
+//    var thumbnailRoundness by rememberPreference(
+//        THUMBNAIL_ROUNDNESS.key,
+//        ThumbnailRoundness.Light
+//    )
+    val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
     val moodColor by remember { derivedStateOf { Color(mood.stripeColor) } }
 
@@ -97,10 +103,14 @@ fun MoodGridItemColored(
     modifier: Modifier = Modifier,
     thumbnailSizeDp: Dp
 ) {
-    var thumbnailRoundness by rememberPreference(
-        THUMBNAIL_ROUNDNESS.key,
-        ThumbnailRoundness.Light
-    )
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
+//    var thumbnailRoundness by rememberPreference(
+//        THUMBNAIL_ROUNDNESS.key,
+//        ThumbnailRoundness.Light
+//    )
+    val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
     val moodColor by remember { derivedStateOf { Color(mood.stripeColor) } }
 
@@ -158,10 +168,14 @@ fun MoodItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var thumbnailRoundness by rememberPreference(
-        THUMBNAIL_ROUNDNESS.key,
-        ThumbnailRoundness.Light
-    )
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
+//    var thumbnailRoundness by rememberPreference(
+//        THUMBNAIL_ROUNDNESS.key,
+//        ThumbnailRoundness.Light
+//    )
+    val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
 
     Column (
@@ -204,10 +218,15 @@ fun MoodGridItem(
     modifier: Modifier = Modifier,
     thumbnailSizeDp: Dp
 ) {
-    var thumbnailRoundness by rememberPreference(
-        THUMBNAIL_ROUNDNESS.key,
-        ThumbnailRoundness.Light
-    )
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
+//    var thumbnailRoundness by rememberPreference(
+//        THUMBNAIL_ROUNDNESS.key,
+//        ThumbnailRoundness.Light
+//    )
+    val thumbnailRoundness = appearanceSettings.thumbnailRoundness
+
 
 
     Column (

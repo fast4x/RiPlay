@@ -95,6 +95,7 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import io.github.oikvpqya.compose.fastscroller.VerticalScrollbar
 import io.github.oikvpqya.compose.fastscroller.rememberScrollbarAdapter
 import it.fast4x.riplay.BuildConfig
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.commonutils.EXPLICIT_PREFIX
@@ -235,6 +236,9 @@ fun HomeSongs(
     val thumbnailSizeDp = Dimensions.thumbnails.song
     val thumbnailSizePx = thumbnailSizeDp.px
 
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
     var sortBy by rememberPreference(SONG_SORT_BY.key, SongSortBy.DateAdded)
     var sortOrder by rememberPreference(SONG_SORT_ORDER.key, SortOrder.Descending)
     val parentalControlEnabled by rememberPreference(PARENTAL_CONTROL_ENABLED.key, false)
@@ -249,10 +253,11 @@ fun HomeSongs(
 
     val context = LocalContext.current
 
-    var thumbnailRoundness by rememberPreference(
-        THUMBNAIL_ROUNDNESS.key,
-        ThumbnailRoundness.Light
-    )
+//    var thumbnailRoundness by rememberPreference(
+//        THUMBNAIL_ROUNDNESS.key,
+//        ThumbnailRoundness.Light
+//    )
+    val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
     var showHiddenSongs by remember { mutableStateOf(0) }
     var includeLocalSongs by rememberPreference(INCLUDE_LOCAL_SONGS.key, true)

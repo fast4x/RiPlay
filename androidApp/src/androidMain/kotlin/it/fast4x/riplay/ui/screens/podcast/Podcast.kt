@@ -33,6 +33,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -69,6 +70,7 @@ import it.fast4x.environment.Environment.getBestQuality
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.requests.podcastPage
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
@@ -143,6 +145,8 @@ fun Podcast(
     navController: NavController,
     browseId: String,
 ) {
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
 
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
@@ -193,16 +197,14 @@ fun Podcast(
         mutableStateOf(false)
     }
 
-    var downloadState by remember {
-        mutableStateOf(Download.STATE_STOPPED)
-    }
+//    var thumbnailRoundness by rememberPreference(
+//        THUMBNAIL_ROUNDNESS.key,
+//        ThumbnailRoundness.Light
+//    )
+    val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
-    var thumbnailRoundness by rememberPreference(
-        THUMBNAIL_ROUNDNESS.key,
-        ThumbnailRoundness.Light
-    )
-
-    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    //val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    val disableScrollingText = appearanceSettings.disableScrollingText
 
     var totalPlayTimes = 0L
     podcastPage?.listEpisode?.forEach {

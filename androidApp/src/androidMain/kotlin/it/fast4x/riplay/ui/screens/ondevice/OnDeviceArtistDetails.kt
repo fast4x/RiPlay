@@ -54,6 +54,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import it.fast4x.environment.models.NavigationEndpoint
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -118,6 +119,9 @@ fun OnDeviceArtistDetails(
 
     if (artistId == null) return
 
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
     val binder = LocalPlayerServiceBinder.current
     val windowInsets = LocalPlayerAwareWindowInsets.current
     val selectedQueue = LocalSelectedQueue.current
@@ -129,7 +133,8 @@ fun OnDeviceArtistDetails(
 
     val endPaddingValues = windowInsets.only(WindowInsetsSides.End).asPaddingValues()
 
-    val thumbnailRoundness by rememberPreference(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
+    //val thumbnailRoundness by rememberPreference(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
+    val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
     var artistItem by rememberSaveable {
         mutableStateOf(ArtistItem.Songs)

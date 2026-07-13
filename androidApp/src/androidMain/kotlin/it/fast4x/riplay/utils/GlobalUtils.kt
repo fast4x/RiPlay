@@ -4,8 +4,11 @@ import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Shape
 import it.fast4x.riplay.Dependencies
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.DnsOverHttpsType
@@ -77,7 +80,14 @@ fun getDnsOverHttpsType() = appContext().preferences.getEnum(DNS_OVER_HTTPS_TYPE
 fun getUiType() = appContext().preferences.getEnum(UI_TYPE.key, UiType.RiPlay)
 fun getKeepPlayerMinimized() = appContext().preferences.getBoolean(KEEP_PLAYER_MINIMIZED.key, false)
 fun getlastFmSessionKey() = appContext().preferences.getString(LASTFM_SESSION_TOKEN.key, "")
-fun getRoundnessShape() = appContext().preferences.getEnum(THUMBNAIL_ROUNDNESS.key,ThumbnailRoundness.Light).shape()
+
+@Composable
+fun getRoundnessShape(): Shape {
+    //appContext().preferences.getEnum(THUMBNAIL_ROUNDNESS.key,ThumbnailRoundness.Light).shape()
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    return appearanceSettings.thumbnailRoundness.shape()
+}
 fun ytAccountName() = appContext().preferences.getString(YT_ACCOUNT_NAME.key, "")
 fun ytAccountThumbnail() = appContext().preferences.getString(YT_ACCOUNT_THUMBNAIL.key, "")
 fun isHandleAudioFocusEnabled() = appContext().preferences.getBoolean(HANDLE_AUDIO_FOCUS_ENABLED.key, true)

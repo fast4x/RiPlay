@@ -67,6 +67,7 @@ import it.fast4x.environment.models.BrowseEndpoint
 import it.fast4x.environment.requests.ArtistPage
 import it.fast4x.environment.utils.ArtistDiscographyType
 import it.fast4x.environment.utils.completed
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -166,6 +167,9 @@ fun ArtistOverview(
 
     if (browseId == null) return
 
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
     val binder = LocalPlayerServiceBinder.current
     val windowInsets = LocalPlayerAwareWindowInsets.current
     val selectedQueue = LocalSelectedQueue.current
@@ -181,8 +185,8 @@ fun ArtistOverview(
 
     val endPaddingValues = windowInsets.only(WindowInsetsSides.End).asPaddingValues()
 
-    val thumbnailRoundness by rememberPreference(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
-
+    //val thumbnailRoundness by rememberPreference(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
+    val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
     val context = LocalContext.current
 

@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +41,7 @@ import androidx.media3.common.util.UnstableApi
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.toThumbnail
@@ -103,6 +105,8 @@ fun NextVisualizer() {
     val visualizerEnabled by rememberPreference(VISUALIZER_ENABLED.key, false)
 
     if (visualizerEnabled && permission.status.isGranted) {
+        val appearanceSettingsVieModel = LocalAppearanceSettings.current
+        val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
 
 //        val permission = Manifest.permission.RECORD_AUDIO
 //
@@ -180,10 +184,11 @@ fun NextVisualizer() {
             var currentVisualizer by rememberPreference(CURRENT_VISUALIZER.key, 0)
             if (currentVisualizer < 0) currentVisualizer = 0
 
-            val thumbnailRoundness by rememberPreference(
-                THUMBNAIL_ROUNDNESS.key,
-                ThumbnailRoundness.Light
-            )
+//            val thumbnailRoundness by rememberPreference(
+//                THUMBNAIL_ROUNDNESS.key,
+//                ThumbnailRoundness.Light
+//            )
+            val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
             var showControls by remember { mutableStateOf(true) }
             DelayedControls(delayControls = showControls) {

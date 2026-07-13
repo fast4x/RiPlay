@@ -79,6 +79,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.environment.models.NavigationEndpoint
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
@@ -1067,6 +1068,9 @@ fun MediaItemMenu(
                     slideOutOfContainer(slideDirection, animationSpec)
         }, label = ""
     ) { currentIsViewingPlaylists ->
+        val appearanceSettingsVieModel = LocalAppearanceSettings.current
+        val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
         val isNetworkConnected = rememberIsNetworkConnected()
         if (currentIsViewingPlaylists) {
             val sortBy by rememberPreference(PLAYLIST_SORT_BY.key, PlaylistSortBy.DateAdded)
@@ -1126,10 +1130,11 @@ fun MediaItemMenu(
 
             var searching by rememberSaveable { mutableStateOf(false) }
 
-            var thumbnailRoundness by rememberPreference(
-                THUMBNAIL_ROUNDNESS.key,
-                ThumbnailRoundness.Light
-            )
+//            var thumbnailRoundness by rememberPreference(
+//                THUMBNAIL_ROUNDNESS.key,
+//                ThumbnailRoundness.Light
+//            )
+            val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
             Menu(
                 modifier = modifier

@@ -19,6 +19,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -40,6 +41,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.github.doyaaaaaken.kotlincsv.client.KotlinCsvExperimental
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.data.models.Chip
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.StatisticsType
@@ -97,6 +99,10 @@ fun AppNavigation(
 ) {
     val navController = rememberNavController()
     onNavControllerInit(navController)
+
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
     val transitionEffect by rememberPreference(TRANSITION_EFFECT.key, TransitionEffect.SlideHorizontal)
 
     @Composable
@@ -105,10 +111,11 @@ fun AppNavigation(
         content: @Composable () -> Unit
     ) {
 
-        val thumbnailRoundness by rememberPreference(
-            THUMBNAIL_ROUNDNESS.key,
-            ThumbnailRoundness.Light
-        )
+//        val thumbnailRoundness by rememberPreference(
+//            THUMBNAIL_ROUNDNESS.key,
+//            ThumbnailRoundness.Light
+//        )
+        val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
         CustomModalBottomSheet(
             showSheet = showSheet == true,

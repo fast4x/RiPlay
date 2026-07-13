@@ -41,6 +41,7 @@ import coil.compose.AsyncImage
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.responses.CachedAccountProfile
 import it.fast4x.environment.utils.parseCookieString
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.LocalAudioTagger
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.LastFmScrobbleType
@@ -102,11 +103,15 @@ import timber.log.Timber
 @ExperimentalAnimationApi
 @Composable
 fun AccountsSettings() {
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
     val context = LocalContext.current
-    val thumbnailRoundness by rememberPreference(
-        THUMBNAIL_ROUNDNESS.key,
-        ThumbnailRoundness.Light
-    )
+//    val thumbnailRoundness by rememberPreference(
+//        THUMBNAIL_ROUNDNESS.key,
+//        ThumbnailRoundness.Light
+//    )
+    val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
     var showUserInfoDialog by rememberSaveable { mutableStateOf(false) }
 

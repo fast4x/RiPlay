@@ -71,6 +71,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.unit.Dp
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.data.models.EventWithSong
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.GlobalSheetState
@@ -90,6 +91,9 @@ import java.time.format.DateTimeFormatter
 fun HistoryList(
     navController: NavController
 ) {
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalGlobalSheetState.current
@@ -100,7 +104,8 @@ fun HistoryList(
 
     val parentalControlEnabled by rememberPreference(PARENTAL_CONTROL_ENABLED.key, false)
     val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
-    val thumbnailRoundness by rememberPreference(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
+    //val thumbnailRoundness by rememberPreference(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
+    val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
     var isSelectionMode by remember { mutableStateOf(false) }
     val selectedIds = remember { mutableStateSetOf<String>() }

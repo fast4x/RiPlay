@@ -20,6 +20,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +40,7 @@ import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.environment.models.NavigationEndpoint
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -83,6 +85,10 @@ fun LocalSongSearch(
     onAction3: () -> Unit,
     onAction4: () -> Unit,
 ) {
+
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalGlobalSheetState.current
 
@@ -99,17 +105,8 @@ fun LocalSongSearch(
 
     val lazyListState = rememberLazyListState()
 
-    var downloadState by remember {
-        mutableStateOf(Download.STATE_STOPPED)
-    }
-    val context = LocalContext.current
-
-    var thumbnailRoundness by rememberPreference(
-        THUMBNAIL_ROUNDNESS.key,
-        ThumbnailRoundness.Heavy
-    )
-
-    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    //val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    val disableScrollingText = appearanceSettings.disableScrollingText
 
     val focusRequester = remember {
         FocusRequester()
