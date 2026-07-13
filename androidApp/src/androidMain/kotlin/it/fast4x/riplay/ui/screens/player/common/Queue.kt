@@ -101,6 +101,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.LOCAL_KEY_PREFIX
@@ -236,17 +237,24 @@ fun Queue(
     onDismiss: (QueueLoopType) -> Unit,
     onDiscoverClick: (Boolean) -> Unit,
 ) {
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
     val windowInsets = WindowInsets.systemBars
     val context = LocalContext.current
-    val showButtonPlayerArrow by rememberPreference(SHOW_BUTTON_PLAYER_ARROW.key, true)
-    var queueType by rememberPreference(QUEUE_TYPE.key, QueueType.Essential)
-    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    //val showButtonPlayerArrow by rememberPreference(SHOW_BUTTON_PLAYER_ARROW.key, true)
+    //var queueType by rememberPreference(QUEUE_TYPE.key, QueueType.Essential)
+    val queueType = appearanceSettings.queueType
+    //val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    val disableScrollingText = appearanceSettings.disableScrollingText
     val binder = LocalPlayerServiceBinder.current
     binder?.player ?: return
     val binderPlayer = binder.player
 
-    var queueLoopType by rememberPreference(QUEUE_LOOP_TYPE.key, defaultValue = QueueLoopType.Default)
+    //var queueLoopType by rememberPreference(QUEUE_LOOP_TYPE.key, defaultValue = QueueLoopType.Default)
+    val queueLoopType = appearanceSettings.queueLoopType
     var excludeSongsIfAreVideos by rememberPreference(EXCLUDE_SONG_IF_IS_VIDEO.key, false)
+    //val excludeSongsIfAreVideos = appearanceSettings.excludeSongsIfAreVideos
     val menuState = LocalGlobalSheetState.current
     val thumbnailSizeDp = Dimensions.thumbnails.song
     val thumbnailSizePx = thumbnailSizeDp.px
@@ -287,6 +295,7 @@ fun Queue(
     val rippleIndication = ripple(bounded = false)
     val musicBarsTransition = updateTransition(targetState = mediaItemIndex, label = "")
     var isReorderDisabled by rememberPreference(REORDER_IN_QUEUE_ENABLED.key, defaultValue = true)
+    //val isReorderDisabled = appearanceSettings.isReorderDisabled
     var listMediaItems = remember { mutableListOf<MediaItem>() }
     var listMediaItemsIndex = remember { mutableListOf<Int>() }
     var selectQueueItems by remember { mutableStateOf(false) }
@@ -379,11 +388,13 @@ fun Queue(
     }
 
     val hapticFeedback = LocalHapticFeedback.current
-    val showButtonPlayerDiscover by rememberPreference(SHOW_BUTTON_PLAYER_DISCOVER.key, false)
-    var discoverIsEnabled by rememberPreference(DISCOVER.key, false)
+    //val showButtonPlayerDiscover by rememberPreference(SHOW_BUTTON_PLAYER_DISCOVER.key, false)
+    val showButtonPlayerDiscover = appearanceSettings.showButtonPlayerDiscover
+    //var discoverIsEnabled by rememberPreference(DISCOVER.key, false)
+    val discoverIsEnabled = appearanceSettings.discoverIsEnabled
     var searching by rememberSaveable { mutableStateOf(false) }
     var filter: String? by rememberSaveable { mutableStateOf(null) }
-    val thumbnailRoundness by rememberPreference(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
+    //val thumbnailRoundness by rememberPreference(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
     var showQueues by rememberSaveable { mutableStateOf(false) }
     val maxHeightQueuesList by remember { derivedStateOf { getScreenDimensions().height.dp.div(8) } }
     val heightQueues = animateDpAsState(if (showQueues) maxHeightQueuesList else 20.dp)
@@ -999,7 +1010,8 @@ fun Queue(
                             active = discoverIsEnabled,
                             size = 22,
                             onClick = {
-                                discoverIsEnabled = !discoverIsEnabled
+                                val new = appearanceSettings.copy(discoverIsEnabled = !discoverIsEnabled)
+                                appearanceSettingsVieModel.updatePreset(new)
                                 onDiscoverClick(discoverIsEnabled)
                             },
                             onLongClick = {
@@ -1013,7 +1025,9 @@ fun Queue(
                         icon = if (isReorderDisabled) R.drawable.locked else R.drawable.unlocked,
                         active = !isReorderDisabled,
                         size = 22,
-                        onClick = { isReorderDisabled = !isReorderDisabled }
+                        onClick = {
+                            isReorderDisabled = !isReorderDisabled
+                        }
                     )
 
                     // Loop — accent when non-default
@@ -1021,7 +1035,9 @@ fun Queue(
                         icon = getIconQueueLoopState(queueLoopType),
                         active = queueLoopType != QueueLoopType.Default,
                         size = 22,
-                        onClick = { queueLoopType = setQueueLoopState(queueLoopType) }
+                        onClick = {
+                            val new = appearanceSettings.copy(queueLoopType = setQueueLoopState(queueLoopType))
+                            appearanceSettingsVieModel.updatePreset(new)}
                     )
 
                     // Shuffle

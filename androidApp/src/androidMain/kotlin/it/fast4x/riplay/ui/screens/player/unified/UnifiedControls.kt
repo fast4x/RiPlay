@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -24,25 +25,14 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Info
 import it.fast4x.riplay.data.models.UiMedia
 import it.fast4x.riplay.enums.PlayerControlsType
 import it.fast4x.riplay.enums.PlayerInfoType
 import it.fast4x.riplay.enums.PlayerPlayButtonType
-import it.fast4x.riplay.enums.PlayerTimelineSize
 import it.fast4x.riplay.enums.PlayerType
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_CONTROLS_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_INFO_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_PLAY_BUTTON_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_SWAP_CONTROLS_WITH_TIMELINE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_TIMELINE_SIZE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_TYPE
-import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LYRICS_THUMBNAIL
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_THUMBNAIL
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR
 import it.fast4x.riplay.services.playback.PlayerState
 import it.fast4x.riplay.ui.screens.player.unified.components.controls.UnifiedInfoAlbumAndArtistEssential
 import it.fast4x.riplay.ui.screens.player.unified.components.controls.UnifiedInfoAlbumAndArtistModern
@@ -83,11 +73,16 @@ fun UnifiedControls(
     onToggleLike: () -> Unit = {},
     playerState: PlayerState,
 ) {
+
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
     var likedAt by rememberSaveable {
         mutableStateOf<Long?>(null)
     }
 
-    var disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    //var disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    val disableScrollingText = appearanceSettings.disableScrollingText
 
     val mediaItem = playerState.mediaInfo?.mediaItem ?: return
 
@@ -96,26 +91,35 @@ fun UnifiedControls(
     }
 
 
-    var playerTimelineSize by rememberPreference(
-        PLAYER_TIMELINE_SIZE.key,
-        PlayerTimelineSize.Biggest
-    )
+//    var playerTimelineSize by rememberPreference(
+//        PLAYER_TIMELINE_SIZE.key,
+//        PlayerTimelineSize.Biggest
+//    )
+    val playerTimelineSize = appearanceSettings.playerTimelineSize
 
 
-    val playerInfoType by rememberPreference(PLAYER_INFO_TYPE.key, PlayerInfoType.Essential)
-    var playerSwapControlsWithTimeline by rememberPreference(
-        PLAYER_SWAP_CONTROLS_WITH_TIMELINE.key,
-        false
-    )
-    var showlyricsthumbnail by rememberPreference(SHOW_LYRICS_THUMBNAIL.key, false)
-    var transparentBackgroundActionBarPlayer by rememberPreference(
-        TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR.key,
-        true
-    )
-    var playerControlsType by rememberPreference(PLAYER_CONTROLS_TYPE.key, PlayerControlsType.Essential)
-    var playerPlayButtonType by rememberPreference(PLAYER_PLAY_BUTTON_TYPE.key, PlayerPlayButtonType.Disabled)
-    var showthumbnail by rememberPreference(SHOW_THUMBNAIL.key, true)
-    var playerType by rememberPreference(PLAYER_TYPE.key, PlayerType.Modern)
+    //val playerInfoType by rememberPreference(PLAYER_INFO_TYPE.key, PlayerInfoType.Essential)
+    val playerInfoType = appearanceSettings.playerInfoType
+//    var playerSwapControlsWithTimeline by rememberPreference(
+//        PLAYER_SWAP_CONTROLS_WITH_TIMELINE.key,
+//        false
+//    )
+    val playerSwapControlsWithTimeline = appearanceSettings.playerSwapControlsWithTimeline
+    //var showlyricsthumbnail by rememberPreference(SHOW_LYRICS_THUMBNAIL.key, false)
+    val showlyricsthumbnail = appearanceSettings.showLyricsThumbnail
+//    var transparentBackgroundActionBarPlayer by rememberPreference(
+//        TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR.key,
+//        true
+//    )
+    val transparentBackgroundActionBarPlayer = appearanceSettings.transparentBackgroundActionBarPlayer
+    //var playerControlsType by rememberPreference(PLAYER_CONTROLS_TYPE.key, PlayerControlsType.Essential)
+    val playerControlsType = appearanceSettings.playerControlsType
+    //var playerPlayButtonType by rememberPreference(PLAYER_PLAY_BUTTON_TYPE.key, PlayerPlayButtonType.Disabled)
+    val playerPlayButtonType = appearanceSettings.playerPlayButtonType
+    //var showthumbnail by rememberPreference(SHOW_THUMBNAIL.key, true)
+    val showthumbnail = appearanceSettings.showThumbnail
+    //var playerType by rememberPreference(PLAYER_TYPE.key, PlayerType.Modern)
+    val playerType = appearanceSettings.playerType
     val expandedlandscape = (isLandscape && playerType == PlayerType.Modern) || (expandedplayer && !showthumbnail)
 
     Box(

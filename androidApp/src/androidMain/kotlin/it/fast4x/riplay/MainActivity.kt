@@ -763,6 +763,9 @@ class MainActivity :
 
                 StorageWarningChecker()
 
+                val appearanceSettingsVieModel = appearanceSettingsViewModel
+                val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
                 val state = binder?.playerState?.collectAsState()
                 playerState = state?.value ?: PlayerState()
                 Timber.d("MainActivity onCreate playerState: $playerState")
@@ -801,10 +804,11 @@ class MainActivity :
 //            val isInternetAvailable by internetConnectivityObserver.internetNetworkStatus.collectAsState(true)
 
                 // Observe preference so theme mode updates immediately when changed from Settings
-                val colorPaletteMode by rememberPreference(
-                    COLOR_PALETTE_MODE.key,
-                    ColorPaletteMode.Dark
-                )
+//                val colorPaletteMode by rememberPreference(
+//                    COLOR_PALETTE_MODE.key,
+//                    ColorPaletteMode.Dark
+//                )
+                val colorPaletteMode = appearanceSettings.colorPaletteMode
 
                 val coroutineScope = rememberCoroutineScope()
                 val isSystemInDarkTheme = isSystemInDarkTheme()
@@ -899,9 +903,11 @@ class MainActivity :
                 ) {
                     with(preferences) {
                         val colorPaletteName =
-                            getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
+                            appearanceSettings.colorPaletteName
+                            //getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
                         val thumbnailRoundness =
-                            getEnum(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
+                            appearanceSettings.thumbnailRoundness
+                            //getEnum(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
                         val useSystemFont = getBoolean(USE_SYSTEM_FONT.key, false)
                         val applyFontPadding = getBoolean(APPLY_FONT_PADDING.key, false)
 
@@ -948,7 +954,8 @@ class MainActivity :
                 fun setDynamicPalette(url: String) {
 
                     val colorPaletteName =
-                        preferences.getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
+                        appearanceSettings.colorPaletteName
+                        //preferences.getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
                     val isDynamicPalette = colorPaletteName == ColorPaletteName.Dynamic
 
                     if (!isDynamicPalette) return
@@ -1063,10 +1070,11 @@ class MainActivity :
                                             ColorPaletteName.Dynamic
                                         )
 
-                                    val newColorPaletteMode = sharedPreferences.getEnum(
-                                        COLOR_PALETTE_MODE.key,
-                                        ColorPaletteMode.Dark
-                                    )
+//                                    val newColorPaletteMode = sharedPreferences.getEnum(
+//                                        COLOR_PALETTE_MODE.key,
+//                                        ColorPaletteMode.Dark
+//                                    )
+                                    val newColorPaletteMode = appearanceSettings.colorPaletteMode
                                     val isNewPitchBlack =
                                         newColorPaletteMode == ColorPaletteMode.PitchBlack
                                     val isNewDark =
@@ -1122,7 +1130,8 @@ class MainActivity :
                                             colorPalette = customColorPalette(
                                                 colorPalette,
                                                 this@MainActivity,
-                                                isSystemInDarkTheme
+                                                isSystemInDarkTheme,
+                                                appearanceSettings.colorPaletteMode
                                             )
                                         }
                                         if (colorPaletteName == ColorPaletteName.CustomColor) {
@@ -1204,7 +1213,8 @@ class MainActivity :
                         registerOnSharedPreferenceChangeListener(listener)
 
                         val colorPaletteName =
-                            getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
+                            appearanceSettings.colorPaletteName
+                            //getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
                         if (colorPaletteName == ColorPaletteName.Dynamic) {
                             setDynamicPalette(
                                 (binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri.toString()
@@ -1246,13 +1256,15 @@ class MainActivity :
 
                 LaunchedEffect(Unit) {
                     val colorPaletteName =
-                        preferences.getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
+                        appearanceSettings.colorPaletteName
+                        //preferences.getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
                     if (colorPaletteName == ColorPaletteName.Customized) {
                         appearance = appearance.copy(
                             colorPalette = customColorPalette(
                                 appearance.colorPalette,
                                 this@MainActivity,
-                                isSystemInDarkTheme
+                                isSystemInDarkTheme,
+                                appearanceSettings.colorPaletteMode
                             )
                         )
                     }
@@ -2001,24 +2013,26 @@ class MainActivity :
     }
 
 
-    override fun onMonetColorsChanged(
-        monet: MonetCompat,
-        monetColors: ColorScheme,
-        isInitialChange: Boolean
-    ) {
-        super<MonetCompatActivity>.onMonetColorsChanged(monet, monetColors, isInitialChange)
-        val colorPaletteName =
-            preferences.getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
-        if (!isInitialChange && colorPaletteName == ColorPaletteName.MaterialYou) {
-            /*
-            monet.updateMonetColors()
-            monet.invokeOnReady {
-                startApp()
-            }
-             */
-            this@MainActivity.recreate()
-        }
-    }
+//    override fun onMonetColorsChanged(
+//        monet: MonetCompat,
+//        monetColors: ColorScheme,
+//        isInitialChange: Boolean
+//    ) {
+//        super<MonetCompatActivity>.onMonetColorsChanged(monet, monetColors, isInitialChange)
+//
+//        val colorPaletteName =
+//            appearanceSettingsViewModel.activeSettings.value.colorPaletteName
+//            //preferences.getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
+//        if (!isInitialChange && colorPaletteName == ColorPaletteName.MaterialYou) {
+//            /*
+//            monet.updateMonetColors()
+//            monet.invokeOnReady {
+//                startApp()
+//            }
+//             */
+//            this@MainActivity.recreate()
+//        }
+//    }
 
 }
 

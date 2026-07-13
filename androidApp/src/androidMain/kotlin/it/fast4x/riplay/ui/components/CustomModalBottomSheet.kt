@@ -13,6 +13,7 @@ import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,6 +24,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.view.WindowCompat
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
 import it.fast4x.riplay.extensions.preferences.rememberPreference
@@ -84,7 +86,12 @@ fun CustomModalBottomSheet(
 
 @Composable
 private fun SetupSystemBarsForSheet(sheetBackgroundColor: Color) {
-    val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
+    //val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
+    val colorPaletteMode = appearanceSettings.colorPaletteMode
+
     val isPitchBlack = colorPaletteMode == ColorPaletteMode.PitchBlack
 
     val isDarkTheme = colorPaletteMode == ColorPaletteMode.Dark ||

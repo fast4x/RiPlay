@@ -72,7 +72,6 @@ fun binder() = LocalPlayerServiceBinder.current
 fun appContext(): Context = Dependencies.application.applicationContext
 fun globalContext(): Context = Dependencies.application
 
-fun getColorTheme() = appContext().preferences.getEnum(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
 fun getViewType() = appContext().preferences.getEnum(VIEW_TYPE.key, ViewType.Grid)
 fun getDnsOverHttpsType() = appContext().preferences.getEnum(DNS_OVER_HTTPS_TYPE.key, DnsOverHttpsType.None)
 fun getUiType() = appContext().preferences.getEnum(UI_TYPE.key, UiType.RiPlay)

@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,18 +36,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.R
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Format
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PlayerType
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.BLACK_GRADIENT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_BACKGROUND_COLORS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_TYPE
-import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_THUMBNAIL
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.STATS_FOR_NERDS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.ui.styling.medium
@@ -76,22 +71,30 @@ fun StatsForNerds(
         enter = fadeIn(),
         exit = fadeOut(),
     ) {
+        val appearanceSettingsVieModel = LocalAppearanceSettings.current
+        val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
 
         var format by remember {
             mutableStateOf<Format?>(null)
         }
-        val showThumbnail by rememberPreference(SHOW_THUMBNAIL.key, true)
-        val statsForNerds by rememberPreference(STATS_FOR_NERDS.key, false)
-        val playerType by rememberPreference(PLAYER_TYPE.key, PlayerType.Modern)
-        val transparentBackgroundActionBarPlayer by rememberPreference(
-            TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR.key,
-            true
-        )
-        var blackgradient by rememberPreference(BLACK_GRADIENT.key, false)
-        val playerBackgroundColors by rememberPreference(
-            PLAYER_BACKGROUND_COLORS.key,
-            PlayerBackgroundColors.BlurredCoverColor
-        )
+        //val showThumbnail by rememberPreference(SHOW_THUMBNAIL.key, true)
+        val showThumbnail = appearanceSettings.showThumbnail
+        //val statsForNerds by rememberPreference(STATS_FOR_NERDS.key, false)
+        val statsForNerds = appearanceSettings.statsfornerds
+        //val playerType by rememberPreference(PLAYER_TYPE.key, PlayerType.Modern)
+        val playerType = appearanceSettings.playerType
+//        val transparentBackgroundActionBarPlayer by rememberPreference(
+//            TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR.key,
+//            true
+//        )
+        val transparentBackgroundActionBarPlayer = appearanceSettings.transparentBackgroundActionBarPlayer
+        //var blackgradient by rememberPreference(BLACK_GRADIENT.key, false)
+        val blackgradient = appearanceSettings.blackgradient
+//        val playerBackgroundColors by rememberPreference(
+//            PLAYER_BACKGROUND_COLORS.key,
+//            PlayerBackgroundColors.BlurredCoverColor
+//        )
+        val playerBackgroundColors = appearanceSettings.playerBackgroundColors
         var statsfornerdsfull by remember {mutableStateOf(false)}
         val rotationAngle by animateFloatAsState(
             targetValue = if (statsfornerdsfull) 180f else 0f,

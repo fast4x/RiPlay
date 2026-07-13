@@ -98,6 +98,7 @@ import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.models.responses.CachedAccountProfile
 import it.fast4x.environment.requests.searchPage
 import it.fast4x.environment.utils.from
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.Database.Companion.update
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -475,14 +476,19 @@ fun SelectorArtistsDialog(
     onValueSelected: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val screenHeight = configuration.screenHeightDp.dp
 
     val dialogSize = if (isLandscape) (screenHeight * 0.85f) else (screenWidth * 0.85f)
 
-    val thumbnailRoundness by rememberPreference(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
-    val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
+    //val thumbnailRoundness by rememberPreference(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
+    val thumbnailRoundness = appearanceSettings.thumbnailRoundness
+    //val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
+    val colorPaletteMode = appearanceSettings.colorPaletteMode
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(

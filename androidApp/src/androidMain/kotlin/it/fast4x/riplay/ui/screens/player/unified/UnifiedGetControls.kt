@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -13,13 +14,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.media3.common.util.UnstableApi
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PlayerControlsType
-import it.fast4x.riplay.enums.PlayerPlayButtonType
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYBACK_SPEED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_BACKGROUND_COLORS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_CONTROLS_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_PLAY_BUTTON_TYPE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.services.playback.PlayerState
 import it.fast4x.riplay.ui.components.themed.PlaybackParamsDialog
@@ -40,28 +38,35 @@ fun UnifiedGetControls(
     onToggleShuffleMode: () -> Unit,
     playerState: PlayerState,
 ) {
-    val playerControlsType by rememberPreference(
-        PLAYER_CONTROLS_TYPE.key,
-        PlayerControlsType.Essential
-    )
-    val playerPlayButtonType by rememberPreference(
-        PLAYER_PLAY_BUTTON_TYPE.key,
-        PlayerPlayButtonType.Disabled
-    )
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
+//    val playerControlsType by rememberPreference(
+//        PLAYER_CONTROLS_TYPE.key,
+//        PlayerControlsType.Essential
+//    )
+    val playerControlsType = appearanceSettings.playerControlsType
+//    val playerPlayButtonType by rememberPreference(
+//        PLAYER_PLAY_BUTTON_TYPE.key,
+//        PlayerPlayButtonType.Disabled
+//    )
+    val playerPlayButtonType = appearanceSettings.playerPlayButtonType
     var isRotated by rememberSaveable { mutableStateOf(false) }
     val rotationAngle by animateFloatAsState(
         targetValue = if (isRotated) 360F else 0f,
         animationSpec = tween(durationMillis = 200), label = ""
     )
-    val playerBackgroundColors by rememberPreference(
-        PLAYER_BACKGROUND_COLORS.key,
-        PlayerBackgroundColors.BlurredCoverColor
-    )
+//    val playerBackgroundColors by rememberPreference(
+//        PLAYER_BACKGROUND_COLORS.key,
+//        PlayerBackgroundColors.BlurredCoverColor
+//    )
+    //val playerBackgroundColors = appearanceSettings.playerBackgroundColors
 
-    val isGradientBackgroundEnabled = playerBackgroundColors == PlayerBackgroundColors.ThemeColorGradient ||
-            playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient
+//    val isGradientBackgroundEnabled = playerBackgroundColors == PlayerBackgroundColors.ThemeColorGradient ||
+//            playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient
 
-    var playbackSpeed by rememberPreference(PLAYBACK_SPEED.key, 1f)
+    var playbackSpeed by rememberPreference(PreferenceKey.PLAYBACK_SPEED.key, 1f)
+    //val playbackSpeed = appearanceSettings.playbackSpeed
 
     var showSpeedPlayerDialog by rememberSaveable {
         mutableStateOf(false)
@@ -70,7 +75,9 @@ fun UnifiedGetControls(
     if (showSpeedPlayerDialog) {
         PlaybackParamsDialog(
             onDismiss = { showSpeedPlayerDialog = false },
-            speedValue = { playbackSpeed = it },
+            speedValue = {
+                playbackSpeed = it
+            },
             pitchValue = {},
             durationValue = {
 //                playbackDuration = it

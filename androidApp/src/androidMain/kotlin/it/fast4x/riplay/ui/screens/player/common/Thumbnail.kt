@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -45,6 +46,7 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.toThumbnail
@@ -52,14 +54,6 @@ import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailType
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CLICK_ON_LYRICS_TEXT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.COVER_THUMBNAIL_ANIMATION
-import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_COVER_THUMBNAIL_ANIMATION
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LYRICS_THUMBNAIL
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_VIS_THUMBNAIL
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_PAUSE
 import it.fast4x.riplay.services.playback.LoginRequiredException
 import it.fast4x.riplay.services.playback.NoInternetException
 import it.fast4x.riplay.services.playback.PlayableFormatNonSupported
@@ -100,7 +94,9 @@ fun Thumbnail(
     showthumbnail: Boolean,
     modifier: Modifier = Modifier
 ) {
-    println("Thumbnail call")
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
     val player = binder?.player ?: return
@@ -111,7 +107,8 @@ fun Thumbnail(
         it to (it - 64.dp).px
     }
 
-    var showlyricsthumbnail by rememberPreference(SHOW_LYRICS_THUMBNAIL.key, false)
+    //var showlyricsthumbnail by rememberPreference(SHOW_LYRICS_THUMBNAIL.key, false)
+    val showlyricsthumbnail = appearanceSettings.showLyricsThumbnail
     var nullableWindow by remember {
         mutableStateOf(player.currentWindow)
     }
@@ -143,8 +140,10 @@ fun Thumbnail(
         mutableStateOf(true)
     }
 
-    val clickLyricsText by rememberPreference(CLICK_ON_LYRICS_TEXT.key, true)
-    var showvisthumbnail by rememberPreference(SHOW_VIS_THUMBNAIL.key, false)
+    //val clickLyricsText by rememberPreference(CLICK_ON_LYRICS_TEXT.key, true)
+    val clickLyricsText = appearanceSettings.clickLyricsText
+    //var showvisthumbnail by rememberPreference(SHOW_VIS_THUMBNAIL.key, false)
+    val showvisthumbnail = appearanceSettings.showvisthumbnail
     //var expandedlyrics by rememberPreference(expandedlyricsKey.key,false)
 
     player.DisposableListener {
@@ -177,8 +176,10 @@ fun Thumbnail(
         onSuccess = { artImageAvailable = true }
     )
 
-    val showCoverThumbnailAnimation by rememberPreference(SHOW_COVER_THUMBNAIL_ANIMATION.key, false)
-    var coverThumbnailAnimation by rememberPreference(COVER_THUMBNAIL_ANIMATION.key, ThumbnailCoverType.Vinyl)
+    //val showCoverThumbnailAnimation by rememberPreference(SHOW_COVER_THUMBNAIL_ANIMATION.key, false)ù
+    val showCoverThumbnailAnimation = appearanceSettings.showCoverThumbnailAnimation
+    //var coverThumbnailAnimation by rememberPreference(COVER_THUMBNAIL_ANIMATION.key, ThumbnailCoverType.Vinyl)
+    val coverThumbnailAnimation = appearanceSettings.coverThumbnailAnimation
 
 
     AnimatedContent(
@@ -214,7 +215,8 @@ fun Thumbnail(
         contentAlignment = Alignment.Center, label = ""
     ) { currentWindow ->
 
-        val thumbnailType by rememberPreference(THUMBNAIL_TYPE.key, ThumbnailType.Modern)
+        //val thumbnailType by rememberPreference(THUMBNAIL_TYPE.key, ThumbnailType.Modern)
+        val thumbnailType = appearanceSettings.thumbnailType
 
         var modifierUiType by remember { mutableStateOf(modifier) }
 
@@ -399,7 +401,10 @@ fun Thumbnail(
 fun Modifier.thumbnailpause(
     shouldBePlaying: Boolean
 ) = composed {
-    var thumbnailpause by rememberPreference(THUMBNAIL_PAUSE.key, false)
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    //var thumbnailpause by rememberPreference(THUMBNAIL_PAUSE.key, false)
+    val thumbnailpause = appearanceSettings.thumbnailpause
     val scale by animateFloatAsState(if ((thumbnailpause) && (!shouldBePlaying)) 0.9f else 1f)
 
     this

@@ -28,8 +28,8 @@ import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.preferences
 
 
-fun customColorPalette(colorPalette: ColorPalette, context: Context, isSystemInDarkTheme: Boolean): ColorPalette {
-    val colorPaletteMode = context.preferences.getEnum(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
+fun customColorPalette(colorPalette: ColorPalette, context: Context, isSystemInDarkTheme: Boolean, colorPaletteMode: ColorPaletteMode): ColorPalette {
+    //val colorPaletteMode = context.preferences.getEnum(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
 
     val customThemeLight = colorPalette.copy(
         background0 = Color(context.preferences.getInt(CUSTOM_THEME_LIGHT_BACKGROUND_0.key, DefaultLightColorPalette.background0.hashCode())),

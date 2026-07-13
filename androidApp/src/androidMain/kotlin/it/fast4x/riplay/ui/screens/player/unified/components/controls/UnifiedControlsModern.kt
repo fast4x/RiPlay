@@ -26,6 +26,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.commonutils.setDisLikeState
@@ -63,14 +65,6 @@ import it.fast4x.riplay.enums.PlayerControlsType
 import it.fast4x.riplay.enums.PlayerPlayButtonType
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.JUMP_PREVIOUS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_BACKGROUND_COLORS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_CONTROLS_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_INFO_SHOW_ICONS
-import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_THUMBNAIL
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.TEXT_OUTLINE
 import it.fast4x.riplay.services.playback.PlaybackState
 import it.fast4x.riplay.services.playback.PlayerState
 import it.fast4x.riplay.ui.components.themed.CustomElevatedButton
@@ -114,7 +108,7 @@ fun UnifiedControlsModern(
     playerState: PlayerState,
 ) {
 
-    var jumpPrevious by rememberPreference(JUMP_PREVIOUS.key, "3")
+    //var jumpPrevious by rememberPreference(JUMP_PREVIOUS.key, "3")
 
     if (playerPlayButtonType != PlayerPlayButtonType.Disabled) {
         CustomElevatedButton(
@@ -444,13 +438,20 @@ fun UnifiedInfoAlbumAndArtistModern(
     onCollapse: () -> Unit,
     disableScrollingText: Boolean = false
 ) {
-    val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
-    val playerControlsType by rememberPreference(PLAYER_CONTROLS_TYPE.key, PlayerControlsType.Essential)
-    var showthumbnail by rememberPreference(SHOW_THUMBNAIL.key, true)
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
+    //val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
+    val colorPaletteMode = appearanceSettings.colorPaletteMode
+    //val playerControlsType by rememberPreference(PLAYER_CONTROLS_TYPE.key, PlayerControlsType.Essential)
+    val playerControlsType = appearanceSettings.playerControlsType
+    //var showthumbnail by rememberPreference(SHOW_THUMBNAIL.key, true)
 
     var showSelectDialog by remember { mutableStateOf(false) }
-    val playerBackgroundColors by rememberPreference(PLAYER_BACKGROUND_COLORS.key,PlayerBackgroundColors.BlurredCoverColor)
-    val playerInfoShowIcon by rememberPreference(PLAYER_INFO_SHOW_ICONS.key, true)
+    //val playerBackgroundColors by rememberPreference(PLAYER_BACKGROUND_COLORS.key,PlayerBackgroundColors.BlurredCoverColor)
+    val playerBackgroundColors = appearanceSettings.playerBackgroundColors
+    //val playerInfoShowIcon by rememberPreference(PLAYER_INFO_SHOW_ICONS.key, true)
+    val playerInfoShowIcon = appearanceSettings.playerInfoShowIcons
 
     val isNetworkConnected = rememberIsNetworkConnected()
 
@@ -505,7 +506,8 @@ fun UnifiedInfoAlbumAndArtistModern(
                 )
 
 
-            val textoutline by rememberPreference(TEXT_OUTLINE.key, false)
+            //val textoutline by rememberPreference(TEXT_OUTLINE.key, false)
+            val textoutline = appearanceSettings.textoutline
 
             if (!disableScrollingText) modifierTitle = modifierTitle.basicMarquee()
             Row(
@@ -688,7 +690,8 @@ fun UnifiedInfoAlbumAndArtistModern(
                 }
             )
 
-        var textoutline by rememberPreference(TEXT_OUTLINE.key, false)
+        //var textoutline by rememberPreference(TEXT_OUTLINE.key, false)
+        val textoutline = appearanceSettings.textoutline
         if (!disableScrollingText) modifierArtist = modifierArtist.basicMarquee()
         Box(
 

@@ -36,6 +36,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SnapshotMutationPolicy
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -81,6 +82,7 @@ import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalPlayerServiceState
 import it.fast4x.riplay.R
@@ -94,27 +96,11 @@ import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailRoundness
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.BLUR_SCALE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.COVER_THUMBNAIL_ANIMATION
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.JUMP_PREVIOUS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_BACKGROUND_COLORS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUEUE_LOOP_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_COVER_THUMBNAIL_ANIMATION
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_THUMBNAIL
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.TEXT_OUTLINE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.VINYL_SIZE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.VISUALIZER_ENABLED
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.services.playback.PlayerState
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
-import it.fast4x.riplay.ui.components.themed.AudioCassette
 import it.fast4x.riplay.ui.components.themed.PlayerMenu
-import it.fast4x.riplay.ui.components.themed.RotateThumbnailCoverAnimationModern
 import it.fast4x.riplay.ui.components.themed.Turntable
 import it.fast4x.riplay.ui.screens.player.common.Lyrics
 import it.fast4x.riplay.ui.screens.player.common.NextVisualizer
@@ -166,6 +152,9 @@ fun TvUnifiedPlayer(
     binder?.player ?: return
     if (binder.player.currentTimeline.windowCount == 0) return
 
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
     val playerState = LocalPlayerServiceState.current
     val context = LocalContext.current
     val menuState = LocalGlobalSheetState.current
@@ -183,27 +172,39 @@ fun TvUnifiedPlayer(
     var mediaItems by remember {
         mutableStateOf(binder.player.currentTimeline.mediaItems)
     }
-    var queueLoopType by rememberPreference(QUEUE_LOOP_TYPE.key, QueueLoopType.Default)
+    //var queueLoopType by rememberPreference(QUEUE_LOOP_TYPE.key, QueueLoopType.Default)
+    val queueLoopType = appearanceSettings.queueLoopType
     var isShowingLyrics by rememberSaveable { mutableStateOf(false) }
     var isShowingVisualizer by rememberSaveable { mutableStateOf(false) }
     var showQueue by rememberSaveable { mutableStateOf(false) }
-    var jumpPrevious by rememberPreference(JUMP_PREVIOUS.key, "3")
-    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
-    val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
-    val textoutline by rememberPreference(TEXT_OUTLINE.key, false)
+    //var jumpPrevious by rememberPreference(JUMP_PREVIOUS.key, "3")
+    val jumpPrevious = appearanceSettings.jumpPrevious
+    //val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    val disableScrollingText = appearanceSettings.disableScrollingText
+    //val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
+    val colorPaletteMode = appearanceSettings.colorPaletteMode
+    //val textoutline by rememberPreference(TEXT_OUTLINE.key, false)
+    val textoutline = appearanceSettings.textoutline
 
-    val visualizerEnabled by rememberPreference(VISUALIZER_ENABLED.key, false)
-    val showthumbnail by rememberPreference(SHOW_THUMBNAIL.key, true)
-    val thumbnailRoundness by rememberPreference(
-        THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light
-    )
-    val showCoverThumbnailAnimation by rememberPreference(
-        SHOW_COVER_THUMBNAIL_ANIMATION.key, false
-    )
-    var coverThumbnailAnimation by rememberPreference(
-        COVER_THUMBNAIL_ANIMATION.key, ThumbnailCoverType.Vinyl
-    )
-    var imageCoverSize by rememberPreference(VINYL_SIZE.key, 50f)
+    //val visualizerEnabled by rememberPreference(VISUALIZER_ENABLED.key, false)
+    val visualizerEnabled = appearanceSettings.visualizerEnabled
+    //val showthumbnail by rememberPreference(SHOW_THUMBNAIL.key, true)
+    val showthumbnail = appearanceSettings.showThumbnail
+//    val thumbnailRoundness by rememberPreference(
+//        THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light
+//    )
+    val thumbnailRoundness = appearanceSettings.thumbnailRoundness
+//    val showCoverThumbnailAnimation by rememberPreference(
+//        SHOW_COVER_THUMBNAIL_ANIMATION.key, false
+//    )
+    val showCoverThumbnailAnimation = appearanceSettings.showCoverThumbnailAnimation
+//    var coverThumbnailAnimation by rememberPreference(
+//        COVER_THUMBNAIL_ANIMATION.key, ThumbnailCoverType.Vinyl
+//    )
+    val coverThumbnailAnimation = appearanceSettings.coverThumbnailAnimation
+
+    //var imageCoverSize by rememberPreference(VINYL_SIZE.key, 50f)
+    val imageCoverSize = appearanceSettings.imageCoverSize
 
     binder.player.DisposableListener {
         object : Player.Listener {
@@ -214,11 +215,12 @@ fun TvUnifiedPlayer(
                 mediaItems = timeline.mediaItems
             }
             override fun onRepeatModeChanged(repeatMode: Int) {
-                queueLoopType = when (repeatMode) {
+                val new = appearanceSettings.copy(queueLoopType = when (repeatMode) {
                     Player.REPEAT_MODE_ONE -> QueueLoopType.RepeatOne
                     Player.REPEAT_MODE_ALL -> QueueLoopType.RepeatAll
                     else -> QueueLoopType.Default
-                }
+                })
+                appearanceSettingsVieModel.updatePreset(new)
             }
         }
     }
@@ -261,9 +263,10 @@ fun TvUnifiedPlayer(
 
     // ── Dynamic color ────────────────────────────────────────────
     var dynamicColorPalette by remember { mutableStateOf(color) }
-    val playerBackgroundColors by rememberPreference(
-        PLAYER_BACKGROUND_COLORS.key, PlayerBackgroundColors.BlurredCoverColor
-    )
+//    val playerBackgroundColors by rememberPreference(
+//        PLAYER_BACKGROUND_COLORS.key, PlayerBackgroundColors.BlurredCoverColor
+//    )
+    val playerBackgroundColors = appearanceSettings.playerBackgroundColors
 
     LaunchedEffect(mediaItem.mediaId) {
         if (playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient ||
@@ -298,7 +301,8 @@ fun TvUnifiedPlayer(
     BackHandler(onBack = onDismiss)
 
     // ── Background ───────────────────────────────────────────────
-    val blurStrength by rememberPreference(BLUR_SCALE.key, 25f)
+    //val blurStrength by rememberPreference(BLUR_SCALE.key, 25f)
+    val blurStrength = appearanceSettings.blurStrength
     val backgroundRequest = remember(mediaItem.mediaId) {
         ImageRequest.Builder(context)
             .data(mediaItem.mediaMetadata.artworkUri.toString().toThumbnail(1200))
@@ -432,7 +436,11 @@ fun TvUnifiedPlayer(
                     isShowingVisualizer = isShowingVisualizer,
                     visualizerEnabled = visualizerEnabled,
                     queueLoopType = queueLoopType,
-                    onQueueLoopTypeChange = { queueLoopType = it },
+                    onQueueLoopTypeChange = {
+                        appearanceSettingsVieModel.updatePreset(
+                            appearanceSettings.copy(queueLoopType = it)
+                        )
+                    },
                     onToggleLyrics = {
                         if (isShowingVisualizer) isShowingVisualizer = false
                         isShowingLyrics = !isShowingLyrics
@@ -515,7 +523,7 @@ fun TvUnifiedPlayer(
                 showPlayer = {},
                 hidePlayer = {},
                 onDismiss = {
-                    queueLoopType = it
+                   appearanceSettingsVieModel.updatePreset(appearanceSettings.copy(queueLoopType = it))
                     showQueue = false
                 },
                 onDiscoverClick = {}

@@ -43,6 +43,7 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import it.fast4x.environment.Environment
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
@@ -260,13 +261,16 @@ fun SongItem(
     isRecommended: Boolean = false,
     mediaItem: MediaItem,
 ) {
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
     val title = remember(mediaItem) { mediaItem.mediaMetadata.title.toString() }
     val authors = remember(mediaItem) { mediaItem.mediaMetadata.artist.toString() }
     val duration = remember(mediaItem) { mediaItem.mediaMetadata.extras?.getString("durationText") }
 
     val playlistindicator by rememberPreference(PLAYLIST_INDICATOR.key, false)
-    val colorPaletteName by rememberPreference(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
-
+    //val colorPaletteName by rememberPreference(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
+    val colorPaletteName = appearanceSettings.colorPaletteName
     val songPlaylist by if (playlistindicator)
         Database.songUsedInPlaylistsAsFlow(mediaItem.mediaId).collectAsState(initial = 0)
     else

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.AlbumSwipeAction
 import it.fast4x.riplay.enums.BackgroundProgress
@@ -516,6 +518,10 @@ fun DefaultUiSettings() {
 fun UiSettings(
     navController: NavController
 ) {
+
+    val appearanceSettingsVieModel = LocalAppearanceSettings.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
     var recommendationsNumber by rememberPreference(RECOMMENDATIONS_NUMBER.key,   RecommendationsNumber.`5`)
 
     var keepPlayerMinimized by rememberPreference(KEEP_PLAYER_MINIMIZED.key,   false)
@@ -527,8 +533,10 @@ fun UiSettings(
 
     var lastPlayerPlayButtonType by rememberPreference(LAST_PLAYER_PLAY_BUTTON_TYPE.key, PlayerPlayButtonType.Rectangular)
 
-    var colorPaletteName by rememberPreference(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
-    var colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
+    //var colorPaletteName by rememberPreference(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
+    val colorPaletteName = appearanceSettings.colorPaletteName
+    //var colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
+    val colorPaletteMode = appearanceSettings.colorPaletteMode
     var indexNavigationTab by rememberPreference(
         INDEX_NAVIGATION_TAB.key,
         HomeScreenTabs.Default
@@ -898,14 +906,17 @@ fun UiSettings(
                         title = stringResource(R.string.theme),
                         selectedValue = colorPaletteName,
                         onValueSelected = {
-                            colorPaletteName = it
-                            when (it) {
-                                ColorPaletteName.PureBlack,
-                                ColorPaletteName.ModernBlack -> colorPaletteMode =
-                                    ColorPaletteMode.System
-
-                                else -> {}
-                            }
+                            val mode = appearanceSettings.colorPaletteMode
+                            val new = appearanceSettings.copy(
+                                colorPaletteName = it,
+                                colorPaletteMode = when (it) {
+                                        ColorPaletteName.PureBlack,
+                                        ColorPaletteName.ModernBlack ->
+                                                    ColorPaletteMode.System
+                                        else -> mode
+                                    }
+                                )
+                            appearanceSettingsVieModel.updatePreset(new)
                         },
                         valueText = {
                             when (it) {
@@ -1135,7 +1146,8 @@ fun UiSettings(
                             }
                         },
                         onValueSelected = {
-                            colorPaletteMode = it
+                            val new = appearanceSettings.copy(colorPaletteMode = it)
+                            appearanceSettingsVieModel.updatePreset(new)
                             //if (it == ColorPaletteMode.PitchBlack) colorPaletteName = ColorPaletteName.ModernBlack
                         },
                         valueText = {

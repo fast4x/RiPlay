@@ -1,10 +1,22 @@
 package it.fast4x.riplay.extensions.experimental.appearancepreset.models
 
 import it.fast4x.riplay.enums.AnimatedGradient
+import it.fast4x.riplay.enums.BackgroundProgress
 import it.fast4x.riplay.enums.CarouselSize
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.ColorPaletteName
 import it.fast4x.riplay.enums.IconLikeType
+import it.fast4x.riplay.enums.Languages
+import it.fast4x.riplay.enums.LyricsAlignment
+import it.fast4x.riplay.enums.LyricsBackground
+import it.fast4x.riplay.enums.LyricsColor
+import it.fast4x.riplay.enums.LyricsFontSize
+import it.fast4x.riplay.enums.LyricsHighlight
+import it.fast4x.riplay.enums.LyricsOutline
+import it.fast4x.riplay.enums.MiniPlayerType
+import it.fast4x.riplay.enums.NavigationBarPosition
+import it.fast4x.riplay.enums.NotificationButtons
+import it.fast4x.riplay.enums.PauseBetweenSongs
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PlayerControlsType
 import it.fast4x.riplay.enums.PlayerInfoType
@@ -14,11 +26,15 @@ import it.fast4x.riplay.enums.PlayerTimelineSize
 import it.fast4x.riplay.enums.PlayerTimelineType
 import it.fast4x.riplay.enums.PlayerType
 import it.fast4x.riplay.enums.PrevNextSongs
+import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.enums.QueueType
+import it.fast4x.riplay.enums.Romanization
 import it.fast4x.riplay.enums.SongsNumber
+import it.fast4x.riplay.enums.SwipeAnimationNoThumbnail
 import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ThumbnailType
+import it.fast4x.riplay.enums.WallpaperType
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -28,17 +44,18 @@ data class AppearanceSettings(
     val showTopActionsBar: Boolean             = true,
     val showThumbnail: Boolean                 = true,
     val playerBackgroundColors: PlayerBackgroundColors = PlayerBackgroundColors.BlurredCoverColor,
-    val blurStrength: Float                    = 50f,
+    val blurStrength: Float                    = 25f,
     val thumbnailRoundness: ThumbnailRoundness = ThumbnailRoundness.None,
     val thumbnailType: ThumbnailType = ThumbnailType.Modern,
-    val playerThumbnailSize: PlayerThumbnailSize = PlayerThumbnailSize.Big,
+    val playerThumbnailSize: PlayerThumbnailSize = PlayerThumbnailSize.Biggest,
+    val playerThumbnailSizeL: PlayerThumbnailSize = PlayerThumbnailSize.Biggest,
     val transparentBar: Boolean                = true,
     val bottomGradient: Boolean                = true,
     val expandedPlayer: Boolean                = true,
     val showLyricsThumbnail: Boolean           = false,
     val playerInfoType: PlayerInfoType = PlayerInfoType.Essential,
     val playerType: PlayerType = PlayerType.Essential,
-    val playerTimelineType: PlayerTimelineType = PlayerTimelineType.ThinBar,
+    val playerTimelineType: PlayerTimelineType = PlayerTimelineType.Default,
     val playerTimelineSize: PlayerTimelineSize = PlayerTimelineSize.Biggest,
     val playerControlsType: PlayerControlsType = PlayerControlsType.Essential,
     val playerPlayButtonType: PlayerPlayButtonType = PlayerPlayButtonType.Disabled,
@@ -97,16 +114,50 @@ data class AppearanceSettings(
     val thumbnailFadeEx: Float                 = 5f,
     val thumbnailFade: Float                   = 5f,
     val thumbnailSpacing: Float                = 0f,
+    val thumbnailSpacingL: Float               = 0f,
+    val imageCoverSize: Float                  = 50f,
+    val blurDarkenFactor: Float                = 0.5f,
     val blackgradient: Boolean                 = false,
     val textoutline: Boolean                   = false,
     val disablePlayerHorizontalSwipe: Boolean  = false,
     val showLikeButtonBackgroundPlayer: Boolean = true,
     val isShowingThumbnailInLockscreen: Boolean = true,
+    val lastPlayerPlayButtonType: PlayerPlayButtonType = PlayerPlayButtonType.Rectangular,
+    val disableScrollingText: Boolean           = false,
+    val seekWithTap: Boolean                   = false,
+    val thumbnailTapEnabled: Boolean            = true,
+    val navigationBarPosition: NavigationBarPosition = NavigationBarPosition.Bottom,
+    val isGradientBackgroundEnabled: Boolean   = false,
+    val backgroundProgress: BackgroundProgress = BackgroundProgress.MiniPlayer,
+    val clickLyricsText: Boolean               = true,
+    val miniPlayerType: MiniPlayerType = MiniPlayerType.Modern,
+    val playerEnableLyricsPopupMessage: Boolean = true,
+    val notificationPlayerFirstIcon: NotificationButtons = NotificationButtons.Repeat,
+    val notificationPlayerSecondIcon: NotificationButtons = NotificationButtons.Favorites,
+    val enableWallpaper: Boolean               = false,
+    val wallpaperType: WallpaperType           = WallpaperType.Lockscreen,
+    val swipeAnimationNoThumbnail: SwipeAnimationNoThumbnail     = SwipeAnimationNoThumbnail.Sliding,
+    val queueLoopType: QueueLoopType                 = QueueLoopType.Default,
+    val discoverIsEnabled: Boolean                 = false,
+    val playlistIndicator: Boolean                 = false,
+    val extraSpace: Boolean                        = false,
+    val jumpPrevious: String                          = "3",
+    val lyricsColor: LyricsColor                   = LyricsColor.Thememode,
+    val lyricsOutline: LyricsOutline                = LyricsOutline.None,
+    val lyricsBackground: LyricsBackground          = LyricsBackground.Black,
+    val lyricsFontSize: LyricsFontSize              = LyricsFontSize.Medium,
+    val lyricsHighlight: LyricsHighlight            = LyricsHighlight.None,
+    val lyricsAlignment: LyricsAlignment            = LyricsAlignment.Center,
+    val lyricsSizeAnimate: Boolean                  = false,
+    val lyricsSize: Float                           = 20f,
+    val lyricsSizeL: Float                          = 20f,
+    val romanization: Romanization                  = Romanization.Off,
+    val showSecondLine: Boolean                    = false,
+    val landscapeControls: Boolean                 = true,
+    val isShowingSynchronizedLyrics: Boolean       = false,
+    val isShowingSynchronizedWordByWordLyrics: Boolean = false,
 
-    // APP
-
-
-) {
+    ) {
     companion object {
 
         val Aura = AppearanceSettings(
