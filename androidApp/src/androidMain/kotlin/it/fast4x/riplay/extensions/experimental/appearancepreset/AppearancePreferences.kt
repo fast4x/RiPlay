@@ -88,19 +88,6 @@ import kotlinx.coroutines.flow.callbackFlow
 class AppearancePreferences(context: Context) {
     private val prefs = context.preferences
 
-    fun activePresetIdFlow(): Flow<String?> = callbackFlow {
-        trySend(prefs.getString(ACTIVE_APPEARANCE_PRESET_ID.key, null))
-
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == ACTIVE_APPEARANCE_PRESET_ID.key) {
-                trySend(prefs.getString("activePresetId", null))
-            }
-        }
-
-        prefs.registerOnSharedPreferenceChangeListener(listener)
-        awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
-    }
-
     fun applyFrom(settings: AppearanceSettings, presetId: String? = null) {
 
         prefs.edit {
