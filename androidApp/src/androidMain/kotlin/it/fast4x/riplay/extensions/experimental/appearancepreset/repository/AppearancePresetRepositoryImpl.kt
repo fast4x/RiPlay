@@ -19,10 +19,10 @@ import java.net.URL
 import androidx.core.net.toUri
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.extensions.experimental.appearancepreset.models.RemoteThemesResponse
-import it.fast4x.riplay.extensions.experimental.appearancepreset.utils.ThemeJson
 import it.fast4x.riplay.extensions.experimental.appearancepreset.utils.fromCurrentSettings
 import it.fast4x.riplay.extensions.experimental.appearancepreset.utils.toDomain
 import it.fast4x.riplay.extensions.experimental.appearancepreset.utils.toEntity
+import it.fast4x.riplay.utils.DbSettingsJson
 import it.fast4x.riplay.utils.appContext
 import kotlinx.coroutines.flow.map
 
@@ -108,7 +108,7 @@ class AppearancePresetRepositoryImpl(
             }
         }
 
-        val response = ThemeJson.decodeFromString<RemoteThemesResponse>(json)
+        val response = DbSettingsJson.decodeFromString<RemoteThemesResponse>(json)
 
         // SALVA NEL DATABASE i preset scaricati diventano entità persistenti.
         response.themes.forEach { dto ->
@@ -133,7 +133,7 @@ class AppearancePresetRepositoryImpl(
             val json = String(Base64.decode(encodedData, Base64.DEFAULT))
 
             // Deserializza e mappa al dominio
-            val dto = ThemeJson.decodeFromString<AppearancePresetDto>(json)
+            val dto = DbSettingsJson.decodeFromString<AppearancePresetDto>(json)
             // IMPORTANTE: Lo salviamo nel DB prima di restituirlo!
             val domainPreset = dto.toDomain()
             dao.insertPreset(domainPreset.toEntity())
@@ -147,7 +147,7 @@ class AppearancePresetRepositoryImpl(
             val dto = preset.toDto()
 
             // Serializza in JSON (con encodeDefaults=false sarà minuscolo!)
-            val json = ThemeJson.encodeToString(dto)
+            val json = DbSettingsJson.encodeToString(dto)
 
             // Codifica in Base64 URL-safe per non rompere i link
             val encoded = Base64.encodeToString(

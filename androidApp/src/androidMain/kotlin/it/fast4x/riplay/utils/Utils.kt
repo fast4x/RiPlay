@@ -23,6 +23,8 @@ import java.util.GregorianCalendar
 import java.util.Locale.getDefault
 import kotlin.time.Duration.Companion.minutes
 import androidx.compose.runtime.saveable.Saver
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
 
 
 const val EXPLICIT_BUNDLE_TAG = "is_explicit"
@@ -255,4 +257,23 @@ fun String.cleanWikipediaText(): String {
         .replace(Regex("\\s*From Wikipedia.*$"), "")
 
         .trim()
+}
+
+@OptIn(ExperimentalSerializationApi::class)
+val DbSettingsJson = Json {
+    // Fondamentale: se deserializzo un JSON vecchio che non ha i campi nuovi,
+    // non crasha, ma usa i valori di default del costruttore Kotlin.
+    ignoreUnknownKeys = true
+
+    // Magia pura: se un campo nel JSON corrisponde esattamente al valore
+    // di default nella data class, NON lo scrive nel file JSON.
+    // Questo ridurrà il JSON del preset "Zen" a poche decine di righe.
+    encodeDefaults = false
+
+    // Opzionale: utile per il debug e per file leggibili dagli utenti
+    prettyPrint = true
+
+    // Coerenza dei nomi (se hai usato camelCase in Kotlin,
+    // lo mantiene in JSON invece di convertire in snake_case)
+    namingStrategy = null
 }

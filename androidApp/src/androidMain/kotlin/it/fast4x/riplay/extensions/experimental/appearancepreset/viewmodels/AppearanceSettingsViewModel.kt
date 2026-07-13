@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearancePreset
 import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearanceSettings
-import it.fast4x.riplay.extensions.experimental.appearancepreset.utils.ThemeJson
+import it.fast4x.riplay.utils.DbSettingsJson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -49,7 +49,7 @@ class AppearanceSettingsViewModel(application: Application) : AndroidViewModel(a
 
                 val entity = daoAppearance.getPresetById(id)
                 if (entity != null) {
-                    val settings = ThemeJson.decodeFromString<AppearanceSettings>(entity.settingsJson)
+                    val settings = DbSettingsJson.decodeFromString<AppearanceSettings>(entity.settingsJson)
                     Timber.d("AppearanceSettingsViewModel init: Successfully loaded settings for $id")
                     _activeSettings.value = settings
                 } else {
@@ -75,7 +75,7 @@ class AppearanceSettingsViewModel(application: Application) : AndroidViewModel(a
             val currentId = _activeId.value
             Timber.d("updatePreset: Saving settings for -> $currentId")
 
-            daoAppearance.updatePresetSettings(currentId, ThemeJson.encodeToString(settings))
+            daoAppearance.updatePresetSettings(currentId, DbSettingsJson.encodeToString(settings))
             _activeSettings.value = settings
         }
     }

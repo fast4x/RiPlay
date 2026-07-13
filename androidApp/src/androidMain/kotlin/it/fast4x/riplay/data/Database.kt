@@ -89,7 +89,6 @@ import it.fast4x.riplay.data.models.UserKeywordAffinity
 import it.fast4x.riplay.enums.AlbumNature
 import it.fast4x.riplay.enums.ArtistNature
 import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearanceSettings
-import it.fast4x.riplay.extensions.experimental.appearancepreset.utils.ThemeJson
 import it.fast4x.riplay.extensions.musicbrainz.models.ExternalLink
 import it.fast4x.riplay.musicvault.MusicVaultState
 import it.fast4x.riplay.extensions.rewind.data.AlbumMostListened
@@ -100,6 +99,7 @@ import it.fast4x.riplay.extensions.rewind.data.PlaylistMostListened
 import it.fast4x.riplay.extensions.rewind.data.PlaylistsListenedCount
 import it.fast4x.riplay.extensions.rewind.data.SongMostListened
 import it.fast4x.riplay.extensions.rewind.data.SongsListenedCount
+import it.fast4x.riplay.utils.DbSettingsJson
 import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.isExplicit
@@ -4439,14 +4439,14 @@ object Converters {
     @TypeConverter
     fun fromSettingsToString(settings: AppearanceSettings): String {
         // Usiamo il custom serializer che ignora i default!
-        return ThemeJson.encodeToString(settings)
+        return DbSettingsJson.encodeToString(settings)
     }
 
     @TypeConverter
     fun fromStringToSettings(json: String): AppearanceSettings {
         // Deserializza in modo sicuro. Se il JSON è vecchio e mancante di campi,
         // usa i default di Kotlin. Zero crash.
-        return ThemeJson.decodeFromString(json)
+        return DbSettingsJson.decodeFromString(json)
     }
 
 }
