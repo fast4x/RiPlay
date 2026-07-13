@@ -3627,7 +3627,7 @@ interface Database {
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 61,
+    version = 62,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -3714,6 +3714,7 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
                 From58To59Migration(),
                 From59To60Migration(),
                 From60To61Migration(),
+                From61To62Migration()
             )
             //.fallbackToDestructiveMigration(false)
             .addCallback(object : Callback() {
@@ -4294,6 +4295,16 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
 
             } catch (e: Exception) {
                 println("Database From60To61Migration error ${e.stackTraceToString()}")
+            }
+        }
+    }
+
+    class From61To62Migration : Migration(61, 62) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            try {
+                db.execSQL("ALTER TABLE app_settings ADD COLUMN settingsJson TEXT NOT NULL DEFAULT '{}'")
+            } catch (e: Exception) {
+                println("Database From61To62Migration error ${e.stackTraceToString()}")
             }
         }
     }
