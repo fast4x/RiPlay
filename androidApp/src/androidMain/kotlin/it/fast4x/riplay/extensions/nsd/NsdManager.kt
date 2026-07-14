@@ -119,13 +119,23 @@ fun discoverNsdServices(
         }
 
         override fun onStartDiscoveryFailed(serviceType: String, errorCode: Int) {
+            // Discovery never started, so this listener was never registered.
+            // Calling stopServiceDiscovery(this) here throws
+            // IllegalArgumentException: listener not registered and crashes the
+            // app (e.g. when resumed from the notification bar with mDNS
+            // unavailable). Only log, matching Google's NsdChat sample.
             Timber.e("NsdManager.discoveryListener Discovery failed: Error code:$errorCode")
-            nsdManager.stopServiceDiscovery(this)
         }
 
         override fun onStopDiscoveryFailed(serviceType: String, errorCode: Int) {
             Timber.e("NsdManager.discoveryListener Discovery failed: Error code:$errorCode")
-            nsdManager.stopServiceDiscovery(this)
+            // Guard against IllegalArgumentException if the listener is not
+            // (or no longer) registered, rather than propagating the crash.
+            try {
+                nsdManager.stopServiceDiscovery(this)
+            } catch (e: IllegalArgumentException) {
+                Timber.e("NsdManager.discoveryListener stopServiceDiscovery failed: ${e.localizedMessage}")
+            }
         }
     }
 
