@@ -161,6 +161,7 @@ import dev.chrisbanes.haze.hazeChild
 import dev.chrisbanes.haze.hazeEffect
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.NavigationEndpoint
+import it.fast4x.riplay.LocalAppSettings
 import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalPlayerServiceState
@@ -317,6 +318,9 @@ fun UnifiedPlayer(
 
     val appearanceSettingsVieModel = LocalAppearanceSettings.current
     val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
+    val appSettingsVieModel = LocalAppSettings.current
+    val appSettings = appSettingsVieModel.activeSettings.collectAsState().value
 
     val menuState = LocalGlobalSheetState.current
 
@@ -499,7 +503,7 @@ fun UnifiedPlayer(
 
 
     //var queueLoopType by rememberPreference(QUEUE_LOOP_TYPE.key, defaultValue = QueueLoopType.Default)
-    val queueLoopType = appearanceSettings.queueLoopType
+    val queueLoopType = appSettings.queueLoopType
 
     binder.player.DisposableListener {
         object : Player.Listener {
@@ -513,12 +517,12 @@ fun UnifiedPlayer(
             }
 
             override fun onRepeatModeChanged(repeatMode: Int) {
-                val new = appearanceSettings.copy(queueLoopType = when (repeatMode) {
+                val new = appSettings.copy(queueLoopType = when (repeatMode) {
                     Player.REPEAT_MODE_ONE -> QueueLoopType.RepeatOne
                     Player.REPEAT_MODE_ALL -> QueueLoopType.RepeatAll
                     else -> QueueLoopType.Default
                 })
-                appearanceSettingsVieModel.updatePreset(new)
+                appSettingsVieModel.updateSettings(new)
                 super.onRepeatModeChanged(repeatMode)
             }
 
@@ -1040,7 +1044,7 @@ fun UnifiedPlayer(
     //val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
     val disableScrollingText = appearanceSettings.disableScrollingText
     //var discoverIsEnabled by rememberPreference(DISCOVER.key, false)
-    val discoverIsEnabled = appearanceSettings.discoverIsEnabled
+    val discoverIsEnabled = appSettings.discoverIsEnabled
     //val titleExpanded by rememberPreference(TITLE_EXPANDED.key, true)
     val titleExpanded = appearanceSettings.titleExpanded
     //val timelineExpanded by rememberPreference(TIMELINE_EXPANDED.key, true)
@@ -1768,8 +1772,8 @@ fun UnifiedPlayer(
                             if (showButtonPlayerDiscover) IconButton(
                                 icon = R.drawable.star_brilliant, color = if (discoverIsEnabled) colorPalette().text else colorPalette().textDisabled,
                                 onClick = {
-                                    val new = appearanceSettings.copy(discoverIsEnabled = !discoverIsEnabled)
-                                    appearanceSettingsVieModel.updatePreset(new)
+                                    val new = appSettings.copy(discoverIsEnabled = !discoverIsEnabled)
+                                    appSettingsVieModel.updateSettings(new)
                                 },
                                 onLongClick = { SmartMessage(context.resources.getString(R.string.discoverinfo), context = context) },
                                 modifier = Modifier.size(28.dp)
@@ -1800,8 +1804,8 @@ fun UnifiedPlayer(
 
                             if (showButtonPlayerLoop) IconButton(icon = getIconQueueLoopState(queueLoopType), color = colorPalette().accent,
                                 onClick = {
-                                    val new = appearanceSettings.copy(queueLoopType = setQueueLoopState(queueLoopType))
-                                    appearanceSettingsVieModel.updatePreset(new)
+                                    val new = appSettings.copy(queueLoopType = setQueueLoopState(queueLoopType))
+                                    appSettingsVieModel.updateSettings(new)
                                 },
                                 modifier = Modifier.size(24.dp))
 
@@ -3905,13 +3909,13 @@ fun UnifiedPlayer(
                 showPlayer = {},
                 hidePlayer = {},
                 onDismiss = {
-                    val new = appearanceSettings.copy(queueLoopType = it)
-                    appearanceSettingsVieModel.updatePreset(new)
+                    val new = appSettings.copy(queueLoopType = it)
+                    appSettingsVieModel.updateSettings(new)
                     showQueue = false
                 },
                 onDiscoverClick = {
-                    val new = appearanceSettings.copy(discoverIsEnabled = it)
-                    appearanceSettingsVieModel.updatePreset(new)
+                    val new = appSettings.copy(discoverIsEnabled = it)
+                    appSettingsVieModel.updateSettings(new)
                 }
             )
         }

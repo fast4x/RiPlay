@@ -278,7 +278,7 @@ import java.io.ByteArrayOutputStream
 class PlayerService : Service(),
     Player.Listener,
     PlaybackStatsListener.Callback,
-    SharedPreferences.OnSharedPreferenceChangeListener,
+    //SharedPreferences.OnSharedPreferenceChangeListener,
     OnAudioVolumeChangedListener
 {
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -449,8 +449,6 @@ class PlayerService : Service(),
     val songEnricher: SongEnricherService = SongEnricherService()
     val relatedItemsService: RelatedItemsService = RelatedItemsService()
 
-    val appSettings: AppSettingsManager = AppSettingsManager()
-
     override fun onBind(intent: Intent?): AndroidBinder {
         return binder
     }
@@ -468,12 +466,12 @@ class PlayerService : Service(),
 
         //connectivityManager = getSystemService()
 
-        // INITIALIZATION
-        serviceScope.launch{
-            appSettings.initialize()
+        // Inizializza app settings prima di tutto
+        runBlocking(Dispatchers.IO) {
+            AppSettingsManager().initialize()
         }
 
-        preferences.registerOnSharedPreferenceChangeListener(this)
+        //preferences.registerOnSharedPreferenceChangeListener(this)
 
         initializeLocalPlayer()
         initializeVariables()
@@ -635,7 +633,8 @@ class PlayerService : Service(),
                     }
                     //fallback if online player not fire state ended
                     //updateOnlineNearEndTicks() Experimental aternative whatchdog for end time
-                    if (_currentDuration.value > 0 && preferences.getEnum(QUEUE_LOOP_TYPE.key, QueueLoopType.Default) == QueueLoopType.Default) {
+                    if (_currentDuration.value > 0
+                        && AppSettingsManager().current.queueLoopType == QueueLoopType.Default) {
                         if (_currentSecond.value >= _currentDuration.value - 0.5f) {
                             if (_playerState.value.isPlaying) {
                                 Timber.d("PlayerService Watchdog: End of online track detected by time, forcing playNext()")
@@ -733,17 +732,17 @@ class PlayerService : Service(),
 
     private fun initializeVariables() {
 
-        isPersistentQueueEnabled = preferences.getBoolean(PERSISTENT_QUEUE.key, true)
-        isResumePlaybackOnStart = preferences.getBoolean(RESUME_PLAYBACK_ON_START.key, false)
+        isPersistentQueueEnabled = AppSettingsManager().current.persistentQueue
+        isResumePlaybackOnStart = AppSettingsManager().current.resumePlaybackOnStart
         isShowingThumbnailInLockscreen =
-            preferences.getBoolean(IS_SHOWING_THUMBNAIL_IN_LOCKSCREEN.key, false)
-        medleyDuration = preferences.getFloat(PLAYBACK_DURATION.key, 0f)
+            AppSettingsManager().current.isShowingThumbnailInLockscreen
+
+        medleyDuration = AppSettingsManager().current.playbackDuration
 
         currentMediaItemState.value = player.currentMediaItem
-        audioQualityFormat = preferences.getEnum(AUDIO_QUALITY_FORMAT.key, AudioQualityFormat.Auto)
-        //isclosebackgroundPlayerEnabled = preferences.getBoolean(closebackgroundPlayerKey.key, false)
-        closeServiceAfterMinutes =
-            preferences.getEnum(CLOSE_PLAYER_SERVICE_AFTER_MINUTES.key, DurationInMinutes.Disabled)
+        audioQualityFormat = AppSettingsManager().current.audioQualityFormat
+
+        closeServiceAfterMinutes = AppSettingsManager().current.closeBackgroundPlayerAfterMinutes
 
 //        closeServiceWhenPlayerPausedAfterMinutes = preferences.getEnum(
 //            closePlayerServiceWhenPausedAfterMinutesKey.key, DurationInMinutes.Disabled
@@ -761,7 +760,7 @@ class PlayerService : Service(),
     private fun initializePlaybackParameters() {
         when (localMediaItem?.isLocal) {
             false -> {
-                val playbackSpeed = preferences.getFloat(PLAYBACK_SPEED.key, 1f)
+                val playbackSpeed = AppSettingsManager().current.playbackSpeed
                 val onlinePlabackRate = when {
                     (playbackSpeed.toDouble() in 0.0..0.25) -> PlayerConstants.PlaybackRate.RATE_0_25
                     (playbackSpeed.toDouble() in 0.26..0.5) -> PlayerConstants.PlaybackRate.RATE_0_5
@@ -778,8 +777,8 @@ class PlayerService : Service(),
 
             else -> {
                 player.playbackParameters = PlaybackParameters(
-                    preferences.getFloat(PLAYBACK_SPEED.key, 1f),
-                    preferences.getFloat(PLAYBACK_PITCH.key, 1f)
+                    AppSettingsManager().current.playbackSpeed,
+                    AppSettingsManager().current.playbackPitch
                 )
             }
         }
@@ -806,7 +805,7 @@ class PlayerService : Service(),
 
         riTuneObserverJob?.cancel()
 
-        val isRiTuneEnabled = preferences.getEnum(CAST_TYPE.key, CastType.RITUNECAST) == CastType.RITUNECAST
+        val isRiTuneEnabled = AppSettingsManager().current.castType == CastType.RITUNECAST
         if (!isRiTuneEnabled) return
         //if (!isRiTuneEnabled || riTuneClient.connectionStatus.value != RiTuneConnectionStatus.Connected) return
         //Timber.d("PlayerService initializeRiTune isRituneEnabled $isRiTuneEnabled")
@@ -925,8 +924,8 @@ class PlayerService : Service(),
     private fun initializeDiscordPresence() {
         if (!isAtLeastAndroid81) return
 
-        if (preferences.getBoolean(IS_DISCORD_PRESENCE_ENABLED.key, false)) {
-            val token = encryptedPreferences.getString(DISCORD_PERSONAL_ACCESS_TOKEN.key, "")
+        if (AppSettingsManager().current.isDiscordPresenceEnabled) {
+            val token = AppSettingsManager().current.discordPersonalAccessToken
             //Timber.d("PlayerService initializeDiscordPresence token $token")
             if (token?.isNotEmpty() == true) {
                 discordPresenceManager = DiscordPresenceManager(
@@ -938,7 +937,7 @@ class PlayerService : Service(),
     }
 
     private fun initializeSensorListener() {
-        if (preferences.getBoolean(SHAKE_EVENT_ENABLED.key, false)) {
+        if (AppSettingsManager().current.shakeEventEnabled) {
             sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
             Objects.requireNonNull(sensorManager)
                 ?.registerListener(
@@ -953,7 +952,7 @@ class PlayerService : Service(),
     private val sensorListener: SensorEventListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent) {
 
-            if (preferences.getBoolean(SHAKE_EVENT_ENABLED.key, false)) {
+            if (AppSettingsManager().current.shakeEventEnabled) {
                 // Fetching x,y,z values
                 val x = event.values[0]
                 val y = event.values[1]
@@ -1025,7 +1024,7 @@ class PlayerService : Service(),
 
         unifiedMediaSession = MediaSessionCompat(this, "PlayerService")
 
-        val repeatMode = preferences.getEnum(QUEUE_LOOP_TYPE.key, QueueLoopType.Default).type
+        val repeatMode = AppSettingsManager().current.queueLoopType.type
 
         unifiedMediaSession.setFlags(
             MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
@@ -1033,7 +1032,7 @@ class PlayerService : Service(),
         )
         unifiedMediaSession.setRepeatMode(repeatMode)
 
-        if (preferences.getBoolean(USE_VOLUME_KEYS_TO_CHANGE_SONG.key, false))
+        if (AppSettingsManager().current.useVolumeKeysToChangeSong)
             unifiedMediaSession.setPlaybackToRemote(getVolumeProvider())
 
         initializeUnifiedSessionCallback()
@@ -1085,9 +1084,9 @@ class PlayerService : Service(),
                 addAnalyticsListener(PlaybackStatsListener(false, this@PlayerService))
             }
 
-        player.repeatMode = preferences.getEnum(QUEUE_LOOP_TYPE.key, QueueLoopType.Default).type
+        player.repeatMode = AppSettingsManager().current.queueLoopType.type
 
-        player.skipSilenceEnabled = preferences.getBoolean(SKIP_SILENCE.key, false)
+        player.skipSilenceEnabled = AppSettingsManager().current.skipSilenceEnabled
         player.pauseAtEndOfMediaItems = true
     }
 
@@ -1155,8 +1154,13 @@ class PlayerService : Service(),
 
                 _currentDuration.value = duration
 
-                preferences.edit { putFloat(STATE_DURATION.key, duration) }
-                preferences.edit { putString(STATE_MEDIA_ID.key, localMediaItem?.mediaId) }
+                val new = AppSettingsManager().current.copy(
+                    stateDuration = duration,
+                    stateMediaId = localMediaItem?.mediaId ?: ""
+                )
+                serviceScope.launch {
+                    AppSettingsManager().updateSettings(new)
+                }
 
                 updateUnifiedNotification()
                 updateDiscordPresence()
@@ -1385,7 +1389,8 @@ class PlayerService : Service(),
         }
 
         //This initilize chromecast if available (available only on full build variant)
-        if (CastHelper.isCastAvailable && preferences.getEnum(CAST_TYPE.key, CastType.RITUNECAST) !in listOf(CastType.NONE, CastType.RITUNECAST)) {
+        if (CastHelper.isCastAvailable
+            && AppSettingsManager().current.castType !in listOf(CastType.NONE, CastType.RITUNECAST)) {
             serviceScope.launch {
                 CastHelper.initChromecastYouTubePlayerContext(this@PlayerService)
                 while (isActive) {
@@ -1522,7 +1527,7 @@ class PlayerService : Service(),
             VolumeProviderCompat(VOLUME_CONTROL_RELATIVE, maxVolume, currentVolume) {
 
                 override fun onAdjustVolume(direction: Int) {
-                        val useVolumeKeysToChangeSong = preferences.getBoolean(USE_VOLUME_KEYS_TO_CHANGE_SONG.key, false)
+                        val useVolumeKeysToChangeSong = AppSettingsManager().current.useVolumeKeysToChangeSong
                         // Up = 1, Down = -1, Release = 0
                         if (direction == VOLUME_UP) {
                             if (binder.player.isPlaying && useVolumeKeysToChangeSong) {
@@ -1619,7 +1624,7 @@ class PlayerService : Service(),
 
         runCatching {
 
-            preferences.unregisterOnSharedPreferenceChangeListener(this)
+            //preferences.unregisterOnSharedPreferenceChangeListener(this)
 
             cache.release()
             loudnessEnhancer?.release()
@@ -1686,7 +1691,7 @@ private fun updateOnlineNearEndTicks() {
 
     val shouldTrackNearEnd =
         localMediaItem?.isLocal == false &&
-        preferences.getEnum(QUEUE_LOOP_TYPE.key, QueueLoopType.Default) == QueueLoopType.Default &&
+                AppSettingsManager().current.queueLoopType == QueueLoopType.Default &&
         _playerState.value.isPlaying &&
         _currentDuration.value > 0f &&
         _currentSecond.value >= (_currentDuration.value - 0.5f)
@@ -1706,7 +1711,7 @@ private fun updateOnlineNearEndTicks() {
 
 private var pausedByZeroVolume = false
     override fun onAudioVolumeChanged(currentVolume: Int, maxVolume: Int) {
-        if (preferences.getBoolean(IS_PAUSE_ON_VOLUME_ZERO_ENABLED.key, false)) {
+        if (AppSettingsManager().current.isPauseOnVolumeZeroEnabled) {
             if ((player.isPlaying || _playerState.value.isPlaying) && currentVolume < 1) {
                 if (player.currentMediaItem?.isLocal == true) {
                     binder.callPause {}
@@ -1762,7 +1767,7 @@ private var pausedByZeroVolume = false
 
         Timber.d("PlayerService onPlaybackStatsReady CALLED eventTime $eventTime playbackStats $playbackStats")
 
-        if (preferences.getBoolean(PAUSE_LISTEN_HISTORY.key, false)) return
+        if (AppSettingsManager().current.isPauseListenHistoryEnabled) return
 
         val mediaItem =
             eventTime.timeline.getWindow(eventTime.windowIndex, Timeline.Window()).mediaItem
@@ -1781,8 +1786,7 @@ private var pausedByZeroVolume = false
         }
 
 
-        val minTimeForEvent =
-            preferences.getEnum(EXO_PLAYER_MIN_TIME_FOR_EVENT.key, MinTimeForEvent.`20s`)
+        val minTimeForEvent = AppSettingsManager().current.minTimeForEvent
 
         if (totalPlayTimeMs > minTimeForEvent.ms) {
             Timber.d("PlayerService onPlaybackStatsReady INSERT EVENT totalPlayTimeMs $totalPlayTimeMs")
@@ -1961,9 +1965,9 @@ private var pausedByZeroVolume = false
 
         serviceScope.launch { saveQueue() }
 
-        if (preferences.getBoolean(IS_ENABLED_LASTFM.key, false)) {
-            preferences.getString(LASTFM_SESSION_TOKEN.key, "")?.let {
-                when (preferences.getEnum(LASTFM_SCRUBBLE_TYPE.key, LastFmScrobbleType.Simple)) {
+        if (AppSettingsManager().current.isEnabledLastFM) {
+            AppSettingsManager().current.lastFMSessionToken.let {
+                when (AppSettingsManager().current.lastFmScrobbleType) {
                     LastFmScrobbleType.Simple -> {
                         sendScrobble(
                             mediaItem.mediaMetadata.artist.toString(),
@@ -2112,11 +2116,8 @@ private var pausedByZeroVolume = false
     }
 
     private fun maybeProcessRadio(reason: Int) {
-        if (!preferences.getBoolean(AUTO_LOAD_SONGS_IN_QUEUE.key, true)
-            || preferences.getEnum(
-                QUEUE_LOOP_TYPE.key,
-                defaultValue = QueueLoopType.Default
-            ) == QueueLoopType.RepeatAll
+        if (!AppSettingsManager().current.autoLoadSongsInQueue
+            || AppSettingsManager().current.queueLoopType == QueueLoopType.RepeatAll
         ) return
 
         if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT &&
@@ -2143,7 +2144,7 @@ private var pausedByZeroVolume = false
     @ExperimentalCoroutinesApi
     @UnstableApi
     private fun initializeNormalizeVolume() {
-        if (!preferences.getBoolean(VOLUME_NORMALIZATION.key, false)) {
+        if (!AppSettingsManager().current.volumeNormalizationEnabled) {
             loudnessEnhancer?.enabled = false
             loudnessEnhancer?.release()
             loudnessEnhancer = null
@@ -2160,8 +2161,8 @@ private var pausedByZeroVolume = false
         loudnessEnhancer = null
         loudnessEnhancer = LoudnessEnhancer(0)
 
-        val baseGain = preferences.getFloat(LOUDNESS_BASE_GAIN.key, 5.00f)
-        val boostLevel = preferences.getFloat(VOLUME_BOOST_LEVEL.key, 0.00f)
+        val baseGain = AppSettingsManager().current.loudnessBaseGain
+        val boostLevel = AppSettingsManager().current.volumeBoostLevel
 
         if (currentSong.value?.isLocal == true && currentSong.value?.mediaId?.isEmpty() == true) return
 
@@ -2192,7 +2193,7 @@ private var pausedByZeroVolume = false
     }
 
     private fun initializeAudioDRCHelper() {
-       val disable = preferences.getBoolean(DISABLE_AUDIO_DRC.key, false)
+       val disable = AppSettingsManager().current.disableAudioDrc
 
         AudioDRCHelper.init(this)
         if (disable) AudioDRCHelper.disableDRC()
@@ -2227,8 +2228,8 @@ private var pausedByZeroVolume = false
     private fun initializeAudioDeviceCallback() {
         if (!isAtLeastAndroid6) return
 
-        val resumeOnBt = preferences.getBoolean(RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_BT.key, false)
-        val resumeOnWired = preferences.getBoolean(PreferenceKey.RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_WIRED.key, false)
+        val resumeOnBt = AppSettingsManager().current.resumeOrPausePlaybackWhenDeviceBt
+        val resumeOnWired = AppSettingsManager().current.resumeOrPausePlaybackWhenDeviceWired
 
         // Se l'utente ha disabilitato entrambe, rimuovo il callback e risparmiiamo risorse
         if (!resumeOnBt && !resumeOnWired) {
@@ -2392,8 +2393,8 @@ private var pausedByZeroVolume = false
                     PlaybackStateCompat.ACTION_SEEK_TO or
                     PlaybackStateCompat.ACTION_SKIP_TO_QUEUE_ITEM
 
-        val notificationPlayerFirstIcon = preferences.getEnum(NOTIFICATION_PLAYER_FIRST_ICON.key, NotificationButtons.Repeat)
-        val notificationPlayerSecondIcon = preferences.getEnum(NOTIFICATION_PLAYER_SECOND_ICON.key, NotificationButtons.Favorites)
+        val notificationPlayerFirstIcon = AppSettingsManager().current.notificationPlayerFirstIcon
+        val notificationPlayerSecondIcon = AppSettingsManager().current.notificationPlayerSecondIcon
 
         val firstCustomAction = NotificationButtons.entries
             .filter { it == notificationPlayerFirstIcon }
@@ -2636,8 +2637,8 @@ private var pausedByZeroVolume = false
          */
 
         isPlayingNow = isPlaying
-        val fadeDisabled = preferences.getEnum(PLAYBACK_FADE_AUDIO_DURATION.key, DurationInMilliseconds.Disabled) == DurationInMilliseconds.Disabled
-        val duration = preferences.getEnum(PLAYBACK_FADE_AUDIO_DURATION.key, DurationInMilliseconds.Disabled).milliSeconds
+        val fadeDisabled = AppSettingsManager().current.playbackFadeAudioDuration == DurationInMilliseconds.Disabled
+        val duration = AppSettingsManager().current.playbackFadeAudioDuration.milliSeconds
         if (isPlayingNow && !fadeDisabled)
             startFadeAnimator(
                 player = binder.player,
@@ -2657,6 +2658,7 @@ private var pausedByZeroVolume = false
         super.onIsPlayingChanged(isPlaying)
     }
 
+    /*
     @ExperimentalCoroutinesApi
     @UnstableApi
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
@@ -2720,9 +2722,11 @@ private var pausedByZeroVolume = false
         }
     }
 
+     */
+
     @ExperimentalCoroutinesApi
     private fun initializeBassBoost() {
-        if (!preferences.getBoolean(BASSBOOST_ENABLED.key, false)) {
+        if (!AppSettingsManager().current.bassBoostEnabled) {
             runCatching {
                 bassBoost?.enabled = false
                 bassBoost?.release()
@@ -2735,7 +2739,7 @@ private var pausedByZeroVolume = false
         runCatching {
             if (bassBoost == null) bassBoost = BassBoost(0, 0)
             val bassboostLevel =
-                (preferences.getFloat(BASSBOOST_LEVEL.key, 0.5f) * 1000f).toInt().toShort()
+                ((AppSettingsManager().current.bassBoostLevel) * 1000f).toInt().toShort()
             Timber.d("PlayerService processBassBoost bassboostLevel $bassboostLevel")
             bassBoost?.enabled = false
             bassBoost?.setStrength(bassboostLevel)
@@ -2749,7 +2753,7 @@ private var pausedByZeroVolume = false
     }
 
     private fun initializeReverb() {
-        val presetType = preferences.getEnum(AUDIO_REVERB_PRESET.key, PresetsReverb.NONE)
+        val presetType = AppSettingsManager().current.audioReverbPreset
         Timber.d("PlayerService processReverb presetType $presetType")
         if (presetType == PresetsReverb.NONE) {
             runCatching {
@@ -2801,8 +2805,8 @@ private var pausedByZeroVolume = false
         ).build()
 
 
-        val notificationPlayerFirstIcon = preferences.getEnum(NOTIFICATION_PLAYER_FIRST_ICON.key, NotificationButtons.Repeat)
-        val notificationPlayerSecondIcon = preferences.getEnum(NOTIFICATION_PLAYER_SECOND_ICON.key, NotificationButtons.Favorites)
+        val notificationPlayerFirstIcon = AppSettingsManager().current.notificationPlayerFirstIcon
+        val notificationPlayerSecondIcon = AppSettingsManager().current.notificationPlayerSecondIcon
 
         val firstCustomAction = NotificationButtons.entries
             .filter { it == notificationPlayerFirstIcon }
@@ -2969,9 +2973,8 @@ private var pausedByZeroVolume = false
             enableFloatOutput: Boolean,
             enableAudioTrackPlaybackParams: Boolean
         ): AudioSink {
-            val minimumSilenceDuration = preferences.getLong(
-                MINIMUM_SILENCE_DURATION.key, 2_000_000L
-            ).coerceIn(1000L..2_000_000L)
+            val minimumSilenceDuration = (AppSettingsManager().current.minimumSilenceDuration)
+                .coerceIn(1000L..2_000_000L)
 
             return DefaultAudioSink.Builder(applicationContext)
                 .setEnableFloatOutput(enableFloatOutput)
@@ -3074,7 +3077,7 @@ private var pausedByZeroVolume = false
     @ExperimentalCoroutinesApi
     private fun incrementOnlineListenedPlaytimeMs() {
         if (currentSong.value?.isLocal == true
-                || preferences.getBoolean(PAUSE_LISTEN_HISTORY.key, false)
+                || AppSettingsManager().current.isPauseListenHistoryEnabled
         ) return
 
         currentSong.value?.id?.let { mediaId ->
@@ -3085,8 +3088,7 @@ private var pausedByZeroVolume = false
                 }
             }
 
-            val minTimeForEvent =
-                preferences.getEnum(EXO_PLAYER_MIN_TIME_FOR_EVENT.key, MinTimeForEvent.`20s`)
+            val minTimeForEvent = AppSettingsManager().current.minTimeForEvent
 
             if (_currentSecond.value > minTimeForEvent.seconds) {
                 Timber.d("PlayerService incrementOnlineListenedPlaytimeMs INSERT EVENT totalPlayTimeMs $onlineListenedDurationMs")
@@ -3132,10 +3134,7 @@ private var pausedByZeroVolume = false
                     && lastProcessedIndex != player.currentMediaItemIndex
                 ) {
 
-                    val queueLoopType = preferences.getEnum(
-                        QUEUE_LOOP_TYPE.key,
-                        defaultValue = QueueLoopType.Default
-                    )
+                    val queueLoopType = AppSettingsManager().current.queueLoopType
 
                     when (queueLoopType) {
                         QueueLoopType.RepeatOne -> {
@@ -3180,9 +3179,9 @@ private var pausedByZeroVolume = false
     suspend fun setWallpaper(context: Context, bitmap: Bitmap) {
         if (!isAtLeastAndroid7) return
 
-        val enabled = preferences.getBoolean(ENABLE_WALLPAPER.key, false)
+        val enabled = AppSettingsManager().current.enableWallpaper
         if (!enabled) return
-        val wallpaperTarget = preferences.getEnum(WALLPAPER_TYPE.key, WallpaperType.Lockscreen)
+        val wallpaperTarget = AppSettingsManager().current.wallpaperType
 
         serviceScope.launch {
             val wallpaperManager = WallpaperManager.getInstance(context) ?: return@launch
@@ -3211,7 +3210,7 @@ private var pausedByZeroVolume = false
     }
 
     private fun checkAndRestoreTimer() {
-        val savedEndTime = preferences.getLong(TIMER_END_TIME.key, 0)
+        val savedEndTime = AppSettingsManager().current.timerEndTime
 
         if (savedEndTime != 0L) {
             val currentTime = System.currentTimeMillis()
@@ -3373,11 +3372,11 @@ private var pausedByZeroVolume = false
 
                 if (!queuedSong.mediaItem.isLocal) {
                     val duration = try {
-                        preferences.getFloat(STATE_DURATION.key, 0f)
+                        AppSettingsManager().current.stateDuration
                     } catch (e: Exception) {
                         0f
                     }
-                    val mId = preferences.getString(STATE_MEDIA_ID.key, null)
+                    val mId = AppSettingsManager().current.stateMediaId
                     playFromSecond = position.toFloat()
                     _currentSecond.value = playFromSecond
                     _currentDuration.value = if (queuedSong.mediaId == mId) duration else 0f
@@ -3523,7 +3522,10 @@ private var pausedByZeroVolume = false
             timerJob?.cancel()
 
             val endTime = System.currentTimeMillis() + delayMillis
-            preferences.edit { putLong(TIMER_END_TIME.key, endTime) }
+            val new = AppSettingsManager().current.copy(timerEndTime = endTime)
+            serviceScope.launch {
+                AppSettingsManager().updateSettings(new)
+            }
 
             Timber.d("PlayerService startSleepTimer delayMillis $delayMillis, scheduled for $endTime")
 
@@ -3534,7 +3536,10 @@ private var pausedByZeroVolume = false
         }
 
         fun executeStopServiceLogic() {
-            preferences.edit { putLong(TIMER_END_TIME.key, 0) }
+            val new = AppSettingsManager().current.copy(timerEndTime = 0)
+            serviceScope.launch {
+                AppSettingsManager().updateSettings(new)
+            }
 
             serviceScope.launch { saveQueue() }
 
@@ -3577,9 +3582,8 @@ private var pausedByZeroVolume = false
         private fun startRadio(endpoint: NavigationEndpoint.Endpoint.Watch?, justAdd: Boolean, filterArtist: String = "") {
             radioJob?.cancel()
             radio = null
-            val isDiscoverEnabled = applicationContext.preferences.getBoolean(DISCOVER.key, false)
-            val filterContentType = applicationContext.preferences.getEnum(FILTER_CONTENT_TYPE.key,
-                ContentType.All)
+            val isDiscoverEnabled = AppSettingsManager().current.discoverIsEnabled
+            val filterContentType = AppSettingsManager().current.filterContentType
 
             OnlineRadio(
                 endpoint?.videoId,
@@ -3672,13 +3676,16 @@ private var pausedByZeroVolume = false
         }
 
         fun toggleRepeat() {
-            val queueLoopType = preferences.getEnum(QUEUE_LOOP_TYPE.key, defaultValue = QueueLoopType.Default)
-            preferences.edit { putEnum(QUEUE_LOOP_TYPE.key, setQueueLoopState(queueLoopType)) }
+            val queueLoopType = AppSettingsManager().current.queueLoopType
+            val new = AppSettingsManager().current.copy(queueLoopType = setQueueLoopState(queueLoopType))
+            serviceScope.launch {
+                AppSettingsManager().updateSettings(new)
+            }
         }
 
         fun callPause(onPause: () -> Unit) {
-            val fadeDisabled = preferences.getEnum(PLAYBACK_FADE_AUDIO_DURATION.key, DurationInMilliseconds.Disabled) == DurationInMilliseconds.Disabled
-            val duration = preferences.getEnum(PLAYBACK_FADE_AUDIO_DURATION.key, DurationInMilliseconds.Disabled).milliSeconds
+            val fadeDisabled = AppSettingsManager().current.playbackFadeAudioDuration == DurationInMilliseconds.Disabled
+            val duration = AppSettingsManager().current.playbackFadeAudioDuration.milliSeconds
             if (player.isPlaying) {
                 if (fadeDisabled) {
                     player.pause()

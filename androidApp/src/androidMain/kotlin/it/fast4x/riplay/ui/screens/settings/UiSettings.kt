@@ -203,6 +203,7 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_DISLIKED_PLAYL
 import it.fast4x.riplay.utils.LazyListContainer
 
 
+/*
 @Composable
 fun DefaultUiSettings() {
     var minTimeForEvent by rememberPreference(
@@ -508,6 +509,7 @@ fun DefaultUiSettings() {
     var showthumbnail by rememberPreference(SHOW_THUMBNAIL.key, true)
     showthumbnail = true
 }
+*/
 
 @ExperimentalAnimationApi
 @UnstableApi
@@ -2062,7 +2064,7 @@ fun UiSettings(
                     onClick = { resetToDefault = true },
                 )
                 if (resetToDefault) {
-                    DefaultUiSettings()
+                    //DefaultUiSettings()
                     resetToDefault = false
                     navController.popBackStack()
                     SmartMessage(stringResource(R.string.done), context = context)

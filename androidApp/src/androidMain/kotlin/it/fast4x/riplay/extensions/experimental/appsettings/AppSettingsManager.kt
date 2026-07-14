@@ -10,7 +10,6 @@ class AppSettingsManager {
 
     // Lo stato in RAM
     var current: AppSettings = AppSettings()
-        private set
 
     // Inizializzazione all'avvio dell'app
     suspend fun initialize() {

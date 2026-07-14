@@ -165,6 +165,7 @@ import kotlin.time.Duration.Companion.seconds
 import androidx.compose.ui.unit.TextUnit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import it.fast4x.riplay.LocalAppSettings
 import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.services.playback.PlayerService
@@ -210,6 +211,9 @@ fun Lyrics(
     val appearanceSettingsVieModel = LocalAppearanceSettings.current
     val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
 
+    val appSettingsVieModel = LocalAppSettings.current
+    val appSettings = appSettingsVieModel.activeSettings.collectAsState().value
+
     val factory = remember(binder) {
         PlayerViewModelFactory(binder)
     }
@@ -221,7 +225,7 @@ fun Lyrics(
     //var showlyricsthumbnail by rememberPreference(SHOW_LYRICS_THUMBNAIL.key, false)
     val showlyricsthumbnail = appearanceSettings.showLyricsThumbnail
     //var isShowingSynchronizedLyrics by rememberPreference(IS_SHOWING_SYNCHRONIZED_LYRICS.key, false)
-    val isShowingSynchronizedLyrics = appearanceSettings.isShowingThumbnailInLockscreen
+    val isShowingSynchronizedLyrics = appSettings.isShowingThumbnailInLockscreen
     //var isShowingSynchronizedWordByWordLyrics by rememberPreference(IS_SHOWING_SYNCHRONIZED_WORD_BY_WORD_LYRICS.key, false)
     val isShowingSynchronizedWordByWordLyrics = appearanceSettings.isShowingSynchronizedWordByWordLyrics
     //val isShowingSynchronizedWordByWordLyrics by remember { mutableStateOf(false) } // removed temporaly word word lyrics suspended by owner

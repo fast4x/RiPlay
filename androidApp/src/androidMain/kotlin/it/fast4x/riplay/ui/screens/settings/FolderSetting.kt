@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.documentfile.provider.DocumentFile
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import androidx.core.net.toUri
+import it.fast4x.riplay.LocalAppSettings
 import it.fast4x.riplay.R
 import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.utils.colorPalette
@@ -33,8 +35,12 @@ fun FolderSetting(
     folderKey: PreferenceKey,
     title: String
 ) {
+    val appSettingsVieModel = LocalAppSettings.current
+    val appSettings = appSettingsVieModel.activeSettings.collectAsState().value
+
     val context = LocalContext.current
-    var folderPath by rememberPreference(folderKey.key, "/")
+    //var folderPath by rememberPreference(folderKey.key, "/")
+    var folderPath = appSettings.folderPath
 
     val displayPath = when {
         folderPath.isEmpty() -> "/"

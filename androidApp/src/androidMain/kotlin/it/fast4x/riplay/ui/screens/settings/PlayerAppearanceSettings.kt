@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
+import it.fast4x.riplay.LocalAppSettings
 import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.BackgroundProgress
@@ -348,6 +349,9 @@ fun PlayerAppearanceSettings(
     val appearanceSettingsVieModel = LocalAppearanceSettings.current
     val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
 
+    val appSettingsVieModel = LocalAppSettings.current
+    val appSettings = appSettingsVieModel.activeSettings.collectAsState().value
+
 //    LaunchedEffect(appearanceSettings) {
 //        Timber.d("PlayerappearanceSettings: ${appearanceSettings.isShowingThumbnailInLockscreen}")
 //    }
@@ -589,13 +593,13 @@ fun PlayerAppearanceSettings(
     val coverThumbnailAnimation = appearanceSettings.coverThumbnailAnimation
 
     //var notificationPlayerFirstIcon by rememberPreference(NOTIFICATION_PLAYER_FIRST_ICON.key, NotificationButtons.Repeat)
-    val notificationPlayerFirstIcon = appearanceSettings.notificationPlayerFirstIcon
+    val notificationPlayerFirstIcon = appSettings.notificationPlayerFirstIcon
     //var notificationPlayerSecondIcon by rememberPreference(NOTIFICATION_PLAYER_SECOND_ICON.key, NotificationButtons.Favorites)
-    val notificationPlayerSecondIcon = appearanceSettings.notificationPlayerSecondIcon
+    val notificationPlayerSecondIcon = appSettings.notificationPlayerSecondIcon
     //var enableWallpaper by rememberPreference(ENABLE_WALLPAPER.key, false)
-    val enableWallpaper = appearanceSettings.enableWallpaper
+    val enableWallpaper = appSettings.enableWallpaper
     //var wallpaperType by rememberPreference(WALLPAPER_TYPE.key, WallpaperType.Lockscreen)
-    val wallpaperType = appearanceSettings.wallpaperType
+    val wallpaperType = appSettings.wallpaperType
     //var topPadding by rememberPreference(TOP_PADDING.key, true)
     val topPadding = appearanceSettings.topPadding
 //    var animatedGradient by rememberPreference(
@@ -2897,8 +2901,8 @@ fun PlayerAppearanceSettings(
                             title = stringResource(R.string.notificationPlayerFirstIcon),
                             selectedValue = notificationPlayerFirstIcon,
                             onValueSelected = {
-                                val new = appearanceSettings.copy(notificationPlayerFirstIcon = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                val new = appSettings.copy(notificationPlayerFirstIcon = it)
+                                appSettingsVieModel.updateSettings(new)
                                 restartService = true
                             },
                             valueText = {
@@ -2909,8 +2913,8 @@ fun PlayerAppearanceSettings(
                             title = stringResource(R.string.notificationPlayerSecondIcon),
                             selectedValue = notificationPlayerSecondIcon,
                             onValueSelected = {
-                                val new = appearanceSettings.copy(notificationPlayerSecondIcon = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                val new = appSettings.copy(notificationPlayerSecondIcon = it)
+                                appSettingsVieModel.updateSettings(new)
 
                                 restartService = true
                             },
@@ -2935,10 +2939,10 @@ fun PlayerAppearanceSettings(
                         SwitchSettingEntry(
                             title = stringResource(R.string.show_song_cover),
                             text = stringResource(R.string.use_song_cover_on_lockscreen),
-                            isChecked = appearanceSettings.isShowingThumbnailInLockscreen,
+                            isChecked = appSettings.isShowingThumbnailInLockscreen,
                             onCheckedChange = {
-                                val new = appearanceSettings.copy(isShowingThumbnailInLockscreen = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                val new = appSettings.copy(isShowingThumbnailInLockscreen = it)
+                                appSettingsVieModel.updateSettings(new)
                             }
                         )
                     //}
@@ -2958,8 +2962,8 @@ fun PlayerAppearanceSettings(
                             text = "",
                             isChecked = enableWallpaper,
                             onCheckedChange = {
-                                val new = appearanceSettings.copy(enableWallpaper = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                val new = appSettings.copy(enableWallpaper = it)
+                                appSettingsVieModel.updateSettings(new)
                             }
                         )
                         AnimatedVisibility(visible = enableWallpaper) {
@@ -2968,8 +2972,8 @@ fun PlayerAppearanceSettings(
                                     title = stringResource(R.string.set_cover_thumbnail_as_wallpaper),
                                     selectedValue = wallpaperType,
                                     onValueSelected = {
-                                        val new = appearanceSettings.copy(wallpaperType = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        val new = appSettings.copy(wallpaperType = it)
+                                        appSettingsVieModel.updateSettings(new)
 
                                         restartService = true
                                     },

@@ -124,7 +124,6 @@ data class AppearanceSettings(
     val textoutline: Boolean                   = false,
     val disablePlayerHorizontalSwipe: Boolean  = false,
     val showLikeButtonBackgroundPlayer: Boolean = true,
-    val isShowingThumbnailInLockscreen: Boolean = true,
     val lastPlayerPlayButtonType: PlayerPlayButtonType = PlayerPlayButtonType.Rectangular,
     val disableScrollingText: Boolean           = false,
     val seekWithTap: Boolean                   = false,
@@ -135,13 +134,7 @@ data class AppearanceSettings(
     val clickLyricsText: Boolean               = true,
     val miniPlayerType: MiniPlayerType = MiniPlayerType.Modern,
     val playerEnableLyricsPopupMessage: Boolean = true,
-    val notificationPlayerFirstIcon: NotificationButtons = NotificationButtons.Repeat,
-    val notificationPlayerSecondIcon: NotificationButtons = NotificationButtons.Favorites,
-    val enableWallpaper: Boolean               = false,
-    val wallpaperType: WallpaperType           = WallpaperType.Lockscreen,
     val swipeAnimationNoThumbnail: SwipeAnimationNoThumbnail     = SwipeAnimationNoThumbnail.Sliding,
-    val queueLoopType: QueueLoopType                 = QueueLoopType.Default,
-    val discoverIsEnabled: Boolean                 = false,
     val playlistIndicator: Boolean                 = false,
     val extraSpace: Boolean                        = false,
     val jumpPrevious: String                          = "3",
@@ -225,7 +218,6 @@ data class AppearanceSettings(
             showButtonPlayerArrow = false,
             showButtonPlayerStartRadio = false,
             showButtonPlayerMenu = true,
-            isShowingThumbnailInLockscreen = true
         )
         val Deck = AppearanceSettings(
             showTopActionsBar = true,
@@ -267,7 +259,6 @@ data class AppearanceSettings(
             showButtonPlayerArrow = false,
             showButtonPlayerStartRadio = false,
             showButtonPlayerMenu = true,
-            isShowingThumbnailInLockscreen = true
         )
 
         val Zen = AppearanceSettings(
@@ -306,7 +297,6 @@ data class AppearanceSettings(
             showButtonPlayerArrow = false,
             showButtonPlayerStartRadio = false,
             showButtonPlayerMenu = true,
-            isShowingThumbnailInLockscreen = true
         )
 
         val Noir = AppearanceSettings(
@@ -349,7 +339,6 @@ data class AppearanceSettings(
             showButtonPlayerArrow = true,
             showButtonPlayerStartRadio = false,
             showButtonPlayerMenu = true,
-            isShowingThumbnailInLockscreen = true
         )
 
         val Prism = AppearanceSettings(
@@ -393,7 +382,6 @@ data class AppearanceSettings(
             showButtonPlayerArrow = false,
             showButtonPlayerStartRadio = false,
             showButtonPlayerMenu = true,
-            isShowingThumbnailInLockscreen = true
         )
 
         val Groove = AppearanceSettings(
@@ -431,7 +419,6 @@ data class AppearanceSettings(
             showButtonPlayerArrow = false,
             showButtonPlayerStartRadio = false,
             showButtonPlayerMenu = true,
-            isShowingThumbnailInLockscreen = true
         )
 
     }

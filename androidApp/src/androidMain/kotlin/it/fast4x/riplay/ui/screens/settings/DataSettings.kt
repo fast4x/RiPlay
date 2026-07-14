@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import coil.Coil
 import coil.annotation.ExperimentalCoilApi
+import it.fast4x.riplay.LocalAppSettings
 import it.fast4x.riplay.LocalBackupManager
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.CacheType
@@ -69,6 +70,9 @@ fun DataSettings() {
     val backupViewModel = LocalBackupManager.current
     val backupUiState by backupViewModel.uiState.collectAsState()
 
+    val appSettingsVieModel = LocalAppSettings.current
+    val appSettings = appSettingsVieModel.activeSettings.collectAsState().value
+
     val backupLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/octet-stream")
     ) { uri ->
@@ -95,16 +99,19 @@ fun DataSettings() {
         }
     }
 
-    var coilDiskCacheMaxSize by rememberPreference(
-        COIL_DISK_CACHE_MAX_SIZE.key,
-        CoilDiskCacheMaxSize.`128MB`
-    )
+//    var coilDiskCacheMaxSize by rememberPreference(
+//        COIL_DISK_CACHE_MAX_SIZE.key,
+//        CoilDiskCacheMaxSize.`128MB`
+//    )
+    val coilDiskCacheMaxSize = appSettings.coilDiskCacheMaxSize
 
 
     var showCoilCustomDiskCacheDialog by remember { mutableStateOf(false) }
-    var coilCustomDiskCache by rememberPreference(
-        COIL_CUSTOM_DISK_CACHE.key,32
-    )
+//    var coilCustomDiskCache by rememberPreference(
+//        COIL_CUSTOM_DISK_CACHE.key,32
+//    )
+    val coilCustomDiskCache = appSettings.coilCustomDiskCache
+
     var isExporting by remember { mutableStateOf(false) }
     var isImporting by remember { mutableStateOf(false) }
 
@@ -200,7 +207,11 @@ fun DataSettings() {
                 },
                 selectedValue = coilDiskCacheMaxSize,
                 onValueSelected = {
-                    coilDiskCacheMaxSize = it
+                    val new = appSettings.copy(
+                        coilDiskCacheMaxSize = it
+                    )
+                    appSettingsVieModel.updateSettings(new)
+
                     if (coilDiskCacheMaxSize == CoilDiskCacheMaxSize.Custom)
                         showCoilCustomDiskCacheDialog = true
 
@@ -232,7 +243,11 @@ fun DataSettings() {
                     onDismiss = { showCoilCustomDiskCacheDialog = false },
                     setValue = {
                         //Log.d("customCache", it)
-                        coilCustomDiskCache = it.toInt()
+                        val new = appSettings.copy(
+                            coilCustomDiskCache = it.toInt()
+                        )
+                        appSettingsVieModel.updateSettings(new)
+
                         showCoilCustomDiskCacheDialog = false
                         restartService = true
                     }

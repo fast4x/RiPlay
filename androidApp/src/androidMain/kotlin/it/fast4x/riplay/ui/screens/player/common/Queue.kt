@@ -101,6 +101,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import it.fast4x.riplay.LocalAppSettings
 import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
@@ -240,6 +241,9 @@ fun Queue(
     val appearanceSettingsVieModel = LocalAppearanceSettings.current
     val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
 
+    val appSettingsVieModel = LocalAppSettings.current
+    val appSettings = appSettingsVieModel.activeSettings.collectAsState().value
+
     val windowInsets = WindowInsets.systemBars
     val context = LocalContext.current
     //val showButtonPlayerArrow by rememberPreference(SHOW_BUTTON_PLAYER_ARROW.key, true)
@@ -252,7 +256,7 @@ fun Queue(
     val binderPlayer = binder.player
 
     //var queueLoopType by rememberPreference(QUEUE_LOOP_TYPE.key, defaultValue = QueueLoopType.Default)
-    val queueLoopType = appearanceSettings.queueLoopType
+    val queueLoopType = appSettings.queueLoopType
     var excludeSongsIfAreVideos by rememberPreference(EXCLUDE_SONG_IF_IS_VIDEO.key, false)
     //val excludeSongsIfAreVideos = appearanceSettings.excludeSongsIfAreVideos
     val menuState = LocalGlobalSheetState.current
@@ -391,7 +395,7 @@ fun Queue(
     //val showButtonPlayerDiscover by rememberPreference(SHOW_BUTTON_PLAYER_DISCOVER.key, false)
     val showButtonPlayerDiscover = appearanceSettings.showButtonPlayerDiscover
     //var discoverIsEnabled by rememberPreference(DISCOVER.key, false)
-    val discoverIsEnabled = appearanceSettings.discoverIsEnabled
+    val discoverIsEnabled = appSettings.discoverIsEnabled
     var searching by rememberSaveable { mutableStateOf(false) }
     var filter: String? by rememberSaveable { mutableStateOf(null) }
     //val thumbnailRoundness by rememberPreference(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
@@ -1010,8 +1014,8 @@ fun Queue(
                             active = discoverIsEnabled,
                             size = 22,
                             onClick = {
-                                val new = appearanceSettings.copy(discoverIsEnabled = !discoverIsEnabled)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                val new = appSettings.copy(discoverIsEnabled = !discoverIsEnabled)
+                                appSettingsVieModel.updateSettings(new)
                                 onDiscoverClick(discoverIsEnabled)
                             },
                             onLongClick = {
@@ -1036,8 +1040,8 @@ fun Queue(
                         active = queueLoopType != QueueLoopType.Default,
                         size = 22,
                         onClick = {
-                            val new = appearanceSettings.copy(queueLoopType = setQueueLoopState(queueLoopType))
-                            appearanceSettingsVieModel.updatePreset(new)}
+                            val new = appSettings.copy(queueLoopType = setQueueLoopState(queueLoopType))
+                            appSettingsVieModel.updateSettings(new)}
                     )
 
                     // Shuffle

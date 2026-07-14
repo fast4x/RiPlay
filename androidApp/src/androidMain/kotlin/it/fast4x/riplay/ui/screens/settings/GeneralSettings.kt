@@ -143,6 +143,7 @@ import java.net.Proxy
 import androidx.core.net.toUri
 import androidx.core.text.isDigitsOnly
 import it.fast4x.riplay.BuildConfig
+import it.fast4x.riplay.LocalAppSettings
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.CastType
 import it.fast4x.riplay.enums.CheckUpdateState
@@ -190,53 +191,67 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 fun GeneralSettings(
     navController: NavController
 ) {
+    val appSettingsVieModel = LocalAppSettings.current
+    val appSettings = appSettingsVieModel.activeSettings.collectAsState().value
+
     val binder = LocalPlayerServiceBinder.current
 
     val systemLocale = LocaleListCompat.getDefault().get(0).toString()
-    var languageApp  by rememberPreference(LANGUAGE_APP.key, getSystemlanguage())
+    //var languageApp  by rememberPreference(LANGUAGE_APP.key, getSystemlanguage())
+    val languageApp = appSettings.languageApp
 
     var restartService by rememberSaveable { mutableStateOf(false) }
     var restartActivity by rememberSaveable { mutableStateOf(false) }
 
-    var minTimeForEvent by rememberPreference(
-        EXO_PLAYER_MIN_TIME_FOR_EVENT.key,
-        MinTimeForEvent.`20s`
-    )
-    var persistentQueue by rememberPreference(PERSISTENT_QUEUE.key, true)
-    var resumePlaybackOnStart by rememberPreference(RESUME_PLAYBACK_ON_START.key, false)
-    var closebackgroundPlayer by rememberPreference(CLOSE_BACKGROUND_PLAYER.key, false)
-    var closeBackgroundPlayerAfterMinutes by rememberPreference(
-        CLOSE_PLAYER_SERVICE_AFTER_MINUTES.key,
-        DurationInMinutes.Disabled
-    )
+//    var minTimeForEvent by rememberPreference(
+//        EXO_PLAYER_MIN_TIME_FOR_EVENT.key,
+//        MinTimeForEvent.`20s`
+//    )
+    val minTimeForEvent = appSettings.minTimeForEvent
+    //var persistentQueue by rememberPreference(PERSISTENT_QUEUE.key, true)
+    val persistentQueue = appSettings.persistentQueue
+    //var resumePlaybackOnStart by rememberPreference(RESUME_PLAYBACK_ON_START.key, false)
+    val resumePlaybackOnStart = appSettings.resumePlaybackOnStart
+    //var closebackgroundPlayer by rememberPreference(CLOSE_BACKGROUND_PLAYER.key, false)
+//    var closeBackgroundPlayerAfterMinutes by rememberPreference(
+//        CLOSE_PLAYER_SERVICE_AFTER_MINUTES.key,
+//        DurationInMinutes.Disabled
+//    )
+    val closeBackgroundPlayerAfterMinutes = appSettings.closeBackgroundPlayerAfterMinutes
 
 //    var closePlayerWhenPausedAfterMinutes by rememberPreference(
 //        closePlayerServiceWhenPausedAfterMinutesKey.key,
 //        DurationInMinutes.Disabled
 //    )
 
-    var closeWithBackButton by rememberPreference(CLOSE_WITH_BACK_BUTTON.key, true)
-    var resumeOrPausePlaybackWhenDeviceBt by rememberPreference(
-        RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_BT.key,
-        false
-    )
-    var resumeOrPausePlaybackWhenDeviceWired by rememberPreference(
-        PreferenceKey.RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_WIRED.key,
-        false
-    )
+    //var closeWithBackButton by rememberPreference(CLOSE_WITH_BACK_BUTTON.key, true)
+    val closeWithBackButton = appSettings.closeWithBackButton
+//    var resumeOrPausePlaybackWhenDeviceBt by rememberPreference(
+//        RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_BT.key,
+//        false
+//    )
+    val resumeOrPausePlaybackWhenDeviceBt = appSettings.resumeOrPausePlaybackWhenDeviceBt
+//    var resumeOrPausePlaybackWhenDeviceWired by rememberPreference(
+//        PreferenceKey.RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_WIRED.key,
+//        false
+//    )
+    val resumeOrPausePlaybackWhenDeviceWired = appSettings.resumeOrPausePlaybackWhenDeviceWired
 
-    var resumeOrPausePlaybackWhenCall by rememberPreference(
-        RESUME_OR_PAUSE_PLAYBACK_WHEN_CALL.key,
-        false
-    )
+//    var resumeOrPausePlaybackWhenCall by rememberPreference(
+//        RESUME_OR_PAUSE_PLAYBACK_WHEN_CALL.key,
+//        false
+//    )
+    val resumeOrPausePlaybackWhenCall = appSettings.resumeOrPausePlaybackWhenCall
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            resumeOrPausePlaybackWhenCall = true
+            val new = appSettings.copy(resumeOrPausePlaybackWhenCall = true)
+            appSettingsVieModel.updateSettings(new)
             restartService = true
         } else {
-            resumeOrPausePlaybackWhenCall = false
+            val new = appSettings.copy(resumeOrPausePlaybackWhenCall = false)
+            appSettingsVieModel.updateSettings(new)
         }
     }
 
@@ -578,7 +593,10 @@ fun GeneralSettings(
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.app_language),
                             selectedValue = languageApp,
-                            onValueSelected = { languageApp = it },
+                            onValueSelected = {
+                                val new = appSettings.copy(languageApp = it)
+                                appSettingsVieModel.updateSettings(new)
+                            },
                             valueText = {
                                 languageDestinationName(it)
                             }
@@ -823,7 +841,10 @@ fun GeneralSettings(
                             EnumValueSelectorSettingsEntry(
                                 title = stringResource(R.string.when_app_swipe_out_from_task_manager),
                                 selectedValue = closeBackgroundPlayerAfterMinutes,
-                                onValueSelected = { closeBackgroundPlayerAfterMinutes = it },
+                                onValueSelected = {
+                                   val new = appSettings.copy(closeBackgroundPlayerAfterMinutes = it)
+                                    appSettingsVieModel.updateSettings(new)
+                                },
                                 valueText = {
                                     when (it) {
                                         DurationInMinutes.Disabled -> stringResource(R.string.vt_disabled)
@@ -897,7 +918,10 @@ fun GeneralSettings(
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.min_listening_time),
                             selectedValue = minTimeForEvent,
-                            onValueSelected = { minTimeForEvent = it },
+                            onValueSelected = {
+                                val new = appSettings.copy(minTimeForEvent = it)
+                                appSettingsVieModel.updateSettings(new)
+                            },
                             valueText = {
                                 when (it) {
                                     MinTimeForEvent.`10s` -> "10s"
@@ -1158,7 +1182,9 @@ fun GeneralSettings(
                             text = stringResource(R.string.save_and_restore_playing_songs),
                             isChecked = persistentQueue,
                             onCheckedChange = {
-                                persistentQueue = it
+                                val new = appSettings.copy(persistentQueue = it)
+                                appSettingsVieModel.updateSettings(new)
+
                                 if(it) binder?.loadQueue() // try to load last known queue now
                                 //restartService = true
                             }
@@ -1174,7 +1200,9 @@ fun GeneralSettings(
                                     text = stringResource(R.string.resume_automatically_when_app_opens),
                                     isChecked = resumePlaybackOnStart,
                                     onCheckedChange = {
-                                        resumePlaybackOnStart = it
+                                        val new = appSettings.copy(resumePlaybackOnStart = it)
+                                        appSettingsVieModel.updateSettings(new)
+
                                         //restartService = true
                                     }
                                 )
@@ -1196,7 +1224,9 @@ fun GeneralSettings(
                             text = stringResource(R.string.when_you_use_the_back_button_from_the_home_page),
                             isChecked = closeWithBackButton,
                             onCheckedChange = {
-                                closeWithBackButton = it
+                                val new = appSettings.copy(closeWithBackButton = it)
+                                appSettingsVieModel.updateSettings(new)
+
                                 restartActivity = true
                             }
                         )
@@ -1594,7 +1624,9 @@ fun GeneralSettings(
                                 text = stringResource(R.string.settings_bt_info_resume_playback_when_connected_pause_when_disconnected),
                                 isChecked = resumeOrPausePlaybackWhenDeviceBt,
                                 onCheckedChange = {
-                                    resumeOrPausePlaybackWhenDeviceBt = it
+                                    val new = appSettings.copy(resumeOrPausePlaybackWhenDeviceBt = it)
+                                    appSettingsVieModel.updateSettings(new)
+
                                     restartService = true
                                 }
                             )
@@ -1603,7 +1635,8 @@ fun GeneralSettings(
                                 text = stringResource(R.string.settings_wired_info_resume_playback_when_plugged_pause_when_unplugged),
                                 isChecked = resumeOrPausePlaybackWhenDeviceWired,
                                 onCheckedChange = {
-                                    resumeOrPausePlaybackWhenDeviceWired = it
+                                    val new = appSettings.copy(resumeOrPausePlaybackWhenDeviceWired = it)
+                                    appSettingsVieModel.updateSettings(new)
                                     restartService = true
                                 }
                             )

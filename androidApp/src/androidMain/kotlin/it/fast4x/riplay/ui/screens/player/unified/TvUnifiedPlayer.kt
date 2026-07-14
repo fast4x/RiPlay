@@ -82,6 +82,7 @@ import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import it.fast4x.riplay.LocalAppSettings
 import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalPlayerServiceState
@@ -155,6 +156,9 @@ fun TvUnifiedPlayer(
     val appearanceSettingsVieModel = LocalAppearanceSettings.current
     val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
 
+    val appSettingsVieModel = LocalAppSettings.current
+    val appSettings = appSettingsVieModel.activeSettings.collectAsState().value
+
     val playerState = LocalPlayerServiceState.current
     val context = LocalContext.current
     val menuState = LocalGlobalSheetState.current
@@ -173,7 +177,7 @@ fun TvUnifiedPlayer(
         mutableStateOf(binder.player.currentTimeline.mediaItems)
     }
     //var queueLoopType by rememberPreference(QUEUE_LOOP_TYPE.key, QueueLoopType.Default)
-    val queueLoopType = appearanceSettings.queueLoopType
+    val queueLoopType = appSettings.queueLoopType
     var isShowingLyrics by rememberSaveable { mutableStateOf(false) }
     var isShowingVisualizer by rememberSaveable { mutableStateOf(false) }
     var showQueue by rememberSaveable { mutableStateOf(false) }
@@ -215,12 +219,12 @@ fun TvUnifiedPlayer(
                 mediaItems = timeline.mediaItems
             }
             override fun onRepeatModeChanged(repeatMode: Int) {
-                val new = appearanceSettings.copy(queueLoopType = when (repeatMode) {
+                val new = appSettings.copy(queueLoopType = when (repeatMode) {
                     Player.REPEAT_MODE_ONE -> QueueLoopType.RepeatOne
                     Player.REPEAT_MODE_ALL -> QueueLoopType.RepeatAll
                     else -> QueueLoopType.Default
                 })
-                appearanceSettingsVieModel.updatePreset(new)
+                appSettingsVieModel.updateSettings(new)
             }
         }
     }
@@ -437,8 +441,8 @@ fun TvUnifiedPlayer(
                     visualizerEnabled = visualizerEnabled,
                     queueLoopType = queueLoopType,
                     onQueueLoopTypeChange = {
-                        appearanceSettingsVieModel.updatePreset(
-                            appearanceSettings.copy(queueLoopType = it)
+                        appSettingsVieModel.updateSettings(
+                            appSettings.copy(queueLoopType = it)
                         )
                     },
                     onToggleLyrics = {
@@ -523,7 +527,7 @@ fun TvUnifiedPlayer(
                 showPlayer = {},
                 hidePlayer = {},
                 onDismiss = {
-                   appearanceSettingsVieModel.updatePreset(appearanceSettings.copy(queueLoopType = it))
+                   appSettingsVieModel.updateSettings(appSettings.copy(queueLoopType = it))
                     showQueue = false
                 },
                 onDiscoverClick = {}

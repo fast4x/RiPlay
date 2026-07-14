@@ -19,7 +19,6 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -41,6 +40,7 @@ import coil.compose.AsyncImage
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.responses.CachedAccountProfile
 import it.fast4x.environment.utils.parseCookieString
+import it.fast4x.riplay.LocalAppSettings
 import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.LocalAudioTagger
 import it.fast4x.riplay.R
@@ -51,7 +51,6 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ValidationType
 import it.fast4x.riplay.extensions.discord.DiscordLoginAndGetToken
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISCORD_ACCOUNT_NAME
@@ -68,26 +67,19 @@ import it.fast4x.riplay.utils.isAtLeastAndroid81
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_DISCORD_PRESENCE_ENABLED
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.USE_YT_LOGIN_ONLY_FOR_BROWSE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_ACCOUNT_CHANNEL_HANDLE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_ACCOUNT_EMAIL
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_ACCOUNT_NAME
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_ACCOUNT_THUMBNAIL
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_COOKIE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_DATA_SYNC_ID
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_VISITOR_DATA
 import it.fast4x.riplay.ui.components.themed.AccountInfoDialog
 import it.fast4x.riplay.extensions.encryptedpreferences.rememberEncryptedPreference
 import it.fast4x.riplay.extensions.lastfm.LastFmAuthScreen
 import it.fast4x.riplay.extensions.preferences.PreferenceKey
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_MUSIC_IDENTIFIER
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_ENABLED_LASTFM
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.LASTFM_SCRUBBLE_TYPE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.LASTFM_SESSION_TOKEN
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_IDENTIFIER_API_KEY
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_IDENTIFIER_PROVIDER
-import it.fast4x.riplay.ui.components.themed.DefaultDialog
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -106,6 +98,9 @@ fun AccountsSettings() {
     val appearanceSettingsVieModel = LocalAppearanceSettings.current
     val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
 
+    val appSettingsVieModel = LocalAppSettings.current
+    val appSettings = appSettingsVieModel.activeSettings.collectAsState().value
+
     val context = LocalContext.current
 //    val thumbnailRoundness by rememberPreference(
 //        THUMBNAIL_ROUNDNESS.key,
@@ -115,14 +110,17 @@ fun AccountsSettings() {
 
     var showUserInfoDialog by rememberSaveable { mutableStateOf(false) }
 
-    var isEnabledMusicIdentifier by rememberPreference(
-        ENABLE_MUSIC_IDENTIFIER.key,
-        false
-    )
-    var musicIdentifierProvider by rememberPreference(MUSIC_IDENTIFIER_PROVIDER.key,
-        MusicIdentifierProvider.AudioTagInfo)
+//    var isEnabledMusicIdentifier by rememberPreference(
+//        ENABLE_MUSIC_IDENTIFIER.key,
+//        false
+//    )
+    val isEnabledMusicIdentifier = appSettings.enableMusicIdentifier
+//    var musicIdentifierProvider by rememberPreference(MUSIC_IDENTIFIER_PROVIDER.key,
+//        MusicIdentifierProvider.AudioTagInfo)
+    val musicIdentifierProvider = appSettings.musicIdentifierProvider
 
-    var musicIdentifierApi by rememberPreference(MUSIC_IDENTIFIER_API_KEY.key, "")
+    //var musicIdentifierApi by rememberPreference(MUSIC_IDENTIFIER_API_KEY.key, "")
+    val musicIdentifierApi = appSettings.musicIdentifierApi
 
     val uriHandler = LocalUriHandler.current
 
@@ -150,26 +148,34 @@ fun AccountsSettings() {
 
         /****** YOUTUBE LOGIN ******/
 
-        var useYtLoginOnlyForBrowse by rememberPreference(USE_YT_LOGIN_ONLY_FOR_BROWSE.key, true)
-        var isYouTubeLoginEnabled by rememberPreference(ENABLE_YOU_TUBE_LOGIN.key, false)
-        var isSyncEnabled by rememberPreference(ENABLE_YOU_TUBE_SYNC.key, true)
+        //var useYtLoginOnlyForBrowse by rememberPreference(USE_YT_LOGIN_ONLY_FOR_BROWSE.key, true)
+        //var isYouTubeLoginEnabled by rememberPreference(ENABLE_YOU_TUBE_LOGIN.key, false)
+        val isYouTubeLoginEnabled = appSettings.enableYtLogin
+        //var isSyncEnabled by rememberPreference(ENABLE_YOU_TUBE_SYNC.key, true)
+        val isSyncEnabled = appSettings.enableYtSync
         var loginYouTube by remember { mutableStateOf(false) }
-        var visitorData by rememberPreference(key = YT_VISITOR_DATA.key, defaultValue = "")
-        var dataSyncId by rememberPreference(key = YT_DATA_SYNC_ID.key, defaultValue = "")
-        var cookie by rememberPreference(key = YT_COOKIE.key, defaultValue = "")
-        var accountName by rememberPreference(key = YT_ACCOUNT_NAME.key, defaultValue = "")
-        var accountEmail by rememberPreference(key = YT_ACCOUNT_EMAIL.key, defaultValue = "")
-        var accountChannelHandle by rememberPreference(
-            key = YT_ACCOUNT_CHANNEL_HANDLE.key,
-            defaultValue = ""
-        )
-        var accountThumbnail by rememberPreference(key = YT_ACCOUNT_THUMBNAIL.key, defaultValue = "")
+        //var visitorData by rememberPreference(key = YT_VISITOR_DATA.key, defaultValue = "")
+        //var dataSyncId by rememberPreference(key = YT_DATA_SYNC_ID.key, defaultValue = "")
+        //var cookie by rememberPreference(key = YT_COOKIE.key, defaultValue = "")
+        val cookie = appSettings.ytCookie
+        //var accountName by rememberPreference(key = YT_ACCOUNT_NAME.key, defaultValue = "")
+        val accountName = appSettings.ytAccountName
+        //var accountEmail by rememberPreference(key = YT_ACCOUNT_EMAIL.key, defaultValue = "")
+        val accountEmail = appSettings.ytAccountEmail
+//        var accountChannelHandle by rememberPreference(
+//            key = YT_ACCOUNT_CHANNEL_HANDLE.key,
+//            defaultValue = ""
+//        )
+        val accountChannelHandle = appSettings.ytAccountChannelHandle
+        //var accountThumbnail by rememberPreference(key = YT_ACCOUNT_THUMBNAIL.key, defaultValue = "")
+        val accountThumbnail = appSettings.ytAccountThumbnail
         var isLoggedIn = remember(cookie) {
             "SID" in parseCookieString(cookie) ||
                     "LOGIN_INFO" in parseCookieString(cookie)
         }
 
-        var jsonCachedAccounts by rememberPreference(PreferenceKey.YT_CACHED_ACCOUNTS.key, "")
+        //var jsonCachedAccounts by rememberPreference(PreferenceKey.YT_CACHED_ACCOUNTS.key, "")
+        val jsonCachedAccounts = appSettings.ytCachedAccounts
         var cachedAccounts = try {
             Json.decodeFromString<List<CachedAccountProfile>>(jsonCachedAccounts)
         } catch (e: Exception) {
@@ -187,12 +193,17 @@ fun AccountsSettings() {
             text = "",
             isChecked = isYouTubeLoginEnabled,
             onCheckedChange = {
-                isYouTubeLoginEnabled = it
+                val new = appSettings.copy(enableYtLogin = it)
+                appSettingsVieModel.updateSettings(new)
                 if (!it) {
-                    accountName = ""
-                    accountChannelHandle = ""
-                    accountEmail = ""
+                    val new = appSettings.copy(
+                        ytAccountName = "",
+                        ytAccountChannelHandle = "",
+                        ytAccountThumbnail = ""
+                    )
+                    appSettingsVieModel.updateSettings(new)
                 }
+
             }
         )
 
@@ -228,12 +239,16 @@ fun AccountsSettings() {
                                 iconColor = colorPalette().text,
                                 onClick = {
                                     if (isLoggedIn) {
-                                        cookie = ""
-                                        accountName = ""
-                                        accountChannelHandle = ""
-                                        accountEmail = ""
-                                        accountThumbnail = ""
-                                        jsonCachedAccounts = ""
+                                        val new = appSettings.copy(
+                                            ytCookie = "",
+                                            ytAccountName = "",
+                                            ytAccountChannelHandle = "",
+                                            ytAccountEmail = "",
+                                            ytAccountThumbnail = "",
+                                            ytCachedAccounts = ""
+                                        )
+                                        appSettingsVieModel.updateSettings(new)
+
                                         cachedAccounts = emptyList()
                                         loginYouTube = false
                                         val cookieManager = CookieManager.getInstance()
@@ -269,11 +284,14 @@ fun AccountsSettings() {
                                         if (accountThumbnail == "" || accountName == "" || accountEmail == "")
                                             GlobalScope.launch {
                                                 Environment.accountInfo().onSuccess {
-                                                    accountName = it?.name.orEmpty()
-                                                    accountEmail = it?.email.orEmpty()
-                                                    accountChannelHandle =
-                                                        it?.channelHandle.orEmpty()
-                                                    accountThumbnail = it?.thumbnailUrl.orEmpty()
+                                                    val new = appSettings.copy(
+                                                        ytAccountName = it?.name.orEmpty(),
+                                                        ytAccountEmail = it?.email.orEmpty(),
+                                                        ytAccountChannelHandle =
+                                                            it?.channelHandle.orEmpty(),
+                                                        ytAccountThumbnail = it?.thumbnailUrl.orEmpty()
+                                                    )
+                                                    appSettingsVieModel.updateSettings(new)
                                                 }.onFailure {
                                                     Timber.e("Error YoutubeLogin: $it.stackTraceToString()")
                                                 }
@@ -287,7 +305,8 @@ fun AccountsSettings() {
                                     text = stringResource(R.string.sync_data_playlists_albums_artists_history_like_etc),
                                     isChecked = isSyncEnabled,
                                     onCheckedChange = {
-                                        isSyncEnabled = it
+                                        val new = appSettings.copy(enableYtSync = it)
+                                        appSettingsVieModel.updateSettings(new)
                                     }
                                 )
                             }
@@ -333,13 +352,16 @@ fun AccountsSettings() {
     /****** YOUTUBE LOGIN ******/
 
         /****** LASTFM ******/
-        var isEnabledLastfm by rememberPreference(IS_ENABLED_LASTFM.key, false)
-        var lastFmSessionToken by rememberPreference(LASTFM_SESSION_TOKEN.key, "")
+        //var isEnabledLastfm by rememberPreference(IS_ENABLED_LASTFM.key, false)
+        val isEnabledLastfm = appSettings.isEnabledLastFM
+        //var lastFmSessionToken by rememberPreference(LASTFM_SESSION_TOKEN.key, "")
+        val lastFmSessionToken = appSettings.lastFMSessionToken
         var loginLastfm by remember { mutableStateOf(false) }
-        var lastfmScrobbleType by rememberPreference(
-            LASTFM_SCRUBBLE_TYPE.key,
-            LastFmScrobbleType.Simple
-        )
+//        var lastfmScrobbleType by rememberPreference(
+//            LASTFM_SCRUBBLE_TYPE.key,
+//            LastFmScrobbleType.Simple
+//        )
+        val lastfmScrobbleType = appSettings.lastFmScrobbleType
 
         SettingsGroupSpacer()
         SettingsEntryGroupText(title = stringResource(R.string.title_lastfm))
@@ -349,7 +371,8 @@ fun AccountsSettings() {
             text = "",
             isChecked = isEnabledLastfm,
             onCheckedChange = {
-                isEnabledLastfm = it
+                val new = appSettings.copy(isEnabledLastFM = it)
+                appSettingsVieModel.updateSettings(new)
             },
         )
 
@@ -366,9 +389,10 @@ fun AccountsSettings() {
                     icon = R.drawable.logo_lastfm,
                     iconColor = colorPalette().text,
                     onClick = {
-                        if (lastFmSessionToken.isNotEmpty())
-                            lastFmSessionToken = ""
-                        else
+                        if (lastFmSessionToken.isNotEmpty()) {
+                            val new = appSettings.copy(lastFMSessionToken = "")
+                            appSettingsVieModel.updateSettings(new)
+                        } else
                             loginLastfm = true
                     }
                 )
@@ -394,8 +418,9 @@ fun AccountsSettings() {
                         navController = rememberNavController(),
                         onAuthSuccess = {
                             loginLastfm = false
-                            lastFmSessionToken =
-                                context.preferences.getString(LASTFM_SESSION_TOKEN.key, "") ?: ""
+                            // controllare se necessario
+                            //lastFmSessionToken = appSettings.lastFMSessionToken
+                                //context.preferences.getString(LASTFM_SESSION_TOKEN.key, "") ?: ""
                             Timber.d("LastFmAuthScreen: Authentication complete")
                         }
                     )
@@ -405,7 +430,10 @@ fun AccountsSettings() {
                     title = stringResource(R.string.lastfm_scrobble_type),
                     titleSecondary = "",
                     selectedValue = lastfmScrobbleType,
-                    onValueSelected = { lastfmScrobbleType = it },
+                    onValueSelected = {
+                        val new = appSettings.copy(lastFmScrobbleType = it)
+                        appSettingsVieModel.updateSettings(new)
+                    },
                     valueText = { it.textName },
                 )
 
@@ -415,17 +443,21 @@ fun AccountsSettings() {
         /****** LASTFM ******/
 
         /****** DISCORD ******/
-        var isDiscordPresenceEnabled by rememberPreference(IS_DISCORD_PRESENCE_ENABLED.key, false)
+        //var isDiscordPresenceEnabled by rememberPreference(IS_DISCORD_PRESENCE_ENABLED.key, false)
+        val isDiscordPresenceEnabled = appSettings.isDiscordPresenceEnabled
         var loginDiscord by remember { mutableStateOf(false) }
         var showDiscordUserInfoDialog by remember { mutableStateOf(false) }
-        var discordPersonalAccessToken by rememberEncryptedPreference(
-            key = DISCORD_PERSONAL_ACCESS_TOKEN.key,
-            defaultValue = ""
-        )
-        var discordAccountName by rememberEncryptedPreference(
-            key = DISCORD_ACCOUNT_NAME.key,
-            defaultValue = ""
-        )
+//        var discordPersonalAccessToken by rememberEncryptedPreference(
+//            key = DISCORD_PERSONAL_ACCESS_TOKEN.key,
+//            defaultValue = ""
+//        )
+        val discordPersonalAccessToken = appSettings.discordPersonalAccessToken
+//        var discordAccountName by rememberEncryptedPreference(
+//            key = DISCORD_ACCOUNT_NAME.key,
+//            defaultValue = ""
+//        )
+        val discordAccountName = appSettings.discordAccountName
+
         SettingsGroupSpacer()
         SettingsEntryGroupText(title = stringResource(R.string.social_discord))
         SwitchSettingEntry(
@@ -433,7 +465,10 @@ fun AccountsSettings() {
             title = stringResource(R.string.discord_enable_rich_presence),
             text = "",
             isChecked = isDiscordPresenceEnabled,
-            onCheckedChange = { isDiscordPresenceEnabled = it }
+            onCheckedChange = {
+                val new = appSettings.copy(isDiscordPresenceEnabled = it)
+                appSettingsVieModel.updateSettings(new)
+            }
         )
 
         AnimatedVisibility(visible = isDiscordPresenceEnabled) {
@@ -449,9 +484,10 @@ fun AccountsSettings() {
                     icon = R.drawable.logo_discord,
                     iconColor = colorPalette().text,
                     onClick = {
-                        if (discordPersonalAccessToken.isNotEmpty())
-                            discordPersonalAccessToken = ""
-                        else
+                        if (discordPersonalAccessToken.isNotEmpty()) {
+                            val new = appSettings.copy(discordPersonalAccessToken = "")
+                            appSettingsVieModel.updateSettings(new)
+                        } else
                             loginDiscord = true
                     }
                 )
@@ -499,8 +535,11 @@ fun AccountsSettings() {
                         onGetToken = { token, username, avatar ->
                             //Timber.d("DiscordLoginAndGetToken DiscordPresence: token $token user $username avatar $avatar")
                             loginDiscord = false
-                            discordPersonalAccessToken = token
-                            discordAccountName = username
+                            val new = appSettings.copy(
+                                discordPersonalAccessToken = token,
+                                discordAccountName = username,
+                            )
+                            appSettingsVieModel.updateSettings(new)
                             SmartMessage(
                                 globalContext().resources.getString(R.string.discord_connected_to_discord_account) + " $username",
                                 type = PopupType.Info,
@@ -524,7 +563,8 @@ fun AccountsSettings() {
             text = "",
             isChecked = isEnabledMusicIdentifier,
             onCheckedChange = {
-                isEnabledMusicIdentifier = it
+                val new = appSettings.copy(enableMusicIdentifier = it)
+                appSettingsVieModel.updateSettings(new)
             },
         )
 
@@ -536,7 +576,10 @@ fun AccountsSettings() {
                     title = stringResource(R.string.music_identifier_provider),
                     titleSecondary = musicIdentifierProvider.info,
                     selectedValue = musicIdentifierProvider,
-                    onValueSelected = { musicIdentifierProvider = it },
+                    onValueSelected = {
+                        val new = appSettings.copy(musicIdentifierProvider = it)
+                        appSettingsVieModel.updateSettings(new)
+                    },
                     valueText = { it.title },
                 )
                 SettingsEntry(
@@ -558,7 +601,8 @@ fun AccountsSettings() {
                             text = musicIdentifierApi.ifEmpty { stringResource(R.string.if_empty_system_api_key_will_be_used) },
                             currentText = musicIdentifierApi,
                             onTextSave = {
-                                musicIdentifierApi = it
+                                val new = appSettings.copy(musicIdentifierApi = it)
+                                appSettingsVieModel.updateSettings(new)
                             },
                             validationType = ValidationType.None,
                         )

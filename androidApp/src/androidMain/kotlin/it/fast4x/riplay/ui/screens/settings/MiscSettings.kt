@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,6 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.BuildConfig
+import it.fast4x.riplay.LocalAppSettings
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
@@ -60,13 +62,18 @@ import java.util.Date
 fun MiscSettings() {
     val context = LocalContext.current
     val (colorPalette, _, _) = LocalAppearance.current
-    var defaultFolder by rememberPreference(DEFAULT_FOLDER.key, "/")
-    val navigationBarPosition by rememberPreference(
-        NAVIGATION_BAR_POSITION.key,
-        NavigationBarPosition.Bottom
-    )
+    val appSettingsVieModel = LocalAppSettings.current
+    val appSettings = appSettingsVieModel.activeSettings.collectAsState().value
 
-    var logDebugEnabled by rememberPreference(LOG_DEBUG_ENABLED.key, false)
+    //var defaultFolder by rememberPreference(DEFAULT_FOLDER.key, "/")
+//    val navigationBarPosition by rememberPreference(
+//        NAVIGATION_BAR_POSITION.key,
+//        NavigationBarPosition.Bottom
+//    )
+    val navigationBarPosition = appSettings.navigationBarPosition
+
+    //var logDebugEnabled by rememberPreference(LOG_DEBUG_ENABLED.key, false)
+    val logDebugEnabled = appSettings.logDebugEnabled
 
     var fileName by remember {
         mutableStateOf("")
@@ -130,8 +137,10 @@ fun MiscSettings() {
         )
     }
 
-    var musicVaultEnabled by rememberPreference(MUSIC_VAULT_ENABLED.key, false)
-    var disclaimerAccepted by rememberPreference(MUSIC_VAULT_DISCLAIMER_ACCEPTED.key, false)
+    //var musicVaultEnabled by rememberPreference(MUSIC_VAULT_ENABLED.key, false)
+    val musicVaultEnabled = appSettings.musicVaultEnabled
+    //var disclaimerAccepted by rememberPreference(MUSIC_VAULT_DISCLAIMER_ACCEPTED.key, false)
+    val disclaimerAccepted = appSettings.musicVaultDisclaimerAccepted
     var showDisclaimer by remember { mutableStateOf(false) }
 
     Column(
@@ -176,11 +185,14 @@ fun MiscSettings() {
                         isChecked = musicVaultEnabled,
                         onCheckedChange = {
                             if (it) {
-                                if (disclaimerAccepted) musicVaultEnabled = true
+                                if (disclaimerAccepted) {
+                                    val new = appSettings.copy(musicVaultEnabled = true)
+                                    appSettingsVieModel.updateSettings(new)
+                                }
                                 else showDisclaimer = true
                             } else {
-                                musicVaultEnabled = false
-                                disclaimerAccepted = false
+                                val new = appSettings.copy(musicVaultEnabled = false, musicVaultDisclaimerAccepted = false)
+                                appSettingsVieModel.updateSettings(new)
                             }
                         }
                     )
@@ -189,8 +201,9 @@ fun MiscSettings() {
                     if (showDisclaimer) {
                         MusicVaultDisclaimerDialog(
                             onAccept = {
-                                disclaimerAccepted = true
-                                musicVaultEnabled = true
+                                val new = appSettings.copy(musicVaultEnabled = true, musicVaultDisclaimerAccepted = true)
+                                appSettingsVieModel.updateSettings(new)
+
                                 showDisclaimer = false
                                 CoroutineScope(Dispatchers.IO).launch {
                                     // Disclaimer accettato quindi Music Vault può essere avviato
@@ -236,7 +249,9 @@ fun MiscSettings() {
                     text = stringResource(R.string.if_enabled_create_a_log_file_to_highlight_errors),
                     isChecked = logDebugEnabled,
                     onCheckedChange = {
-                        logDebugEnabled = it
+                        val new = appSettings.copy(logDebugEnabled = it)
+                        appSettingsVieModel.updateSettings(new)
+
                         if (!it) {
                             val file = File(context.filesDir.resolve("logs"), "RiPlay_log.txt")
                             if (file.exists())

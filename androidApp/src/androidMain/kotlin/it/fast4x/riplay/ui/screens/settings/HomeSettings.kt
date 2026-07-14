@@ -11,12 +11,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
+import it.fast4x.riplay.LocalAppSettings
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.HomePagetype
 import it.fast4x.riplay.enums.NavigationBarPosition
@@ -41,18 +43,31 @@ import it.fast4x.riplay.utils.LazyListContainer
 @UnstableApi
 @Composable
 fun  HomeSettings() {
-    //var showListenerLevels by rememberPreference(showListenerLevelsKey.key, true)
-    var showTips by rememberPreference(SHOW_TIPS.key, true)
-    var showRelatedAlbums by rememberPreference(SHOW_RELATED_ALBUMS.key, true)
-    var showSimilarArtists by rememberPreference(SHOW_SIMILAR_ARTISTS.key, true)
-    var showNewAlbumsArtists by rememberPreference(SHOW_NEW_ALBUMS_ARTISTS.key, true)
-    var showNewAlbums by rememberPreference(SHOW_NEW_ALBUMS.key, true)
-    var showPlaylistMightLike by rememberPreference(SHOW_PLAYLIST_MIGHT_LIKE.key, true)
-    var showMoodsAndGenres by rememberPreference(SHOW_MOODS_AND_GENRES.key, true)
-    var showMonthlyPlaylistInQuickPicks by rememberPreference(SHOW_MONTHLY_PLAYLIST_IN_QUICK_PICKS.key, true)
-    var showCharts by rememberPreference(SHOW_CHARTS.key, true)
+    val appSettingsVieModel = LocalAppSettings.current
+    val appSettings = appSettingsVieModel.activeSettings.collectAsState().value
 
-    var homePageType by rememberPreference(HOME_PAGE_TYPE.key, HomePagetype.Classic)
+    //var showListenerLevels by rememberPreference(showListenerLevelsKey.key, true)
+    //var showTips by rememberPreference(SHOW_TIPS.key, true)
+    val showTips = appSettings.showTips
+    //var showRelatedAlbums by rememberPreference(SHOW_RELATED_ALBUMS.key, true)
+    val showRelatedAlbums = appSettings.showRelatedAlbums
+    //var showSimilarArtists by rememberPreference(SHOW_SIMILAR_ARTISTS.key, true)
+    val showSimilarArtists = appSettings.showSimilarArtists
+    //var showNewAlbumsArtists by rememberPreference(SHOW_NEW_ALBUMS_ARTISTS.key, true)
+    val showNewAlbumsArtists = appSettings.showNewAlbumsArtists
+    //var showNewAlbums by rememberPreference(SHOW_NEW_ALBUMS.key, true)
+    val showNewAlbums = appSettings.showNewAlbums
+    //var showPlaylistMightLike by rememberPreference(SHOW_PLAYLIST_MIGHT_LIKE.key, true)
+    val showPlaylistMightLike = appSettings.showPipedPlaylists
+    //var showMoodsAndGenres by rememberPreference(SHOW_MOODS_AND_GENRES.key, true)
+    val showMoodsAndGenres = appSettings.showMoodAndGenres
+    //var showMonthlyPlaylistInQuickPicks by rememberPreference(SHOW_MONTHLY_PLAYLIST_IN_QUICK_PICKS.key, true)
+    val showMonthlyPlaylistInQuickPicks = appSettings.showMonthlyPlaylistInQuickPicks
+    //var showCharts by rememberPreference(SHOW_CHARTS.key, true)
+    val showCharts = appSettings.showCharts
+
+    //var homePageType by rememberPreference(HOME_PAGE_TYPE.key, HomePagetype.Classic)
+    val homePageType = appSettings.homePageType
 
     Column(
         modifier = Modifier
@@ -98,7 +113,10 @@ fun  HomeSettings() {
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.homepage_type),
                             selectedValue = homePageType,
-                            onValueSelected = { homePageType = it },
+                            onValueSelected = {
+                                val new = appSettings.copy(homePageType = it)
+                                appSettingsVieModel.updateSettings(new)
+                            },
                             valueText = { it.textName }
                         )
 
@@ -122,7 +140,8 @@ fun  HomeSettings() {
                             ),
                             isChecked = showTips,
                             onCheckedChange = {
-                                showTips = it
+                                val new = appSettings.copy(showTips = it)
+                                appSettingsVieModel.updateSettings(new)
                             }
                         )
 
@@ -133,7 +152,8 @@ fun  HomeSettings() {
                             ),
                             isChecked = showNewAlbumsArtists,
                             onCheckedChange = {
-                                showNewAlbumsArtists = it
+                                val new = appSettings.copy(showNewAlbumsArtists = it)
+                                appSettingsVieModel.updateSettings(new)
                             }
                         )
 
@@ -144,7 +164,8 @@ fun  HomeSettings() {
                             ),
                             isChecked = showNewAlbums,
                             onCheckedChange = {
-                                showNewAlbums = it
+                                val new = appSettings.copy(showNewAlbums = it)
+                                appSettingsVieModel.updateSettings(new)
                             }
                         )
 
@@ -155,7 +176,8 @@ fun  HomeSettings() {
                             ),
                             isChecked = showMoodsAndGenres,
                             onCheckedChange = {
-                                showMoodsAndGenres = it
+                                val new = appSettings.copy(showMoodAndGenres = it)
+                                appSettingsVieModel.updateSettings(new)
                             }
                         )
 
@@ -170,7 +192,8 @@ fun  HomeSettings() {
                                     ),
                                     isChecked = showCharts,
                                     onCheckedChange = {
-                                        showCharts = it
+                                        val new = appSettings.copy(showCharts = it)
+                                        appSettingsVieModel.updateSettings(new)
                                     }
                                 )
 
@@ -181,7 +204,8 @@ fun  HomeSettings() {
                                     ),
                                     isChecked = showRelatedAlbums,
                                     onCheckedChange = {
-                                        showRelatedAlbums = it
+                                        val new = appSettings.copy(showRelatedAlbums = it)
+                                        appSettingsVieModel.updateSettings(new)
                                     }
                                 )
 
@@ -192,7 +216,8 @@ fun  HomeSettings() {
                                     ),
                                     isChecked = showSimilarArtists,
                                     onCheckedChange = {
-                                        showSimilarArtists = it
+                                        val new = appSettings.copy(showSimilarArtists = it)
+                                        appSettingsVieModel.updateSettings(new)
                                     }
                                 )
 
@@ -203,7 +228,8 @@ fun  HomeSettings() {
                                     ),
                                     isChecked = showPlaylistMightLike,
                                     onCheckedChange = {
-                                        showPlaylistMightLike = it
+                                        val new = appSettings.copy(showPlaylistMightLike = it)
+                                        appSettingsVieModel.updateSettings(new)
                                     }
                                 )
 
@@ -214,7 +240,8 @@ fun  HomeSettings() {
                                     ),
                                     isChecked = showMonthlyPlaylistInQuickPicks,
                                     onCheckedChange = {
-                                        showMonthlyPlaylistInQuickPicks = it
+                                        val new = appSettings.copy(showMonthlyPlaylistInQuickPicks = it)
+                                        appSettingsVieModel.updateSettings(new)
                                     }
                                 )
                             }

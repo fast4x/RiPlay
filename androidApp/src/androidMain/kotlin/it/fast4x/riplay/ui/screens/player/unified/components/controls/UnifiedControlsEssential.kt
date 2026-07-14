@@ -55,6 +55,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import it.fast4x.riplay.LocalAppSettings
 import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
@@ -425,6 +426,9 @@ fun UnifiedControlsEssential(
     val appearanceSettingsVieModel = LocalAppearanceSettings.current
     val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
 
+    val appSettingsVieModel = LocalAppSettings.current
+    val appSettings = appSettingsVieModel.activeSettings.collectAsState().value
+
     //val colorPaletteName by rememberPreference(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
     //val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
     val colorPaletteMode = appearanceSettings.colorPaletteMode
@@ -437,7 +441,7 @@ fun UnifiedControlsEssential(
     )
 
     //var queueLoopType by rememberPreference(QUEUE_LOOP_TYPE.key, defaultValue = QueueLoopType.Default)
-    val queueLoopType = appearanceSettings.queueLoopType
+    val queueLoopType = appSettings.queueLoopType
     //val playerBackgroundColors by rememberPreference(PLAYER_BACKGROUND_COLORS.key,PlayerBackgroundColors.BlurredCoverColor)
     val playerBackgroundColors = appearanceSettings.playerBackgroundColors
     //var jumpPrevious by rememberPreference(JUMP_PREVIOUS.key,"3")
@@ -449,8 +453,8 @@ fun UnifiedControlsEssential(
     binder?.player?.DisposableListener {
         object : Player.Listener {
             override fun onRepeatModeChanged(repeatMode: Int) {
-                appearanceSettingsVieModel.updatePreset(
-                    appearanceSettings.copy(queueLoopType = when (repeatMode) {
+                appSettingsVieModel.updateSettings(
+                    appSettings.copy(queueLoopType = when (repeatMode) {
                         Player.REPEAT_MODE_ONE -> QueueLoopType.RepeatOne
                         Player.REPEAT_MODE_ALL -> QueueLoopType.RepeatAll
                         else -> QueueLoopType.Default
@@ -666,8 +670,8 @@ fun UnifiedControlsEssential(
         icon = getIconQueueLoopState(queueLoopType),
         color = colorPalette().text,
         onClick = {
-            val new = appearanceSettings.copy(queueLoopType = setQueueLoopState(queueLoopType))
-            appearanceSettingsVieModel.updatePreset(new)
+            val new = appSettings.copy(queueLoopType = setQueueLoopState(queueLoopType))
+            appSettingsVieModel.updateSettings(new)
         },
         modifier = Modifier
             .size(26.dp)

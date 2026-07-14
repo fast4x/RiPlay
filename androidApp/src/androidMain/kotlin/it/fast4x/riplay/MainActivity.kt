@@ -100,7 +100,6 @@ import com.kieronquinn.monetcompat.interfaces.MonetColorsChangedListener
 import it.fast4x.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import com.valentinilk.shimmer.LocalShimmerTheme
 import com.valentinilk.shimmer.defaultShimmerTheme
-import dev.kdrag0n.monet.theme.ColorScheme
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.requests.playlistPage
@@ -133,7 +132,6 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.BACKGROUND_PROGRESS
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_NAME
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_COLOR
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_DNS_OVER_HTTPS_SERVER
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_0
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_1
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_2
@@ -166,13 +164,11 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.MINI_PLAYER_TYPE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.NAVIGATION_BAR_POSITION
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.NAVIGATION_BAR_TYPE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PIP_MODULE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_BACKGROUND_COLORS
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.PROXY_HOSTNAME
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.PROXY_MODE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.PROXY_PORT
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.RESTART_ACTIVITY
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHAKE_EVENT_ENABLED
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SEARCH_TAB
@@ -181,7 +177,6 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSITION_EFFECT
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.USE_SYSTEM_FONT
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_COOKIE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_DATA_SYNC_ID
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_VISITOR_DATA
 import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
 import it.fast4x.riplay.data.models.Queues
@@ -210,11 +205,9 @@ import it.fast4x.riplay.ui.styling.dynamicColorPaletteOf
 import it.fast4x.riplay.ui.styling.typographyOf
 import it.fast4x.riplay.utils.LocalMonetCompat
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.getDnsOverHttpsType
 import it.fast4x.riplay.utils.getKeepPlayerMinimized
-import it.fast4x.riplay.utils.getSystemlanguage
 import it.fast4x.riplay.utils.invokeOnReady
 import it.fast4x.riplay.utils.isAtLeastAndroid13
 import it.fast4x.riplay.utils.isAtLeastAndroid6
@@ -232,7 +225,6 @@ import it.fast4x.riplay.extensions.htmlreader.shazamSongInfoExtractor
 import it.fast4x.riplay.extensions.nsd.discoverNsdServices
 import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_BT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SNOWFALL_EFFECT
 import it.fast4x.riplay.cast.ritune.models.toRiTuneDevice
 import it.fast4x.riplay.cast.ritune.RiTuneCastSelector
 import it.fast4x.riplay.enums.CastType
@@ -267,16 +259,13 @@ import java.util.Date
 import java.util.Objects
 import kotlin.math.sqrt
 import androidx.compose.ui.platform.LocalLocale
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import it.fast4x.riplay.extensions.appviewmodel.AppViewModelProvider
 import it.fast4x.riplay.extensions.experimental.appearancepreset.viewmodels.AppearanceSettingsViewModel
-import it.fast4x.riplay.extensions.experimental.appsettings.models.AppSettings
 import it.fast4x.riplay.extensions.experimental.appsettings.viewmodel.AppSettingsViewModel
 import it.fast4x.riplay.extensions.qrcodeanalyzer.qrCodeToAction
 import it.fast4x.riplay.extensions.musicbrainz.viewmodels.AlbumInsightsViewModel
 import it.fast4x.riplay.extensions.musicbrainz.viewmodels.ArtistInsightsViewModel
-import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.extensions.preferences.cleanUpUnusedPreferences
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.ui.screens.player.unified.TvUnifiedPlayer
@@ -845,8 +834,19 @@ class MainActivity :
                     gl = LocalePreferences.preference?.gl
                 )
 
+                LaunchedEffect(Unit, languageApp) {
+                    val systemLangCode =
+                        AppCompatDelegate.getApplicationLocales().get(0).toString()
+
+                    val sysLocale: LocaleListCompat =
+                        LocaleListCompat.forLanguageTags(systemLangCode)
+                    val appLocale: LocaleListCompat =
+                        LocaleListCompat.forLanguageTags(languageApp.code)
+                    AppCompatDelegate.setApplicationLocales(if (languageApp.code == "") sysLocale else appLocale)
+                }
+
                 //cookie.value = preferences.getString(YT_COOKIE.key, "").toString()
-                cookie.value = appSettings.ytCookey
+                cookie.value = appSettings.ytCookie
                 //visitorData.value = preferences.getString(YT_VISITOR_DATA.key, "").toString()
                 visitorData.value = appSettings.ytVisitorData
 
@@ -880,7 +880,7 @@ class MainActivity :
                         Environment.cookie = ""
                         cookie.value = ""
                         //preferences.edit { putString(YT_COOKIE.key, "") }
-                        val new = appSettings.copy(ytCookey = "")
+                        val new = appSettings.copy(ytCookie = "")
                         appSettingsViewModel.updateSettings(new)
                     }
                 }
@@ -1286,6 +1286,9 @@ class MainActivity :
                 }
 
                 LaunchedEffect(Unit, appearanceSettings) {
+                    appearance = appearance.copy(
+                        thumbnailShape = appearanceSettings.thumbnailRoundness.shape()
+                    )
                     val colorPaletteName =
                         appearanceSettings.colorPaletteName
                         //preferences.getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)

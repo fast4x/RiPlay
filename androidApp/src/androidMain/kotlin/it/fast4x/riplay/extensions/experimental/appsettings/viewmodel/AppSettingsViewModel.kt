@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.extensions.experimental.appsettings.AppSettingsManager
 import it.fast4x.riplay.extensions.experimental.appsettings.models.AppSettings
 import it.fast4x.riplay.utils.DbSettingsJson
 import kotlinx.coroutines.Dispatchers
@@ -52,6 +53,7 @@ class AppSettingsViewModel(application: Application) : AndroidViewModel(applicat
         viewModelScope.launch(Dispatchers.IO) {
             daoApp.updateSettings(DbSettingsJson.encodeToString(settings))
             _activeSettings.value = settings
+            AppSettingsManager().current = settings
         }
     }
 }
