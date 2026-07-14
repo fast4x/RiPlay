@@ -269,7 +269,7 @@ import kotlin.math.sqrt
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.seconds
 import android.os.Binder as AndroidBinder
-import androidx.core.graphics.scale
+import it.fast4x.riplay.extensions.experimental.appsettings.AppSettingsManager
 import java.io.ByteArrayOutputStream
 
 
@@ -449,6 +449,7 @@ class PlayerService : Service(),
     val songEnricher: SongEnricherService = SongEnricherService()
     val relatedItemsService: RelatedItemsService = RelatedItemsService()
 
+    val appSettings: AppSettingsManager = AppSettingsManager()
 
     override fun onBind(intent: Intent?): AndroidBinder {
         return binder
@@ -468,6 +469,10 @@ class PlayerService : Service(),
         //connectivityManager = getSystemService()
 
         // INITIALIZATION
+        serviceScope.launch{
+            appSettings.initialize()
+        }
+
         preferences.registerOnSharedPreferenceChangeListener(this)
 
         initializeLocalPlayer()

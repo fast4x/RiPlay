@@ -271,6 +271,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import it.fast4x.riplay.extensions.appviewmodel.AppViewModelProvider
 import it.fast4x.riplay.extensions.experimental.appearancepreset.viewmodels.AppearanceSettingsViewModel
+import it.fast4x.riplay.extensions.experimental.appsettings.models.AppSettings
+import it.fast4x.riplay.extensions.experimental.appsettings.viewmodel.AppSettingsViewModel
 import it.fast4x.riplay.extensions.qrcodeanalyzer.qrCodeToAction
 import it.fast4x.riplay.extensions.musicbrainz.viewmodels.AlbumInsightsViewModel
 import it.fast4x.riplay.extensions.musicbrainz.viewmodels.ArtistInsightsViewModel
@@ -371,9 +373,11 @@ class MainActivity :
     private val appearanceSettingsViewModel: AppearanceSettingsViewModel by viewModels {
         AppearanceSettingsViewModel(application)
     }
+    private val appSettingsViewModel: AppSettingsViewModel by viewModels {
+        AppSettingsViewModel(application)
+    }
 
     private var showAutostartPermissionDialog = false
-
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -766,6 +770,10 @@ class MainActivity :
                 val appearanceSettingsVieModel = appearanceSettingsViewModel
                 val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
 
+                val appSettingsVieModel = appSettingsViewModel
+                val appSettings = appSettingsVieModel.activeSettings.collectAsState().value
+                Timber.d("MainActivity onCreate appSettings: $appSettings")
+
                 val state = binder?.playerState?.collectAsState()
                 playerState = state?.value ?: PlayerState()
                 Timber.d("MainActivity onCreate playerState: $playerState")
@@ -814,14 +822,15 @@ class MainActivity :
                 val isSystemInDarkTheme = isSystemInDarkTheme()
                 var navController: NavController? = null
 
-                var customColor by rememberPreference(CUSTOM_COLOR.key, Color.Green.hashCode())
+                //var customColor by rememberPreference(CUSTOM_COLOR.key, Color.Green.hashCode())
+                val customColor = appearanceSettings.customColor
                 val lightTheme =
                     colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
 
                 val locale = LocalLocale.current.platformLocale
                 val languageTag = locale.toLanguageTag().replace("-Hant", "")
-                val languageApp =
-                    globalContext().preferences.getEnum(LANGUAGE_APP.key, getSystemlanguage())
+                val languageApp = appSettings.languageApp
+                    //globalContext().preferences.getEnum(LANGUAGE_APP.key, getSystemlanguage())
                 LocalePreferences.preference =
                     LocalePreferenceItem(
                         hl = languageApp.code.takeIf { it != Languages.System.code }
@@ -836,8 +845,11 @@ class MainActivity :
                     gl = LocalePreferences.preference?.gl
                 )
 
-                cookie.value = preferences.getString(YT_COOKIE.key, "").toString()
-                visitorData.value = preferences.getString(YT_VISITOR_DATA.key, "").toString()
+                //cookie.value = preferences.getString(YT_COOKIE.key, "").toString()
+                cookie.value = appSettings.ytCookey
+                //visitorData.value = preferences.getString(YT_VISITOR_DATA.key, "").toString()
+                visitorData.value = appSettings.ytVisitorData
+
 
 
                 // If visitorData is empty, get it from the server with or without login
@@ -848,10 +860,14 @@ class MainActivity :
                             Environment.getInitialVisitorData().getOrNull()
                         }.takeIf { it != "null" } ?: ""
                         // Save visitorData in SharedPreferences
-                        preferences.edit { putString(YT_VISITOR_DATA.key, visitorData.value) }
+                        //preferences.edit { putString(YT_VISITOR_DATA.key, visitorData.value) }
+                        val new = appSettings.copy(ytVisitorData = visitorData.value)
+                        appSettingsViewModel.updateSettings(new)
                     }.onFailure {
                         Timber.e("MainActivity.setContent visitorData.isEmpty() getInitialVisitorData ${it.stackTraceToString()}")
-                        visitorData.value = "" //Environment._uMYwa66ycM
+                        //visitorData.value = "" //Environment._uMYwa66ycM
+                        val new = appSettings.copy(ytVisitorData = "")
+                        appSettingsViewModel.updateSettings(new)
                     }
 
                 Environment.visitorData = visitorData.value
@@ -863,11 +879,14 @@ class MainActivity :
                     else {
                         Environment.cookie = ""
                         cookie.value = ""
-                        preferences.edit { putString(YT_COOKIE.key, "") }
+                        //preferences.edit { putString(YT_COOKIE.key, "") }
+                        val new = appSettings.copy(ytCookey = "")
+                        appSettingsViewModel.updateSettings(new)
                     }
                 }
 
-                val dataSyncId = preferences.getString(YT_DATA_SYNC_ID.key, "").toString()
+                //val dataSyncId = preferences.getString(YT_DATA_SYNC_ID.key, "").toString()
+                val dataSyncId = appSettings.ytDataSyncId
                 Environment.dataSyncId = dataSyncId.let {
                     it.takeIf { !it.contains("||") }
                         ?: it.takeIf { it.endsWith("||") }?.substringBefore("||")
@@ -876,7 +895,8 @@ class MainActivity :
 
                 Timber.d("MainActivity.setContent Environment variables cookie: ${Environment.cookie} visitorData: ${Environment.visitorData} dataSyncId: ${Environment.dataSyncId}")
                 val customDnsOverHttpsServer =
-                    preferences.getString(CUSTOM_DNS_OVER_HTTPS_SERVER.key, "")
+                    appSettings.customDnsOverHttpsServer
+                    //preferences.getString(CUSTOM_DNS_OVER_HTTPS_SERVER.key, "")
 
                 val customDnsIsOk = customDnsOverHttpsServer?.let { isValidHttpUrl(it) }
                 if (customDnsIsOk == false && getDnsOverHttpsType() == DnsOverHttpsType.Custom)
@@ -890,8 +910,10 @@ class MainActivity :
                 Environment.customDnsToUse = customDnsUrl
                 Environment.dnsToUse = getDnsOverHttpsType().type
 
-                val pageId = preferences.getString(PreferenceKey.YT_PAGEID.key, "")
-                val authUser = preferences.getString(PreferenceKey.YT_AUTHUSER.key, "")
+                //val pageId = preferences.getString(PreferenceKey.YT_PAGEID.key, "")
+                val pageId = appSettings.ytPageId
+                //val authUser = preferences.getString(PreferenceKey.YT_AUTHUSER.key, "")
+                val authUser = appSettings.ytAuthUser
                 Environment.pageId = pageId
                 Environment.authUser = authUser
 
@@ -930,6 +952,14 @@ class MainActivity :
                                 !lightTheme
                             )
                             Timber.d("MainActivity.startApp SetContent with(preferences) customColor POST colorPalette: $colorPalette")
+                        }
+                        if (colorPaletteName == ColorPaletteName.Customized) {
+                            colorPalette = customColorPalette(
+                                colorPalette,
+                                this@MainActivity,
+                                isSystemInDarkTheme,
+                                appearanceSettings.colorPaletteMode
+                            )
                         }
 
                         setSystemBarAppearance(colorPalette.isDark)
@@ -1001,6 +1031,7 @@ class MainActivity :
 
                 // React to theme mode changes without requiring app restart (include palette mode key)
                 DisposableEffect(binder, colorPaletteMode, !lightTheme) {
+
 
                     val listener =
                         SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
@@ -1254,7 +1285,7 @@ class MainActivity :
                     )
                 }
 
-                LaunchedEffect(Unit) {
+                LaunchedEffect(Unit, appearanceSettings) {
                     val colorPaletteName =
                         appearanceSettings.colorPaletteName
                         //preferences.getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
@@ -1266,6 +1297,15 @@ class MainActivity :
                                 isSystemInDarkTheme,
                                 appearanceSettings.colorPaletteMode
                             )
+                        )
+                    }
+                    if (colorPaletteName == ColorPaletteName.Dynamic) {
+                        setDynamicPalette(
+                            (binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri.toString()
+                                .toThumbnail(
+                                    1200
+                                )
+                                ?: "")
                         )
                     }
                 }
@@ -1363,7 +1403,8 @@ class MainActivity :
                         state = pip
                     ) { isCurrentInPip ->
                         //Timber.d("MainActivity pipState ${pipState.value} CrossfadeContainer isCurrentInPip $isCurrentInPip ")
-                        val pipModule by rememberPreference(PIP_MODULE.key, PipModule.Cover)
+                        //val pipModule by rememberPreference(PIP_MODULE.key, PipModule.Cover)
+                        val pipModule = appSettings.pipModule
                         if (isCurrentInPip) {
                             Box(
                                 modifier = Modifier
@@ -1411,6 +1452,7 @@ class MainActivity :
                                 LocalArtistInsights provides artistInsightsViewModel,
                                 LocalAlbumInsights provides albumInsightsViewModel,
                                 LocalAppearanceSettings provides appearanceSettingsViewModel,
+                                LocalAppSettings provides appSettingsViewModel,
                                 //LocalOnlinePlayerPlayingState provides onlinePlayerPlayingState,
                                 //LocalGlobalQueue provides globalQueueViewModel,
                                 //LocalInternetAvailable provides isInternetAvailable
@@ -1459,10 +1501,11 @@ class MainActivity :
                                         openTabFromShortcut = openTabFromShortcut
                                     )
 
-                                    val isSnowEffectEnabled by rememberPreference(
-                                        SHOW_SNOWFALL_EFFECT.key,
-                                        false
-                                    )
+//                                    val isSnowEffectEnabled by rememberPreference(
+//                                        SHOW_SNOWFALL_EFFECT.key,
+//                                        false
+//                                    )
+                                    val isSnowEffectEnabled = appSettings.isSnowEffectEnabled
                                     if (isSnowEffectEnabled)
                                         Box(modifier = Modifier.fillMaxSize()) {
                                             Snowfall()
@@ -1471,10 +1514,11 @@ class MainActivity :
                                     checkIfAppIsRunningInBackground()
                                     if (appRunningInBackground) localPlayerSheetState.collapseSoft()
 
-                                    val thumbnailRoundness by rememberPreference(
-                                        THUMBNAIL_ROUNDNESS.key,
-                                        ThumbnailRoundness.Light
-                                    )
+//                                    val thumbnailRoundness by rememberPreference(
+//                                        THUMBNAIL_ROUNDNESS.key,
+//                                        ThumbnailRoundness.Light
+//                                    )
+                                    val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
                                     val useTvInterface = isTvMode()
 
@@ -2070,3 +2114,5 @@ val LocalArtistInsights = staticCompositionLocalOf<ArtistInsightsViewModel> { er
 val LocalAlbumInsights = staticCompositionLocalOf<AlbumInsightsViewModel> { error("No album insights provided")}
 
 val LocalAppearanceSettings = staticCompositionLocalOf<AppearanceSettingsViewModel> { error("No appearance settings provided")}
+
+val LocalAppSettings = staticCompositionLocalOf<AppSettingsViewModel> { error("No app settings provided") }

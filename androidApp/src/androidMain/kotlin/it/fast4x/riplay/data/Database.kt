@@ -38,6 +38,7 @@ import it.fast4x.riplay.commonutils.MONTHLY_PREFIX
 import it.fast4x.riplay.commonutils.PINNED_PREFIX
 import it.fast4x.riplay.commonutils.PIPED_PREFIX
 import it.fast4x.riplay.data.dao.AlbumDao
+import it.fast4x.riplay.data.dao.AppSettingsDao
 import it.fast4x.riplay.data.dao.AppearancePresetDao
 import it.fast4x.riplay.data.dao.ArtistDao
 import it.fast4x.riplay.data.dao.EventDao
@@ -147,6 +148,9 @@ interface Database {
         }
         fun appearancePresetDao(): AppearancePresetDao {
             return (DatabaseInitializer.Instance).appearancePresetDao()
+        }
+        fun appSettingsDao(): AppSettingsDao {
+            return (DatabaseInitializer.Instance).appSettingsDao()
         }
     }
 
@@ -3745,6 +3749,7 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
     abstract fun relationDao(): RelationDao
     abstract fun eventDao(): EventDao
     abstract fun appearancePresetDao(): AppearancePresetDao
+    abstract fun appSettingsDao(): AppSettingsDao
 
 
     // Crud da migrare in dao

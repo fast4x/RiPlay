@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import it.fast4x.riplay.LocalAppSettings
 import it.fast4x.riplay.LocalAppearanceSettings
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.AlbumSwipeAction
@@ -198,12 +199,7 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_COLOR
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_ENABLED_FULLSCREEN
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_DISLIKED_PLAYLIST
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LISTENER_LEVELS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SNOWFALL_EFFECT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.USE_PLACEHOLDER_IN_IMAGE_LOADER
 import it.fast4x.riplay.utils.LazyListContainer
 
 
@@ -523,243 +519,307 @@ fun UiSettings(
     val appearanceSettingsVieModel = LocalAppearanceSettings.current
     val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
 
-    var recommendationsNumber by rememberPreference(RECOMMENDATIONS_NUMBER.key,   RecommendationsNumber.`5`)
+    val appSettingsViewModel = LocalAppSettings.current
+    val appSettings = appSettingsViewModel.activeSettings.collectAsState().value
 
-    var keepPlayerMinimized by rememberPreference(KEEP_PLAYER_MINIMIZED.key,   false)
+    //var recommendationsNumber by rememberPreference(RECOMMENDATIONS_NUMBER.key,   RecommendationsNumber.`5`)
+    val recommendationsNumber = appSettings.recommendationsNumber
 
-    var disableIconButtonOnTop by rememberPreference(DISABLE_ICON_BUTTON_ON_TOP.key, false)
-    var lastPlayerTimelineType by rememberPreference(LAST_PLAYER_TIMELINE_TYPE.key, PlayerTimelineType.Default)
-    var lastPlayerThumbnailSize by rememberPreference(LAST_PLAYER_THUMBNAIL_SIZE.key, PlayerThumbnailSize.Medium)
-    var disablePlayerHorizontalSwipe by rememberPreference(DISABLE_PLAYER_HORIZONTAL_SWIPE.key, false)
+    //var keepPlayerMinimized by rememberPreference(KEEP_PLAYER_MINIMIZED.key,   false)
+    //val keepPlayerMinimized = appSettings.keepPlayerMinimized
 
-    var lastPlayerPlayButtonType by rememberPreference(LAST_PLAYER_PLAY_BUTTON_TYPE.key, PlayerPlayButtonType.Rectangular)
+    //var disableIconButtonOnTop by rememberPreference(DISABLE_ICON_BUTTON_ON_TOP.key, false)
+    val disableIconButtonOnTop = appSettings.disableIconButtonOnTop
+    //var lastPlayerTimelineType by rememberPreference(LAST_PLAYER_TIMELINE_TYPE.key, PlayerTimelineType.Default)
+    val lastPlayerTimelineType = appearanceSettings.lastPlayerTimelineType
+    //var lastPlayerThumbnailSize by rememberPreference(LAST_PLAYER_THUMBNAIL_SIZE.key, PlayerThumbnailSize.Medium)
+    val lastPlayerThumbnailSize = appearanceSettings.lastPlayerThumbnailSize
+    //var disablePlayerHorizontalSwipe by rememberPreference(DISABLE_PLAYER_HORIZONTAL_SWIPE.key, false)
+    val disablePlayerHorizontalSwipe = appearanceSettings.disablePlayerHorizontalSwipe
+
+    //var lastPlayerPlayButtonType by rememberPreference(LAST_PLAYER_PLAY_BUTTON_TYPE.key, PlayerPlayButtonType.Rectangular)
+    val lastPlayerPlayButtonType = appearanceSettings.lastPlayerPlayButtonType
 
     //var colorPaletteName by rememberPreference(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
     val colorPaletteName = appearanceSettings.colorPaletteName
     //var colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
     val colorPaletteMode = appearanceSettings.colorPaletteMode
-    var indexNavigationTab by rememberPreference(
-        INDEX_NAVIGATION_TAB.key,
-        HomeScreenTabs.Default
-    )
-    var fontType by rememberPreference(FONT_TYPE.key, FontType.Rubik)
-    var useSystemFont by rememberPreference(USE_SYSTEM_FONT.key, false)
-    var applyFontPadding by rememberPreference(APPLY_FONT_PADDING.key, false)
-    var isSwipeToActionEnabled by rememberPreference(IS_SWIPE_TO_ACTION_ENABLED.key, true)
-    var showSearchTab by rememberPreference(SHOW_SEARCH_TAB.key, false)
-    var showStatsInNavbar by rememberPreference(SHOW_STATS_IN_NAVBAR.key, false)
+//    var indexNavigationTab by rememberPreference(
+//        INDEX_NAVIGATION_TAB.key,
+//        HomeScreenTabs.Default
+//    )
+    val indexNavigationTab = appSettings.indexNavigationTab
+    //var fontType by rememberPreference(FONT_TYPE.key, FontType.Rubik)
+    val fontType = appSettings.fontType
+    //var useSystemFont by rememberPreference(USE_SYSTEM_FONT.key, false)
+    val useSystemFont = appSettings.useSystemFont
+    //var applyFontPadding by rememberPreference(APPLY_FONT_PADDING.key, false)
+    val applyFontPadding = appSettings.applyFontPadding
+    //var isSwipeToActionEnabled by rememberPreference(IS_SWIPE_TO_ACTION_ENABLED.key, true)
+    val isSwipeToActionEnabled = appSettings.isSwipeToActionEnabled
+    //var showSearchTab by rememberPreference(SHOW_SEARCH_TAB.key, false)
+    val showSearchTab = appSettings.showSearchTab
+    //var showStatsInNavbar by rememberPreference(SHOW_STATS_IN_NAVBAR.key, false)
+    val showStatsInNavbar = appSettings.showStatsInNavbar
 
-    var maxStatisticsItems by rememberPreference(
-        MAX_STATISTICS_ITEMS.key,
-        MaxStatisticsItems.`10`
-    )
+//    var maxStatisticsItems by rememberPreference(
+//        MAX_STATISTICS_ITEMS.key,
+//        MaxStatisticsItems.`10`
+//    )
+    val maxStatisticsItems = appSettings.maxStatisticsItems
 
-    var showStatsListeningTime by rememberPreference(SHOW_STATS_LISTENING_TIME.key,   true)
+    //var showStatsListeningTime by rememberPreference(SHOW_STATS_LISTENING_TIME.key,   true)
+    val showStatsListeningTime = appSettings.showStatsListeningTime
 
-    var maxTopPlaylistItems by rememberPreference(
-        MAX_TOP_PLAYLIST_ITEMS.key,
-        MaxTopPlaylistItems.`10`
-    )
+//    var maxTopPlaylistItems by rememberPreference(
+//        MAX_TOP_PLAYLIST_ITEMS.key,
+//        MaxTopPlaylistItems.`10`
+//    )
+    val maxTopPlaylistItems = appSettings.maxTopPlaylistItems
 
-    var navigationBarPosition by rememberPreference(NAVIGATION_BAR_POSITION.key, NavigationBarPosition.Bottom)
-    var navigationBarType by rememberPreference(NAVIGATION_BAR_TYPE.key, NavigationBarType.IconAndText)
+    //var navigationBarPosition by rememberPreference(NAVIGATION_BAR_POSITION.key, NavigationBarPosition.Bottom)
+    val navigationBarPosition = appSettings.navigationBarPosition
+    //var navigationBarType by rememberPreference(NAVIGATION_BAR_TYPE.key, NavigationBarType.IconAndText)
+    val navigationBarType = appSettings.navigationBarType
     val search = Search.init()
 
-    var showFavoritesPlaylist by rememberPreference(SHOW_FAVORITES_PLAYLIST.key, true)
-    var showMyTopPlaylist by rememberPreference(SHOW_MY_TOP_PLAYLIST.key, true)
-    var showOnDevicePlaylist by rememberPreference(SHOW_ON_DEVICE_PLAYLIST.key, true)
-    var showDislikedPlaylist by rememberPreference(SHOW_DISLIKED_PLAYLIST.key, false)
-    var showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
-    var menuStyle by rememberPreference(MENU_STYLE.key, MenuStyle.List)
-    var transitionEffect by rememberPreference(TRANSITION_EFFECT.key, TransitionEffect.SlideHorizontal)
-    var enableCreateMonthlyPlaylists by rememberPreference(ENABLE_CREATE_MONTHLY_PLAYLISTS.key, true)
-    var showPinnedPlaylists by rememberPreference(SHOW_PINNED_PLAYLISTS.key, true)
-    var showMonthlyPlaylists by rememberPreference(SHOW_MONTHLY_PLAYLISTS.key, true)
+    //var showFavoritesPlaylist by rememberPreference(SHOW_FAVORITES_PLAYLIST.key, true)
+    val showFavoritesPlaylist = appSettings.showFavoritesPlaylist
+    //var showMyTopPlaylist by rememberPreference(SHOW_MY_TOP_PLAYLIST.key, true)
+    val showMyTopPlaylist = appSettings.showMyTopPlaylist
+    //var showOnDevicePlaylist by rememberPreference(SHOW_ON_DEVICE_PLAYLIST.key, true)
+    val showOnDevicePlaylist = appSettings.showOnDevicePlaylist
+    //var showDislikedPlaylist by rememberPreference(SHOW_DISLIKED_PLAYLIST.key, false)
+    val showDislikedPlaylist = appSettings.showDislikedPlaylist
+    //var showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
+    val showFloatingIcon = appSettings.showFloatingIcon
+    //var menuStyle by rememberPreference(MENU_STYLE.key, MenuStyle.List)
+    val menuStyle = appSettings.menuStyle
+    //var transitionEffect by rememberPreference(TRANSITION_EFFECT.key, TransitionEffect.SlideHorizontal)
+    val transitionEffect = appSettings.transitionEffect
+    //var enableCreateMonthlyPlaylists by rememberPreference(ENABLE_CREATE_MONTHLY_PLAYLISTS.key, true)
+    val enableCreateMonthlyPlaylists = appSettings.enableCreateMonthlyPlaylists
+    //var showPinnedPlaylists by rememberPreference(SHOW_PINNED_PLAYLISTS.key, true)
+    val showPinnedPlaylists = appSettings.showPinnedPlaylists
+    //var showMonthlyPlaylists by rememberPreference(SHOW_MONTHLY_PLAYLISTS.key, true)
+    val showMonthlyPlaylists = appSettings.showMonthlyPlaylists
 
-    var customThemeLight_Background0 by rememberPreference(CUSTOM_THEME_LIGHT_BACKGROUND_0.key, DefaultLightColorPalette.background0.hashCode())
-    var customThemeLight_Background1 by rememberPreference(CUSTOM_THEME_LIGHT_BACKGROUND_1.key, DefaultLightColorPalette.background1.hashCode())
-    var customThemeLight_Background2 by rememberPreference(CUSTOM_THEME_LIGHT_BACKGROUND_2.key, DefaultLightColorPalette.background2.hashCode())
-    var customThemeLight_Background3 by rememberPreference(CUSTOM_THEME_LIGHT_BACKGROUND_3.key, DefaultLightColorPalette.background3.hashCode())
-    var customThemeLight_Background4 by rememberPreference(CUSTOM_THEME_LIGHT_BACKGROUND_4.key, DefaultLightColorPalette.background4.hashCode())
-    var customThemeLight_Text by rememberPreference(CUSTOM_THEME_LIGHT_TEXT.key, DefaultLightColorPalette.text.hashCode())
-    var customThemeLight_TextSecondary by rememberPreference(CUSTOM_THEME_LIGHT_TEXT_SECONDARY.key, DefaultLightColorPalette.textSecondary.hashCode())
-    var customThemeLight_TextDisabled by rememberPreference(CUSTOM_THEME_LIGHT_TEXT_DISABLED.key, DefaultLightColorPalette.textDisabled.hashCode())
-    var customThemeLight_IconButtonPlayer by rememberPreference(CUSTOM_THEME_LIGHT_ICON_BUTTON_PLAYER.key, DefaultLightColorPalette.iconButtonPlayer.hashCode())
-    var customThemeLight_Accent by rememberPreference(CUSTOM_THEME_LIGHT_ACCENT.key, DefaultLightColorPalette.accent.hashCode())
+    //var customThemeLight_Background0 by rememberPreference(CUSTOM_THEME_LIGHT_BACKGROUND_0.key, DefaultLightColorPalette.background0.hashCode())
+    val customThemeLight_Background0 = appearanceSettings.customThemeLight_Background0
+    //var customThemeLight_Background1 by rememberPreference(CUSTOM_THEME_LIGHT_BACKGROUND_1.key, DefaultLightColorPalette.background1.hashCode())
+    val customThemeLight_Background1 = appearanceSettings.customThemeLight_Background1
+    //var customThemeLight_Background2 by rememberPreference(CUSTOM_THEME_LIGHT_BACKGROUND_2.key, DefaultLightColorPalette.background2.hashCode())
+    val customThemeLight_Background2 = appearanceSettings.customThemeLight_Background2
+    //var customThemeLight_Background3 by rememberPreference(CUSTOM_THEME_LIGHT_BACKGROUND_3.key, DefaultLightColorPalette.background3.hashCode())
+    val customThemeLight_Background3 = appearanceSettings.customThemeLight_Background3
+    //var customThemeLight_Background4 by rememberPreference(CUSTOM_THEME_LIGHT_BACKGROUND_4.key, DefaultLightColorPalette.background4.hashCode())
+    val customThemeLight_Background4 = appearanceSettings.customThemeLight_Background4
+    //var customThemeLight_Text by rememberPreference(CUSTOM_THEME_LIGHT_TEXT.key, DefaultLightColorPalette.text.hashCode())
+    val customThemeLight_Text = appearanceSettings.customThemeLight_Text
+    //var customThemeLight_TextSecondary by rememberPreference(CUSTOM_THEME_LIGHT_TEXT_SECONDARY.key, DefaultLightColorPalette.textSecondary.hashCode())
+    val customThemeLight_TextSecondary = appearanceSettings.customThemeLight_TextSecondary
+    //var customThemeLight_TextDisabled by rememberPreference(CUSTOM_THEME_LIGHT_TEXT_DISABLED.key, DefaultLightColorPalette.textDisabled.hashCode())
+    val customThemeLight_TextDisabled = appearanceSettings.customThemeLight_TextDisabled
+    //var customThemeLight_IconButtonPlayer by rememberPreference(CUSTOM_THEME_LIGHT_ICON_BUTTON_PLAYER.key, DefaultLightColorPalette.iconButtonPlayer.hashCode())
+    val customThemeLight_IconButtonPlayer = appearanceSettings.customThemeLight_IconButtonPlayer
+    //var customThemeLight_Accent by rememberPreference(CUSTOM_THEME_LIGHT_ACCENT.key, DefaultLightColorPalette.accent.hashCode())
+    val customThemeLight_Accent = appearanceSettings.customThemeLight_Accent
 
-    var customThemeDark_Background0 by rememberPreference(CUSTOM_THEME_DARK_BACKGROUND_0.key, DefaultDarkColorPalette.background0.hashCode())
-    var customThemeDark_Background1 by rememberPreference(CUSTOM_THEME_DARK_BACKGROUND_1.key, DefaultDarkColorPalette.background1.hashCode())
-    var customThemeDark_Background2 by rememberPreference(CUSTOM_THEME_DARK_BACKGROUND_2.key, DefaultDarkColorPalette.background2.hashCode())
-    var customThemeDark_Background3 by rememberPreference(CUSTOM_THEME_DARK_BACKGROUND_3.key, DefaultDarkColorPalette.background3.hashCode())
-    var customThemeDark_Background4 by rememberPreference(CUSTOM_THEME_DARK_BACKGROUND_4.key, DefaultDarkColorPalette.background4.hashCode())
-    var customThemeDark_Text by rememberPreference(CUSTOM_THEME_DARK_TEXT.key, DefaultDarkColorPalette.text.hashCode())
-    var customThemeDark_TextSecondary by rememberPreference(CUSTOM_THEME_DARK_TEXT_SECONDARY.key, DefaultDarkColorPalette.textSecondary.hashCode())
-    var customThemeDark_TextDisabled by rememberPreference(CUSTOM_THEME_DARK_TEXT_DISABLED.key, DefaultDarkColorPalette.textDisabled.hashCode())
-    var customThemeDark_IconButtonPlayer by rememberPreference(CUSTOM_THEME_DARK_ICON_BUTTON_PLAYER.key, DefaultDarkColorPalette.iconButtonPlayer.hashCode())
-    var customThemeDark_Accent by rememberPreference(CUSTOM_THEME_DARK_ACCENT.key, DefaultDarkColorPalette.accent.hashCode())
+    //var customThemeDark_Background0 by rememberPreference(CUSTOM_THEME_DARK_BACKGROUND_0.key, DefaultDarkColorPalette.background0.hashCode())
+    val customThemeDark_Background0 = appearanceSettings.customThemeDark_Background0
+    //var customThemeDark_Background1 by rememberPreference(CUSTOM_THEME_DARK_BACKGROUND_1.key, DefaultDarkColorPalette.background1.hashCode())
+    val customThemeDark_Background1 = appearanceSettings.customThemeDark_Background1
+    //var customThemeDark_Background2 by rememberPreference(CUSTOM_THEME_DARK_BACKGROUND_2.key, DefaultDarkColorPalette.background2.hashCode())
+    val customThemeDark_Background2 = appearanceSettings.customThemeDark_Background2
+    //var customThemeDark_Background3 by rememberPreference(CUSTOM_THEME_DARK_BACKGROUND_3.key, DefaultDarkColorPalette.background3.hashCode())
+    val customThemeDark_Background3 = appearanceSettings.customThemeDark_Background3
+    //var customThemeDark_Background4 by rememberPreference(CUSTOM_THEME_DARK_BACKGROUND_4.key, DefaultDarkColorPalette.background4.hashCode())
+    val customThemeDark_Background4 = appearanceSettings.customThemeDark_Background4
+    //var customThemeDark_Text by rememberPreference(CUSTOM_THEME_DARK_TEXT.key, DefaultDarkColorPalette.text.hashCode())
+    val customThemeDark_Text = appearanceSettings.customThemeDark_Text
+    //var customThemeDark_TextSecondary by rememberPreference(CUSTOM_THEME_DARK_TEXT_SECONDARY.key, DefaultDarkColorPalette.textSecondary.hashCode())
+    val customThemeDark_TextSecondary = appearanceSettings.customThemeDark_TextSecondary
+    //var customThemeDark_TextDisabled by rememberPreference(CUSTOM_THEME_DARK_TEXT_DISABLED.key, DefaultDarkColorPalette.textDisabled.hashCode())
+    val customThemeDark_TextDisabled = appearanceSettings.customThemeDark_TextDisabled
+    //var customThemeDark_IconButtonPlayer by rememberPreference(CUSTOM_THEME_DARK_ICON_BUTTON_PLAYER.key, DefaultDarkColorPalette.iconButtonPlayer.hashCode())
+    val customThemeDark_IconButtonPlayer = appearanceSettings.customThemeDark_IconButtonPlayer
+    //var customThemeDark_Accent by rememberPreference(CUSTOM_THEME_DARK_ACCENT.key, DefaultDarkColorPalette.accent.hashCode())
+    val customThemeDark_Accent = appearanceSettings.customThemeDark_Accent
 
     var resetCustomLightThemeDialog by rememberSaveable { mutableStateOf(false) }
     var resetCustomDarkThemeDialog by rememberSaveable { mutableStateOf(false) }
-    var playerPosition by rememberPreference(PLAYER_POSITION.key, PlayerPosition.Bottom)
+    //var playerPosition by rememberPreference(PLAYER_POSITION.key, PlayerPosition.Bottom)
+    val playerPosition = appSettings.playerPosition
 
-    var messageType by rememberPreference(MESSAGE_TYPE.key, MessageType.Modern)
+    //var messageType by rememberPreference(MESSAGE_TYPE.key, MessageType.Modern)
+    val messageType = appSettings.messageType
 
 
     /*  ViMusic Mode Settings  */
     //var showTopActionsBar by rememberPreference(SHOW_TOP_ACTIONS_BAR.key, true)
     //val showTopActionsBar = appearanceSettings.showTopActionsBar
     //var playerControlsType by rememberPreference(PLAYER_CONTROLS_TYPE.key, PlayerControlsType.Essential)
-    val playerControlsType = appearanceSettings.playerControlsType
+    //val playerControlsType = appearanceSettings.playerControlsType
     //var playerInfoType by rememberPreference(PLAYER_INFO_TYPE.key, PlayerInfoType.Essential)
     //var playerType by rememberPreference(PLAYER_TYPE.key, PlayerType.Modern)
-    val playerType = appearanceSettings.playerType
+    //val playerType = appearanceSettings.playerType
     //var queueType by rememberPreference(QUEUE_TYPE.key, QueueType.Modern)
-    val queueType = appearanceSettings.queueType
+    //val queueType = appearanceSettings.queueType
     //var fadingedge by rememberPreference(FADING_EDGE.key, false)
-    val fadingedge = appearanceSettings.fadingedge
+    //val fadingedge = appearanceSettings.fadingedge
     //var carousel by rememberPreference(CAROUSEL.key, true)
-    val carousel = appearanceSettings.carousel
+    //val carousel = appearanceSettings.carousel
     //var carouselSize by rememberPreference(CAROUSEL_SIZE.key, CarouselSize.Biggest)
-    val carouselSize = appearanceSettings.carouselSize
+    //val carouselSize = appearanceSettings.carouselSize
     //var thumbnailType by rememberPreference(THUMBNAIL_TYPE.key, ThumbnailType.Modern)
-    val thumbnailType = appearanceSettings.thumbnailType
+    //val thumbnailType = appearanceSettings.thumbnailType
     //var playerTimelineType by rememberPreference(PLAYER_TIMELINE_TYPE.key, PlayerTimelineType.Default)
-    val playerTimelineType = appearanceSettings.playerTimelineType
+    //val playerTimelineType = appearanceSettings.playerTimelineType
 //    var playerThumbnailSize by rememberPreference(
 //        PLAYER_THUMBNAIL_SIZE.key,
 //        PlayerThumbnailSize.Biggest
 //    )
-    val playerThumbnailSize = appearanceSettings.playerThumbnailSize
+    //val playerThumbnailSize = appearanceSettings.playerThumbnailSize
 //    var playerTimelineSize by rememberPreference(
 //        PLAYER_TIMELINE_SIZE.key,
 //        PlayerTimelineSize.Biggest
 //    )
-    val playerTimelineSize = appearanceSettings.playerTimelineSize
+    //val playerTimelineSize = appearanceSettings.playerTimelineSize
     //var playerInfoShowIcons by rememberPreference(PLAYER_INFO_SHOW_ICONS.key, true)
-    val playerInfoShowIcons = appearanceSettings.playerInfoShowIcons
+    //val playerInfoShowIcons = appearanceSettings.playerInfoShowIcons
 //    var miniPlayerType by rememberPreference(
 //        MINI_PLAYER_TYPE.key,
 //        MiniPlayerType.Modern
 //    )
-    val miniPlayerType = appearanceSettings.miniPlayerType
+    //val miniPlayerType = appearanceSettings.miniPlayerType
 //    var playerSwapControlsWithTimeline by rememberPreference(
 //        PLAYER_SWAP_CONTROLS_WITH_TIMELINE.key,
 //        false
 //    )
-    val playerSwapControlsWithTimeline = appearanceSettings.playerSwapControlsWithTimeline
+    //val playerSwapControlsWithTimeline = appearanceSettings.playerSwapControlsWithTimeline
 //    var playerPlayButtonType by rememberPreference(
 //        PLAYER_PLAY_BUTTON_TYPE.key,
 //        PlayerPlayButtonType.Disabled
 //    )
-    val playerPlayButtonType = appearanceSettings.playerPlayButtonType
+    //val playerPlayButtonType = appearanceSettings.playerPlayButtonType
     //var buttonzoomout by rememberPreference(BUTTON_ZOOM_OUT.key, false)
-    val buttonzoomout = appearanceSettings.buttonzoomout
+    //val buttonzoomout = appearanceSettings.buttonzoomout
     //var iconLikeType by rememberPreference(ICON_LIKE_TYPE.key, IconLikeType.Essential)
-    val iconLikeType = appearanceSettings.iconLikeType
+    //val iconLikeType = appearanceSettings.iconLikeType
 //    var playerBackgroundColors by rememberPreference(
 //        PLAYER_BACKGROUND_COLORS.key,
 //        PlayerBackgroundColors.BlurredCoverColor
 //    )
     //val playerBackgroundColors = appearanceSettings.playerBackgroundColors
     //var blackgradient by rememberPreference(BLACK_GRADIENT.key, false)
-    val blackgradient = appearanceSettings.blackgradient
+    //val blackgradient = appearanceSettings.blackgradient
     //var showTotalTimeQueue by rememberPreference(SHOW_TOTAL_TIME_QUEUE.key, true)
-    val showTotalTimeQueue = appearanceSettings.showTotalTimeQueue
+    //val showTotalTimeQueue = appearanceSettings.showTotalTimeQueue
     //var showNextSongsInPlayer by rememberPreference(SHOW_NEXT_SONGS_IN_PLAYER.key, false)
-    val showNextSongsInPlayer = appearanceSettings.showNextSongsInPlayer
+    //val showNextSongsInPlayer = appearanceSettings.showNextSongsInPlayer
     //var showRemainingSongTime by rememberPreference(SHOW_REMAINING_SONG_TIME.key, true)
-    val showRemainingSongTime = appearanceSettings.showRemainingSongTime
+    //val showRemainingSongTime = appearanceSettings.showRemainingSongTime
     //var disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
-    val disableScrollingText = appearanceSettings.disableScrollingText
+    //val disableScrollingText = appearanceSettings.disableScrollingText
     //var thumbnailTapEnabled by rememberPreference(THUMBNAIL_TAP_ENABLED.key, true)
-    val thumbnailTapEnabled = appearanceSettings.thumbnailTapEnabled
+    //val thumbnailTapEnabled = appearanceSettings.thumbnailTapEnabled
     //var clickLyricsText by rememberPreference(CLICK_ON_LYRICS_TEXT.key, true)
-    val clickLyricsText = appearanceSettings.clickLyricsText
+    //val clickLyricsText = appearanceSettings.clickLyricsText
 //    var backgroundProgress by rememberPreference(
 //        BACKGROUND_PROGRESS.key,
 //        BackgroundProgress.MiniPlayer
 //    )
-    val backgroundProgress = appearanceSettings.backgroundProgress
+    //val backgroundProgress = appearanceSettings.backgroundProgress
 //    var transparentBackgroundActionBarPlayer by rememberPreference(
 //        TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR.key,
 //        true
 //    )
-    val transparentBackgroundActionBarPlayer = appearanceSettings.transparentBackgroundActionBarPlayer
+    //val transparentBackgroundActionBarPlayer = appearanceSettings.transparentBackgroundActionBarPlayer
     //var actionspacedevenly by rememberPreference(ACTIONS_SPACED_EVENLY.key, false)
-    val actionspacedevenly = appearanceSettings.actionsSpacedEvenly
+    //val actionspacedevenly = appearanceSettings.actionsSpacedEvenly
     //var tapqueue by rememberPreference(TAP_QUEUE.key, true)
-    val tapqueue = appearanceSettings.tapqueue
+    //val tapqueue = appearanceSettings.tapqueue
     //var swipeUpQueue by rememberPreference(SWIPE_UP_QUEUE.key, true)
-    val swipeUpQueue = appearanceSettings.swipeUpQueue
+    //val swipeUpQueue = appearanceSettings.swipeUpQueue
     //var showButtonPlayerAddToPlaylist by rememberPreference(SHOW_BUTTON_PLAYER_ADD_TO_PLAYLIST.key, true)
-    val showButtonPlayerAddToPlaylist = appearanceSettings.showButtonPlayerAddToPlaylist
+    //val showButtonPlayerAddToPlaylist = appearanceSettings.showButtonPlayerAddToPlaylist
     //var showButtonPlayerArrow by rememberPreference(SHOW_BUTTON_PLAYER_ARROW.key, true)
-    val showButtonPlayerArrow = appearanceSettings.showButtonPlayerArrow
+    //val showButtonPlayerArrow = appearanceSettings.showButtonPlayerArrow
     //var showButtonPlayerDownload by rememberPreference(showButtonPlayerDownloadKey.key, true)
     //var showButtonPlayerLoop by rememberPreference(SHOW_BUTTON_PLAYER_LOOP.key, true)
-    val showButtonPlayerLoop = appearanceSettings.showButtonPlayerLoop
+    //val showButtonPlayerLoop = appearanceSettings.showButtonPlayerLoop
     //var showButtonPlayerLyrics by rememberPreference(SHOW_BUTTON_PLAYER_LYRICS.key, true)
-    val showButtonPlayerLyrics = appearanceSettings.showButtonPlayerLyrics
+    //val showButtonPlayerLyrics = appearanceSettings.showButtonPlayerLyrics
     //var expandedplayertoggle by rememberPreference(EXPANDED_PLAYER_TOGGLE.key, true)
-    val expandedplayertoggle = appearanceSettings.expandedPlayerToggle
+    //val expandedplayertoggle = appearanceSettings.expandedPlayerToggle
     //var showButtonPlayerShuffle by rememberPreference(SHOW_BUTTON_PLAYER_SHUFFLE.key, true)
-    val showButtonPlayerShuffle = appearanceSettings.showButtonPlayerShuffle
+    //val showButtonPlayerShuffle = appearanceSettings.showButtonPlayerShuffle
     //var showButtonPlayerSleepTimer by rememberPreference(SHOW_BUTTON_PLAYER_SLEEP_TIMER.key, false)
-    val showButtonPlayerSleepTimer = appearanceSettings.showButtonPlayerSleepTimer
+    //val showButtonPlayerSleepTimer = appearanceSettings.showButtonPlayerSleepTimer
     //var showButtonPlayerMenu by rememberPreference(SHOW_BUTTON_PLAYER_MENU.key, false)
-    val showButtonPlayerMenu = appearanceSettings.showButtonPlayerMenu
+    //val showButtonPlayerMenu = appearanceSettings.showButtonPlayerMenu
 //    var showButtonPlayerSystemEqualizer by rememberPreference(
 //        SHOW_BUTTON_PLAYER_SYSTEM_EQUALIZER.key,
 //        false
 //    )
-    val showButtonPlayerSystemEqualizer = appearanceSettings.showButtonPlayerSystemEqualizer
+    //val showButtonPlayerSystemEqualizer = appearanceSettings.showButtonPlayerSystemEqualizer
     //var showButtonPlayerDiscover by rememberPreference(SHOW_BUTTON_PLAYER_DISCOVER.key, false)
-    val showButtonPlayerDiscover = appearanceSettings.showButtonPlayerDiscover
+    //val showButtonPlayerDiscover = appearanceSettings.showButtonPlayerDiscover
 //    var playerEnableLyricsPopupMessage by rememberPreference(
 //        PLAYER_ENABLE_LYRICS_POPUP_MESSAGE.key,
 //        true
 //    )
-    val playerEnableLyricsPopupMessage = appearanceSettings.playerEnableLyricsPopupMessage
+    //val playerEnableLyricsPopupMessage = appearanceSettings.playerEnableLyricsPopupMessage
     //var visualizerEnabled by rememberPreference(VISUALIZER_ENABLED.key, false)
-    val visualizerEnabled = appearanceSettings.visualizerEnabled
+    //val visualizerEnabled = appearanceSettings.visualizerEnabled
     //var showthumbnail by rememberPreference(SHOW_THUMBNAIL.key, true)
-    val showthumbnail = appearanceSettings.showThumbnail
+    //val showthumbnail = appearanceSettings.showThumbnail
     /*  ViMusic Mode Settings  */
 
-    var queueSwipeLeftAction by rememberPreference(
-        QUEUE_SWIPE_LEFT_ACTION.key,
-        QueueSwipeAction.RemoveFromQueue
-    )
-    var queueSwipeRightAction by rememberPreference(
-        QUEUE_SWIPE_RIGHT_ACTION.key,
-        QueueSwipeAction.PlayNext
-    )
-    var playlistSwipeLeftAction by rememberPreference(
-        PLAYLIST_SWIPE_LEFT_ACTION.key,
-        PlaylistSwipeAction.Favourite
-    )
-    var playlistSwipeRightAction by rememberPreference(
-        PLAYLIST_SWIPE_RIGHT_ACTION.key,
-        PlaylistSwipeAction.PlayNext
-    )
-    var albumSwipeLeftAction by rememberPreference(
-        ALBUM_SWIPE_LEFT_ACTION.key,
-        AlbumSwipeAction.PlayNext
-    )
-    var albumSwipeRightAction by rememberPreference(
-        ALBUM_SWIPE_RIGHT_ACTION.key,
-        AlbumSwipeAction.Bookmark
-    )
+//    var queueSwipeLeftAction by rememberPreference(
+//        QUEUE_SWIPE_LEFT_ACTION.key,
+//        QueueSwipeAction.RemoveFromQueue
+//    )
+    val queueSwipeLeftAction = appSettings.queueSwipeLeftAction
+//    var queueSwipeRightAction by rememberPreference(
+//        QUEUE_SWIPE_RIGHT_ACTION.key,
+//        QueueSwipeAction.PlayNext
+//
+    val queueSwipeRightAction = appSettings.queueSwipeRightAction
+//    var playlistSwipeLeftAction by rememberPreference(
+//        PLAYLIST_SWIPE_LEFT_ACTION.key,
+//        PlaylistSwipeAction.Favourite
+//    )
+    val playlistSwipeLeftAction = appSettings.playlistSwipeLeftAction
+//    var playlistSwipeRightAction by rememberPreference(
+//        PLAYLIST_SWIPE_RIGHT_ACTION.key,
+//        PlaylistSwipeAction.PlayNext
+//    )
+    val playlistSwipeRightAction = appSettings.playlistSwipeRightAction
+//    var albumSwipeLeftAction by rememberPreference(
+//        ALBUM_SWIPE_LEFT_ACTION.key,
+//        AlbumSwipeAction.PlayNext
+//    )
+    val albumSwipeLeftAction = appSettings.albumSwipeLeftAction
+//    var albumSwipeRightAction by rememberPreference(
+//        ALBUM_SWIPE_RIGHT_ACTION.key,
+//        AlbumSwipeAction.Bookmark
+//    )
+    val albumSwipeRightAction = appSettings.albumSwipeRightAction
+    //var customColor by rememberPreference(CUSTOM_COLOR.key, Color.Green.hashCode())
+    val customColor = appearanceSettings.customColor
 
-    var customColor by rememberPreference(CUSTOM_COLOR.key, Color.Green.hashCode())
+    //var usePlaceholder by rememberPreference(USE_PLACEHOLDER_IN_IMAGE_LOADER.key, true)
+    val usePlaceholderInImageLoader = appSettings.usePlaceholderInImageLoader
 
-    var usePlaceholder by rememberPreference(USE_PLACEHOLDER_IN_IMAGE_LOADER.key, true)
+    //var isEnabledFullscreen by rememberPreference(IS_ENABLED_FULLSCREEN.key, false)
+    val isEnabledFullscreen = appSettings.isEnabledFullScreen
 
-    var isEnabledFullscreen by rememberPreference(IS_ENABLED_FULLSCREEN.key, false)
+    //var isSnowEffectEnabled by rememberPreference(SHOW_SNOWFALL_EFFECT.key, false)
+    val isSnowEffectEnabled = appSettings.showSnowfallEffect
 
-    var isSnowEffectEnabled by rememberPreference(SHOW_SNOWFALL_EFFECT.key, false)
-
-    var showListenerLevels by rememberPreference(SHOW_LISTENER_LEVELS.key, true)
+    //var showListenerLevels by rememberPreference(SHOW_LISTENER_LEVELS.key, true)
+    val showListenerLevels = appSettings.showListenerLevels
 
     Column(
         modifier = Modifier
@@ -781,16 +841,19 @@ fun UiSettings(
                 onDismiss = { resetCustomLightThemeDialog = false },
                 onConfirm = {
                     resetCustomLightThemeDialog = false
-                    customThemeLight_Background0 = DefaultLightColorPalette.background0.hashCode()
-                    customThemeLight_Background1 = DefaultLightColorPalette.background1.hashCode()
-                    customThemeLight_Background2 = DefaultLightColorPalette.background2.hashCode()
-                    customThemeLight_Background3 = DefaultLightColorPalette.background3.hashCode()
-                    customThemeLight_Background4 = DefaultLightColorPalette.background4.hashCode()
-                    customThemeLight_Text = DefaultLightColorPalette.text.hashCode()
-                    customThemeLight_TextSecondary = DefaultLightColorPalette.textSecondary.hashCode()
-                    customThemeLight_TextDisabled = DefaultLightColorPalette.textDisabled.hashCode()
-                    customThemeLight_IconButtonPlayer = DefaultLightColorPalette.iconButtonPlayer.hashCode()
-                    customThemeLight_Accent = DefaultLightColorPalette.accent.hashCode()
+                    val new = appearanceSettings.copy(
+                        customThemeLight_Background0 = DefaultLightColorPalette.background0.hashCode(),
+                        customThemeLight_Background1 = DefaultLightColorPalette.background1.hashCode(),
+                        customThemeLight_Background2 = DefaultLightColorPalette.background2.hashCode(),
+                        customThemeLight_Background3 = DefaultLightColorPalette.background3.hashCode(),
+                        customThemeLight_Background4 = DefaultLightColorPalette.background4.hashCode(),
+                        customThemeLight_Text = DefaultLightColorPalette.text.hashCode(),
+                        customThemeLight_TextSecondary = DefaultLightColorPalette.textSecondary.hashCode(),
+                        customThemeLight_TextDisabled = DefaultLightColorPalette.textDisabled.hashCode(),
+                        customThemeLight_IconButtonPlayer = DefaultLightColorPalette.iconButtonPlayer.hashCode(),
+                        customThemeLight_Accent = DefaultLightColorPalette.accent.hashCode()
+                    )
+                    appearanceSettingsVieModel.updatePreset(new)
                 }
             )
         }
@@ -801,16 +864,19 @@ fun UiSettings(
                 onDismiss = { resetCustomDarkThemeDialog = false },
                 onConfirm = {
                     resetCustomDarkThemeDialog = false
-                    customThemeDark_Background0 = DefaultDarkColorPalette.background0.hashCode()
-                    customThemeDark_Background1 = DefaultDarkColorPalette.background1.hashCode()
-                    customThemeDark_Background2 = DefaultDarkColorPalette.background2.hashCode()
-                    customThemeDark_Background3 = DefaultDarkColorPalette.background3.hashCode()
-                    customThemeDark_Background4 = DefaultDarkColorPalette.background4.hashCode()
-                    customThemeDark_Text = DefaultDarkColorPalette.text.hashCode()
-                    customThemeDark_TextSecondary = DefaultDarkColorPalette.textSecondary.hashCode()
-                    customThemeDark_TextDisabled = DefaultDarkColorPalette.textDisabled.hashCode()
-                    customThemeDark_IconButtonPlayer = DefaultDarkColorPalette.iconButtonPlayer.hashCode()
-                    customThemeDark_Accent = DefaultDarkColorPalette.accent.hashCode()
+                    val new = appearanceSettings.copy(
+                        customThemeDark_Background0 = DefaultDarkColorPalette.background0.hashCode(),
+                        customThemeDark_Background1 = DefaultDarkColorPalette.background1.hashCode(),
+                        customThemeDark_Background2 = DefaultDarkColorPalette.background2.hashCode(),
+                        customThemeDark_Background3 = DefaultDarkColorPalette.background3.hashCode(),
+                        customThemeDark_Background4 = DefaultDarkColorPalette.background4.hashCode(),
+                        customThemeDark_Text = DefaultDarkColorPalette.text.hashCode(),
+                        customThemeDark_TextSecondary = DefaultDarkColorPalette.textSecondary.hashCode(),
+                        customThemeDark_TextDisabled = DefaultDarkColorPalette.textDisabled.hashCode(),
+                        customThemeDark_IconButtonPlayer = DefaultDarkColorPalette.iconButtonPlayer.hashCode(),
+                        customThemeDark_Accent = DefaultDarkColorPalette.accent.hashCode()
+                    )
+                    appearanceSettingsVieModel.updatePreset(new)
                 }
             )
         }
@@ -859,10 +925,14 @@ fun UiSettings(
                         title = stringResource(R.string.enable_fullscreen),
                         text = stringResource(R.string.enable_fullscreen_info),
                         isChecked = isEnabledFullscreen,
-                        onCheckedChange = { isEnabledFullscreen = it }
+                        onCheckedChange = {
+                            val new = appSettings.copy(isEnabledFullScreen = it)
+                            appSettingsViewModel.updateSettings(new)
+                        }
                     )
 
-                var uiType by rememberPreference(UI_TYPE.key, UiType.RiPlay)
+                //var uiType by rememberPreference(UI_TYPE.key, UiType.RiPlay)
+                val uiType = appSettings.uiType
                 if (search.input.isBlank() || stringResource(R.string.interface_in_use).contains(
                         search.input,
                         true
@@ -872,7 +942,9 @@ fun UiSettings(
                         title = stringResource(R.string.interface_in_use),
                         selectedValue = uiType,
                         onValueSelected = {
-                            uiType = it
+                            val new = appSettings.copy(uiType = it)
+                            appSettingsViewModel.updateSettings(new)
+
                             if (uiType == UiType.ViMusic) {
                                 val new = appearanceSettings.copy(
                                     showTopActionsBar = false,
@@ -917,18 +989,19 @@ fun UiSettings(
                                     showButtonPlayerSystemEqualizer = false,
                                     showButtonPlayerArrow = false,
                                     showButtonPlayerMenu = true,
+                                    keepPlayerMinimized = false,
+                                    disablePlayerHorizontalSwipe = true
                                 )
                                 appearanceSettingsVieModel.updatePreset(new)
+                                val newsettings = appSettings.copy(
+                                    disablePlayerHorizontalSwipe = true,
+                                    disableIconButtonOnTop = true,
+                                    showSearchTab = true,
+                                    showStatsInNavbar = true,
+                                    navigationBarPosition = NavigationBarPosition.Left
+                                )
+                                appSettingsViewModel.updateSettings(newsettings)
 
-                                disablePlayerHorizontalSwipe = true
-                                disableIconButtonOnTop = true
-                                //playerTimelineType = PlayerTimelineType.Default
-                                //visualizerEnabled = false
-                                //playerThumbnailSize = PlayerThumbnailSize.Medium
-                                //thumbnailTapEnabled = true
-                                showSearchTab = true
-                                showStatsInNavbar = true
-                                navigationBarPosition = NavigationBarPosition.Left
                                 //showTopActionsBar = false
 //                                playerType = PlayerType.Modern
 //                                queueType = QueueType.Modern
@@ -970,7 +1043,7 @@ fun UiSettings(
 //                                showButtonPlayerShuffle = false
 //                                showButtonPlayerMenu = true
                                 //showthumbnail = true
-                                keepPlayerMinimized = false
+                                //keepPlayerMinimized = false
                             } else {
                                 val new = appearanceSettings.copy(
                                     playerTimelineType = lastPlayerTimelineType,
@@ -979,11 +1052,11 @@ fun UiSettings(
                                 )
                                 appearanceSettingsVieModel.updatePreset(new)
 
-                                disablePlayerHorizontalSwipe = false
-                                disableIconButtonOnTop = false
-//                                playerTimelineType = lastPlayerTimelineType
-//                                playerThumbnailSize = lastPlayerThumbnailSize
-//                                playerPlayButtonType = lastPlayerPlayButtonType
+                                val newsettings = appSettings.copy(
+                                    disablePlayerHorizontalSwipe = false,
+                                    disableIconButtonOnTop = false,
+                                )
+                                appSettingsViewModel.updateSettings(newsettings)
 
                             }
 
@@ -1035,7 +1108,8 @@ fun UiSettings(
                             text = "",
                             color = Color(customColor),
                             onColorSelected = {
-                                customColor = it.hashCode()
+                                val new = appearanceSettings.copy(customColor = it.hashCode())
+                                appearanceSettingsVieModel.updatePreset(new)
                             },
                             modifier = Modifier
                                 .padding(start = 12.dp)
@@ -1061,7 +1135,10 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeLight_Background0),
                             onColorSelected = {
-                                customThemeLight_Background0 = it.hashCode()
+                                val new = appearanceSettings.copy(
+                                    customThemeLight_Background0 = it.hashCode()
+                                )
+                                appearanceSettingsVieModel.updatePreset(new)
                             }
                         )
                         ColorSettingEntry(
@@ -1069,7 +1146,10 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeLight_Background1),
                             onColorSelected = {
-                                customThemeLight_Background1 = it.hashCode()
+                                val new = appearanceSettings.copy(
+                                    customThemeLight_Background1 = it.hashCode()
+                                )
+                                appearanceSettingsVieModel.updatePreset(new)
                             }
                         )
                         ColorSettingEntry(
@@ -1077,7 +1157,10 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeLight_Background2),
                             onColorSelected = {
-                                customThemeLight_Background2 = it.hashCode()
+                                val new = appearanceSettings.copy(
+                                    customThemeLight_Background2 = it.hashCode()
+                                )
+                                appearanceSettingsVieModel.updatePreset(new)
                             }
                         )
                         ColorSettingEntry(
@@ -1085,7 +1168,10 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeLight_Background3),
                             onColorSelected = {
-                                customThemeLight_Background3 = it.hashCode()
+                                val new = appearanceSettings.copy(
+                                    customThemeLight_Background3 = it.hashCode()
+                                )
+                                appearanceSettingsVieModel.updatePreset(new)
                             }
                         )
                         ColorSettingEntry(
@@ -1093,7 +1179,10 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeLight_Background4),
                             onColorSelected = {
-                                customThemeLight_Background4 = it.hashCode()
+                                val new = appearanceSettings.copy(
+                                    customThemeLight_Background4 = it.hashCode()
+                                )
+                                appearanceSettingsVieModel.updatePreset(new)
                             }
                         )
                         ColorSettingEntry(
@@ -1101,7 +1190,10 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeLight_Text),
                             onColorSelected = {
-                                customThemeLight_Text = it.hashCode()
+                                val new = appearanceSettings.copy(
+                                    customThemeLight_Text = it.hashCode()
+                                )
+                                appearanceSettingsVieModel.updatePreset(new)
                             }
                         )
                         ColorSettingEntry(
@@ -1109,7 +1201,10 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeLight_TextSecondary),
                             onColorSelected = {
-                                customThemeLight_TextSecondary = it.hashCode()
+                                val new = appearanceSettings.copy(
+                                    customThemeLight_TextSecondary = it.hashCode()
+                                )
+                                appearanceSettingsVieModel.updatePreset(new)
                             }
                         )
                         ColorSettingEntry(
@@ -1117,7 +1212,10 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeLight_TextDisabled),
                             onColorSelected = {
-                                customThemeLight_TextDisabled = it.hashCode()
+                                val new = appearanceSettings.copy(
+                                    customThemeLight_TextDisabled = it.hashCode()
+                                )
+                                appearanceSettingsVieModel.updatePreset(new)
                             }
                         )
                         ColorSettingEntry(
@@ -1125,7 +1223,10 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeLight_IconButtonPlayer),
                             onColorSelected = {
-                                customThemeLight_IconButtonPlayer = it.hashCode()
+                                val new = appearanceSettings.copy(
+                                    customThemeLight_IconButtonPlayer = it.hashCode()
+                                )
+                                appearanceSettingsVieModel.updatePreset(new)
                             }
                         )
                         ColorSettingEntry(
@@ -1133,7 +1234,10 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeLight_Accent),
                             onColorSelected = {
-                                customThemeLight_Accent = it.hashCode()
+                                val new = appearanceSettings.copy(
+                                    customThemeLight_Accent = it.hashCode()
+                                )
+                                appearanceSettingsVieModel.updatePreset(new)
                             }
                         )
 
@@ -1149,7 +1253,10 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeDark_Background0),
                             onColorSelected = {
-                                customThemeDark_Background0 = it.hashCode()
+                                val new = appearanceSettings.copy(
+                                    customThemeDark_Background0 = it.hashCode()
+                                )
+                                appearanceSettingsVieModel.updatePreset(new)
                             }
                         )
                         ColorSettingEntry(
@@ -1157,7 +1264,10 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeDark_Background1),
                             onColorSelected = {
-                                customThemeDark_Background1 = it.hashCode()
+                                val new = appearanceSettings.copy(
+                                    customThemeDark_Background1 = it.hashCode()
+                                )
+                                appearanceSettingsVieModel.updatePreset(new)
                             }
                         )
                         ColorSettingEntry(
@@ -1165,7 +1275,10 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeDark_Background2),
                             onColorSelected = {
-                                customThemeDark_Background2 = it.hashCode()
+                                val new = appearanceSettings.copy(
+                                    customThemeDark_Background2 = it.hashCode()
+                                )
+                                appearanceSettingsVieModel.updatePreset(new)
                             }
                         )
                         ColorSettingEntry(
@@ -1173,7 +1286,10 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeDark_Background3),
                             onColorSelected = {
-                                customThemeDark_Background3 = it.hashCode()
+                                val new = appearanceSettings.copy(
+                                    customThemeDark_Background3 = it.hashCode()
+                                )
+                                appearanceSettingsVieModel.updatePreset(new)
                             }
                         )
                         ColorSettingEntry(
@@ -1181,7 +1297,10 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeDark_Background4),
                             onColorSelected = {
-                                customThemeDark_Background4 = it.hashCode()
+                                val new = appearanceSettings.copy(
+                                    customThemeDark_Background4 = it.hashCode()
+                                )
+                                appearanceSettingsVieModel.updatePreset(new)
                             }
                         )
                         ColorSettingEntry(
@@ -1189,7 +1308,10 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeDark_Text),
                             onColorSelected = {
-                                customThemeDark_Text = it.hashCode()
+                                val new = appearanceSettings.copy(
+                                    customThemeDark_Text = it.hashCode()
+                                )
+                                appearanceSettingsVieModel.updatePreset(new)
                             }
                         )
                         ColorSettingEntry(
@@ -1197,7 +1319,10 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeDark_TextSecondary),
                             onColorSelected = {
-                                customThemeDark_TextSecondary = it.hashCode()
+                                val new = appearanceSettings.copy(
+                                    customThemeDark_TextSecondary = it.hashCode()
+                                )
+                                appearanceSettingsVieModel.updatePreset(new)
                             }
                         )
                         ColorSettingEntry(
@@ -1205,7 +1330,10 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeDark_TextDisabled),
                             onColorSelected = {
-                                customThemeDark_TextDisabled = it.hashCode()
+                                val new = appearanceSettings.copy(
+                                    customThemeDark_TextDisabled = it.hashCode()
+                                )
+                                appearanceSettingsVieModel.updatePreset(new)
                             }
                         )
                         ColorSettingEntry(
@@ -1213,7 +1341,10 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeDark_IconButtonPlayer),
                             onColorSelected = {
-                                customThemeDark_IconButtonPlayer = it.hashCode()
+                                val new = appearanceSettings.copy(
+                                    customThemeDark_IconButtonPlayer = it.hashCode()
+                                )
+                                appearanceSettingsVieModel.updatePreset(new)
                             }
                         )
                         ColorSettingEntry(
@@ -1221,7 +1352,10 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeDark_Accent),
                             onColorSelected = {
-                                customThemeDark_Accent = it.hashCode()
+                                val new = appearanceSettings.copy(
+                                    customThemeDark_Accent = it.hashCode()
+                                )
+                                appearanceSettingsVieModel.updatePreset(new)
                             }
                         )
                     }
@@ -1265,7 +1399,10 @@ fun UiSettings(
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.navigation_bar_position),
                         selectedValue = navigationBarPosition,
-                        onValueSelected = { navigationBarPosition = it },
+                        onValueSelected = {
+                            val new = appearanceSettings.copy(navigationBarPosition = it)
+                            appearanceSettingsVieModel.updatePreset(new)
+                        },
                         // As of version 0.6.53, changing navigation bar to top or bottom
                         // while using ViMusic theme breaks the UI
                         isEnabled = uiType != UiType.ViMusic,
@@ -1287,7 +1424,10 @@ fun UiSettings(
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.navigation_bar_type),
                         selectedValue = navigationBarType,
-                        onValueSelected = { navigationBarType = it },
+                        onValueSelected = {
+                            val new = appSettings.copy(navigationBarType = it)
+                            appSettingsViewModel.updateSettings(new)
+                        },
                         valueText = {
                             when (it) {
                                 NavigationBarType.IconAndText -> stringResource(R.string.icon_and_text)
@@ -1304,7 +1444,10 @@ fun UiSettings(
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.player_position),
                         selectedValue = playerPosition,
-                        onValueSelected = { playerPosition = it },
+                        onValueSelected = {
+                            val new = appSettings.copy(playerPosition = it)
+                            appSettingsViewModel.updateSettings(new)
+                        },
                         valueText = {
                             when (it) {
                                 PlayerPosition.Top -> stringResource(R.string.position_top)
@@ -1321,7 +1464,10 @@ fun UiSettings(
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.menu_style),
                         selectedValue = menuStyle,
-                        onValueSelected = { menuStyle = it },
+                        onValueSelected = {
+                            val new = appSettings.copy(menuStyle = it)
+                            appSettingsViewModel.updateSettings(new)
+                        },
                         valueText = {
                             when (it) {
                                 MenuStyle.Grid -> stringResource(R.string.style_grid)
@@ -1338,7 +1484,10 @@ fun UiSettings(
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.message_type),
                         selectedValue = messageType,
-                        onValueSelected = { messageType = it },
+                        onValueSelected = {
+                            val new = appSettings.copy(messageType = it)
+                            appSettingsViewModel.updateSettings(new)
+                        },
                         valueText = {
                             when (it) {
                                 MessageType.Modern -> stringResource(R.string.message_type_modern)
@@ -1355,7 +1504,10 @@ fun UiSettings(
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.default_page),
                         selectedValue = indexNavigationTab,
-                        onValueSelected = { indexNavigationTab = it },
+                        onValueSelected = {
+                            val new = appSettings.copy(indexNavigationTab = it)
+                            appSettingsViewModel.updateSettings(new)
+                        },
                         valueText = {
                             when (it) {
                                 HomeScreenTabs.Default -> stringResource(R.string._default)
@@ -1378,7 +1530,10 @@ fun UiSettings(
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.transition_effect),
                         selectedValue = transitionEffect,
-                        onValueSelected = { transitionEffect = it },
+                        onValueSelected = {
+                            val new = appSettings.copy(transitionEffect = it)
+                            appSettingsViewModel.updateSettings(new)
+                        },
                         valueText = {
                             when (it) {
                                 TransitionEffect.None -> stringResource(R.string.none)
@@ -1400,7 +1555,10 @@ fun UiSettings(
                         title = stringResource(R.string.snow_effect),
                         text = "",
                         isChecked = isSnowEffectEnabled,
-                        onCheckedChange = { isSnowEffectEnabled = it }
+                        onCheckedChange = {
+                            val new = appSettings.copy(isSnowEffectEnabled = it)
+                            appSettingsViewModel.updateSettings(new)
+                        }
                     )
 
                 if (UiType.ViMusic.isCurrent()) {
@@ -1413,7 +1571,10 @@ fun UiSettings(
                             title = stringResource(R.string.vimusic_show_search_button_in_navigation_bar),
                             text = stringResource(R.string.vismusic_only_in_left_right_navigation_bar),
                             isChecked = showSearchTab,
-                            onCheckedChange = { showSearchTab = it }
+                            onCheckedChange = {
+                                val new = appSettings.copy(showSearchTab = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         )
 
 
@@ -1427,7 +1588,10 @@ fun UiSettings(
                             title = stringResource(R.string.show_statistics_in_navigation_bar),
                             text = "",
                             isChecked = showStatsInNavbar,
-                            onCheckedChange = { showStatsInNavbar = it }
+                            onCheckedChange = {
+                                val new = appSettings.copy(showStatsInNavbar = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         )
                 }
 
@@ -1441,9 +1605,17 @@ fun UiSettings(
                             title = stringResource(R.string.show_floating_icon),
                             text = "",
                             isChecked = showFloatingIcon,
-                            onCheckedChange = { showFloatingIcon = it }
+                            onCheckedChange = {
+                                val new = appSettings.copy(showFloatingIcon = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         )
-                } else showFloatingIcon = false
+                } else {
+                    val new = appSettings.copy(
+                        showFloatingIcon = false
+                    )
+                    appSettingsViewModel.updateSettings(new)
+                }
 
 
 
@@ -1455,7 +1627,10 @@ fun UiSettings(
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.settings_use_font_type),
                         selectedValue = fontType,
-                        onValueSelected = { fontType = it },
+                        onValueSelected = {
+                            val new = appSettings.copy(fontType = it)
+                            appSettingsViewModel.updateSettings(new)
+                        },
                         valueText = {
                             when (it) {
                                 FontType.Rubik -> FontType.Rubik.name
@@ -1473,7 +1648,10 @@ fun UiSettings(
                         title = stringResource(R.string.use_system_font),
                         text = stringResource(R.string.use_font_by_the_system),
                         isChecked = useSystemFont,
-                        onCheckedChange = { useSystemFont = it }
+                        onCheckedChange = {
+                            val new = appSettings.copy(useSystemFont = it)
+                            appSettingsViewModel.updateSettings(new)
+                        }
                     )
 
                 if (search.input.isBlank() || stringResource(R.string.apply_font_padding).contains(
@@ -1485,7 +1663,10 @@ fun UiSettings(
                         title = stringResource(R.string.apply_font_padding),
                         text = stringResource(R.string.add_spacing_around_texts),
                         isChecked = applyFontPadding,
-                        onCheckedChange = { applyFontPadding = it }
+                        onCheckedChange = {
+                            val new = appSettings.copy(applyFontPadding = it)
+                            appSettingsViewModel.updateSettings(new)
+                        }
                     )
 
 
@@ -1498,7 +1679,10 @@ fun UiSettings(
                         title = stringResource(R.string.swipe_to_action),
                         text = stringResource(R.string.activate_the_action_menu_by_swiping_the_song_left_or_right),
                         isChecked = isSwipeToActionEnabled,
-                        onCheckedChange = { isSwipeToActionEnabled = it }
+                        onCheckedChange = {
+                            val new = appSettings.copy(isSwipeToActionEnabled = it)
+                            appSettingsViewModel.updateSettings(new)
+                        }
                     )
 
                     AnimatedVisibility(visible = isSwipeToActionEnabled) {
@@ -1509,7 +1693,10 @@ fun UiSettings(
                                 title = stringResource(R.string.queue_and_local_playlists_left_swipe),
                                 selectedValue = queueSwipeLeftAction,
                                 onValueSelected = {
-                                    queueSwipeLeftAction = it
+                                    val new = appSettings.copy(
+                                        queueSwipeLeftAction = it
+                                    )
+                                    appSettingsViewModel.updateSettings(new)
                                 },
                                 valueText = {
                                     it.displayName
@@ -1519,7 +1706,10 @@ fun UiSettings(
                                 title = stringResource(R.string.queue_and_local_playlists_right_swipe),
                                 selectedValue = queueSwipeRightAction,
                                 onValueSelected = {
-                                    queueSwipeRightAction = it
+                                    val new = appSettings.copy(
+                                        queueSwipeRightAction = it
+                                    )
+                                    appSettingsViewModel.updateSettings(new)
                                 },
                                 valueText = {
                                     it.displayName
@@ -1529,7 +1719,10 @@ fun UiSettings(
                                 title = stringResource(R.string.playlist_left_swipe),
                                 selectedValue = playlistSwipeLeftAction,
                                 onValueSelected = {
-                                    playlistSwipeLeftAction = it
+                                    val new = appSettings.copy(
+                                        playlistSwipeLeftAction = it
+                                    )
+                                    appSettingsViewModel.updateSettings(new)
                                 },
                                 valueText = {
                                     it.displayName
@@ -1539,7 +1732,10 @@ fun UiSettings(
                                 title = stringResource(R.string.playlist_right_swipe),
                                 selectedValue = playlistSwipeRightAction,
                                 onValueSelected = {
-                                    playlistSwipeRightAction = it
+                                    val new = appSettings.copy(
+                                        playlistSwipeRightAction = it
+                                    )
+                                    appSettingsViewModel.updateSettings(new)
                                 },
                                 valueText = {
                                     it.displayName
@@ -1549,7 +1745,10 @@ fun UiSettings(
                                 title = stringResource(R.string.album_left_swipe),
                                 selectedValue = albumSwipeLeftAction,
                                 onValueSelected = {
-                                    albumSwipeLeftAction = it
+                                    val new = appSettings.copy(
+                                        albumSwipeLeftAction = it
+                                    )
+                                    appSettingsViewModel.updateSettings(new)
                                 },
                                 valueText = {
                                     it.displayName
@@ -1559,7 +1758,10 @@ fun UiSettings(
                                 title = stringResource(R.string.album_right_swipe),
                                 selectedValue = albumSwipeRightAction,
                                 onValueSelected = {
-                                    albumSwipeRightAction = it
+                                    val new = appSettings.copy(
+                                        albumSwipeRightAction = it
+                                    )
+                                    appSettingsViewModel.updateSettings(new)
                                 },
                                 valueText = {
                                     it.displayName
@@ -1577,8 +1779,11 @@ fun UiSettings(
                     SwitchSettingEntry(
                         title = stringResource(R.string.use_placeholder_in_imageloader),
                         text = stringResource(R.string.use_placeholder_in_imageloader_info),
-                        isChecked = usePlaceholder,
-                        onCheckedChange = { usePlaceholder = it }
+                        isChecked = usePlaceholderInImageLoader,
+                        onCheckedChange = {
+                            val new = appSettings.copy(usePlaceholderInImageLoader = it)
+                            appSettingsViewModel.updateSettings(new)
+                        }
                     )
             }
 
@@ -1599,7 +1804,10 @@ fun UiSettings(
                         title = "${stringResource(R.string.show)} ${stringResource(R.string.favorites)}",
                         text = "",
                         isChecked = showFavoritesPlaylist,
-                        onCheckedChange = { showFavoritesPlaylist = it }
+                        onCheckedChange = {
+                            val new = appSettings.copy(showFavoritesPlaylist = it)
+                            appSettingsViewModel.updateSettings(new)
+                        }
                     )
 
                 if (search.input.isBlank() || "${stringResource(R.string.show)} ${stringResource(R.string.my_playlist_top)}".contains(
@@ -1615,7 +1823,10 @@ fun UiSettings(
                         }",
                         text = "",
                         isChecked = showMyTopPlaylist,
-                        onCheckedChange = { showMyTopPlaylist = it }
+                        onCheckedChange = {
+                            val new = appSettings.copy(showMyTopPlaylist = it)
+                            appSettingsViewModel.updateSettings(new)
+                        }
                     )
                 if (search.input.isBlank() || "${stringResource(R.string.show)} ${stringResource(R.string.on_device)}".contains(
                         search.input,
@@ -1626,7 +1837,10 @@ fun UiSettings(
                         title = "${stringResource(R.string.show)} ${stringResource(R.string.on_device)}",
                         text = "",
                         isChecked = showOnDevicePlaylist,
-                        onCheckedChange = { showOnDevicePlaylist = it }
+                        onCheckedChange = {
+                            val new = appSettings.copy(showOnDevicePlaylist = it)
+                            appSettingsViewModel.updateSettings(new)
+                        }
                     )
 
                 if (search.input.isBlank() || "${stringResource(R.string.show)} ${stringResource(R.string.disliked)}".contains(
@@ -1638,7 +1852,10 @@ fun UiSettings(
                         title = "${stringResource(R.string.show)} ${stringResource(R.string.disliked)}",
                         text = "",
                         isChecked = showDislikedPlaylist,
-                        onCheckedChange = { showDislikedPlaylist = it }
+                        onCheckedChange = {
+                            val new = appSettings.copy(showDislikedPlaylist = it)
+                            appSettingsViewModel.updateSettings(new)
+                        }
                     )
 
             }
@@ -1661,7 +1878,10 @@ fun UiSettings(
                         title = "${stringResource(R.string.show)} ${stringResource(R.string.pinned_playlists)}",
                         text = "",
                         isChecked = showPinnedPlaylists,
-                        onCheckedChange = { showPinnedPlaylists = it }
+                        onCheckedChange = {
+                            val new = appSettings.copy(showPinnedPlaylists = it)
+                            appSettingsViewModel.updateSettings(new)
+                        }
                     )
 
                 if (search.input.isBlank() || "${stringResource(R.string.show)} ${stringResource(R.string.monthly_playlists)}".contains(
@@ -1673,7 +1893,10 @@ fun UiSettings(
                         title = "${stringResource(R.string.show)} ${stringResource(R.string.monthly_playlists)}",
                         text = "",
                         isChecked = showMonthlyPlaylists,
-                        onCheckedChange = { showMonthlyPlaylists = it }
+                        onCheckedChange = {
+                            val new = appSettings.copy(showMonthlyPlaylists = it)
+                            appSettingsViewModel.updateSettings(new)
+                        }
                     )
             }
 
@@ -1695,7 +1918,8 @@ fun UiSettings(
                         text = "",
                         isChecked = enableCreateMonthlyPlaylists,
                         onCheckedChange = {
-                            enableCreateMonthlyPlaylists = it
+                            val new = appSettings.copy(enableCreateMonthlyPlaylists = it)
+                            appSettingsViewModel.updateSettings(new)
                         }
                     )
             }
@@ -1716,7 +1940,10 @@ fun UiSettings(
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.statistics_max_number_of_items),
                         selectedValue = recommendationsNumber,
-                        onValueSelected = { recommendationsNumber = it },
+                        onValueSelected = {
+                            val new = appSettings.copy(recommendationsNumber = it)
+                            appSettingsViewModel.updateSettings(new)
+                        },
                         valueText = {
                             it.number.toString()
                         }
@@ -1739,7 +1966,10 @@ fun UiSettings(
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.statistics_max_number_of_items),
                         selectedValue = maxStatisticsItems,
-                        onValueSelected = { maxStatisticsItems = it },
+                        onValueSelected = {
+                            val new = appSettings.copy(maxStatisticsItems = it)
+                            appSettingsViewModel.updateSettings(new)
+                        },
                         valueText = {
                             it.number.toString()
                         }
@@ -1755,7 +1985,10 @@ fun UiSettings(
                         text = stringResource(R.string.shows_the_number_of_songs_heard_and_their_listening_time),
                         isChecked = showStatsListeningTime,
                         onCheckedChange = {
-                            showStatsListeningTime = it
+                            val new = appSettings.copy(
+                                showStatsListeningTime = it
+                            )
+                            appSettingsViewModel.updateSettings(new)
                         }
                     )
             }
@@ -1776,7 +2009,10 @@ fun UiSettings(
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.statistics_max_number_of_items),
                         selectedValue = maxTopPlaylistItems,
-                        onValueSelected = { maxTopPlaylistItems = it },
+                        onValueSelected = {
+                            val new = appSettings.copy(maxTopPlaylistItems = it)
+                            appSettingsViewModel.updateSettings(new)
+                        },
                         valueText = {
                             it.number.toString()
                         }
@@ -1800,7 +2036,10 @@ fun UiSettings(
                     ),
                     isChecked = showListenerLevels,
                     onCheckedChange = {
-                        showListenerLevels = it
+                        val new = appSettings.copy(
+                            showListenerLevels = it
+                        )
+                        appSettingsViewModel.updateSettings(new)
                     }
                 )
             }

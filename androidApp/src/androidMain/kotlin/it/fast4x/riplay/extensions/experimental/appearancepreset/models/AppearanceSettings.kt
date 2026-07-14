@@ -1,5 +1,6 @@
 package it.fast4x.riplay.extensions.experimental.appearancepreset.models
 
+import androidx.compose.ui.graphics.Color
 import it.fast4x.riplay.enums.AnimatedGradient
 import it.fast4x.riplay.enums.BackgroundProgress
 import it.fast4x.riplay.enums.CarouselSize
@@ -35,6 +36,8 @@ import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ThumbnailType
 import it.fast4x.riplay.enums.WallpaperType
+import it.fast4x.riplay.ui.styling.DefaultDarkColorPalette
+import it.fast4x.riplay.ui.styling.DefaultLightColorPalette
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -156,6 +159,31 @@ data class AppearanceSettings(
     val landscapeControls: Boolean                 = true,
     val isShowingSynchronizedLyrics: Boolean       = false,
     val isShowingSynchronizedWordByWordLyrics: Boolean = false,
+    val customColor: Int                            = Color.Green.hashCode(),
+    val lastPlayerTimelineType: PlayerTimelineType = PlayerTimelineType.Default,
+    val lastPlayerThumbnailSize: PlayerThumbnailSize = PlayerThumbnailSize.Biggest,
+    val lastPlayerThumbnailSizeL: PlayerThumbnailSize = PlayerThumbnailSize.Biggest,
+    val customThemeLight_Background0: Int           = DefaultLightColorPalette.background0.hashCode(),
+    val customThemeLight_Background1: Int           = DefaultLightColorPalette.background1.hashCode(),
+    val customThemeLight_Background2: Int           = DefaultLightColorPalette.background2.hashCode(),
+    val customThemeLight_Background3: Int           = DefaultLightColorPalette.background3.hashCode(),
+    val customThemeLight_Background4: Int           = DefaultLightColorPalette.background4.hashCode(),
+    val customThemeLight_Text: Int                  = DefaultLightColorPalette.text.hashCode(),
+    val customThemeLight_TextSecondary: Int         = DefaultLightColorPalette.textSecondary.hashCode(),
+    val customThemeLight_TextDisabled: Int          = DefaultLightColorPalette.textDisabled.hashCode(),
+    val customThemeLight_IconButtonPlayer: Int      = DefaultLightColorPalette.iconButtonPlayer.hashCode(),
+    val customThemeLight_Accent: Int                = DefaultLightColorPalette.accent.hashCode(),
+    val customThemeDark_Background0: Int            = DefaultDarkColorPalette.background0.hashCode(),
+    val customThemeDark_Background1: Int            = DefaultDarkColorPalette.background1.hashCode(),
+    val customThemeDark_Background2: Int            = DefaultDarkColorPalette.background2.hashCode(),
+    val customThemeDark_Background3: Int            = DefaultDarkColorPalette.background3.hashCode(),
+    val customThemeDark_Background4: Int            = DefaultDarkColorPalette.background4.hashCode(),
+    val customThemeDark_Text: Int                   = DefaultDarkColorPalette.text.hashCode(),
+    val customThemeDark_TextSecondary: Int          = DefaultDarkColorPalette.textSecondary.hashCode(),
+    val customThemeDark_TextDisabled: Int           = DefaultDarkColorPalette.textDisabled.hashCode(),
+    val customThemeDark_IconButtonPlayer: Int       = DefaultDarkColorPalette.iconButtonPlayer.hashCode(),
+    val customThemeDark_Accent: Int                 = DefaultDarkColorPalette.accent.hashCode(),
+
 
     ) {
     companion object {
