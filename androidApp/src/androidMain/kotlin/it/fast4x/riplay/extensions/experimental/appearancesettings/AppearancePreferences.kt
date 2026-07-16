@@ -1,9 +1,8 @@
-package it.fast4x.riplay.extensions.experimental.appearancepreset
+package it.fast4x.riplay.extensions.experimental.appearancesettings
 
 import android.content.Context
-import android.content.SharedPreferences
 import androidx.core.content.edit
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearanceSettings
+import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearanceSettings
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.ACTION_EXPANDED
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.ACTIONS_SPACED_EVENLY
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.ACTIVE_APPEARANCE_PRESET_ID
@@ -81,9 +80,6 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.TOP_PADDING
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BAR
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.VISUALIZER_ENABLED
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
 
 class AppearancePreferences(context: Context) {
     private val prefs = context.preferences

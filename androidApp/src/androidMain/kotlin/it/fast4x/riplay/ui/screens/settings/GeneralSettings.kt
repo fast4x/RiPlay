@@ -35,6 +35,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -183,6 +184,7 @@ import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.utils.CheckForNewVersion
 import it.fast4x.riplay.utils.LazyListContainer
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 
 
 @ExperimentalAnimationApi
@@ -242,16 +244,21 @@ fun GeneralSettings(
 //        false
 //    )
     val resumeOrPausePlaybackWhenCall = appSettings.resumeOrPausePlaybackWhenCall
+
+    val coroutineScope = rememberCoroutineScope()
+
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
-        if (isGranted) {
-            val new = appSettings.copy(resumeOrPausePlaybackWhenCall = true)
-            appSettingsVieModel.updateSettings(new)
-            restartService = true
-        } else {
-            val new = appSettings.copy(resumeOrPausePlaybackWhenCall = false)
-            appSettingsVieModel.updateSettings(new)
+        coroutineScope.launch {
+            if (isGranted) {
+                val new = appSettings.copy(resumeOrPausePlaybackWhenCall = true)
+                appSettingsVieModel.updateSettings(new)
+                restartService = true
+            } else {
+                val new = appSettings.copy(resumeOrPausePlaybackWhenCall = false)
+                appSettingsVieModel.updateSettings(new)
+            }
         }
     }
 
@@ -411,7 +418,8 @@ fun GeneralSettings(
         Database.queriesCount().distinctUntilChanged()
     }.collectAsState(initial = 0)
 
-    var checkUpdateState by rememberPreference(CHECK_UPDATE_STATE.key, CheckUpdateState.Enabled)
+    //var checkUpdateState by rememberPreference(CHECK_UPDATE_STATE.key, CheckUpdateState.Enabled)
+    val checkUpdateState = appSettings.checkUpdateState
 
     val internalEqualizer = LocalPlayerServiceBinder.current?.equalizer
 
@@ -542,7 +550,12 @@ fun GeneralSettings(
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.enable_check_for_update),
                             selectedValue = checkUpdateState,
-                            onValueSelected = { checkUpdateState = it },
+                            onValueSelected = {
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(checkUpdateState = it)
+                                    appSettingsVieModel.updateSettings(new)
+                                }
+                            },
                             valueText = {
                                 when (it) {
                                     CheckUpdateState.Disabled -> stringResource(R.string.vt_disabled)
@@ -594,8 +607,10 @@ fun GeneralSettings(
                             title = stringResource(R.string.app_language),
                             selectedValue = languageApp,
                             onValueSelected = {
-                                val new = appSettings.copy(languageApp = it)
-                                appSettingsVieModel.updateSettings(new)
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(languageApp = it)
+                                    appSettingsVieModel.updateSettings(new)
+                                }
                             },
                             valueText = {
                                 languageDestinationName(it)
@@ -842,8 +857,11 @@ fun GeneralSettings(
                                 title = stringResource(R.string.when_app_swipe_out_from_task_manager),
                                 selectedValue = closeBackgroundPlayerAfterMinutes,
                                 onValueSelected = {
-                                   val new = appSettings.copy(closeBackgroundPlayerAfterMinutes = it)
-                                    appSettingsVieModel.updateSettings(new)
+                                    coroutineScope.launch {
+                                        val new =
+                                            appSettings.copy(closeBackgroundPlayerAfterMinutes = it)
+                                        appSettingsVieModel.updateSettings(new)
+                                    }
                                 },
                                 valueText = {
                                     when (it) {
@@ -919,8 +937,10 @@ fun GeneralSettings(
                             title = stringResource(R.string.min_listening_time),
                             selectedValue = minTimeForEvent,
                             onValueSelected = {
-                                val new = appSettings.copy(minTimeForEvent = it)
-                                appSettingsVieModel.updateSettings(new)
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(minTimeForEvent = it)
+                                    appSettingsVieModel.updateSettings(new)
+                                }
                             },
                             valueText = {
                                 when (it) {
@@ -1182,8 +1202,10 @@ fun GeneralSettings(
                             text = stringResource(R.string.save_and_restore_playing_songs),
                             isChecked = persistentQueue,
                             onCheckedChange = {
-                                val new = appSettings.copy(persistentQueue = it)
-                                appSettingsVieModel.updateSettings(new)
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(persistentQueue = it)
+                                    appSettingsVieModel.updateSettings(new)
+                                }
 
                                 if(it) binder?.loadQueue() // try to load last known queue now
                                 //restartService = true
@@ -1200,8 +1222,10 @@ fun GeneralSettings(
                                     text = stringResource(R.string.resume_automatically_when_app_opens),
                                     isChecked = resumePlaybackOnStart,
                                     onCheckedChange = {
-                                        val new = appSettings.copy(resumePlaybackOnStart = it)
-                                        appSettingsVieModel.updateSettings(new)
+                                        coroutineScope.launch {
+                                            val new = appSettings.copy(resumePlaybackOnStart = it)
+                                            appSettingsVieModel.updateSettings(new)
+                                        }
 
                                         //restartService = true
                                     }
@@ -1224,8 +1248,10 @@ fun GeneralSettings(
                             text = stringResource(R.string.when_you_use_the_back_button_from_the_home_page),
                             isChecked = closeWithBackButton,
                             onCheckedChange = {
-                                val new = appSettings.copy(closeWithBackButton = it)
-                                appSettingsVieModel.updateSettings(new)
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(closeWithBackButton = it)
+                                    appSettingsVieModel.updateSettings(new)
+                                }
 
                                 restartActivity = true
                             }
@@ -1624,8 +1650,11 @@ fun GeneralSettings(
                                 text = stringResource(R.string.settings_bt_info_resume_playback_when_connected_pause_when_disconnected),
                                 isChecked = resumeOrPausePlaybackWhenDeviceBt,
                                 onCheckedChange = {
-                                    val new = appSettings.copy(resumeOrPausePlaybackWhenDeviceBt = it)
-                                    appSettingsVieModel.updateSettings(new)
+                                    coroutineScope.launch {
+                                        val new =
+                                            appSettings.copy(resumeOrPausePlaybackWhenDeviceBt = it)
+                                        appSettingsVieModel.updateSettings(new)
+                                    }
 
                                     restartService = true
                                 }
@@ -1635,8 +1664,12 @@ fun GeneralSettings(
                                 text = stringResource(R.string.settings_wired_info_resume_playback_when_plugged_pause_when_unplugged),
                                 isChecked = resumeOrPausePlaybackWhenDeviceWired,
                                 onCheckedChange = {
-                                    val new = appSettings.copy(resumeOrPausePlaybackWhenDeviceWired = it)
-                                    appSettingsVieModel.updateSettings(new)
+                                    coroutineScope.launch {
+                                        val new =
+                                            appSettings.copy(resumeOrPausePlaybackWhenDeviceWired = it)
+                                        appSettingsVieModel.updateSettings(new)
+                                    }
+
                                     restartService = true
                                 }
                             )

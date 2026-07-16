@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.appearancepreset.utils
+package it.fast4x.riplay.extensions.experimental.appearancesettings.utils
 
 import android.content.Context
 import android.net.Uri
@@ -22,10 +22,10 @@ import it.fast4x.riplay.enums.SongsNumber
 import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ThumbnailType
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearancePreset
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearancePresetDto
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearanceSettings
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.PresetSource
+import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearancePreset
+import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearancePresetDto
+import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearanceSettings
+import it.fast4x.riplay.extensions.experimental.appearancesettings.models.PresetSource
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.ACTION_EXPANDED
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.ACTIONS_SPACED_EVENLY
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUM_COVER_ROTATION
@@ -105,8 +105,6 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BACKGRO
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BAR
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.VISUALIZER_ENABLED
 import it.fast4x.riplay.utils.DbSettingsJson
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.Json
 import kotlin.Boolean
 
 

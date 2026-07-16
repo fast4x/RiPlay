@@ -3,6 +3,7 @@ package it.fast4x.riplay.extensions.experimental.appsettings.models
 import it.fast4x.riplay.enums.AlbumSwipeAction
 import it.fast4x.riplay.enums.AudioQualityFormat
 import it.fast4x.riplay.enums.CastType
+import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.CoilDiskCacheMaxSize
 import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.enums.DurationInMilliseconds
@@ -33,10 +34,11 @@ import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.enums.WallpaperType
 import it.fast4x.riplay.utils.getSystemlanguage
 import kotlinx.serialization.Serializable
+import java.net.Proxy
 
 @Serializable
 data class AppSettings(
-    val languageApp: Languages = getSystemlanguage(),
+    val languageApp: Languages = Languages.English, //getSystemlanguage(),
     val otherLanguageApp: Languages = Languages.English,
     val pipModule: PipModule = PipModule.Cover,
     val isSnowEffectEnabled: Boolean = false,
@@ -157,6 +159,16 @@ data class AppSettings(
     val timerEndTime: Long                      = 0L,
     val discoverIsEnabled: Boolean                 = false,
     val filterContentType: ContentType = ContentType.All,
+    val showAutostartPermissionDialog: Boolean = true,
+    val keepScreenEnabled: Boolean = false,
+    val proxyEnabled: Boolean = false,
+    val proxyHostname: String = "",
+    val proxyPort: Int = 8080,
+    val proxyMode: Proxy.Type = Proxy.Type.HTTP,
+    val loadedData: Boolean = false,
+    val appIsRunning: Boolean = false,
+    val parentalControlEnabled: Boolean = false,
+    val checkUpdateState: CheckUpdateState = CheckUpdateState.Enabled
 
     )
 

@@ -26,6 +26,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -49,95 +50,24 @@ import it.fast4x.riplay.enums.PlayerInfoType
 import it.fast4x.riplay.enums.PlayerPlayButtonType
 import it.fast4x.riplay.enums.PlayerThumbnailSize
 import it.fast4x.riplay.enums.PlayerTimelineSize
-import it.fast4x.riplay.enums.PlayerTimelineType
 import it.fast4x.riplay.enums.PlayerType
-import it.fast4x.riplay.enums.PrevNextSongs
 import it.fast4x.riplay.enums.QueueType
-import it.fast4x.riplay.enums.SongsNumber
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ThumbnailType
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.RestartPlayerService
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ACTIONS_SPACED_EVENLY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.BACKGROUND_PROGRESS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.BLACK_GRADIENT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.BOTTOM_GRADIENT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.BUTTON_ZOOM_OUT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CAROUSEL
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CAROUSEL_SIZE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CLICK_ON_LYRICS_TEXT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_PLAYER_HORIZONTAL_SWIPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXPANDED_PLAYER_TOGGLE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.FADING_EDGE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ICON_LIKE_TYPE
 import it.fast4x.riplay.utils.isAtLeastAndroid7
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_SHOWING_THUMBNAIL_IN_LOCKSCREEN
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.KEEP_PLAYER_MINIMIZED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.LAST_PLAYER_PLAY_BUTTON_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MINI_PLAYER_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.NAVIGATION_BAR_POSITION
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.NO_BLUR
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_BACKGROUND_COLORS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_CONTROLS_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_ENABLE_LYRICS_POPUP_MESSAGE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_INFO_SHOW_ICONS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_INFO_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_PLAY_BUTTON_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_SWAP_CONTROLS_WITH_TIMELINE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_THUMBNAIL_SIZE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_TIMELINE_SIZE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_TIMELINE_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PREV_NEXT_SONGS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUEUE_TYPE
-import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BACKGROUND_LYRICS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_ADD_TO_PLAYLIST
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_ARROW
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_DISCOVER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_LOOP
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_LYRICS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_MENU
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_SHUFFLE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_SLEEP_TIMER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_SYSTEM_EQUALIZER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_VIDEO
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LIKE_BUTTON_BACKGROUND_PLAYER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_NEXT_SONGS_IN_PLAYER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_REMAINING_SONG_TIME
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_TOP_ACTIONS_BAR
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_TOTAL_TIME_QUEUE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_ALBUM_COVER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LYRICS_THUMBNAIL
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SONGS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_THUMBNAIL
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_VIS_THUMBNAIL
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.STATS_EXPANDED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.STATS_FOR_NERDS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SWIPE_UP_QUEUE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.TAP_QUEUE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.TEXT_OUTLINE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_TAP_ENABLED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_PAUSE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BAR
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.VISUALIZER_ENABLED
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.AnimatedGradient
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.SwipeAnimationNoThumbnail
-import it.fast4x.riplay.enums.UiType
-import it.fast4x.riplay.extensions.experimental.appearancepreset.AppearancePreferences
-import it.fast4x.riplay.extensions.experimental.appearancepreset.ui.AppearancePresetDialogHost
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearanceSettings
-import it.fast4x.riplay.extensions.experimental.appearancepreset.utils.fromShareString
-import it.fast4x.riplay.utils.getUiType
+import it.fast4x.riplay.extensions.experimental.appearancesettings.AppearancePreferences
+import it.fast4x.riplay.extensions.experimental.appearancesettings.ui.AppearancePresetDialogHost
+import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearanceSettings
+import it.fast4x.riplay.extensions.experimental.appearancesettings.utils.fromShareString
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
@@ -147,7 +77,7 @@ import it.fast4x.riplay.utils.RestartActivity
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.utils.LazyListContainer
-import it.fast4x.riplay.utils.isAtLeastAndroid13
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -351,6 +281,8 @@ fun PlayerAppearanceSettings(
 
     val appSettingsVieModel = LocalAppSettings.current
     val appSettings = appSettingsVieModel.activeSettings.collectAsState().value
+
+    val coroutineScope = rememberCoroutineScope()
 
 //    LaunchedEffect(appearanceSettings) {
 //        Timber.d("PlayerappearanceSettings: ${appearanceSettings.isShowingThumbnailInLockscreen}")
@@ -1075,24 +1007,30 @@ fun PlayerAppearanceSettings(
          */
     ) {
 
-        if (playerBackgroundColors != PlayerBackgroundColors.BlurredCoverColor) {
-            val new = appearanceSettings.copy(showThumbnail = true)
-            appearanceSettingsVieModel.updatePreset(new)
-        }
+        LaunchedEffect(Unit, playerBackgroundColors, visualizerEnabled, showthumbnail, playerType) {
+            if (playerBackgroundColors != PlayerBackgroundColors.BlurredCoverColor) {
+                val new = appearanceSettings.copy(showThumbnail = true)
+                appearanceSettingsVieModel.updatePreset(new)
+            }
 
-        if (!visualizerEnabled) {
-            val new = appearanceSettings.copy(showvisthumbnail = false)
-            appearanceSettingsVieModel.updatePreset(new)
+            if (!visualizerEnabled) {
+                val new = appearanceSettings.copy(showvisthumbnail = false)
+                appearanceSettingsVieModel.updatePreset(new)
+            }
 
-        }
-
-        if (!showthumbnail) {
-            val new = appearanceSettings.copy(showvisthumbnail = false, showLyricsThumbnail = false)
-            appearanceSettingsVieModel.updatePreset(new)
-        }
-        if (playerType == PlayerType.Modern) {
-            val new = appearanceSettings.copy(showLyricsThumbnail = false, showvisthumbnail = false, thumbnailpause = false)
-            appearanceSettingsVieModel.updatePreset(new)
+            if (!showthumbnail) {
+                val new =
+                    appearanceSettings.copy(showvisthumbnail = false, showLyricsThumbnail = false)
+                appearanceSettingsVieModel.updatePreset(new)
+            }
+            if (playerType == PlayerType.Modern) {
+                val new = appearanceSettings.copy(
+                    showLyricsThumbnail = false,
+                    showvisthumbnail = false,
+                    thumbnailpause = false
+                )
+                appearanceSettingsVieModel.updatePreset(new)
+            }
         }
 
         // NEW FEATURE THEMES REPO
@@ -1392,6 +1330,7 @@ fun PlayerAppearanceSettings(
         }
         */
 
+        val coroutineScope = rememberCoroutineScope()
 
         val state = rememberLazyListState()
         LazyListContainer(
@@ -1454,8 +1393,10 @@ fun PlayerAppearanceSettings(
                                 text = "",
                                 isChecked = showTopActionsBar,
                                 onCheckedChange = {
-                                    val new = appearanceSettings.copy(showTopActionsBar = it)
-                                    appearanceSettingsVieModel.updatePreset(new)
+                                    coroutineScope.launch {
+                                        val new = appearanceSettings.copy(showTopActionsBar = it)
+                                        appearanceSettingsVieModel.updatePreset(new)
+                                    }
                                 }
                             )
 
@@ -1470,8 +1411,10 @@ fun PlayerAppearanceSettings(
                                     text = "",
                                     isChecked = topPadding,
                                     onCheckedChange = {
-                                        val new = appearanceSettings.copy(topPadding = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new = appearanceSettings.copy(topPadding = it)
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     }
                                 )
                         }
@@ -1489,8 +1432,10 @@ fun PlayerAppearanceSettings(
                             title = stringResource(R.string.playertype),
                             selectedValue = playerType,
                             onValueSelected = {
-                                val new = appearanceSettings.copy(playerType = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(playerType = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             },
                             valueText = {
                                 when (it) {
@@ -1509,8 +1454,10 @@ fun PlayerAppearanceSettings(
                             title = stringResource(R.string.queuetype),
                             selectedValue = queueType,
                             onValueSelected = {
-                                val new = appearanceSettings.copy(queueType = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(queueType = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             },
                             valueText = {
                                 when (it) {
@@ -1531,8 +1478,10 @@ fun PlayerAppearanceSettings(
                                 text = "",
                                 isChecked = showthumbnail,
                                 onCheckedChange = {
-                                    val new = appearanceSettings.copy(showThumbnail = it)
-                                    appearanceSettingsVieModel.updatePreset(new)
+                                    coroutineScope.launch {
+                                        val new = appearanceSettings.copy(showThumbnail = it)
+                                        appearanceSettingsVieModel.updatePreset(new)
+                                    }
                                 },
                             )
                     }
@@ -1546,8 +1495,11 @@ fun PlayerAppearanceSettings(
                                 title = stringResource(R.string.swipe_Animation_No_Thumbnail),
                                 selectedValue = swipeAnimationNoThumbnail,
                                 onValueSelected = {
-                                    val new = appearanceSettings.copy(swipeAnimationNoThumbnail = it)
-                                    appearanceSettingsVieModel.updatePreset(new)
+                                    coroutineScope.launch {
+                                        val new =
+                                            appearanceSettings.copy(swipeAnimationNoThumbnail = it)
+                                        appearanceSettingsVieModel.updatePreset(new)
+                                    }
                                 },
                                 valueText = {
                                     when (it) {
@@ -1574,8 +1526,10 @@ fun PlayerAppearanceSettings(
                                         text = "",
                                         isChecked = fadingedge,
                                         onCheckedChange = {
-                                            val new = appearanceSettings.copy(fadingedge = it)
-                                            appearanceSettingsVieModel.updatePreset(new)
+                                            coroutineScope.launch {
+                                                val new = appearanceSettings.copy(fadingedge = it)
+                                                appearanceSettingsVieModel.updatePreset(new)
+                                            }
                                         },
                                         modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                                     )
@@ -1592,8 +1546,10 @@ fun PlayerAppearanceSettings(
                                         text = "",
                                         isChecked = carousel,
                                         onCheckedChange = {
-                                            val new = appearanceSettings.copy(carousel = it)
-                                            appearanceSettingsVieModel.updatePreset(new)
+                                            coroutineScope.launch {
+                                                val new = appearanceSettings.copy(carousel = it)
+                                                appearanceSettingsVieModel.updatePreset(new)
+                                            }
                                         },
                                         modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                                     )
@@ -1607,8 +1563,10 @@ fun PlayerAppearanceSettings(
                                         title = stringResource(R.string.carouselsize),
                                         selectedValue = carouselSize,
                                         onValueSelected = {
-                                            val new = appearanceSettings.copy(carouselSize = it)
-                                            appearanceSettingsVieModel.updatePreset(new)
+                                            coroutineScope.launch {
+                                                val new = appearanceSettings.copy(carouselSize = it)
+                                                appearanceSettingsVieModel.updatePreset(new)
+                                            }
                                         },
                                         valueText = {
                                             when (it) {
@@ -1634,8 +1592,11 @@ fun PlayerAppearanceSettings(
                                         text = "",
                                         isChecked = thumbnailpause,
                                         onCheckedChange = {
-                                            val new = appearanceSettings.copy(thumbnailpause = it)
-                                            appearanceSettingsVieModel.updatePreset(new)
+                                            coroutineScope.launch {
+                                                val new =
+                                                    appearanceSettings.copy(thumbnailpause = it)
+                                                appearanceSettingsVieModel.updatePreset(new)
+                                            }
                                         },
                                         modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                                     )
@@ -1650,8 +1611,11 @@ fun PlayerAppearanceSettings(
                                         text = "",
                                         isChecked = showlyricsthumbnail,
                                         onCheckedChange = {
-                                            val new = appearanceSettings.copy(showLyricsThumbnail = it)
-                                            appearanceSettingsVieModel.updatePreset(new)
+                                            coroutineScope.launch {
+                                                val new =
+                                                    appearanceSettings.copy(showLyricsThumbnail = it)
+                                                appearanceSettingsVieModel.updatePreset(new)
+                                            }
                                         },
                                         modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                                     )
@@ -1666,8 +1630,11 @@ fun PlayerAppearanceSettings(
                                             text = "",
                                             isChecked = showvisthumbnail,
                                             onCheckedChange = {
-                                                val new = appearanceSettings.copy(showvisthumbnail = it)
-                                                appearanceSettingsVieModel.updatePreset(new)
+                                                coroutineScope.launch {
+                                                    val new =
+                                                        appearanceSettings.copy(showvisthumbnail = it)
+                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                }
                                             },
                                             modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                                         )
@@ -1684,8 +1651,11 @@ fun PlayerAppearanceSettings(
                                     text = "",
                                     isChecked = showCoverThumbnailAnimation,
                                     onCheckedChange = {
-                                        val new = appearanceSettings.copy(showCoverThumbnailAnimation = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new =
+                                                appearanceSettings.copy(showCoverThumbnailAnimation = it)
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     },
                                     modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                                 )
@@ -1695,8 +1665,12 @@ fun PlayerAppearanceSettings(
                                             title = stringResource(R.string.cover_thumbnail_animation_type),
                                             selectedValue = coverThumbnailAnimation,
                                             onValueSelected = {
-                                                val new = appearanceSettings.copy(coverThumbnailAnimation = it)
-                                                appearanceSettingsVieModel.updatePreset(new)
+                                                coroutineScope.launch {
+                                                    val new = appearanceSettings.copy(
+                                                        coverThumbnailAnimation = it
+                                                    )
+                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                }
                                             },
                                             valueText = { it.textName },
                                             modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 24.dp else 12.dp)
@@ -1715,8 +1689,11 @@ fun PlayerAppearanceSettings(
                                         title = stringResource(R.string.player_thumbnail_size),
                                         selectedValue = playerThumbnailSizeL,
                                         onValueSelected = {
-                                            val new = appearanceSettings.copy(playerThumbnailSizeL = it)
-                                            appearanceSettingsVieModel.updatePreset(new)
+                                            coroutineScope.launch {
+                                                val new =
+                                                    appearanceSettings.copy(playerThumbnailSizeL = it)
+                                                appearanceSettingsVieModel.updatePreset(new)
+                                            }
                                         },
                                         valueText = {
                                             when (it) {
@@ -1739,8 +1716,11 @@ fun PlayerAppearanceSettings(
                                         title = stringResource(R.string.player_thumbnail_size),
                                         selectedValue = playerThumbnailSize,
                                         onValueSelected = {
-                                            val new = appearanceSettings.copy(playerThumbnailSize = it)
-                                            appearanceSettingsVieModel.updatePreset(new)
+                                            coroutineScope.launch {
+                                                val new =
+                                                    appearanceSettings.copy(playerThumbnailSize = it)
+                                                appearanceSettingsVieModel.updatePreset(new)
+                                            }
                                         },
                                         valueText = {
                                             when (it) {
@@ -1763,8 +1743,10 @@ fun PlayerAppearanceSettings(
                                     title = stringResource(R.string.thumbnailtype),
                                     selectedValue = thumbnailType,
                                     onValueSelected = {
-                                        val new = appearanceSettings.copy(thumbnailType = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new = appearanceSettings.copy(thumbnailType = it)
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     },
                                     valueText = {
                                         when (it) {
@@ -1784,8 +1766,11 @@ fun PlayerAppearanceSettings(
                                     title = stringResource(R.string.thumbnail_roundness),
                                     selectedValue = thumbnailRoundness,
                                     onValueSelected = {
-                                        val new = appearanceSettings.copy(thumbnailRoundness = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new =
+                                                appearanceSettings.copy(thumbnailRoundness = it)
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     },
                                     trailingContent = {
                                         Spacer(
@@ -1826,8 +1811,10 @@ fun PlayerAppearanceSettings(
                                 text = "",
                                 isChecked = noblur,
                                 onCheckedChange = {
-                                    val new = appearanceSettings.copy(noblur = it)
-                                    appearanceSettingsVieModel.updatePreset(new)
+                                    coroutineScope.launch {
+                                        val new = appearanceSettings.copy(noblur = it)
+                                        appearanceSettingsVieModel.updatePreset(new)
+                                    }
                                 }
                             )
 
@@ -1845,8 +1832,10 @@ fun PlayerAppearanceSettings(
                                 text = "",
                                 isChecked = statsfornerds,
                                 onCheckedChange = {
-                                    val new = appearanceSettings.copy(statsfornerds = it)
-                                    appearanceSettingsVieModel.updatePreset(new)
+                                    coroutineScope.launch {
+                                        val new = appearanceSettings.copy(statsfornerds = it)
+                                        appearanceSettingsVieModel.updatePreset(new)
+                                    }
                                 }
                             )
                     }
@@ -1860,8 +1849,10 @@ fun PlayerAppearanceSettings(
                             title = stringResource(R.string.pinfo_type),
                             selectedValue = playerInfoType,
                             onValueSelected = {
-                                val new = appearanceSettings.copy(playerInfoType = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(playerInfoType = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             },
                             valueText = {
                                 when (it) {
@@ -1884,8 +1875,11 @@ fun PlayerAppearanceSettings(
                                         text = "",
                                         isChecked = playerInfoShowIcons,
                                         onCheckedChange = {
-                                            val new = appearanceSettings.copy(playerInfoShowIcons = it)
-                                            appearanceSettingsVieModel.updatePreset(new)
+                                            coroutineScope.launch {
+                                                val new =
+                                                    appearanceSettings.copy(playerInfoShowIcons = it)
+                                                appearanceSettingsVieModel.updatePreset(new)
+                                            }
                                         },
                                         modifier = Modifier
                                             .padding(start = 12.dp)
@@ -1906,8 +1900,10 @@ fun PlayerAppearanceSettings(
                             title = stringResource(R.string.miniplayertype),
                             selectedValue = miniPlayerType,
                             onValueSelected = {
-                                val new = appearanceSettings.copy(miniPlayerType = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(miniPlayerType = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             },
                             valueText = {
                                 when (it) {
@@ -1927,8 +1923,11 @@ fun PlayerAppearanceSettings(
                             text = "",
                             isChecked = playerSwapControlsWithTimeline,
                             onCheckedChange = {
-                                val new = appearanceSettings.copy(playerSwapControlsWithTimeline = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new =
+                                        appearanceSettings.copy(playerSwapControlsWithTimeline = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
 
@@ -1941,8 +1940,10 @@ fun PlayerAppearanceSettings(
                             title = stringResource(R.string.timeline),
                             selectedValue = playerTimelineType,
                             onValueSelected = {
-                                val new = appearanceSettings.copy(playerTimelineType = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(playerTimelineType = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
 
                                 restartActivity = true // applied also for online player
                             },
@@ -1961,8 +1962,10 @@ fun PlayerAppearanceSettings(
                             text = "",
                             isChecked = transparentbar,
                             onCheckedChange = {
-                                val new = appearanceSettings.copy(transparentBar = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(transparentBar = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
 
@@ -1975,8 +1978,10 @@ fun PlayerAppearanceSettings(
                             title = stringResource(R.string.timelinesize),
                             selectedValue = playerTimelineSize,
                             onValueSelected = {
-                                val new = appearanceSettings.copy(playerTimelineSize = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(playerTimelineSize = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             },
                             valueText = {
                                 when (it) {
@@ -1999,8 +2004,10 @@ fun PlayerAppearanceSettings(
                             text = "",
                             isChecked = seekWithTap,
                             onCheckedChange = {
-                                val new = appearanceSettings.copy(seekWithTap = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(seekWithTap = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
 
@@ -2013,8 +2020,10 @@ fun PlayerAppearanceSettings(
                             title = stringResource(R.string.pcontrols_type),
                             selectedValue = playerControlsType,
                             onValueSelected = {
-                                val new = appearanceSettings.copy(playerControlsType = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(playerControlsType = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             },
                             valueText = {
                                 when (it) {
@@ -2034,8 +2043,13 @@ fun PlayerAppearanceSettings(
                             title = stringResource(R.string.play_button),
                             selectedValue = playerPlayButtonType,
                             onValueSelected = {
-                                val new = appearanceSettings.copy(playerPlayButtonType = it, lastPlayerPlayButtonType = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(
+                                        playerPlayButtonType = it,
+                                        lastPlayerPlayButtonType = it
+                                    )
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             },
                             valueText = {
                                 when (it) {
@@ -2059,8 +2073,10 @@ fun PlayerAppearanceSettings(
                             text = "",
                             isChecked = buttonzoomout,
                             onCheckedChange = {
-                                val new = appearanceSettings.copy(buttonzoomout = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(buttonzoomout = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
 
@@ -2074,8 +2090,10 @@ fun PlayerAppearanceSettings(
                             title = stringResource(R.string.icon_like_button),
                             selectedValue = iconLikeType,
                             onValueSelected = {
-                                val new = appearanceSettings.copy(iconLikeType = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(iconLikeType = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             },
                             valueText = {
                                 when (it) {
@@ -2110,8 +2128,10 @@ fun PlayerAppearanceSettings(
                             title = stringResource(R.string.background_colors),
                             selectedValue = playerBackgroundColors,
                             onValueSelected = {
-                                val new = appearanceSettings.copy(playerBackgroundColors = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(playerBackgroundColors = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             },
                             valueText = {
                                 when (it) {
@@ -2137,8 +2157,10 @@ fun PlayerAppearanceSettings(
                                 title = stringResource(R.string.gradienttype),
                                 selectedValue = animatedGradient,
                                 onValueSelected = {
-                                    val new = appearanceSettings.copy(animatedGradient = it)
-                                    appearanceSettingsVieModel.updatePreset(new)
+                                    coroutineScope.launch {
+                                        val new = appearanceSettings.copy(animatedGradient = it)
+                                        appearanceSettingsVieModel.updatePreset(new)
+                                    }
                                 },
                                 valueText = {
                                     when (it) {
@@ -2174,8 +2196,10 @@ fun PlayerAppearanceSettings(
                                 text = "",
                                 isChecked = blackgradient,
                                 onCheckedChange = {
-                                    val new = appearanceSettings.copy(blackgradient = it)
-                                    appearanceSettingsVieModel.updatePreset(new)
+                                    coroutineScope.launch {
+                                        val new = appearanceSettings.copy(blackgradient = it)
+                                        appearanceSettingsVieModel.updatePreset(new)
+                                    }
                                 }
                             )
 
@@ -2190,8 +2214,10 @@ fun PlayerAppearanceSettings(
                                 text = "",
                                 isChecked = albumCoverRotation,
                                 onCheckedChange = {
-                                    val new = appearanceSettings.copy(albumCoverRotation = it)
-                                    appearanceSettingsVieModel.updatePreset(new)
+                                    coroutineScope.launch {
+                                        val new = appearanceSettings.copy(albumCoverRotation = it)
+                                        appearanceSettingsVieModel.updatePreset(new)
+                                    }
                                 },
                                 modifier = Modifier
                                     .padding(start = 12.dp)
@@ -2208,8 +2234,10 @@ fun PlayerAppearanceSettings(
                                 text = "",
                                 isChecked = bottomgradient,
                                 onCheckedChange = {
-                                    val new = appearanceSettings.copy(bottomGradient = it)
-                                    appearanceSettingsVieModel.updatePreset(new)
+                                    coroutineScope.launch {
+                                        val new = appearanceSettings.copy(bottomGradient = it)
+                                        appearanceSettingsVieModel.updatePreset(new)
+                                    }
                                 }
                             )
                     if (search.input.isBlank() || stringResource(R.string.textoutline).contains(
@@ -2222,8 +2250,10 @@ fun PlayerAppearanceSettings(
                             text = "",
                             isChecked = textoutline,
                             onCheckedChange = {
-                                val new = appearanceSettings.copy(textoutline = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(textoutline = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
 
@@ -2237,8 +2267,10 @@ fun PlayerAppearanceSettings(
                             text = "",
                             isChecked = showTotalTimeQueue,
                             onCheckedChange = {
-                                val new = appearanceSettings.copy(showTotalTimeQueue = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(showTotalTimeQueue = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
 
@@ -2252,8 +2284,10 @@ fun PlayerAppearanceSettings(
                             text = "",
                             isChecked = showRemainingSongTime,
                             onCheckedChange = {
-                                val new = appearanceSettings.copy(showRemainingSongTime = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(showRemainingSongTime = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
 
@@ -2267,8 +2301,10 @@ fun PlayerAppearanceSettings(
                             text = "",
                             isChecked = showNextSongsInPlayer,
                             onCheckedChange = {
-                                val new = appearanceSettings.copy(showNextSongsInPlayer = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(showNextSongsInPlayer = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
                     AnimatedVisibility(visible = showNextSongsInPlayer) {
@@ -2282,8 +2318,10 @@ fun PlayerAppearanceSettings(
                                     title = stringResource(R.string.songs_number_to_show),
                                     selectedValue = showsongs,
                                     onValueSelected = {
-                                        val new = appearanceSettings.copy(showsongs = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new = appearanceSettings.copy(showsongs = it)
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     },
                                     valueText = {
                                         it.name
@@ -2303,8 +2341,10 @@ fun PlayerAppearanceSettings(
                                     text = "",
                                     isChecked = showalbumcover,
                                     onCheckedChange = {
-                                        val new = appearanceSettings.copy(showalbumcover = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new = appearanceSettings.copy(showalbumcover = it)
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     },
                                     modifier = Modifier.padding(start = 12.dp)
                                 )
@@ -2321,8 +2361,10 @@ fun PlayerAppearanceSettings(
                             text = stringResource(R.string.scrolling_text_is_used_for_long_texts),
                             isChecked = disableScrollingText,
                             onCheckedChange = {
-                                val new = appearanceSettings.copy(disableScrollingText = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(disableScrollingText = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
 
@@ -2336,8 +2378,11 @@ fun PlayerAppearanceSettings(
                             text = stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.disable_vertical_swipe_secondary else R.string.disable_song_switching_via_swipe),
                             isChecked = disablePlayerHorizontalSwipe,
                             onCheckedChange = {
-                                val new = appearanceSettings.copy(disablePlayerHorizontalSwipe = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new =
+                                        appearanceSettings.copy(disablePlayerHorizontalSwipe = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
 
@@ -2351,8 +2396,10 @@ fun PlayerAppearanceSettings(
                             text = stringResource(R.string.by_tapping_on_the_thumbnail),
                             isChecked = thumbnailTapEnabled,
                             onCheckedChange = {
-                                val new = appearanceSettings.copy(thumbnailTapEnabled = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(thumbnailTapEnabled = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
 
@@ -2366,8 +2413,10 @@ fun PlayerAppearanceSettings(
                             text = "",
                             isChecked = clickLyricsText,
                             onCheckedChange = {
-                                val new = appearanceSettings.copy(clickLyricsText = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(clickLyricsText = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
                     if (showlyricsthumbnail)
@@ -2381,8 +2430,10 @@ fun PlayerAppearanceSettings(
                                 text = "",
                                 isChecked = showBackgroundLyrics,
                                 onCheckedChange = {
-                                    val new = appearanceSettings.copy(showBackgroundLyrics = it)
-                                    appearanceSettingsVieModel.updatePreset(new)
+                                    coroutineScope.launch {
+                                        val new = appearanceSettings.copy(showBackgroundLyrics = it)
+                                        appearanceSettingsVieModel.updatePreset(new)
+                                    }
                                 }
                             )
 
@@ -2396,8 +2447,11 @@ fun PlayerAppearanceSettings(
                             text = "",
                             isChecked = playerEnableLyricsPopupMessage,
                             onCheckedChange = {
-                                val new = appearanceSettings.copy(playerEnableLyricsPopupMessage = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new =
+                                        appearanceSettings.copy(playerEnableLyricsPopupMessage = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
 
@@ -2410,8 +2464,10 @@ fun PlayerAppearanceSettings(
                             title = stringResource(R.string.background_progress_bar),
                             selectedValue = backgroundProgress,
                             onValueSelected = {
-                                val new = appearanceSettings.copy(backgroundProgress = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(backgroundProgress = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             },
                             valueText = {
                                 when (it) {
@@ -2434,8 +2490,10 @@ fun PlayerAppearanceSettings(
                             text = "",
                             isChecked = visualizerEnabled,
                             onCheckedChange = {
-                                val new = appearanceSettings.copy(visualizerEnabled = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(visualizerEnabled = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
                         /*
@@ -2480,8 +2538,10 @@ fun PlayerAppearanceSettings(
                             text = "",
                             isChecked = showPlayerActionsBar,
                             onCheckedChange = {
-                                val new = appearanceSettings.copy(showPlayerActionsBar = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(showPlayerActionsBar = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
                 }
@@ -2500,8 +2560,12 @@ fun PlayerAppearanceSettings(
                                     text = "",
                                     isChecked = transparentBackgroundActionBarPlayer,
                                     onCheckedChange = {
-                                        val new = appearanceSettings.copy(transparentBackgroundActionBarPlayer = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new = appearanceSettings.copy(
+                                                transparentBackgroundActionBarPlayer = it
+                                            )
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     }
                                 )
 
@@ -2515,8 +2579,11 @@ fun PlayerAppearanceSettings(
                                     text = "",
                                     isChecked = actionspacedevenly,
                                     onCheckedChange = {
-                                        val new = appearanceSettings.copy(actionsSpacedEvenly = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new =
+                                                appearanceSettings.copy(actionsSpacedEvenly = it)
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     }
                                 )
 
@@ -2530,8 +2597,10 @@ fun PlayerAppearanceSettings(
                                     text = "",
                                     isChecked = tapqueue,
                                     onCheckedChange = {
-                                        val new = appearanceSettings.copy(tapqueue = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new = appearanceSettings.copy(tapqueue = it)
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     }
                                 )
 
@@ -2545,8 +2614,10 @@ fun PlayerAppearanceSettings(
                                     text = "",
                                     isChecked = swipeUpQueue,
                                     onCheckedChange = {
-                                        val new = appearanceSettings.copy(swipeUpQueue = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new = appearanceSettings.copy(swipeUpQueue = it)
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     }
                                 )
 
@@ -2560,8 +2631,11 @@ fun PlayerAppearanceSettings(
                                     text = "",
                                     isChecked = showButtonPlayerVideo,
                                     onCheckedChange = {
-                                        val new = appearanceSettings.copy(showButtonPlayerVideo = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new =
+                                                appearanceSettings.copy(showButtonPlayerVideo = it)
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     }
                                 )
 
@@ -2575,8 +2649,11 @@ fun PlayerAppearanceSettings(
                                     text = "",
                                     isChecked = showButtonPlayerDiscover,
                                     onCheckedChange = {
-                                        val new = appearanceSettings.copy(showButtonPlayerDiscover = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new =
+                                                appearanceSettings.copy(showButtonPlayerDiscover = it)
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     }
                                 )
 
@@ -2602,8 +2679,12 @@ fun PlayerAppearanceSettings(
                                     text = "",
                                     isChecked = showButtonPlayerAddToPlaylist,
                                     onCheckedChange = {
-                                        val new = appearanceSettings.copy(showButtonPlayerAddToPlaylist = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new = appearanceSettings.copy(
+                                                showButtonPlayerAddToPlaylist = it
+                                            )
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     }
                                 )
 
@@ -2617,8 +2698,11 @@ fun PlayerAppearanceSettings(
                                     text = "",
                                     isChecked = showButtonPlayerLoop,
                                     onCheckedChange = {
-                                        val new = appearanceSettings.copy(showButtonPlayerLoop = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new =
+                                                appearanceSettings.copy(showButtonPlayerLoop = it)
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     }
                                 )
 
@@ -2632,8 +2716,11 @@ fun PlayerAppearanceSettings(
                                     text = "",
                                     isChecked = showButtonPlayerShuffle,
                                     onCheckedChange = {
-                                        val new = appearanceSettings.copy(showButtonPlayerShuffle = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new =
+                                                appearanceSettings.copy(showButtonPlayerShuffle = it)
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     }
                                 )
 
@@ -2647,8 +2734,11 @@ fun PlayerAppearanceSettings(
                                     text = "",
                                     isChecked = showButtonPlayerLyrics,
                                     onCheckedChange = {
-                                        val new = appearanceSettings.copy(showButtonPlayerLyrics = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new =
+                                                appearanceSettings.copy(showButtonPlayerLyrics = it)
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     }
                                 )
                             if (!isLandscape || !showthumbnail) {
@@ -2663,8 +2753,11 @@ fun PlayerAppearanceSettings(
                                             text = "",
                                             isChecked = expandedplayertoggle,
                                             onCheckedChange = {
-                                                val new = appearanceSettings.copy(expandedPlayerToggle = it)
-                                                appearanceSettingsVieModel.updatePreset(new)
+                                                coroutineScope.launch {
+                                                    val new =
+                                                        appearanceSettings.copy(expandedPlayerToggle = it)
+                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                }
                                             }
                                         )
                                 }
@@ -2680,8 +2773,11 @@ fun PlayerAppearanceSettings(
                                     text = "",
                                     isChecked = showButtonPlayerSleepTimer,
                                     onCheckedChange = {
-                                        val new = appearanceSettings.copy(showButtonPlayerSleepTimer = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new =
+                                                appearanceSettings.copy(showButtonPlayerSleepTimer = it)
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     }
                                 )
 
@@ -2695,8 +2791,12 @@ fun PlayerAppearanceSettings(
                                     text = "",
                                     isChecked = showButtonPlayerSystemEqualizer,
                                     onCheckedChange = {
-                                        val new = appearanceSettings.copy(showButtonPlayerSystemEqualizer = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new = appearanceSettings.copy(
+                                                showButtonPlayerSystemEqualizer = it
+                                            )
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     }
                                 )
 
@@ -2724,8 +2824,11 @@ fun PlayerAppearanceSettings(
                                     text = "",
                                     isChecked = showButtonPlayerStartradio,
                                     onCheckedChange = {
-                                        val new = appearanceSettings.copy(showButtonPlayerStartRadio = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new =
+                                                appearanceSettings.copy(showButtonPlayerStartRadio = it)
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     }
                                 )
 
@@ -2739,8 +2842,11 @@ fun PlayerAppearanceSettings(
                                     text = "",
                                     isChecked = showButtonPlayerMenu,
                                     onCheckedChange = {
-                                        val new = appearanceSettings.copy(showButtonPlayerMenu = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new =
+                                                appearanceSettings.copy(showButtonPlayerMenu = it)
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     }
                                 )
                         }
@@ -2767,8 +2873,11 @@ fun PlayerAppearanceSettings(
                                     text = "",
                                     isChecked = queueDurationExpanded,
                                     onCheckedChange = {
-                                        val new = appearanceSettings.copy(queueDurationExpanded = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new =
+                                                appearanceSettings.copy(queueDurationExpanded = it)
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     }
                                 )
                         }
@@ -2783,8 +2892,10 @@ fun PlayerAppearanceSettings(
                                 text = "",
                                 isChecked = titleExpanded,
                                 onCheckedChange = {
-                                    val new = appearanceSettings.copy(titleExpanded = it)
-                                    appearanceSettingsVieModel.updatePreset(new)
+                                    coroutineScope.launch {
+                                        val new = appearanceSettings.copy(titleExpanded = it)
+                                        appearanceSettingsVieModel.updatePreset(new)
+                                    }
                                 }
                             )
 
@@ -2798,8 +2909,10 @@ fun PlayerAppearanceSettings(
                                 text = "",
                                 isChecked = timelineExpanded,
                                 onCheckedChange = {
-                                    val new = appearanceSettings.copy(timelineExpanded = it)
-                                    appearanceSettingsVieModel.updatePreset(new)
+                                    coroutineScope.launch {
+                                        val new = appearanceSettings.copy(timelineExpanded = it)
+                                        appearanceSettingsVieModel.updatePreset(new)
+                                    }
                                 }
                             )
 
@@ -2813,8 +2926,10 @@ fun PlayerAppearanceSettings(
                                 text = "",
                                 isChecked = controlsExpanded,
                                 onCheckedChange = {
-                                    val new = appearanceSettings.copy(controlsExpanded = it)
-                                    appearanceSettingsVieModel.updatePreset(new)
+                                    coroutineScope.launch {
+                                        val new = appearanceSettings.copy(controlsExpanded = it)
+                                        appearanceSettingsVieModel.updatePreset(new)
+                                    }
                                 }
                             )
 
@@ -2829,8 +2944,10 @@ fun PlayerAppearanceSettings(
                                     text = "",
                                     isChecked = statsExpanded,
                                     onCheckedChange = {
-                                        val new = appearanceSettings.copy(statsExpanded = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new = appearanceSettings.copy(statsExpanded = it)
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     }
                                 )
                         }
@@ -2859,8 +2976,10 @@ fun PlayerAppearanceSettings(
                                     text = "",
                                     isChecked = actionExpanded,
                                     onCheckedChange = {
-                                        val new = appearanceSettings.copy(actionExpanded = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new = appearanceSettings.copy(actionExpanded = it)
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     }
                                 )
                         }
@@ -2875,8 +2994,11 @@ fun PlayerAppearanceSettings(
                                     text = "",
                                     isChecked = miniQueueExpanded,
                                     onCheckedChange = {
-                                        val new = appearanceSettings.copy(miniQueueExpanded = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new =
+                                                appearanceSettings.copy(miniQueueExpanded = it)
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     }
                                 )
                         }
@@ -2901,8 +3023,10 @@ fun PlayerAppearanceSettings(
                             title = stringResource(R.string.notificationPlayerFirstIcon),
                             selectedValue = notificationPlayerFirstIcon,
                             onValueSelected = {
-                                val new = appSettings.copy(notificationPlayerFirstIcon = it)
-                                appSettingsVieModel.updateSettings(new)
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(notificationPlayerFirstIcon = it)
+                                    appSettingsVieModel.updateSettings(new)
+                                }
                                 restartService = true
                             },
                             valueText = {
@@ -2913,8 +3037,10 @@ fun PlayerAppearanceSettings(
                             title = stringResource(R.string.notificationPlayerSecondIcon),
                             selectedValue = notificationPlayerSecondIcon,
                             onValueSelected = {
-                                val new = appSettings.copy(notificationPlayerSecondIcon = it)
-                                appSettingsVieModel.updateSettings(new)
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(notificationPlayerSecondIcon = it)
+                                    appSettingsVieModel.updateSettings(new)
+                                }
 
                                 restartService = true
                             },
@@ -2941,8 +3067,10 @@ fun PlayerAppearanceSettings(
                             text = stringResource(R.string.use_song_cover_on_lockscreen),
                             isChecked = appSettings.isShowingThumbnailInLockscreen,
                             onCheckedChange = {
-                                val new = appSettings.copy(isShowingThumbnailInLockscreen = it)
-                                appSettingsVieModel.updateSettings(new)
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(isShowingThumbnailInLockscreen = it)
+                                    appSettingsVieModel.updateSettings(new)
+                                }
                             }
                         )
                     //}
@@ -2962,8 +3090,10 @@ fun PlayerAppearanceSettings(
                             text = "",
                             isChecked = enableWallpaper,
                             onCheckedChange = {
-                                val new = appSettings.copy(enableWallpaper = it)
-                                appSettingsVieModel.updateSettings(new)
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(enableWallpaper = it)
+                                    appSettingsVieModel.updateSettings(new)
+                                }
                             }
                         )
                         AnimatedVisibility(visible = enableWallpaper) {
@@ -2972,8 +3102,10 @@ fun PlayerAppearanceSettings(
                                     title = stringResource(R.string.set_cover_thumbnail_as_wallpaper),
                                     selectedValue = wallpaperType,
                                     onValueSelected = {
-                                        val new = appSettings.copy(wallpaperType = it)
-                                        appSettingsVieModel.updateSettings(new)
+                                        coroutineScope.launch {
+                                            val new = appSettings.copy(wallpaperType = it)
+                                            appSettingsVieModel.updateSettings(new)
+                                        }
 
                                         restartService = true
                                     },
@@ -3002,14 +3134,19 @@ fun PlayerAppearanceSettings(
                         iconColor = colorPalette().text,
                         onClick = { resetToDefault = true },
                     )
-                    if (resetToDefault) {
+
+                    LaunchedEffect(resetToDefault) {
+                        if (!resetToDefault) return@LaunchedEffect
+
                         val new = AppearanceSettings()
                         appearanceSettingsVieModel.updatePreset(new)
+
                         //DefaultPlayerAppearanceSettings()
                         resetToDefault = false
                         navController.popBackStack()
-                        SmartMessage(stringResource(R.string.done), context = context)
+                        SmartMessage(context.resources.getString(R.string.done), context = context)
                     }
+
 
                     SettingsGroupSpacer()
                     ButtonBarSettingEntry(

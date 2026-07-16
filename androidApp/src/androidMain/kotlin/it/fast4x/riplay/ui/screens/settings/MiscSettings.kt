@@ -19,6 +19,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -143,6 +144,8 @@ fun MiscSettings() {
     val disclaimerAccepted = appSettings.musicVaultDisclaimerAccepted
     var showDisclaimer by remember { mutableStateOf(false) }
 
+    val coroutineScope = rememberCoroutineScope()
+
     Column(
         modifier = Modifier
             .background(colorPalette.background0)
@@ -184,15 +187,19 @@ fun MiscSettings() {
                         text = stringResource(R.string.settings_music_vault_save_songs_from_youtube_for_personal_offline_listening),
                         isChecked = musicVaultEnabled,
                         onCheckedChange = {
-                            if (it) {
-                                if (disclaimerAccepted) {
-                                    val new = appSettings.copy(musicVaultEnabled = true)
+                            coroutineScope.launch {
+                                if (it) {
+                                    if (disclaimerAccepted) {
+                                        val new = appSettings.copy(musicVaultEnabled = true)
+                                        appSettingsVieModel.updateSettings(new)
+                                    } else showDisclaimer = true
+                                } else {
+                                    val new = appSettings.copy(
+                                        musicVaultEnabled = false,
+                                        musicVaultDisclaimerAccepted = false
+                                    )
                                     appSettingsVieModel.updateSettings(new)
                                 }
-                                else showDisclaimer = true
-                            } else {
-                                val new = appSettings.copy(musicVaultEnabled = false, musicVaultDisclaimerAccepted = false)
-                                appSettingsVieModel.updateSettings(new)
                             }
                         }
                     )
@@ -201,8 +208,13 @@ fun MiscSettings() {
                     if (showDisclaimer) {
                         MusicVaultDisclaimerDialog(
                             onAccept = {
-                                val new = appSettings.copy(musicVaultEnabled = true, musicVaultDisclaimerAccepted = true)
-                                appSettingsVieModel.updateSettings(new)
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(
+                                        musicVaultEnabled = true,
+                                        musicVaultDisclaimerAccepted = true
+                                    )
+                                    appSettingsVieModel.updateSettings(new)
+                                }
 
                                 showDisclaimer = false
                                 CoroutineScope(Dispatchers.IO).launch {
@@ -249,8 +261,10 @@ fun MiscSettings() {
                     text = stringResource(R.string.if_enabled_create_a_log_file_to_highlight_errors),
                     isChecked = logDebugEnabled,
                     onCheckedChange = {
-                        val new = appSettings.copy(logDebugEnabled = it)
-                        appSettingsVieModel.updateSettings(new)
+                        coroutineScope.launch {
+                            val new = appSettings.copy(logDebugEnabled = it)
+                            appSettingsVieModel.updateSettings(new)
+                        }
 
                         if (!it) {
                             val file = File(context.filesDir.resolve("logs"), "RiPlay_log.txt")

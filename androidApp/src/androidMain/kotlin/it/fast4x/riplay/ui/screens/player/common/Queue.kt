@@ -1014,8 +1014,11 @@ fun Queue(
                             active = discoverIsEnabled,
                             size = 22,
                             onClick = {
-                                val new = appSettings.copy(discoverIsEnabled = !discoverIsEnabled)
-                                appSettingsVieModel.updateSettings(new)
+                                coroutineScope.launch {
+                                    val new =
+                                        appSettings.copy(discoverIsEnabled = !discoverIsEnabled)
+                                    appSettingsVieModel.updateSettings(new)
+                                }
                                 onDiscoverClick(discoverIsEnabled)
                             },
                             onLongClick = {
@@ -1040,9 +1043,14 @@ fun Queue(
                         active = queueLoopType != QueueLoopType.Default,
                         size = 22,
                         onClick = {
-                            val new = appSettings.copy(queueLoopType = setQueueLoopState(queueLoopType))
-                            appSettingsVieModel.updateSettings(new)}
+                            coroutineScope.launch {
+                                val new =
+                                    appSettings.copy(queueLoopType = setQueueLoopState(queueLoopType))
+                                appSettingsVieModel.updateSettings(new)
+                            }
+                        }
                     )
+
 
                     // Shuffle
                     ActionIconButton(

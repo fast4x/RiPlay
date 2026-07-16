@@ -355,12 +355,16 @@ fun Lyrics(
     if (showLyricsSizeDialog) {
         LyricsSizeDialog(onDismiss = { showLyricsSizeDialog = false },
             sizeValue = {
-                val new = appearanceSettings.copy(lyricsSize = it)
-                appearanceSettingsVieModel.updatePreset(new)
+                coroutineScope.launch {
+                    val new = appearanceSettings.copy(lyricsSize = it)
+                    appearanceSettingsVieModel.updatePreset(new)
+                }
             },
             sizeValueL = {
-                val new = appearanceSettings.copy(lyricsSizeL = it)
-                appearanceSettingsVieModel.updatePreset(new)
+                coroutineScope.launch {
+                    val new = appearanceSettings.copy(lyricsSizeL = it)
+                    appearanceSettingsVieModel.updatePreset(new)
+                }
             })
     }
 
@@ -835,8 +839,11 @@ fun Lyrics(
                                         secondaryText = "",
                                         onClick = {
                                             menuState.hide()
-                                            val new = appearanceSettings.copy(lyricsFontSize = LyricsFontSize.Light)
-                                            appearanceSettingsVieModel.updatePreset(new)
+                                            coroutineScope.launch {
+                                                val new =
+                                                    appearanceSettings.copy(lyricsFontSize = LyricsFontSize.Light)
+                                                appearanceSettingsVieModel.updatePreset(new)
+                                            }
                                         }
                                     )
                                     MenuEntry(
@@ -845,8 +852,11 @@ fun Lyrics(
                                         secondaryText = "",
                                         onClick = {
                                             menuState.hide()
-                                            val new = appearanceSettings.copy(lyricsFontSize = LyricsFontSize.Medium)
-                                            appearanceSettingsVieModel.updatePreset(new)
+                                            coroutineScope.launch {
+                                                val new =
+                                                    appearanceSettings.copy(lyricsFontSize = LyricsFontSize.Medium)
+                                                appearanceSettingsVieModel.updatePreset(new)
+                                            }
                                         }
                                     )
                                     MenuEntry(
@@ -855,8 +865,11 @@ fun Lyrics(
                                         secondaryText = "",
                                         onClick = {
                                             menuState.hide()
-                                            val new = appearanceSettings.copy(lyricsFontSize = LyricsFontSize.Heavy)
-                                            appearanceSettingsVieModel.updatePreset(new)
+                                            coroutineScope.launch {
+                                                val new =
+                                                    appearanceSettings.copy(lyricsFontSize = LyricsFontSize.Heavy)
+                                                appearanceSettingsVieModel.updatePreset(new)
+                                            }
                                         }
                                     )
                                     MenuEntry(
@@ -865,8 +878,11 @@ fun Lyrics(
                                         secondaryText = "",
                                         onClick = {
                                             menuState.hide()
-                                            val new = appearanceSettings.copy(lyricsFontSize = LyricsFontSize.Large)
-                                            appearanceSettingsVieModel.updatePreset(new)
+                                            coroutineScope.launch {
+                                                val new =
+                                                    appearanceSettings.copy(lyricsFontSize = LyricsFontSize.Large)
+                                                appearanceSettingsVieModel.updatePreset(new)
+                                            }
                                         }
                                     )
                                 }
@@ -909,8 +925,10 @@ fun Lyrics(
                                 interactionSource = remember { MutableInteractionSource() },
                                 onClick = {
                                     if (jumpPrevious == "") {
-                                        val new = appearanceSettings.copy(jumpPrevious = "0")
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new = appearanceSettings.copy(jumpPrevious = "0")
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     }
                                     if (binder?.player?.hasPreviousMediaItem() == false || (jumpPrevious != "0" && (binder?.player?.currentPosition
                                             ?: 0) > jumpPrevious.toInt() * 1000)
@@ -1001,18 +1019,30 @@ fun Lyrics(
                         .clickable {
                             when {
                                 isShowingSynchronizedLyrics && isShowingSynchronizedWordByWordLyrics -> {
-                                    val new = appearanceSettings.copy(isShowingSynchronizedWordByWordLyrics = false)
-                                    appearanceSettingsVieModel.updatePreset(new)
+                                    coroutineScope.launch {
+                                        val new = appearanceSettings.copy(
+                                            isShowingSynchronizedWordByWordLyrics = false
+                                        )
+                                        appearanceSettingsVieModel.updatePreset(new)
+                                    }
                                 }
 
                                 isShowingSynchronizedLyrics && !isShowingSynchronizedWordByWordLyrics -> {
-                                    val new = appearanceSettings.copy(isShowingSynchronizedLyrics = false)
-                                    appearanceSettingsVieModel.updatePreset(new)
+                                    coroutineScope.launch {
+                                        val new =
+                                            appearanceSettings.copy(isShowingSynchronizedLyrics = false)
+                                        appearanceSettingsVieModel.updatePreset(new)
+                                    }
                                 }
 
                                 else -> {
-                                    val new = appearanceSettings.copy(isShowingSynchronizedLyrics = true, isShowingSynchronizedWordByWordLyrics = true)
-                                    appearanceSettingsVieModel.updatePreset(new)
+                                    coroutineScope.launch {
+                                        val new = appearanceSettings.copy(
+                                            isShowingSynchronizedLyrics = true,
+                                            isShowingSynchronizedWordByWordLyrics = true
+                                        )
+                                        appearanceSettingsVieModel.updatePreset(new)
+                                    }
                                 }
                             }
                         }
@@ -1061,8 +1091,12 @@ fun Lyrics(
                                                 enabled = true,
                                                 onClick = {
                                                     menuState.hide()
-                                                    val new = appearanceSettings.copy(landscapeControls = !landscapeControls)
-                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                    coroutineScope.launch {
+                                                        val new = appearanceSettings.copy(
+                                                            landscapeControls = !landscapeControls
+                                                        )
+                                                        appearanceSettingsVieModel.updatePreset(new)
+                                                    }
                                                 }
                                             )
                                         }
@@ -1079,8 +1113,15 @@ fun Lyrics(
                                                             secondaryText = "",
                                                             onClick = {
                                                                 menuState.hide()
-                                                                val new = appearanceSettings.copy(lyricsAlignment = LyricsAlignment.Left)
-                                                                appearanceSettingsVieModel.updatePreset(new)
+                                                                coroutineScope.launch {
+                                                                    val new =
+                                                                        appearanceSettings.copy(
+                                                                            lyricsAlignment = LyricsAlignment.Left
+                                                                        )
+                                                                    appearanceSettingsVieModel.updatePreset(
+                                                                        new
+                                                                    )
+                                                                }
                                                             }
                                                         )
                                                         MenuEntry(
@@ -1089,8 +1130,15 @@ fun Lyrics(
                                                             secondaryText = "",
                                                             onClick = {
                                                                 menuState.hide()
-                                                                val new = appearanceSettings.copy(lyricsAlignment = LyricsAlignment.Center)
-                                                                appearanceSettingsVieModel.updatePreset(new)
+                                                                coroutineScope.launch {
+                                                                    val new =
+                                                                        appearanceSettings.copy(
+                                                                            lyricsAlignment = LyricsAlignment.Center
+                                                                        )
+                                                                    appearanceSettingsVieModel.updatePreset(
+                                                                        new
+                                                                    )
+                                                                }
                                                             }
                                                         )
                                                         MenuEntry(
@@ -1099,8 +1147,15 @@ fun Lyrics(
                                                             secondaryText = "",
                                                             onClick = {
                                                                 menuState.hide()
-                                                                val new = appearanceSettings.copy(lyricsAlignment = LyricsAlignment.Right)
-                                                                appearanceSettingsVieModel.updatePreset(new)
+                                                                coroutineScope.launch {
+                                                                    val new =
+                                                                        appearanceSettings.copy(
+                                                                            lyricsAlignment = LyricsAlignment.Right
+                                                                        )
+                                                                    appearanceSettingsVieModel.updatePreset(
+                                                                        new
+                                                                    )
+                                                                }
                                                             }
                                                         )
                                                     }
@@ -1122,8 +1177,15 @@ fun Lyrics(
                                                                 secondaryText = "",
                                                                 onClick = {
                                                                     menuState.hide()
-                                                                    val new = appearanceSettings.copy(lyricsFontSize = LyricsFontSize.Light)
-                                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                                    coroutineScope.launch {
+                                                                        val new =
+                                                                            appearanceSettings.copy(
+                                                                                lyricsFontSize = LyricsFontSize.Light
+                                                                            )
+                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                            new
+                                                                        )
+                                                                    }
                                                                 }
                                                             )
                                                             MenuEntry(
@@ -1132,8 +1194,15 @@ fun Lyrics(
                                                                 secondaryText = "",
                                                                 onClick = {
                                                                     menuState.hide()
-                                                                    val new = appearanceSettings.copy(lyricsFontSize = LyricsFontSize.Medium)
-                                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                                    coroutineScope.launch {
+                                                                        val new =
+                                                                            appearanceSettings.copy(
+                                                                                lyricsFontSize = LyricsFontSize.Medium
+                                                                            )
+                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                            new
+                                                                        )
+                                                                    }
                                                                 }
                                                             )
                                                             MenuEntry(
@@ -1142,8 +1211,15 @@ fun Lyrics(
                                                                 secondaryText = "",
                                                                 onClick = {
                                                                     menuState.hide()
-                                                                    val new = appearanceSettings.copy(lyricsFontSize = LyricsFontSize.Heavy)
-                                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                                    coroutineScope.launch {
+                                                                        val new =
+                                                                            appearanceSettings.copy(
+                                                                                lyricsFontSize = LyricsFontSize.Heavy
+                                                                            )
+                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                            new
+                                                                        )
+                                                                    }
                                                                 }
                                                             )
                                                             MenuEntry(
@@ -1152,8 +1228,15 @@ fun Lyrics(
                                                                 secondaryText = "",
                                                                 onClick = {
                                                                     menuState.hide()
-                                                                    val new = appearanceSettings.copy(lyricsFontSize = LyricsFontSize.Large)
-                                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                                    coroutineScope.launch {
+                                                                        val new =
+                                                                            appearanceSettings.copy(
+                                                                                lyricsFontSize = LyricsFontSize.Large
+                                                                            )
+                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                            new
+                                                                        )
+                                                                    }
                                                                 }
                                                             )
                                                             MenuEntry(
@@ -1162,8 +1245,15 @@ fun Lyrics(
                                                                 secondaryText = stringResource(R.string.lyricsSizeSecondary),
                                                                 onClick = {
                                                                     menuState.hide()
-                                                                    val new = appearanceSettings.copy(lyricsFontSize = LyricsFontSize.Custom)
-                                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                                    coroutineScope.launch {
+                                                                        val new =
+                                                                            appearanceSettings.copy(
+                                                                                lyricsFontSize = LyricsFontSize.Custom
+                                                                            )
+                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                            new
+                                                                        )
+                                                                    }
                                                                 },
                                                                 onLongClick = {
                                                                     showLyricsSizeDialog =
@@ -1188,8 +1278,15 @@ fun Lyrics(
                                                                 secondaryText = "",
                                                                 onClick = {
                                                                     menuState.hide()
-                                                                    val new = appearanceSettings.copy(lyricsColor = LyricsColor.Thememode)
-                                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                                    coroutineScope.launch {
+                                                                        val new =
+                                                                            appearanceSettings.copy(
+                                                                                lyricsColor = LyricsColor.Thememode
+                                                                            )
+                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                            new
+                                                                        )
+                                                                    }
                                                                 }
                                                             )
                                                             MenuEntry(
@@ -1198,8 +1295,15 @@ fun Lyrics(
                                                                 secondaryText = "",
                                                                 onClick = {
                                                                     menuState.hide()
-                                                                    val new = appearanceSettings.copy(lyricsColor = LyricsColor.White)
-                                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                                    coroutineScope.launch {
+                                                                        val new =
+                                                                            appearanceSettings.copy(
+                                                                                lyricsColor = LyricsColor.White
+                                                                            )
+                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                            new
+                                                                        )
+                                                                    }
                                                                 }
                                                             )
                                                             MenuEntry(
@@ -1208,8 +1312,15 @@ fun Lyrics(
                                                                 secondaryText = "",
                                                                 onClick = {
                                                                     menuState.hide()
-                                                                    val new = appearanceSettings.copy(lyricsColor = LyricsColor.Black)
-                                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                                    coroutineScope.launch {
+                                                                        val new =
+                                                                            appearanceSettings.copy(
+                                                                                lyricsColor = LyricsColor.Black
+                                                                            )
+                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                            new
+                                                                        )
+                                                                    }
                                                                 }
                                                             )
                                                             MenuEntry(
@@ -1218,8 +1329,15 @@ fun Lyrics(
                                                                 secondaryText = "",
                                                                 onClick = {
                                                                     menuState.hide()
-                                                                    val new = appearanceSettings.copy(lyricsColor = LyricsColor.Accent)
-                                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                                    coroutineScope.launch {
+                                                                        val new =
+                                                                            appearanceSettings.copy(
+                                                                                lyricsColor = LyricsColor.Accent
+                                                                            )
+                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                            new
+                                                                        )
+                                                                    }
                                                                 }
                                                             )
                                                             MenuEntry(
@@ -1228,8 +1346,15 @@ fun Lyrics(
                                                                 secondaryText = "",
                                                                 onClick = {
                                                                     menuState.hide()
-                                                                    val new = appearanceSettings.copy(lyricsColor = LyricsColor.FluidRainbow)
-                                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                                    coroutineScope.launch {
+                                                                        val new =
+                                                                            appearanceSettings.copy(
+                                                                                lyricsColor = LyricsColor.FluidRainbow
+                                                                            )
+                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                            new
+                                                                        )
+                                                                    }
                                                                 }
                                                             )
                                                             /*MenuEntry(
@@ -1259,8 +1384,15 @@ fun Lyrics(
                                                                 secondaryText = "",
                                                                 onClick = {
                                                                     menuState.hide()
-                                                                    val new = appearanceSettings.copy(lyricsOutline = LyricsOutline.None)
-                                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                                    coroutineScope.launch {
+                                                                        val new =
+                                                                            appearanceSettings.copy(
+                                                                                lyricsOutline = LyricsOutline.None
+                                                                            )
+                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                            new
+                                                                        )
+                                                                    }
                                                                 }
                                                             )
                                                             MenuEntry(
@@ -1269,8 +1401,15 @@ fun Lyrics(
                                                                 secondaryText = "",
                                                                 onClick = {
                                                                     menuState.hide()
-                                                                    val new = appearanceSettings.copy(lyricsOutline = LyricsOutline.Thememode)
-                                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                                    coroutineScope.launch {
+                                                                        val new =
+                                                                            appearanceSettings.copy(
+                                                                                lyricsOutline = LyricsOutline.Thememode
+                                                                            )
+                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                            new
+                                                                        )
+                                                                    }
                                                                 }
                                                             )
                                                             MenuEntry(
@@ -1279,8 +1418,15 @@ fun Lyrics(
                                                                 secondaryText = "",
                                                                 onClick = {
                                                                     menuState.hide()
-                                                                    val new = appearanceSettings.copy(lyricsOutline = LyricsOutline.White)
-                                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                                    coroutineScope.launch {
+                                                                        val new =
+                                                                            appearanceSettings.copy(
+                                                                                lyricsOutline = LyricsOutline.White
+                                                                            )
+                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                            new
+                                                                        )
+                                                                    }
                                                                 }
                                                             )
                                                             MenuEntry(
@@ -1289,8 +1435,15 @@ fun Lyrics(
                                                                 secondaryText = "",
                                                                 onClick = {
                                                                     menuState.hide()
-                                                                    val new = appearanceSettings.copy(lyricsOutline = LyricsOutline.Black)
-                                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                                    coroutineScope.launch {
+                                                                        val new =
+                                                                            appearanceSettings.copy(
+                                                                                lyricsOutline = LyricsOutline.Black
+                                                                            )
+                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                            new
+                                                                        )
+                                                                    }
                                                                 }
                                                             )
                                                             MenuEntry(
@@ -1299,8 +1452,15 @@ fun Lyrics(
                                                                 secondaryText = "",
                                                                 onClick = {
                                                                     menuState.hide()
-                                                                    val new = appearanceSettings.copy(lyricsOutline = LyricsOutline.Rainbow)
-                                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                                    coroutineScope.launch {
+                                                                        val new =
+                                                                            appearanceSettings.copy(
+                                                                                lyricsOutline = LyricsOutline.Rainbow
+                                                                            )
+                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                            new
+                                                                        )
+                                                                    }
                                                                 }
                                                             )
                                                             if (isShowingSynchronizedLyrics) {
@@ -1310,8 +1470,15 @@ fun Lyrics(
                                                                     secondaryText = "",
                                                                     onClick = {
                                                                         menuState.hide()
-                                                                        val new = appearanceSettings.copy(lyricsOutline = LyricsOutline.Glow)
-                                                                        appearanceSettingsVieModel.updatePreset(new)
+                                                                        coroutineScope.launch {
+                                                                            val new =
+                                                                                appearanceSettings.copy(
+                                                                                    lyricsOutline = LyricsOutline.Glow
+                                                                                )
+                                                                            appearanceSettingsVieModel.updatePreset(
+                                                                                new
+                                                                            )
+                                                                        }
                                                                     }
                                                                 )
                                                             }
@@ -1356,8 +1523,15 @@ fun Lyrics(
                                                             secondaryText = "",
                                                             onClick = {
                                                                 menuState.hide()
-                                                                val new = appearanceSettings.copy(romanization = Romanization.Off)
-                                                                appearanceSettingsVieModel.updatePreset(new)
+                                                                coroutineScope.launch {
+                                                                    val new =
+                                                                        appearanceSettings.copy(
+                                                                            romanization = Romanization.Off
+                                                                        )
+                                                                    appearanceSettingsVieModel.updatePreset(
+                                                                        new
+                                                                    )
+                                                                }
                                                             }
                                                         )
                                                         MenuEntry(
@@ -1366,8 +1540,15 @@ fun Lyrics(
                                                             secondaryText = "",
                                                             onClick = {
                                                                 menuState.hide()
-                                                                val new = appearanceSettings.copy(romanization = Romanization.Original)
-                                                                appearanceSettingsVieModel.updatePreset(new)
+                                                                coroutineScope.launch {
+                                                                    val new =
+                                                                        appearanceSettings.copy(
+                                                                            romanization = Romanization.Original
+                                                                        )
+                                                                    appearanceSettingsVieModel.updatePreset(
+                                                                        new
+                                                                    )
+                                                                }
                                                             }
                                                         )
                                                         MenuEntry(
@@ -1376,8 +1557,15 @@ fun Lyrics(
                                                             secondaryText = "",
                                                             onClick = {
                                                                 menuState.hide()
-                                                                val new = appearanceSettings.copy(romanization = Romanization.Translated)
-                                                                appearanceSettingsVieModel.updatePreset(new)
+                                                                coroutineScope.launch {
+                                                                    val new =
+                                                                        appearanceSettings.copy(
+                                                                            romanization = Romanization.Translated
+                                                                        )
+                                                                    appearanceSettingsVieModel.updatePreset(
+                                                                        new
+                                                                    )
+                                                                }
                                                             }
                                                         )
                                                         if (showSecondLine) {
@@ -1387,8 +1575,15 @@ fun Lyrics(
                                                                 secondaryText = "",
                                                                 onClick = {
                                                                     menuState.hide()
-                                                                    val new = appearanceSettings.copy(romanization = Romanization.Both)
-                                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                                    coroutineScope.launch {
+                                                                        val new =
+                                                                            appearanceSettings.copy(
+                                                                                romanization = Romanization.Both
+                                                                            )
+                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                            new
+                                                                        )
+                                                                    }
                                                                 }
                                                             )
                                                         }
@@ -1402,8 +1597,11 @@ fun Lyrics(
                                             enabled = true,
                                             onClick = {
                                                 menuState.hide()
-                                                val new = appearanceSettings.copy(showSecondLine = !showSecondLine)
-                                                appearanceSettingsVieModel.updatePreset(new)
+                                                coroutineScope.launch {
+                                                    val new =
+                                                        appearanceSettings.copy(showSecondLine = !showSecondLine)
+                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                }
                                             }
                                         )
 
@@ -1414,8 +1612,12 @@ fun Lyrics(
                                                 enabled = true,
                                                 onClick = {
                                                     menuState.hide()
-                                                    val new = appearanceSettings.copy(lyricsSizeAnimate = !lyricsSizeAnimate)
-                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                    coroutineScope.launch {
+                                                        val new = appearanceSettings.copy(
+                                                            lyricsSizeAnimate = !lyricsSizeAnimate
+                                                        )
+                                                        appearanceSettingsVieModel.updatePreset(new)
+                                                    }
                                                 }
                                             )
                                         }
@@ -1434,8 +1636,15 @@ fun Lyrics(
                                                                 secondaryText = "",
                                                                 onClick = {
                                                                     menuState.hide()
-                                                                    val new = appearanceSettings.copy(lyricsHighlight = LyricsHighlight.None)
-                                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                                    coroutineScope.launch {
+                                                                        val new =
+                                                                            appearanceSettings.copy(
+                                                                                lyricsHighlight = LyricsHighlight.None
+                                                                            )
+                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                            new
+                                                                        )
+                                                                    }
                                                                 }
                                                             )
                                                             MenuEntry(
@@ -1444,8 +1653,15 @@ fun Lyrics(
                                                                 secondaryText = "",
                                                                 onClick = {
                                                                     menuState.hide()
-                                                                    val new = appearanceSettings.copy(lyricsHighlight = LyricsHighlight.White)
-                                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                                    coroutineScope.launch {
+                                                                        val new =
+                                                                            appearanceSettings.copy(
+                                                                                lyricsHighlight = LyricsHighlight.White
+                                                                            )
+                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                            new
+                                                                        )
+                                                                    }
                                                                 }
                                                             )
                                                             MenuEntry(
@@ -1454,8 +1670,15 @@ fun Lyrics(
                                                                 secondaryText = "",
                                                                 onClick = {
                                                                     menuState.hide()
-                                                                    val new = appearanceSettings.copy(lyricsHighlight = LyricsHighlight.Black)
-                                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                                    coroutineScope.launch {
+                                                                        val new =
+                                                                            appearanceSettings.copy(
+                                                                                lyricsHighlight = LyricsHighlight.Black
+                                                                            )
+                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                            new
+                                                                        )
+                                                                    }
                                                                 }
                                                             )
                                                         }
@@ -1477,8 +1700,15 @@ fun Lyrics(
                                                                 secondaryText = "",
                                                                 onClick = {
                                                                     menuState.hide()
-                                                                    val new = appearanceSettings.copy(lyricsBackground = LyricsBackground.None)
-                                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                                    coroutineScope.launch {
+                                                                        val new =
+                                                                            appearanceSettings.copy(
+                                                                                lyricsBackground = LyricsBackground.None
+                                                                            )
+                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                            new
+                                                                        )
+                                                                    }
                                                                 }
                                                             )
                                                             MenuEntry(
@@ -1487,8 +1717,15 @@ fun Lyrics(
                                                                 secondaryText = "",
                                                                 onClick = {
                                                                     menuState.hide()
-                                                                    val new = appearanceSettings.copy(lyricsBackground = LyricsBackground.White)
-                                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                                    coroutineScope.launch {
+                                                                        val new =
+                                                                            appearanceSettings.copy(
+                                                                                lyricsBackground = LyricsBackground.White
+                                                                            )
+                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                            new
+                                                                        )
+                                                                    }
                                                                 }
                                                             )
                                                             MenuEntry(
@@ -1497,8 +1734,15 @@ fun Lyrics(
                                                                 secondaryText = "",
                                                                 onClick = {
                                                                     menuState.hide()
-                                                                    val new = appearanceSettings.copy(lyricsBackground = LyricsBackground.Black)
-                                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                                    coroutineScope.launch {
+                                                                        val new =
+                                                                            appearanceSettings.copy(
+                                                                                lyricsBackground = LyricsBackground.Black
+                                                                            )
+                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                            new
+                                                                        )
+                                                                    }
                                                                 }
                                                             )
                                                         }
@@ -1527,8 +1771,16 @@ fun Lyrics(
                                                                     )
                                                             },
                                                             onClick = {
-                                                                val new = appearanceSettings.copy(isShowingSynchronizedLyrics = false, isShowingSynchronizedWordByWordLyrics = false)
-                                                                appearanceSettingsVieModel.updatePreset(new)
+                                                                coroutineScope.launch {
+                                                                    val new =
+                                                                        appearanceSettings.copy(
+                                                                            isShowingSynchronizedLyrics = false,
+                                                                            isShowingSynchronizedWordByWordLyrics = false
+                                                                        )
+                                                                    appearanceSettingsVieModel.updatePreset(
+                                                                        new
+                                                                    )
+                                                                }
                                                             }
                                                         )
                                                         MenuEntry(
@@ -1548,8 +1800,16 @@ fun Lyrics(
                                                                     )
                                                             },
                                                             onClick = {
-                                                                val new = appearanceSettings.copy(isShowingSynchronizedLyrics = true, isShowingSynchronizedWordByWordLyrics = false)
-                                                                appearanceSettingsVieModel.updatePreset(new)
+                                                                coroutineScope.launch {
+                                                                    val new =
+                                                                        appearanceSettings.copy(
+                                                                            isShowingSynchronizedLyrics = true,
+                                                                            isShowingSynchronizedWordByWordLyrics = false
+                                                                        )
+                                                                    appearanceSettingsVieModel.updatePreset(
+                                                                        new
+                                                                    )
+                                                                }
                                                             }
                                                         )
 
@@ -1570,8 +1830,16 @@ fun Lyrics(
                                                                     )
                                                             },
                                                             onClick = {
-                                                                val new = appearanceSettings.copy(isShowingSynchronizedLyrics = true, isShowingSynchronizedWordByWordLyrics = true)
-                                                                appearanceSettingsVieModel.updatePreset(new)
+                                                                coroutineScope.launch {
+                                                                    val new =
+                                                                        appearanceSettings.copy(
+                                                                            isShowingSynchronizedLyrics = true,
+                                                                            isShowingSynchronizedWordByWordLyrics = true
+                                                                        )
+                                                                    appearanceSettingsVieModel.updatePreset(
+                                                                        new
+                                                                    )
+                                                                }
                                                             }
                                                         )
 

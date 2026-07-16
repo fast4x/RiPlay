@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -38,6 +39,7 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_TIPS
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.utils.LazyListContainer
+import kotlinx.coroutines.launch
 
 @ExperimentalAnimationApi
 @UnstableApi
@@ -68,6 +70,8 @@ fun  HomeSettings() {
 
     //var homePageType by rememberPreference(HOME_PAGE_TYPE.key, HomePagetype.Classic)
     val homePageType = appSettings.homePageType
+
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -114,8 +118,10 @@ fun  HomeSettings() {
                             title = stringResource(R.string.homepage_type),
                             selectedValue = homePageType,
                             onValueSelected = {
-                                val new = appSettings.copy(homePageType = it)
-                                appSettingsVieModel.updateSettings(new)
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(homePageType = it)
+                                    appSettingsVieModel.updateSettings(new)
+                                }
                             },
                             valueText = { it.textName }
                         )
@@ -140,8 +146,10 @@ fun  HomeSettings() {
                             ),
                             isChecked = showTips,
                             onCheckedChange = {
-                                val new = appSettings.copy(showTips = it)
-                                appSettingsVieModel.updateSettings(new)
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(showTips = it)
+                                    appSettingsVieModel.updateSettings(new)
+                                }
                             }
                         )
 
@@ -152,8 +160,10 @@ fun  HomeSettings() {
                             ),
                             isChecked = showNewAlbumsArtists,
                             onCheckedChange = {
-                                val new = appSettings.copy(showNewAlbumsArtists = it)
-                                appSettingsVieModel.updateSettings(new)
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(showNewAlbumsArtists = it)
+                                    appSettingsVieModel.updateSettings(new)
+                                }
                             }
                         )
 
@@ -164,8 +174,10 @@ fun  HomeSettings() {
                             ),
                             isChecked = showNewAlbums,
                             onCheckedChange = {
-                                val new = appSettings.copy(showNewAlbums = it)
-                                appSettingsVieModel.updateSettings(new)
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(showNewAlbums = it)
+                                    appSettingsVieModel.updateSettings(new)
+                                }
                             }
                         )
 
@@ -176,8 +188,10 @@ fun  HomeSettings() {
                             ),
                             isChecked = showMoodsAndGenres,
                             onCheckedChange = {
-                                val new = appSettings.copy(showMoodAndGenres = it)
-                                appSettingsVieModel.updateSettings(new)
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(showMoodAndGenres = it)
+                                    appSettingsVieModel.updateSettings(new)
+                                }
                             }
                         )
 
@@ -192,8 +206,10 @@ fun  HomeSettings() {
                                     ),
                                     isChecked = showCharts,
                                     onCheckedChange = {
-                                        val new = appSettings.copy(showCharts = it)
-                                        appSettingsVieModel.updateSettings(new)
+                                        coroutineScope.launch {
+                                            val new = appSettings.copy(showCharts = it)
+                                            appSettingsVieModel.updateSettings(new)
+                                        }
                                     }
                                 )
 
@@ -204,8 +220,10 @@ fun  HomeSettings() {
                                     ),
                                     isChecked = showRelatedAlbums,
                                     onCheckedChange = {
-                                        val new = appSettings.copy(showRelatedAlbums = it)
-                                        appSettingsVieModel.updateSettings(new)
+                                        coroutineScope.launch {
+                                            val new = appSettings.copy(showRelatedAlbums = it)
+                                            appSettingsVieModel.updateSettings(new)
+                                        }
                                     }
                                 )
 
@@ -216,8 +234,10 @@ fun  HomeSettings() {
                                     ),
                                     isChecked = showSimilarArtists,
                                     onCheckedChange = {
-                                        val new = appSettings.copy(showSimilarArtists = it)
-                                        appSettingsVieModel.updateSettings(new)
+                                        coroutineScope.launch {
+                                            val new = appSettings.copy(showSimilarArtists = it)
+                                            appSettingsVieModel.updateSettings(new)
+                                        }
                                     }
                                 )
 
@@ -228,8 +248,10 @@ fun  HomeSettings() {
                                     ),
                                     isChecked = showPlaylistMightLike,
                                     onCheckedChange = {
-                                        val new = appSettings.copy(showPlaylistMightLike = it)
-                                        appSettingsVieModel.updateSettings(new)
+                                        coroutineScope.launch {
+                                            val new = appSettings.copy(showPlaylistMightLike = it)
+                                            appSettingsVieModel.updateSettings(new)
+                                        }
                                     }
                                 )
 
@@ -240,8 +262,11 @@ fun  HomeSettings() {
                                     ),
                                     isChecked = showMonthlyPlaylistInQuickPicks,
                                     onCheckedChange = {
-                                        val new = appSettings.copy(showMonthlyPlaylistInQuickPicks = it)
-                                        appSettingsVieModel.updateSettings(new)
+                                        coroutineScope.launch {
+                                            val new =
+                                                appSettings.copy(showMonthlyPlaylistInQuickPicks = it)
+                                            appSettingsVieModel.updateSettings(new)
+                                        }
                                     }
                                 )
                             }

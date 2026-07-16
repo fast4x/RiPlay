@@ -1,15 +1,14 @@
-package it.fast4x.riplay.extensions.experimental.appearancepreset.viewmodels
+package it.fast4x.riplay.extensions.experimental.appearancesettings.viewmodels
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import it.fast4x.riplay.extensions.experimental.appearancepreset.AppearancePreferences
-import it.fast4x.riplay.extensions.experimental.appearancepreset.repository.AppearancePresetRepository
-import it.fast4x.riplay.extensions.experimental.appearancepreset.repository.AppearancePresetRepositoryImpl
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearancePreset
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.PresetEvent
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.PresetUiState
+import it.fast4x.riplay.extensions.experimental.appearancesettings.repository.AppearancePresetRepository
+import it.fast4x.riplay.extensions.experimental.appearancesettings.repository.AppearancePresetRepositoryImpl
+import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearancePreset
+import it.fast4x.riplay.extensions.experimental.appearancesettings.models.PresetEvent
+import it.fast4x.riplay.extensions.experimental.appearancesettings.models.PresetUiState
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -27,7 +26,7 @@ class AppearancePresetViewModel(
     private val _uiState = MutableStateFlow<PresetUiState>(PresetUiState.Loading)
     val uiState: StateFlow<PresetUiState> = _uiState.asStateFlow()
 
-    private val presetList: StateFlow<List<AppearancePreset>> = repository.getAllPresets()
+    val presetList: StateFlow<List<AppearancePreset>> = repository.getAllPresets()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),

@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -30,30 +31,41 @@ class AppSettingsViewModel(application: Application) : AndroidViewModel(applicat
 
     private val daoApp = Database.appSettingsDao()
 
+    private var isInitialized = false
+
     private val _activeSettings = MutableStateFlow(AppSettings())
     val activeSettings: StateFlow<AppSettings> = _activeSettings.asStateFlow()
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val settings = daoApp.getSettings()?.first()
-                if (settings != null) {
-                    _activeSettings.value = DbSettingsJson.decodeFromString<AppSettings>(settings.toString())
+                val settings = daoApp.getSettings().first()
+                Timber.d("AppSettingsViewModel init: Loading settings from DB $settings")
+                if (settings.isNotEmpty()) {
+                    _activeSettings.value = DbSettingsJson.decodeFromString<AppSettings>(settings)
                     Timber.d("AppSettingsViewModel init: Successfully loaded settings")
                 } else {
-                    Timber.w("AppSettingsViewModel init: Settings not found in DB, falling back to defaults")
+                    Timber.w("AppSettingsViewModel init: No settings found in DB, initialized with defaults falling back")
                 }
             } catch (e: Exception) {
                 Timber.e(e, "AppSettingsViewModel init: Error loading app settings from DB")
+            } finally {
+                isInitialized = true
             }
         }
     }
 
     fun updateSettings(settings: AppSettings) {
         viewModelScope.launch(Dispatchers.IO) {
-            daoApp.updateSettings(DbSettingsJson.encodeToString(settings))
+            if (!isInitialized) {
+                Timber.w("AppSettingsViewModel updateSettings: chiamato prima che l'init finisse. Ignoro la scrittura per non corrompere il DB.")
+                return@launch
+            }
+            Timber.d("AppSettingsViewModel updateSettings: Updating settings $settings")
+
             _activeSettings.value = settings
-            AppSettingsManager().current = settings
+            daoApp.updateSettings(DbSettingsJson.encodeToString(settings))
+            //AppSettingsManager().current = settings
         }
     }
 }

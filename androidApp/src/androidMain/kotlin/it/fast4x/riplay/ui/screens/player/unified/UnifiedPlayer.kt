@@ -324,6 +324,8 @@ fun UnifiedPlayer(
 
     val menuState = LocalGlobalSheetState.current
 
+    val coroutineScope = rememberCoroutineScope()
+
 //    val playerThumbnailSize by rememberPreference(
 //        PLAYER_THUMBNAIL_SIZE.key,
 //        PlayerThumbnailSize.Biggest
@@ -408,12 +410,16 @@ fun UnifiedPlayer(
         BlurParamsDialog(
             onDismiss = { showBlurPlayerDialog = false },
             scaleValue = {
-                val new = appearanceSettings.copy(blurStrength = it)
-                appearanceSettingsVieModel.updatePreset(new)
+                coroutineScope.launch {
+                    val new = appearanceSettings.copy(blurStrength = it)
+                    appearanceSettingsVieModel.updatePreset(new)
+                }
             },
             darkenFactorValue = {
-                val new = appearanceSettings.copy(blurDarkenFactor = it)
-                appearanceSettingsVieModel.updatePreset(new)
+                coroutineScope.launch {
+                    val new = appearanceSettings.copy(blurDarkenFactor = it)
+                    appearanceSettingsVieModel.updatePreset(new)
+                }
             }
         )
 
@@ -424,24 +430,34 @@ fun UnifiedPlayer(
         ThumbnailOffsetDialog(
             onDismiss = { showThumbnailOffsetDialog = false },
             spacingValue = {
-                val new = appearanceSettings.copy(thumbnailSpacing = it)
-                appearanceSettingsVieModel.updatePreset(new)
+                coroutineScope.launch {
+                    val new = appearanceSettings.copy(thumbnailSpacing = it)
+                    appearanceSettingsVieModel.updatePreset(new)
+                }
             },
             spacingValueL = {
-                val new = appearanceSettings.copy(thumbnailSpacingL = it)
-                appearanceSettingsVieModel.updatePreset(new)
+                coroutineScope.launch {
+                    val new = appearanceSettings.copy(thumbnailSpacingL = it)
+                    appearanceSettingsVieModel.updatePreset(new)
+                }
             },
             fadeValue = {
-                val new = appearanceSettings.copy(thumbnailFade = it)
-                appearanceSettingsVieModel.updatePreset(new)
+                coroutineScope.launch {
+                    val new = appearanceSettings.copy(thumbnailFade = it)
+                    appearanceSettingsVieModel.updatePreset(new)
+                }
             },
             fadeValueEx = {
-                val new = appearanceSettings.copy(thumbnailFadeEx = it)
-                appearanceSettingsVieModel.updatePreset(new)
+                coroutineScope.launch {
+                    val new = appearanceSettings.copy(thumbnailFadeEx = it)
+                    appearanceSettingsVieModel.updatePreset(new)
+                }
             },
             imageCoverSizeValue = {
-                val new = appearanceSettings.copy(imageCoverSize = it)
-                appearanceSettingsVieModel.updatePreset(new)
+                coroutineScope.launch {
+                    val new = appearanceSettings.copy(imageCoverSize = it)
+                    appearanceSettingsVieModel.updatePreset(new)
+                }
             }
         )
     }
@@ -517,12 +533,16 @@ fun UnifiedPlayer(
             }
 
             override fun onRepeatModeChanged(repeatMode: Int) {
-                val new = appSettings.copy(queueLoopType = when (repeatMode) {
-                    Player.REPEAT_MODE_ONE -> QueueLoopType.RepeatOne
-                    Player.REPEAT_MODE_ALL -> QueueLoopType.RepeatAll
-                    else -> QueueLoopType.Default
-                })
-                appSettingsVieModel.updateSettings(new)
+                coroutineScope.launch {
+                    val new = appSettings.copy(
+                        queueLoopType = when (repeatMode) {
+                            Player.REPEAT_MODE_ONE -> QueueLoopType.RepeatOne
+                            Player.REPEAT_MODE_ALL -> QueueLoopType.RepeatAll
+                            else -> QueueLoopType.Default
+                        }
+                    )
+                    appSettingsVieModel.updateSettings(new)
+                }
                 super.onRepeatModeChanged(repeatMode)
             }
 
@@ -604,8 +624,10 @@ fun UnifiedPlayer(
     var updateBrush by rememberSaveable { mutableStateOf(false) }
 
     if (showlyricsthumbnail) {
-        val new = appearanceSettings.copy(expandedPlayer = false)
-        appearanceSettingsVieModel.updatePreset(new)
+        coroutineScope.launch {
+            val new = appearanceSettings.copy(expandedPlayer = false)
+            appearanceSettingsVieModel.updatePreset(new)
+        }
     }
 
     LaunchedEffect(mediaItem.mediaId) {
@@ -1387,8 +1409,10 @@ fun UnifiedPlayer(
             albumId = albumId,
             modifier = modifierValue,
             onBlurScaleChange = {
-                val new = appearanceSettings.copy(blurStrength = it)
-                appearanceSettingsVieModel.updatePreset(new)
+                coroutineScope.launch {
+                    val new = appearanceSettings.copy(blurStrength = it)
+                    appearanceSettingsVieModel.updatePreset(new)
+                }
             },
             isExplicit = mediaItem.isExplicit,
             onPlay = {
@@ -1433,8 +1457,10 @@ fun UnifiedPlayer(
             onNext = { binder.player.playNext() },
             onPrevious = {
                 if (jumpPrevious == "") {
-                    val new = appearanceSettings.copy(jumpPrevious = "0")
-                    appearanceSettingsVieModel.updatePreset(new)
+                    coroutineScope.launch {
+                        val new = appearanceSettings.copy(jumpPrevious = "0")
+                        appearanceSettingsVieModel.updatePreset(new)
+                    }
                 }
                 if (!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())) {
                     binder.onlinePlayer?.seekTo(0f)
@@ -1772,8 +1798,11 @@ fun UnifiedPlayer(
                             if (showButtonPlayerDiscover) IconButton(
                                 icon = R.drawable.star_brilliant, color = if (discoverIsEnabled) colorPalette().text else colorPalette().textDisabled,
                                 onClick = {
-                                    val new = appSettings.copy(discoverIsEnabled = !discoverIsEnabled)
-                                    appSettingsVieModel.updateSettings(new)
+                                    coroutineScope.launch {
+                                        val new =
+                                            appSettings.copy(discoverIsEnabled = !discoverIsEnabled)
+                                        appSettingsVieModel.updateSettings(new)
+                                    }
                                 },
                                 onLongClick = { SmartMessage(context.resources.getString(R.string.discoverinfo), context = context) },
                                 modifier = Modifier.size(28.dp)
@@ -1804,8 +1833,12 @@ fun UnifiedPlayer(
 
                             if (showButtonPlayerLoop) IconButton(icon = getIconQueueLoopState(queueLoopType), color = colorPalette().accent,
                                 onClick = {
-                                    val new = appSettings.copy(queueLoopType = setQueueLoopState(queueLoopType))
-                                    appSettingsVieModel.updateSettings(new)
+                                    coroutineScope.launch {
+                                        val new = appSettings.copy(
+                                            queueLoopType = setQueueLoopState(queueLoopType)
+                                        )
+                                        appSettingsVieModel.updateSettings(new)
+                                    }
                                 },
                                 modifier = Modifier.size(24.dp))
 
@@ -1819,8 +1852,11 @@ fun UnifiedPlayer(
                             if (!isLandscape || ((playerType == PlayerType.Essential) && !showthumbnail)) if (expandedplayertoggle && !showlyricsthumbnail) IconButton(icon = R.drawable.minmax, color = if (expandedplayer) colorPalette().accent else Color.Gray,
                                 enabled = true,
                                 onClick = {
-                                    val new = appearanceSettings.copy(expandedPlayer = !expandedplayer)
-                                    appearanceSettingsVieModel.updatePreset(new)
+                                    coroutineScope.launch {
+                                        val new =
+                                            appearanceSettings.copy(expandedPlayer = !expandedplayer)
+                                        appearanceSettingsVieModel.updatePreset(new)
+                                    }
                                 },
                                 modifier = Modifier.size(24.dp))
 
@@ -2536,8 +2572,10 @@ fun UnifiedPlayer(
                                     navController = navController,
                                     onCollapse = onDismiss,
                                     onBlurScaleChange = {
-                                        val new = appearanceSettings.copy(blurStrength = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new = appearanceSettings.copy(blurStrength = it)
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     },
                                     expandedplayer = expandedplayer,
                                     titleExpanded = titleExpanded,
@@ -2601,8 +2639,11 @@ fun UnifiedPlayer(
                                     onNext = { binder.player.playNext() },
                                     onPrevious = {
                                         if (jumpPrevious == "") {
-                                            val new = appearanceSettings.copy(jumpPrevious = "0")
-                                            appearanceSettingsVieModel.updatePreset(new)
+                                            coroutineScope.launch {
+                                                val new =
+                                                    appearanceSettings.copy(jumpPrevious = "0")
+                                                appearanceSettingsVieModel.updatePreset(new)
+                                            }
                                         }
                                         if (!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())) {
                                             binder.onlinePlayer?.seekTo(0f)
@@ -2835,9 +2876,11 @@ fun UnifiedPlayer(
                                         },
                                         onDoubleClick = {
                                             if (!showlyricsthumbnail && !showvisthumbnail) {
-                                                val new =
-                                                    appearanceSettings.copy(showThumbnail = !showthumbnail)
-                                                appearanceSettingsVieModel.updatePreset(new)
+                                                coroutineScope.launch {
+                                                    val new =
+                                                        appearanceSettings.copy(showThumbnail = !showthumbnail)
+                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                }
                                             }
                                         },
                                         onLongClick = {
@@ -2871,8 +2914,11 @@ fun UnifiedPlayer(
                                             navController = navController,
                                             onCollapse = onDismiss,
                                             onBlurScaleChange = {
-                                                val new = appearanceSettings.copy(blurStrength = it)
-                                                appearanceSettingsVieModel.updatePreset(new)
+                                                coroutineScope.launch {
+                                                    val new =
+                                                        appearanceSettings.copy(blurStrength = it)
+                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                }
                                             },
                                             expandedplayer = expandedplayer,
                                             titleExpanded = titleExpanded,
@@ -2939,8 +2985,11 @@ fun UnifiedPlayer(
                                             onNext = { binder.player.playNext() },
                                             onPrevious = {
                                                 if (jumpPrevious == "") {
-                                                    val new = appearanceSettings.copy(jumpPrevious = "0")
-                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                    coroutineScope.launch {
+                                                        val new =
+                                                            appearanceSettings.copy(jumpPrevious = "0")
+                                                        appearanceSettingsVieModel.updatePreset(new)
+                                                    }
                                                 }
                                                 if (!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())) {
                                                     binder.onlinePlayer?.seekTo(0f)
@@ -3787,8 +3836,10 @@ fun UnifiedPlayer(
                                     navController = navController,
                                     onCollapse = onDismiss,
                                     onBlurScaleChange = {
-                                        val new = appearanceSettings.copy(blurStrength = it)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        coroutineScope.launch {
+                                            val new = appearanceSettings.copy(blurStrength = it)
+                                            appearanceSettingsVieModel.updatePreset(new)
+                                        }
                                     },
                                     expandedplayer = expandedplayer,
                                     titleExpanded = titleExpanded,
@@ -3857,8 +3908,11 @@ fun UnifiedPlayer(
                                     onNext = { binder.player.playNext() },
                                     onPrevious = {
                                         if (jumpPrevious == "") {
-                                            val new = appearanceSettings.copy(jumpPrevious = "0")
-                                            appearanceSettingsVieModel.updatePreset(new)
+                                            coroutineScope.launch {
+                                                val new =
+                                                    appearanceSettings.copy(jumpPrevious = "0")
+                                                appearanceSettingsVieModel.updatePreset(new)
+                                            }
                                         }
                                         if (!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())) {
                                             binder.onlinePlayer?.seekTo(0f)
@@ -3909,13 +3963,17 @@ fun UnifiedPlayer(
                 showPlayer = {},
                 hidePlayer = {},
                 onDismiss = {
-                    val new = appSettings.copy(queueLoopType = it)
-                    appSettingsVieModel.updateSettings(new)
+                    coroutineScope.launch {
+                        val new = appSettings.copy(queueLoopType = it)
+                        appSettingsVieModel.updateSettings(new)
+                    }
                     showQueue = false
                 },
                 onDiscoverClick = {
-                    val new = appSettings.copy(discoverIsEnabled = it)
-                    appSettingsVieModel.updateSettings(new)
+                    coroutineScope.launch {
+                        val new = appSettings.copy(discoverIsEnabled = it)
+                        appSettingsVieModel.updateSettings(new)
+                    }
                 }
             )
         }

@@ -25,6 +25,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -183,7 +184,7 @@ fun AccountsSettings() {
             emptyList()
         }
 
-
+        val coroutineScope = rememberCoroutineScope()
 
         SettingsGroupSpacer()
         SettingsEntryGroupText(title = stringResource(R.string.title_youtube_music))
@@ -193,15 +194,17 @@ fun AccountsSettings() {
             text = "",
             isChecked = isYouTubeLoginEnabled,
             onCheckedChange = {
-                val new = appSettings.copy(enableYtLogin = it)
-                appSettingsVieModel.updateSettings(new)
-                if (!it) {
-                    val new = appSettings.copy(
-                        ytAccountName = "",
-                        ytAccountChannelHandle = "",
-                        ytAccountThumbnail = ""
-                    )
+                coroutineScope.launch {
+                    val new = appSettings.copy(enableYtLogin = it)
                     appSettingsVieModel.updateSettings(new)
+                    if (!it) {
+                        val new = appSettings.copy(
+                            ytAccountName = "",
+                            ytAccountChannelHandle = "",
+                            ytAccountThumbnail = ""
+                        )
+                        appSettingsVieModel.updateSettings(new)
+                    }
                 }
 
             }
@@ -239,15 +242,17 @@ fun AccountsSettings() {
                                 iconColor = colorPalette().text,
                                 onClick = {
                                     if (isLoggedIn) {
-                                        val new = appSettings.copy(
-                                            ytCookie = "",
-                                            ytAccountName = "",
-                                            ytAccountChannelHandle = "",
-                                            ytAccountEmail = "",
-                                            ytAccountThumbnail = "",
-                                            ytCachedAccounts = ""
-                                        )
-                                        appSettingsVieModel.updateSettings(new)
+                                        coroutineScope.launch {
+                                            val new = appSettings.copy(
+                                                ytCookie = "",
+                                                ytAccountName = "",
+                                                ytAccountChannelHandle = "",
+                                                ytAccountEmail = "",
+                                                ytAccountThumbnail = "",
+                                                ytCachedAccounts = ""
+                                            )
+                                            appSettingsVieModel.updateSettings(new)
+                                        }
 
                                         cachedAccounts = emptyList()
                                         loginYouTube = false
@@ -305,8 +310,10 @@ fun AccountsSettings() {
                                     text = stringResource(R.string.sync_data_playlists_albums_artists_history_like_etc),
                                     isChecked = isSyncEnabled,
                                     onCheckedChange = {
-                                        val new = appSettings.copy(enableYtSync = it)
-                                        appSettingsVieModel.updateSettings(new)
+                                        coroutineScope.launch {
+                                            val new = appSettings.copy(enableYtSync = it)
+                                            appSettingsVieModel.updateSettings(new)
+                                        }
                                     }
                                 )
                             }
@@ -371,8 +378,10 @@ fun AccountsSettings() {
             text = "",
             isChecked = isEnabledLastfm,
             onCheckedChange = {
-                val new = appSettings.copy(isEnabledLastFM = it)
-                appSettingsVieModel.updateSettings(new)
+                coroutineScope.launch {
+                    val new = appSettings.copy(isEnabledLastFM = it)
+                    appSettingsVieModel.updateSettings(new)
+                }
             },
         )
 
@@ -390,8 +399,10 @@ fun AccountsSettings() {
                     iconColor = colorPalette().text,
                     onClick = {
                         if (lastFmSessionToken.isNotEmpty()) {
-                            val new = appSettings.copy(lastFMSessionToken = "")
-                            appSettingsVieModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(lastFMSessionToken = "")
+                                appSettingsVieModel.updateSettings(new)
+                            }
                         } else
                             loginLastfm = true
                     }
@@ -431,8 +442,10 @@ fun AccountsSettings() {
                     titleSecondary = "",
                     selectedValue = lastfmScrobbleType,
                     onValueSelected = {
-                        val new = appSettings.copy(lastFmScrobbleType = it)
-                        appSettingsVieModel.updateSettings(new)
+                        coroutineScope.launch {
+                            val new = appSettings.copy(lastFmScrobbleType = it)
+                            appSettingsVieModel.updateSettings(new)
+                        }
                     },
                     valueText = { it.textName },
                 )
@@ -466,8 +479,10 @@ fun AccountsSettings() {
             text = "",
             isChecked = isDiscordPresenceEnabled,
             onCheckedChange = {
-                val new = appSettings.copy(isDiscordPresenceEnabled = it)
-                appSettingsVieModel.updateSettings(new)
+                coroutineScope.launch {
+                    val new = appSettings.copy(isDiscordPresenceEnabled = it)
+                    appSettingsVieModel.updateSettings(new)
+                }
             }
         )
 
@@ -485,8 +500,10 @@ fun AccountsSettings() {
                     iconColor = colorPalette().text,
                     onClick = {
                         if (discordPersonalAccessToken.isNotEmpty()) {
-                            val new = appSettings.copy(discordPersonalAccessToken = "")
-                            appSettingsVieModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(discordPersonalAccessToken = "")
+                                appSettingsVieModel.updateSettings(new)
+                            }
                         } else
                             loginDiscord = true
                     }
@@ -535,11 +552,13 @@ fun AccountsSettings() {
                         onGetToken = { token, username, avatar ->
                             //Timber.d("DiscordLoginAndGetToken DiscordPresence: token $token user $username avatar $avatar")
                             loginDiscord = false
-                            val new = appSettings.copy(
-                                discordPersonalAccessToken = token,
-                                discordAccountName = username,
-                            )
-                            appSettingsVieModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(
+                                    discordPersonalAccessToken = token,
+                                    discordAccountName = username,
+                                )
+                                appSettingsVieModel.updateSettings(new)
+                            }
                             SmartMessage(
                                 globalContext().resources.getString(R.string.discord_connected_to_discord_account) + " $username",
                                 type = PopupType.Info,
@@ -563,8 +582,10 @@ fun AccountsSettings() {
             text = "",
             isChecked = isEnabledMusicIdentifier,
             onCheckedChange = {
-                val new = appSettings.copy(enableMusicIdentifier = it)
-                appSettingsVieModel.updateSettings(new)
+                coroutineScope.launch {
+                    val new = appSettings.copy(enableMusicIdentifier = it)
+                    appSettingsVieModel.updateSettings(new)
+                }
             },
         )
 
@@ -577,8 +598,10 @@ fun AccountsSettings() {
                     titleSecondary = musicIdentifierProvider.info,
                     selectedValue = musicIdentifierProvider,
                     onValueSelected = {
-                        val new = appSettings.copy(musicIdentifierProvider = it)
-                        appSettingsVieModel.updateSettings(new)
+                        coroutineScope.launch {
+                            val new = appSettings.copy(musicIdentifierProvider = it)
+                            appSettingsVieModel.updateSettings(new)
+                        }
                     },
                     valueText = { it.title },
                 )
@@ -601,8 +624,10 @@ fun AccountsSettings() {
                             text = musicIdentifierApi.ifEmpty { stringResource(R.string.if_empty_system_api_key_will_be_used) },
                             currentText = musicIdentifierApi,
                             onTextSave = {
-                                val new = appSettings.copy(musicIdentifierApi = it)
-                                appSettingsVieModel.updateSettings(new)
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(musicIdentifierApi = it)
+                                    appSettingsVieModel.updateSettings(new)
+                                }
                             },
                             validationType = ValidationType.None,
                         )

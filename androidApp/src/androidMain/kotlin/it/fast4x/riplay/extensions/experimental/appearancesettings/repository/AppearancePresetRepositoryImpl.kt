@@ -1,13 +1,13 @@
-package it.fast4x.riplay.extensions.experimental.appearancepreset.repository
+package it.fast4x.riplay.extensions.experimental.appearancesettings.repository
 
 import android.content.Context
 import android.util.Base64
 import it.fast4x.riplay.R
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearancePreset
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearancePresetDto
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearanceSettings
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.PresetSource
-import it.fast4x.riplay.extensions.experimental.appearancepreset.utils.toDto
+import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearancePreset
+import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearancePresetDto
+import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearanceSettings
+import it.fast4x.riplay.extensions.experimental.appearancesettings.models.PresetSource
+import it.fast4x.riplay.extensions.experimental.appearancesettings.utils.toDto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -18,10 +18,10 @@ import java.net.HttpURLConnection
 import java.net.URL
 import androidx.core.net.toUri
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.RemoteThemesResponse
-import it.fast4x.riplay.extensions.experimental.appearancepreset.utils.fromCurrentSettings
-import it.fast4x.riplay.extensions.experimental.appearancepreset.utils.toDomain
-import it.fast4x.riplay.extensions.experimental.appearancepreset.utils.toEntity
+import it.fast4x.riplay.extensions.experimental.appearancesettings.models.RemoteThemesResponse
+import it.fast4x.riplay.extensions.experimental.appearancesettings.utils.fromCurrentSettings
+import it.fast4x.riplay.extensions.experimental.appearancesettings.utils.toDomain
+import it.fast4x.riplay.extensions.experimental.appearancesettings.utils.toEntity
 import it.fast4x.riplay.utils.DbSettingsJson
 import it.fast4x.riplay.utils.appContext
 import kotlinx.coroutines.flow.map

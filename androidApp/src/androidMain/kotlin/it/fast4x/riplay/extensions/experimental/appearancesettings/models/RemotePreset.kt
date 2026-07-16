@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.appearancepreset.models
+package it.fast4x.riplay.extensions.experimental.appearancesettings.models
 
 import kotlinx.serialization.Serializable
 

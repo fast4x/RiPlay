@@ -89,7 +89,7 @@ import it.fast4x.riplay.data.models.UserEraAffinity
 import it.fast4x.riplay.data.models.UserKeywordAffinity
 import it.fast4x.riplay.enums.AlbumNature
 import it.fast4x.riplay.enums.ArtistNature
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearanceSettings
+import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearanceSettings
 import it.fast4x.riplay.extensions.musicbrainz.models.ExternalLink
 import it.fast4x.riplay.musicvault.MusicVaultState
 import it.fast4x.riplay.extensions.rewind.data.AlbumMostListened
@@ -3722,9 +3722,19 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
             )
             //.fallbackToDestructiveMigration(false)
             .addCallback(object : Callback() {
+
+                // Inizializzazione da installazione pulita alla prima apertura
+                override fun onCreate(db: SupportSQLiteDatabase) {
+                    super.onCreate(db)
+
+                    // Inizializza la riga di default per un utente nuovo
+                    db.execSQL("INSERT OR IGNORE INTO `app_settings` (`id`, `activePresetId`, `settingsJson`) VALUES (1, 'aura', '{}')")
+
+                }
+
                 override fun onOpen(db: SupportSQLiteDatabase) {
                     super.onOpen(db)
-                    db.execSQL("PRAGMA foreign_keys = ON")  // ← In automatico non viene attivato da room
+                    db.execSQL("PRAGMA foreign_keys = ON") // ← In automatico non viene attivato da room
                 }
             })
             .build()
@@ -4269,6 +4279,7 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
 
     class From60To61Migration : Migration(60, 61) {
         override fun migrate(db: SupportSQLiteDatabase) {
+            println("Database From60To61Migration chiamato")
             try {
                 // 1. Creazione della tabella dei Preset
                 db.execSQL(
@@ -4295,8 +4306,7 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
                     """.trimIndent()
                 )
 
-                // 3. Inizializziamo la tabella app_settings con la riga di default
-                db.execSQL("INSERT OR IGNORE INTO `app_settings` (`id`, `activePresetId`) VALUES (1, 'aura')")
+                db.execSQL("INSERT OR REPLACE INTO app_settings (id, activePresetId) VALUES (1, 'aura')")
 
             } catch (e: Exception) {
                 println("Database From60To61Migration error ${e.stackTraceToString()}")
@@ -4306,6 +4316,7 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
 
     class From61To62Migration : Migration(61, 62) {
         override fun migrate(db: SupportSQLiteDatabase) {
+            println("Database From61To62Migration chiamato")
             try {
                 db.execSQL("ALTER TABLE app_settings ADD COLUMN settingsJson TEXT NOT NULL DEFAULT '{}'")
             } catch (e: Exception) {

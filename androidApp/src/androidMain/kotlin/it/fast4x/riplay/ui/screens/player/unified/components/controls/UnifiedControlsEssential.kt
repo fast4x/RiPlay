@@ -34,6 +34,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -449,17 +450,23 @@ fun UnifiedControlsEssential(
     var lightTheme = colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
     val isNetworkConnected = rememberIsNetworkConnected()
 
+    val coroutineScope = rememberCoroutineScope()
     val binder = LocalPlayerServiceBinder.current
+
     binder?.player?.DisposableListener {
         object : Player.Listener {
             override fun onRepeatModeChanged(repeatMode: Int) {
-                appSettingsVieModel.updateSettings(
-                    appSettings.copy(queueLoopType = when (repeatMode) {
-                        Player.REPEAT_MODE_ONE -> QueueLoopType.RepeatOne
-                        Player.REPEAT_MODE_ALL -> QueueLoopType.RepeatAll
-                        else -> QueueLoopType.Default
-                    })
-                )
+                coroutineScope.launch {
+                    appSettingsVieModel.updateSettings(
+                        appSettings.copy(
+                            queueLoopType = when (repeatMode) {
+                                Player.REPEAT_MODE_ONE -> QueueLoopType.RepeatOne
+                                Player.REPEAT_MODE_ALL -> QueueLoopType.RepeatAll
+                                else -> QueueLoopType.Default
+                            }
+                        )
+                    )
+                }
                 super.onRepeatModeChanged(repeatMode)
             }
         }
@@ -670,8 +677,10 @@ fun UnifiedControlsEssential(
         icon = getIconQueueLoopState(queueLoopType),
         color = colorPalette().text,
         onClick = {
-            val new = appSettings.copy(queueLoopType = setQueueLoopState(queueLoopType))
-            appSettingsVieModel.updateSettings(new)
+            coroutineScope.launch {
+                val new = appSettings.copy(queueLoopType = setQueueLoopState(queueLoopType))
+                appSettingsVieModel.updateSettings(new)
+            }
         },
         modifier = Modifier
             .size(26.dp)

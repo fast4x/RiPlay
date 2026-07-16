@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.appearancepreset.models
+package it.fast4x.riplay.extensions.experimental.appearancesettings.models
 
 import androidx.compose.ui.graphics.Color
 import it.fast4x.riplay.enums.AnimatedGradient
@@ -7,7 +7,6 @@ import it.fast4x.riplay.enums.CarouselSize
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.ColorPaletteName
 import it.fast4x.riplay.enums.IconLikeType
-import it.fast4x.riplay.enums.Languages
 import it.fast4x.riplay.enums.LyricsAlignment
 import it.fast4x.riplay.enums.LyricsBackground
 import it.fast4x.riplay.enums.LyricsColor
@@ -16,8 +15,6 @@ import it.fast4x.riplay.enums.LyricsHighlight
 import it.fast4x.riplay.enums.LyricsOutline
 import it.fast4x.riplay.enums.MiniPlayerType
 import it.fast4x.riplay.enums.NavigationBarPosition
-import it.fast4x.riplay.enums.NotificationButtons
-import it.fast4x.riplay.enums.PauseBetweenSongs
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PlayerControlsType
 import it.fast4x.riplay.enums.PlayerInfoType
@@ -27,7 +24,6 @@ import it.fast4x.riplay.enums.PlayerTimelineSize
 import it.fast4x.riplay.enums.PlayerTimelineType
 import it.fast4x.riplay.enums.PlayerType
 import it.fast4x.riplay.enums.PrevNextSongs
-import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.enums.QueueType
 import it.fast4x.riplay.enums.Romanization
 import it.fast4x.riplay.enums.SongsNumber
@@ -35,7 +31,6 @@ import it.fast4x.riplay.enums.SwipeAnimationNoThumbnail
 import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ThumbnailType
-import it.fast4x.riplay.enums.WallpaperType
 import it.fast4x.riplay.ui.styling.DefaultDarkColorPalette
 import it.fast4x.riplay.ui.styling.DefaultLightColorPalette
 import kotlinx.serialization.Serializable

@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.appearancepreset.ui
+package it.fast4x.riplay.extensions.experimental.appearancesettings.ui
 
 import android.content.Context
 import androidx.compose.material3.SnackbarHostState
@@ -10,11 +10,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import it.fast4x.riplay.Dependencies
 import it.fast4x.riplay.LocalAppearanceSettings
-import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.PresetEvent
-import it.fast4x.riplay.extensions.experimental.appearancepreset.viewmodels.AppearancePresetViewModel
+import it.fast4x.riplay.extensions.audiotag.models.UiState
+import it.fast4x.riplay.extensions.experimental.appearancesettings.models.PresetEvent
+import it.fast4x.riplay.extensions.experimental.appearancesettings.models.PresetUiState
+import it.fast4x.riplay.extensions.experimental.appearancesettings.viewmodels.AppearancePresetViewModel
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -30,9 +30,16 @@ fun AppearancePresetDialogHost(
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val activePresetId by viewModel.activePresetId.collectAsStateWithLifecycle()
+    val presetList by viewModel.presetList.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val appearanceSettings = LocalAppearanceSettings.current
+
+    val uiStateWithPresets = remember(uiState, presetList) { PresetUiState.Success(presetList) }
+
+    Timber.d("AppearancePresetDialogHost: $uiState")
+
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -52,10 +59,12 @@ fun AppearancePresetDialogHost(
 
     AppearancePresetDialog(
         activePresetId = activePresetId,
-        uiState   = uiState,
+        uiState   = uiStateWithPresets,
         onDismiss = onDismiss,
         onSelect  = {
-            appearanceSettings.applyPreset(it)
+            coroutineScope.launch {
+                appearanceSettings.applyPreset(it)
+            }
         },
         onShare   = {} // ex viewModel::sharePreset
     )

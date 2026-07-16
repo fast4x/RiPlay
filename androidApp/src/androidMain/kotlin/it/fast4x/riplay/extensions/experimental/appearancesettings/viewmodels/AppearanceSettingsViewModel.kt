@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.appearancepreset.viewmodels
+package it.fast4x.riplay.extensions.experimental.appearancesettings.viewmodels
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -6,8 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearancePreset
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearanceSettings
+import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearancePreset
+import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearanceSettings
 import it.fast4x.riplay.utils.DbSettingsJson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow

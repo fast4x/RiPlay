@@ -1,13 +1,11 @@
 package it.fast4x.riplay
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
@@ -19,7 +17,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
-import android.provider.Settings
 import android.view.WindowManager
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -27,7 +24,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
@@ -79,8 +75,6 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
-import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.core.os.LocaleListCompat
 import androidx.core.view.WindowCompat
@@ -126,7 +120,6 @@ import it.fast4x.riplay.extensions.pip.isInPip
 import it.fast4x.riplay.extensions.pip.maybeEnterPip
 import it.fast4x.riplay.extensions.pip.maybeExitPip
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.UI_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.APP_IS_RUNNING
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.APPLY_FONT_PADDING
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.BACKGROUND_PROGRESS
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
@@ -156,21 +149,13 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_CLOSING_PLA
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_PLAYER_HORIZONTAL_SWIPE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.FONT_TYPE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_ENABLED_FULLSCREEN
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_KEEP_SCREEN_ON_ENABLED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_PROXY_ENABLED
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.LANGUAGE_APP
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.LOADED_DATA
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.MINI_PLAYER_TYPE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.NAVIGATION_BAR_POSITION
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.NAVIGATION_BAR_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_BACKGROUND_COLORS
 import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PROXY_HOSTNAME
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PROXY_MODE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PROXY_PORT
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.RESTART_ACTIVITY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHAKE_EVENT_ENABLED
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SEARCH_TAB
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_TOTAL_TIME_QUEUE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
@@ -183,7 +168,6 @@ import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.extensions.audiotag.AudioTagViewModel
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.CLOSE_BACKGROUND_PLAYER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_AUTOSTART_PERMISSION_DIALOG
 import it.fast4x.riplay.navigation.AppNavigation
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.BottomSheet
@@ -209,7 +193,6 @@ import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.getDnsOverHttpsType
 import it.fast4x.riplay.utils.getKeepPlayerMinimized
 import it.fast4x.riplay.utils.invokeOnReady
-import it.fast4x.riplay.utils.isAtLeastAndroid13
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 import it.fast4x.riplay.utils.isEnabledFullscreen
@@ -224,11 +207,9 @@ import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
 import it.fast4x.riplay.extensions.htmlreader.shazamSongInfoExtractor
 import it.fast4x.riplay.extensions.nsd.discoverNsdServices
 import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_BT
 import it.fast4x.riplay.cast.ritune.models.toRiTuneDevice
 import it.fast4x.riplay.cast.ritune.RiTuneCastSelector
 import it.fast4x.riplay.enums.CastType
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CAST_TYPE
 import it.fast4x.riplay.extensions.storagewarning.StorageWarningChecker
 import it.fast4x.riplay.services.playback.PlayerState
 import it.fast4x.riplay.ui.components.Snowfall
@@ -240,8 +221,6 @@ import it.fast4x.riplay.utils.WebViewInfo
 import it.fast4x.riplay.utils.cleanTempAudioCache
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.getWebViewInfo
-import it.fast4x.riplay.utils.isAtLeastAndroid12
-import it.fast4x.riplay.utils.isManufacturerWithAutostart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -252,17 +231,18 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
-import java.net.Proxy
 import java.net.URLEncoder
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Objects
 import kotlin.math.sqrt
 import androidx.compose.ui.platform.LocalLocale
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.extensions.appviewmodel.AppViewModelProvider
-import it.fast4x.riplay.extensions.experimental.appearancepreset.viewmodels.AppearanceSettingsViewModel
-import it.fast4x.riplay.extensions.experimental.appsettings.viewmodel.AppSettingsViewModel
+import it.fast4x.riplay.extensions.experimental.appearancesettings.AppearanceSettingsManager
+import it.fast4x.riplay.extensions.experimental.appsettings.AppSettingsManager
 import it.fast4x.riplay.extensions.qrcodeanalyzer.qrCodeToAction
 import it.fast4x.riplay.extensions.musicbrainz.viewmodels.AlbumInsightsViewModel
 import it.fast4x.riplay.extensions.musicbrainz.viewmodels.ArtistInsightsViewModel
@@ -359,15 +339,17 @@ class MainActivity :
         AlbumInsightsViewModel(application)
     }
 
-    private val appearanceSettingsViewModel: AppearanceSettingsViewModel by viewModels {
-        AppearanceSettingsViewModel(application)
+    private val appearanceSettingsManager by lazy {
+        (application as MainApplication).appearanceSettingsManager
     }
-    private val appSettingsViewModel: AppSettingsViewModel by viewModels {
-        AppSettingsViewModel(application)
+
+    private val appSettingsManager by lazy {
+        (application as MainApplication).appSettingsManager
     }
 
     private var showAutostartPermissionDialog = false
 
+    /*
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -385,6 +367,7 @@ class MainActivity :
             }
         }
     }
+
 
     private fun checkAndRequestStandardPermissions() {
         val permissionsToRequest = mutableListOf<String>()
@@ -415,6 +398,7 @@ class MainActivity :
         }
     }
 
+
     private fun checkAndRequestAutostartPermission() {
         val manufacturer = Build.MANUFACTURER.lowercase()
 
@@ -425,6 +409,8 @@ class MainActivity :
             Timber.d("MainActivity Vendor known already granted.")
         }
     }
+
+
 
     private fun showAutostartDialog() {
         AlertDialog.Builder(this)
@@ -437,6 +423,8 @@ class MainActivity :
             .setCancelable(false)
             .show()
     }
+
+
 
     private fun openAutostartSettings() {
         try {
@@ -480,6 +468,8 @@ class MainActivity :
             SmartMessage( "Open the app settings and look for battery or autostart options.", context= this)
         }
     }
+
+     */
 
     override fun onStart() {
         super.onStart()
@@ -562,32 +552,7 @@ class MainActivity :
             startApp()
         }
 
-        if (preferences.getBoolean(SHAKE_EVENT_ENABLED.key, false)) {
-            sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
-            Objects.requireNonNull(sensorManager)
-                ?.registerListener(
-                    sensorListener,
-                    sensorManager
-                        ?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-                    SensorManager.SENSOR_DELAY_NORMAL
-                )
-        }
-
         checkIfAppIsRunningInBackground()
-
-        if (preferences.getEnum(CAST_TYPE.key, CastType.RITUNECAST) == CastType.RITUNECAST) {
-            //registerNsdService()
-            discoverNsdServices(
-                onServiceFound = { devices ->
-                    GlobalSharedData.riTuneDevices.value =
-                        devices.map { device -> device.toRiTuneDevice() }.toMutableStateList()
-                }
-            )
-        }
-
-        isclosebackgroundPlayerEnabled = preferences.getBoolean(CLOSE_BACKGROUND_PLAYER.key, false)
-
-        showAutostartPermissionDialog = preferences.getBoolean(SHOW_AUTOSTART_PERMISSION_DIALOG.key, true)
 
         //checkAndRequestStandardPermissions()
 
@@ -697,25 +662,6 @@ class MainActivity :
     @ExperimentalSerializationApi
     @ExperimentalPermissionsApi
     fun startApp() {
-
-        // Hide autostart permission dialog after showing the dialog
-        preferences.edit(commit = true) { putBoolean(SHOW_AUTOSTART_PERMISSION_DIALOG.key, false) }
-
-        // Used in QuickPics for load data from remote instead of last saved in SharedPreferences
-        preferences.edit(commit = true) { putBoolean(LOADED_DATA.key, false) }
-
-        // Used for android auto to show notification to invite user launch app
-        preferences.edit(commit = true) { putBoolean(APP_IS_RUNNING.key, true) }
-
-//        if (!preferences.getBoolean(closeWithBackButtonKey.key, false))
-//            if (Build.VERSION.SDK_INT >= 33) {
-//                onBackInvokedDispatcher.registerOnBackInvokedCallback(
-//                    OnBackInvokedDispatcher.PRIORITY_DEFAULT
-//                ) {
-//                    //Log.d("onBackPress", "yeah")
-//                }
-//            }
-
         val launchedFromNotification: Boolean =
             intent?.extras?.let {
                 it.getBoolean("expandPlayerBottomSheet") || it.getBoolean("fromWidget")
@@ -725,6 +671,7 @@ class MainActivity :
 
         intentUriData = intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri()
 
+        /*
         with(preferences) {
             if (getBoolean(IS_KEEP_SCREEN_ON_ENABLED.key, false)) {
                 window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -747,8 +694,9 @@ class MainActivity :
                     )
                 }
             }
-
         }
+
+         */
 
         setContent {
 
@@ -756,12 +704,90 @@ class MainActivity :
 
                 StorageWarningChecker()
 
-                val appearanceSettingsVieModel = appearanceSettingsViewModel
-                val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
 
-                val appSettingsVieModel = appSettingsViewModel
-                val appSettings = appSettingsVieModel.activeSettings.collectAsState().value
+                val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+                val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
                 Timber.d("MainActivity onCreate appSettings: $appSettings")
+
+                // Hide autostart permission dialog after showing the dialog
+                // Used in QuickPics for load data from remote instead of last saved in SharedPreferences
+                // Used for android auto to show notification to invite user launch app
+                val new = appSettings .copy(
+                    showAutostartPermissionDialog = false,
+                    loadedData = false,
+                    appIsRunning = true
+                )
+                LaunchedEffect(Unit)  { appSettingsManager.updateSettings(new) }
+
+                //preferences.edit(commit = true) { putBoolean(SHOW_AUTOSTART_PERMISSION_DIALOG.key, false) }
+
+                // Used in QuickPics for load data from remote instead of last saved in SharedPreferences
+                //preferences.edit(commit = true) { putBoolean(LOADED_DATA.key, false) }
+
+                // Used for android auto to show notification to invite user launch app
+                //preferences.edit(commit = true) { putBoolean(APP_IS_RUNNING.key, true) }
+
+//        if (!preferences.getBoolean(closeWithBackButtonKey.key, false))
+//            if (Build.VERSION.SDK_INT >= 33) {
+//                onBackInvokedDispatcher.registerOnBackInvokedCallback(
+//                    OnBackInvokedDispatcher.PRIORITY_DEFAULT
+//                ) {
+//                    //Log.d("onBackPress", "yeah")
+//                }
+//            }
+
+
+                if (appSettings.keepScreenEnabled) {
+                    window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                }
+
+                if (appSettings.proxyEnabled ) {
+                    val hostName = appSettings.proxyHostname
+                    val proxyPort = appSettings.proxyPort
+                    val proxyMode = appSettings.proxyMode
+                    if (isValidIP(hostName)) {
+                        if (hostName.isNotBlank() && proxyPort != 0)
+                            ProxyPreferences.preference =
+                                ProxyPreferenceItem(hostName, proxyPort, proxyMode)
+                        }
+                    } else {
+                        SmartMessage(
+                            "Your Proxy Hostname is invalid, please check it",
+                            PopupType.Warning,
+                            context = this@MainActivity
+                        )
+                    }
+
+
+
+                if (appSettings.castType == CastType.RITUNECAST) {
+                    //registerNsdService()
+                    discoverNsdServices(
+                        onServiceFound = { devices ->
+                            GlobalSharedData.riTuneDevices.value =
+                                devices.map { device -> device.toRiTuneDevice() }.toMutableStateList()
+                        }
+                    )
+                }
+
+                if (appSettings.shakeEventEnabled) {
+                    sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+                    Objects.requireNonNull(sensorManager)
+                        ?.registerListener(
+                            sensorListener,
+                            sensorManager
+                                ?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+                            SensorManager.SENSOR_DELAY_NORMAL
+                        )
+                }
+
+
+                isclosebackgroundPlayerEnabled = appSettings.closeBackgroundPlayerAfterMinutes != DurationInMinutes.Disabled
+
+                showAutostartPermissionDialog = appSettings.showAutostartPermissionDialog
+
+
 
                 val state = binder?.playerState?.collectAsState()
                 playerState = state?.value ?: PlayerState()
@@ -819,7 +845,6 @@ class MainActivity :
                 val locale = LocalLocale.current.platformLocale
                 val languageTag = locale.toLanguageTag().replace("-Hant", "")
                 val languageApp = appSettings.languageApp
-                    //globalContext().preferences.getEnum(LANGUAGE_APP.key, getSystemlanguage())
                 LocalePreferences.preference =
                     LocalePreferenceItem(
                         hl = languageApp.code.takeIf { it != Languages.System.code }
@@ -861,14 +886,19 @@ class MainActivity :
                         }.takeIf { it != "null" } ?: ""
                         // Save visitorData in SharedPreferences
                         //preferences.edit { putString(YT_VISITOR_DATA.key, visitorData.value) }
-                        val new = appSettings.copy(ytVisitorData = visitorData.value)
-                        appSettingsViewModel.updateSettings(new)
+
                     }.onFailure {
                         Timber.e("MainActivity.setContent visitorData.isEmpty() getInitialVisitorData ${it.stackTraceToString()}")
-                        //visitorData.value = "" //Environment._uMYwa66ycM
-                        val new = appSettings.copy(ytVisitorData = "")
-                        appSettingsViewModel.updateSettings(new)
+                        visitorData.value = "" //Environment._uMYwa66ycM
+//                        val new = appSettings.copy(ytVisitorData = "")
+//                        appSettingsViewModel.updateSettings(new)
                     }
+
+                LaunchedEffect(Unit, visitorData.value) {
+                    val new = appSettings.copy(ytVisitorData = visitorData.value)
+                    appSettingsManager.updateSettings(new)
+                }
+
 
                 Environment.visitorData = visitorData.value
                 Timber.d("MainActivity.setContent visitorData in use: ${visitorData.value}")
@@ -880,8 +910,8 @@ class MainActivity :
                         Environment.cookie = ""
                         cookie.value = ""
                         //preferences.edit { putString(YT_COOKIE.key, "") }
-                        val new = appSettings.copy(ytCookie = "")
-                        appSettingsViewModel.updateSettings(new)
+//                        val new = appSettings.copy(ytCookie = "")
+//                        appSettingsViewModel.updateSettings(new)
                     }
                 }
 
@@ -920,23 +950,23 @@ class MainActivity :
                 // Recreate appearance whenever theme mode or light/dark flag changes
                 var appearance by rememberSaveable(
                     colorPaletteMode,
-                    !lightTheme,
+                    !lightTheme, appSettings, appearanceSettings,
                     stateSaver = Appearance
                 ) {
-                    with(preferences) {
+                    //with(preferences) {
                         val colorPaletteName =
                             appearanceSettings.colorPaletteName
                             //getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
                         val thumbnailRoundness =
                             appearanceSettings.thumbnailRoundness
                             //getEnum(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
-                        val useSystemFont = getBoolean(USE_SYSTEM_FONT.key, false)
-                        val applyFontPadding = getBoolean(APPLY_FONT_PADDING.key, false)
+                        val useSystemFont = appSettings.useSystemFont
+                        val applyFontPadding = appSettings.applyFontPadding
 
                         var colorPalette =
                             colorPaletteOf(colorPaletteName, colorPaletteMode, !lightTheme)
 
-                        val fontType = getEnum(FONT_TYPE.key, FontType.Rubik)
+                        val fontType = appSettings.fontType
 
                         //TODO CHECK MATERIALYOU OR MONIT
                         if (colorPaletteName == ColorPaletteName.MaterialYou) {
@@ -976,7 +1006,7 @@ class MainActivity :
                                 thumbnailShape = thumbnailRoundness.shape()
                             )
                         )
-                    }
+                    //}
 
 
                 }
@@ -1285,13 +1315,22 @@ class MainActivity :
                     )
                 }
 
-                LaunchedEffect(Unit, appearanceSettings) {
+                LaunchedEffect(Unit, appSettings) {
+                    if (appSettings.isEnabledFullScreen) enableFullscreenMode()
+
+
+                }
+
+                // Imposta tema, colore, font e shape della thumbnail
+                LaunchedEffect(Unit, appearanceSettings, appSettings, lightTheme) {
+                    // Imposta thumbnail shape
                     appearance = appearance.copy(
                         thumbnailShape = appearanceSettings.thumbnailRoundness.shape()
                     )
+                    // Imposta appearance in base al tema selezionato
                     val colorPaletteName =
                         appearanceSettings.colorPaletteName
-                        //preferences.getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
+
                     if (colorPaletteName == ColorPaletteName.Customized) {
                         appearance = appearance.copy(
                             colorPalette = customColorPalette(
@@ -1311,14 +1350,31 @@ class MainActivity :
                                 ?: "")
                         )
                     }
+                    if (colorPaletteMode == ColorPaletteMode.PitchBlack)
+                        appearance = appearance.copy(
+                            colorPalette = appearance.colorPalette.applyPitchBlack,
+                            typography = appearance.typography.copy(color = appearance.colorPalette.text)
+                        )
+
+
+                    val useSystemFont = appSettings.useSystemFont
+                    val applyFontPadding = appSettings.applyFontPadding
+                    val fontType = appSettings.fontType
+
+                    appearance = appearance.copy(
+                        typography = typographyOf(
+                            appearance.colorPalette.text,
+                            useSystemFont,
+                            applyFontPadding,
+                            fontType
+                        ),
+                    )
+
+
                 }
 
 
-                if (colorPaletteMode == ColorPaletteMode.PitchBlack)
-                    appearance = appearance.copy(
-                        colorPalette = appearance.colorPalette.applyPitchBlack,
-                        typography = appearance.typography.copy(appearance.colorPalette.text)
-                    )
+
 
                 BoxWithConstraints(
                     modifier = Modifier
@@ -1454,8 +1510,8 @@ class MainActivity :
                                 LocalRiTuneSheetState provides castSheetState,
                                 LocalArtistInsights provides artistInsightsViewModel,
                                 LocalAlbumInsights provides albumInsightsViewModel,
-                                LocalAppearanceSettings provides appearanceSettingsViewModel,
-                                LocalAppSettings provides appSettingsViewModel,
+                                LocalAppearanceSettings provides appearanceSettingsManager,
+                                LocalAppSettings provides appSettingsManager,
                                 //LocalOnlinePlayerPlayingState provides onlinePlayerPlayingState,
                                 //LocalGlobalQueue provides globalQueueViewModel,
                                 //LocalInternetAvailable provides isInternetAvailable
@@ -1849,11 +1905,7 @@ class MainActivity :
                                 Environment.song(videoId)?.getOrNull()?.let { song ->
                                     val binder = snapshotFlow { binder }.filterNotNull().first()
                                     withContext(Dispatchers.Main) {
-                                        if (!song.explicit && !preferences.getBoolean(
-                                                PARENTAL_CONTROL_ENABLED.key,
-                                                false
-                                            )
-                                        )
+                                        if (!song.explicit && !appSettings.parentalControlEnabled)
                                             binder.player.forcePlay(song.asMediaItem)
                                         //fastPlay(song.asMediaItem, binder)
                                         else
@@ -1927,34 +1979,29 @@ class MainActivity :
 
     private val sensorListener: SensorEventListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent) {
+            // Fetching x,y,z values
+            val x = event.values[0]
+            val y = event.values[1]
+            val z = event.values[2]
+            lastAcceleration = currentAcceleration
 
-            if (preferences.getBoolean(SHAKE_EVENT_ENABLED.key, false)) {
-                // Fetching x,y,z values
-                val x = event.values[0]
-                val y = event.values[1]
-                val z = event.values[2]
-                lastAcceleration = currentAcceleration
+            // Getting current accelerations
+            // with the help of fetched x,y,z values
+            currentAcceleration = sqrt((x * x + y * y + z * z).toDouble()).toFloat()
+            val delta: Float = currentAcceleration - lastAcceleration
+            acceleration = acceleration * 0.9f + delta
 
-                // Getting current accelerations
-                // with the help of fetched x,y,z values
-                currentAcceleration = sqrt((x * x + y * y + z * z).toDouble()).toFloat()
-                val delta: Float = currentAcceleration - lastAcceleration
-                acceleration = acceleration * 0.9f + delta
-
-                // Display a Toast message if
-                // acceleration value is over 12
-                if (acceleration > 12) {
-                    shakeCounter++
-                    //Toast.makeText(applicationContext, "Shake event detected", Toast.LENGTH_SHORT).show()
-                }
-                if (shakeCounter >= 1) {
-                    //Toast.makeText(applicationContext, "Shaked $shakeCounter times", Toast.LENGTH_SHORT).show()
-                    shakeCounter = 0
-                    binder?.player?.playNext()
-                }
-
+            // Display a Toast message if
+            // acceleration value is over 12
+            if (acceleration > 12) {
+                shakeCounter++
+                //Toast.makeText(applicationContext, "Shake event detected", Toast.LENGTH_SHORT).show()
             }
-
+            if (shakeCounter >= 1) {
+                //Toast.makeText(applicationContext, "Shaked $shakeCounter times", Toast.LENGTH_SHORT).show()
+                shakeCounter = 0
+                binder?.player?.playNext()
+            }
         }
 
         override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
@@ -1965,7 +2012,7 @@ class MainActivity :
 
         binder?.onlinePlayer?.setVolume(100) // maybe is needed when webview lost audiofocus
 
-        preferences.edit(commit = true) { putBoolean(APP_IS_RUNNING.key, true) }
+        //preferences.edit(commit = true) { putBoolean(APP_IS_RUNNING.key, true) }
 
         runCatching {
             sensorManager?.registerListener(
@@ -1985,7 +2032,7 @@ class MainActivity :
     override fun onPause() {
         super.onPause()
 
-        preferences.edit(commit = true) { putBoolean(APP_IS_RUNNING.key, false) }
+        //preferences.edit(commit = true) { putBoolean(APP_IS_RUNNING.key, false) }
 
         runCatching {
             sensorListener.let { sensorManager?.unregisterListener(it) }
@@ -2022,7 +2069,7 @@ class MainActivity :
         super.onDestroy()
 
         Timber.d("MainActivity.onDestroy")
-        preferences.edit(commit = true) { putBoolean(APP_IS_RUNNING.key, false) }
+        //preferences.edit(commit = true) { putBoolean(APP_IS_RUNNING.key, false) }
 
         runCatching {
             localMonet.removeMonetColorsChangedListener(this)
@@ -2116,6 +2163,6 @@ val LocalArtistInsights = staticCompositionLocalOf<ArtistInsightsViewModel> { er
 
 val LocalAlbumInsights = staticCompositionLocalOf<AlbumInsightsViewModel> { error("No album insights provided")}
 
-val LocalAppearanceSettings = staticCompositionLocalOf<AppearanceSettingsViewModel> { error("No appearance settings provided")}
+val LocalAppearanceSettings = staticCompositionLocalOf<AppearanceSettingsManager> { error("No appearance settings provided")}
 
-val LocalAppSettings = staticCompositionLocalOf<AppSettingsViewModel> { error("No app settings provided") }
+val LocalAppSettings = staticCompositionLocalOf<AppSettingsManager> { error("No app settings provided") }

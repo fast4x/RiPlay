@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.appearancepreset.ui
+package it.fast4x.riplay.extensions.experimental.appearancesettings.ui
 
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedContent
@@ -37,8 +37,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.R
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearancePreset
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.PresetUiState
+import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearancePreset
+import it.fast4x.riplay.extensions.experimental.appearancesettings.models.PresetUiState
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.getRoundnessShape

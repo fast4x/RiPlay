@@ -11,7 +11,8 @@ interface AppSettingsDao {
     fun getActivePreset(): Flow<String?>
 
     @Query("SELECT settingsJson FROM app_settings WHERE id = 1")
-    suspend fun getSettings(): String?
+    fun getSettings(): Flow<String>
+
 
     @Query("UPDATE app_settings SET settingsJson = :jsonSettings WHERE id = 1")
     suspend fun updateSettings(jsonSettings: String)

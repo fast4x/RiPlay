@@ -104,23 +104,16 @@ import it.fast4x.riplay.data.Database.Companion.update
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.ColorPaletteMode
-import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ValidationType
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Info
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.shimmer
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.BLUR_DARKEN_FACTOR
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.BLUR_SCALE
 import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.commonutils.toThumbnail
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.VINYL_SIZE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
 import it.fast4x.riplay.utils.drawCircle
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXPANDED_PLAYER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.FADING_EDGE
 import it.fast4x.riplay.utils.getDeviceVolume
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isValidIP
@@ -133,10 +126,6 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYBACK_VOLUME
 import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.setDeviceVolume
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_COVER_THUMBNAIL_ANIMATION
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_FADE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_SPACING
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.isBassBoostEnabled
 import it.fast4x.riplay.data.models.Album
@@ -147,7 +136,6 @@ import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.data.models.defaultQueue
-import it.fast4x.riplay.extensions.experimental.appearancepreset.models.AppearanceSettings
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.items.SongItem
@@ -163,17 +151,13 @@ import it.fast4x.riplay.utils.isValidHttpUrl
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.LYRICS_SIZE
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.LYRICS_SIZE_L
 import it.fast4x.riplay.utils.removeYTSongFromPlaylist
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_FADE_EX
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_SPACING_L
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.getUpdateDownloadUrl
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.thumbnailShape
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlin.collections.forEach
@@ -1195,6 +1179,8 @@ fun BlurParamsDialog(
     //var blurDarkenFactor  by rememberPreference(BLUR_DARKEN_FACTOR.key, defaultDarkenFactor)
     val blurDarkenFactor = appearanceSettings.blurDarkenFactor
 
+    val coroutineScope = rememberCoroutineScope()
+
     /*
     var isShowingLyrics by rememberSaveable {
         mutableStateOf(false)
@@ -1220,8 +1206,10 @@ fun BlurParamsDialog(
         ) {
             IconButton(
                 onClick = {
-                    val new = appearanceSettings.copy(blurStrength = defaultStrength)
-                    appearanceSettingsVieModel.updatePreset(new)
+                    coroutineScope.launch {
+                        val new = appearanceSettings.copy(blurStrength = defaultStrength)
+                        appearanceSettingsVieModel.updatePreset(new)
+                    }
                 },
                 icon = R.drawable.droplet,
                 color = colorPalette().favoritesIcon,
@@ -1232,8 +1220,10 @@ fun BlurParamsDialog(
             SliderControl(
                 state = blurStrength,
                 onSlide = {
-                    val new = appearanceSettings.copy(blurStrength = it)
-                    appearanceSettingsVieModel.updatePreset(new)
+                    coroutineScope.launch {
+                        val new = appearanceSettings.copy(blurStrength = it)
+                        appearanceSettingsVieModel.updatePreset(new)
+                    }
                 },
                 onSlideComplete = {},
                 toDisplay = { "%.0f".format(it) },
@@ -1328,6 +1318,8 @@ fun BlurParamsDialog(
         val showCoverThumbnailAnimation = appearanceSettings.showCoverThumbnailAnimation
         //val expandedplayer by rememberPreference(EXPANDED_PLAYER.key, false)
         val expandedplayer = appearanceSettings.expandedPlayer
+
+        val coroutineScope = rememberCoroutineScope()
         DefaultDialog(
             onDismiss = {
                 spacingValue(thumbnailSpacing)
@@ -1347,8 +1339,11 @@ fun BlurParamsDialog(
                 ) {
                     IconButton(
                         onClick = {
-                            val new = appearanceSettings.copy(imageCoverSize = defaultImageCoverSize)
-                            appearanceSettingsVieModel.updatePreset(new)
+                            coroutineScope.launch {
+                                val new =
+                                    appearanceSettings.copy(imageCoverSize = defaultImageCoverSize)
+                                appearanceSettingsVieModel.updatePreset(new)
+                            }
                         },
                         icon = R.drawable.music_album,
                         color = colorPalette().favoritesIcon,
@@ -1359,8 +1354,10 @@ fun BlurParamsDialog(
                     SliderControl(
                         state = imageCoverSize,
                         onSlide = {
-                            val new = appearanceSettings.copy(imageCoverSize = it)
-                            appearanceSettingsVieModel.updatePreset(new)
+                            coroutineScope.launch {
+                                val new = appearanceSettings.copy(imageCoverSize = it)
+                                appearanceSettingsVieModel.updatePreset(new)
+                            }
                         },
                         onSlideComplete = {
                             imageCoverSizeValue(imageCoverSize)
@@ -1382,8 +1379,10 @@ fun BlurParamsDialog(
                     ) {
                         IconButton(
                             onClick = {
-                                val new = appearanceSettings.copy(thumbnailFadeEx = defaultFade)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(thumbnailFadeEx = defaultFade)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             },
                             icon = R.drawable.droplet,
                             color = colorPalette().favoritesIcon,
@@ -1394,8 +1393,10 @@ fun BlurParamsDialog(
                         SliderControl(
                             state = thumbnailFadeEx,
                             onSlide = {
-                                val new = appearanceSettings.copy(thumbnailFadeEx = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(thumbnailFadeEx = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             },
                             onSlideComplete = {},
                             toDisplay = { "%.0f".format(it) },
@@ -1470,8 +1471,10 @@ fun BlurParamsDialog(
                     ) {
                         IconButton(
                             onClick = {
-                                val new = appearanceSettings.copy(thumbnailFade = defaultFade)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(thumbnailFade = defaultFade)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             },
                             icon = R.drawable.droplet,
                             color = colorPalette().favoritesIcon,
@@ -1482,8 +1485,10 @@ fun BlurParamsDialog(
                         SliderControl(
                             state = thumbnailFade,
                             onSlide = {
-                                val new = appearanceSettings.copy(thumbnailFade = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(thumbnailFade = it)
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             },
                             onSlideComplete = {},
                             toDisplay = { "%.0f".format(it) },
@@ -1502,8 +1507,10 @@ fun BlurParamsDialog(
                 ) {
                     IconButton(
                         onClick = {
-                            val new = appearanceSettings.copy(thumbnailSpacing = defaultSpacing)
-                            appearanceSettingsVieModel.updatePreset(new)
+                            coroutineScope.launch {
+                                val new = appearanceSettings.copy(thumbnailSpacing = defaultSpacing)
+                                appearanceSettingsVieModel.updatePreset(new)
+                            }
                         },
                         icon = R.drawable.burger,
                         color = colorPalette().favoritesIcon,
@@ -1514,8 +1521,10 @@ fun BlurParamsDialog(
                     SliderControl(
                         state = thumbnailSpacing,
                         onSlide = {
-                            val new = appearanceSettings.copy(thumbnailSpacing = it)
-                            appearanceSettingsVieModel.updatePreset(new)
+                            coroutineScope.launch {
+                                val new = appearanceSettings.copy(thumbnailSpacing = it)
+                                appearanceSettingsVieModel.updatePreset(new)
+                            }
                         },
                         onSlideComplete = {},
                         toDisplay = { "%.0f".format(it) },
@@ -1590,8 +1599,11 @@ fun BlurParamsDialog(
                 ) {
                     IconButton(
                         onClick = {
-                            val new = appearanceSettings.copy(thumbnailSpacingL = defaultSpacing)
-                            appearanceSettingsVieModel.updatePreset(new)
+                            coroutineScope.launch {
+                                val new =
+                                    appearanceSettings.copy(thumbnailSpacingL = defaultSpacing)
+                                appearanceSettingsVieModel.updatePreset(new)
+                            }
                         },
                         icon = R.drawable.burger,
                         color = colorPalette().favoritesIcon,
@@ -1603,8 +1615,10 @@ fun BlurParamsDialog(
                     SliderControl(
                         state = thumbnailSpacingL,
                         onSlide = {
-                            val new = appearanceSettings.copy(thumbnailSpacingL = it)
-                            appearanceSettingsVieModel.updatePreset(new)
+                            coroutineScope.launch {
+                                val new = appearanceSettings.copy(thumbnailSpacingL = it)
+                                appearanceSettingsVieModel.updatePreset(new)
+                            }
                         },
                         onSlideComplete = {},
                         toDisplay = { "%.0f".format(it) },
@@ -2069,6 +2083,8 @@ fun PlaybackParamsDialog(
     val blurStrength = appearanceSettings.blurStrength
     var bassBoost  by rememberPreference(BASSBOOST_LEVEL.key, defaultBassboost)
 
+    val coroutineScope = rememberCoroutineScope()
+
     DefaultDialog(
         onDismiss = {
             speedValue(playbackSpeed)
@@ -2096,8 +2112,10 @@ fun PlaybackParamsDialog(
         ) {
             IconButton(
                 onClick = {
-                    val new = appearanceSettings.copy(blurStrength = defaultStrength)
-                    appearanceSettingsVieModel.updatePreset(new)
+                    coroutineScope.launch {
+                        val new = appearanceSettings.copy(blurStrength = defaultStrength)
+                        appearanceSettingsVieModel.updatePreset(new)
+                    }
                 },
                 icon = R.drawable.droplet,
                 color = colorPalette().favoritesIcon,
@@ -2107,8 +2125,10 @@ fun PlaybackParamsDialog(
             SliderControl(
                 state = blurStrength,
                 onSlide = {
-                    val new = appearanceSettings.copy(blurStrength = it)
-                    appearanceSettingsVieModel.updatePreset(new)
+                    coroutineScope.launch {
+                        val new = appearanceSettings.copy(blurStrength = it)
+                        appearanceSettingsVieModel.updatePreset(new)
+                    }
                 },
                 onSlideComplete = {},
                 toDisplay = { "%.0f".format(it) },

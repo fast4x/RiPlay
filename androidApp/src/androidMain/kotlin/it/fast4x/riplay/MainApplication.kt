@@ -4,7 +4,6 @@ import android.app.Application
 import android.content.ComponentName
 import android.content.pm.PackageManager
 import androidx.annotation.OptIn
-import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import coil.ImageLoader
 import coil.ImageLoaderFactory
@@ -27,6 +26,8 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.LOG_DEBUG_ENABLED
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.USE_PLACEHOLDER_IN_IMAGE_LOADER
 import it.fast4x.riplay.extensions.crashreporter.CrashReporter
+import it.fast4x.riplay.extensions.experimental.appearancesettings.AppearanceSettingsManager
+import it.fast4x.riplay.extensions.experimental.appsettings.AppSettingsManager
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.service.RecommendationService
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.repository.UserProfileRepository
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.builders.UserProfileBuilder
@@ -39,8 +40,6 @@ import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategie
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.musicbrainz.workers.WorkScheduler
 import it.fast4x.riplay.extensions.musicbrainz.workers.WorkerDependencies
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_VAULT_DISCLAIMER_ACCEPTED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_VAULT_ENABLED
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.utils.InitializeEnvironment
 import kotlinx.coroutines.CoroutineScope
@@ -70,6 +69,13 @@ class MainApplication : Application(), ImageLoaderFactory {
         AppViewModel.factory(this)
     }
 
+    val appSettingsManager by lazy {
+        AppSettingsManager()
+    }
+
+    val appearanceSettingsManager by lazy {
+        AppearanceSettingsManager()
+    }
 
     // Prepara Profile Builder
     val profileBuilder = UserProfileBuilder()
@@ -101,6 +107,11 @@ class MainApplication : Application(), ImageLoaderFactory {
         )
 
         Dependencies.init(this)
+        appScopeIO.launch {
+            // Inizializza le importazioni di app ed aspetto
+            appSettingsManager.initialize()
+            appearanceSettingsManager.initialize()
+        }
 
         /***** CRASH LOG ALWAYS ENABLED *****/
         val dir = filesDir.resolve("logs").also {

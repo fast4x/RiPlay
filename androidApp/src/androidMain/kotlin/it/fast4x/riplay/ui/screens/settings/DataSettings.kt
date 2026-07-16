@@ -23,6 +23,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -57,6 +58,7 @@ import it.fast4x.riplay.ui.components.themed.DefaultDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.styling.style
 import it.fast4x.riplay.utils.typography
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -152,6 +154,7 @@ fun DataSettings() {
         )
     }
 
+    val coroutineScope = rememberCoroutineScope()
     var restartService by rememberSaveable { mutableStateOf(false) }
 
     Column(
@@ -207,10 +210,12 @@ fun DataSettings() {
                 },
                 selectedValue = coilDiskCacheMaxSize,
                 onValueSelected = {
-                    val new = appSettings.copy(
-                        coilDiskCacheMaxSize = it
-                    )
-                    appSettingsVieModel.updateSettings(new)
+                    coroutineScope.launch {
+                        val new = appSettings.copy(
+                            coilDiskCacheMaxSize = it
+                        )
+                        appSettingsVieModel.updateSettings(new)
+                    }
 
                     if (coilDiskCacheMaxSize == CoilDiskCacheMaxSize.Custom)
                         showCoilCustomDiskCacheDialog = true
@@ -243,10 +248,12 @@ fun DataSettings() {
                     onDismiss = { showCoilCustomDiskCacheDialog = false },
                     setValue = {
                         //Log.d("customCache", it)
-                        val new = appSettings.copy(
-                            coilCustomDiskCache = it.toInt()
-                        )
-                        appSettingsVieModel.updateSettings(new)
+                        coroutineScope.launch {
+                            val new = appSettings.copy(
+                                coilCustomDiskCache = it.toInt()
+                            )
+                            appSettingsVieModel.updateSettings(new)
+                        }
 
                         showCoilCustomDiskCacheDialog = false
                         restartService = true

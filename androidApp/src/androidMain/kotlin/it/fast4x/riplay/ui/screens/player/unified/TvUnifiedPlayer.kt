@@ -210,6 +210,8 @@ fun TvUnifiedPlayer(
     //var imageCoverSize by rememberPreference(VINYL_SIZE.key, 50f)
     val imageCoverSize = appearanceSettings.imageCoverSize
 
+    val coroutineScope = rememberCoroutineScope ()
+
     binder.player.DisposableListener {
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
@@ -219,12 +221,16 @@ fun TvUnifiedPlayer(
                 mediaItems = timeline.mediaItems
             }
             override fun onRepeatModeChanged(repeatMode: Int) {
-                val new = appSettings.copy(queueLoopType = when (repeatMode) {
-                    Player.REPEAT_MODE_ONE -> QueueLoopType.RepeatOne
-                    Player.REPEAT_MODE_ALL -> QueueLoopType.RepeatAll
-                    else -> QueueLoopType.Default
-                })
-                appSettingsVieModel.updateSettings(new)
+                coroutineScope.launch {
+                    val new = appSettings.copy(
+                        queueLoopType = when (repeatMode) {
+                            Player.REPEAT_MODE_ONE -> QueueLoopType.RepeatOne
+                            Player.REPEAT_MODE_ALL -> QueueLoopType.RepeatAll
+                            else -> QueueLoopType.Default
+                        }
+                    )
+                    appSettingsVieModel.updateSettings(new)
+                }
             }
         }
     }
@@ -441,9 +447,11 @@ fun TvUnifiedPlayer(
                     visualizerEnabled = visualizerEnabled,
                     queueLoopType = queueLoopType,
                     onQueueLoopTypeChange = {
-                        appSettingsVieModel.updateSettings(
-                            appSettings.copy(queueLoopType = it)
-                        )
+                        coroutineScope.launch {
+                            appSettingsVieModel.updateSettings(
+                                appSettings.copy(queueLoopType = it)
+                            )
+                        }
                     },
                     onToggleLyrics = {
                         if (isShowingVisualizer) isShowingVisualizer = false
@@ -527,7 +535,9 @@ fun TvUnifiedPlayer(
                 showPlayer = {},
                 hidePlayer = {},
                 onDismiss = {
-                   appSettingsVieModel.updateSettings(appSettings.copy(queueLoopType = it))
+                    coroutineScope.launch {
+                        appSettingsVieModel.updateSettings(appSettings.copy(queueLoopType = it))
+                    }
                     showQueue = false
                 },
                 onDiscoverClick = {}

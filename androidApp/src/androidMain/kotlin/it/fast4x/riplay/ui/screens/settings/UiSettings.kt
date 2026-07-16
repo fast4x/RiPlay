@@ -11,10 +11,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -201,6 +203,7 @@ import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_DISLIKED_PLAYLIST
 import it.fast4x.riplay.utils.LazyListContainer
+import kotlinx.coroutines.launch
 
 
 /*
@@ -823,6 +826,8 @@ fun UiSettings(
     //var showListenerLevels by rememberPreference(SHOW_LISTENER_LEVELS.key, true)
     val showListenerLevels = appSettings.showListenerLevels
 
+    val coroutineScope = rememberCoroutineScope()
+
     Column(
         modifier = Modifier
             .background(colorPalette().background0)
@@ -843,19 +848,21 @@ fun UiSettings(
                 onDismiss = { resetCustomLightThemeDialog = false },
                 onConfirm = {
                     resetCustomLightThemeDialog = false
-                    val new = appearanceSettings.copy(
-                        customThemeLight_Background0 = DefaultLightColorPalette.background0.hashCode(),
-                        customThemeLight_Background1 = DefaultLightColorPalette.background1.hashCode(),
-                        customThemeLight_Background2 = DefaultLightColorPalette.background2.hashCode(),
-                        customThemeLight_Background3 = DefaultLightColorPalette.background3.hashCode(),
-                        customThemeLight_Background4 = DefaultLightColorPalette.background4.hashCode(),
-                        customThemeLight_Text = DefaultLightColorPalette.text.hashCode(),
-                        customThemeLight_TextSecondary = DefaultLightColorPalette.textSecondary.hashCode(),
-                        customThemeLight_TextDisabled = DefaultLightColorPalette.textDisabled.hashCode(),
-                        customThemeLight_IconButtonPlayer = DefaultLightColorPalette.iconButtonPlayer.hashCode(),
-                        customThemeLight_Accent = DefaultLightColorPalette.accent.hashCode()
-                    )
-                    appearanceSettingsVieModel.updatePreset(new)
+                    coroutineScope.launch {
+                        val new = appearanceSettings.copy(
+                            customThemeLight_Background0 = DefaultLightColorPalette.background0.hashCode(),
+                            customThemeLight_Background1 = DefaultLightColorPalette.background1.hashCode(),
+                            customThemeLight_Background2 = DefaultLightColorPalette.background2.hashCode(),
+                            customThemeLight_Background3 = DefaultLightColorPalette.background3.hashCode(),
+                            customThemeLight_Background4 = DefaultLightColorPalette.background4.hashCode(),
+                            customThemeLight_Text = DefaultLightColorPalette.text.hashCode(),
+                            customThemeLight_TextSecondary = DefaultLightColorPalette.textSecondary.hashCode(),
+                            customThemeLight_TextDisabled = DefaultLightColorPalette.textDisabled.hashCode(),
+                            customThemeLight_IconButtonPlayer = DefaultLightColorPalette.iconButtonPlayer.hashCode(),
+                            customThemeLight_Accent = DefaultLightColorPalette.accent.hashCode()
+                        )
+                        appearanceSettingsVieModel.updatePreset(new)
+                    }
                 }
             )
         }
@@ -866,23 +873,27 @@ fun UiSettings(
                 onDismiss = { resetCustomDarkThemeDialog = false },
                 onConfirm = {
                     resetCustomDarkThemeDialog = false
-                    val new = appearanceSettings.copy(
-                        customThemeDark_Background0 = DefaultDarkColorPalette.background0.hashCode(),
-                        customThemeDark_Background1 = DefaultDarkColorPalette.background1.hashCode(),
-                        customThemeDark_Background2 = DefaultDarkColorPalette.background2.hashCode(),
-                        customThemeDark_Background3 = DefaultDarkColorPalette.background3.hashCode(),
-                        customThemeDark_Background4 = DefaultDarkColorPalette.background4.hashCode(),
-                        customThemeDark_Text = DefaultDarkColorPalette.text.hashCode(),
-                        customThemeDark_TextSecondary = DefaultDarkColorPalette.textSecondary.hashCode(),
-                        customThemeDark_TextDisabled = DefaultDarkColorPalette.textDisabled.hashCode(),
-                        customThemeDark_IconButtonPlayer = DefaultDarkColorPalette.iconButtonPlayer.hashCode(),
-                        customThemeDark_Accent = DefaultDarkColorPalette.accent.hashCode()
-                    )
-                    appearanceSettingsVieModel.updatePreset(new)
+                    coroutineScope.launch {
+                        val new = appearanceSettings.copy(
+                            customThemeDark_Background0 = DefaultDarkColorPalette.background0.hashCode(),
+                            customThemeDark_Background1 = DefaultDarkColorPalette.background1.hashCode(),
+                            customThemeDark_Background2 = DefaultDarkColorPalette.background2.hashCode(),
+                            customThemeDark_Background3 = DefaultDarkColorPalette.background3.hashCode(),
+                            customThemeDark_Background4 = DefaultDarkColorPalette.background4.hashCode(),
+                            customThemeDark_Text = DefaultDarkColorPalette.text.hashCode(),
+                            customThemeDark_TextSecondary = DefaultDarkColorPalette.textSecondary.hashCode(),
+                            customThemeDark_TextDisabled = DefaultDarkColorPalette.textDisabled.hashCode(),
+                            customThemeDark_IconButtonPlayer = DefaultDarkColorPalette.iconButtonPlayer.hashCode(),
+                            customThemeDark_Accent = DefaultDarkColorPalette.accent.hashCode()
+                        )
+                        appearanceSettingsVieModel.updatePreset(new)
+                    }
                 }
             )
         }
     }
+
+
 
     val state = rememberLazyListState()
     LazyListContainer(
@@ -928,8 +939,10 @@ fun UiSettings(
                         text = stringResource(R.string.enable_fullscreen_info),
                         isChecked = isEnabledFullscreen,
                         onCheckedChange = {
-                            val new = appSettings.copy(isEnabledFullScreen = it)
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(isEnabledFullScreen = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         }
                     )
 
@@ -944,65 +957,69 @@ fun UiSettings(
                         title = stringResource(R.string.interface_in_use),
                         selectedValue = uiType,
                         onValueSelected = {
-                            val new = appSettings.copy(uiType = it)
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(uiType = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
 
                             if (uiType == UiType.ViMusic) {
-                                val new = appearanceSettings.copy(
-                                    showTopActionsBar = false,
-                                    visualizerEnabled = false,
-                                    showThumbnail = true,
-                                    playerBackgroundColors = PlayerBackgroundColors.CoverColorGradient,
-                                    playerTimelineType = PlayerTimelineType.Default,
-                                    playerThumbnailSize = PlayerThumbnailSize.Medium,
-                                    thumbnailTapEnabled = true,
-                                    playerType = PlayerType.Modern,
-                                    queueType = QueueType.Modern,
-                                    fadingedge = false,
-                                    carousel = true,
-                                    carouselSize = CarouselSize.Medium,
-                                    thumbnailType = ThumbnailType.Essential,
-                                    playerTimelineSize = PlayerTimelineSize.Medium,
-                                    playerInfoShowIcons = true,
-                                    miniPlayerType = MiniPlayerType.Modern,
-                                    playerSwapControlsWithTimeline = false,
-                                    transparentBackgroundActionBarPlayer = false,
-                                    playerControlsType = PlayerControlsType.Essential,
-                                    playerPlayButtonType = PlayerPlayButtonType.Disabled,
-                                    buttonzoomout = true,
-                                    iconLikeType = IconLikeType.Essential,
-                                    blackgradient = true,
-                                    showTotalTimeQueue = false,
-                                    showRemainingSongTime = false,
-                                    showNextSongsInPlayer = false,
-                                    disableScrollingText = false,
-                                    clickLyricsText = true,
-                                    playerEnableLyricsPopupMessage = true,
-                                    backgroundProgress = BackgroundProgress.MiniPlayer,
-                                    actionsSpacedEvenly = false,
-                                    tapqueue = false,
-                                    swipeUpQueue = true,
-                                    showButtonPlayerDiscover = false,
-                                    showButtonPlayerAddToPlaylist = false,
-                                    showButtonPlayerLoop = false,
-                                    showButtonPlayerShuffle = false,
-                                    showButtonPlayerLyrics = false,
-                                    showButtonPlayerSleepTimer = false,
-                                    showButtonPlayerSystemEqualizer = false,
-                                    showButtonPlayerArrow = false,
-                                    showButtonPlayerMenu = true,
-                                    keepPlayerMinimized = false,
-                                    disablePlayerHorizontalSwipe = true
-                                )
-                                appearanceSettingsVieModel.updatePreset(new)
-                                val newsettings = appSettings.copy(
-                                    disablePlayerHorizontalSwipe = true,
-                                    disableIconButtonOnTop = true,
-                                    showSearchTab = true,
-                                    showStatsInNavbar = true,
-                                    navigationBarPosition = NavigationBarPosition.Left
-                                )
-                                appSettingsViewModel.updateSettings(newsettings)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(
+                                        showTopActionsBar = false,
+                                        visualizerEnabled = false,
+                                        showThumbnail = true,
+                                        playerBackgroundColors = PlayerBackgroundColors.CoverColorGradient,
+                                        playerTimelineType = PlayerTimelineType.Default,
+                                        playerThumbnailSize = PlayerThumbnailSize.Medium,
+                                        thumbnailTapEnabled = true,
+                                        playerType = PlayerType.Modern,
+                                        queueType = QueueType.Modern,
+                                        fadingedge = false,
+                                        carousel = true,
+                                        carouselSize = CarouselSize.Medium,
+                                        thumbnailType = ThumbnailType.Essential,
+                                        playerTimelineSize = PlayerTimelineSize.Medium,
+                                        playerInfoShowIcons = true,
+                                        miniPlayerType = MiniPlayerType.Modern,
+                                        playerSwapControlsWithTimeline = false,
+                                        transparentBackgroundActionBarPlayer = false,
+                                        playerControlsType = PlayerControlsType.Essential,
+                                        playerPlayButtonType = PlayerPlayButtonType.Disabled,
+                                        buttonzoomout = true,
+                                        iconLikeType = IconLikeType.Essential,
+                                        blackgradient = true,
+                                        showTotalTimeQueue = false,
+                                        showRemainingSongTime = false,
+                                        showNextSongsInPlayer = false,
+                                        disableScrollingText = false,
+                                        clickLyricsText = true,
+                                        playerEnableLyricsPopupMessage = true,
+                                        backgroundProgress = BackgroundProgress.MiniPlayer,
+                                        actionsSpacedEvenly = false,
+                                        tapqueue = false,
+                                        swipeUpQueue = true,
+                                        showButtonPlayerDiscover = false,
+                                        showButtonPlayerAddToPlaylist = false,
+                                        showButtonPlayerLoop = false,
+                                        showButtonPlayerShuffle = false,
+                                        showButtonPlayerLyrics = false,
+                                        showButtonPlayerSleepTimer = false,
+                                        showButtonPlayerSystemEqualizer = false,
+                                        showButtonPlayerArrow = false,
+                                        showButtonPlayerMenu = true,
+                                        keepPlayerMinimized = false,
+                                        disablePlayerHorizontalSwipe = true
+                                    )
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                    val newsettings = appSettings.copy(
+                                        disablePlayerHorizontalSwipe = true,
+                                        disableIconButtonOnTop = true,
+                                        showSearchTab = true,
+                                        showStatsInNavbar = true,
+                                        navigationBarPosition = NavigationBarPosition.Left
+                                    )
+                                    appSettingsViewModel.updateSettings(newsettings)
+                                }
 
                                 //showTopActionsBar = false
 //                                playerType = PlayerType.Modern
@@ -1047,18 +1064,20 @@ fun UiSettings(
                                 //showthumbnail = true
                                 //keepPlayerMinimized = false
                             } else {
-                                val new = appearanceSettings.copy(
-                                    playerTimelineType = lastPlayerTimelineType,
-                                    playerThumbnailSize = lastPlayerThumbnailSize,
-                                    playerPlayButtonType = lastPlayerPlayButtonType,
-                                )
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(
+                                        playerTimelineType = lastPlayerTimelineType,
+                                        playerThumbnailSize = lastPlayerThumbnailSize,
+                                        playerPlayButtonType = lastPlayerPlayButtonType,
+                                    )
+                                    appearanceSettingsVieModel.updatePreset(new)
 
-                                val newsettings = appSettings.copy(
-                                    disablePlayerHorizontalSwipe = false,
-                                    disableIconButtonOnTop = false,
-                                )
-                                appSettingsViewModel.updateSettings(newsettings)
+                                    val newsettings = appSettings.copy(
+                                        disablePlayerHorizontalSwipe = false,
+                                        disableIconButtonOnTop = false,
+                                    )
+                                    appSettingsViewModel.updateSettings(newsettings)
+                                }
 
                             }
 
@@ -1079,16 +1098,19 @@ fun UiSettings(
                         selectedValue = colorPaletteName,
                         onValueSelected = {
                             val mode = appearanceSettings.colorPaletteMode
-                            val new = appearanceSettings.copy(
-                                colorPaletteName = it,
-                                colorPaletteMode = when (it) {
+                            coroutineScope.launch {
+                                val new = appearanceSettings.copy(
+                                    colorPaletteName = it,
+                                    colorPaletteMode = when (it) {
                                         ColorPaletteName.PureBlack,
                                         ColorPaletteName.ModernBlack ->
-                                                    ColorPaletteMode.System
+                                            ColorPaletteMode.System
+
                                         else -> mode
                                     }
                                 )
-                            appearanceSettingsVieModel.updatePreset(new)
+                                appearanceSettingsVieModel.updatePreset(new)
+                            }
                         },
                         valueText = {
                             when (it) {
@@ -1110,8 +1132,10 @@ fun UiSettings(
                             text = "",
                             color = Color(customColor),
                             onColorSelected = {
-                                val new = appearanceSettings.copy(customColor = it.hashCode())
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(customColor = it.hashCode())
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             },
                             modifier = Modifier
                                 .padding(start = 12.dp)
@@ -1137,10 +1161,12 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeLight_Background0),
                             onColorSelected = {
-                                val new = appearanceSettings.copy(
-                                    customThemeLight_Background0 = it.hashCode()
-                                )
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(
+                                        customThemeLight_Background0 = it.hashCode()
+                                    )
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
                         ColorSettingEntry(
@@ -1148,10 +1174,12 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeLight_Background1),
                             onColorSelected = {
-                                val new = appearanceSettings.copy(
-                                    customThemeLight_Background1 = it.hashCode()
-                                )
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(
+                                        customThemeLight_Background1 = it.hashCode()
+                                    )
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
                         ColorSettingEntry(
@@ -1159,10 +1187,12 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeLight_Background2),
                             onColorSelected = {
-                                val new = appearanceSettings.copy(
-                                    customThemeLight_Background2 = it.hashCode()
-                                )
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(
+                                        customThemeLight_Background2 = it.hashCode()
+                                    )
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
                         ColorSettingEntry(
@@ -1170,10 +1200,12 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeLight_Background3),
                             onColorSelected = {
-                                val new = appearanceSettings.copy(
-                                    customThemeLight_Background3 = it.hashCode()
-                                )
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(
+                                        customThemeLight_Background3 = it.hashCode()
+                                    )
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
                         ColorSettingEntry(
@@ -1181,10 +1213,12 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeLight_Background4),
                             onColorSelected = {
-                                val new = appearanceSettings.copy(
-                                    customThemeLight_Background4 = it.hashCode()
-                                )
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(
+                                        customThemeLight_Background4 = it.hashCode()
+                                    )
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
                         ColorSettingEntry(
@@ -1192,10 +1226,12 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeLight_Text),
                             onColorSelected = {
-                                val new = appearanceSettings.copy(
-                                    customThemeLight_Text = it.hashCode()
-                                )
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(
+                                        customThemeLight_Text = it.hashCode()
+                                    )
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
                         ColorSettingEntry(
@@ -1203,10 +1239,12 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeLight_TextSecondary),
                             onColorSelected = {
-                                val new = appearanceSettings.copy(
-                                    customThemeLight_TextSecondary = it.hashCode()
-                                )
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(
+                                        customThemeLight_TextSecondary = it.hashCode()
+                                    )
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
                         ColorSettingEntry(
@@ -1214,10 +1252,12 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeLight_TextDisabled),
                             onColorSelected = {
-                                val new = appearanceSettings.copy(
-                                    customThemeLight_TextDisabled = it.hashCode()
-                                )
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(
+                                        customThemeLight_TextDisabled = it.hashCode()
+                                    )
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
                         ColorSettingEntry(
@@ -1225,10 +1265,12 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeLight_IconButtonPlayer),
                             onColorSelected = {
-                                val new = appearanceSettings.copy(
-                                    customThemeLight_IconButtonPlayer = it.hashCode()
-                                )
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(
+                                        customThemeLight_IconButtonPlayer = it.hashCode()
+                                    )
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
                         ColorSettingEntry(
@@ -1236,10 +1278,12 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeLight_Accent),
                             onColorSelected = {
-                                val new = appearanceSettings.copy(
-                                    customThemeLight_Accent = it.hashCode()
-                                )
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(
+                                        customThemeLight_Accent = it.hashCode()
+                                    )
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
 
@@ -1255,10 +1299,12 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeDark_Background0),
                             onColorSelected = {
-                                val new = appearanceSettings.copy(
-                                    customThemeDark_Background0 = it.hashCode()
-                                )
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(
+                                        customThemeDark_Background0 = it.hashCode()
+                                    )
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
                         ColorSettingEntry(
@@ -1266,10 +1312,12 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeDark_Background1),
                             onColorSelected = {
-                                val new = appearanceSettings.copy(
-                                    customThemeDark_Background1 = it.hashCode()
-                                )
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(
+                                        customThemeDark_Background1 = it.hashCode()
+                                    )
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
                         ColorSettingEntry(
@@ -1277,10 +1325,12 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeDark_Background2),
                             onColorSelected = {
-                                val new = appearanceSettings.copy(
-                                    customThemeDark_Background2 = it.hashCode()
-                                )
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(
+                                        customThemeDark_Background2 = it.hashCode()
+                                    )
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
                         ColorSettingEntry(
@@ -1288,10 +1338,12 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeDark_Background3),
                             onColorSelected = {
-                                val new = appearanceSettings.copy(
-                                    customThemeDark_Background3 = it.hashCode()
-                                )
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(
+                                        customThemeDark_Background3 = it.hashCode()
+                                    )
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
                         ColorSettingEntry(
@@ -1299,10 +1351,12 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeDark_Background4),
                             onColorSelected = {
-                                val new = appearanceSettings.copy(
-                                    customThemeDark_Background4 = it.hashCode()
-                                )
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(
+                                        customThemeDark_Background4 = it.hashCode()
+                                    )
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
                         ColorSettingEntry(
@@ -1310,10 +1364,12 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeDark_Text),
                             onColorSelected = {
-                                val new = appearanceSettings.copy(
-                                    customThemeDark_Text = it.hashCode()
-                                )
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(
+                                        customThemeDark_Text = it.hashCode()
+                                    )
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
                         ColorSettingEntry(
@@ -1321,10 +1377,12 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeDark_TextSecondary),
                             onColorSelected = {
-                                val new = appearanceSettings.copy(
-                                    customThemeDark_TextSecondary = it.hashCode()
-                                )
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(
+                                        customThemeDark_TextSecondary = it.hashCode()
+                                    )
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
                         ColorSettingEntry(
@@ -1332,10 +1390,12 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeDark_TextDisabled),
                             onColorSelected = {
-                                val new = appearanceSettings.copy(
-                                    customThemeDark_TextDisabled = it.hashCode()
-                                )
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(
+                                        customThemeDark_TextDisabled = it.hashCode()
+                                    )
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
                         ColorSettingEntry(
@@ -1343,10 +1403,12 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeDark_IconButtonPlayer),
                             onColorSelected = {
-                                val new = appearanceSettings.copy(
-                                    customThemeDark_IconButtonPlayer = it.hashCode()
-                                )
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(
+                                        customThemeDark_IconButtonPlayer = it.hashCode()
+                                    )
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
                         ColorSettingEntry(
@@ -1354,10 +1416,12 @@ fun UiSettings(
                             text = "",
                             color = Color(customThemeDark_Accent),
                             onColorSelected = {
-                                val new = appearanceSettings.copy(
-                                    customThemeDark_Accent = it.hashCode()
-                                )
-                                appearanceSettingsVieModel.updatePreset(new)
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(
+                                        customThemeDark_Accent = it.hashCode()
+                                    )
+                                    appearanceSettingsVieModel.updatePreset(new)
+                                }
                             }
                         )
                     }
@@ -1379,8 +1443,10 @@ fun UiSettings(
                             }
                         },
                         onValueSelected = {
-                            val new = appearanceSettings.copy(colorPaletteMode = it)
-                            appearanceSettingsVieModel.updatePreset(new)
+                            coroutineScope.launch {
+                                val new = appearanceSettings.copy(colorPaletteMode = it)
+                                appearanceSettingsVieModel.updatePreset(new)
+                            }
                             //if (it == ColorPaletteMode.PitchBlack) colorPaletteName = ColorPaletteName.ModernBlack
                         },
                         valueText = {
@@ -1402,8 +1468,10 @@ fun UiSettings(
                         title = stringResource(R.string.navigation_bar_position),
                         selectedValue = navigationBarPosition,
                         onValueSelected = {
-                            val new = appearanceSettings.copy(navigationBarPosition = it)
-                            appearanceSettingsVieModel.updatePreset(new)
+                            coroutineScope.launch {
+                                val new = appearanceSettings.copy(navigationBarPosition = it)
+                                appearanceSettingsVieModel.updatePreset(new)
+                            }
                         },
                         // As of version 0.6.53, changing navigation bar to top or bottom
                         // while using ViMusic theme breaks the UI
@@ -1427,8 +1495,10 @@ fun UiSettings(
                         title = stringResource(R.string.navigation_bar_type),
                         selectedValue = navigationBarType,
                         onValueSelected = {
-                            val new = appSettings.copy(navigationBarType = it)
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(navigationBarType = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         },
                         valueText = {
                             when (it) {
@@ -1447,8 +1517,10 @@ fun UiSettings(
                         title = stringResource(R.string.player_position),
                         selectedValue = playerPosition,
                         onValueSelected = {
-                            val new = appSettings.copy(playerPosition = it)
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(playerPosition = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         },
                         valueText = {
                             when (it) {
@@ -1467,8 +1539,10 @@ fun UiSettings(
                         title = stringResource(R.string.menu_style),
                         selectedValue = menuStyle,
                         onValueSelected = {
-                            val new = appSettings.copy(menuStyle = it)
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(menuStyle = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         },
                         valueText = {
                             when (it) {
@@ -1487,8 +1561,10 @@ fun UiSettings(
                         title = stringResource(R.string.message_type),
                         selectedValue = messageType,
                         onValueSelected = {
-                            val new = appSettings.copy(messageType = it)
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(messageType = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         },
                         valueText = {
                             when (it) {
@@ -1507,8 +1583,10 @@ fun UiSettings(
                         title = stringResource(R.string.default_page),
                         selectedValue = indexNavigationTab,
                         onValueSelected = {
-                            val new = appSettings.copy(indexNavigationTab = it)
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(indexNavigationTab = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         },
                         valueText = {
                             when (it) {
@@ -1533,8 +1611,10 @@ fun UiSettings(
                         title = stringResource(R.string.transition_effect),
                         selectedValue = transitionEffect,
                         onValueSelected = {
-                            val new = appSettings.copy(transitionEffect = it)
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(transitionEffect = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         },
                         valueText = {
                             when (it) {
@@ -1558,8 +1638,10 @@ fun UiSettings(
                         text = "",
                         isChecked = isSnowEffectEnabled,
                         onCheckedChange = {
-                            val new = appSettings.copy(isSnowEffectEnabled = it)
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(isSnowEffectEnabled = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         }
                     )
 
@@ -1574,8 +1656,10 @@ fun UiSettings(
                             text = stringResource(R.string.vismusic_only_in_left_right_navigation_bar),
                             isChecked = showSearchTab,
                             onCheckedChange = {
-                                val new = appSettings.copy(showSearchTab = it)
-                                appSettingsViewModel.updateSettings(new)
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(showSearchTab = it)
+                                    appSettingsViewModel.updateSettings(new)
+                                }
                             }
                         )
 
@@ -1591,8 +1675,10 @@ fun UiSettings(
                             text = "",
                             isChecked = showStatsInNavbar,
                             onCheckedChange = {
-                                val new = appSettings.copy(showStatsInNavbar = it)
-                                appSettingsViewModel.updateSettings(new)
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(showStatsInNavbar = it)
+                                    appSettingsViewModel.updateSettings(new)
+                                }
                             }
                         )
                 }
@@ -1608,15 +1694,19 @@ fun UiSettings(
                             text = "",
                             isChecked = showFloatingIcon,
                             onCheckedChange = {
-                                val new = appSettings.copy(showFloatingIcon = it)
-                                appSettingsViewModel.updateSettings(new)
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(showFloatingIcon = it)
+                                    appSettingsViewModel.updateSettings(new)
+                                }
                             }
                         )
                 } else {
-                    val new = appSettings.copy(
-                        showFloatingIcon = false
-                    )
-                    appSettingsViewModel.updateSettings(new)
+                    LaunchedEffect(Unit) {
+                        val new = appSettings.copy(
+                            showFloatingIcon = false
+                        )
+                        appSettingsViewModel.updateSettings(new)
+                    }
                 }
 
 
@@ -1630,8 +1720,10 @@ fun UiSettings(
                         title = stringResource(R.string.settings_use_font_type),
                         selectedValue = fontType,
                         onValueSelected = {
-                            val new = appSettings.copy(fontType = it)
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(fontType = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         },
                         valueText = {
                             when (it) {
@@ -1651,8 +1743,10 @@ fun UiSettings(
                         text = stringResource(R.string.use_font_by_the_system),
                         isChecked = useSystemFont,
                         onCheckedChange = {
-                            val new = appSettings.copy(useSystemFont = it)
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(useSystemFont = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         }
                     )
 
@@ -1666,8 +1760,10 @@ fun UiSettings(
                         text = stringResource(R.string.add_spacing_around_texts),
                         isChecked = applyFontPadding,
                         onCheckedChange = {
-                            val new = appSettings.copy(applyFontPadding = it)
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(applyFontPadding = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         }
                     )
 
@@ -1682,8 +1778,10 @@ fun UiSettings(
                         text = stringResource(R.string.activate_the_action_menu_by_swiping_the_song_left_or_right),
                         isChecked = isSwipeToActionEnabled,
                         onCheckedChange = {
-                            val new = appSettings.copy(isSwipeToActionEnabled = it)
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(isSwipeToActionEnabled = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         }
                     )
 
@@ -1695,10 +1793,12 @@ fun UiSettings(
                                 title = stringResource(R.string.queue_and_local_playlists_left_swipe),
                                 selectedValue = queueSwipeLeftAction,
                                 onValueSelected = {
-                                    val new = appSettings.copy(
-                                        queueSwipeLeftAction = it
-                                    )
-                                    appSettingsViewModel.updateSettings(new)
+                                    coroutineScope.launch {
+                                        val new = appSettings.copy(
+                                            queueSwipeLeftAction = it
+                                        )
+                                        appSettingsViewModel.updateSettings(new)
+                                    }
                                 },
                                 valueText = {
                                     it.displayName
@@ -1708,10 +1808,12 @@ fun UiSettings(
                                 title = stringResource(R.string.queue_and_local_playlists_right_swipe),
                                 selectedValue = queueSwipeRightAction,
                                 onValueSelected = {
-                                    val new = appSettings.copy(
-                                        queueSwipeRightAction = it
-                                    )
-                                    appSettingsViewModel.updateSettings(new)
+                                    coroutineScope.launch {
+                                        val new = appSettings.copy(
+                                            queueSwipeRightAction = it
+                                        )
+                                        appSettingsViewModel.updateSettings(new)
+                                    }
                                 },
                                 valueText = {
                                     it.displayName
@@ -1721,10 +1823,12 @@ fun UiSettings(
                                 title = stringResource(R.string.playlist_left_swipe),
                                 selectedValue = playlistSwipeLeftAction,
                                 onValueSelected = {
-                                    val new = appSettings.copy(
-                                        playlistSwipeLeftAction = it
-                                    )
-                                    appSettingsViewModel.updateSettings(new)
+                                    coroutineScope.launch {
+                                        val new = appSettings.copy(
+                                            playlistSwipeLeftAction = it
+                                        )
+                                        appSettingsViewModel.updateSettings(new)
+                                    }
                                 },
                                 valueText = {
                                     it.displayName
@@ -1734,10 +1838,12 @@ fun UiSettings(
                                 title = stringResource(R.string.playlist_right_swipe),
                                 selectedValue = playlistSwipeRightAction,
                                 onValueSelected = {
-                                    val new = appSettings.copy(
-                                        playlistSwipeRightAction = it
-                                    )
-                                    appSettingsViewModel.updateSettings(new)
+                                    coroutineScope.launch {
+                                        val new = appSettings.copy(
+                                            playlistSwipeRightAction = it
+                                        )
+                                        appSettingsViewModel.updateSettings(new)
+                                    }
                                 },
                                 valueText = {
                                     it.displayName
@@ -1747,10 +1853,12 @@ fun UiSettings(
                                 title = stringResource(R.string.album_left_swipe),
                                 selectedValue = albumSwipeLeftAction,
                                 onValueSelected = {
-                                    val new = appSettings.copy(
-                                        albumSwipeLeftAction = it
-                                    )
-                                    appSettingsViewModel.updateSettings(new)
+                                    coroutineScope.launch {
+                                        val new = appSettings.copy(
+                                            albumSwipeLeftAction = it
+                                        )
+                                        appSettingsViewModel.updateSettings(new)
+                                    }
                                 },
                                 valueText = {
                                     it.displayName
@@ -1760,10 +1868,12 @@ fun UiSettings(
                                 title = stringResource(R.string.album_right_swipe),
                                 selectedValue = albumSwipeRightAction,
                                 onValueSelected = {
-                                    val new = appSettings.copy(
-                                        albumSwipeRightAction = it
-                                    )
-                                    appSettingsViewModel.updateSettings(new)
+                                    coroutineScope.launch {
+                                        val new = appSettings.copy(
+                                            albumSwipeRightAction = it
+                                        )
+                                        appSettingsViewModel.updateSettings(new)
+                                    }
                                 },
                                 valueText = {
                                     it.displayName
@@ -1783,8 +1893,10 @@ fun UiSettings(
                         text = stringResource(R.string.use_placeholder_in_imageloader_info),
                         isChecked = usePlaceholderInImageLoader,
                         onCheckedChange = {
-                            val new = appSettings.copy(usePlaceholderInImageLoader = it)
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(usePlaceholderInImageLoader = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         }
                     )
             }
@@ -1807,8 +1919,10 @@ fun UiSettings(
                         text = "",
                         isChecked = showFavoritesPlaylist,
                         onCheckedChange = {
-                            val new = appSettings.copy(showFavoritesPlaylist = it)
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(showFavoritesPlaylist = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         }
                     )
 
@@ -1826,8 +1940,10 @@ fun UiSettings(
                         text = "",
                         isChecked = showMyTopPlaylist,
                         onCheckedChange = {
-                            val new = appSettings.copy(showMyTopPlaylist = it)
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(showMyTopPlaylist = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         }
                     )
                 if (search.input.isBlank() || "${stringResource(R.string.show)} ${stringResource(R.string.on_device)}".contains(
@@ -1840,8 +1956,10 @@ fun UiSettings(
                         text = "",
                         isChecked = showOnDevicePlaylist,
                         onCheckedChange = {
-                            val new = appSettings.copy(showOnDevicePlaylist = it)
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(showOnDevicePlaylist = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         }
                     )
 
@@ -1855,8 +1973,10 @@ fun UiSettings(
                         text = "",
                         isChecked = showDislikedPlaylist,
                         onCheckedChange = {
-                            val new = appSettings.copy(showDislikedPlaylist = it)
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(showDislikedPlaylist = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         }
                     )
 
@@ -1881,8 +2001,10 @@ fun UiSettings(
                         text = "",
                         isChecked = showPinnedPlaylists,
                         onCheckedChange = {
-                            val new = appSettings.copy(showPinnedPlaylists = it)
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(showPinnedPlaylists = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         }
                     )
 
@@ -1896,8 +2018,10 @@ fun UiSettings(
                         text = "",
                         isChecked = showMonthlyPlaylists,
                         onCheckedChange = {
-                            val new = appSettings.copy(showMonthlyPlaylists = it)
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(showMonthlyPlaylists = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         }
                     )
             }
@@ -1920,8 +2044,10 @@ fun UiSettings(
                         text = "",
                         isChecked = enableCreateMonthlyPlaylists,
                         onCheckedChange = {
-                            val new = appSettings.copy(enableCreateMonthlyPlaylists = it)
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(enableCreateMonthlyPlaylists = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         }
                     )
             }
@@ -1943,8 +2069,10 @@ fun UiSettings(
                         title = stringResource(R.string.statistics_max_number_of_items),
                         selectedValue = recommendationsNumber,
                         onValueSelected = {
-                            val new = appSettings.copy(recommendationsNumber = it)
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(recommendationsNumber = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         },
                         valueText = {
                             it.number.toString()
@@ -1969,8 +2097,10 @@ fun UiSettings(
                         title = stringResource(R.string.statistics_max_number_of_items),
                         selectedValue = maxStatisticsItems,
                         onValueSelected = {
-                            val new = appSettings.copy(maxStatisticsItems = it)
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(maxStatisticsItems = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         },
                         valueText = {
                             it.number.toString()
@@ -1987,10 +2117,12 @@ fun UiSettings(
                         text = stringResource(R.string.shows_the_number_of_songs_heard_and_their_listening_time),
                         isChecked = showStatsListeningTime,
                         onCheckedChange = {
-                            val new = appSettings.copy(
-                                showStatsListeningTime = it
-                            )
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(
+                                    showStatsListeningTime = it
+                                )
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         }
                     )
             }
@@ -2012,8 +2144,10 @@ fun UiSettings(
                         title = stringResource(R.string.statistics_max_number_of_items),
                         selectedValue = maxTopPlaylistItems,
                         onValueSelected = {
-                            val new = appSettings.copy(maxTopPlaylistItems = it)
-                            appSettingsViewModel.updateSettings(new)
+                            coroutineScope.launch {
+                                val new = appSettings.copy(maxTopPlaylistItems = it)
+                                appSettingsViewModel.updateSettings(new)
+                            }
                         },
                         valueText = {
                             it.number.toString()
@@ -2038,10 +2172,12 @@ fun UiSettings(
                     ),
                     isChecked = showListenerLevels,
                     onCheckedChange = {
-                        val new = appSettings.copy(
-                            showListenerLevels = it
-                        )
-                        appSettingsViewModel.updateSettings(new)
+                        coroutineScope.launch {
+                            val new = appSettings.copy(
+                                showListenerLevels = it
+                            )
+                            appSettingsViewModel.updateSettings(new)
+                        }
                     }
                 )
             }
