@@ -11,21 +11,21 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.documentfile.provider.DocumentFile
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_VAULT_PATH
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import androidx.core.net.toUri
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.getSafeDefaultDir
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 const val DEFAULT_MUSICVAULT_DIRECTORY = "MusicVault"
@@ -33,11 +33,16 @@ const val DEFAULT_MUSICVAULT_DIRECTORY = "MusicVault"
 @Composable
 fun MusicVaultFolderSetting() {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     // Otteniamo il percorso di default in modo sicuro
     val defaultDir = remember { getSafeDefaultDir(context, DEFAULT_MUSICVAULT_DIRECTORY) }
 
-    var musicVaultPath by rememberPreference(MUSIC_VAULT_PATH.key, "")
+    //var musicVaultPath by rememberPreference(MUSIC_VAULT_PATH.key, "")
+    val musicVaultPath = appSettings.musicVaultPath
 
     // Logica di visualizzazione unificata
     val displayPath = when {
@@ -64,8 +69,13 @@ fun MusicVaultFolderSetting() {
                         Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             )
             // Salviamo l'URI content:// come stringa
-            musicVaultPath = it.toString()
-            Timber.d("MusicVaultFolderSetting folderPicker musicVaultPath: $musicVaultPath")
+
+            coroutineScope.launch {
+                appSettingsManager.updateSettings(
+                    appSettings.copy(musicVaultPath = it.toString())
+                )
+            }
+            Timber.d("MusicVaultFolderSetting folderPicke.r musicVaultPath: $musicVaultPath")
         }
     }
 
@@ -96,7 +106,11 @@ fun MusicVaultFolderSetting() {
                 modifier = Modifier.clickable {
                     // Ripristiniamo la stringa vuota, che nel Repository
                     // verrà interpretata come "usa la cartella di default"
-                    musicVaultPath = ""
+                    coroutineScope.launch {
+                        appSettingsManager.updateSettings(
+                            appSettings.copy(musicVaultPath = "")
+                        )
+                    }
                 }
             )
         }

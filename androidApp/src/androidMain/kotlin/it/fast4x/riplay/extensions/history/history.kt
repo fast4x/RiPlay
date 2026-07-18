@@ -2,14 +2,13 @@ package it.fast4x.riplay.extensions.history
 
 import androidx.media3.common.MediaItem
 import it.fast4x.environment.EnvironmentExt
+import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.utils.globalContext
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PAUSE_LISTEN_HISTORY
-import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.data.models.Format
 import it.fast4x.riplay.extensions.players.getOnlineMetadata
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
+import it.fast4x.riplay.utils.appContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -19,7 +18,9 @@ import timber.log.Timber
 
 @ExperimentalSerializationApi
 fun updateOnlineHistory(mediaItem: MediaItem) {
-    if (globalContext().preferences.getBoolean(PAUSE_LISTEN_HISTORY.key, false)) return
+    //if (globalContext().preferences.getBoolean(PAUSE_LISTEN_HISTORY.key, false)) return
+    val appSettingsManager = (appContext() as MainApplication).appSettingsManager
+    if (appSettingsManager.activeSettings.value.isPauseListenHistoryEnabled) return
 
     Timber.d("UpdateOnlineHistory called with mediaItem $mediaItem")
 

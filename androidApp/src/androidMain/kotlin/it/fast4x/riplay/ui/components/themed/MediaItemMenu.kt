@@ -79,7 +79,8 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.environment.models.NavigationEndpoint
-import it.fast4x.riplay.LocalAppearanceSettings
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
@@ -92,8 +93,6 @@ import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.enums.NavRoutes
-import it.fast4x.riplay.enums.PlaylistSortBy
-import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.extensions.ondevice.Folder
 import it.fast4x.riplay.data.models.Info
@@ -113,10 +112,6 @@ import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.ui.styling.medium
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MENU_STYLE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SORT_BY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SORT_ORDER
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.commonutils.toThumbnail
 import kotlinx.coroutines.CoroutineScope
@@ -141,9 +136,7 @@ import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.removeYTSongFromPlaylist
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.commonutils.setDisLikeState
-import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.utils.SetupWriteSettingsPermission
 import it.fast4x.riplay.utils.getLocalFileUri
@@ -303,6 +296,9 @@ fun NonQueuedMediaItemMenuLibrary(
     disableScrollingText: Boolean,
     onBlacklist: (() -> Unit)? = null,
 ) {
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
     val selectedQueue = LocalSelectedQueue.current
@@ -344,10 +340,7 @@ fun NonQueuedMediaItemMenuLibrary(
         )
     }
 
-    val menuStyle by rememberPreference(
-        MENU_STYLE.key,
-        MenuStyle.List
-    )
+    val menuStyle = appSettings.menuStyle
 
     if (menuStyle == MenuStyle.Grid) {
 
@@ -465,10 +458,10 @@ fun NonQueuedMediaItemMenu(
     val context = LocalContext.current
     val selectedQueue = LocalSelectedQueue.current
 
-    val menuStyle by rememberPreference(
-        MENU_STYLE.key,
-        MenuStyle.List
-    )
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
+    val menuStyle = appSettings.menuStyle
 
     //println("mediaItem in NonQueuedMediaItemMenu albumId ${mediaItem.mediaMetadata.extras?.getString("albumId")}")
 
@@ -556,10 +549,9 @@ fun QueuedMediaItemMenu(
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
     val selectedQueue = LocalSelectedQueue.current
-    val menuStyle by rememberPreference(
-        MENU_STYLE.key,
-        MenuStyle.List
-    )
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val menuStyle = appSettings.menuStyle
     val isNetworkConnected = rememberIsNetworkConnected()
 
     if (menuStyle == MenuStyle.Grid) {
@@ -1068,13 +1060,16 @@ fun MediaItemMenu(
                     slideOutOfContainer(slideDirection, animationSpec)
         }, label = ""
     ) { currentIsViewingPlaylists ->
-        val appearanceSettingsVieModel = LocalAppearanceSettings.current
-        val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+        val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+        val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
+        val appSettingsManager = LocalAppSettingsManager.current
+        val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
         val isNetworkConnected = rememberIsNetworkConnected()
         if (currentIsViewingPlaylists) {
-            val sortBy by rememberPreference(PLAYLIST_SORT_BY.key, PlaylistSortBy.DateAdded)
-            val sortOrder by rememberPreference(PLAYLIST_SORT_ORDER.key, SortOrder.Descending)
+            val sortBy = appSettings.playlistSortBy
+            val sortOrder = appSettings.playlistSortOrder
             var filter: String? by rememberSaveable { mutableStateOf(null) }
 
             val playlistPreviews by remember {
@@ -2207,6 +2202,9 @@ fun AddToPlaylistItemMenu(
     mediaItem: MediaItem,
     onGoToPlaylist: ((Long) -> Unit)? = null,
 ) {
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
     var isCreatingNewPlaylist by rememberSaveable {
         mutableStateOf(false)
     }
@@ -2227,15 +2225,15 @@ fun AddToPlaylistItemMenu(
             }
         )
     }
-    val sortBy by rememberPreference(PLAYLIST_SORT_BY.key, PlaylistSortBy.DateAdded)
-    val sortOrder by rememberPreference(PLAYLIST_SORT_ORDER.key, SortOrder.Descending)
+    val sortBy = remember { appSettings.playlistSortBy }
+    val sortOrder = remember { appSettings.playlistSortOrder }
     val playlistPreviews by remember {
         Database.playlistPreviews(sortBy, sortOrder)
-    }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
+    }.collectAsStateWithLifecycle(initialValue = emptyList(), context = Dispatchers.IO)
 
     val playlistIds by remember {
         Database.getPlaylistsWithSong(mediaItem.mediaId)
-    }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
+    }.collectAsStateWithLifecycle(initialValue = emptyList(), context = Dispatchers.IO)
 
     val pinnedPlaylists = playlistPreviews.filter {
         it.playlist.name.startsWith(PINNED_PREFIX, 0, true)
@@ -2436,7 +2434,8 @@ fun AddToPlaylistArtistSongsMenu(
     var isCreatingNewPlaylist by rememberSaveable {
         mutableStateOf(false)
     }
-    val context = LocalContext.current
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
     val configuration = LocalConfiguration.current
 
     val screenHeight = configuration.screenHeightDp.dp
@@ -2463,11 +2462,12 @@ fun AddToPlaylistArtistSongsMenu(
             }
         )
     }
-    val sortBy by rememberPreference(PLAYLIST_SORT_BY.key, PlaylistSortBy.DateAdded)
-    val sortOrder by rememberPreference(PLAYLIST_SORT_ORDER.key, SortOrder.Descending)
+    val sortBy = appSettings.playlistSortBy
+    val sortOrder = appSettings.playlistSortOrder
+
     val playlistPreviews by remember {
         Database.playlistPreviews(sortBy, sortOrder)
-    }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
+    }.collectAsStateWithLifecycle(initialValue = emptyList())
 
     val pinnedPlaylists = playlistPreviews.filter {
         it.playlist.name.startsWith(PINNED_PREFIX, 0, true)

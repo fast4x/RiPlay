@@ -8,16 +8,18 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.GlobalSheetState
 import it.fast4x.riplay.ui.components.themed.Menu
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MENU_STYLE
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 
 class EllipsisMenuComponent private constructor(
     private val buttons: () -> List<Button>,
@@ -28,11 +30,15 @@ class EllipsisMenuComponent private constructor(
     companion object {
         @JvmStatic
         @Composable
-        fun init( items: () -> List<Button> ) = EllipsisMenuComponent(
-            items,
-            LocalGlobalSheetState.current,
-            rememberPreference( MENU_STYLE.key, MenuStyle.List )
-        )
+        fun init( items: () -> List<Button> ): EllipsisMenuComponent {
+            val appSettingsManager = LocalAppSettingsManager.current
+            val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+            return EllipsisMenuComponent(
+                items,
+                LocalGlobalSheetState.current,
+                remember { mutableStateOf(appSettings.menuStyle)}
+            )
+        }
     }
 
     var style: MenuStyle = styleState.value
@@ -45,7 +51,8 @@ class EllipsisMenuComponent private constructor(
     @Composable
     override fun ListMenu() {
         Menu(
-            Modifier.fillMaxHeight(0.4f)
+            Modifier
+                .fillMaxHeight(0.4f)
                 .onPlaced { it.size.height.dp * 0.5f }
         ) {
             buttons().forEach {

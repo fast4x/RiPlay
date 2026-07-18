@@ -11,31 +11,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
-import it.fast4x.riplay.LocalAppSettings
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.HomePagetype
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.styling.Dimensions
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.HOME_PAGE_TYPE
-import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_CHARTS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_MONTHLY_PLAYLIST_IN_QUICK_PICKS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_MOODS_AND_GENRES
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_NEW_ALBUMS_ARTISTS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_NEW_ALBUMS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_PLAYLIST_MIGHT_LIKE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_RELATED_ALBUMS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SIMILAR_ARTISTS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_TIPS
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.utils.LazyListContainer
@@ -45,30 +32,19 @@ import kotlinx.coroutines.launch
 @UnstableApi
 @Composable
 fun  HomeSettings() {
-    val appSettingsVieModel = LocalAppSettings.current
-    val appSettings = appSettingsVieModel.activeSettings.collectAsState().value
+    val appSettingsVieModel = LocalAppSettingsManager.current
+    val appSettings = appSettingsVieModel.activeSettings.collectAsStateWithLifecycle().value
 
-    //var showListenerLevels by rememberPreference(showListenerLevelsKey.key, true)
-    //var showTips by rememberPreference(SHOW_TIPS.key, true)
     val showTips = appSettings.showTips
-    //var showRelatedAlbums by rememberPreference(SHOW_RELATED_ALBUMS.key, true)
     val showRelatedAlbums = appSettings.showRelatedAlbums
-    //var showSimilarArtists by rememberPreference(SHOW_SIMILAR_ARTISTS.key, true)
     val showSimilarArtists = appSettings.showSimilarArtists
-    //var showNewAlbumsArtists by rememberPreference(SHOW_NEW_ALBUMS_ARTISTS.key, true)
     val showNewAlbumsArtists = appSettings.showNewAlbumsArtists
-    //var showNewAlbums by rememberPreference(SHOW_NEW_ALBUMS.key, true)
     val showNewAlbums = appSettings.showNewAlbums
-    //var showPlaylistMightLike by rememberPreference(SHOW_PLAYLIST_MIGHT_LIKE.key, true)
     val showPlaylistMightLike = appSettings.showPipedPlaylists
-    //var showMoodsAndGenres by rememberPreference(SHOW_MOODS_AND_GENRES.key, true)
     val showMoodsAndGenres = appSettings.showMoodAndGenres
-    //var showMonthlyPlaylistInQuickPicks by rememberPreference(SHOW_MONTHLY_PLAYLIST_IN_QUICK_PICKS.key, true)
     val showMonthlyPlaylistInQuickPicks = appSettings.showMonthlyPlaylistInQuickPicks
-    //var showCharts by rememberPreference(SHOW_CHARTS.key, true)
     val showCharts = appSettings.showCharts
 
-    //var homePageType by rememberPreference(HOME_PAGE_TYPE.key, HomePagetype.Classic)
     val homePageType = appSettings.homePageType
 
     val coroutineScope = rememberCoroutineScope()

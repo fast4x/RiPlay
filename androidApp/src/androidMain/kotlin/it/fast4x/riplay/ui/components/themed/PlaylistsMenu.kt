@@ -18,8 +18,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.navigation.NavController
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.commonutils.MONTHLY_PREFIX
 import it.fast4x.riplay.commonutils.PINNED_PREFIX
@@ -27,17 +29,11 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.enums.NavRoutes
-import it.fast4x.riplay.enums.PlaylistSortBy
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.GlobalSheetState
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MENU_STYLE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SORT_BY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SORT_ORDER
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -66,14 +62,18 @@ class PlaylistsMenu private constructor(
             mediaItems: (PlaylistPreview) -> List<MediaItem>,
             onFailure: (Throwable, PlaylistPreview) -> Unit,
             finalAction: (PlaylistPreview) -> Unit
-        ) = PlaylistsMenu(
-            navController,
-            mediaItems,
-            onFailure,
-            finalAction,
-            LocalGlobalSheetState.current,
-            rememberPreference( MENU_STYLE.key, MenuStyle.List )
-        )
+        ): PlaylistsMenu {
+            val appSettingsManager = LocalAppSettingsManager.current
+            val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+            return PlaylistsMenu(
+                navController,
+                mediaItems,
+                onFailure,
+                finalAction,
+                LocalGlobalSheetState.current,
+                remember { mutableStateOf(appSettings.menuStyle) }
+            )
+        }
     }
 
     override val iconId: Int = R.drawable.add_in_playlist
@@ -158,8 +158,10 @@ class PlaylistsMenu private constructor(
 
     @Composable
     override fun MenuComponent() {
-        val sortBy by rememberPreference( PLAYLIST_SORT_BY.key, PlaylistSortBy.DateAdded )
-        val sortOrder by rememberPreference( PLAYLIST_SORT_ORDER.key, SortOrder.Descending )
+        val appSettingsManager = LocalAppSettingsManager.current
+        val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+        val sortBy = appSettings.playlistSortBy
+        val sortOrder = appSettings.playlistSortOrder
 
         val playlistPreviews by remember {
             Database.playlistPreviews( sortBy, sortOrder )
@@ -219,7 +221,8 @@ class PlaylistsMenu private constructor(
                     onClick = ::onShortClick,
                     icon = R.drawable.chevron_back,
                     color = colorPalette().textSecondary,
-                    modifier = Modifier.padding(all = 4.dp)
+                    modifier = Modifier
+                        .padding(all = 4.dp)
                         .size(20.dp)
                 )
 

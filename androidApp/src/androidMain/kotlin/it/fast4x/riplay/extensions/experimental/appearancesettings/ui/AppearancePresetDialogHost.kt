@@ -10,8 +10,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import it.fast4x.riplay.LocalAppearanceSettings
-import it.fast4x.riplay.extensions.audiotag.models.UiState
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.extensions.experimental.appearancesettings.models.PresetEvent
 import it.fast4x.riplay.extensions.experimental.appearancesettings.models.PresetUiState
 import it.fast4x.riplay.extensions.experimental.appearancesettings.viewmodels.AppearancePresetViewModel
@@ -33,7 +32,7 @@ fun AppearancePresetDialogHost(
     val presetList by viewModel.presetList.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    val appearanceSettings = LocalAppearanceSettings.current
+    val appearanceSettings = LocalAppearanceSettingsManager.current
 
     val uiStateWithPresets = remember(uiState, presetList) { PresetUiState.Success(presetList) }
 

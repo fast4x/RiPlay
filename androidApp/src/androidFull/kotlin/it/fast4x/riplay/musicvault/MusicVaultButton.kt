@@ -8,17 +8,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Song
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_VAULT_ENABLED
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.isExclusivelyLocal
 import timber.log.Timber
@@ -29,8 +28,11 @@ fun MusicVaultButton(
     context: Context = LocalContext.current,
     size: Dp = 20.dp
 ) {
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
-    var musicVaultEnabled by rememberPreference(MUSIC_VAULT_ENABLED.key, false)
+    //var musicVaultEnabled by rememberPreference(MUSIC_VAULT_ENABLED.key, false)
+    val musicVaultEnabled = appSettings.musicVaultEnabled
     if (!musicVaultEnabled) return
 
     val sizeModifier = Modifier.size(size)

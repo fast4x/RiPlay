@@ -48,132 +48,37 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
-import it.fast4x.riplay.enums.AndroidAutoPlaylistLimit
 import it.fast4x.riplay.enums.DurationInMilliseconds
 import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.enums.MinTimeForEvent
 import it.fast4x.riplay.enums.MaxSongs
-import it.fast4x.riplay.enums.MusicAnimationType
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PauseBetweenSongs
 import it.fast4x.riplay.enums.PipModule
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.styling.DefaultDarkColorPalette
-import it.fast4x.riplay.ui.styling.DefaultLightColorPalette
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.RestartActivity
 import it.fast4x.riplay.utils.RestartPlayerService
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.AUTO_LOAD_SONGS_IN_QUEUE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CLOSE_WITH_BACK_BUTTON
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CLOSE_BACKGROUND_PLAYER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_0
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_1
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_2
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_3
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_4
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_TEXT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_ACCENT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_ICON_BUTTON_PLAYER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_TEXT_DISABLED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_TEXT_SECONDARY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_0
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_1
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_2
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_3
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_4
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_TEXT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_ACCENT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_ICON_BUTTON_PLAYER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_TEXT_DISABLED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_TEXT_SECONDARY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_CLOSING_PLAYER_SWIPING_DOWN
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISCOVER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_PICTURE_IN_PICTURE_AUTO
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_PICTURE_IN_PICTURE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXCLUDE_SONGS_WITH_DURATION_LIMIT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXO_PLAYER_MIN_TIME_FOR_EVENT
 import it.fast4x.riplay.utils.isAtLeastAndroid12
 import it.fast4x.riplay.utils.isAtLeastAndroid6
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_PAUSE_ON_VOLUME_ZERO_ENABLED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.JUMP_PREVIOUS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.KEEP_PLAYER_MINIMIZED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.LANGUAGE_APP
 import it.fast4x.riplay.utils.languageDestinationName
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.LOUDNESS_BASE_GAIN
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MAX_SONGS_IN_QUEUE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MINIMUM_SILENCE_DURATION
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.NAVIGATION_BAR_POSITION
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.NOW_PLAYING_INDICATOR
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PAUSE_BETWEEN_SONGS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PAUSE_LISTEN_HISTORY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PERSISTENT_QUEUE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PIP_MODULE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYBACK_FADE_AUDIO_DURATION
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_INDICATOR
-import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.RESUME_PLAYBACK_ON_START
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHAKE_EVENT_ENABLED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SKIP_MEDIA_ON_ERROR
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SKIP_SILENCE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.VOLUME_NORMALIZATION
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.DnsOverHttpsType
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.enums.PresetsReverb
 import it.fast4x.riplay.enums.ValidationType
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.utils.typography
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.AUDIO_REVERB_PRESET
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.BASSBOOST_ENABLED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.BASSBOOST_LEVEL
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_DNS_OVER_HTTPS_SERVER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DNS_OVER_HTTPS_TYPE
-import it.fast4x.riplay.utils.getSystemlanguage
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.HANDLE_AUDIO_FOCUS_ENABLED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_CONNECTION_METERED_ENABLED
-import it.fast4x.riplay.utils.isIgnoringBatteryOptimizations
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_KEEP_SCREEN_ON_ENABLED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_PROXY_ENABLED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PROXY_HOSTNAME
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PROXY_MODE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PROXY_PORT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.VOLUME_BOOST_LEVEL
-import java.net.Proxy
 import androidx.core.net.toUri
 import androidx.core.text.isDigitsOnly
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import it.fast4x.riplay.BuildConfig
-import it.fast4x.riplay.LocalAppSettings
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.enums.CastType
 import it.fast4x.riplay.enums.CheckUpdateState
-import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.enums.EqualizerType
-import it.fast4x.riplay.extensions.preferences.PreferenceKey
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ANDROID_AUTO_PLAYLIST_LIMIT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CAST_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CHECK_UPDATE_STATE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CLOSE_PLAYER_SERVICE_AFTER_MINUTES
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_AUDIO_DRC
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_VOICE_INPUT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EQUALIZER_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXCLUDE_SONG_IF_IS_VIDEO
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.FILTER_CONTENT_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PAUSE_SEARCH_HISTORY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.RESUME_OR_PAUSE_PLAYBACK_WHEN_CALL
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_BT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_ALL_SONGS_AA
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FAVORITES_SONGS_AA
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_GRID_AA
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_IN_LIBRARY_AA
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_MONTHLY_PLAYLISTS_AA
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_ON_DEVICE_AA
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_PINNED_AA
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_PODCAST_AA
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SHUFFLE_SONGS_AA
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_TOP_SONGS_AA
 import it.fast4x.riplay.extensions.updater.UpdateDialog
 import it.fast4x.riplay.services.playback.PlayerMediaBrowserService
 import it.fast4x.riplay.services.helpers.AudioDRCHelper
@@ -183,6 +88,7 @@ import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.utils.CheckForNewVersion
 import it.fast4x.riplay.utils.LazyListContainer
+import it.fast4x.riplay.utils.isIgnoringBatteryOptimizations
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
@@ -193,57 +99,26 @@ import kotlinx.coroutines.launch
 fun GeneralSettings(
     navController: NavController
 ) {
-    val appSettingsVieModel = LocalAppSettings.current
-    val appSettings = appSettingsVieModel.activeSettings.collectAsState().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val binder = LocalPlayerServiceBinder.current
 
     val systemLocale = LocaleListCompat.getDefault().get(0).toString()
-    //var languageApp  by rememberPreference(LANGUAGE_APP.key, getSystemlanguage())
     val languageApp = appSettings.languageApp
 
     var restartService by rememberSaveable { mutableStateOf(false) }
     var restartActivity by rememberSaveable { mutableStateOf(false) }
 
-//    var minTimeForEvent by rememberPreference(
-//        EXO_PLAYER_MIN_TIME_FOR_EVENT.key,
-//        MinTimeForEvent.`20s`
-//    )
     val minTimeForEvent = appSettings.minTimeForEvent
-    //var persistentQueue by rememberPreference(PERSISTENT_QUEUE.key, true)
     val persistentQueue = appSettings.persistentQueue
-    //var resumePlaybackOnStart by rememberPreference(RESUME_PLAYBACK_ON_START.key, false)
     val resumePlaybackOnStart = appSettings.resumePlaybackOnStart
-    //var closebackgroundPlayer by rememberPreference(CLOSE_BACKGROUND_PLAYER.key, false)
-//    var closeBackgroundPlayerAfterMinutes by rememberPreference(
-//        CLOSE_PLAYER_SERVICE_AFTER_MINUTES.key,
-//        DurationInMinutes.Disabled
-//    )
     val closeBackgroundPlayerAfterMinutes = appSettings.closeBackgroundPlayerAfterMinutes
-
-//    var closePlayerWhenPausedAfterMinutes by rememberPreference(
-//        closePlayerServiceWhenPausedAfterMinutesKey.key,
-//        DurationInMinutes.Disabled
-//    )
-
-    //var closeWithBackButton by rememberPreference(CLOSE_WITH_BACK_BUTTON.key, true)
     val closeWithBackButton = appSettings.closeWithBackButton
-//    var resumeOrPausePlaybackWhenDeviceBt by rememberPreference(
-//        RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_BT.key,
-//        false
-//    )
     val resumeOrPausePlaybackWhenDeviceBt = appSettings.resumeOrPausePlaybackWhenDeviceBt
-//    var resumeOrPausePlaybackWhenDeviceWired by rememberPreference(
-//        PreferenceKey.RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_WIRED.key,
-//        false
-//    )
     val resumeOrPausePlaybackWhenDeviceWired = appSettings.resumeOrPausePlaybackWhenDeviceWired
-
-//    var resumeOrPausePlaybackWhenCall by rememberPreference(
-//        RESUME_OR_PAUSE_PLAYBACK_WHEN_CALL.key,
-//        false
-//    )
-    val resumeOrPausePlaybackWhenCall = appSettings.resumeOrPausePlaybackWhenCall
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -253,101 +128,67 @@ fun GeneralSettings(
         coroutineScope.launch {
             if (isGranted) {
                 val new = appSettings.copy(resumeOrPausePlaybackWhenCall = true)
-                appSettingsVieModel.updateSettings(new)
+                appSettingsManager.updateSettings(new)
                 restartService = true
             } else {
                 val new = appSettings.copy(resumeOrPausePlaybackWhenCall = false)
-                appSettingsVieModel.updateSettings(new)
+                appSettingsManager.updateSettings(new)
             }
         }
     }
 
-    var skipSilence by rememberPreference(SKIP_SILENCE.key, false)
-    var skipMediaOnError by rememberPreference(SKIP_MEDIA_ON_ERROR.key, false)
-    var volumeNormalization by rememberPreference(VOLUME_NORMALIZATION.key, false)
-    var isConnectionMeteredEnabled by rememberPreference(IS_CONNECTION_METERED_ENABLED.key, true)
+    val skipSilence = appSettings.skipSilenceEnabled
+    val skipMediaOnError = appSettings.skipMediaOnError
+    val volumeNormalization = appSettings.volumeNormalizationEnabled
 
-    var useDnsOverHttpsType by rememberPreference(DNS_OVER_HTTPS_TYPE.key, DnsOverHttpsType.None)
+    val useDnsOverHttpsType = appSettings.dnsOverHttpsType
 
+    val keepPlayerMinimized = appSettings.keepPlayerMinimized
 
-    var keepPlayerMinimized by rememberPreference(KEEP_PLAYER_MINIMIZED.key,   false)
+    val disableClosingPlayerSwipingDown = appSettings.disableClosingPlayerSwipingDown
 
-    var disableClosingPlayerSwipingDown by rememberPreference(DISABLE_CLOSING_PLAYER_SWIPING_DOWN.key, false)
-
-    val navigationBarPosition by rememberPreference(NAVIGATION_BAR_POSITION.key, NavigationBarPosition.Bottom)
-    //var navigationBarType by rememberPreference(navigationBarTypeKey.key, NavigationBarType.IconAndText)
-    var pauseBetweenSongs  by rememberPreference(PAUSE_BETWEEN_SONGS.key, PauseBetweenSongs.`0`)
-    var maxSongsInQueue  by rememberPreference(MAX_SONGS_IN_QUEUE.key, MaxSongs.`500`)
-    var filterContentType by rememberPreference(FILTER_CONTENT_TYPE.key, ContentType.All)
+    val navigationBarPosition = appSettings.navigationBarPosition
+    val pauseBetweenSongs = appSettings.pauseBetweenSongs
+    val maxSongsInQueue = appSettings.maxSongsInQueue
+    val filterContentType = appSettings.filterContentType
 
     val search = Search.init()
 
-    var shakeEventEnabled by rememberPreference(SHAKE_EVENT_ENABLED.key, false)
-    //var useVolumeKeysToChangeSong by rememberPreference(useVolumeKeysToChangeSongKey.key, false)
+    val shakeEventEnabled = appSettings.shakeEventEnabled
+    val playbackFadeAudioDuration = appSettings.playbackFadeAudioDuration
+    val excludeSongWithDurationLimit = appSettings.excludeSongWithDurationLimit
+    val excludeSongsIfAreVideos = appSettings.excludeIfIsVideo
+    val playlistindicator = appearanceSettings.playlistIndicator
+    val nowPlayingIndicator = appSettings.nowPlayingIndicator
+    val discoverIsEnabled = appSettings.discoverIsEnabled
+    val isPauseOnVolumeZeroEnabled = appSettings.isPauseOnVolumeZeroEnabled
 
-    var customThemeLight_Background0 by rememberPreference(CUSTOM_THEME_LIGHT_BACKGROUND_0.key, DefaultLightColorPalette.background0.hashCode())
-    var customThemeLight_Background1 by rememberPreference(CUSTOM_THEME_LIGHT_BACKGROUND_1.key, DefaultLightColorPalette.background1.hashCode())
-    var customThemeLight_Background2 by rememberPreference(CUSTOM_THEME_LIGHT_BACKGROUND_2.key, DefaultLightColorPalette.background2.hashCode())
-    var customThemeLight_Background3 by rememberPreference(CUSTOM_THEME_LIGHT_BACKGROUND_3.key, DefaultLightColorPalette.background3.hashCode())
-    var customThemeLight_Background4 by rememberPreference(CUSTOM_THEME_LIGHT_BACKGROUND_4.key, DefaultLightColorPalette.background4.hashCode())
-    var customThemeLight_Text by rememberPreference(CUSTOM_THEME_LIGHT_TEXT.key, DefaultLightColorPalette.text.hashCode())
-    var customThemeLight_TextSecondary by rememberPreference(CUSTOM_THEME_LIGHT_TEXT_SECONDARY.key, DefaultLightColorPalette.textSecondary.hashCode())
-    var customThemeLight_TextDisabled by rememberPreference(CUSTOM_THEME_LIGHT_TEXT_DISABLED.key, DefaultLightColorPalette.textDisabled.hashCode())
-    var customThemeLight_IconButtonPlayer by rememberPreference(CUSTOM_THEME_LIGHT_ICON_BUTTON_PLAYER.key, DefaultLightColorPalette.iconButtonPlayer.hashCode())
-    var customThemeLight_Accent by rememberPreference(CUSTOM_THEME_LIGHT_ACCENT.key, DefaultLightColorPalette.accent.hashCode())
+    val equalizerType = appSettings.equalizerType
 
-    var customThemeDark_Background0 by rememberPreference(CUSTOM_THEME_DARK_BACKGROUND_0.key, DefaultDarkColorPalette.background0.hashCode())
-    var customThemeDark_Background1 by rememberPreference(CUSTOM_THEME_DARK_BACKGROUND_1.key, DefaultDarkColorPalette.background1.hashCode())
-    var customThemeDark_Background2 by rememberPreference(CUSTOM_THEME_DARK_BACKGROUND_2.key, DefaultDarkColorPalette.background2.hashCode())
-    var customThemeDark_Background3 by rememberPreference(CUSTOM_THEME_DARK_BACKGROUND_3.key, DefaultDarkColorPalette.background3.hashCode())
-    var customThemeDark_Background4 by rememberPreference(CUSTOM_THEME_DARK_BACKGROUND_4.key, DefaultDarkColorPalette.background4.hashCode())
-    var customThemeDark_Text by rememberPreference(CUSTOM_THEME_DARK_TEXT.key, DefaultDarkColorPalette.text.hashCode())
-    var customThemeDark_TextSecondary by rememberPreference(CUSTOM_THEME_DARK_TEXT_SECONDARY.key, DefaultDarkColorPalette.textSecondary.hashCode())
-    var customThemeDark_TextDisabled by rememberPreference(CUSTOM_THEME_DARK_TEXT_DISABLED.key, DefaultDarkColorPalette.textDisabled.hashCode())
-    var customThemeDark_IconButtonPlayer by rememberPreference(CUSTOM_THEME_DARK_ICON_BUTTON_PLAYER.key, DefaultDarkColorPalette.iconButtonPlayer.hashCode())
-    var customThemeDark_Accent by rememberPreference(CUSTOM_THEME_DARK_ACCENT.key, DefaultDarkColorPalette.accent.hashCode())
+    val minimumSilenceDuration = appSettings.minimumSilenceDuration
 
-    var resetCustomLightThemeDialog by rememberSaveable { mutableStateOf(false) }
-    var resetCustomDarkThemeDialog by rememberSaveable { mutableStateOf(false) }
-    var playbackFadeAudioDuration by rememberPreference(PLAYBACK_FADE_AUDIO_DURATION.key, DurationInMilliseconds.Disabled)
-    var excludeSongWithDurationLimit by rememberPreference(EXCLUDE_SONGS_WITH_DURATION_LIMIT.key, DurationInMinutes.Disabled)
-    var excludeSongsIfAreVideos by rememberPreference(EXCLUDE_SONG_IF_IS_VIDEO.key, false)
-    var playlistindicator by rememberPreference(PLAYLIST_INDICATOR.key, false)
-    var nowPlayingIndicator by rememberPreference(NOW_PLAYING_INDICATOR.key, MusicAnimationType.Bubbles)
-    var discoverIsEnabled by rememberPreference(DISCOVER.key, false)
-    var isPauseOnVolumeZeroEnabled by rememberPreference(IS_PAUSE_ON_VOLUME_ZERO_ENABLED.key, false)
+    val pauseListenHistory = appSettings.isPauseListenHistoryEnabled
 
 
-//    val launchEqualizer by rememberEqualizerLauncher(audioSessionId = {
-//        //binder?.player?.audioSessionId
-//        0
-//    })
-    var equalizerType by rememberPreference(EQUALIZER_TYPE.key, EqualizerType.Internal)
+    val loudnessBaseGain = appSettings.loudnessBaseGain
+    val autoLoadSongsInQueue = appSettings.autoLoadSongsInQueue
 
-    var minimumSilenceDuration by rememberPreference(MINIMUM_SILENCE_DURATION.key, 2_000_000L)
+    val bassboostEnabled = appSettings.bassBoostEnabled
+    val bassboostLevel = appSettings.bassBoostLevel
+    val volumeBoostLevel = appSettings.volumeBoostLevel
+    val audioReverb = appSettings.audioReverbPreset
+    val audioFocusEnabled = appSettings.handleAudioFocusEnabled
 
-    var pauseListenHistory by rememberPreference(PAUSE_LISTEN_HISTORY.key, false)
+    val enablePictureInPicture = appSettings.enablePictureInPicture
+    val enablePictureInPictureAuto = appSettings.enablePictureInPictureAuto
+    val pipModule = appSettings.pipModule
+    val jumpPrevious = appearanceSettings.jumpPrevious
 
-
-    var loudnessBaseGain by rememberPreference(LOUDNESS_BASE_GAIN.key, 5.00f)
-    var autoLoadSongsInQueue by rememberPreference(AUTO_LOAD_SONGS_IN_QUEUE.key, true)
-
-    var bassboostEnabled by rememberPreference(BASSBOOST_ENABLED.key,false)
-    var bassboostLevel by rememberPreference(BASSBOOST_LEVEL.key, 0.5f)
-    var volumeBoostLevel by rememberPreference(VOLUME_BOOST_LEVEL.key, 0f)
-    var audioReverb by rememberPreference(AUDIO_REVERB_PRESET.key,   PresetsReverb.NONE)
-    var audioFocusEnabled by rememberPreference(HANDLE_AUDIO_FOCUS_ENABLED.key, true)
-
-    var enablePictureInPicture by rememberPreference(ENABLE_PICTURE_IN_PICTURE.key, false)
-    var enablePictureInPictureAuto by rememberPreference(ENABLE_PICTURE_IN_PICTURE_AUTO.key, false)
-    var pipModule by rememberPreference(PIP_MODULE.key, PipModule.Cover)
-    var jumpPrevious by rememberPreference(JUMP_PREVIOUS.key,"3")
-
-    var isProxyEnabled by rememberPreference(IS_PROXY_ENABLED.key, false)
-    var proxyHost by rememberPreference(PROXY_HOSTNAME.key, "")
-    var proxyPort by rememberPreference(PROXY_PORT.key, 1080)
-    var proxyMode by rememberPreference(PROXY_MODE.key, Proxy.Type.HTTP)
-    var customDnsOverHttpsServer by rememberPreference(CUSTOM_DNS_OVER_HTTPS_SERVER.key, "")
+    val isProxyEnabled = appSettings.proxyEnabled
+    val proxyHost = appSettings.proxyHostname
+    val proxyPort = appSettings.proxyPort
+    val proxyMode = appSettings.proxyMode
+    val customDnsOverHttpsServer = appSettings.customDnsOverHttpsServer
     val context = LocalContext.current
 
     var isAndroidAutoEnabled by remember {
@@ -370,34 +211,24 @@ fun GeneralSettings(
         )
     }
 
-    var showShuffleSongsAA by rememberPreference(SHOW_SHUFFLE_SONGS_AA.key, true)
-    var showMonthlyPlaylistsAA by rememberPreference(SHOW_MONTHLY_PLAYLISTS_AA.key, true)
-    var showInLibraryAA by rememberPreference(SHOW_IN_LIBRARY_AA.key, true)
-    var showOnDeviceAA by rememberPreference(SHOW_ON_DEVICE_AA.key, true)
-    var showFavoritesSongsAA by rememberPreference(SHOW_FAVORITES_SONGS_AA.key, true)
-    var showTopSongsAA by rememberPreference(SHOW_TOP_SONGS_AA.key, true)
-    var showAllSongsAA by rememberPreference(SHOW_ALL_SONGS_AA.key, true)
-    var showPodcastAA by rememberPreference(SHOW_PODCAST_AA.key, true)
-    var showPinnedAA by rememberPreference(SHOW_PINNED_AA.key, true)
-    var showGridAA by rememberPreference(SHOW_GRID_AA.key, true)
-    var androidAutoPlaylistLimit by rememberPreference(
-        ANDROID_AUTO_PLAYLIST_LIMIT.key,
-        AndroidAutoPlaylistLimit.Unlimited
-    )
+    val showShuffleSongsAA = appSettings.showShuffleSongsAA
+    val showMonthlyPlaylistsAA = appSettings.showMonthlyPlaylistAA
+    val showInLibraryAA = appSettings.showInLibraryAA
+    val showOnDeviceAA = appSettings.showOnDeviceAA
+    val showTopSongsAA = appSettings.showTopSongsAA
+    val showAllSongsAA = appSettings.showAllSongsAA
+    val showPodcastAA = appSettings.showPodcastAA
+    val showPinnedAA = appSettings.showPinnedAA
+    val showGridAA = appSettings.showGridAA
+    val androidAutoPlaylistLimit = appSettings.androidAutoPlaylistLimit
 
-    var isEnabledVoiceInput by rememberPreference(
-        ENABLE_VOICE_INPUT.key,
-        true
-    )
+    val isEnabledVoiceInput = appSettings.enableVoiceInput
 
-    //var checkVolumeLevel by rememberPreference(checkVolumeLevelKey.key, true)
-    var parentalControlEnabled by rememberPreference(PARENTAL_CONTROL_ENABLED.key, false)
+    val parentalControlEnabled = appSettings.parentalControlEnabled
 
-    //var castToRiTuneDeviceEnabled by rememberPreference(castToRiTuneDeviceEnabledKey.key, false )
+    val castType = appSettings.castType
 
-    var castType by rememberPreference(CAST_TYPE.key, CastType.RITUNECAST)
-
-    var disableAudioDRC by rememberPreference(DISABLE_AUDIO_DRC.key, false)
+    val disableAudioDRC = appSettings.disableAudioDrc
 
 
     val eventsCount by remember {
@@ -412,18 +243,17 @@ fun GeneralSettings(
         )
     }
 
-    var pauseSearchHistory by rememberPreference(PAUSE_SEARCH_HISTORY.key, false)
+    val pauseSearchHistory = appSettings.pauseSearchHistory
 
     val queriesCount by remember {
         Database.queriesCount().distinctUntilChanged()
     }.collectAsState(initial = 0)
 
-    //var checkUpdateState by rememberPreference(CHECK_UPDATE_STATE.key, CheckUpdateState.Enabled)
     val checkUpdateState = appSettings.checkUpdateState
 
     val internalEqualizer = LocalPlayerServiceBinder.current?.equalizer
 
-    var enabledQrCodeActions by rememberPreference(PreferenceKey.QR_CODE_TO_ACTIONS.key, true)
+    val enabledQrCodeActions = appSettings.qrCodeToActions
 
     LaunchedEffect(Unit) {
         AudioDRCHelper.init(context)
@@ -553,7 +383,7 @@ fun GeneralSettings(
                             onValueSelected = {
                                 coroutineScope.launch {
                                     val new = appSettings.copy(checkUpdateState = it)
-                                    appSettingsVieModel.updateSettings(new)
+                                    appSettingsManager.updateSettings(new)
                                 }
                             },
                             valueText = {
@@ -609,7 +439,7 @@ fun GeneralSettings(
                             onValueSelected = {
                                 coroutineScope.launch {
                                     val new = appSettings.copy(languageApp = it)
-                                    appSettingsVieModel.updateSettings(new)
+                                    appSettingsManager.updateSettings(new)
                                 }
                             },
                             valueText = {
@@ -633,7 +463,12 @@ fun GeneralSettings(
                             title = stringResource(R.string.enable_create_and_read_qrcode),
                             text = stringResource(R.string.info_create_and_read_qr_code_for_artist_album_playlist_song),
                             isChecked = enabledQrCodeActions,
-                            onCheckedChange = { enabledQrCodeActions = it }
+                            onCheckedChange = {
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(qrCodeToActions = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
+                            }
                         )
                     }
                 }
@@ -669,7 +504,10 @@ fun GeneralSettings(
                             title = stringResource(R.string.use_dns_over_https_title),
                             selectedValue = useDnsOverHttpsType,
                             onValueSelected = {
-                                useDnsOverHttpsType = it
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(dnsOverHttpsType = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
                                 restartActivity = true
                             },
                             valueText = { it.textName }
@@ -682,7 +520,10 @@ fun GeneralSettings(
                                     text = customDnsOverHttpsServer,
                                     currentText = customDnsOverHttpsServer,
                                     onTextSave = {
-                                        customDnsOverHttpsServer = it
+                                        coroutineScope.launch {
+                                            val new = appSettings.copy(customDnsOverHttpsServer = it)
+                                            appSettingsManager.updateSettings(new)
+                                        }
                                         restartActivity = true
                                     },
                                     validationType = ValidationType.Url
@@ -712,7 +553,12 @@ fun GeneralSettings(
                             title = stringResource(R.string.enable_proxy),
                             text = "",
                             isChecked = isProxyEnabled,
-                            onCheckedChange = { isProxyEnabled = it }
+                            onCheckedChange = {
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(proxyEnabled = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
+                            }
                         )
                         SettingsDescription(text = stringResource(R.string.restarting_riplay_is_required))
 
@@ -721,21 +567,36 @@ fun GeneralSettings(
                                 EnumValueSelectorSettingsEntry(
                                     title = stringResource(R.string.proxy_mode),
                                     selectedValue = proxyMode,
-                                    onValueSelected = { proxyMode = it },
+                                    onValueSelected = {
+                                        coroutineScope.launch {
+                                            val new = appSettings.copy(proxyMode = it)
+                                            appSettingsManager.updateSettings(new)
+                                        }
+                                    },
                                     valueText = { it.name }
                                 )
                                 TextDialogSettingEntry(
                                     title = stringResource(R.string.proxy_host),
                                     text = proxyHost,
                                     currentText = proxyHost,
-                                    onTextSave = { proxyHost = it },
+                                    onTextSave = {
+                                        coroutineScope.launch {
+                                            val new = appSettings.copy(proxyHostname = it)
+                                            appSettingsManager.updateSettings(new)
+                                        }
+                                    },
                                     validationType = ValidationType.Ip
                                 )
                                 TextDialogSettingEntry(
                                     title = stringResource(R.string.proxy_port),
                                     text = proxyPort.toString(),
                                     currentText = proxyPort.toString(),
-                                    onTextSave = { proxyPort = it.toIntOrNull() ?: 1080 })
+                                    onTextSave = {
+                                        coroutineScope.launch {
+                                            val new = appSettings.copy(proxyPort = it.toIntOrNull() ?: 1080)
+                                            appSettingsManager.updateSettings(new)
+                                        }
+                                    })
                             }
                         }
                     }
@@ -751,7 +612,7 @@ fun GeneralSettings(
 
                 settingsItem {
                     val context = LocalContext.current
-                    var isKeepScreenOnEnabled by rememberPreference(IS_KEEP_SCREEN_ON_ENABLED.key, false)
+                    val isKeepScreenOnEnabled = appSettings.keepScreenEnabled
                     var isIgnoringBatteryOptimizations by remember {
                         mutableStateOf(context.isIgnoringBatteryOptimizations())
                     }
@@ -769,7 +630,12 @@ fun GeneralSettings(
                             title = stringResource(R.string.keep_screen_on),
                             text = stringResource(R.string.prevents_screen_timeout),
                             isChecked = isKeepScreenOnEnabled,
-                            onCheckedChange = { isKeepScreenOnEnabled = it }
+                            onCheckedChange = {
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(keepScreenEnabled = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
+                            }
                         )
                     }
                     if (search.input.isBlank() || stringResource(R.string.ignore_battery_optimizations).contains(
@@ -831,7 +697,10 @@ fun GeneralSettings(
                             text = stringResource(R.string.require_mic_permission),
                             isChecked = isEnabledVoiceInput,
                             onCheckedChange = {
-                                isEnabledVoiceInput = it
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(enableVoiceInput = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
                             }
                         )
                     }
@@ -860,7 +729,7 @@ fun GeneralSettings(
                                     coroutineScope.launch {
                                         val new =
                                             appSettings.copy(closeBackgroundPlayerAfterMinutes = it)
-                                        appSettingsVieModel.updateSettings(new)
+                                        appSettingsManager.updateSettings(new)
                                     }
                                 },
                                 valueText = {
@@ -916,7 +785,10 @@ fun GeneralSettings(
                                 value = jumpPrevious,
                                 onValueChange = {
                                     if (it.isDigitsOnly())
-                                        jumpPrevious = it
+                                        coroutineScope.launch {
+                                            val new = appearanceSettings.copy(jumpPrevious = it)
+                                            appearanceSettingsManager.updatePreset(new)
+                                        }
                                 },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 singleLine = true,
@@ -939,7 +811,7 @@ fun GeneralSettings(
                             onValueSelected = {
                                 coroutineScope.launch {
                                     val new = appSettings.copy(minTimeForEvent = it)
-                                    appSettingsVieModel.updateSettings(new)
+                                    appSettingsManager.updateSettings(new)
                                 }
                             },
                             valueText = {
@@ -965,7 +837,10 @@ fun GeneralSettings(
                             title = stringResource(R.string.exclude_songs_with_duration_limit),
                             selectedValue = excludeSongWithDurationLimit,
                             onValueSelected = {
-                                excludeSongWithDurationLimit = if (it == DurationInMinutes.`0`) DurationInMinutes.`1` else it
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(excludeSongWithDurationLimit = if (it == DurationInMinutes.`0`) DurationInMinutes.`1` else it)
+                                    appSettingsManager.updateSettings(new)
+                                }
                             },
                             valueText = {
                                 when (it) {
@@ -1000,7 +875,10 @@ fun GeneralSettings(
                             text = "",
                             isChecked = excludeSongsIfAreVideos,
                             onCheckedChange = {
-                                excludeSongsIfAreVideos = it
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(excludeIfIsVideo = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
                                 restartService = true
                             }
                         )
@@ -1015,7 +893,12 @@ fun GeneralSettings(
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.pause_between_songs),
                             selectedValue = pauseBetweenSongs,
-                            onValueSelected = { pauseBetweenSongs = it },
+                            onValueSelected = {
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(pauseBetweenSongs = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
+                            },
                             valueText = {
                                 when (it) {
                                     PauseBetweenSongs.`0` -> "0s"
@@ -1042,7 +925,10 @@ fun GeneralSettings(
                             text = stringResource(R.string.info_pauses_player_when_volume_zero),
                             isChecked = isPauseOnVolumeZeroEnabled,
                             onCheckedChange = {
-                                isPauseOnVolumeZeroEnabled = it
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(isPauseOnVolumeZeroEnabled = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
                             }
                         )
 
@@ -1054,7 +940,12 @@ fun GeneralSettings(
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.effect_fade_audio),
                             selectedValue = playbackFadeAudioDuration,
-                            onValueSelected = { playbackFadeAudioDuration = it },
+                            onValueSelected = {
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(playbackFadeAudioDuration = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
+                            },
                             valueText = {
                                 when (it) {
                                     DurationInMilliseconds.Disabled -> stringResource(R.string.vt_disabled)
@@ -1078,7 +969,10 @@ fun GeneralSettings(
                             text = stringResource(R.string.when_click_on_a_song_player_start_minimized),
                             isChecked = keepPlayerMinimized,
                             onCheckedChange = {
-                                keepPlayerMinimized = it
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(keepPlayerMinimized = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
                             }
                         )
 
@@ -1093,7 +987,10 @@ fun GeneralSettings(
                             text = stringResource(R.string.avoid_closing_the_player_cleaning_queue_by_swiping_down),
                             isChecked = disableClosingPlayerSwipingDown,
                             onCheckedChange = {
-                                disableClosingPlayerSwipingDown = it
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(disableClosingPlayerSwipingDown = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
                             }
                         )
 
@@ -1107,7 +1004,10 @@ fun GeneralSettings(
                             text = stringResource(R.string.player_auto_load_songs_in_queue_description),
                             isChecked = autoLoadSongsInQueue,
                             onCheckedChange = {
-                                autoLoadSongsInQueue = it
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(autoLoadSongsInQueue = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
                                 restartService = true
                             }
                         )
@@ -1122,7 +1022,12 @@ fun GeneralSettings(
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.max_songs_in_queue),
                             selectedValue = maxSongsInQueue,
-                            onValueSelected = { maxSongsInQueue = it },
+                            onValueSelected = {
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(maxSongsInQueue = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
+                            },
                             valueText = {
                                 when (it) {
                                     MaxSongs.Unlimited -> stringResource(R.string.unlimited)
@@ -1146,7 +1051,12 @@ fun GeneralSettings(
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.filter_content_type),
                             selectedValue = filterContentType,
-                            onValueSelected = { filterContentType = it },
+                            onValueSelected = {
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(filterContentType = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
+                            },
                             valueText = {
                                 it.textName
                             }
@@ -1161,7 +1071,12 @@ fun GeneralSettings(
                             title = stringResource(R.string.discover),
                             text = stringResource(R.string.discoverinfo),
                             isChecked = discoverIsEnabled,
-                            onCheckedChange = { discoverIsEnabled = it }
+                            onCheckedChange = {
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(discoverIsEnabled = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
+                            }
                         )
 
                     if (search.input.isBlank() || stringResource(R.string.playlistindicator).contains(
@@ -1174,7 +1089,10 @@ fun GeneralSettings(
                             text = stringResource(R.string.playlistindicatorinfo),
                             isChecked = playlistindicator,
                             onCheckedChange = {
-                                playlistindicator = it
+                                coroutineScope.launch {
+                                    val new = appearanceSettings.copy(playlistIndicator = it)
+                                    appearanceSettingsManager.updatePreset(new)
+                                }
                             }
                         )
 
@@ -1186,7 +1104,12 @@ fun GeneralSettings(
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.now_playing_indicator),
                             selectedValue = nowPlayingIndicator,
-                            onValueSelected = { nowPlayingIndicator = it },
+                            onValueSelected = {
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(nowPlayingIndicator = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
+                            },
                             valueText = {
                                 it.textName
                             }
@@ -1204,7 +1127,7 @@ fun GeneralSettings(
                             onCheckedChange = {
                                 coroutineScope.launch {
                                     val new = appSettings.copy(persistentQueue = it)
-                                    appSettingsVieModel.updateSettings(new)
+                                    appSettingsManager.updateSettings(new)
                                 }
 
                                 if(it) binder?.loadQueue() // try to load last known queue now
@@ -1224,7 +1147,7 @@ fun GeneralSettings(
                                     onCheckedChange = {
                                         coroutineScope.launch {
                                             val new = appSettings.copy(resumePlaybackOnStart = it)
-                                            appSettingsVieModel.updateSettings(new)
+                                            appSettingsManager.updateSettings(new)
                                         }
 
                                         //restartService = true
@@ -1250,7 +1173,7 @@ fun GeneralSettings(
                             onCheckedChange = {
                                 coroutineScope.launch {
                                     val new = appSettings.copy(closeWithBackButton = it)
-                                    appSettingsVieModel.updateSettings(new)
+                                    appSettingsManager.updateSettings(new)
                                 }
 
                                 restartActivity = true
@@ -1268,7 +1191,13 @@ fun GeneralSettings(
                             text = stringResource(R.string.skip_media_on_error_description),
                             isChecked = skipMediaOnError,
                             onCheckedChange = {
-                                skipMediaOnError = it
+                                coroutineScope.launch {
+                                    appSettingsManager.updateSettings(
+                                        appSettings.copy(
+                                            skipMediaOnError = it
+                                        )
+                                    )
+                                }
                                 restartService = true
                             }
                         )
@@ -1287,7 +1216,13 @@ fun GeneralSettings(
                             text = stringResource(R.string.skip_silent_parts_during_playback),
                             isChecked = skipSilence,
                             onCheckedChange = {
-                                skipSilence = it
+                                coroutineScope.launch {
+                                    appSettingsManager.updateSettings(
+                                        appSettings.copy(
+                                            skipSilenceEnabled = it
+                                        )
+                                    )
+                                }
                             }
                         )
 
@@ -1309,7 +1244,14 @@ fun GeneralSettings(
                                     state = newValue,
                                     onSlide = { newValue = it },
                                     onSlideComplete = {
-                                        minimumSilenceDuration = newValue.toLong() * 1000L
+                                        coroutineScope.launch {
+                                            appSettingsManager.updateSettings(
+                                                appSettings.copy(
+                                                    minimumSilenceDuration = newValue.toLong() * 1000L
+                                                )
+                                            )
+                                        }
+
                                         restartService = true
                                     },
                                     toDisplay = { stringResource(R.string.format_ms, it.toLong()) },
@@ -1333,7 +1275,15 @@ fun GeneralSettings(
                             title = stringResource(R.string.parental_control),
                             text = stringResource(R.string.info_prevent_play_songs_with_age_limitation),
                             isChecked = parentalControlEnabled,
-                            onCheckedChange = { parentalControlEnabled = it }
+                            onCheckedChange = {
+                                coroutineScope.launch {
+                                    appSettingsManager.updateSettings(
+                                        appSettings.copy(
+                                            parentalControlEnabled = it
+                                        )
+                                    )
+                                }
+                            }
                         )
 
                     if (search.input.isBlank() || stringResource(R.string.event_shake).contains(
@@ -1346,7 +1296,13 @@ fun GeneralSettings(
                             text = stringResource(R.string.shake_to_change_song),
                             isChecked = shakeEventEnabled,
                             onCheckedChange = {
-                                shakeEventEnabled = it
+                                coroutineScope.launch {
+                                    appSettingsManager.updateSettings(
+                                        appSettings.copy(
+                                            shakeEventEnabled = it
+                                        )
+                                    )
+                                }
                                 restartService = true
                             }
                         )
@@ -1363,7 +1319,13 @@ fun GeneralSettings(
                             text = "",
                             isChecked = enablePictureInPicture,
                             onCheckedChange = {
-                                enablePictureInPicture = it
+                                coroutineScope.launch {
+                                    appSettingsManager.updateSettings(
+                                        appSettings.copy(
+                                            enablePictureInPicture = it
+                                        )
+                                    )
+                                }
                                 restartActivity = true
                             }
                         )
@@ -1377,7 +1339,13 @@ fun GeneralSettings(
                                     title = stringResource(R.string.settings_pip_module),
                                     selectedValue = pipModule,
                                     onValueSelected = {
-                                        pipModule = it
+                                        coroutineScope.launch {
+                                            appSettingsManager.updateSettings(
+                                                appSettings.copy(
+                                                    pipModule = it
+                                                )
+                                            )
+                                        }
                                         restartActivity = true
                                     },
                                     valueText = {
@@ -1393,7 +1361,13 @@ fun GeneralSettings(
                                     text = stringResource(R.string.pip_info_from_android_12_pip_can_be_automatically_enabled),
                                     isChecked = enablePictureInPictureAuto,
                                     onCheckedChange = {
-                                        enablePictureInPictureAuto = it
+                                        coroutineScope.launch {
+                                            appSettingsManager.updateSettings(
+                                                appSettings.copy(
+                                                    enablePictureInPictureAuto = it
+                                                )
+                                            )
+                                        }
                                         restartActivity = true
                                     }
                                 )
@@ -1414,7 +1388,13 @@ fun GeneralSettings(
                             title = stringResource(R.string.equalizer),
                             selectedValue = equalizerType,
                             onValueSelected = {
-                                equalizerType = it
+                                coroutineScope.launch {
+                                    appSettingsManager.updateSettings(
+                                        appSettings.copy(
+                                            equalizerType = it
+                                        )
+                                    )
+                                }
 
                                 if (it == EqualizerType.System)
                                     internalEqualizer?.setEnabled(false)
@@ -1445,7 +1425,13 @@ fun GeneralSettings(
                             text = stringResource(R.string.autoadjust_the_volume),
                             isChecked = volumeNormalization,
                             onCheckedChange = {
-                                volumeNormalization = it
+                                coroutineScope.launch {
+                                    appSettingsManager.updateSettings(
+                                        appSettings.copy(
+                                            volumeNormalizationEnabled = it
+                                        )
+                                    )
+                                }
                             }
                         )
                         AnimatedVisibility(visible = volumeNormalization) {
@@ -1473,7 +1459,13 @@ fun GeneralSettings(
                                     state = newValue,
                                     onSlide = { newValue = it },
                                     onSlideComplete = {
-                                        loudnessBaseGain = newValue
+                                        coroutineScope.launch {
+                                            appSettingsManager.updateSettings(
+                                                appSettings.copy(
+                                                    loudnessBaseGain = newValue
+                                                )
+                                            )
+                                        }
                                     },
                                     toDisplay = {
                                         "%.1f dB".format(loudnessBaseGain).replace(",", ".")
@@ -1487,7 +1479,13 @@ fun GeneralSettings(
                                     state = newValueVolume,
                                     onSlide = { newValueVolume = it },
                                     onSlideComplete = {
-                                        volumeBoostLevel = newValueVolume
+                                        coroutineScope.launch {
+                                            appSettingsManager.updateSettings(
+                                                appSettings.copy(
+                                                    volumeBoostLevel = newValueVolume
+                                                )
+                                            )
+                                        }
                                     },
                                     toDisplay = {
                                         "%.2f dB".format(volumeBoostLevel).replace(",", ".")
@@ -1508,7 +1506,13 @@ fun GeneralSettings(
                             text = "",
                             isChecked = bassboostEnabled,
                             onCheckedChange = {
-                                bassboostEnabled = it
+                                coroutineScope.launch {
+                                    appSettingsManager.updateSettings(
+                                        appSettings.copy(
+                                            bassBoostEnabled = it
+                                        )
+                                    )
+                                }
                             }
                         )
                         AnimatedVisibility(visible = bassboostEnabled) {
@@ -1529,7 +1533,13 @@ fun GeneralSettings(
                                     state = newValue,
                                     onSlide = { newValue = it },
                                     onSlideComplete = {
-                                        bassboostLevel = newValue
+                                        coroutineScope.launch {
+                                            appSettingsManager.updateSettings(
+                                                appSettings.copy(
+                                                    bassBoostLevel = newValue
+                                                )
+                                            )
+                                        }
                                     },
                                     toDisplay = { "%.1f".format(bassboostLevel).replace(",", ".") },
                                     range = 0f..1f
@@ -1548,7 +1558,13 @@ fun GeneralSettings(
                             text = stringResource(R.string.settings_audio_reverb_info_apply_a_depth_effect_to_the_audio),
                             selectedValue = audioReverb,
                             onValueSelected = {
-                                audioReverb = it
+                                coroutineScope.launch {
+                                    appSettingsManager.updateSettings(
+                                        appSettings.copy(
+                                            audioReverbPreset = it
+                                        )
+                                    )
+                                }
                                 restartService = true
                             },
                             valueText = {
@@ -1568,7 +1584,13 @@ fun GeneralSettings(
                             text = stringResource(R.string.settings_audio_focus_info),
                             isChecked = audioFocusEnabled,
                             onCheckedChange = {
-                                audioFocusEnabled = it
+                                coroutineScope.launch {
+                                    appSettingsManager.updateSettings(
+                                        appSettings.copy(
+                                            handleAudioFocusEnabled = it
+                                        )
+                                    )
+                                }
                             }
                         )
                     }
@@ -1584,7 +1606,13 @@ fun GeneralSettings(
                             text = if (AudioDRCHelper.hasDRCSupport()) "" else "Not supported by device",
                             isChecked = disableAudioDRC,
                             onCheckedChange = {
-                                disableAudioDRC = it
+                                coroutineScope.launch {
+                                    appSettingsManager.updateSettings(
+                                        appSettings.copy(
+                                            disableAudioDrc = it
+                                        )
+                                    )
+                                }
                             }
                         )
                     }
@@ -1614,20 +1642,23 @@ fun GeneralSettings(
 //                            }
 //                        )
 
-                    EnumValueSelectorSettingsEntry(
-                        title = stringResource(R.string.cast_type),
-                        selectedValue = castType,
-                        onValueSelected = {
-                            castType = it
-                            restartActivity = true
-                        },
-                        valueText = {
-                            context.resources.getString(it.title)
-                        }
-                    )
-                    RestartActivity(
-                        restartActivity,
-                        onRestart = { restartActivity = false })
+                        EnumValueSelectorSettingsEntry(
+                            title = stringResource(R.string.cast_type),
+                            selectedValue = castType,
+                            onValueSelected = {
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(castType = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
+                                restartActivity = true
+                            },
+                            valueText = {
+                                context.resources.getString(it.title)
+                            }
+                        )
+                        RestartActivity(
+                            restartActivity,
+                            onRestart = { restartActivity = false })
 
                 }
 
@@ -1653,7 +1684,7 @@ fun GeneralSettings(
                                     coroutineScope.launch {
                                         val new =
                                             appSettings.copy(resumeOrPausePlaybackWhenDeviceBt = it)
-                                        appSettingsVieModel.updateSettings(new)
+                                        appSettingsManager.updateSettings(new)
                                     }
 
                                     restartService = true
@@ -1667,7 +1698,7 @@ fun GeneralSettings(
                                     coroutineScope.launch {
                                         val new =
                                             appSettings.copy(resumeOrPausePlaybackWhenDeviceWired = it)
-                                        appSettingsVieModel.updateSettings(new)
+                                        appSettingsManager.updateSettings(new)
                                     }
 
                                     restartService = true
@@ -1698,7 +1729,13 @@ fun GeneralSettings(
                             text = stringResource(R.string.player_pause_listen_history_info),
                             isChecked = pauseListenHistory,
                             onCheckedChange = {
-                                pauseListenHistory = it
+                                coroutineScope.launch {
+                                    appSettingsManager.updateSettings(
+                                        appSettings.copy(
+                                            isPauseListenHistoryEnabled = it
+                                        )
+                                    )
+                                }
                                 restartService = true
                             }
                         )
@@ -1729,7 +1766,13 @@ fun GeneralSettings(
                         text = stringResource(R.string.neither_save_new_searched_query),
                         isChecked = pauseSearchHistory,
                         onCheckedChange = {
-                            pauseSearchHistory = it
+                            coroutineScope.launch {
+                                appSettingsManager.updateSettings(
+                                    appSettings.copy(
+                                        pauseSearchHistory = it
+                                    )
+                                )
+                            }
                             restartService = true
                         }
                     )
@@ -1786,7 +1829,10 @@ fun GeneralSettings(
                                     text = "",
                                     isChecked = showGridAA,
                                     onCheckedChange = {
-                                        showGridAA = it
+                                        coroutineScope.launch {
+                                            val new = appSettings.copy(showGridAA = it)
+                                            appSettingsManager.updateSettings(new)
+                                        }
                                     }
                                 )
                             }
@@ -1799,7 +1845,12 @@ fun GeneralSettings(
                                 EnumValueSelectorSettingsEntry(
                                     title = stringResource(R.string.aa_playlist_song_limit),
                                     selectedValue = androidAutoPlaylistLimit,
-                                    onValueSelected = { androidAutoPlaylistLimit = it },
+                                    onValueSelected = {
+                                        coroutineScope.launch {
+                                            val new = appSettings.copy(androidAutoPlaylistLimit = it)
+                                            appSettingsManager.updateSettings(new)
+                                            }
+                                    },
                                     valueText = {
                                         it.number?.toString()
                                             ?: stringResource(R.string.aa_playlist_song_limit_unlimited)
@@ -1816,7 +1867,12 @@ fun GeneralSettings(
                                     title = stringResource(R.string.aa_show_monthly_playlists),
                                     text = "", //stringResource(R.string.aa_info_show_monthly_playlists_in_playlists_screen),
                                     isChecked = showMonthlyPlaylistsAA,
-                                    onCheckedChange = { showMonthlyPlaylistsAA = it }
+                                    onCheckedChange = {
+                                        coroutineScope.launch {
+                                            val new = appSettings.copy(showMonthlyPlaylistAA = it)
+                                            appSettingsManager.updateSettings(new)
+                                        }
+                                    }
                                 )
 
                             if (search.input.isBlank() || stringResource(R.string.aa_show_podcast_playlists).contains(
@@ -1828,7 +1884,12 @@ fun GeneralSettings(
                                     title = stringResource(R.string.aa_show_podcast_playlists),
                                     text = "", //stringResource(R.string.aa_info_show_monthly_playlists_in_playlists_screen),
                                     isChecked = showPodcastAA,
-                                    onCheckedChange = { showPodcastAA = it }
+                                    onCheckedChange = {
+                                        coroutineScope.launch {
+                                            val new = appSettings.copy(showPodcastAA = it)
+                                            appSettingsManager.updateSettings(new)
+                                        }
+                                    }
                                 )
 
                             if (search.input.isBlank() || stringResource(R.string.aa_show_pinned_playlists).contains(
@@ -1840,7 +1901,12 @@ fun GeneralSettings(
                                     title = stringResource(R.string.aa_show_pinned_playlists),
                                     text = "", //stringResource(R.string.aa_info_show_monthly_playlists_in_playlists_screen),
                                     isChecked = showPinnedAA,
-                                    onCheckedChange = { showPinnedAA = it }
+                                    onCheckedChange = {
+                                        coroutineScope.launch {
+                                            val new = appSettings.copy(showPinnedAA = it)
+                                            appSettingsManager.updateSettings(new)
+                                        }
+                                    }
                                 )
 
                             if (search.input.isBlank() || stringResource(R.string.aa_show_in_library).contains(
@@ -1852,7 +1918,12 @@ fun GeneralSettings(
                                     title = stringResource(R.string.aa_show_in_library),
                                     text = "", //stringResource(R.string.aa_info_show_in_library_in_artists_and_albums_screen),
                                     isChecked = showInLibraryAA,
-                                    onCheckedChange = { showInLibraryAA = it }
+                                    onCheckedChange = {
+                                        coroutineScope.launch {
+                                            val new = appSettings.copy(showInLibraryAA = it)
+                                            appSettingsManager.updateSettings(new)
+                                        }
+                                    }
                                 )
 
                             if (search.input.isBlank() || stringResource(R.string.aa_show_on_device).contains(
@@ -1864,7 +1935,12 @@ fun GeneralSettings(
                                     title = stringResource(R.string.aa_show_on_device),
                                     text = "", //stringResource(R.string.aa_info_show_on_device_in_artists_and_albums_screen),
                                     isChecked = showOnDeviceAA,
-                                    onCheckedChange = { showOnDeviceAA = it }
+                                    onCheckedChange = {
+                                        coroutineScope.launch {
+                                            val new = appSettings.copy(showOnDeviceAA = it)
+                                            appSettingsManager.updateSettings(new)
+                                        }
+                                    }
                                 )
 
                             if (search.input.isBlank() || stringResource(R.string.aa_show_top_songs).contains(
@@ -1876,7 +1952,12 @@ fun GeneralSettings(
                                     title = stringResource(R.string.aa_show_top_songs),
                                     text = "", //stringResource(R.string.aa_info_show_top_playlist_in_playlists_screen),
                                     isChecked = showTopSongsAA,
-                                    onCheckedChange = { showTopSongsAA = it }
+                                    onCheckedChange = {
+                                        coroutineScope.launch {
+                                            val new = appSettings.copy(showTopSongsAA = it)
+                                            appSettingsManager.updateSettings(new)
+                                        }
+                                    }
                                 )
 
                             if (search.input.isBlank() || stringResource(R.string.aa_show_all_songs).contains(
@@ -1888,7 +1969,12 @@ fun GeneralSettings(
                                     title = stringResource(R.string.aa_show_all_songs),
                                     text = "", // stringResource(R.string.aa_info_show_favorites_playlists_in_playlists_screen),
                                     isChecked = showAllSongsAA,
-                                    onCheckedChange = { showAllSongsAA = it }
+                                    onCheckedChange = {
+                                        coroutineScope.launch {
+                                            val new = appSettings.copy(showAllSongsAA = it)
+                                            appSettingsManager.updateSettings(new)
+                                        }
+                                    }
                                 )
 
                             if (search.input.isBlank() || stringResource(R.string.aa_show_shuffle_in_songs).contains(
@@ -1901,7 +1987,10 @@ fun GeneralSettings(
                                     text = "",
                                     isChecked = showShuffleSongsAA,
                                     onCheckedChange = {
-                                        showShuffleSongsAA = it
+                                        coroutineScope.launch {
+                                            val new = appSettings.copy(showShuffleSongsAA = it)
+                                            appSettingsManager.updateSettings(new)
+                                        }
                                     }
                                 )
                             }

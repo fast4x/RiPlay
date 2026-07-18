@@ -17,13 +17,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.R
 import it.fast4x.riplay.extensions.appviewmodel.models.NetworkConnectivity
 import it.fast4x.riplay.extensions.appviewmodel.models.NetworkType
-import it.fast4x.riplay.extensions.preferences.PreferenceKey
-import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import kotlinx.coroutines.channels.awaitClose
@@ -109,14 +107,15 @@ private fun getNetworkConnectivity(context: Context): NetworkConnectivity {
 fun rememberIsNetworkConnected(): Boolean {
     val app = LocalContext.current.applicationContext as MainApplication
     val networkConnectivity by app.networkConnectivity.collectAsStateWithLifecycle()
-    val offlineModeEnabled by rememberPreference(PreferenceKey.OFFLINE_MODE_ENABLED.key, false)
-
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val offlineModeEnabled = appSettings.offlineModeEnabled
     return !offlineModeEnabled && networkConnectivity is NetworkConnectivity.Connected
 }
 
 fun isNetworkConnected(): Boolean {
     val app = globalContext() as MainApplication
-    val offlineModeEnabled = app.preferences.getBoolean(PreferenceKey.OFFLINE_MODE_ENABLED.key, false)
+    val offlineModeEnabled = app.appSettingsManager.activeSettings.value.offlineModeEnabled
     return !offlineModeEnabled && app.networkConnectivity.value is NetworkConnectivity.Connected
 }
 

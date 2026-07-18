@@ -30,7 +30,6 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
@@ -62,7 +61,8 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import it.fast4x.riplay.LocalAppearanceSettings
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalPlayerServiceState
 import it.fast4x.riplay.R
@@ -77,8 +77,6 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
-import it.fast4x.riplay.extensions.preferences.PreferenceKey
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.services.playback.PlaybackState
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.themed.IconButton
@@ -133,8 +131,10 @@ fun UnifiedMiniPlayer(
     binder?.player ?: return
     if (binder.player.currentTimeline.windowCount == 0) return
 
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val playerState = LocalPlayerServiceState.current
     val shouldBePlaying = playerState.isPlaying
@@ -161,10 +161,6 @@ fun UnifiedMiniPlayer(
         Database.likedAt(mediaItem.mediaId).distinctUntilChanged().collect { likedAt = it }
     }
 
-//    var miniPlayerType by rememberPreference(
-//        MINI_PLAYER_TYPE.key,
-//        MiniPlayerType.Modern
-//    )
     val miniPlayerType = appearanceSettings.miniPlayerType
 
     val factory = remember(binder) {
@@ -238,7 +234,6 @@ fun UnifiedMiniPlayer(
         }
     )
 
-    //val backgroundProgress by rememberPreference(BACKGROUND_PROGRESS.key, BackgroundProgress.MiniPlayer)
     val backgroundProgress = appearanceSettings.backgroundProgress
     val shouldBePlayingTransition = updateTransition(shouldBePlaying, label = "shouldBePlaying")
     val playPauseRoundness by shouldBePlayingTransition.animateDp(
@@ -252,9 +247,7 @@ fun UnifiedMiniPlayer(
         targetValue = if (isRotated) 360F else 0f,
         animationSpec = tween(durationMillis = 200), label = ""
     )
-    val disableClosingPlayerSwipingDown by rememberPreference(PreferenceKey.DISABLE_CLOSING_PLAYER_SWIPING_DOWN.key, false)
-    //val disableClosingPlayerSwipingDown = appearanceSettings.disableClosingPlayerSwipingDown
-    //val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    val disableClosingPlayerSwipingDown = appSettings.disableClosingPlayerSwipingDown
     val disableScrollingText = appearanceSettings.disableScrollingText
 
     val colorPalette = colorPalette()

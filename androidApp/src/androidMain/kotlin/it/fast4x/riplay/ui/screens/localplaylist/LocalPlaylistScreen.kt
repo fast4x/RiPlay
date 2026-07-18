@@ -11,8 +11,9 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.github.doyaaaaaken.kotlincsv.client.KotlinCsvExperimental
 import it.fast4x.riplay.ui.components.PageContainer
+import kotlinx.serialization.ExperimentalSerializationApi
 
-@OptIn(KotlinCsvExperimental::class)
+@OptIn(KotlinCsvExperimental::class, ExperimentalSerializationApi::class)
 @ExperimentalMaterialApi
 @ExperimentalTextApi
 @ExperimentalFoundationApi

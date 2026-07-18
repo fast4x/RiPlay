@@ -27,6 +27,7 @@ import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.requests.searchPage
 import it.fast4x.environment.utils.completed
 import it.fast4x.environment.utils.from
+import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.commonutils.MODIFIED_PREFIX
 import it.fast4x.riplay.commonutils.MONTHLY_PREFIX
 import it.fast4x.riplay.commonutils.PINNED_PREFIX
@@ -43,8 +44,6 @@ import it.fast4x.riplay.enums.AndroidAutoPlaylistLimit
 import it.fast4x.riplay.enums.ArtistSortBy
 import it.fast4x.riplay.enums.MaxTopPlaylistItems
 import it.fast4x.riplay.enums.SortOrder
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ANDROID_AUTO_PLAYLIST_LIMIT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MAX_TOP_PLAYLIST_ITEMS
 import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.commonutils.removePrefix
@@ -54,18 +53,10 @@ import it.fast4x.riplay.enums.HomeItemSize
 import it.fast4x.riplay.enums.PlaylistSongSortBy
 import it.fast4x.riplay.enums.PlaylistSortBy
 import it.fast4x.riplay.enums.SongSortBy
+import it.fast4x.riplay.extensions.experimental.appsettings.AppSettingsManager
+import it.fast4x.riplay.extensions.experimental.appsettings.models.AppSettings
 import it.fast4x.riplay.extensions.musicbrainz.repository.AlbumRepository
 import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUM_SORT_BY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUM_SORT_ORDER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUMS_ITEM_SIZE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ARTIST_SORT_BY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ARTIST_SORT_ORDER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ARTISTS_ITEM_SIZE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SONG_SORT_BY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SORT_BY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SONG_SORT_BY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SONG_SORT_ORDER
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
@@ -80,8 +71,12 @@ import it.fast4x.riplay.utils.showPinnedAA
 import it.fast4x.riplay.utils.showPodcastAA
 import it.fast4x.riplay.utils.showTopSongstAA
 import it.fast4x.riplay.utils.shuffleSongsAAEnabled
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
@@ -90,8 +85,9 @@ import kotlin.also
 
 @UnstableApi
 class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
-    ServiceConnection,
-    SharedPreferences.OnSharedPreferenceChangeListener {
+    ServiceConnection
+    //SharedPreferences.OnSharedPreferenceChangeListener
+{
 
     companion object {
         private val _currentBrowseContext = AtomicReference<List<Song>>(emptyList())
@@ -116,12 +112,66 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
     private var bound = false
     private var playerServiceBinder: PlayerService.Binder? = null
 
+    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
     // Package AA da riconoscere
     private val androidAutoPackages = setOf(
         "com.google.android.projection.gearhead",   // Android Auto
         "com.google.android.automotiveui"            // Android Automotive OS
     )
 
+    private var settingsObserverJob: Job? = null
+    private lateinit var appSettingsManager: AppSettingsManager
+    private lateinit var appSettings: AppSettings
+
+    private fun startObservingSettings() {
+        appSettingsManager = (application as MainApplication).appSettingsManager
+
+        settingsObserverJob = serviceScope.launch {
+            appSettingsManager.activeSettings
+                .collect { settings ->
+                    Timber.d("PlayerMediaBrowserService: impostazioni cambiate $settings")
+                    when {
+                        (settings.songSortOrder != songSortOrder) -> {
+                            songSortOrder = settings.songSortOrder
+                            notifyChildrenChanged(MediaId.SONGS)
+                        }
+                        (settings.artistSortOrder != artistSortOrder) -> {
+                            artistSortOrder = settings.artistSortOrder
+                            notifyChildrenChanged(MediaId.ARTISTS_FAVORITES)
+                        }
+                        (settings.albumSortOrder != albumSortOrder) -> {
+                            albumSortOrder = settings.albumSortOrder
+                            notifyChildrenChanged(MediaId.ALBUMS_FAVORITES)
+                        }
+                        (settings.playlistSortBy != playlistSortBy) -> {
+                            playlistSortBy = settings.playlistSortBy
+                            notifyChildrenChanged(MediaId.PLAYLISTS)
+                        }
+                        (settings.playlistSongsSortBy != playlistSongsSortBy) -> {
+                            playlistSongsSortBy = settings.playlistSongsSortBy
+                            notifyChildrenChanged(MediaId.PLAYLISTS)
+                        }
+                        (settings.artistSortBy != artistSortBy) -> {
+                            artistSortBy = settings.artistSortBy
+                            notifyChildrenChanged(MediaId.ARTISTS_FAVORITES)
+                        }
+                        (settings.albumSortBy != albumSortBy) -> {
+                            albumSortBy = settings.albumSortBy
+                            notifyChildrenChanged(MediaId.ALBUMS_FAVORITES)
+                        }
+                        (settings.songSortBy != songsSortBy) -> {
+                            songsSortBy = settings.songSortBy
+                            notifyChildrenChanged(MediaId.SONGS)
+                        }
+                    }
+                    appSettings = settings
+                }
+        }
+
+    }
+
+    /*
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         sharedPreferences ?: return
         Timber.d("PlayerMediaBrowserService onSharedPreferenceChanged $key")
@@ -173,6 +223,8 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
         }
     }
 
+     */
+
     private val onDeviceViewModel: OnDeviceViewModel by lazy {
         OnDeviceViewModel(application)
     }
@@ -181,18 +233,16 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
     override fun onCreate() {
         super.onCreate()
 
-        songsSortBy = preferences.getEnum(SONG_SORT_BY.key, SongSortBy.DateAdded)
-        songSortOrder = preferences.getEnum(SONG_SORT_ORDER.key, SortOrder.Descending)
-        playlistSortBy = preferences.getEnum(PLAYLIST_SORT_BY.key, PlaylistSortBy.DateAdded)
-        playlistSongsSortBy = preferences.getEnum(PLAYLIST_SONG_SORT_BY.key, PlaylistSongSortBy.DateAdded)
-        artistSortBy = preferences.getEnum(ARTIST_SORT_BY.key, ArtistSortBy.DateAdded)
-        artistSortOrder = preferences.getEnum(ARTIST_SORT_ORDER.key, SortOrder.Descending)
-        albumSortBy = preferences.getEnum(ALBUM_SORT_BY.key, AlbumSortBy.DateAdded)
-        albumSortOrder = preferences.getEnum(ALBUM_SORT_ORDER.key, SortOrder.Descending)
+        startObservingSettings()
 
-
-
-        preferences.registerOnSharedPreferenceChangeListener(this)
+        songsSortBy = appSettings.songSortBy
+        songSortOrder = appSettings.songSortOrder
+        playlistSortBy = appSettings.playlistSortBy
+        playlistSongsSortBy = appSettings.playlistSongsSortBy
+        artistSortBy = appSettings.artistSortBy
+        artistSortOrder = appSettings.artistSortOrder
+        albumSortBy = appSettings.albumSortBy
+        albumSortOrder = appSettings.albumSortOrder
 
         Timber.d("PlayerMediaBrowserService onCreate")
     }
@@ -203,10 +253,13 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
         GlobalSharedData.androidAutoConnected.value = false
         Timber.d("PlayerMediaBrowserService: destroyed, Android Auto disconnected")
 
+        settingsObserverJob?.cancel()
+        settingsObserverJob = null
+
         if (bound) {
             unbindService(this)
         }
-        preferences.unregisterOnSharedPreferenceChangeListener(this)
+
         super.onDestroy()
     }
 
@@ -393,8 +446,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                     }
 
                     MediaId.SONGS_TOP -> {
-                        val maxTopSongs = preferences.getEnum(MAX_TOP_PLAYLIST_ITEMS.key,
-                            MaxTopPlaylistItems.`10`).number.toInt()
+                        val maxTopSongs = appSettings.maxTopPlaylistItems.number.toInt()
 
                         Database.trending(maxTopSongs)
                             .first()
@@ -424,10 +476,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                                     if (showInLibraryAA()) add(0,playlistsInLibraryBrowserMediaItem)
                                 }
                         } else {
-                            val playlistLimit = preferences.getEnum(
-                                ANDROID_AUTO_PLAYLIST_LIMIT.key,
-                                AndroidAutoPlaylistLimit.Unlimited
-                            ).number
+                            val playlistLimit = appSettings.androidAutoPlaylistLimit.number
 
                             Database
                                 .songsPlaylist(id.toLong(), playlistSongsSortBy, songSortOrder)
@@ -995,7 +1044,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                 )
                 .setTitle(title?.removePrefix())
                 .setSubtitle(authorsText)
-                .setIconUri(thumbnailUrl?.toThumbnail(preferences.getEnum(ALBUMS_ITEM_SIZE.key,HomeItemSize.BIG).size)?.toUri())
+                .setIconUri(thumbnailUrl?.toThumbnail(appSettings.albumsItemSize.size)?.toUri())
                 .build(),
             MediaItem.FLAG_BROWSABLE
         )
@@ -1012,7 +1061,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
                     }
                 )
                 .setTitle(name?.removePrefix())
-                .setIconUri(thumbnailUrl?.toThumbnail(preferences.getEnum(ARTISTS_ITEM_SIZE.key,HomeItemSize.BIG).size)?.toUri())
+                .setIconUri(thumbnailUrl?.toThumbnail(appSettings.artistsItemSize.size)?.toUri())
                 .build(),
             MediaItem.FLAG_BROWSABLE
         )
@@ -1221,8 +1270,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
             MediaDescriptionCompat.Builder()
                 .setMediaId(MediaId.SONGS_TOP)
                 .setTitle((this as Context).resources.getString(R.string.my_playlist_top)
-                    .format((this as Context).preferences.getEnum(MAX_TOP_PLAYLIST_ITEMS.key,
-                        MaxTopPlaylistItems.`10`).number))
+                    .format( appSettings.maxTopPlaylistItems.number))
                 .setIconUri(uriFor(R.drawable.trending))
                 .build(),
             MediaItem.FLAG_BROWSABLE

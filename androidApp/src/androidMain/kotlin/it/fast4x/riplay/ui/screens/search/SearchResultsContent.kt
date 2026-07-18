@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.environment.Environment
@@ -36,6 +37,8 @@ import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.requests.albumPage
 import it.fast4x.environment.requests.searchPage
 import it.fast4x.environment.utils.from
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
@@ -48,8 +51,6 @@ import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.persist.persist
-import it.fast4x.riplay.extensions.preferences.PreferenceKey
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.SwipeableAlbumItem
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
@@ -104,12 +105,16 @@ fun SearchResultsContent(
     focusRequester: FocusRequester,
     keyboardController: SoftwareKeyboardController?
 ) {
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
     val binder = LocalPlayerServiceBinder.current
     val selectedQueue = LocalSelectedQueue.current
     val hapticFeedback = LocalHapticFeedback.current
     val menuState = LocalGlobalSheetState.current
-    val parentalControlEnabled by rememberPreference(PreferenceKey.PARENTAL_CONTROL_ENABLED.key, false)
-    val disableScrollingText by rememberPreference(PreferenceKey.DISABLE_SCROLLING_TEXT.key, false)
+    val parentalControlEnabled = appSettings.parentalControlEnabled
+    val disableScrollingText = appearanceSettings.disableScrollingText
     val emptyItemsText = stringResource(R.string.no_results_found)
     val context = LocalContext.current
 
@@ -192,7 +197,6 @@ fun SearchResultsContent(
                             localBinder?.player?.enqueue(song.asMediaItem, queue = it)
                         }
                     ) {
-                        //var forceRecompose by remember { mutableStateOf(false) }
                         SongItem(
                             song = song,
                             thumbnailContent = {

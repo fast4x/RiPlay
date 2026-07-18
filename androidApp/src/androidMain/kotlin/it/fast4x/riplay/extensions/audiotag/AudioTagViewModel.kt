@@ -9,13 +9,13 @@ import androidx.lifecycle.viewModelScope
 import it.fast4x.audiotaginfo.AudioTagInfo
 import it.fast4x.audiotaginfo.models.GetResultResponse
 import it.fast4x.audiotaginfo.models.StatResponse
+import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.R
 import it.fast4x.riplay.extensions.players.audioPlayer
 import it.fast4x.riplay.extensions.audiotag.models.UiState
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_IDENTIFIER_API_KEY
-import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.extensions.recorders.AudioRecorder
 import it.fast4x.riplay.utils.SecureConfig
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.globalContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,7 +40,8 @@ class AudioTagViewModel() : ViewModel(), ViewModelProvider.Factory {
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
     private val audioRecorder = AudioRecorder()
-    private val userApiKey = globalContext().preferences.getString(MUSIC_IDENTIFIER_API_KEY.key, "")
+    private val userApiKey =
+        (appContext() as MainApplication).appSettingsManager.activeSettings.value.musicIdentifierApi //globalContext().preferences.getString(MUSIC_IDENTIFIER_API_KEY.key, "")
     private val apiKey = if (!userApiKey.isNullOrEmpty()) userApiKey
     else SecureConfig.getApiKey(globalContext().resources.getString(R.string.AudioTagInfo_API_KEY))
 

@@ -36,7 +36,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SnapshotMutationPolicy
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,7 +63,6 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
@@ -82,8 +80,8 @@ import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import it.fast4x.riplay.LocalAppSettings
-import it.fast4x.riplay.LocalAppearanceSettings
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalPlayerServiceState
 import it.fast4x.riplay.R
@@ -153,11 +151,11 @@ fun TvUnifiedPlayer(
     binder?.player ?: return
     if (binder.player.currentTimeline.windowCount == 0) return
 
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
-    val appSettingsVieModel = LocalAppSettings.current
-    val appSettings = appSettingsVieModel.activeSettings.collectAsState().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val playerState = LocalPlayerServiceState.current
     val context = LocalContext.current
@@ -176,38 +174,24 @@ fun TvUnifiedPlayer(
     var mediaItems by remember {
         mutableStateOf(binder.player.currentTimeline.mediaItems)
     }
-    //var queueLoopType by rememberPreference(QUEUE_LOOP_TYPE.key, QueueLoopType.Default)
     val queueLoopType = appSettings.queueLoopType
     var isShowingLyrics by rememberSaveable { mutableStateOf(false) }
     var isShowingVisualizer by rememberSaveable { mutableStateOf(false) }
     var showQueue by rememberSaveable { mutableStateOf(false) }
-    //var jumpPrevious by rememberPreference(JUMP_PREVIOUS.key, "3")
     val jumpPrevious = appearanceSettings.jumpPrevious
-    //val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
     val disableScrollingText = appearanceSettings.disableScrollingText
-    //val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
     val colorPaletteMode = appearanceSettings.colorPaletteMode
-    //val textoutline by rememberPreference(TEXT_OUTLINE.key, false)
     val textoutline = appearanceSettings.textoutline
 
-    //val visualizerEnabled by rememberPreference(VISUALIZER_ENABLED.key, false)
     val visualizerEnabled = appearanceSettings.visualizerEnabled
-    //val showthumbnail by rememberPreference(SHOW_THUMBNAIL.key, true)
     val showthumbnail = appearanceSettings.showThumbnail
-//    val thumbnailRoundness by rememberPreference(
-//        THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light
-//    )
+
     val thumbnailRoundness = appearanceSettings.thumbnailRoundness
-//    val showCoverThumbnailAnimation by rememberPreference(
-//        SHOW_COVER_THUMBNAIL_ANIMATION.key, false
-//    )
+
     val showCoverThumbnailAnimation = appearanceSettings.showCoverThumbnailAnimation
-//    var coverThumbnailAnimation by rememberPreference(
-//        COVER_THUMBNAIL_ANIMATION.key, ThumbnailCoverType.Vinyl
-//    )
+
     val coverThumbnailAnimation = appearanceSettings.coverThumbnailAnimation
 
-    //var imageCoverSize by rememberPreference(VINYL_SIZE.key, 50f)
     val imageCoverSize = appearanceSettings.imageCoverSize
 
     val coroutineScope = rememberCoroutineScope ()
@@ -229,7 +213,7 @@ fun TvUnifiedPlayer(
                             else -> QueueLoopType.Default
                         }
                     )
-                    appSettingsVieModel.updateSettings(new)
+                    appSettingsManager.updateSettings(new)
                 }
             }
         }
@@ -273,9 +257,7 @@ fun TvUnifiedPlayer(
 
     // ── Dynamic color ────────────────────────────────────────────
     var dynamicColorPalette by remember { mutableStateOf(color) }
-//    val playerBackgroundColors by rememberPreference(
-//        PLAYER_BACKGROUND_COLORS.key, PlayerBackgroundColors.BlurredCoverColor
-//    )
+
     val playerBackgroundColors = appearanceSettings.playerBackgroundColors
 
     LaunchedEffect(mediaItem.mediaId) {
@@ -448,7 +430,7 @@ fun TvUnifiedPlayer(
                     queueLoopType = queueLoopType,
                     onQueueLoopTypeChange = {
                         coroutineScope.launch {
-                            appSettingsVieModel.updateSettings(
+                            appSettingsManager.updateSettings(
                                 appSettings.copy(queueLoopType = it)
                             )
                         }
@@ -536,7 +518,7 @@ fun TvUnifiedPlayer(
                 hidePlayer = {},
                 onDismiss = {
                     coroutineScope.launch {
-                        appSettingsVieModel.updateSettings(appSettings.copy(queueLoopType = it))
+                        appSettingsManager.updateSettings(appSettings.copy(queueLoopType = it))
                     }
                     showQueue = false
                 },

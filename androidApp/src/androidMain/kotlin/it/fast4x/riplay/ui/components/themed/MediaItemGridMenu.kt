@@ -51,6 +51,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import it.fast4x.environment.models.NavigationEndpoint
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
@@ -61,8 +62,6 @@ import it.fast4x.riplay.commonutils.PIPED_PREFIX
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.enums.NavRoutes
-import it.fast4x.riplay.enums.PlaylistSortBy
-import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Info
 import it.fast4x.riplay.data.models.Playlist
@@ -76,9 +75,6 @@ import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.mediaItemToggleLike
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SORT_BY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SORT_ORDER
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.commonutils.toThumbnail
 import kotlinx.coroutines.CoroutineScope
@@ -328,7 +324,9 @@ fun MediaItemGridMenu (
 ) {
     val binder = LocalPlayerServiceBinder.current
     val uriHandler = LocalUriHandler.current
-    val context = LocalContext.current
+
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val isLocal by remember { derivedStateOf { mediaItem.isLocal } }
 
@@ -721,15 +719,15 @@ fun MediaItemGridMenu (
         }, label = ""
     ) { currentIsViewingPlaylists ->
         if (currentIsViewingPlaylists) {
-            val sortBy by rememberPreference(PLAYLIST_SORT_BY.key, PlaylistSortBy.DateAdded)
-            val sortOrder by rememberPreference(PLAYLIST_SORT_ORDER.key, SortOrder.Descending)
+            val sortBy = appSettings.playlistSortBy
+            val sortOrder = appSettings.playlistSortOrder
             val playlistPreviews by remember {
                 Database.playlistPreviews(sortBy, sortOrder)
-            }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
+            }.collectAsStateWithLifecycle(initialValue = emptyList())
 
             val playlistIds by remember {
                 Database.getPlaylistsWithSong(mediaItem.mediaId)
-            }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
+            }.collectAsStateWithLifecycle(initialValue = emptyList())
 
             val pinnedPlaylists = playlistPreviews.filter {
                 it.playlist.name.startsWith(PINNED_PREFIX, 0, true)

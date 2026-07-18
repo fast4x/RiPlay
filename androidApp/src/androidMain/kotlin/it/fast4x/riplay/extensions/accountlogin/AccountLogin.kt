@@ -7,46 +7,26 @@ import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.edit
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.responses.CachedAccountProfile
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.R
-import it.fast4x.riplay.extensions.preferences.PreferenceKey
-import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_ACCOUNT_CHANNEL_HANDLE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_ACCOUNT_EMAIL
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_ACCOUNT_NAME
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_ACCOUNT_THUMBNAIL
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_COOKIE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_DATA_SYNC_ID
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_VISITOR_DATA
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.components.themed.CachedAccountsSelectorDialog
 import it.fast4x.riplay.ui.components.themed.DefaultDialog
-import it.fast4x.riplay.ui.components.themed.Loader
 import it.fast4x.riplay.ui.components.themed.LoaderScreen
-import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.utils.getRoundnessShape
-import it.fast4x.riplay.utils.restartApp
-import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -84,11 +64,15 @@ fun AccountLogin(
     var loadSessionAction by remember { mutableStateOf<(() -> Unit)?>(null) }
     val localContext = LocalContext.current
 
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
     var signinUrl by remember { mutableStateOf("") }
     var showSelectorDialog by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(true) }
 
-    val jsonCachedAccounts by rememberPreference(PreferenceKey.YT_CACHED_ACCOUNTS.key, "")
+    //val jsonCachedAccounts by rememberPreference(PreferenceKey.YT_CACHED_ACCOUNTS.key, "")
+    val jsonCachedAccounts = appSettings.ytCachedAccounts
     Timber.d("AccountLogin INITIAL CachedAccountProfile jsonString $jsonCachedAccounts ")
     val cachedAccounts = remember(jsonCachedAccounts) {
         try {
@@ -122,12 +106,22 @@ fun AccountLogin(
                         delay(200)
 
                         Timber.d("AccountLogin: save login preferences")
-                        localContext.preferences.edit {putString(PreferenceKey.YT_PAGEID.key, account.pageId)}
-                        localContext.preferences.edit {putString(PreferenceKey.YT_AUTHUSER.key, account.authUser)}
-                        localContext.preferences.edit {putString(PreferenceKey.YT_ACCOUNT_NAME.key, account.name)}
-                        localContext.preferences.edit {putString(PreferenceKey.YT_ACCOUNT_EMAIL.key, account.email)}
-                        localContext.preferences.edit {putString(PreferenceKey.YT_ACCOUNT_CHANNEL_HANDLE.key, account.channelHandle)}
-                        localContext.preferences.edit {putString(PreferenceKey.YT_ACCOUNT_THUMBNAIL.key, account.thumbnailUrl)}
+                        appSettingsManager.updateSettings(
+                            appSettings.copy(
+                                ytPageId = account.pageId.toString(),
+                                ytAuthUser = account.authUser.toString(),
+                                ytAccountName = account.name.toString(),
+                                ytAccountEmail = account.email.toString(),
+                                ytAccountChannelHandle = account.channelHandle.toString(),
+                                ytAccountThumbnail = account.thumbnailUrl.toString()
+                            )
+                        )
+//                        localContext.preferences.edit {putString(PreferenceKey.YT_PAGEID.key, account.pageId)}
+//                        localContext.preferences.edit {putString(PreferenceKey.YT_AUTHUSER.key, account.authUser)}
+//                        localContext.preferences.edit {putString(PreferenceKey.YT_ACCOUNT_NAME.key, account.name)}
+//                        localContext.preferences.edit {putString(PreferenceKey.YT_ACCOUNT_EMAIL.key, account.email)}
+//                        localContext.preferences.edit {putString(PreferenceKey.YT_ACCOUNT_CHANNEL_HANDLE.key, account.channelHandle)}
+//                        localContext.preferences.edit {putString(PreferenceKey.YT_ACCOUNT_THUMBNAIL.key, account.thumbnailUrl)}
                         delay(200)
 
                         signinUrl = "https://music.youtube.com${account.signinUrl.toString()}"
@@ -251,9 +245,16 @@ fun AccountLogin(
                                 delay(200)
 
                                 Timber.d("AccountLogin: save login preferences")
-                                context.preferences.edit { putString(YT_VISITOR_DATA.key, refreshedVisitorData) }
-                                context.preferences.edit { putString(YT_DATA_SYNC_ID.key, refreshedDataSyncId) }
-                                context.preferences.edit { putString(YT_COOKIE.key, freshCookie) }
+                                appSettingsManager.updateSettings(
+                                    appSettings.copy(
+                                        ytCookie = freshCookie,
+                                        ytVisitorData = refreshedVisitorData,
+                                        ytDataSyncId = refreshedDataSyncId
+                                    )
+                                )
+//                                context.preferences.edit { putString(YT_VISITOR_DATA.key, refreshedVisitorData) }
+//                                context.preferences.edit { putString(YT_DATA_SYNC_ID.key, refreshedDataSyncId) }
+//                                context.preferences.edit { putString(YT_COOKIE.key, freshCookie) }
                                 delay(200)
 
                                 Timber.d("AccountLogin: Initialize Environment")
@@ -266,10 +267,18 @@ fun AccountLogin(
                                 Timber.d("AccountLogin: Initialized, get account info")
 
                                 Environment.accountInfo().onSuccess {
-                                    context.preferences.edit { putString(YT_ACCOUNT_NAME.key, it?.name.orEmpty()) }
-                                    context.preferences.edit { putString(YT_ACCOUNT_EMAIL.key, it?.email.orEmpty()) }
-                                    context.preferences.edit { putString(YT_ACCOUNT_CHANNEL_HANDLE.key, it?.channelHandle.orEmpty()) }
-                                    context.preferences.edit { putString(YT_ACCOUNT_THUMBNAIL.key, it?.thumbnailUrl.orEmpty()) }
+                                    appSettingsManager.updateSettings(
+                                        appSettings.copy(
+                                            ytAccountName = it?.name.orEmpty(),
+                                            ytAccountEmail = it?.email.orEmpty(),
+                                            ytAccountChannelHandle = it?.channelHandle.orEmpty(),
+                                            ytAccountThumbnail = it?.thumbnailUrl.orEmpty()
+                                        )
+                                    )
+//                                    context.preferences.edit { putString(YT_ACCOUNT_NAME.key, it?.name.orEmpty()) }
+//                                    context.preferences.edit { putString(YT_ACCOUNT_EMAIL.key, it?.email.orEmpty()) }
+//                                    context.preferences.edit { putString(YT_ACCOUNT_CHANNEL_HANDLE.key, it?.channelHandle.orEmpty()) }
+//                                    context.preferences.edit { putString(YT_ACCOUNT_THUMBNAIL.key, it?.thumbnailUrl.orEmpty()) }
                                     delay(200)
 
                                     Timber.d("AccountLogin: Logged in as ${it?.name}, restarting app...")
@@ -289,7 +298,10 @@ fun AccountLogin(
                                     Timber.d("AccountLogin: getAccountsList $it")
                                     val jsonString = Json.encodeToString(it)
                                     Timber.d("AccountLogin: getAccountsList salva jsonString $jsonString")
-                                    context.preferences.edit { putString(PreferenceKey.YT_CACHED_ACCOUNTS.key, jsonString) }
+                                    appSettingsManager.updateSettings(
+                                        appSettings.copy(ytCachedAccounts = jsonString)
+                                    )
+                                    //context.preferences.edit { putString(PreferenceKey.YT_CACHED_ACCOUNTS.key, jsonString) }
                                     delay(200)
                                 }.onFailure {
                                     Timber.e(it, "AccountLogin: getAccountsList error ${it.message}")

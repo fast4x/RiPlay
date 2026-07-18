@@ -87,6 +87,7 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
@@ -95,7 +96,8 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import io.github.oikvpqya.compose.fastscroller.VerticalScrollbar
 import io.github.oikvpqya.compose.fastscroller.rememberScrollbarAdapter
 import it.fast4x.riplay.BuildConfig
-import it.fast4x.riplay.LocalAppearanceSettings
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.commonutils.EXPLICIT_PREFIX
@@ -106,8 +108,6 @@ import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.BuiltInPlaylist
 import it.fast4x.riplay.enums.DurationInMinutes
-import it.fast4x.riplay.enums.MaxSongs
-import it.fast4x.riplay.enums.MaxTopPlaylistItems
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.OnDeviceFolderSortBy
 import it.fast4x.riplay.enums.OnDeviceSongSortBy
@@ -115,8 +115,6 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.QueueSelection
 import it.fast4x.riplay.enums.SongSortBy
 import it.fast4x.riplay.enums.SortOrder
-import it.fast4x.riplay.enums.ThumbnailRoundness
-import it.fast4x.riplay.enums.TopPlaylistPeriod
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.ondevice.Folder
@@ -153,45 +151,23 @@ import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.onOverlay
 import it.fast4x.riplay.ui.styling.overlay
 import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MAX_TOP_PLAYLIST_ITEMS
 import it.fast4x.riplay.utils.OnDeviceOrganize
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.AUTO_SHUFFLE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.BUILT_IN_PLAYLIST
 import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.ui.styling.color
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DEFAULT_FOLDER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.ExportType
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.extensions.exporter.Exporter
 import it.fast4x.riplay.utils.enqueue
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXCLUDE_SONGS_WITH_DURATION_LIMIT
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.hasPermission
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.INCLUDE_LOCAL_SONGS
 import it.fast4x.riplay.utils.isCompositionLaunched
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MAX_SONGS_IN_QUEUE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ON_DEVICE_FOLDER_SORT_BY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ON_DEVICE_SONG_SORT_BY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FAVORITES_PLAYLIST
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FOLDERS_ON_DEVICE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_MY_TOP_PLAYLIST
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_ON_DEVICE_PLAYLIST
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SEARCH_TAB
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SONG_SORT_BY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SONG_SORT_ORDER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.TOP_PLAYLIST_PERIOD
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -206,7 +182,6 @@ import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.formatAsDuration
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_DISLIKED_PLAYLIST
 import it.fast4x.riplay.ui.components.tab.TabHeader
 import it.fast4x.riplay.ui.components.themed.EnumsMenu
 import it.fast4x.riplay.utils.getRoundnessShape
@@ -230,47 +205,38 @@ fun HomeSongs(
     onSearchClick: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalGlobalSheetState.current
     val selectedQueue = LocalSelectedQueue.current
     val thumbnailSizeDp = Dimensions.thumbnails.song
     val thumbnailSizePx = thumbnailSizeDp.px
 
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
-
-    var sortBy by rememberPreference(SONG_SORT_BY.key, SongSortBy.DateAdded)
-    var sortOrder by rememberPreference(SONG_SORT_ORDER.key, SortOrder.Descending)
-    val parentalControlEnabled by rememberPreference(PARENTAL_CONTROL_ENABLED.key, false)
+    val sortBy = appSettings.songSortBy
+    val sortOrder = appSettings.songSortOrder
+    val parentalControlEnabled = appSettings.parentalControlEnabled
 
     var items by persistList<SongEntity>("home/songs")
 
     var filter: String? by rememberSaveable { mutableStateOf(null) }
-    var builtInPlaylist by rememberPreference(
-        BUILT_IN_PLAYLIST.key,
-        BuiltInPlaylist.Favorites
-    )
+    val builtInPlaylist = appSettings.builtInPlaylist
 
     val context = LocalContext.current
 
-//    var thumbnailRoundness by rememberPreference(
-//        THUMBNAIL_ROUNDNESS.key,
-//        ThumbnailRoundness.Light
-//    )
     val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
     var showHiddenSongs by remember { mutableStateOf(0) }
-    var includeLocalSongs by rememberPreference(INCLUDE_LOCAL_SONGS.key, true)
-    var autoShuffle by rememberPreference(AUTO_SHUFFLE.key, false)
+    val includeLocalSongs = appSettings.includeLocalSongs
+    val autoShuffle = appSettings.autoShuffle
 
-    val maxTopPlaylistItems by rememberPreference(
-        MAX_TOP_PLAYLIST_ITEMS.key,
-        MaxTopPlaylistItems.`10`
-    )
-    var topPlaylistPeriod by rememberPreference(TOP_PLAYLIST_PERIOD.key, TopPlaylistPeriod.PastWeek)
+    val maxTopPlaylistItems = appSettings.maxTopPlaylistItems
+    val topPlaylistPeriod = appSettings.topPlaylistPeriod
 
     var scrollToNowPlaying by remember { mutableStateOf(false) }
-    var nowPlayingItem by remember { mutableStateOf(-1) }
+    var nowPlayingItem by remember { mutableIntStateOf(-1) }
 
     /************ OnDevice Permissions */
     val permission = if (Build.VERSION.SDK_INT >= 33) Manifest.permission.READ_MEDIA_AUDIO
@@ -288,13 +254,13 @@ fun HomeSongs(
     )
 
     val backButtonFolder = Folder(name = "..", note = "Previous")
-    var showFolders by rememberPreference(SHOW_FOLDERS_ON_DEVICE.key, true)
+    val showFolders = appSettings.showFoldersOnDevice
 
-    var sortByOnDevice by rememberPreference(ON_DEVICE_SONG_SORT_BY.key, OnDeviceSongSortBy.DateAdded)
-    var sortByFolderOnDevice by rememberPreference(ON_DEVICE_FOLDER_SORT_BY.key, OnDeviceFolderSortBy.Title)
-    var sortOrderOnDevice by rememberPreference(SONG_SORT_ORDER.key, SortOrder.Descending)
+    val sortByOnDevice = appSettings.onDeviceSongSortBy
+    val sortByFolderOnDevice = appSettings.onDeviceFolderSortBy
+    val sortOrderOnDevice = appSettings.songSortOrder
 
-    val defaultFolder by rememberPreference(DEFAULT_FOLDER.key, "/")
+    val defaultFolder = appSettings.defaultFolder
     val onDeviceViewModel: OnDeviceViewModel = viewModel()
     val songsDevice by onDeviceViewModel.audioFiles.collectAsState()
 
@@ -337,10 +303,10 @@ fun HomeSongs(
         }
 
     /************ Playlist Buttons Config */
-    val showFavoritesPlaylist by rememberPreference(SHOW_FAVORITES_PLAYLIST.key, true)
-    val showDislikedPlaylist by rememberPreference(SHOW_DISLIKED_PLAYLIST.key, false)
-    val showMyTopPlaylist by rememberPreference(SHOW_MY_TOP_PLAYLIST.key, true)
-    val showOnDevicePlaylist by rememberPreference(SHOW_ON_DEVICE_PLAYLIST.key, true)
+    val showFavoritesPlaylist = appSettings.showFavoritesPlaylist
+    val showDislikedPlaylist = appSettings.showDislikedPlaylist
+    val showMyTopPlaylist = appSettings.showMyTopPlaylist
+    val showOnDevicePlaylist = appSettings.showOnDevicePlaylist
     val isNetworkConnected = rememberIsNetworkConnected()
 
     val buttonsList = (if (isNetworkConnected) listOf(BuiltInPlaylist.All to stringResource(R.string.all)) else emptyList()).toMutableList()
@@ -354,9 +320,9 @@ fun HomeSongs(
     if (showOnDevicePlaylist) buttonsList += BuiltInPlaylist.OnDevice to stringResource(R.string.on_device)
     if (showDislikedPlaylist && isNetworkConnected) buttonsList += BuiltInPlaylist.Disliked to stringResource(R.string.disliked)
 
-    val excludeSongWithDurationLimit by rememberPreference(EXCLUDE_SONGS_WITH_DURATION_LIMIT.key, DurationInMinutes.Disabled)
+    val excludeSongWithDurationLimit = appSettings.excludeSongWithDurationLimit
     val hapticFeedback = LocalHapticFeedback.current
-    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    val disableScrollingText = appearanceSettings.disableScrollingText
 
     val blacklisted = remember {
         Database.blacklisted(listOf(BlacklistType.Song.name, BlacklistType.Video.name, BlacklistType.Folder.name))
@@ -508,8 +474,8 @@ fun HomeSongs(
     )
 
     val lazyListState = rememberLazyListState()
-    val showSearchTab by rememberPreference(SHOW_SEARCH_TAB.key, false)
-    val maxSongsInQueue by rememberPreference(MAX_SONGS_IN_QUEUE.key, MaxSongs.`500`)
+    val showSearchTab = appSettings.showSearchTab
+    val maxSongsInQueue = appSettings.maxSongsInQueue
 
     var listMediaItems = remember { mutableListOf<MediaItem>() }
     var selectItems by remember { mutableStateOf(false) }
@@ -599,7 +565,15 @@ fun HomeSongs(
                         title = stringResource(R.string.sorting_order),
                         onDismiss = menuState::hide,
                         selectedValue = sortByOnDevice.menuItem,
-                        onValueSelected = { sortByOnDevice = OnDeviceSongSortBy.entries[it.ordinal] },
+                        onValueSelected = {
+                            coroutineScope.launch {
+                                appSettingsManager.updateSettings(
+                                    appSettings.copy(
+                                        onDeviceSongSortBy = OnDeviceSongSortBy.entries[it.ordinal]
+                                    )
+                                )
+                            }
+                        },
                         values = OnDeviceSongSortBy.entries.map { it.menuItem },
                         valueText = { stringResource(it.titleId) }
                     )
@@ -608,7 +582,15 @@ fun HomeSongs(
                         title = stringResource(R.string.sorting_order),
                         onDismiss = menuState::hide,
                         selectedValue = sortByFolderOnDevice.menuItem,
-                        onValueSelected = { sortByFolderOnDevice = OnDeviceFolderSortBy.entries[it.ordinal] },
+                        onValueSelected = {
+                            coroutineScope.launch {
+                                appSettingsManager.updateSettings(
+                                    appSettings.copy(
+                                        onDeviceFolderSortBy = OnDeviceFolderSortBy.entries[it.ordinal]
+                                    )
+                                )
+                            }
+                        },
                         values = OnDeviceFolderSortBy.entries.map { it.menuItem },
                         valueText = { stringResource(it.titleId) }
                     )
@@ -618,7 +600,16 @@ fun HomeSongs(
                     title = stringResource(R.string.sorting_order),
                     onDismiss = menuState::hide,
                     selectedValue = sortBy.menuItem,
-                    onValueSelected = { sortBy = SongSortBy.entries[it.ordinal] },
+                    onValueSelected = {
+                        coroutineScope.launch {
+                            appSettingsManager.updateSettings(
+                                appSettings.copy(
+                                    songSortBy = SongSortBy.entries[it.ordinal]
+                                )
+                            )
+                        }
+
+                    },
                     values = SongSortBy.entries.map { it.menuItem },
                     valueText = { stringResource(it.titleId) }
                 )
@@ -671,7 +662,15 @@ fun HomeSongs(
                             ButtonsRow(
                                 buttons = buttonsList,
                                 currentValue = builtInPlaylist,
-                                onValueUpdate = { builtInPlaylist = it },
+                                onValueUpdate = {
+                                    coroutineScope.launch {
+                                        appSettingsManager.updateSettings(
+                                            appSettings.copy(
+                                                builtInPlaylist = it
+                                            )
+                                        )
+                                    }
+                                },
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }
@@ -731,10 +730,17 @@ fun HomeSongs(
                                     icon = R.drawable.arrow_up,
                                     color = colorPalette().text,
                                     onClick = {
+
                                         // Cliccando la freccia (anche qui) il timer si resetta perché lo stato rimane true
                                         if (isSortExpanded) {
-                                            if (builtInPlaylist != BuiltInPlaylist.OnDevice) sortOrder = !sortOrder
-                                            else sortOrderOnDevice = !sortOrderOnDevice
+                                            coroutineScope.launch {
+                                                appSettingsManager.updateSettings(
+                                                    if (builtInPlaylist != BuiltInPlaylist.OnDevice)
+                                                    appSettings.copy(songSortOrder = !sortOrder)
+                                                else
+                                                    appSettings.copy(songSortOrder = !sortOrderOnDevice)
+                                                )
+                                            }
                                         } else {
                                             isSortExpanded = true
                                         }
@@ -761,7 +767,16 @@ fun HomeSongs(
                                 icon = R.drawable.stat, color = colorPalette().text,
                                 onClick = {
                                     menuState.display {
-                                        PeriodMenu(onDismiss = { topPlaylistPeriod = it; menuState.hide() })
+                                        PeriodMenu(onDismiss = {
+                                            coroutineScope.launch {
+                                                appSettingsManager.updateSettings(
+                                                    appSettings.copy(
+                                                        topPlaylistPeriod = it
+                                                    )
+                                                )
+                                            }
+                                            menuState.hide()
+                                        })
                                     }
                                 },
                             )
@@ -857,7 +872,15 @@ fun HomeSongs(
                             HeaderIconButton(
                                 icon = R.drawable.random, enabled = true,
                                 color = if (autoShuffle) colorPalette().text else colorPalette().textDisabled,
-                                onClick = { autoShuffle = !autoShuffle },
+                                onClick = {
+                                    coroutineScope.launch {
+                                        appSettingsManager.updateSettings(
+                                            appSettings.copy(
+                                                autoShuffle = !autoShuffle
+                                            )
+                                        )
+                                    }
+                                },
                                 onLongClick = { SmartMessage("Random sorting", context = context) },
                             )
 
@@ -875,7 +898,15 @@ fun HomeSongs(
                             HeaderIconButton(
                                 icon = if (showFolders) R.drawable.list_view else R.drawable.grid_view,
                                 color = colorPalette().text,
-                                onClick = { showFolders = !showFolders },
+                                onClick = {
+                                    coroutineScope.launch {
+                                        appSettingsManager.updateSettings(
+                                            appSettings.copy(
+                                                showFoldersOnDevice = !showFolders
+                                            )
+                                        )
+                                    }
+                                },
                                 onLongClick = { SmartMessage(context.resources.getString(R.string.viewType), context = context) },
                             )
                         }
@@ -1427,7 +1458,7 @@ fun HomeSongs(
 
         FloatingActionsContainerWithScrollToTop(lazyListState = lazyListState)
 
-        val showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
+        val showFloatingIcon = appSettings.showFloatingIcon
         if (UiType.ViMusic.isCurrent() && showFloatingIcon)
             MultiFloatingActionsContainer(iconId = R.drawable.search, onClick = onSearchClick, onClickSettings = onSettingsClick, onClickSearch = onSearchClick)
     }

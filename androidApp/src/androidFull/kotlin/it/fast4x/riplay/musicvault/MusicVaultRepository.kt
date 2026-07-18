@@ -7,20 +7,20 @@ import android.provider.DocumentsContract
 import androidx.documentfile.provider.DocumentFile
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Song
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_VAULT_PATH
-import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.utils.appContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.io.File
 import androidx.core.net.toUri
+import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.utils.getSafeDefaultDir
 import timber.log.Timber
 
 object MusicVaultRepository {
 
+    val appSettingsManager = (appContext() as MainApplication).appSettingsManager
     private fun getSavedPath(): String? {
-        val path = appContext().preferences.getString(MUSIC_VAULT_PATH.key, "")
+        val path = appSettingsManager.activeSettings.value.musicVaultPath //appContext().preferences.getString(MUSIC_VAULT_PATH.key, "")
         return path.takeIf { it?.isNotBlank() == true }
     }
 

@@ -18,7 +18,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,14 +36,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import it.fast4x.riplay.LocalAppearanceSettings
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.R
-import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.ui.styling.favoritesIcon
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
@@ -156,8 +153,8 @@ class Search private constructor(
 
     @Composable
     fun SearchBar( columnScope: ColumnScope ) {
-        val appearanceSettingsVieModel = LocalAppearanceSettings.current
-        val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+        val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+        val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
 //        val thumbnailRoundness by rememberPreference(
 //            THUMBNAIL_ROUNDNESS.key,

@@ -5,7 +5,6 @@ import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
-import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
@@ -107,67 +106,20 @@ import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.ColorPaletteName
 import it.fast4x.riplay.enums.DnsOverHttpsType
-import it.fast4x.riplay.enums.FontType
 import it.fast4x.riplay.enums.HomeScreenTabs
 import it.fast4x.riplay.enums.Languages
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PipModule
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.extensions.pip.PipModuleContainer
 import it.fast4x.riplay.extensions.pip.PipModuleCover
 import it.fast4x.riplay.extensions.pip.isInPip
 import it.fast4x.riplay.extensions.pip.maybeEnterPip
 import it.fast4x.riplay.extensions.pip.maybeExitPip
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.UI_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.APPLY_FONT_PADDING
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.BACKGROUND_PROGRESS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_MODE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_NAME
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_COLOR
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_0
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_1
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_2
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_3
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_BACKGROUND_4
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_TEXT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_ACCENT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_ICON_BUTTON_PLAYER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_TEXT_DISABLED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_DARK_TEXT_SECONDARY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_0
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_1
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_2
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_3
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_BACKGROUND_4
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_TEXT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_ACCENT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_ICON_BUTTON_PLAYER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_TEXT_DISABLED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CUSTOM_THEME_LIGHT_TEXT_SECONDARY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_CLOSING_PLAYER_SWIPING_DOWN
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_PLAYER_HORIZONTAL_SWIPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.FONT_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_ENABLED_FULLSCREEN
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.LANGUAGE_APP
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MINI_PLAYER_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.NAVIGATION_BAR_POSITION
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.NAVIGATION_BAR_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_BACKGROUND_COLORS
-import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.RESTART_ACTIVITY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SEARCH_TAB
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_TOTAL_TIME_QUEUE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSITION_EFFECT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.USE_SYSTEM_FONT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_COOKIE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_VISITOR_DATA
 import it.fast4x.riplay.extensions.rescuecenter.RescueScreen
 import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.extensions.audiotag.AudioTagViewModel
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CLOSE_BACKGROUND_PLAYER
 import it.fast4x.riplay.navigation.AppNavigation
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.BottomSheet
@@ -247,7 +199,6 @@ import it.fast4x.riplay.extensions.qrcodeanalyzer.qrCodeToAction
 import it.fast4x.riplay.extensions.musicbrainz.viewmodels.AlbumInsightsViewModel
 import it.fast4x.riplay.extensions.musicbrainz.viewmodels.ArtistInsightsViewModel
 import it.fast4x.riplay.extensions.preferences.cleanUpUnusedPreferences
-import it.fast4x.riplay.extensions.preferences.getEnum
 import it.fast4x.riplay.ui.screens.player.unified.TvUnifiedPlayer
 import it.fast4x.riplay.utils.isTvMode
 
@@ -750,7 +701,6 @@ class MainActivity :
                         if (hostName.isNotBlank() && proxyPort != 0)
                             ProxyPreferences.preference =
                                 ProxyPreferenceItem(hostName, proxyPort, proxyMode)
-                        }
                     } else {
                         SmartMessage(
                             "Your Proxy Hostname is invalid, please check it",
@@ -758,6 +708,7 @@ class MainActivity :
                             context = this@MainActivity
                         )
                     }
+                }
 
 
 
@@ -837,7 +788,6 @@ class MainActivity :
                 val isSystemInDarkTheme = isSystemInDarkTheme()
                 var navController: NavController? = null
 
-                //var customColor by rememberPreference(CUSTOM_COLOR.key, Color.Green.hashCode())
                 val customColor = appearanceSettings.customColor
                 val lightTheme =
                     colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
@@ -1059,6 +1009,7 @@ class MainActivity :
                 }
 
 
+                /*
                 // React to theme mode changes without requiring app restart (include palette mode key)
                 DisposableEffect(binder, colorPaletteMode, !lightTheme) {
 
@@ -1292,6 +1243,8 @@ class MainActivity :
                     }
                 }
 
+                 */
+
                 val rippleConfiguration =
                     remember(appearance.colorPalette.text, appearance.colorPalette.isDark) {
                         RippleConfiguration(color = appearance.colorPalette.text)
@@ -1510,8 +1463,8 @@ class MainActivity :
                                 LocalRiTuneSheetState provides castSheetState,
                                 LocalArtistInsights provides artistInsightsViewModel,
                                 LocalAlbumInsights provides albumInsightsViewModel,
-                                LocalAppearanceSettings provides appearanceSettingsManager,
-                                LocalAppSettings provides appSettingsManager,
+                                LocalAppearanceSettingsManager provides appearanceSettingsManager,
+                                LocalAppSettingsManager provides appSettingsManager,
                                 //LocalOnlinePlayerPlayingState provides onlinePlayerPlayingState,
                                 //LocalGlobalQueue provides globalQueueViewModel,
                                 //LocalInternetAvailable provides isInternetAvailable
@@ -2163,6 +2116,6 @@ val LocalArtistInsights = staticCompositionLocalOf<ArtistInsightsViewModel> { er
 
 val LocalAlbumInsights = staticCompositionLocalOf<AlbumInsightsViewModel> { error("No album insights provided")}
 
-val LocalAppearanceSettings = staticCompositionLocalOf<AppearanceSettingsManager> { error("No appearance settings provided")}
+val LocalAppearanceSettingsManager = staticCompositionLocalOf<AppearanceSettingsManager> { error("No appearance settings provided")}
 
-val LocalAppSettings = staticCompositionLocalOf<AppSettingsManager> { error("No app settings provided") }
+val LocalAppSettingsManager = staticCompositionLocalOf<AppSettingsManager> { error("No app settings provided") }

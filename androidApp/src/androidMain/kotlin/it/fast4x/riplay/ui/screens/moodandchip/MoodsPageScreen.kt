@@ -26,12 +26,7 @@ fun MoodsPageScreen(
     navController: NavController,
     miniPlayer: @Composable () -> Unit = {},
 ) {
-    val saveableStateHolder = rememberSaveableStateHolder()
-
-    //PersistMapCleanup(tagPrefix = "playlist/$defaultBrowseId")
-
     PageContainer(
-        //modifier = modifier,
         navController = navController,
         miniPlayer = miniPlayer,
     ) {
@@ -40,18 +35,4 @@ fun MoodsPageScreen(
         )
     }
 
-//            ScreenContainer(
-//                navController,
-//                navBarContent = { item ->
-//                    item(0, stringResource(R.string.moods_and_genres), R.drawable.music_album)
-//                }
-//            ) { currentTabIndex ->
-//                saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
-//                    when (currentTabIndex) {
-//                        0 -> MoodsPage(
-//                            navController = navController
-//                        )
-//                    }
-//                }
-//            }
 }

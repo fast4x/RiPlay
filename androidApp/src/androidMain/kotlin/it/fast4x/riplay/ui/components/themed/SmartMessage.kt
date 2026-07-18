@@ -8,14 +8,11 @@ import androidx.annotation.OptIn
 import androidx.compose.ui.graphics.Color
 import androidx.media3.common.util.UnstableApi
 import es.dmoral.toasty.Toasty
+import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.enums.MessageType
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.preferences.getEnum
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MESSAGE_TYPE
-import it.fast4x.riplay.extensions.preferences.preferences
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import it.fast4x.riplay.utils.appContext
 import java.util.concurrent.atomic.AtomicReference
 
 private val currentToast = AtomicReference<Toast?>(null)
@@ -29,6 +26,8 @@ fun SmartMessage(
     context: Context,
 ) {
     val length = if (durationLong) Toast.LENGTH_LONG else Toast.LENGTH_SHORT
+    val appSettingsManager = (appContext() as MainApplication).appSettingsManager
+    val appSettings = appSettingsManager.activeSettings.value
 
     // Handler diretto: zero overhead, esecuzione immediata sul Main thread
     Handler(Looper.getMainLooper()).post {
@@ -36,10 +35,7 @@ fun SmartMessage(
         // Cancella il toast in coda prima di mostrarne uno nuovo
         currentToast.getAndSet(null)?.cancel()
 
-        val toast = if (context.preferences.getEnum(
-                MESSAGE_TYPE.key, MessageType.Modern
-            ) == MessageType.Modern
-        ) {
+        val toast = if (appSettings.messageType == MessageType.Modern) {
             when (type) {
                 PopupType.Info    -> Toasty.info(context, message, length, true)
                 PopupType.Success -> Toasty.success(context, message, length, true)

@@ -32,12 +32,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.EventType
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.AUTO_BACKUP_FOLDER
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.extensions.scheduled.periodicAutoBackup
 import it.fast4x.riplay.extensions.scheduled.periodicCheckNewFromArtists
 import it.fast4x.riplay.extensions.scheduled.periodicCheckUpdate
@@ -48,6 +48,7 @@ import it.fast4x.riplay.utils.getWorkStatusFlow
 import it.fast4x.riplay.utils.isWorkScheduled
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.styling.semiBold
+import kotlinx.coroutines.launch
 
 
 const val workNameNewRelease = "weeklyOrDailyCheckNewFromArtistsWork"
@@ -69,9 +70,9 @@ fun EventsScreen() {
 //    }
     var eventType by remember { mutableStateOf(EventType.NewArtistsRelease) }
 
-    val workInfoNewRelease by context.getWorkStatusFlow(workNameNewRelease).collectAsState(initial = null)
-    val workInfoCheckUpdate by context.getWorkStatusFlow(workNameCheckUpdate).collectAsState(initial = null)
-    val workInfoAutoBackup by context.getWorkStatusFlow(workNameAutoBackup).collectAsState(initial = null)
+    val workInfoNewRelease by context.getWorkStatusFlow(workNameNewRelease).collectAsStateWithLifecycle(initialValue = null)
+    val workInfoCheckUpdate by context.getWorkStatusFlow(workNameCheckUpdate).collectAsStateWithLifecycle(initialValue = null)
+    val workInfoAutoBackup by context.getWorkStatusFlow(workNameAutoBackup).collectAsStateWithLifecycle(initialValue = null)
 
     var weeklyOrDaily by remember { mutableStateOf(true) }
 
@@ -403,9 +404,12 @@ fun AutoBackupContent(
     onToggleFrequency: (Boolean) -> Unit,
     onAction: () -> Unit
 ) {
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
     val isScheduled = isWorkScheduled(workInfo)
     val DEFAULT_DOWNLOADS_URI = "content://com.android.externalstorage.documents/tree/primary%3ADownload"
-    var selectedFolderUri by rememberPreference(AUTO_BACKUP_FOLDER.key, DEFAULT_DOWNLOADS_URI)
+    val selectedFolderUri = appSettings.autoBackupFolder
+    val scope = rememberCoroutineScope()
 
     val folderPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()
@@ -415,7 +419,11 @@ fun AutoBackupContent(
                 uri,
                 Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             )
-            selectedFolderUri = uri.toString()
+            scope.launch {
+                appSettingsManager.updateSettings (
+                    appSettings.copy(autoBackupFolder = uri.toString())
+                )
+            }
         }
     }
 

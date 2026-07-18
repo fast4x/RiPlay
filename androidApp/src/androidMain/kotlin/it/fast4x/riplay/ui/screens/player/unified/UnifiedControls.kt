@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -23,9 +22,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
-import it.fast4x.riplay.LocalAppearanceSettings
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Info
 import it.fast4x.riplay.data.models.UiMedia
@@ -74,14 +74,13 @@ fun UnifiedControls(
     playerState: PlayerState,
 ) {
 
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     var likedAt by rememberSaveable {
         mutableStateOf<Long?>(null)
     }
 
-    //var disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
     val disableScrollingText = appearanceSettings.disableScrollingText
 
     val mediaItem = playerState.mediaInfo?.mediaItem ?: return
@@ -91,34 +90,17 @@ fun UnifiedControls(
     }
 
 
-//    var playerTimelineSize by rememberPreference(
-//        PLAYER_TIMELINE_SIZE.key,
-//        PlayerTimelineSize.Biggest
-//    )
     val playerTimelineSize = appearanceSettings.playerTimelineSize
 
-
-    //val playerInfoType by rememberPreference(PLAYER_INFO_TYPE.key, PlayerInfoType.Essential)
     val playerInfoType = appearanceSettings.playerInfoType
-//    var playerSwapControlsWithTimeline by rememberPreference(
-//        PLAYER_SWAP_CONTROLS_WITH_TIMELINE.key,
-//        false
-//    )
+
     val playerSwapControlsWithTimeline = appearanceSettings.playerSwapControlsWithTimeline
-    //var showlyricsthumbnail by rememberPreference(SHOW_LYRICS_THUMBNAIL.key, false)
     val showlyricsthumbnail = appearanceSettings.showLyricsThumbnail
-//    var transparentBackgroundActionBarPlayer by rememberPreference(
-//        TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR.key,
-//        true
-//    )
+
     val transparentBackgroundActionBarPlayer = appearanceSettings.transparentBackgroundActionBarPlayer
-    //var playerControlsType by rememberPreference(PLAYER_CONTROLS_TYPE.key, PlayerControlsType.Essential)
     val playerControlsType = appearanceSettings.playerControlsType
-    //var playerPlayButtonType by rememberPreference(PLAYER_PLAY_BUTTON_TYPE.key, PlayerPlayButtonType.Disabled)
     val playerPlayButtonType = appearanceSettings.playerPlayButtonType
-    //var showthumbnail by rememberPreference(SHOW_THUMBNAIL.key, true)
     val showthumbnail = appearanceSettings.showThumbnail
-    //var playerType by rememberPreference(PLAYER_TYPE.key, PlayerType.Modern)
     val playerType = appearanceSettings.playerType
     val expandedlandscape = (isLandscape && playerType == PlayerType.Modern) || (expandedplayer && !showthumbnail)
 

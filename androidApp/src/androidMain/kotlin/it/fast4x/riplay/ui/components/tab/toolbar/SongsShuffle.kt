@@ -6,12 +6,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.appContext
-import it.fast4x.riplay.enums.MaxSongs
-import it.fast4x.riplay.extensions.preferences.getEnum
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MAX_SONGS_IN_QUEUE
-import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.forcePlayFromBeginning
@@ -56,6 +53,9 @@ fun playShuffledSongs( mediaItems: List<MediaItem>, context: Context, binder: Pl
 
     if ( binder == null ) return
 
+    val appSettingsManager = (appContext() as MainApplication).appSettingsManager
+    val appSettings = appSettingsManager.activeSettings.value
+
     // Send message saying that there's no song to play
     if( mediaItems.isEmpty() ) {
         SmartMessage(
@@ -65,10 +65,7 @@ fun playShuffledSongs( mediaItems: List<MediaItem>, context: Context, binder: Pl
         return
     }
 
-    val maxSongsInQueue = context.preferences
-        .getEnum( MAX_SONGS_IN_QUEUE.key, MaxSongs.`500` )
-        .number
-        .toInt()
+    val maxSongsInQueue = appSettings.maxSongsInQueue.number.toInt()
 
     mediaItems.let { songs ->
 

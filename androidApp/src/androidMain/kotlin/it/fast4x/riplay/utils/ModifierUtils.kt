@@ -47,11 +47,11 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.enums.ButtonState
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.BUTTON_ZOOM_OUT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_PLAYER_HORIZONTAL_SWIPE
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.shimmer
 import kotlin.math.sqrt
 
@@ -108,8 +108,10 @@ fun Modifier.detectGestures(
     onPress: () -> Unit? = {},
     onLongPress: () -> Unit? = {},
 ): Modifier {
-    val disablePlayerHorizontalSwipe by rememberPreference(DISABLE_PLAYER_HORIZONTAL_SWIPE.key, false)
-    var deltaX by remember { mutableStateOf(0f) }
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val disablePlayerHorizontalSwipe = appSettings.disablePlayerHorizontalSwipe
+    var deltaX by remember { mutableFloatStateOf(0f) }
     return this
         .pointerInput(Unit) {
             detectHorizontalDragGestures(
@@ -485,8 +487,10 @@ fun Modifier.applyIf(condition : Boolean, modifier : Modifier.() -> Modifier) : 
 }
 
 fun Modifier.bounceClick() = composed {
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
     var buttonState by remember { mutableStateOf(ButtonState.Idle) }
-    var buttonzoomout by rememberPreference(BUTTON_ZOOM_OUT.key,false)
+    var buttonzoomout = appearanceSettings.buttonzoomout
     val scale by animateFloatAsState(if ((buttonState == ButtonState.Pressed) && (buttonzoomout)) 0.8f else 1f)
 
     this

@@ -1,15 +1,18 @@
 package it.fast4x.riplay.musicvault
 
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_VAULT_DISCLAIMER_ACCEPTED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MUSIC_VAULT_ENABLED
-import it.fast4x.riplay.extensions.preferences.preferences
+import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.utils.appContext
 import timber.log.Timber
 
 fun checkAndStartMusicVault(){
     val context = appContext()
-    if (context.preferences.getBoolean(MUSIC_VAULT_ENABLED.key, false)
-        && context.preferences.getBoolean(MUSIC_VAULT_DISCLAIMER_ACCEPTED.key, false)) {
+
+    val appSettingsManager = (context as MainApplication).appSettingsManager
+    val appSettings = appSettingsManager.activeSettings.value
+
+//    if (context.preferences.getBoolean(MUSIC_VAULT_ENABLED.key, false)
+//        && context.preferences.getBoolean(MUSIC_VAULT_DISCLAIMER_ACCEPTED.key, false)) {
+    if (appSettings.musicVaultEnabled && appSettings.musicVaultDisclaimerAccepted) {
         val result = testAndStartChaquopy()
         Timber.d("Chaquopy $result")
     }

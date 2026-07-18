@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
+import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.data.Database
@@ -13,10 +14,6 @@ import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.data.models.defaultQueueId
 import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXCLUDE_SONG_IF_IS_VIDEO
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXCLUDE_SONGS_WITH_DURATION_LIMIT
-import it.fast4x.riplay.extensions.preferences.getEnum
-import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.appContext
@@ -100,8 +97,9 @@ class GlobalQueueViewModel() : ViewModel(), ViewModelProvider.Factory {
 
     fun exclude(mediaItem: MediaItem, context: Context): Boolean {
         runCatching {
-            val preferences = context.preferences
-            val excludeIfIsVideo = preferences.getBoolean(EXCLUDE_SONG_IF_IS_VIDEO.key, false)
+            //val preferences = context.preferences
+            val appSettingsManager = (appContext() as MainApplication).appSettingsManager
+            val excludeIfIsVideo = appSettingsManager.activeSettings.value.excludeIfIsVideo //preferences.getBoolean(EXCLUDE_SONG_IF_IS_VIDEO.key, false)
             if (excludeIfIsVideo && mediaItem.isVideo) {
                 CoroutineScope(Dispatchers.Main).launch {
                     SmartMessage(context.resources.getString(R.string.message_excluded_videos).format(1), context = context)
@@ -109,8 +107,8 @@ class GlobalQueueViewModel() : ViewModel(), ViewModelProvider.Factory {
                 return true
             }
 
-            val excludeSongWithDurationLimit =
-                preferences.getEnum(EXCLUDE_SONGS_WITH_DURATION_LIMIT.key, DurationInMinutes.Disabled)
+            val excludeSongWithDurationLimit = appSettingsManager.activeSettings.value.excludeSongWithDurationLimit
+                //preferences.getEnum(EXCLUDE_SONGS_WITH_DURATION_LIMIT.key, DurationInMinutes.Disabled)
             if (excludeSongWithDurationLimit != DurationInMinutes.Disabled) {
                 val excludedSong = (mediaItem.mediaMetadata.extras?.getString("durationText")?.let { it1 ->
                     durationTextToMillis(it1)
@@ -135,8 +133,10 @@ class GlobalQueueViewModel() : ViewModel(), ViewModelProvider.Factory {
     fun exclude(mediaItems: List<MediaItem>, context: Context): List<MediaItem> {
         var filteredMediaItems = mediaItems
         runCatching {
-            val preferences = context.preferences
-            val excludeIfIsVideo = preferences.getBoolean(EXCLUDE_SONG_IF_IS_VIDEO.key, false)
+            //val preferences = context.preferences
+            //val excludeIfIsVideo = preferences.getBoolean(EXCLUDE_SONG_IF_IS_VIDEO.key, false)
+            val appSettingsManager = (appContext() as MainApplication).appSettingsManager
+            val excludeIfIsVideo = appSettingsManager.activeSettings.value.excludeIfIsVideo
             if (excludeIfIsVideo) {
                 filteredMediaItems = mediaItems.filter { !it.isVideo }
             }
@@ -147,8 +147,8 @@ class GlobalQueueViewModel() : ViewModel(), ViewModelProvider.Factory {
                     SmartMessage(context.resources.getString(R.string.message_excluded_videos).format(excludedVideos), context = context)
                 }
 
-            val excludeSongWithDurationLimit =
-                preferences.getEnum(EXCLUDE_SONGS_WITH_DURATION_LIMIT.key, DurationInMinutes.Disabled)
+            val excludeSongWithDurationLimit = appSettingsManager.activeSettings.value.excludeSongWithDurationLimit
+                //preferences.getEnum(EXCLUDE_SONGS_WITH_DURATION_LIMIT.key, DurationInMinutes.Disabled)
 
             if (excludeSongWithDurationLimit != DurationInMinutes.Disabled) {
                 filteredMediaItems = mediaItems.filter {

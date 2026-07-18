@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,10 +31,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import coil.Coil
 import coil.annotation.ExperimentalCoilApi
-import it.fast4x.riplay.LocalAppSettings
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalBackupManager
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.CacheType
@@ -48,15 +48,11 @@ import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.InputNumericDialog
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.RestartPlayerService
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.COIL_CUSTOM_DISK_CACHE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.COIL_DISK_CACHE_MAX_SIZE
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.databasebackup.BackupUiState
 import it.fast4x.riplay.ui.components.themed.DefaultDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.styling.style
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -72,8 +68,8 @@ fun DataSettings() {
     val backupViewModel = LocalBackupManager.current
     val backupUiState by backupViewModel.uiState.collectAsState()
 
-    val appSettingsVieModel = LocalAppSettings.current
-    val appSettings = appSettingsVieModel.activeSettings.collectAsState().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val backupLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/octet-stream")
@@ -101,17 +97,11 @@ fun DataSettings() {
         }
     }
 
-//    var coilDiskCacheMaxSize by rememberPreference(
-//        COIL_DISK_CACHE_MAX_SIZE.key,
-//        CoilDiskCacheMaxSize.`128MB`
-//    )
     val coilDiskCacheMaxSize = appSettings.coilDiskCacheMaxSize
 
 
     var showCoilCustomDiskCacheDialog by remember { mutableStateOf(false) }
-//    var coilCustomDiskCache by rememberPreference(
-//        COIL_CUSTOM_DISK_CACHE.key,32
-//    )
+
     val coilCustomDiskCache = appSettings.coilCustomDiskCache
 
     var isExporting by remember { mutableStateOf(false) }
@@ -214,7 +204,7 @@ fun DataSettings() {
                         val new = appSettings.copy(
                             coilDiskCacheMaxSize = it
                         )
-                        appSettingsVieModel.updateSettings(new)
+                        appSettingsManager.updateSettings(new)
                     }
 
                     if (coilDiskCacheMaxSize == CoilDiskCacheMaxSize.Custom)
@@ -252,7 +242,7 @@ fun DataSettings() {
                             val new = appSettings.copy(
                                 coilCustomDiskCache = it.toInt()
                             )
-                            appSettingsVieModel.updateSettings(new)
+                            appSettingsManager.updateSettings(new)
                         }
 
                         showCoilCustomDiskCacheDialog = false

@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,14 +27,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.compositeOver
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.commonutils.MONTHLY_PREFIX
 import it.fast4x.riplay.commonutils.PINNED_PREFIX
@@ -45,19 +45,12 @@ import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.enums.NavRoutes
-import it.fast4x.riplay.enums.PlaylistSortBy
-import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.ui.items.PlaylistItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MENU_STYLE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SORT_BY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SORT_ORDER
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
-import kotlinx.coroutines.Dispatchers
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
 
@@ -105,15 +98,10 @@ fun PlaylistsItemMenu(
     var isViewingPlaylists by remember {
         mutableStateOf(false)
     }
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
-//    var height by remember {
-//        mutableStateOf(0.dp)
-//    }
-
-    val menuStyle by rememberPreference(
-        MENU_STYLE.key,
-        MenuStyle.List
-    )
+    val menuStyle = appSettings.menuStyle
 
     if (menuStyle == MenuStyle.Grid) {
         PlaylistsItemGridMenu(
@@ -164,12 +152,11 @@ fun PlaylistsItemMenu(
             }, label = ""
         ) { currentIsViewingPlaylists ->
             if (currentIsViewingPlaylists) {
-                val context = LocalContext.current
-                val sortBy by rememberPreference(PLAYLIST_SORT_BY.key, PlaylistSortBy.DateAdded)
-                val sortOrder by rememberPreference(PLAYLIST_SORT_ORDER.key, SortOrder.Descending)
+                val sortBy = appSettings.playlistSortBy
+                val sortOrder = appSettings.playlistSortOrder
                 val playlistPreviews by remember {
                     Database.playlistPreviews(sortBy, sortOrder)
-                }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
+                }.collectAsStateWithLifecycle(initialValue = emptyList())
 
                 val pinnedPlaylists = playlistPreviews.filter {
                     it.playlist.name.startsWith(PINNED_PREFIX, 0, true)

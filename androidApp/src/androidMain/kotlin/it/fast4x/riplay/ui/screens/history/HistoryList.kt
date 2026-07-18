@@ -39,7 +39,6 @@ import it.fast4x.riplay.commonutils.EXPLICIT_PREFIX
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavigationBarPosition
-import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.data.models.DateAgo
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
@@ -50,17 +49,12 @@ import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
-import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import kotlinx.coroutines.flow.map
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.HistoryType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.ui.components.ButtonsRow
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.HISTORY_TYPE
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.forcePlay
@@ -71,11 +65,14 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.unit.Dp
-import it.fast4x.riplay.LocalAppearanceSettings
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.models.EventWithSong
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.GlobalSheetState
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import java.time.DayOfWeek
 import java.time.Instant
@@ -91,8 +88,10 @@ import java.time.format.DateTimeFormatter
 fun HistoryList(
     navController: NavController
 ) {
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
@@ -102,8 +101,8 @@ fun HistoryList(
     val thumbnailSizePx = thumbnailSizeDp.px
 
 
-    val parentalControlEnabled by rememberPreference(PARENTAL_CONTROL_ENABLED.key, false)
-    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    val parentalControlEnabled = appSettings.parentalControlEnabled
+    val disableScrollingText = appearanceSettings.disableScrollingText
     //val thumbnailRoundness by rememberPreference(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
     val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
@@ -134,7 +133,7 @@ fun HistoryList(
     val buttonsList = mutableListOf(HistoryType.History to stringResource(R.string.history))
     if (isYtLoggedIn()) buttonsList += HistoryType.OnlineHistory to stringResource(R.string.online_history)
 
-    var historyType by rememberPreference(HISTORY_TYPE.key, HistoryType.History)
+    val historyType = appSettings.historyType
     var historyPage by persist<HistoryPage>("home/historyPage")
 
     LaunchedEffect(Unit, historyType) {
@@ -144,7 +143,7 @@ fun HistoryList(
     }
 
     val colorPalette = colorPalette()
-
+    val coroutineScope = rememberCoroutineScope()
     val state = rememberLazyListState()
 
     Column(
@@ -177,7 +176,11 @@ fun HistoryList(
                     ButtonsRow(
                         buttons = buttonsList,
                         currentValue = historyType,
-                        onValueUpdate = { historyType = it },
+                        onValueUpdate = {
+                            coroutineScope.launch {
+                                appSettingsManager.updateSettings(appSettings.copy(historyType = it))
+                            }
+                        },
                         modifier = Modifier.padding(horizontal = 12.dp)
                     )
                 }

@@ -48,6 +48,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -57,8 +58,8 @@ import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.BrowseEndpoint
 import it.fast4x.environment.requests.ArtistItemsPage
 import it.fast4x.environment.utils.completed
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
@@ -75,10 +76,7 @@ import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.enums.MaxSongs
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.Album
@@ -100,14 +98,12 @@ import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.isExplicit
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MAX_SONGS_IN_QUEUE
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.commonutils.setLikeState
 import it.fast4x.riplay.enums.ItemSortBy
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SONG_SORT_ORDER
 import it.fast4x.riplay.ui.components.themed.SortMenu
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.CoroutineScope
@@ -134,16 +130,16 @@ fun ArtistOverviewItems(
     disableScrollingText: Boolean,
     onDismiss: () -> Unit
 ) {
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalGlobalSheetState.current
-    val windowInsets = LocalPlayerAwareWindowInsets.current
     val selectedQueue = LocalSelectedQueue.current
 
     val songThumbnailSizeDp = Dimensions.thumbnails.song
     val songThumbnailSizePx = songThumbnailSizeDp.px
     val albumThumbnailSizeDp = 108.dp
-    val albumThumbnailSizePx = albumThumbnailSizeDp.px
     val artistThumbnailSizeDp = 92.dp
     val artistThumbnailSizePx = artistThumbnailSizeDp.px
     val playlistThumbnailSizeDp = 108.dp
@@ -163,14 +159,14 @@ fun ArtistOverviewItems(
     var totalMinutesToLike by remember { mutableStateOf("") }
 
     val hapticFeedback = LocalHapticFeedback.current
-    val parentalControlEnabled by rememberPreference(PARENTAL_CONTROL_ENABLED.key, false)
+    val parentalControlEnabled = appSettings.parentalControlEnabled
 
     var artistItemsPage by remember { mutableStateOf<ArtistItemsPage?>(null) }
 
 
     val thumbnailSizeDp = Dimensions.thumbnails.album //+ 24.dp
     val thumbnailSizePx = thumbnailSizeDp.px
-    val maxSongsInQueue by rememberPreference(MAX_SONGS_IN_QUEUE.key, MaxSongs.`500`)
+    val maxSongsInQueue = appSettings.maxSongsInQueue
 
     val coroutineScope = rememberCoroutineScope()
     val isNetworkConnected = rememberIsNetworkConnected()
@@ -494,7 +490,7 @@ fun ArtistOverviewItems(
             }
         } else {
             var sortBy by remember{ mutableStateOf(ItemSortBy.Year)}
-            var sortOrder by rememberPreference(SONG_SORT_ORDER.key, SortOrder.Descending)
+            val sortOrder = appSettings.songSortOrder
             val sortOrderIconRotation by animateFloatAsState(
                 targetValue = if (sortOrder == SortOrder.Ascending) 0f else 180f,
                 animationSpec = tween(durationMillis = 400, easing = LinearEasing), label = ""
@@ -575,7 +571,13 @@ fun ArtistOverviewItems(
                             HeaderIconButton(
                                 icon = R.drawable.arrow_up,
                                 color = colorPalette().text,
-                                onClick = { sortOrder = !sortOrder },
+                                onClick = {
+                                    coroutineScope.launch {
+                                        appSettingsManager.updateSettings(
+                                            appSettings.copy(songSortOrder = !sortOrder)
+                                        )
+                                    }
+                                },
                                 onLongClick = {
                                     menuState.display {
                                         sortMenu()

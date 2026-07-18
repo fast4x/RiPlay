@@ -27,7 +27,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.data.Database
@@ -36,8 +38,6 @@ import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Blacklist
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.enums.BlacklistType
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.applyIf
@@ -56,7 +56,9 @@ fun BlacklistItem(
     onRemove: () -> Unit = {},
     onClick: () -> Unit = {}
 ) {
-    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val disableScrollingText = appearanceSettings.disableScrollingText
     val colorPalette = colorPalette()
 
     var blacklistedEntity: Any? by remember { mutableStateOf(null) }

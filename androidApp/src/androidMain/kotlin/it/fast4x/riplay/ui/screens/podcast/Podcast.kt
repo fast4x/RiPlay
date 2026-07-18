@@ -33,7 +33,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -60,8 +59,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import it.fast4x.riplay.extensions.persist.persist
@@ -70,7 +69,8 @@ import it.fast4x.environment.Environment.getBestQuality
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.requests.podcastPage
-import it.fast4x.riplay.LocalAppearanceSettings
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
@@ -78,7 +78,6 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.SongPlaylistMap
@@ -102,7 +101,6 @@ import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.utils.enqueue
@@ -111,11 +109,8 @@ import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.ui.styling.medium
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -145,8 +140,10 @@ fun Podcast(
     navController: NavController,
     browseId: String,
 ) {
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
@@ -197,13 +194,8 @@ fun Podcast(
         mutableStateOf(false)
     }
 
-//    var thumbnailRoundness by rememberPreference(
-//        THUMBNAIL_ROUNDNESS.key,
-//        ThumbnailRoundness.Light
-//    )
     val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
-    //val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
     val disableScrollingText = appearanceSettings.disableScrollingText
 
     var totalPlayTimes = 0L
@@ -727,7 +719,6 @@ fun Podcast(
                                 binder?.player?.enqueue(song.asMediaItem, queue = it)
                             }
                         ) {
-                            //var forceRecompose by remember { mutableStateOf(false) }
                             SongItem(
                                 song = song.asMediaItem,
                                 thumbnailSizePx = songThumbnailSizePx,
@@ -794,7 +785,7 @@ fun Podcast(
                 }
             }
 
-            val showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
+            val showFloatingIcon = appSettings.showFloatingIcon
             if( UiType.ViMusic.isCurrent() && showFloatingIcon )
             FloatingActionsContainerWithScrollToTop(
                 lazyListState = lazyListState,

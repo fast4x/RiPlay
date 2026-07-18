@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -12,16 +11,14 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import coil.Coil
 import coil.annotation.ExperimentalCoilApi
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.enums.CacheType
-import it.fast4x.riplay.enums.CoilDiskCacheMaxSize
 import it.fast4x.riplay.enums.LocalPlayerDiskCacheMaxSize
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.COIL_DISK_CACHE_MAX_SIZE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXO_PLAYER_DISK_CACHE_MAX_SIZE
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 
 
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -32,15 +29,11 @@ fun CacheSpaceIndicator(
     circularIndicator: Boolean = false,
     horizontalPadding: Dp = 12.dp,
 ) {
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
-    val coilDiskCacheMaxSize by rememberPreference(
-        COIL_DISK_CACHE_MAX_SIZE.key,
-        CoilDiskCacheMaxSize.`128MB`
-    )
-    val localPlayerDiskCacheMaxSize by rememberPreference(
-        EXO_PLAYER_DISK_CACHE_MAX_SIZE.key,
-        LocalPlayerDiskCacheMaxSize.`2GB`
-    )
+    val coilDiskCacheMaxSize = appSettings.coilDiskCacheMaxSize
+    val localPlayerDiskCacheMaxSize = appSettings.exoPlayerDiskCacheMaxSize
 
     when (cacheType) {
         CacheType.Images -> {}

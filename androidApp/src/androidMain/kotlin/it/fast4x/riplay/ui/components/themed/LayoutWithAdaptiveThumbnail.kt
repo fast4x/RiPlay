@@ -9,23 +9,21 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import coil.compose.AsyncImage
 import com.valentinilk.shimmer.shimmer
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.R
-import it.fast4x.riplay.enums.PlayerThumbnailSize
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.styling.shimmer
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_THUMBNAIL_SIZE
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.thumbnailShape
@@ -57,11 +55,13 @@ fun adaptiveThumbnailContent(
     onOtherVersionAvailable: (() -> Unit)? = {},
     onClick: (() -> Unit)? = {}
 ): @Composable () -> Unit = {
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
     BoxWithConstraints(contentAlignment = Alignment.Center) {
         val thumbnailSizeDp = if (isLandscape) (maxHeight - 128.dp) else (maxWidth - 64.dp)
         val thumbnailSizePx = thumbnailSizeDp.px
         val context = LocalContext.current
-        val playerThumbnailSize by rememberPreference(PLAYER_THUMBNAIL_SIZE.key, PlayerThumbnailSize.Medium)
+        val playerThumbnailSize = appearanceSettings.playerThumbnailSize
 
         val modifier = Modifier
             //.padding(all = 16.dp)

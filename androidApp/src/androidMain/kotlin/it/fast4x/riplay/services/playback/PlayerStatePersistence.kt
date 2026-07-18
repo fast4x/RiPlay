@@ -2,12 +2,9 @@ package it.fast4x.riplay.services.playback
 
 import android.content.Context
 import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.STATE_DURATION
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.STATE_IS_PLAYING
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.STATE_MEDIA_ID
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.STATE_POSITION
 import timber.log.Timber
 
+/*
 class PlayerStatePersistence(context: Context) {
 
     val prefs = context.preferences
@@ -37,3 +34,5 @@ class PlayerStatePersistence(context: Context) {
     fun getSavedDuration(): Long = prefs.getLong(STATE_DURATION.key, 0L)
     fun getSavedIsPlaying(): Boolean = prefs.getBoolean(STATE_IS_PLAYING.key, false)
 }
+
+ */

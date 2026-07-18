@@ -61,6 +61,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -71,6 +72,8 @@ import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.requests.AlbumPage
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.commonutils.EXPLICIT_PREFIX
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -121,11 +124,8 @@ import it.fast4x.riplay.utils.formatAsTime
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.languageDestination
 import it.fast4x.riplay.ui.styling.medium
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -140,7 +140,6 @@ import it.fast4x.riplay.extensions.qrcodeanalyzer.GenerateQrButton
 import it.fast4x.riplay.extensions.musicbrainz.MBMetadataHelper
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.musicbrainz.repository.AlbumRepository
-import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.ExternalLinksSection
@@ -180,6 +179,11 @@ fun AlbumDetails(
     onSettingsClick: () -> Unit,
     onNavigateTo: () -> Unit
 ) {
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
 
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalGlobalSheetState.current
@@ -190,8 +194,8 @@ fun AlbumDetails(
         .collectAsState(initial = null)
     var albumPage by remember { mutableStateOf<AlbumPage?>(null) }
 
-    val parentalControlEnabled by rememberPreference(PARENTAL_CONTROL_ENABLED.key, false)
-    val disableScrollingText by rememberPreference(PreferenceKey.DISABLE_SCROLLING_TEXT.key, false)
+    val parentalControlEnabled = appSettings.parentalControlEnabled
+    val disableScrollingText = appearanceSettings.disableScrollingText
     val isNetworkConnected = rememberIsNetworkConnected()
     LoaderScreen(show = songs.isEmpty())
 
@@ -495,17 +499,6 @@ fun AlbumDetails(
             lazyListState.scrollToItem(nowPlayingItem, 1)
         scrollToNowPlaying = false
     }
-
-    val sectionTextModifier = Modifier
-        .padding(horizontal = 16.dp)
-        .padding(top = 24.dp, bottom = 8.dp)
-
-    var translateEnabled by remember {
-        mutableStateOf(false)
-    }
-
-    val translator =  Translator(CustomHttpClient.okHttpClient)
-    val languageDestination = languageDestination()
 
     var readMore by remember { mutableStateOf(false) }
 
@@ -1449,7 +1442,7 @@ fun AlbumDetails(
                 }
 
 
-                val showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
+                val showFloatingIcon = appSettings.showFloatingIcon
                 if (UiType.ViMusic.isCurrent() && showFloatingIcon)
                     MultiFloatingActionsContainer(
                         iconId = R.drawable.shuffle,

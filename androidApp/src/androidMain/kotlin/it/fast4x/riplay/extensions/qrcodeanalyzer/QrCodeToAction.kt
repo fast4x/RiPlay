@@ -6,11 +6,10 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.environment.Environment
 import it.fast4x.environment.requests.song
+import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
-import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
@@ -24,6 +23,9 @@ import timber.log.Timber
 @OptIn(UnstableApi::class)
 suspend fun qrCodeToAction(content: String, context: Context, binder: PlayerService.Binder, navController: NavController){
     if (content.isNotEmpty()) {
+
+        val appSettingsManager = (context as MainApplication).appSettingsManager
+
         val parts = content.split(":")
 
         if (parts.size >= 3) {
@@ -40,11 +42,7 @@ suspend fun qrCodeToAction(content: String, context: Context, binder: PlayerServ
 
                     mediaItem?.let { media ->
                         withContext(Dispatchers.Main) {
-                            if (!media.isExplicit && !context.preferences.getBoolean(
-                                    PARENTAL_CONTROL_ENABLED.key,
-                                    false
-                                )
-                            )
+                            if (!media.isExplicit && !appSettingsManager.activeSettings.value.parentalControlEnabled)
                                 binder.player.forcePlay(media)
                             else
                                 SmartMessage(

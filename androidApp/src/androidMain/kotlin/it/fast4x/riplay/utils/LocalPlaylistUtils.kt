@@ -7,11 +7,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.PINNED_PREFIX
@@ -26,11 +29,6 @@ import it.fast4x.riplay.ui.components.themed.MenuEntry
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MENU_STYLE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SONG_SORT_BY
-import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.REORDER_IN_QUEUE_ENABLED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SONG_SORT_ORDER
 import it.fast4x.riplay.ui.components.themed.DeleteDialog
 import it.fast4x.riplay.ui.components.themed.IDialog
 import it.fast4x.riplay.ui.components.tab.Sort
@@ -83,10 +81,14 @@ class PositionLock private constructor(
     companion object {
         @JvmStatic
         @Composable
-        fun init( sortOrder: SortOrder ) = PositionLock(
-            rememberPreference(REORDER_IN_QUEUE_ENABLED.key, true),
-            rememberSaveable( sortOrder ) { mutableStateOf( sortOrder == SortOrder.Ascending ) }
-        )
+        fun init( sortOrder: SortOrder ): PositionLock {
+            val appSettingsManager = LocalAppSettingsManager.current
+            val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+            return PositionLock(
+                remember { mutableStateOf(appSettings.reorderInQueueEnabled) },
+                rememberSaveable(sortOrder) { mutableStateOf(sortOrder == SortOrder.Ascending) }
+            )
+        }
     }
 
     override val secondIconId: Int = R.drawable.unlocked
@@ -130,12 +132,16 @@ class PlaylistSongsSort private constructor(
     companion object {
         @JvmStatic
         @Composable
-        fun init() = PlaylistSongsSort(
-            rememberPreference(SONG_SORT_ORDER.key, SortOrder.Descending),
-            rememberPreference(PLAYLIST_SONG_SORT_BY.key, PlaylistSongSortBy.Title),
-            LocalGlobalSheetState.current,
-            rememberPreference(MENU_STYLE.key, MenuStyle.List)
-        )
+        fun init(): PlaylistSongsSort {
+            val appSettingsManager = LocalAppSettingsManager.current
+            val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+            return PlaylistSongsSort(
+                remember{ mutableStateOf(appSettings.songSortOrder)},
+                remember{ mutableStateOf(appSettings.playlistSongsSortBy)},
+                LocalGlobalSheetState.current,
+                remember { mutableStateOf(appSettings.menuStyle) }
+            )
+        }
     }
 
     @Composable

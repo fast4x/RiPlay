@@ -24,7 +24,6 @@ fun MoodListScreen(
     mood: Mood,
     miniPlayer: @Composable () -> Unit = {},
 ) {
-    val saveableStateHolder = rememberSaveableStateHolder()
 
     PageContainer(
         //modifier = modifier,
@@ -36,21 +35,4 @@ fun MoodListScreen(
             mood = mood
         )
     }
-
-//    ScreenContainer(
-//        navController,
-//        navBarContent = { item ->
-//            item(0, stringResource(R.string.mood), R.drawable.music_album)
-//        },
-//        miniPlayer = miniPlayer
-//    ) { currentTabIndex ->
-//        saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
-//            when (currentTabIndex) {
-//                0 -> MoodList(
-//                    navController = navController,
-//                    mood = mood
-//                )
-//            }
-//        }
-//    }
 }

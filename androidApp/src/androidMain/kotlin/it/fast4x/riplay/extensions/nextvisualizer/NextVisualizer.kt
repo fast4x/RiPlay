@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,13 +34,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
-import it.fast4x.riplay.LocalAppearanceSettings
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.toThumbnail
@@ -68,16 +69,11 @@ import it.fast4x.riplay.extensions.nextvisualizer.utils.VisualizerHelper
 import it.fast4x.riplay.extensions.nextvisualizer.views.VisualizerView
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.utils.DisposableListener
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CURRENT_VISUALIZER
 import it.fast4x.riplay.utils.currentWindow
 import it.fast4x.riplay.utils.getBitmapFromUrl
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.VISUALIZER_ENABLED
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.enums.ThumbnailRoundness
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.DelayedControls
 import timber.log.Timber
@@ -98,15 +94,20 @@ fun NextVisualizer() {
             permission.launchPermissionRequest()
         }
     }
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
+    val coroutineScope = rememberCoroutineScope()
 
     val context = LocalContext.current
-    val visualizerEnabled by rememberPreference(VISUALIZER_ENABLED.key, false)
+    //val visualizerEnabled by rememberPreference(VISUALIZER_ENABLED.key, false)
+    val visualizerEnabled = appearanceSettings.visualizerEnabled
 
     if (visualizerEnabled && permission.status.isGranted) {
-        val appearanceSettingsVieModel = LocalAppearanceSettings.current
-        val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+
 
 //        val permission = Manifest.permission.RECORD_AUDIO
 //
@@ -165,7 +166,6 @@ fun NextVisualizer() {
 
         //} else {
 
-            val binder = LocalPlayerServiceBinder.current
             val visualizerView = VisualizerView(context)
             val audioSessionId = remember {
                 0
@@ -181,13 +181,15 @@ fun NextVisualizer() {
             println("NextVisualizer View created audioSessionId: $audioSessionId")
 
             val visualizersList = getVisualizers()
-            var currentVisualizer by rememberPreference(CURRENT_VISUALIZER.key, 0)
-            if (currentVisualizer < 0) currentVisualizer = 0
+            val currentVisualizer = appSettings.currentVisualizer
+            LaunchedEffect(currentVisualizer) {
+                if (currentVisualizer > 0) return@LaunchedEffect
 
-//            val thumbnailRoundness by rememberPreference(
-//                THUMBNAIL_ROUNDNESS.key,
-//                ThumbnailRoundness.Light
-//            )
+                appSettingsManager.updateSettings(
+                    appSettings.copy(currentVisualizer = 0)
+                )
+            }
+
             val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
             var showControls by remember { mutableStateOf(true) }
@@ -203,7 +205,7 @@ fun NextVisualizer() {
                     modifier = Modifier
                         .fillMaxWidth()
                         .fillMaxHeight()
-                        .clickable{
+                        .clickable {
                             showControls = !showControls
                         },
                         /*
@@ -239,7 +241,9 @@ fun NextVisualizer() {
 
 
                 AnimatedVisibility(
-                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 5.dp),
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 5.dp),
                     visible = showControls,
                     enter = fadeIn(),
                     exit = fadeOut()
@@ -256,9 +260,20 @@ fun NextVisualizer() {
                     ) {
                         IconButton(
                             onClick = {
-                                if (currentVisualizer <= visualizersList.lastIndex) currentVisualizer--
-                                if (currentVisualizer < 0) currentVisualizer =
-                                    visualizersList.lastIndex
+                                if (currentVisualizer <= visualizersList.lastIndex) {
+                                    coroutineScope.launch {
+                                        appSettingsManager.updateSettings(
+                                            appSettings.copy(currentVisualizer = currentVisualizer - 1)
+                                        )
+                                    }
+                                }
+                                if (currentVisualizer < 0) {
+                                    coroutineScope.launch {
+                                        appSettingsManager.updateSettings(
+                                            appSettings.copy(currentVisualizer = visualizersList.lastIndex)
+                                        )
+                                    }
+                                }
                             },
                             icon = R.drawable.arrow_left,
                             color = colorPalette().text,
@@ -273,8 +288,13 @@ fun NextVisualizer() {
 
                         IconButton(
                             onClick = {
-                                if (currentVisualizer < visualizersList.lastIndex) currentVisualizer++ else currentVisualizer =
-                                    0
+                                coroutineScope.launch {
+                                    appSettingsManager.updateSettings(
+                                        appSettings.copy(
+                                            currentVisualizer =
+                                            if (currentVisualizer < visualizersList.lastIndex) currentVisualizer + 1 else 0)
+                                    )
+                                }
                             },
                             icon = R.drawable.arrow_right,
                             color = colorPalette().text,

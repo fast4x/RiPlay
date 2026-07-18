@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,8 +34,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
-import it.fast4x.riplay.LocalAppearanceSettings
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.R
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Format
@@ -71,29 +71,19 @@ fun StatsForNerds(
         enter = fadeIn(),
         exit = fadeOut(),
     ) {
-        val appearanceSettingsVieModel = LocalAppearanceSettings.current
-        val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+        val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+        val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
         var format by remember {
             mutableStateOf<Format?>(null)
         }
-        //val showThumbnail by rememberPreference(SHOW_THUMBNAIL.key, true)
         val showThumbnail = appearanceSettings.showThumbnail
-        //val statsForNerds by rememberPreference(STATS_FOR_NERDS.key, false)
         val statsForNerds = appearanceSettings.statsfornerds
-        //val playerType by rememberPreference(PLAYER_TYPE.key, PlayerType.Modern)
         val playerType = appearanceSettings.playerType
-//        val transparentBackgroundActionBarPlayer by rememberPreference(
-//            TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR.key,
-//            true
-//        )
+
         val transparentBackgroundActionBarPlayer = appearanceSettings.transparentBackgroundActionBarPlayer
-        //var blackgradient by rememberPreference(BLACK_GRADIENT.key, false)
         val blackgradient = appearanceSettings.blackgradient
-//        val playerBackgroundColors by rememberPreference(
-//            PLAYER_BACKGROUND_COLORS.key,
-//            PlayerBackgroundColors.BlurredCoverColor
-//        )
+
         val playerBackgroundColors = appearanceSettings.playerBackgroundColors
         var statsfornerdsfull by remember {mutableStateOf(false)}
         val rotationAngle by animateFloatAsState(

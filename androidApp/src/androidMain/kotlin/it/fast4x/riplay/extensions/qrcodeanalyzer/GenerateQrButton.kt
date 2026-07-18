@@ -1,13 +1,11 @@
 package it.fast4x.riplay.extensions.qrcodeanalyzer
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.QrType
-import it.fast4x.riplay.extensions.preferences.PreferenceKey
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.components.ActionPillButton
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.SheetBody
@@ -19,7 +17,10 @@ fun GenerateQrButton(
     type: QrType = QrType.unknown,
     value: String
 ) {
-    var enabledQrCodeActions by rememberPreference(PreferenceKey.QR_CODE_TO_ACTIONS.key, true)
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
+    val enabledQrCodeActions = appSettings.qrCodeToActions
     if (!enabledQrCodeActions) return
 
     if (type == QrType.unknown) return

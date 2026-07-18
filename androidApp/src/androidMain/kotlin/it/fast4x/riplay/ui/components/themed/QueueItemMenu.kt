@@ -1,15 +1,14 @@
 package it.fast4x.riplay.ui.components.themed
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.MenuStyle
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MENU_STYLE
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 
 @Composable
 fun QueueItemMenu(
@@ -19,10 +18,9 @@ fun QueueItemMenu(
     onEdit: () -> Unit = {},
     onRemove: () -> Unit = {},
 ) {
-    val menuStyle by rememberPreference(
-        MENU_STYLE.key,
-        MenuStyle.List
-    )
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val menuStyle  = appSettings.menuStyle
     if (menuStyle == MenuStyle.Grid) {
         QueueItemMenuGrid(
             modifier = modifier,

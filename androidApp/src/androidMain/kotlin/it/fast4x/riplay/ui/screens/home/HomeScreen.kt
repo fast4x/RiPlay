@@ -1,7 +1,6 @@
 package it.fast4x.riplay.ui.screens.home
 
 import android.app.Activity
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -13,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
@@ -21,34 +21,23 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.Dependencies
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.commonutils.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.LocalPlayerSheetState
 import it.fast4x.riplay.R
-import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.toUiChip
 import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.HomeScreenTabs
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.data.models.toUiMood
 import it.fast4x.riplay.enums.HomePagetype
-import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
-import it.fast4x.riplay.extensions.preferences.PreferenceKey
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CHECK_UPDATE_STATE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CLOSE_WITH_BACK_BUTTON
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_MUSIC_IDENTIFIER
-import it.fast4x.riplay.extensions.preferences.getEnum
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.HOME_PAGE_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.HOME_SCREEN_TAB_INDEX
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.INDEX_NAVIGATION_TAB
-import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSITION_EFFECT
 import it.fast4x.riplay.extensions.updater.UpdateDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -56,12 +45,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.ui.components.ScreenContainer
 import it.fast4x.riplay.ui.screens.home.homepages.HomePage
-import it.fast4x.riplay.ui.screens.home.homepages.HomePageAtlas
 import it.fast4x.riplay.ui.screens.home.homepages.HomePageExtended
 import it.fast4x.riplay.utils.CheckForNewVersion
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
-import timber.log.Timber
 import kotlin.system.exitProcess
 
 
@@ -80,19 +66,23 @@ fun HomeScreen(
     miniPlayer: @Composable () -> Unit = {},
     openTabFromShortcut: Int
 ) {
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val recommendationService = Dependencies.application.recommendationService
 
     var showNewversionDialog by rememberSaveable { mutableStateOf(true) }
 
-    var checkUpdateState by rememberPreference(CHECK_UPDATE_STATE.key, CheckUpdateState.Enabled)
+    val checkUpdateState = appSettings.checkUpdateState
 
     val saveableStateHolder = rememberSaveableStateHolder()
 
-    val preferences = LocalContext.current.preferences
+    //val preferences = LocalContext.current.preferences
     //val enableQuickPicksPage by rememberPreference(enableQuickPicksPageKey.key, true)
 
     val isNetworkConnected = rememberIsNetworkConnected()
+
+    val coroutineScope = rememberCoroutineScope()
 
     val openTabFromShortcut1 by remember{
         mutableIntStateOf(openTabFromShortcut)
@@ -101,7 +91,7 @@ fun HomeScreen(
     val initialtabIndex = remember {
         when (openTabFromShortcut1) {
             -1 -> {
-                val savedTab = preferences.getEnum(INDEX_NAVIGATION_TAB.key, HomeScreenTabs.Home)
+                val savedTab = appSettings.indexNavigationTab
                 if (savedTab == HomeScreenTabs.Default) HomeScreenTabs.Home.index
                 else savedTab.index
             }
@@ -109,21 +99,31 @@ fun HomeScreen(
         }
     }
 
-    var (tabIndex, onTabChanged) = rememberPreference(HOME_SCREEN_TAB_INDEX.key, initialtabIndex)
 
-    val offlineModeEnabled by rememberPreference(PreferenceKey.OFFLINE_MODE_ENABLED.key, false)
-    LaunchedEffect(Unit, offlineModeEnabled) {
-        if (offlineModeEnabled) onTabChanged(1)
+    val tabIndex = appSettings.homeScreenTabIndex
+
+    LaunchedEffect(Unit, initialtabIndex) {
+        appSettingsManager.updateSettings (
+            appSettings.copy(homeScreenTabIndex = initialtabIndex)
+        )
     }
 
-    val isEnabledMusicIdentifier by rememberPreference(
-        ENABLE_MUSIC_IDENTIFIER.key,
-        false
-    )
+    val offlineModeEnabled = appSettings.offlineModeEnabled
+    LaunchedEffect(Unit, offlineModeEnabled) {
+        if (offlineModeEnabled) {
+            appSettingsManager.updateSettings(
+                appSettings.copy(
+                    homeScreenTabIndex = 1
+                )
+            )
+        }
+    }
 
-    val transitionEffect by rememberPreference(TRANSITION_EFFECT.key, TransitionEffect.SlideHorizontal)
+    val isEnabledMusicIdentifier = appSettings.enableMusicIdentifier
 
-    val homePageType by rememberPreference(HOME_PAGE_TYPE.key, HomePagetype.Classic)
+    val transitionEffect = appSettings.transitionEffect
+
+    val homePageType = appSettings.homePageType
 
     if (tabIndex == -2) navController.navigate(NavRoutes.search.name)
     if (tabIndex == -3) {
@@ -138,7 +138,13 @@ fun HomeScreen(
     ScreenContainer(
         navController,
         tabIndex,
-        onTabChanged,
+        {
+            coroutineScope.launch {
+                appSettingsManager.updateSettings(
+                    appSettings.copy(homeScreenTabIndex = it)
+                )
+            }
+        },
         miniPlayer,
         transitionEffect = transitionEffect,
         navBarContent = { Item ->
@@ -333,37 +339,11 @@ fun HomeScreen(
             )
     }
 
-    /*
-    if(BuildConfig.FLAVOR == "full") {
-
-        if (showNewversionDialog && checkUpdateState == CheckUpdateState.Enabled)
-            CheckForNewVersion(
-                onDismiss = {},
-                onClose = { showNewversionDialog = false },
-                onNoUpdateAvailable = {}
-            )
-
-        if (checkUpdateState == CheckUpdateState.Ask)
-            ConfirmationDialog(
-                text = stringResource(R.string.check_at_github_for_updates) + "\n\n" +
-                        stringResource(R.string.when_an_update_is_available_you_will_be_asked_if_you_want_to_install_info) + "\n\n" +
-                        stringResource(R.string.but_these_updates_would_not_go_through) + "\n\n" +
-                        stringResource(R.string.you_can_still_turn_it_on_or_off_from_the_settings),
-                confirmText = stringResource(R.string.enable),
-                cancelText = stringResource(R.string.don_t_enable),
-                cancelBackgroundPrimary = true,
-                onCancel = { checkUpdateState = CheckUpdateState.Disabled },
-                onDismiss = {},
-                onConfirm = { checkUpdateState = CheckUpdateState.Enabled },
-            )
-    }
-    */
-
     // Exit app when user uses back
     val context = LocalContext.current
     var confirmCount by remember { mutableIntStateOf( 0 ) }
     val playerSheetState = LocalPlayerSheetState.current
-    var closeWithBackButton by rememberPreference(CLOSE_WITH_BACK_BUTTON.key, true)
+    val closeWithBackButton = appSettings.closeWithBackButton
     BackHandler(
         enabled = !playerSheetState.isExpanded
     ) {

@@ -26,10 +26,6 @@ import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.musicvault.MusicVaultState
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXCLUDE_SONG_IF_IS_VIDEO
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXCLUDE_SONGS_WITH_DURATION_LIMIT
-import it.fast4x.riplay.extensions.preferences.getEnum
-import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import kotlinx.coroutines.CoroutineScope
@@ -301,21 +297,18 @@ fun Player.findMediaItemIndexById(mediaId: String): Int {
 
 fun Player.excludeMediaItems(mediaItems: List<MediaItem>, context: Context): List<MediaItem> {
     return try {
-        val preferences = context.preferences
+        val appSettings = getAppSettings()
 
         var filteredMediaItems = mediaItems
 
         // --- Escludi Video ---
-        val excludeIfIsVideo = preferences.getBoolean(EXCLUDE_SONG_IF_IS_VIDEO.key, false)
+        val excludeIfIsVideo = appSettings.excludeIfIsVideo
         if (excludeIfIsVideo) {
             filteredMediaItems = filteredMediaItems.filter { !it.isVideo }
         }
 
         // --- Escludi per Durata ---
-        val excludeSongWithDurationLimit = preferences.getEnum(
-            EXCLUDE_SONGS_WITH_DURATION_LIMIT.key,
-            DurationInMinutes.Disabled
-        )
+        val excludeSongWithDurationLimit = appSettings.excludeSongWithDurationLimit
 
         if (excludeSongWithDurationLimit != DurationInMinutes.Disabled) {
             filteredMediaItems = filteredMediaItems.filter { item ->
@@ -365,20 +358,17 @@ fun Player.excludeMediaItems(mediaItems: List<MediaItem>, context: Context): Lis
 
 fun Player.excludeMediaItem(mediaItem: MediaItem, context: Context): Boolean {
     return try {
-        val preferences = context.preferences
+        val appSettings = getAppSettings()
 
         // --- CHECK VIDEO ---
-        val excludeIfIsVideo = preferences.getBoolean(EXCLUDE_SONG_IF_IS_VIDEO.key, false)
+        val excludeIfIsVideo = appSettings.excludeIfIsVideo
         if (excludeIfIsVideo && mediaItem.isVideo) {
             showExcludedMessage(context, R.string.message_excluded_videos, 1)
             return true
         }
 
         // --- CHECK DURATA ---
-        val excludeSongWithDurationLimit = preferences.getEnum(
-            EXCLUDE_SONGS_WITH_DURATION_LIMIT.key,
-            DurationInMinutes.Disabled
-        )
+        val excludeSongWithDurationLimit = appSettings.excludeSongWithDurationLimit
 
         if (excludeSongWithDurationLimit != DurationInMinutes.Disabled) {
             val durationMillis = try {

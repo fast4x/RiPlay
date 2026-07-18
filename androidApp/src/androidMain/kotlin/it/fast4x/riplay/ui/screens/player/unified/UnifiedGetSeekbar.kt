@@ -21,7 +21,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -41,14 +40,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
-import it.fast4x.riplay.LocalAppearanceSettings
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.PauseBetweenSongs
 import it.fast4x.riplay.enums.PlayerTimelineType
-import it.fast4x.riplay.extensions.preferences.PreferenceKey
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.components.SeekBar
 import it.fast4x.riplay.ui.components.SeekBarAudioForms
 import it.fast4x.riplay.ui.components.SeekBarSegmentColored
@@ -73,13 +71,11 @@ fun UnifiedGetSeekBar(
     onPlay: () -> Unit = {},
 ) {
 
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
-//    val playerTimelineType by rememberPreference(
-//        PLAYER_TIMELINE_TYPE.key,
-//        PlayerTimelineType.Default
-//    )
     val playerTimelineType = appearanceSettings.playerTimelineType
     var scrubbingPosition by remember(mediaId) {
         mutableStateOf<Long?>(null)
@@ -100,20 +96,16 @@ fun UnifiedGetSeekBar(
     val position = positionAndDuration.first
     val duration = positionAndDuration.second
 
-    //var transparentbar by rememberPreference(TRANSPARENT_BAR.key, true)
     val transparentbar = appearanceSettings.transparentBar
     val animatedPosition = remember { Animatable(position.toFloat()) }
     var isSeeking by remember { mutableStateOf(false) }
-    //val showRemainingSongTime by rememberPreference(SHOW_REMAINING_SONG_TIME.key, true)
     val showRemainingSongTime = appearanceSettings.showRemainingSongTime
-    val pauseBetweenSongs by rememberPreference(PreferenceKey.PAUSE_BETWEEN_SONGS.key, PauseBetweenSongs.`0`)
-    //val pauseBetweenSongs = appearanceSettings.pauseBetweenSongs
+    val pauseBetweenSongs = appSettings.pauseBetweenSongs
 
     val compositionLaunched = isCompositionLaunched()
     LaunchedEffect(mediaId) {
         if (compositionLaunched) animatedPosition.animateTo(0f)
     }
-    //val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
     val colorPaletteMode = appearanceSettings.colorPaletteMode
     LaunchedEffect(position) {
         if (!isSeeking && !animatedPosition.isRunning)
@@ -124,9 +116,7 @@ fun UnifiedGetSeekBar(
                 )
             )
     }
-    //val textoutline by rememberPreference(TEXT_OUTLINE.key, false)
     val textoutline = appearanceSettings.textoutline
-    //val seekWithTap by rememberPreference(SEEK_WITH_TAP.key, true)
     val seekWithTap = appearanceSettings.seekWithTap
 
     Row(

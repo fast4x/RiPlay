@@ -132,7 +132,6 @@ import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.utils.languageDestination
 import it.fast4x.riplay.utils.languageDestinationName
 import it.fast4x.riplay.ui.styling.medium
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.copyTextToClipboard
 import it.fast4x.riplay.utils.verticalFadingEdge
 import kotlinx.coroutines.Dispatchers
@@ -165,9 +164,8 @@ import kotlin.time.Duration.Companion.seconds
 import androidx.compose.ui.unit.TextUnit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import it.fast4x.riplay.LocalAppSettings
-import it.fast4x.riplay.LocalAppearanceSettings
-import it.fast4x.riplay.extensions.preferences.PreferenceKey
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.themed.Loader
 import it.fast4x.riplay.utils.CustomHttpClient
@@ -208,11 +206,10 @@ fun Lyrics(
     val binder = LocalPlayerServiceBinder.current
     val coroutineScope = rememberCoroutineScope()
 
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
-
-    val appSettingsVieModel = LocalAppSettings.current
-    val appSettings = appSettingsVieModel.activeSettings.collectAsState().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val factory = remember(binder) {
         PlayerViewModelFactory(binder)
@@ -222,33 +219,23 @@ fun Lyrics(
     val positionProvider = { positionAndDuration.first }
     //Timber.d("LyricsNew positionAndDuration ${positionAndDuration.first}")
 
-    //var showlyricsthumbnail by rememberPreference(SHOW_LYRICS_THUMBNAIL.key, false)
     val showlyricsthumbnail = appearanceSettings.showLyricsThumbnail
-    //var isShowingSynchronizedLyrics by rememberPreference(IS_SHOWING_SYNCHRONIZED_LYRICS.key, false)
     val isShowingSynchronizedLyrics = appSettings.isShowingThumbnailInLockscreen
-    //var isShowingSynchronizedWordByWordLyrics by rememberPreference(IS_SHOWING_SYNCHRONIZED_WORD_BY_WORD_LYRICS.key, false)
     val isShowingSynchronizedWordByWordLyrics = appearanceSettings.isShowingSynchronizedWordByWordLyrics
-    //val isShowingSynchronizedWordByWordLyrics by remember { mutableStateOf(false) } // removed temporaly word word lyrics suspended by owner
-
+    
     val currentLyrics by Database.lyrics(mediaId).collectAsState(initial = null)
 
     var invalidLrc by remember(mediaId, isShowingSynchronizedLyrics) { mutableStateOf(false) }
     var isPicking by remember(mediaId, isShowingSynchronizedLyrics) { mutableStateOf(false) }
 
-    //var lyricsColor by rememberPreference(LYRICS_COLOR.key, LyricsColor.Thememode)
     val lyricsColor = appearanceSettings.lyricsColor
-    //var lyricsOutline by rememberPreference(LYRICS_OUTLINE.key, LyricsOutline.None)
     val lyricsOutline = appearanceSettings.lyricsOutline
-    //val playerBackgroundColors by rememberPreference(PLAYER_BACKGROUND_COLORS.key, PlayerBackgroundColors.BlurredCoverColor)
-    //var lyricsFontSize by rememberPreference(LYRICS_FONT_SIZE.key, LyricsFontSize.Medium)
-
+    
     val thumbnailSize = Dimensions.thumbnails.player.song
-    //val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
     val colorPaletteMode = appearanceSettings.colorPaletteMode
 
     var isEditing by remember(mediaId, isShowingSynchronizedLyrics) { mutableStateOf(false) }
-    //var showPlaceholder by remember { mutableStateOf(false) }
-
+    
     val lyricsText = when {
         isShowingSynchronizedLyrics && !isShowingSynchronizedWordByWordLyrics -> currentLyrics?.synced ?: ""
         isShowingSynchronizedWordByWordLyrics && isShowingSynchronizedLyrics -> currentLyrics?.lrcSynced ?: ""
@@ -262,13 +249,9 @@ fun Lyrics(
     var showLanguagesList by remember { mutableStateOf(false) }
     var translateEnabled by remember { mutableStateOf(false) }
 
-    //var romanization by rememberPreference(ROMANIZATION.key, Romanization.Off)
     val romanization = appearanceSettings.romanization
-    //var showSecondLine by rememberPreference(SHOW_SECOND_LINE.key, false)
     val showSecondLine = appearanceSettings.showSecondLine
-    var otherLanguageApp by rememberPreference(PreferenceKey.OTHER_LANGUAGE_APP.key, Languages.English)
-    //val otherLanguageApp = appearanceSettings.otherLanguageApp
-    //var lyricsBackground by rememberPreference(LYRICS_BACKGROUND.key, LyricsBackground.Black)
+    val otherLanguageApp = appSettings.otherLanguageApp
     val lyricsBackground = appearanceSettings.lyricsBackground
 
 
@@ -290,9 +273,11 @@ fun Lyrics(
                 Languages.entries.forEach {
                     if (it != Languages.System) MenuEntry(icon = R.drawable.translate, text = languageDestinationName(it), onClick = {
                         menuState.hide()
-                        otherLanguageApp = it
-//                        val new = appearanceSettings.copy(otherLanguageApp = it)
-//                        appearanceSettingsVieModel.updatePreset(new)
+                        coroutineScope.launch {
+                            appSettingsManager.updateSettings(
+                                appSettings.copy(otherLanguageApp = it)
+                            )
+                        }
                         showLanguagesList = false
                         translateEnabled = true
                     })
@@ -311,45 +296,33 @@ fun Lyrics(
     var copyTranslatedToClipboard by remember { mutableStateOf(false) }
     if (copyTranslatedToClipboard) { textTranslated.let { copyTextToClipboard(it, context) }; copyTranslatedToClipboard = false }
 
-    //var fontSize by rememberPreference(LYRICS_FONT_SIZE.key, LyricsFontSize.Medium)
     val lyricsFontSize = appearanceSettings.lyricsFontSize
-    //val showBackgroundLyrics by rememberPreference(SHOW_BACKGROUND_LYRICS.key, false)
     val showBackgroundLyrics = appearanceSettings.showBackgroundLyrics
-    //val playerEnableLyricsPopupMessage by rememberPreference(PLAYER_ENABLE_LYRICS_POPUP_MESSAGE.key, true)
     val playerEnableLyricsPopupMessage = appearanceSettings.playerEnableLyricsPopupMessage
-    //var expandedplayer by rememberPreference(EXPANDED_PLAYER.key, false)
-
+    
     var checkedLyricsLrc by remember(mediaId) { mutableStateOf(false) }
     var checkedLyricsKugou by remember(mediaId) { mutableStateOf(false) }
     var checkedLyricsInnertube by remember(mediaId) { mutableStateOf(false) }
     var checkedLyricsSimpLrc by remember(mediaId) { mutableStateOf(false) }
     var checkLyrics by remember { mutableStateOf(false) }
-    //var lyricsHighlight by rememberPreference(LYRICS_HIGHLIGHT.key, LyricsHighlight.None)
     val lyricsHighlight = appearanceSettings.lyricsHighlight
-    //var lyricsAlignment by rememberPreference(LYRICS_ALIGNMENT.key, LyricsAlignment.Center)
     val lyricsAlignment = appearanceSettings.lyricsAlignment
-    //var lyricsSizeAnimate by rememberPreference(LYRICS_SIZE_ANIMATE.key, false)
     val lyricsSizeAnimate = appearanceSettings.lyricsSizeAnimate
 
     val mediaMetadata = mediaMetadataProvider()
     var artistName by rememberSaveable { mutableStateOf(mediaMetadata.artist?.toString().orEmpty()) }
     var title by rememberSaveable { mutableStateOf(cleanPrefix(mediaMetadata.title?.toString().orEmpty())) }
 
-    //var lyricsSize by rememberPreference(LYRICS_SIZE.key, 20f)
     val lyricsSize = appearanceSettings.lyricsSize
-    //var lyricsSizeL by rememberPreference(LYRICS_SIZE_L.key, 20f)
     val lyricsSizeL = appearanceSettings.lyricsSizeL
     val customSize = if (isLandscape) lyricsSizeL else lyricsSize
     var showLyricsSizeDialog by rememberSaveable { mutableStateOf(false) }
 
     val lightTheme = colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
-    //var landscapeControls by rememberPreference(LANDSCAPE_CONTROLS.key, true)
     val landscapeControls = appearanceSettings.landscapeControls
-    //var jumpPrevious by rememberPreference(JUMP_PREVIOUS.key, "3")
     val jumpPrevious = appearanceSettings.jumpPrevious
     var isRotated by rememberSaveable { mutableStateOf(false) }
     val rotationAngle by animateFloatAsState(targetValue = if (isRotated) 360F else 0f, animationSpec = tween(200), label = "")
-    //val colorPaletteName by rememberPreference(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
     val colorPaletteName = appearanceSettings.colorPaletteName
 
     if (showLyricsSizeDialog) {
@@ -357,13 +330,13 @@ fun Lyrics(
             sizeValue = {
                 coroutineScope.launch {
                     val new = appearanceSettings.copy(lyricsSize = it)
-                    appearanceSettingsVieModel.updatePreset(new)
+                    appearanceSettingsManager.updatePreset(new)
                 }
             },
             sizeValueL = {
                 coroutineScope.launch {
                     val new = appearanceSettings.copy(lyricsSizeL = it)
-                    appearanceSettingsVieModel.updatePreset(new)
+                    appearanceSettingsManager.updatePreset(new)
                 }
             })
     }
@@ -842,7 +815,7 @@ fun Lyrics(
                                             coroutineScope.launch {
                                                 val new =
                                                     appearanceSettings.copy(lyricsFontSize = LyricsFontSize.Light)
-                                                appearanceSettingsVieModel.updatePreset(new)
+                                                appearanceSettingsManager.updatePreset(new)
                                             }
                                         }
                                     )
@@ -855,7 +828,7 @@ fun Lyrics(
                                             coroutineScope.launch {
                                                 val new =
                                                     appearanceSettings.copy(lyricsFontSize = LyricsFontSize.Medium)
-                                                appearanceSettingsVieModel.updatePreset(new)
+                                                appearanceSettingsManager.updatePreset(new)
                                             }
                                         }
                                     )
@@ -868,7 +841,7 @@ fun Lyrics(
                                             coroutineScope.launch {
                                                 val new =
                                                     appearanceSettings.copy(lyricsFontSize = LyricsFontSize.Heavy)
-                                                appearanceSettingsVieModel.updatePreset(new)
+                                                appearanceSettingsManager.updatePreset(new)
                                             }
                                         }
                                     )
@@ -881,7 +854,7 @@ fun Lyrics(
                                             coroutineScope.launch {
                                                 val new =
                                                     appearanceSettings.copy(lyricsFontSize = LyricsFontSize.Large)
-                                                appearanceSettingsVieModel.updatePreset(new)
+                                                appearanceSettingsManager.updatePreset(new)
                                             }
                                         }
                                     )
@@ -927,7 +900,7 @@ fun Lyrics(
                                     if (jumpPrevious == "") {
                                         coroutineScope.launch {
                                             val new = appearanceSettings.copy(jumpPrevious = "0")
-                                            appearanceSettingsVieModel.updatePreset(new)
+                                            appearanceSettingsManager.updatePreset(new)
                                         }
                                     }
                                     if (binder?.player?.hasPreviousMediaItem() == false || (jumpPrevious != "0" && (binder?.player?.currentPosition
@@ -1023,7 +996,7 @@ fun Lyrics(
                                         val new = appearanceSettings.copy(
                                             isShowingSynchronizedWordByWordLyrics = false
                                         )
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        appearanceSettingsManager.updatePreset(new)
                                     }
                                 }
 
@@ -1031,7 +1004,7 @@ fun Lyrics(
                                     coroutineScope.launch {
                                         val new =
                                             appearanceSettings.copy(isShowingSynchronizedLyrics = false)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        appearanceSettingsManager.updatePreset(new)
                                     }
                                 }
 
@@ -1041,7 +1014,7 @@ fun Lyrics(
                                             isShowingSynchronizedLyrics = true,
                                             isShowingSynchronizedWordByWordLyrics = true
                                         )
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        appearanceSettingsManager.updatePreset(new)
                                     }
                                 }
                             }
@@ -1095,7 +1068,7 @@ fun Lyrics(
                                                         val new = appearanceSettings.copy(
                                                             landscapeControls = !landscapeControls
                                                         )
-                                                        appearanceSettingsVieModel.updatePreset(new)
+                                                        appearanceSettingsManager.updatePreset(new)
                                                     }
                                                 }
                                             )
@@ -1118,7 +1091,7 @@ fun Lyrics(
                                                                         appearanceSettings.copy(
                                                                             lyricsAlignment = LyricsAlignment.Left
                                                                         )
-                                                                    appearanceSettingsVieModel.updatePreset(
+                                                                    appearanceSettingsManager.updatePreset(
                                                                         new
                                                                     )
                                                                 }
@@ -1135,7 +1108,7 @@ fun Lyrics(
                                                                         appearanceSettings.copy(
                                                                             lyricsAlignment = LyricsAlignment.Center
                                                                         )
-                                                                    appearanceSettingsVieModel.updatePreset(
+                                                                    appearanceSettingsManager.updatePreset(
                                                                         new
                                                                     )
                                                                 }
@@ -1152,7 +1125,7 @@ fun Lyrics(
                                                                         appearanceSettings.copy(
                                                                             lyricsAlignment = LyricsAlignment.Right
                                                                         )
-                                                                    appearanceSettingsVieModel.updatePreset(
+                                                                    appearanceSettingsManager.updatePreset(
                                                                         new
                                                                     )
                                                                 }
@@ -1182,7 +1155,7 @@ fun Lyrics(
                                                                             appearanceSettings.copy(
                                                                                 lyricsFontSize = LyricsFontSize.Light
                                                                             )
-                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                        appearanceSettingsManager.updatePreset(
                                                                             new
                                                                         )
                                                                     }
@@ -1199,7 +1172,7 @@ fun Lyrics(
                                                                             appearanceSettings.copy(
                                                                                 lyricsFontSize = LyricsFontSize.Medium
                                                                             )
-                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                        appearanceSettingsManager.updatePreset(
                                                                             new
                                                                         )
                                                                     }
@@ -1216,7 +1189,7 @@ fun Lyrics(
                                                                             appearanceSettings.copy(
                                                                                 lyricsFontSize = LyricsFontSize.Heavy
                                                                             )
-                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                        appearanceSettingsManager.updatePreset(
                                                                             new
                                                                         )
                                                                     }
@@ -1233,7 +1206,7 @@ fun Lyrics(
                                                                             appearanceSettings.copy(
                                                                                 lyricsFontSize = LyricsFontSize.Large
                                                                             )
-                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                        appearanceSettingsManager.updatePreset(
                                                                             new
                                                                         )
                                                                     }
@@ -1250,7 +1223,7 @@ fun Lyrics(
                                                                             appearanceSettings.copy(
                                                                                 lyricsFontSize = LyricsFontSize.Custom
                                                                             )
-                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                        appearanceSettingsManager.updatePreset(
                                                                             new
                                                                         )
                                                                     }
@@ -1283,7 +1256,7 @@ fun Lyrics(
                                                                             appearanceSettings.copy(
                                                                                 lyricsColor = LyricsColor.Thememode
                                                                             )
-                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                        appearanceSettingsManager.updatePreset(
                                                                             new
                                                                         )
                                                                     }
@@ -1300,7 +1273,7 @@ fun Lyrics(
                                                                             appearanceSettings.copy(
                                                                                 lyricsColor = LyricsColor.White
                                                                             )
-                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                        appearanceSettingsManager.updatePreset(
                                                                             new
                                                                         )
                                                                     }
@@ -1317,7 +1290,7 @@ fun Lyrics(
                                                                             appearanceSettings.copy(
                                                                                 lyricsColor = LyricsColor.Black
                                                                             )
-                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                        appearanceSettingsManager.updatePreset(
                                                                             new
                                                                         )
                                                                     }
@@ -1334,7 +1307,7 @@ fun Lyrics(
                                                                             appearanceSettings.copy(
                                                                                 lyricsColor = LyricsColor.Accent
                                                                             )
-                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                        appearanceSettingsManager.updatePreset(
                                                                             new
                                                                         )
                                                                     }
@@ -1351,7 +1324,7 @@ fun Lyrics(
                                                                             appearanceSettings.copy(
                                                                                 lyricsColor = LyricsColor.FluidRainbow
                                                                             )
-                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                        appearanceSettingsManager.updatePreset(
                                                                             new
                                                                         )
                                                                     }
@@ -1389,7 +1362,7 @@ fun Lyrics(
                                                                             appearanceSettings.copy(
                                                                                 lyricsOutline = LyricsOutline.None
                                                                             )
-                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                        appearanceSettingsManager.updatePreset(
                                                                             new
                                                                         )
                                                                     }
@@ -1406,7 +1379,7 @@ fun Lyrics(
                                                                             appearanceSettings.copy(
                                                                                 lyricsOutline = LyricsOutline.Thememode
                                                                             )
-                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                        appearanceSettingsManager.updatePreset(
                                                                             new
                                                                         )
                                                                     }
@@ -1423,7 +1396,7 @@ fun Lyrics(
                                                                             appearanceSettings.copy(
                                                                                 lyricsOutline = LyricsOutline.White
                                                                             )
-                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                        appearanceSettingsManager.updatePreset(
                                                                             new
                                                                         )
                                                                     }
@@ -1440,7 +1413,7 @@ fun Lyrics(
                                                                             appearanceSettings.copy(
                                                                                 lyricsOutline = LyricsOutline.Black
                                                                             )
-                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                        appearanceSettingsManager.updatePreset(
                                                                             new
                                                                         )
                                                                     }
@@ -1457,7 +1430,7 @@ fun Lyrics(
                                                                             appearanceSettings.copy(
                                                                                 lyricsOutline = LyricsOutline.Rainbow
                                                                             )
-                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                        appearanceSettingsManager.updatePreset(
                                                                             new
                                                                         )
                                                                     }
@@ -1475,7 +1448,7 @@ fun Lyrics(
                                                                                 appearanceSettings.copy(
                                                                                     lyricsOutline = LyricsOutline.Glow
                                                                                 )
-                                                                            appearanceSettingsVieModel.updatePreset(
+                                                                            appearanceSettingsManager.updatePreset(
                                                                                 new
                                                                             )
                                                                         }
@@ -1528,7 +1501,7 @@ fun Lyrics(
                                                                         appearanceSettings.copy(
                                                                             romanization = Romanization.Off
                                                                         )
-                                                                    appearanceSettingsVieModel.updatePreset(
+                                                                    appearanceSettingsManager.updatePreset(
                                                                         new
                                                                     )
                                                                 }
@@ -1545,7 +1518,7 @@ fun Lyrics(
                                                                         appearanceSettings.copy(
                                                                             romanization = Romanization.Original
                                                                         )
-                                                                    appearanceSettingsVieModel.updatePreset(
+                                                                    appearanceSettingsManager.updatePreset(
                                                                         new
                                                                     )
                                                                 }
@@ -1562,7 +1535,7 @@ fun Lyrics(
                                                                         appearanceSettings.copy(
                                                                             romanization = Romanization.Translated
                                                                         )
-                                                                    appearanceSettingsVieModel.updatePreset(
+                                                                    appearanceSettingsManager.updatePreset(
                                                                         new
                                                                     )
                                                                 }
@@ -1580,7 +1553,7 @@ fun Lyrics(
                                                                             appearanceSettings.copy(
                                                                                 romanization = Romanization.Both
                                                                             )
-                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                        appearanceSettingsManager.updatePreset(
                                                                             new
                                                                         )
                                                                     }
@@ -1600,7 +1573,7 @@ fun Lyrics(
                                                 coroutineScope.launch {
                                                     val new =
                                                         appearanceSettings.copy(showSecondLine = !showSecondLine)
-                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                    appearanceSettingsManager.updatePreset(new)
                                                 }
                                             }
                                         )
@@ -1616,7 +1589,7 @@ fun Lyrics(
                                                         val new = appearanceSettings.copy(
                                                             lyricsSizeAnimate = !lyricsSizeAnimate
                                                         )
-                                                        appearanceSettingsVieModel.updatePreset(new)
+                                                        appearanceSettingsManager.updatePreset(new)
                                                     }
                                                 }
                                             )
@@ -1641,7 +1614,7 @@ fun Lyrics(
                                                                             appearanceSettings.copy(
                                                                                 lyricsHighlight = LyricsHighlight.None
                                                                             )
-                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                        appearanceSettingsManager.updatePreset(
                                                                             new
                                                                         )
                                                                     }
@@ -1658,7 +1631,7 @@ fun Lyrics(
                                                                             appearanceSettings.copy(
                                                                                 lyricsHighlight = LyricsHighlight.White
                                                                             )
-                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                        appearanceSettingsManager.updatePreset(
                                                                             new
                                                                         )
                                                                     }
@@ -1675,7 +1648,7 @@ fun Lyrics(
                                                                             appearanceSettings.copy(
                                                                                 lyricsHighlight = LyricsHighlight.Black
                                                                             )
-                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                        appearanceSettingsManager.updatePreset(
                                                                             new
                                                                         )
                                                                     }
@@ -1705,7 +1678,7 @@ fun Lyrics(
                                                                             appearanceSettings.copy(
                                                                                 lyricsBackground = LyricsBackground.None
                                                                             )
-                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                        appearanceSettingsManager.updatePreset(
                                                                             new
                                                                         )
                                                                     }
@@ -1722,7 +1695,7 @@ fun Lyrics(
                                                                             appearanceSettings.copy(
                                                                                 lyricsBackground = LyricsBackground.White
                                                                             )
-                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                        appearanceSettingsManager.updatePreset(
                                                                             new
                                                                         )
                                                                     }
@@ -1739,7 +1712,7 @@ fun Lyrics(
                                                                             appearanceSettings.copy(
                                                                                 lyricsBackground = LyricsBackground.Black
                                                                             )
-                                                                        appearanceSettingsVieModel.updatePreset(
+                                                                        appearanceSettingsManager.updatePreset(
                                                                             new
                                                                         )
                                                                     }
@@ -1777,7 +1750,7 @@ fun Lyrics(
                                                                             isShowingSynchronizedLyrics = false,
                                                                             isShowingSynchronizedWordByWordLyrics = false
                                                                         )
-                                                                    appearanceSettingsVieModel.updatePreset(
+                                                                    appearanceSettingsManager.updatePreset(
                                                                         new
                                                                     )
                                                                 }
@@ -1806,7 +1779,7 @@ fun Lyrics(
                                                                             isShowingSynchronizedLyrics = true,
                                                                             isShowingSynchronizedWordByWordLyrics = false
                                                                         )
-                                                                    appearanceSettingsVieModel.updatePreset(
+                                                                    appearanceSettingsManager.updatePreset(
                                                                         new
                                                                     )
                                                                 }
@@ -1836,7 +1809,7 @@ fun Lyrics(
                                                                             isShowingSynchronizedLyrics = true,
                                                                             isShowingSynchronizedWordByWordLyrics = true
                                                                         )
-                                                                    appearanceSettingsVieModel.updatePreset(
+                                                                    appearanceSettingsManager.updatePreset(
                                                                         new
                                                                     )
                                                                 }

@@ -58,10 +58,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.environment.EnvironmentExt
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.ArtistSortBy
@@ -70,7 +73,6 @@ import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Song
-import it.fast4x.riplay.enums.AlbumsType
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.ui.components.ButtonsRow
@@ -79,13 +81,7 @@ import it.fast4x.riplay.ui.components.themed.HeaderInfo
 import it.fast4x.riplay.ui.components.themed.MultiFloatingActionsContainer
 import it.fast4x.riplay.ui.items.ArtistItem
 import it.fast4x.riplay.ui.styling.Dimensions
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ARTIST_SORT_BY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ARTIST_SORT_ORDER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ARTIST_TYPE
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
-import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
 import kotlinx.coroutines.flow.map
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ViewType
@@ -136,7 +132,12 @@ fun HomeArtists(
     var items by persistList<Artist>("")
     var itemsOnDisplay by persistList<Artist>("home/artists/on_display")
 
-    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
+    val disableScrollingText = appearanceSettings.disableScrollingText
     val search = Search.init()
     val itemSize = ItemSize.init(HOME_ARTIST_ITEM_SIZE)
 
@@ -146,7 +147,7 @@ fun HomeArtists(
         override fun onClick(index: Int) = onArtistClick(itemsOnDisplay[index])
     }
 
-    var artistType by rememberPreference(ARTIST_TYPE.key, ArtistsType.Favorites)
+    val artistType = appSettings.artistType
 
     // Configurazione Shuffle
     val shuffle = SongsShuffle.init {
@@ -167,8 +168,8 @@ fun HomeArtists(
     val coroutineScope = rememberCoroutineScope()
 
     // Gestione Ordinamento
-    var sortBy by rememberPreference(ARTIST_SORT_BY.key, ArtistSortBy.DateAdded)
-    var sortOrder by rememberPreference(ARTIST_SORT_ORDER.key, SortOrder.Descending)
+    val sortBy = appSettings.artistSortBy
+    val sortOrder = appSettings.artistSortOrder
     val sortOrderIconRotation by animateFloatAsState(
         targetValue = if (sortOrder == SortOrder.Ascending) 0f else 180f,
         animationSpec = tween(durationMillis = 400, easing = LinearEasing), label = ""
@@ -264,7 +265,13 @@ fun HomeArtists(
             title = stringResource(R.string.sorting_order),
             onDismiss = menuState::hide,
             selectedValue = sortBy.menuItem,
-            onValueSelected = { sortBy = ArtistSortBy.entries[it.ordinal] },
+            onValueSelected = {
+                coroutineScope.launch {
+                    appSettingsManager.updateSettings(
+                        appSettings.copy(artistSortBy = ArtistSortBy.entries[it.ordinal])
+                    )
+                }
+            },
             values = ArtistSortBy.entries.map { it.menuItem },
             valueText = { stringResource(it.titleId) }
         )
@@ -307,7 +314,13 @@ fun HomeArtists(
                         ButtonsRow(
                             buttons = buttonsList,
                             currentValue = artistType,
-                            onValueUpdate = { artistType = it },
+                            onValueUpdate = {
+                                coroutineScope.launch {
+                                    appSettingsManager.updateSettings(
+                                        appSettings.copy(artistType = it)
+                                    )
+                                }
+                            },
                             // FillMaxWidth assicura che il LazyRow interno occupi tutto lo spazio disponibile
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -370,7 +383,12 @@ fun HomeArtists(
                                 // Se espanso -> Inverte ordine (e resetta timer)
                                 // Se chiuso -> Espande il chip
                                 if (isSortExpanded) {
-                                    sortOrder = if (sortOrder == SortOrder.Ascending) SortOrder.Descending else SortOrder.Ascending
+                                    coroutineScope.launch {
+                                        appSettingsManager.updateSettings(
+                                            appSettings.copy(artistSortOrder = !sortOrder)
+
+                                        )
+                                    }
                                 } else {
                                     isSortExpanded = true
                                 }
@@ -520,7 +538,7 @@ fun HomeArtists(
 
             FloatingActionsContainerWithScrollToTop(lazyGridState = lazyGridState)
 
-            val showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
+            val showFloatingIcon = appSettings.showFloatingIcon
             if (UiType.ViMusic.isCurrent() && showFloatingIcon)
                 MultiFloatingActionsContainer(
                     iconId = R.drawable.search,

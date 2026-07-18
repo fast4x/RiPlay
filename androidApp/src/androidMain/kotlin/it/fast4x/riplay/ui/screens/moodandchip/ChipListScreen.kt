@@ -11,7 +11,9 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.data.models.Chip
 import it.fast4x.riplay.ui.components.PageContainer
+import kotlinx.serialization.ExperimentalSerializationApi
 
+@OptIn(ExperimentalSerializationApi::class)
 @ExperimentalMaterialApi
 @ExperimentalTextApi
 @ExperimentalFoundationApi
@@ -24,8 +26,6 @@ fun ChipListScreen(
     chip: Chip,
     miniPlayer: @Composable () -> Unit = {},
 ) {
-    val saveableStateHolder = rememberSaveableStateHolder()
-
     PageContainer(
         //modifier = modifier,
         navController = navController,
@@ -36,21 +36,4 @@ fun ChipListScreen(
             chip = chip
         )
     }
-
-//    ScreenContainer(
-//        navController,
-//        navBarContent = { item ->
-//            item(0, stringResource(R.string.mood), R.drawable.music_album)
-//        },
-//        miniPlayer = miniPlayer
-//    ) { currentTabIndex ->
-//        saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
-//            when (currentTabIndex) {
-//                0 -> MoodList(
-//                    navController = navController,
-//                    mood = mood
-//                )
-//            }
-//        }
-//    }
 }

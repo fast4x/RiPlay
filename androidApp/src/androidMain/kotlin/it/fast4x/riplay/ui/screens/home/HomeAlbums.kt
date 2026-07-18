@@ -60,8 +60,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -86,14 +89,8 @@ import it.fast4x.riplay.ui.components.themed.MultiFloatingActionsContainer
 import it.fast4x.riplay.ui.items.AlbumItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.addNext
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUM_SORT_BY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUM_SORT_ORDER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUM_TYPE
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.utils.enqueue
-import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
 import kotlinx.coroutines.flow.map
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.NavRoutes
@@ -101,7 +98,6 @@ import it.fast4x.riplay.enums.ViewType
 import it.fast4x.riplay.utils.getViewType
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.enums.BlacklistType
-import it.fast4x.riplay.enums.BuiltInPlaylist
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.ui.components.themed.Search
@@ -123,7 +119,6 @@ import it.fast4x.riplay.utils.importYTMLikedAlbums
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.viewTypeToolbutton
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -153,7 +148,12 @@ fun HomeAlbums(
     val lazyGridState = rememberLazyGridState()
     val lazyListState = rememberLazyListState() // Spostato qui sopra per gestire il ripristino scroll
 
-    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
+    val disableScrollingText = appearanceSettings.disableScrollingText
 
     var items by persistList<Album>("home/albums")
     var itemsOnDisplay by persistList<Album>("home/albums/on_display")
@@ -170,7 +170,7 @@ fun HomeAlbums(
         Database.songsInAllBookmarkedAlbums().map { it.map(Song::asMediaItem) }
     }
 
-    var albumType by rememberPreference(ALBUM_TYPE.key, AlbumsType.Favorites)
+    val albumType = appSettings.albumType
     val isNetworkConnected = rememberIsNetworkConnected()
 
     val buttonsList = AlbumsType.entries.map { it to it.textName }.filter {
@@ -178,8 +178,8 @@ fun HomeAlbums(
     }
     val coroutineScope = rememberCoroutineScope()
 
-    var sortBy by rememberPreference(ALBUM_SORT_BY.key, AlbumSortBy.DateAdded)
-    var sortOrder by rememberPreference(ALBUM_SORT_ORDER.key, SortOrder.Descending)
+    val sortBy = appSettings.albumSortBy
+    val sortOrder = appSettings.albumSortOrder
     val sortOrderIconRotation by animateFloatAsState(
         targetValue = if (sortOrder == SortOrder.Ascending) 0f else 180f,
         animationSpec = tween(durationMillis = 400, easing = LinearEasing), label = ""
@@ -270,7 +270,13 @@ fun HomeAlbums(
             title = stringResource(R.string.sorting_order),
             onDismiss = menuState::hide,
             selectedValue = sortBy.menuItem,
-            onValueSelected = { sortBy = AlbumSortBy.entries[it.ordinal] },
+            onValueSelected = {
+                coroutineScope.launch {
+                    appSettingsManager.updateSettings(
+                        appSettings.copy(albumSortBy = AlbumSortBy.entries[it.ordinal])
+                    )
+                }
+            },
             values = AlbumSortBy.entries.map { it.menuItem },
             valueText = { stringResource(it.titleId) }
         )
@@ -307,7 +313,14 @@ fun HomeAlbums(
                         ButtonsRow(
                             buttons = buttonsList,
                             currentValue = albumType,
-                            onValueUpdate = { albumType = it },
+                            onValueUpdate = {
+                                coroutineScope.launch {
+                                    appSettingsManager.updateSettings(
+                                    appSettings.copy(albumType = it)
+                                    )
+
+                                }
+                            },
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
@@ -369,7 +382,11 @@ fun HomeAlbums(
                                 // Se espanso -> Inverte ordine (e resetta timer)
                                 // Se chiuso -> Espande il chip
                                 if (isSortExpanded) {
-                                    sortOrder = if (sortOrder == SortOrder.Ascending) SortOrder.Descending else SortOrder.Ascending
+                                    coroutineScope.launch {
+                                        appSettingsManager.updateSettings(
+                                            appSettings.copy(albumSortOrder = !sortOrder)
+                                        )
+                                    }
                                 } else {
                                     isSortExpanded = true
                                 }
@@ -743,7 +760,7 @@ fun HomeAlbums(
 
             FloatingActionsContainerWithScrollToTop(lazyGridState)
 
-            val showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
+            val showFloatingIcon = appSettings.showFloatingIcon
             if (UiType.ViMusic.isCurrent() && showFloatingIcon)
                 MultiFloatingActionsContainer(
                     iconId = R.drawable.search,

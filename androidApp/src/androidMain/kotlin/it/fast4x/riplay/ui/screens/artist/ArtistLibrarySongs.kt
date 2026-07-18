@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,8 +34,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -49,11 +53,7 @@ import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.utils.forcePlayAtIndex
-import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SONG_SORT_BY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SONG_SORT_ORDER
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
 import it.fast4x.riplay.ui.components.themed.Loader
 import it.fast4x.riplay.ui.components.themed.SortMenu
@@ -62,6 +62,7 @@ import it.fast4x.riplay.ui.components.themed.TitleSection
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.typography
+import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSerializationApi::class)
@@ -81,10 +82,17 @@ fun ArtistLibrarySongs(
     val menuState = LocalGlobalSheetState.current
     var songs by persist<List<SongEntity>?>("artist/$browseId/localSongs")
 
-    var sortBy by rememberPreference(SONG_SORT_BY.key, SongSortBy.DateAdded)
-    var sortOrder by rememberPreference(SONG_SORT_ORDER.key, SortOrder.Descending)
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
-    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    val sortBy = appSettings.songSortBy
+    val sortOrder = appSettings.songSortOrder
+
+    val disableScrollingText = appearanceSettings.disableScrollingText
+
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit, sortBy, sortOrder) {
         Database.listArtistLibrarySongs(browseId, sortBy, sortOrder).collect { songs = it }
@@ -108,31 +116,60 @@ fun ArtistLibrarySongs(
         SortMenu(
             title = stringResource(R.string.sorting_order),
             onDismiss = menuState::hide,
-            onTitle = { sortBy = SongSortBy.Title },
+            onTitle = {
+                scope.launch {
+                    val new = appSettings.copy(songSortBy = SongSortBy.Title)
+                    appSettingsManager.updateSettings(new)
+                }
+            },
             onDatePlayed = {
-                sortBy = SongSortBy.DatePlayed
+                scope.launch {
+                    val new = appSettings.copy(songSortBy = SongSortBy.DatePlayed)
+                    appSettingsManager.updateSettings(new)
+                }
             },
             onDateAdded = {
-                sortBy = SongSortBy.DateAdded
+                scope.launch {
+                    val new = appSettings.copy(songSortBy = SongSortBy.DateAdded)
+                    appSettingsManager.updateSettings(new)
+                }
             },
             onPlayTime = {
-                sortBy = SongSortBy.PlayTime
+                scope.launch {
+                    val new = appSettings.copy(songSortBy = SongSortBy.PlayTime)
+                    appSettingsManager.updateSettings(new)
+                }
             },
             onRelativePlayTime = {
-                sortBy = SongSortBy.RelativePlayTime
+                scope.launch {
+                    val new = appSettings.copy(songSortBy = SongSortBy.RelativePlayTime)
+                    appSettingsManager.updateSettings(new)
+                }
             },
             onDateLiked = {
-                sortBy = SongSortBy.DateLiked
+                scope.launch {
+                    val new = appSettings.copy(songSortBy = SongSortBy.DateLiked)
+                    appSettingsManager.updateSettings(new)
+                }
             },
             onArtist = {
-                sortBy = SongSortBy.Artist
-            },
-            onDuration = {
-                sortBy = SongSortBy.Duration
+                scope.launch {
+                    val new = appSettings.copy(songSortBy = SongSortBy.Artist)
+                    appSettingsManager.updateSettings(new)
+                }
             },
             onAlbum = {
-                sortBy = SongSortBy.AlbumName
+                scope.launch {
+                    val new = appSettings.copy(songSortBy = SongSortBy.AlbumName)
+                    appSettingsManager.updateSettings(new)
+                }
             },
+            onDuration = {
+                scope.launch {
+                    val new = appSettings.copy(songSortBy = SongSortBy.Duration)
+                    appSettingsManager.updateSettings(new)
+                }
+            }
         )
     }
 
@@ -186,7 +223,13 @@ fun ArtistLibrarySongs(
                             HeaderIconButton(
                                 icon = R.drawable.arrow_up,
                                 color = colorPalette().text,
-                                onClick = { sortOrder = !sortOrder },
+                                onClick = {
+                                    scope.launch {
+                                        appSettingsManager.updateSettings(
+                                            appSettings.copy(songSortOrder = !sortOrder)
+                                        )
+                                    }
+                                },
                                 onLongClick = {
                                     menuState.display {
                                         sortMenu()

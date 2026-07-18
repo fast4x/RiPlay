@@ -15,11 +15,11 @@ import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.enums.MenuStyle
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MENU_STYLE
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.items.ArtistItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
@@ -32,16 +32,16 @@ fun ArtistsItemMenu(
     onBlacklist: (() -> Unit)? = null,
     disableScrollingText: Boolean,
 ) {
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
     val density = LocalDensity.current
 
     var height by remember {
         mutableStateOf(0.dp)
     }
 
-    val menuStyle by rememberPreference(
-        MENU_STYLE.key,
-        MenuStyle.List
-    )
+    val menuStyle = appSettings.menuStyle
 
     if (menuStyle == MenuStyle.Grid) {
 

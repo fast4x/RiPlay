@@ -27,9 +27,11 @@ import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.environment.Environment
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.appContext
@@ -38,15 +40,7 @@ import it.fast4x.riplay.enums.AlbumSwipeAction
 import it.fast4x.riplay.enums.PlaylistSwipeAction
 import it.fast4x.riplay.enums.QueueSwipeAction
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUM_SWIPE_LEFT_ACTION
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUM_SWIPE_RIGHT_ACTION
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_SWIPE_TO_ACTION_ENABLED
 import it.fast4x.riplay.utils.mediaItemToggleLike
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SWIPE_LEFT_ACTION
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SWIPE_RIGHT_ACTION
-import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUEUE_SWIPE_LEFT_ACTION
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUEUE_SWIPE_RIGHT_ACTION
 import kotlinx.coroutines.flow.distinctUntilChanged
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.PopupType
@@ -82,7 +76,10 @@ fun SwipeableContent(
         }
     )
 
-    val isSwipeToActionEnabled by rememberPreference(IS_SWIPE_TO_ACTION_ENABLED.key, true)
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
+    val isSwipeToActionEnabled = appSettings.isSwipeToActionEnabled
 
     val current = LocalViewConfiguration.current
     CompositionLocalProvider(LocalViewConfiguration provides object : ViewConfiguration by current{
@@ -144,6 +141,8 @@ fun SwipeableQueueItem(
 ) {
     val context = LocalContext.current
 
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     var likedAt by rememberSaveable {
         mutableStateOf<Long?>(null)
@@ -182,8 +181,8 @@ fun SwipeableQueueItem(
         }
     }
 
-    val queueSwipeLeftAction by rememberPreference(QUEUE_SWIPE_LEFT_ACTION.key, QueueSwipeAction.RemoveFromQueue)
-    val queueSwipeRightAction by rememberPreference(QUEUE_SWIPE_RIGHT_ACTION.key, QueueSwipeAction.PlayNext)
+    val queueSwipeLeftAction = appSettings.queueSwipeLeftAction
+    val queueSwipeRightAction = appSettings.queueSwipeRightAction
     var isViewingQueues by remember { mutableStateOf(false) }
 
     fun getActionCallback(actionName: QueueSwipeAction): () -> Unit {
@@ -231,9 +230,13 @@ fun SwipeablePlaylistItem(
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
     var likedAt by rememberSaveable {
         mutableStateOf<Long?>(null)
     }
+
 
     val isNetworkConnected = rememberIsNetworkConnected()
 
@@ -269,8 +272,8 @@ fun SwipeablePlaylistItem(
         }
     }
 
-    val playlistSwipeLeftAction by rememberPreference(PLAYLIST_SWIPE_LEFT_ACTION.key, PlaylistSwipeAction.Favourite)
-    val playlistSwipeRightAction by rememberPreference(PLAYLIST_SWIPE_RIGHT_ACTION.key, PlaylistSwipeAction.PlayNext)
+    val playlistSwipeLeftAction = appSettings.playlistSwipeLeftAction
+    val playlistSwipeRightAction = appSettings.playlistSwipeRightAction
     var isViewingQueues by remember { mutableStateOf(false) }
 
     fun getActionCallback(actionName: PlaylistSwipeAction): () -> Unit {
@@ -315,6 +318,9 @@ fun SwipeableAlbumItem(
     onBookmark: () -> Unit,
     content: @Composable () -> Unit
 ) {
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
     var bookmarkedAt by rememberSaveable {
         mutableStateOf<Long?>(null)
     }
@@ -322,8 +328,8 @@ fun SwipeableAlbumItem(
         Database.albumBookmarkedAt(albumItem.key).distinctUntilChanged().collect { bookmarkedAt = it }
     }
 
-    val albumSwipeLeftAction by rememberPreference(ALBUM_SWIPE_LEFT_ACTION.key, AlbumSwipeAction.PlayNext)
-    val albumSwipeRightAction by rememberPreference(ALBUM_SWIPE_RIGHT_ACTION.key, AlbumSwipeAction.Bookmark)
+    val albumSwipeLeftAction = appSettings.albumSwipeLeftAction
+    val albumSwipeRightAction = appSettings.albumSwipeRightAction
 
     fun getActionCallback(actionName: AlbumSwipeAction): () -> Unit {
         return when (actionName) {

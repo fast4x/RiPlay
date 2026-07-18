@@ -1,8 +1,8 @@
 package it.fast4x.riplay.enums
 
 import androidx.compose.runtime.Composable
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.UI_TYPE
-import it.fast4x.riplay.extensions.preferences.rememberPreference
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import it.fast4x.riplay.LocalAppSettingsManager
 
 enum class UiType {
     RiPlay,
@@ -11,7 +11,12 @@ enum class UiType {
     companion object {
 
         @Composable
-        fun current(): UiType = rememberPreference( UI_TYPE.key, RiPlay ).value
+        fun current(): UiType {
+            //rememberPreference(UI_TYPE.key, RiPlay).value
+            val appSettingsManager = LocalAppSettingsManager.current
+            val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+            return appSettings.uiType
+        }
     }
 
     @Composable

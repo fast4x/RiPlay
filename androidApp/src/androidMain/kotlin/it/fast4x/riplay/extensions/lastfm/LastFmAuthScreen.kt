@@ -6,13 +6,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.core.content.edit
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.LASTFM_SESSION_TOKEN
-import it.fast4x.riplay.extensions.preferences.preferences
+import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.utils.appContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @Composable
@@ -23,18 +25,28 @@ fun LastFmAuthScreen(
         factory = LastFmAuthViewModelFactory(
             lastFmService = LastFmClient.service,
             onSaveSessionKey = { sessionKey ->
-                appContext().preferences.edit(commit = true) {
-                    putString(LASTFM_SESSION_TOKEN.key, sessionKey)
+                val appSettingsManager = (appContext() as MainApplication).appSettingsManager
+                CoroutineScope(Dispatchers.IO).launch {
+                    appSettingsManager.updateSettings(
+                        appSettingsManager.activeSettings.value.copy(
+                            lastFMSessionToken = sessionKey
+                        )
+                    )
                 }
+//                appContext().preferences.edit(commit = true) {
+//                    putString(LASTFM_SESSION_TOKEN.key, sessionKey)
+//                }
                 Timber.d("LastFmAuthScreen: Save Session Key -> $sessionKey")
             }
         )
     )
 ) {
-    val authState by viewModel.authState.collectAsState()
+    val authState by viewModel.authState.collectAsStateWithLifecycle()
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         when (val state = authState) {

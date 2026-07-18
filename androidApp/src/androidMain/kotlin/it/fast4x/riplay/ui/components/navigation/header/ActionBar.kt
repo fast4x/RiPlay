@@ -25,10 +25,6 @@ import it.fast4x.riplay.extensions.equalizer.InternalEqualizerScreen
 import it.fast4x.riplay.extensions.equalizer.rememberSystemEqualizerLauncher
 import it.fast4x.riplay.extensions.pip.isPipSupported
 import it.fast4x.riplay.extensions.pip.rememberPipHandler
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_MUSIC_IDENTIFIER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_PICTURE_IN_PICTURE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EQUALIZER_TYPE
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.SheetBody
 import it.fast4x.riplay.utils.colorPalette
@@ -49,17 +45,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.window.PopupProperties
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalRiTuneSheetState
 import it.fast4x.riplay.cast.CastButton
 import it.fast4x.riplay.cast.CastHelper
 import it.fast4x.riplay.enums.CastType
 import it.fast4x.riplay.extensions.qrcodeanalyzer.ScanQrScreen
 import it.fast4x.riplay.extensions.qrcodeanalyzer.qrCodeToAction
-import it.fast4x.riplay.extensions.preferences.PreferenceKey
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.CAST_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LISTENER_LEVELS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.YT_ACCOUNT_THUMBNAIL
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.getRoundnessShape
@@ -76,16 +70,18 @@ private fun HamburgerMenu(
     onItemClick: (NavRoutes) -> Unit,
     onDismissRequest: () -> Unit
 ) {
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
-    val enablePictureInPicture by rememberPreference(ENABLE_PICTURE_IN_PICTURE.key, false)
+    val enablePictureInPicture = appSettings.enablePictureInPicture
     val pipHandler = rememberPipHandler()
     val sheet = LocalGlobalSheetState.current
-    val equalizerType by rememberPreference(EQUALIZER_TYPE.key, EqualizerType.Internal)
+    val equalizerType = appSettings.equalizerType
     val internalEqualizer = LocalPlayerServiceBinder.current?.equalizer
     val launchSystemEqualizer by rememberSystemEqualizerLauncher(audioSessionId = {0})
-    val showListenerLevels by rememberPreference(SHOW_LISTENER_LEVELS.key, true)
-    var offlineModeEnabled by rememberPreference(PreferenceKey.OFFLINE_MODE_ENABLED.key, false)
-
+    val showListenerLevels = appSettings.showListenerLevels
+    val offlineModeEnabled = appSettings.offlineModeEnabled
+    val scope = rememberCoroutineScope()
     var menuIndex = 0
 
     DropdownMenu(
@@ -205,7 +201,11 @@ private fun HamburgerMenu(
                     textRes = R.string.offline,
                     checked = offlineModeEnabled,
                     onCheckedChange = {
-                        offlineModeEnabled = it
+                        scope.launch {
+                            appSettingsManager.updateSettings(
+                                appSettings.copy(offlineModeEnabled = it)
+                            )
+                        }
                     }
                 )
 
@@ -511,12 +511,15 @@ private fun HamburgerMenu(
 fun ActionBar(
     navController: NavController,
 ) {
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
     var expanded by remember { mutableStateOf(false) }
     val sheet = LocalGlobalSheetState.current
 
-    val accountThumbnail by rememberPreference(YT_ACCOUNT_THUMBNAIL.key, "")
+    val accountThumbnail = appSettings.ytAccountThumbnail
 
-    val enabledQrCodeActions by rememberPreference(PreferenceKey.QR_CODE_TO_ACTIONS.key, true)
+    val enabledQrCodeActions = appSettings.qrCodeToActions
 
     if(enabledQrCodeActions) {
         val scope = rememberCoroutineScope()
@@ -540,7 +543,7 @@ fun ActionBar(
         }
     }
 
-    var castType by rememberPreference(CAST_TYPE.key, CastType.RITUNECAST )
+    var castType = appSettings.castType
     if (castType == CastType.RITUNECAST) {
         val showCastScreen = LocalRiTuneSheetState.current
         HeaderIcon(
@@ -570,10 +573,7 @@ fun ActionBar(
      */
 
 
-    val isEnabledMusicIdentifier by rememberPreference(
-        ENABLE_MUSIC_IDENTIFIER.key,
-        false
-    )
+    val isEnabledMusicIdentifier = appSettings.enableMusicIdentifier
     if (isEnabledMusicIdentifier) {
         HeaderIcon(R.drawable.soundwave) {
             sheet.display {

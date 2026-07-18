@@ -7,28 +7,35 @@ import timber.log.Timber
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import androidx.core.content.edit
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EQ_BANDS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EQ_ENABLED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EQ_PRESET
+import it.fast4x.riplay.MainApplication
+import it.fast4x.riplay.utils.appContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class EqualizerHelper(private val context: Context) {
 
-    private val prefs = context.preferences
-    //private val eqEnabledKey = "eq_enabled"
-    //private val eqPresetKey = "eq_preset"
-    //private val eqBandsKey = "eq_bands"
+    val scope = CoroutineScope(Dispatchers.IO)
+
+    val appSettingsManager = (appContext() as MainApplication).appSettingsManager
+    val appSettings = appSettingsManager.activeSettings.value
 
     private var equalizer: Equalizer? = null
 
     fun saveSettings(isEnabled: Boolean, presetName: String, bandLevels: Map<Short, Float>) {
         try {
-            prefs.edit { putBoolean(EQ_ENABLED.key, isEnabled) }
-            prefs.edit { putString(EQ_PRESET.key, presetName) }
-
             val sortedBands = bandLevels.keys.sorted().map { bandLevels[it] ?: 0.5f }
             val bandsString = sortedBands.joinToString(separator = ",")
 
-            prefs.edit { putString(EQ_BANDS.key, bandsString) }
+            scope.launch {
+                appSettingsManager.updateSettings(
+                    appSettings.copy(
+                        eqEnabled = isEnabled,
+                        eqPreset = presetName,
+                        eqBands = bandsString
+                    )
+                )
+            }
 
             Timber.d("EqualizerHelper settings saved")
         } catch (e: Exception) {
@@ -38,11 +45,11 @@ class EqualizerHelper(private val context: Context) {
 
     fun loadSettings(): Triple<Boolean, String?, Map<Short, Float>>? {
         return try {
-            val isEnabled = prefs.getBoolean(EQ_ENABLED.key, false)
-            val presetName = prefs.getString(EQ_PRESET.key, "Flat")
-            val bandsString = prefs.getString(EQ_BANDS.key, null)
+            val isEnabled = appSettings.eqEnabled
+            val presetName = appSettings.eqPreset
+            val bandsString = appSettings.eqBands
 
-            if (bandsString != null) {
+            if (bandsString.isNotEmpty()) {
                 val values = bandsString.split(",").map { it.toFloat() }
                 val bandsMap = mutableMapOf<Short, Float>()
                 values.forEachIndexed { index, fl ->
@@ -78,10 +85,8 @@ class EqualizerHelper(private val context: Context) {
         val eq = equalizer ?: return
 
         try {
-
-            val isEnabled = prefs.getBoolean(EQ_ENABLED.key, false) // Default false
-
-            val bandsString = prefs.getString(EQ_BANDS.key, null)
+            val isEnabled = appSettings.eqEnabled
+            val bandsString = appSettings.eqBands
 
             val range = eq.bandLevelRange
             val minLevel = range[0]
@@ -90,7 +95,7 @@ class EqualizerHelper(private val context: Context) {
 
             val trueFlatPercent = getZeroDbPercent(minLevel, maxLevel)
 
-            if (bandsString != null) {
+            if (bandsString.isNotEmpty()) {
 
                 val values = bandsString.split(",").map { it.toFloat() }
                 for (i in 0 until bandsCount) {
@@ -201,7 +206,9 @@ class EqualizerHelper(private val context: Context) {
     fun setEnabled(enabled: Boolean) {
         try {
             equalizer?.enabled = enabled
-            prefs.edit { putBoolean(EQ_ENABLED.key, enabled) }
+            scope.launch {
+                appSettingsManager.updateSettings(appSettings.copy(eqEnabled = enabled))
+            }
         } catch (e: Exception) {
             Timber.d("EqualizerHelper Errore set enabled ${e.message}")
         }

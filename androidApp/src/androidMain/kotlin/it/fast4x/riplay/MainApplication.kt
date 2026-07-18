@@ -19,12 +19,6 @@ import it.fast4x.riplay.extensions.appviewmodel.AppViewModel
 import it.fast4x.riplay.extensions.appviewmodel.models.NetworkConnectivity
 import it.fast4x.riplay.extensions.appviewmodel.observeNetworkType
 import it.fast4x.riplay.utils.FileLoggingTree
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.COIL_CUSTOM_DISK_CACHE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.COIL_DISK_CACHE_MAX_SIZE
-import it.fast4x.riplay.extensions.preferences.getEnum
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.LOG_DEBUG_ENABLED
-import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.USE_PLACEHOLDER_IN_IMAGE_LOADER
 import it.fast4x.riplay.extensions.crashreporter.CrashReporter
 import it.fast4x.riplay.extensions.experimental.appearancesettings.AppearanceSettingsManager
 import it.fast4x.riplay.extensions.experimental.appsettings.AppSettingsManager
@@ -49,6 +43,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import java.io.File
 
@@ -107,8 +102,9 @@ class MainApplication : Application(), ImageLoaderFactory {
         )
 
         Dependencies.init(this)
-        appScopeIO.launch {
-            // Inizializza le importazioni di app ed aspetto
+        runBlocking {
+            // Inizializza le impostazioni di app ed aspetto, in attesa che il db venga inizializzato in onCreate
+            // uso runBlocking perchè devo essere sicuro che il db e le impostazioni siano pronte
             appSettingsManager.initialize()
             appearanceSettingsManager.initialize()
         }
@@ -122,7 +118,8 @@ class MainApplication : Application(), ImageLoaderFactory {
         /***** CRASH LOG ALWAYS ENABLED *****/
 
         /**** LOG *********/
-        val logEnabled = preferences.getBoolean(LOG_DEBUG_ENABLED.key, false)
+        val logEnabled = appSettingsManager.activeSettings.value.logDebugEnabled //preferences.getBoolean(LOG_DEBUG_ENABLED.key, false)
+        println("Log enabled: $logEnabled")
         if (logEnabled) {
             Timber.plant(FileLoggingTree(File(dir, "RiPlay_log.txt")))
             Timber.d("Log enabled at ${dir.absolutePath}")
@@ -459,9 +456,9 @@ class MainApplication : Application(), ImageLoaderFactory {
     }
 
     override fun newImageLoader(): ImageLoader {
-        val coilCustomDiskCache = preferences.getInt(COIL_CUSTOM_DISK_CACHE.key, 128) * 1000 * 1000L
-        val coilDiskCacheMaxSize = preferences.getEnum(COIL_DISK_CACHE_MAX_SIZE.key,CoilDiskCacheMaxSize.`128MB`)
-        val usePlaceholder = preferences.getBoolean(USE_PLACEHOLDER_IN_IMAGE_LOADER.key, true)
+        val coilCustomDiskCache = appSettingsManager.activeSettings.value.coilCustomDiskCache * 1000 * 1000L //preferences.getInt(COIL_CUSTOM_DISK_CACHE.key, 128) * 1000 * 1000L
+        val coilDiskCacheMaxSize = appSettingsManager.activeSettings.value.coilDiskCacheMaxSize //preferences.getEnum(COIL_DISK_CACHE_MAX_SIZE.key,CoilDiskCacheMaxSize.`128MB`)
+        val usePlaceholder = appSettingsManager.activeSettings.value.usePlaceholderInImageLoader //preferences.getBoolean(USE_PLACEHOLDER_IN_IMAGE_LOADER.key, true)
         val coilCacheSize = when (coilDiskCacheMaxSize) {
             CoilDiskCacheMaxSize.Custom -> coilCustomDiskCache
             else -> coilDiskCacheMaxSize.bytes

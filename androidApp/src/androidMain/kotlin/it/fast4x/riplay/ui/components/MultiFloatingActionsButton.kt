@@ -36,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,13 +53,13 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
 import it.fast4x.riplay.ui.styling.favoritesIcon
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MULTI_FLOAT_ACTION_ICON_OFFSET_X
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MULTI_FLOAT_ACTION_ICON_OFFSET_Y
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.getRoundnessShape
+import kotlinx.coroutines.launch
 
 enum class MultiFabState {
     Collapsed, Expanded
@@ -79,6 +80,9 @@ fun MultiFloatingActionsButton (
     onStateChanged: ((state: MultiFabState) -> Unit)? = null,
     onClick: () -> Unit
 ) {
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
     var currentState by remember { mutableStateOf(MultiFabState.Collapsed) }
     val stateTransition: Transition<MultiFabState> =
         updateTransition(targetState = currentState, label = "")
@@ -114,11 +118,10 @@ fun MultiFloatingActionsButton (
                 currentState = MultiFabState.Collapsed
             } else Modifier.fillMaxSize()
 
-    //var offsetX by remember { mutableStateOf(0f) }
-    //var offsetY by remember { mutableStateOf(0f) }
+    val offsetX = appSettings.multiFloatActionIconOffsetX
+    val offsetY = appSettings.multiFloatActionIconOffsetY
 
-    var offsetX = rememberPreference(MULTI_FLOAT_ACTION_ICON_OFFSET_X.key, 0F )
-    var offsetY = rememberPreference(MULTI_FLOAT_ACTION_ICON_OFFSET_Y.key, 0F )
+    val scope = rememberCoroutineScope()
 
     Box(
         modifier = modifier,
@@ -162,7 +165,7 @@ fun MultiFloatingActionsButton (
                     modifier = Modifier
                         .offset {
                             //IntOffset(offsetX.roundToInt(), offsetY.roundToInt())
-                            IntOffset(offsetX.value.toInt(), offsetY.value.toInt())
+                            IntOffset(offsetX.toInt(), offsetY.toInt())
                         }
                         .pointerInput(Unit) {
                             /*
@@ -174,9 +177,14 @@ fun MultiFloatingActionsButton (
                              */
                             detectDragGesturesAfterLongPress { change, dragAmount ->
                                 change.consume()
-                                offsetX.value += dragAmount.x
-                                offsetY.value += dragAmount.y
-
+                                scope.launch {
+                                    appSettingsManager.updateSettings(
+                                        appSettings.copy(
+                                            multiFloatActionIconOffsetX = offsetX + dragAmount.x,
+                                            multiFloatActionIconOffsetY = offsetY + dragAmount.y
+                                        )
+                                    )
+                                }
                             }
                         }
                         .clip(getRoundnessShape())

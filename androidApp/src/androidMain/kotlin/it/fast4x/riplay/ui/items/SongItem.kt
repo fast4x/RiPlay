@@ -37,13 +37,14 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import it.fast4x.environment.Environment
-import it.fast4x.riplay.LocalAppearanceSettings
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
@@ -65,15 +66,11 @@ import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.favoritesOverlay
 import it.fast4x.riplay.ui.styling.shimmer
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.COLOR_PALETTE_NAME
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.ui.styling.medium
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_INDICATOR
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.isNowPlaying
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
@@ -261,15 +258,14 @@ fun SongItem(
     isRecommended: Boolean = false,
     mediaItem: MediaItem,
 ) {
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val title = remember(mediaItem) { mediaItem.mediaMetadata.title.toString() }
     val authors = remember(mediaItem) { mediaItem.mediaMetadata.artist.toString() }
     val duration = remember(mediaItem) { mediaItem.mediaMetadata.extras?.getString("durationText") }
 
-    val playlistindicator by rememberPreference(PLAYLIST_INDICATOR.key, false)
-    //val colorPaletteName by rememberPreference(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
+    val playlistindicator = appearanceSettings.playlistIndicator
     val colorPaletteName = appearanceSettings.colorPaletteName
     val songPlaylist by if (playlistindicator)
         Database.songUsedInPlaylistsAsFlow(mediaItem.mediaId).collectAsState(initial = 0)
@@ -278,7 +274,7 @@ fun SongItem(
 
     val binder = LocalPlayerServiceBinder.current
     val isNowPlaying = binder?.player?.isNowPlaying(mediaItem.mediaId)
-    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    val disableScrollingText = appearanceSettings.disableScrollingText
 
     val context = LocalContext.current
     val colorPalette = LocalAppearance.current.colorPalette

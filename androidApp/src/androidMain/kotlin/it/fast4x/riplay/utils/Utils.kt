@@ -13,8 +13,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHORT_ON_DEVICE_FOLDER_NAME
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.time.Duration
@@ -23,6 +21,8 @@ import java.util.GregorianCalendar
 import java.util.Locale.getDefault
 import kotlin.time.Duration.Companion.minutes
 import androidx.compose.runtime.saveable.Saver
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import it.fast4x.riplay.LocalAppSettingsManager
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 
@@ -131,7 +131,9 @@ inline val Int.asBoolean: Boolean
 
 @Composable
 fun String.cleanOnDeviceName(): String {
-    val shortOnDeviceFolderName by rememberPreference(SHORT_ON_DEVICE_FOLDER_NAME.key, false)
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val shortOnDeviceFolderName = appSettings.shortOnDeviceFolderName
     return if (shortOnDeviceFolderName)
          this.substringAfterLast("/") else this
 }

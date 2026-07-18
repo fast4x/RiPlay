@@ -2,7 +2,6 @@ package it.fast4x.riplay.ui.screens.settings
 
 import android.content.Intent
 import android.net.Uri
-import android.os.Environment
 import android.provider.DocumentsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -14,33 +13,29 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.documentfile.provider.DocumentFile
-import it.fast4x.riplay.extensions.preferences.rememberPreference
-import androidx.core.net.toUri
-import it.fast4x.riplay.LocalAppSettings
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
-import it.fast4x.riplay.extensions.preferences.PreferenceKey
+import it.fast4x.riplay.extensions.experimental.appsettings.models.AppSettings
 import it.fast4x.riplay.utils.colorPalette
+import kotlinx.coroutines.launch
 
 @Composable
 fun FolderSetting(
-    folderKey: PreferenceKey,
     title: String
 ) {
-    val appSettingsVieModel = LocalAppSettings.current
-    val appSettings = appSettingsVieModel.activeSettings.collectAsState().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val context = LocalContext.current
-    //var folderPath by rememberPreference(folderKey.key, "/")
-    var folderPath = appSettings.folderPath
+    val folderPath = appSettings.folderPath
+    val scope = rememberCoroutineScope()
 
     val displayPath = when {
         folderPath.isEmpty() -> "/"
@@ -56,7 +51,15 @@ fun FolderSetting(
                 Intent.FLAG_GRANT_READ_URI_PERMISSION or
                         Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             )
-            folderPath = extractPathFromTreeUri(it)
+            scope.launch {
+                appSettingsManager.updateSettings(
+                    appSettings.copy(
+                        folderPath = extractPathFromTreeUri(
+                            it
+                        )
+                    )
+                )
+            }
         }
     }
 
@@ -83,7 +86,7 @@ fun FolderSetting(
             Text(
                 text = stringResource(R.string.settings_music_vault_restore_default_folder),
                 color = colorPalette().text,
-                modifier = Modifier.clickable { folderPath = "/" }
+                modifier = Modifier.clickable { scope.launch { appSettingsManager.updateSettings(appSettings.copy(folderPath = AppSettings().folderPath)) } }
             )
         }
     }

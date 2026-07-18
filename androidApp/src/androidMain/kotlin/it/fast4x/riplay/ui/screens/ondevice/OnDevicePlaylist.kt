@@ -39,7 +39,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -69,6 +68,7 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -76,18 +76,17 @@ import coil.compose.AsyncImage
 import com.github.doyaaaaaken.kotlincsv.client.KotlinCsvExperimental
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.environment.EnvironmentExt
-import it.fast4x.riplay.LocalAppearanceSettings
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.LocalOnDeviceViewModel
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
-import it.fast4x.riplay.enums.MaxSongs
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.SortOrder
-import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.data.models.SongPlaylistMap
@@ -108,7 +107,6 @@ import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.LocalAppearance
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.UI_TYPE
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.commonutils.durationTextToMillis
@@ -116,13 +114,7 @@ import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsTime
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MAX_SONGS_IN_QUEUE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.NAVIGATION_BAR_POSITION
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SONG_SORT_ORDER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -134,7 +126,6 @@ import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import kotlinx.coroutines.CoroutineScope
 import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.data.models.defaultQueue
@@ -150,7 +141,6 @@ import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.utils.LazyListContainer
 import kotlinx.coroutines.delay
 import it.fast4x.riplay.extensions.persist.persistList
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ON_DEVICE_SONG_SORT_BY
 import it.fast4x.riplay.ui.items.PlaylistItem
 import it.fast4x.riplay.utils.cleanOnDeviceName
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -170,15 +160,17 @@ fun OnDevicePlaylist(
     navController: NavController,
     folder: String,
 ) {
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val context = LocalContext.current
     val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalGlobalSheetState.current
     val selectedQueue = LocalSelectedQueue.current
-    val uiType by rememberPreference(UI_TYPE.key, UiType.RiPlay)
+    val uiType = appSettings.uiType
 
     val folder by remember(folder) { mutableStateOf(folder.replace("$","/")) }
 
@@ -189,12 +181,12 @@ fun OnDevicePlaylist(
     val thumbnailUrl = remember { mutableStateOf("") }
 
 
-    var sortBy by rememberPreference(ON_DEVICE_SONG_SORT_BY.key, OnDeviceSongSortBy.DateAdded)
-    var sortOrder by rememberPreference(SONG_SORT_ORDER.key, SortOrder.Descending)
+    val sortBy = appSettings.onDeviceSongSortBy
+    val sortOrder = appSettings.songSortOrder
 
     var filter: String? by rememberSaveable { mutableStateOf(null) }
 
-    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    val disableScrollingText = appearanceSettings.disableScrollingText
 
     val onDeviceViewModel = LocalOnDeviceViewModel.current
     LaunchedEffect(Unit, filter, sortOrder, sortBy) {
@@ -269,14 +261,10 @@ fun OnDevicePlaylist(
 
 
     val playlistThumbnailSizeDp = Dimensions.thumbnails.playlist
-    val playlistThumbnailSizePx = playlistThumbnailSizeDp.px
 
     val thumbnailSizeDp = Dimensions.thumbnails.song
     val thumbnailSizePx = thumbnailSizeDp.px
 
-    val rippleIndication = ripple(bounded = false)
-
-    val uriHandler = LocalUriHandler.current
 
     var scrollToNowPlaying by remember {
         mutableStateOf(false)
@@ -410,11 +398,8 @@ fun OnDevicePlaylist(
         )
     }
 
-    val navigationBarPosition by rememberPreference(
-        NAVIGATION_BAR_POSITION.key,
-        NavigationBarPosition.Bottom
-    )
-    val maxSongsInQueue by rememberPreference(MAX_SONGS_IN_QUEUE.key, MaxSongs.`500`)
+    val navigationBarPosition = appSettings.navigationBarPosition
+    val maxSongsInQueue = appSettings.maxSongsInQueue
 
     val thumbnails = playlistSongs.map { it.song }
         .takeWhile { it.thumbnailUrl?.isNotEmpty() ?: false }
@@ -919,7 +904,13 @@ fun OnDevicePlaylist(
                                 icon = R.drawable.arrow_up,
                                 color = colorPalette.text,
                                 onClick = {
-                                    sortOrder = !sortOrder
+                                    coroutineScope.launch {
+                                        appSettingsManager.updateSettings(
+                                            appSettings.copy(
+                                                songSortOrder = !sortOrder
+                                            )
+                                        )
+                                    }
                                 },
                                 modifier = Modifier
                                     .graphicsLayer { rotationZ = sortOrderIconRotation }
@@ -943,20 +934,40 @@ fun OnDevicePlaylist(
                                                 title = stringResource(R.string.sorting_order),
                                                 onDismiss = menuState::hide,
                                                 onTitle = {
-                                                    sortBy =
-                                                        OnDeviceSongSortBy.Title
+                                                    coroutineScope.launch {
+                                                        appSettingsManager.updateSettings(
+                                                            appSettings.copy(
+                                                                onDeviceSongSortBy = OnDeviceSongSortBy.Title
+                                                            )
+                                                        )
+                                                    }
                                                 },
                                                 onDateAdded = {
-                                                    sortBy =
-                                                        OnDeviceSongSortBy.DateAdded
+                                                    coroutineScope.launch {
+                                                        appSettingsManager.updateSettings(
+                                                            appSettings.copy(
+                                                                onDeviceSongSortBy = OnDeviceSongSortBy.DateAdded
+                                                            )
+                                                        )
+                                                    }
                                                 },
                                                 onArtist = {
-                                                    sortBy =
-                                                        OnDeviceSongSortBy.Artist
+                                                    coroutineScope.launch {
+                                                        appSettingsManager.updateSettings(
+                                                            appSettings.copy(
+                                                                onDeviceSongSortBy = OnDeviceSongSortBy.Artist
+                                                            )
+                                                        )
+                                                    }
                                                 },
                                                 onAlbum = {
-                                                    sortBy =
-                                                        OnDeviceSongSortBy.Album
+                                                    coroutineScope.launch {
+                                                        appSettingsManager.updateSettings(
+                                                            appSettings.copy(
+                                                                onDeviceSongSortBy = OnDeviceSongSortBy.Album
+                                                            )
+                                                        )
+                                                    }
                                                 },
                                             )
                                         }
@@ -1205,7 +1216,7 @@ fun OnDevicePlaylist(
 
             FloatingActionsContainerWithScrollToTop(lazyListState = lazyListState)
 
-            val showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
+            val showFloatingIcon = appSettings.showFloatingIcon
             if (uiType == UiType.ViMusic || showFloatingIcon)
                 FloatingActionsContainerWithScrollToTop(
                     lazyListState = lazyListState,

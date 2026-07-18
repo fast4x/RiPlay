@@ -1,28 +1,26 @@
 package it.fast4x.riplay.ui.screens.player.unified
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
-import it.fast4x.riplay.LocalAppearanceSettings
-import it.fast4x.riplay.enums.PlayerBackgroundColors
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.enums.PlayerControlsType
-import it.fast4x.riplay.extensions.preferences.PreferenceKey
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.services.playback.PlayerState
 import it.fast4x.riplay.ui.components.themed.PlaybackParamsDialog
 import it.fast4x.riplay.ui.screens.player.unified.components.controls.UnifiedControlsEssential
 import it.fast4x.riplay.ui.screens.player.unified.components.controls.UnifiedControlsModern
+import kotlinx.coroutines.launch
 
 @UnstableApi
 @Composable
@@ -38,35 +36,16 @@ fun UnifiedGetControls(
     onToggleShuffleMode: () -> Unit,
     playerState: PlayerState,
 ) {
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
-//    val playerControlsType by rememberPreference(
-//        PLAYER_CONTROLS_TYPE.key,
-//        PlayerControlsType.Essential
-//    )
     val playerControlsType = appearanceSettings.playerControlsType
-//    val playerPlayButtonType by rememberPreference(
-//        PLAYER_PLAY_BUTTON_TYPE.key,
-//        PlayerPlayButtonType.Disabled
-//    )
     val playerPlayButtonType = appearanceSettings.playerPlayButtonType
-    var isRotated by rememberSaveable { mutableStateOf(false) }
-    val rotationAngle by animateFloatAsState(
-        targetValue = if (isRotated) 360F else 0f,
-        animationSpec = tween(durationMillis = 200), label = ""
-    )
-//    val playerBackgroundColors by rememberPreference(
-//        PLAYER_BACKGROUND_COLORS.key,
-//        PlayerBackgroundColors.BlurredCoverColor
-//    )
-    //val playerBackgroundColors = appearanceSettings.playerBackgroundColors
 
-//    val isGradientBackgroundEnabled = playerBackgroundColors == PlayerBackgroundColors.ThemeColorGradient ||
-//            playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient
-
-    var playbackSpeed by rememberPreference(PreferenceKey.PLAYBACK_SPEED.key, 1f)
-    //val playbackSpeed = appearanceSettings.playbackSpeed
+    val playbackSpeed = appSettings.playbackSpeed
+    val scope = rememberCoroutineScope()
 
     var showSpeedPlayerDialog by rememberSaveable {
         mutableStateOf(false)
@@ -76,13 +55,16 @@ fun UnifiedGetControls(
         PlaybackParamsDialog(
             onDismiss = { showSpeedPlayerDialog = false },
             speedValue = {
-                playbackSpeed = it
+                scope.launch {
+                    appSettingsManager.updateSettings(
+                        appSettings.copy(
+                            playbackSpeed = it
+                        )
+                    )
+                }
             },
             pitchValue = {},
-            durationValue = {
-//                playbackDuration = it
-//                setPlaybackDuration = true
-            },
+            durationValue = {},
             scaleValue = onBlurScaleChange
         )
     }

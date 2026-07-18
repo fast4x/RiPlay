@@ -16,11 +16,10 @@ import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
-import it.fast4x.riplay.enums.MaxTopPlaylistItems
 import it.fast4x.riplay.enums.TopPlaylistPeriod
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MAX_TOP_PLAYLIST_ITEMS
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.typography
 
@@ -30,14 +29,14 @@ fun PeriodMenu (
     onDismiss: (TopPlaylistPeriod) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
     var height by remember {
         mutableStateOf(0.dp)
     }
     val density = LocalDensity.current
-    val maxTopPlaylistItems by rememberPreference(
-        MAX_TOP_PLAYLIST_ITEMS.key,
-        MaxTopPlaylistItems.`10`
-    )
+    val maxTopPlaylistItems = appSettings.maxTopPlaylistItems
 
     Menu(
         modifier = modifier

@@ -53,6 +53,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -60,6 +61,8 @@ import coil.compose.AsyncImage
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.environment.models.NavigationEndpoint
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.commonutils.EXPLICIT_PREFIX
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -97,7 +100,6 @@ import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.utils.applyIf
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.utils.enqueue
@@ -107,10 +109,7 @@ import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsTime
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.ui.styling.medium
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -149,8 +148,14 @@ fun OnDeviceAlbumDetails(
     val selectedQueue = LocalSelectedQueue.current
     var songs by persistList<Song>("album/$albumId/songs")
     var album by persist<Album?>("album/$albumId")
-    val parentalControlEnabled by rememberPreference(PARENTAL_CONTROL_ENABLED.key, false)
-    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
+    val parentalControlEnabled = appSettings.parentalControlEnabled
+    val disableScrollingText = appearanceSettings.disableScrollingText
 
     val isNetworkConnected = rememberIsNetworkConnected()
 
@@ -739,7 +744,6 @@ fun OnDeviceAlbumDetails(
                                 }
                             ) {
                                 val checkedState = rememberSaveable { mutableStateOf(false) }
-                                //var forceRecompose by remember { mutableStateOf(false) }
                                 SongItem(
                                     mediaItem = song.asMediaItem,
                                     thumbnailSizeDp = thumbnailSizeDp,
@@ -855,7 +859,7 @@ fun OnDeviceAlbumDetails(
                 }
 
 
-                val showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
+                val showFloatingIcon = appSettings.showFloatingIcon
                 if (UiType.ViMusic.isCurrent() && showFloatingIcon)
                     MultiFloatingActionsContainer(
                         iconId = R.drawable.shuffle,

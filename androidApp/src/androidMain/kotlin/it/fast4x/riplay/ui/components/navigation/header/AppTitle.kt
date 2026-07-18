@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -23,14 +22,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import it.fast4x.riplay.BuildConfig
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.appviewmodel.LocalAppViewModel
 import it.fast4x.riplay.extensions.appviewmodel.toIcon
-import it.fast4x.riplay.extensions.preferences.PreferenceKey
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EQ_ENABLED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.LOG_DEBUG_ENABLED
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.components.themed.Button
 import it.fast4x.riplay.utils.GlobalSharedData
@@ -61,12 +57,15 @@ private fun AppLogo(
 
 @Composable
 private fun AppLogoText( navController: NavController ) {
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
     val iconTextClick: () -> Unit = {
         if ( NavRoutes.home.isNotHere( navController ) )
             navController.popBackStack(route = NavRoutes.home.name, inclusive = false)
     }
 
-    val isDebugModeEnabled by rememberPreference(LOG_DEBUG_ENABLED.key, false)
+    val isDebugModeEnabled = appSettings.logDebugEnabled
 
     val appTitle by remember { mutableStateOf(
         "Play${if (BuildConfig.DEBUG || isDebugModeEnabled) " DEBUG" else ""}"
@@ -98,9 +97,11 @@ fun AppTitle(
     navController: NavController,
     context: Context
 ) {
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
     val appViewModel = LocalAppViewModel.current
     val networkState by appViewModel.networkState.collectAsStateWithLifecycle()
-    var offlineModeEnabled by rememberPreference(PreferenceKey.OFFLINE_MODE_ENABLED.key, false)
+    val offlineModeEnabled = appSettings.offlineModeEnabled
     val isAndroidAutoConnected by GlobalSharedData.androidAutoConnected
 
     Row(
@@ -139,7 +140,7 @@ fun AppTitle(
                 )
 
 
-            val isEqualizerEnabled by rememberPreference(EQ_ENABLED.key, false)
+            val isEqualizerEnabled = appSettings.eqEnabled
             if (isEqualizerEnabled) {
                 Image(
                     painter = painterResource(R.drawable.music_equalizer),

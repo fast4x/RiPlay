@@ -11,10 +11,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.environment.models.NavigationEndpoint
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.globalContext
@@ -26,9 +28,7 @@ import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.utils.addSongToYtPlaylist
 import it.fast4x.riplay.utils.addToOnlineLikedSong
 import it.fast4x.riplay.utils.addToYtPlaylist
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MENU_STYLE
 import it.fast4x.riplay.extensions.equalizer.rememberSystemEqualizerLauncher
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
@@ -56,11 +56,10 @@ fun PlayerMenu(
     onSelectUnselect: (() -> Unit)? = null,
     disableScrollingText: Boolean
     ) {
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
-    val menuStyle by rememberPreference(
-        MENU_STYLE.key,
-        MenuStyle.List
-    )
+    val menuStyle = appSettings.menuStyle
 
 
     val launchEqualizer by rememberSystemEqualizerLauncher(audioSessionId = {
@@ -199,11 +198,9 @@ fun MiniPlayerMenu(
     onInfo: (() -> Unit)? = null,
     disableScrollingText: Boolean
 ) {
-
-    val menuStyle by rememberPreference(
-        MENU_STYLE.key,
-        MenuStyle.List
-    )
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val menuStyle = appSettings.menuStyle
     val isNetworkConnected = rememberIsNetworkConnected()
 
     if (menuStyle == MenuStyle.Grid) {

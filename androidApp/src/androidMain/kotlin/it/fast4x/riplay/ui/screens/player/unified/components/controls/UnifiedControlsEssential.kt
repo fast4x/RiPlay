@@ -3,7 +3,6 @@ package it.fast4x.riplay.ui.screens.player.unified.components.controls
 import android.annotation.SuppressLint
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDp
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -30,17 +29,14 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.StrokeJoin
@@ -52,12 +48,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
-import it.fast4x.riplay.LocalAppSettings
-import it.fast4x.riplay.LocalAppearanceSettings
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.cleanPrefix
@@ -66,7 +63,6 @@ import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Info
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.enums.ColorPaletteMode
-import it.fast4x.riplay.enums.ColorPaletteName
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PlayerControlsType
@@ -121,18 +117,14 @@ fun UnifiedInfoAlbumAndArtistEssential(
     disableScrollingText: Boolean = false,
     mediaItem: MediaItem
 ) {
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
-    //val playerControlsType by rememberPreference(PLAYER_CONTROLS_TYPE.key, PlayerControlsType.Essential)
     val playerControlsType = appearanceSettings.playerControlsType
-    //val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
     val colorPaletteMode = appearanceSettings.colorPaletteMode
 
     var showSelectDialog by remember { mutableStateOf(false) }
-    //var textoutline by rememberPreference(TEXT_OUTLINE.key, false)
     val textoutline = appearanceSettings.textoutline
-    //val playerBackgroundColors by rememberPreference(PLAYER_BACKGROUND_COLORS.key,PlayerBackgroundColors.BlurredCoverColor)
     val playerBackgroundColors = appearanceSettings.playerBackgroundColors
     var likeButtonWidth by remember{ mutableStateOf(0.dp) }
 
@@ -424,14 +416,12 @@ fun UnifiedControlsEssential(
     onToggleShuffleMode: () -> Unit,
     playerState: PlayerState,
 ) {
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
-    val appSettingsVieModel = LocalAppSettings.current
-    val appSettings = appSettingsVieModel.activeSettings.collectAsState().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
-    //val colorPaletteName by rememberPreference(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
-    //val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
     val colorPaletteMode = appearanceSettings.colorPaletteMode
 
     val shouldBePlayingTransition = updateTransition(playerState.isPlaying, label = "shouldBePlaying")
@@ -441,11 +431,8 @@ fun UnifiedControlsEssential(
         targetValueByState = { if (it) 32.dp else 16.dp }
     )
 
-    //var queueLoopType by rememberPreference(QUEUE_LOOP_TYPE.key, defaultValue = QueueLoopType.Default)
     val queueLoopType = appSettings.queueLoopType
-    //val playerBackgroundColors by rememberPreference(PLAYER_BACKGROUND_COLORS.key,PlayerBackgroundColors.BlurredCoverColor)
     val playerBackgroundColors = appearanceSettings.playerBackgroundColors
-    //var jumpPrevious by rememberPreference(JUMP_PREVIOUS.key,"3")
     val currentMediaItem = playerState.mediaInfo?.mediaItem
     var lightTheme = colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
     val isNetworkConnected = rememberIsNetworkConnected()
@@ -457,7 +444,7 @@ fun UnifiedControlsEssential(
         object : Player.Listener {
             override fun onRepeatModeChanged(repeatMode: Int) {
                 coroutineScope.launch {
-                    appSettingsVieModel.updateSettings(
+                    appSettingsManager.updateSettings(
                         appSettings.copy(
                             queueLoopType = when (repeatMode) {
                                 Player.REPEAT_MODE_ONE -> QueueLoopType.RepeatOne
@@ -679,7 +666,7 @@ fun UnifiedControlsEssential(
         onClick = {
             coroutineScope.launch {
                 val new = appSettings.copy(queueLoopType = setQueueLoopState(queueLoopType))
-                appSettingsVieModel.updateSettings(new)
+                appSettingsManager.updateSettings(new)
             }
         },
         modifier = Modifier

@@ -30,7 +30,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,13 +42,13 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import it.fast4x.riplay.LocalAppearanceSettings
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.LinkType
 import it.fast4x.riplay.extensions.listapps.listApps
 import it.fast4x.riplay.extensions.listapps.toExternalApp
@@ -62,10 +61,8 @@ import it.fast4x.riplay.ui.components.themed.MenuEntry
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.components.themed.TitleMiniSection
 import it.fast4x.riplay.ui.components.themed.TitleSection
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.copyTextToClipboard
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
-import kotlinx.coroutines.Dispatchers
+import kotlin.collections.emptyList
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -128,8 +125,8 @@ fun FastShare(
 
     if (urlToShare == "") return
 
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    val appearanceSettingsVieModel = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsStateWithLifecycle().value
 
 //    val thumbnailRoundness by rememberPreference(
 //        THUMBNAIL_ROUNDNESS.key,
@@ -141,7 +138,7 @@ fun FastShare(
 
     val externalApps by remember {
         Database.externalApps()
-    }.collectAsState(initial = emptyList() , Dispatchers.IO)
+    }.collectAsStateWithLifecycle(initialValue = emptyList())
     
     val uriHandler = LocalUriHandler.current
 

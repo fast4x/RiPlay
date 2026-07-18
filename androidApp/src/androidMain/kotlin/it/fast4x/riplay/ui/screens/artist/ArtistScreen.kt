@@ -4,13 +4,12 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
-import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.ui.components.PageContainer
 import kotlinx.serialization.ExperimentalSerializationApi
 
@@ -28,7 +27,9 @@ fun ArtistScreen(
     browseId: String,
     miniPlayer: @Composable () -> Unit = {},
 ) {
-    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val disableScrollingText = appearanceSettings.disableScrollingText
 
     PageContainer(
         navController = navController,

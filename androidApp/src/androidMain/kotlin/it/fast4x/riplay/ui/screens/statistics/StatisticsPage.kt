@@ -47,12 +47,10 @@ import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.cleanPrefix
-import it.fast4x.riplay.enums.MaxStatisticsItems
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.StatisticsCategory
 import it.fast4x.riplay.enums.StatisticsType
-import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.PlaylistPreview
@@ -70,18 +68,11 @@ import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.styling.shimmer
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.ui.styling.color
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.formatAsTime
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MAX_STATISTICS_ITEMS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.NAVIGATION_BAR_POSITION
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_STATS_LISTENING_TIME
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.STATISTICS_CATEGORY
 import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.data.models.defaultQueue
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -98,11 +89,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import it.fast4x.riplay.LocalAppearanceSettings
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.ui.styling.align
 import it.fast4x.riplay.utils.updateOnlineAlbum
 import it.fast4x.riplay.utils.updateOnlineArtist
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 
 @ExperimentalSerializationApi
@@ -115,8 +109,10 @@ fun StatisticsPage(
     onSwipeToLeft: () -> Unit = {},
     onSwipeToRight: () -> Unit = {}
 ) {
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalGlobalSheetState.current
@@ -129,16 +125,13 @@ fun StatisticsPage(
     val playlistThumbnailSizeDp = 108.dp
     val playlistThumbnailSizePx = playlistThumbnailSizeDp.px
 
-
-    //val thumbnailRoundness by rememberPreference(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
     val thumbnailRoundness = appearanceSettings.thumbnailRoundness
-    val showStatsListeningTime by rememberPreference(SHOW_STATS_LISTENING_TIME.key, true)
-    //val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    val showStatsListeningTime = appSettings.showStatsListeningTime
     val disableScrollingText = appearanceSettings.disableScrollingText
-    val navigationBarPosition by rememberPreference(NAVIGATION_BAR_POSITION.key, NavigationBarPosition.Bottom)
+    val navigationBarPosition = appSettings.navigationBarPosition
 
-    var maxStatisticsItems by rememberPreference(MAX_STATISTICS_ITEMS.key, MaxStatisticsItems.`10`)
-    var statisticsCategory by rememberPreference(STATISTICS_CATEGORY.key, StatisticsCategory.Songs)
+    val maxStatisticsItems = appSettings.maxStatisticsItems
+    val statisticsCategory = appSettings.statisticsCategory
 
     var songs by persistList<Song>("statistics/songs")
     var allSongs by persistList<Song>("statistics/allsongs")
@@ -195,6 +188,8 @@ fun StatisticsPage(
 
     val localSelectedQueue = LocalSelectedQueue.current
 
+    val scope = rememberCoroutineScope()
+
 
     Box(
         modifier = Modifier
@@ -242,7 +237,15 @@ fun StatisticsPage(
                 ButtonsRow(
                     buttons = buttonsList,
                     currentValue = statisticsCategory,
-                    onValueUpdate = { statisticsCategory = it },
+                    onValueUpdate = {
+                        scope.launch {
+                            appSettingsManager.updateSettings(
+                                appSettings.copy(
+                                    statisticsCategory = it
+                                )
+                            )
+                        }
+                    },
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                 )
             }

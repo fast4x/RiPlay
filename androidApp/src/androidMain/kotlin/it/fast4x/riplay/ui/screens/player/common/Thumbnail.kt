@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -38,6 +37,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -46,13 +46,12 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import it.fast4x.riplay.LocalAppearanceSettings
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailType
 import it.fast4x.riplay.services.playback.LoginRequiredException
 import it.fast4x.riplay.services.playback.NoInternetException
@@ -94,8 +93,8 @@ fun Thumbnail(
     showthumbnail: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
@@ -107,7 +106,6 @@ fun Thumbnail(
         it to (it - 64.dp).px
     }
 
-    //var showlyricsthumbnail by rememberPreference(SHOW_LYRICS_THUMBNAIL.key, false)
     val showlyricsthumbnail = appearanceSettings.showLyricsThumbnail
     var nullableWindow by remember {
         mutableStateOf(player.currentWindow)
@@ -139,12 +137,8 @@ fun Thumbnail(
     var artImageAvailable by remember {
         mutableStateOf(true)
     }
-
-    //val clickLyricsText by rememberPreference(CLICK_ON_LYRICS_TEXT.key, true)
     val clickLyricsText = appearanceSettings.clickLyricsText
-    //var showvisthumbnail by rememberPreference(SHOW_VIS_THUMBNAIL.key, false)
     val showvisthumbnail = appearanceSettings.showvisthumbnail
-    //var expandedlyrics by rememberPreference(expandedlyricsKey.key,false)
 
     player.DisposableListener {
         object : Player.Listener {
@@ -401,9 +395,8 @@ fun Thumbnail(
 fun Modifier.thumbnailpause(
     shouldBePlaying: Boolean
 ) = composed {
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
-    //var thumbnailpause by rememberPreference(THUMBNAIL_PAUSE.key, false)
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
     val thumbnailpause = appearanceSettings.thumbnailpause
     val scale by animateFloatAsState(if ((thumbnailpause) && (!shouldBePlaying)) 0.9f else 1f)
 

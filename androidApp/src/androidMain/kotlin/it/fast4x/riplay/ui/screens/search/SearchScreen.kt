@@ -19,7 +19,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,19 +41,16 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.extensions.persist.PersistMapCleanup
 import it.fast4x.riplay.R
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.SearchQuery
 import it.fast4x.riplay.enums.ContentType
-import it.fast4x.riplay.enums.TransitionEffect
-import it.fast4x.riplay.extensions.preferences.PreferenceKey
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_VOICE_INPUT
-import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSITION_EFFECT
-import it.fast4x.riplay.extensions.preferences.preferences
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.components.ScreenContainer
@@ -74,8 +70,10 @@ fun SearchScreen(
     navController: NavController,
     miniPlayer: @Composable () -> Unit = {},
 ) {
-    val context = LocalContext.current
-    val transitionEffect by rememberPreference(TRANSITION_EFFECT.key, TransitionEffect.SlideHorizontal)
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
+    val transitionEffect = appSettings.transitionEffect
     val saveableStateHolder = rememberSaveableStateHolder()
 
     val (textFieldValue, onTextFieldValueChanged) = rememberSaveable(
@@ -92,7 +90,7 @@ fun SearchScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
 
 
-    val isEnabledVoiceInput by rememberPreference(ENABLE_VOICE_INPUT.key, true)
+    val isEnabledVoiceInput = appSettings.enableVoiceInput
     var startVoiceInput by remember { mutableStateOf(false) }
 
     if (startVoiceInput) {
@@ -238,7 +236,7 @@ fun SearchScreen(
                                     submittedQuery = textFieldValue.text
                                     keyboardController?.hide()
 
-                                    if (!context.preferences.getBoolean(PreferenceKey.PAUSE_SEARCH_HISTORY.key, false)) {
+                                    if (!appSettings.isPauseListenHistoryEnabled) {
                                         Database.asyncTransaction {
                                             insert(SearchQuery(query = textFieldValue.text))
                                         }
@@ -259,11 +257,7 @@ fun SearchScreen(
                                 onFilterChanged = { filterContentType = it },
                                 navController = navController,
                                 onSaveHistory = {
-                                    if (!context.preferences.getBoolean(
-                                            PreferenceKey.PAUSE_SEARCH_HISTORY.key,
-                                            false
-                                        )
-                                    ) {
+                                    if (!appSettings.isPauseListenHistoryEnabled) {
                                         Database.asyncTransaction { insert(SearchQuery(query = textFieldValue.text)) }
                                     }
                                 },

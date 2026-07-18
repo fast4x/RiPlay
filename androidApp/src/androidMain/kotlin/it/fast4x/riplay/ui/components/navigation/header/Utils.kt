@@ -5,14 +5,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import it.fast4x.riplay.LocalAppearanceSettings
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.utils.colorPalette
 
@@ -40,8 +40,8 @@ internal class AppBar {
 
         @Composable
         fun contentColor(): Color {
-            val appearanceSettingsVieModel = LocalAppearanceSettings.current
-            val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+            val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+            val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
             return when (appearanceSettings.colorPaletteMode) {
                 ColorPaletteMode.Light, ColorPaletteMode.System -> colorPalette().text

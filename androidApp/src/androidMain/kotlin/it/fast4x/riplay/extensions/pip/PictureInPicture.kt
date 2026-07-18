@@ -28,16 +28,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.OnPictureInPictureModeChangedProvider
 import androidx.core.app.PictureInPictureModeChangedInfo
 import androidx.core.graphics.toRect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
 import it.fast4x.riplay.extensions.persist.findActivityNullable
 import it.fast4x.riplay.utils.ActionReceiver
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_PICTURE_IN_PICTURE_AUTO
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_PICTURE_IN_PICTURE
 import it.fast4x.riplay.utils.findActivity
 import it.fast4x.riplay.utils.isAtLeastAndroid12
 import it.fast4x.riplay.utils.isAtLeastAndroid7
 import it.fast4x.riplay.utils.isAtLeastAndroid8
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.isPipModeAutoEnabled
 
@@ -185,8 +184,14 @@ fun Pip(
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity() }
 
-    val enablePictureInPicture by rememberPreference(ENABLE_PICTURE_IN_PICTURE.key, false)
-    val enablePictureInPictureAuto by rememberPreference(ENABLE_PICTURE_IN_PICTURE_AUTO.key, false)
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
+//    val enablePictureInPicture by rememberPreference(ENABLE_PICTURE_IN_PICTURE.key, false)
+//    val enablePictureInPictureAuto by rememberPreference(ENABLE_PICTURE_IN_PICTURE_AUTO.key, false)
+
+    val enablePictureInPicture = appSettings.enablePictureInPicture
+    val enablePictureInPictureAuto = appSettings.enablePictureInPictureAuto
 
     DisposableEffect(context, actions) {
         val currentActions = actions ?: return@DisposableEffect onDispose { }

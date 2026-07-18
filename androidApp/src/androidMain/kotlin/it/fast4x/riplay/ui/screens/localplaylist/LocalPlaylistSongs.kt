@@ -42,7 +42,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -75,6 +74,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -89,21 +89,19 @@ import it.fast4x.environment.requests.PlaylistPage
 import it.fast4x.environment.requests.podcastPage
 import it.fast4x.environment.requests.relatedSongs
 import it.fast4x.environment.utils.completed
-import it.fast4x.riplay.LocalAppearanceSettings
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.Database.Companion.songAlbumInfo
 import it.fast4x.riplay.data.Database.Companion.songArtistInfo
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
-import it.fast4x.riplay.enums.MaxSongs
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PlaylistSongSortBy
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.enums.RecommendationsNumber
 import it.fast4x.riplay.enums.SortOrder
-import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.data.models.PlaylistPreview
 import it.fast4x.riplay.data.models.Song
@@ -130,7 +128,6 @@ import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.onOverlay
 import it.fast4x.riplay.ui.styling.overlay
 import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.UI_TYPE
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.ui.styling.center
@@ -139,18 +136,8 @@ import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.IS_RECOMMENDATION_ENABLED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MAX_SONGS_IN_QUEUE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.NAVIGATION_BAR_POSITION
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SONG_SORT_BY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.RECOMMENDATIONS_NUMBER
-import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.REORDER_IN_QUEUE_ENABLED
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SONG_SORT_ORDER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
@@ -173,7 +160,6 @@ import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.utils.checkFileExists
 import it.fast4x.riplay.utils.deleteFileIfExists
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.utils.saveImageToInternalStorage
 import kotlinx.coroutines.CoroutineScope
 import it.fast4x.riplay.data.models.SongEntity
@@ -195,7 +181,6 @@ import it.fast4x.riplay.utils.getAlbumVersionFromVideo
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.move
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SONGS_TYPE_FILTER
 import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.forcePlay
@@ -228,15 +213,17 @@ fun LocalPlaylistSongs(
     onDelete: () -> Unit,
 ) {
 
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val context = LocalContext.current
     val (colorPalette, typography, thumbnailShape) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalGlobalSheetState.current
     val selectedQueue = LocalSelectedQueue.current
-    val uiType by rememberPreference(UI_TYPE.key, UiType.RiPlay)
+    val uiType = appSettings.uiType
 
     var playlistAllSongs by persistList<SongEntity>("localPlaylist/$playlistId/songs")
     var songsInTheToPlaylist by persistList<SongEntity>("")
@@ -246,13 +233,13 @@ fun LocalPlaylistSongs(
     val thumbnailUrl = remember { mutableStateOf("") }
 
 
-    var sortBy by rememberPreference(PLAYLIST_SONG_SORT_BY.key, PlaylistSongSortBy.Title)
-    var sortOrder by rememberPreference(SONG_SORT_ORDER.key, SortOrder.Descending)
+    val sortBy = appSettings.playlistSongsSortBy
+    val sortOrder = appSettings.songSortOrder
 
     var filter: String? by rememberSaveable { mutableStateOf(null) }
 
-    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
-    var playlistSongsTypeFilter by rememberPreference(PLAYLIST_SONGS_TYPE_FILTER.key, PlaylistSongsTypeFilter.All)
+    val disableScrollingText = appearanceSettings.disableScrollingText
+    val playlistSongsTypeFilter = appSettings.playlistSongsTypeFilter
     var isSpotifyPlaylist by remember { mutableStateOf(false) }
 
     val isNetworkConnected = rememberIsNetworkConnected()
@@ -324,11 +311,8 @@ fun LocalPlaylistSongs(
     }
 
     //**** SMART RECOMMENDATION
-    val recommendationsNumber by rememberPreference(
-        RECOMMENDATIONS_NUMBER.key,
-        RecommendationsNumber.`5`
-    )
-    var isRecommendationEnabled by rememberPreference(IS_RECOMMENDATION_ENABLED.key, false)
+    val recommendationsNumber = appSettings.recommendationsNumber
+    val isRecommendationEnabled = appSettings.isRecommendationEnabled
     var relatedSongsRecommendationResult by persist<Result<Environment.RelatedSongs?>?>(tag = "home/relatedSongsResult")
     var songBaseRecommendation by persist<SongEntity?>("home/songBaseRecommendation")
     var positionsRecommendationList = arrayListOf<Int>()
@@ -589,7 +573,7 @@ fun LocalPlaylistSongs(
         }
     }
 
-    var isReorderDisabled by rememberPreference(REORDER_IN_QUEUE_ENABLED.key, defaultValue = true)
+    val isReorderDisabled = appSettings.reorderInQueueEnabled
 
     val playlistThumbnailSizeDp = Dimensions.thumbnails.playlist
     val playlistThumbnailSizePx = playlistThumbnailSizeDp.px
@@ -828,11 +812,8 @@ fun LocalPlaylistSongs(
         )
     }
 
-    val navigationBarPosition by rememberPreference(
-        NAVIGATION_BAR_POSITION.key,
-        NavigationBarPosition.Bottom
-    )
-    val maxSongsInQueue by rememberPreference(MAX_SONGS_IN_QUEUE.key, MaxSongs.`500`)
+    val navigationBarPosition = appSettings.navigationBarPosition
+    val maxSongsInQueue = appSettings.maxSongsInQueue
 
     val playlistNotMonthlyType =
         playlistPreview?.playlist?.name?.startsWith(MONTHLY_PREFIX, 0, true) == false
@@ -1245,7 +1226,13 @@ fun LocalPlaylistSongs(
                                         }
                                     },
                                     onSmartRecommendationClick = {
-                                        isRecommendationEnabled = !isRecommendationEnabled
+                                        coroutineScope.launch {
+                                            appSettingsManager.updateSettings(
+                                                appSettings.copy(
+                                                    isRecommendationEnabled = !appSettings.isRecommendationEnabled
+                                                )
+                                            )
+                                        }
                                     },
                                     isRecommendationEnabled = isRecommendationEnabled
                                 )
@@ -1314,17 +1301,22 @@ fun LocalPlaylistSongs(
                                 color = if (playlistSongs.isNotEmpty() && isReorderDisabled) colorPalette.text else colorPalette.accent,
                                 onClick = {
                                     //if (sortBy == PlaylistSongSortBy.Position && sortOrder == SortOrder.Ascending) {
-                                    isReorderDisabled = !isReorderDisabled
-                                    if (!isReorderDisabled) {
-                                        sortBy = PlaylistSongSortBy.Position
-                                        sortOrder = SortOrder.Ascending
+                                    coroutineScope.launch {
+                                        appSettingsManager.updateSettings(
+                                            appSettings.copy(
+                                                isReorderDisabled = !isReorderDisabled,
+                                            )
+                                        )
+                                        if (!isReorderDisabled) {
+                                            appSettingsManager.updateSettings(
+                                                appSettings.copy(
+                                                    playlistSongsSortBy = PlaylistSongSortBy.Position,
+                                                    playlistSortOrder = SortOrder.Ascending
+                                                )
+                                            )
+
+                                        }
                                     }
-//                                            } else {
-//                                                SmartMessage(
-//                                                    context.resources.getString(R.string.info_reorder_is_possible_only_in_ascending_sort),
-//                                                    type = PopupType.Warning, context = context
-//                                                )
-//                                            }
                                 },
                                 onLongClick = {
                                     SmartMessage(
@@ -1822,9 +1814,14 @@ fun LocalPlaylistSongs(
                                 icon = R.drawable.arrow_up,
                                 color = colorPalette.text,
                                 onClick = {
-                                    sortOrder = !sortOrder
-                                    if (sortBy == PlaylistSongSortBy.Position && sortOrder == SortOrder.Ascending)
-                                        isReorderDisabled = false else isReorderDisabled = true
+                                    coroutineScope.launch {
+                                        appSettingsManager.updateSettings(
+                                            appSettings.copy(
+                                                playlistSortOrder = !sortOrder,
+                                                isReorderDisabled = !(sortBy == PlaylistSongSortBy.Position && sortOrder == SortOrder.Ascending)
+                                            )
+                                        )
+                                    }
                                 },
                                 modifier = Modifier
                                     .graphicsLayer { rotationZ = sortOrderIconRotation }
@@ -1860,64 +1857,124 @@ fun LocalPlaylistSongs(
                                                 title = stringResource(R.string.sorting_order),
                                                 onDismiss = menuState::hide,
                                                 onTitle = {
-                                                    sortBy =
-                                                        PlaylistSongSortBy.Title; isReorderDisabled =
-                                                    true
+                                                    coroutineScope.launch {
+                                                        appSettingsManager.updateSettings(
+                                                            appSettings.copy(
+                                                                playlistSongsSortBy = PlaylistSongSortBy.Title,
+                                                                isReorderDisabled = true
+                                                            )
+                                                        )
+                                                    }
                                                 },
                                                 onAlbum = {
-                                                    sortBy =
-                                                        PlaylistSongSortBy.Album; isReorderDisabled =
-                                                    true
+                                                    coroutineScope.launch {
+                                                        appSettingsManager.updateSettings(
+                                                            appSettings.copy(
+                                                                playlistSongsSortBy = PlaylistSongSortBy.Album,
+                                                                isReorderDisabled = true
+                                                            )
+                                                        )
+                                                    }
                                                 },
                                                 onAlbumYear = {
-                                                    sortBy =
-                                                        PlaylistSongSortBy.AlbumYear; isReorderDisabled =
-                                                    true
+                                                    coroutineScope.launch {
+                                                        appSettingsManager.updateSettings(
+                                                            appSettings.copy(
+                                                                playlistSongsSortBy = PlaylistSongSortBy.AlbumYear,
+                                                                isReorderDisabled = true
+                                                            )
+                                                        )
+                                                    }
                                                 },
                                                 onDatePlayed = {
-                                                    sortBy =
-                                                        PlaylistSongSortBy.DatePlayed; isReorderDisabled =
-                                                    true
+                                                    coroutineScope.launch {
+                                                        appSettingsManager.updateSettings(
+                                                            appSettings.copy(
+                                                                playlistSongsSortBy = PlaylistSongSortBy.DatePlayed,
+                                                                isReorderDisabled = true
+                                                            )
+                                                        )
+                                                    }
                                                 },
                                                 onDateLiked = {
-                                                    sortBy =
-                                                        PlaylistSongSortBy.DateLiked; isReorderDisabled =
-                                                    true
+                                                    coroutineScope.launch {
+                                                        appSettingsManager.updateSettings(
+                                                            appSettings.copy(
+                                                                playlistSongsSortBy = PlaylistSongSortBy.DateLiked,
+                                                                isReorderDisabled = true
+                                                            )
+                                                        )
+                                                    }
                                                 },
                                                 onPosition = {
-                                                    sortBy = PlaylistSongSortBy.Position
-                                                    if (sortOrder == SortOrder.Ascending) isReorderDisabled =
-                                                        false else isReorderDisabled = true
+                                                    coroutineScope.launch {
+                                                        appSettingsManager.updateSettings(
+                                                            appSettings.copy(
+                                                                playlistSongsSortBy = PlaylistSongSortBy.Position,
+                                                                isReorderDisabled = sortOrder != SortOrder.Ascending
+                                                            )
+                                                        )
+                                                    }
                                                 },
                                                 onArtist = {
-                                                    sortBy =
-                                                        PlaylistSongSortBy.Artist; isReorderDisabled =
-                                                    true
+                                                    coroutineScope.launch {
+                                                        appSettingsManager.updateSettings(
+                                                            appSettings.copy(
+                                                                playlistSongsSortBy = PlaylistSongSortBy.Artist,
+                                                                isReorderDisabled = true
+                                                            )
+                                                        )
+                                                    }
                                                 },
                                                 onArtistAndAlbum = {
-                                                    sortBy =
-                                                        PlaylistSongSortBy.ArtistAndAlbum; isReorderDisabled =
-                                                    true
+                                                    coroutineScope.launch {
+                                                        appSettingsManager.updateSettings(
+                                                            appSettings.copy(
+                                                                playlistSongsSortBy = PlaylistSongSortBy.ArtistAndAlbum,
+                                                                isReorderDisabled = true
+                                                            )
+                                                        )
+                                                    }
                                                 },
                                                 onPlayTime = {
-                                                    sortBy =
-                                                        PlaylistSongSortBy.PlayTime; isReorderDisabled =
-                                                    true
+                                                    coroutineScope.launch {
+                                                        appSettingsManager.updateSettings(
+                                                            appSettings.copy(
+                                                                playlistSongsSortBy = PlaylistSongSortBy.PlayTime,
+                                                                isReorderDisabled = true
+                                                            )
+                                                        )
+                                                    }
                                                 },
                                                 onRelativePlayTime = {
-                                                    sortBy =
-                                                        PlaylistSongSortBy.RelativePlayTime; isReorderDisabled =
-                                                    true
+                                                    coroutineScope.launch {
+                                                        appSettingsManager.updateSettings(
+                                                            appSettings.copy(
+                                                                playlistSongsSortBy = PlaylistSongSortBy.RelativePlayTime,
+                                                                isReorderDisabled = true
+                                                            )
+                                                        )
+                                                    }
                                                 },
                                                 onDuration = {
-                                                    sortBy =
-                                                        PlaylistSongSortBy.Duration; isReorderDisabled =
-                                                    true
+                                                    coroutineScope.launch {
+                                                        appSettingsManager.updateSettings(
+                                                            appSettings.copy(
+                                                                playlistSongsSortBy = PlaylistSongSortBy.Duration,
+                                                                isReorderDisabled = true
+                                                            )
+                                                        )
+                                                    }
                                                 },
                                                 onDateAdded = {
-                                                    sortBy =
-                                                        PlaylistSongSortBy.DateAdded; isReorderDisabled =
-                                                    true
+                                                    coroutineScope.launch {
+                                                        appSettingsManager.updateSettings(
+                                                            appSettings.copy(
+                                                                playlistSongsSortBy = PlaylistSongSortBy.DateAdded,
+                                                                isReorderDisabled = true
+                                                            )
+                                                        )
+                                                    }
                                                 },
                                             )
                                         }
@@ -1958,32 +2015,72 @@ fun LocalPlaylistSongs(
                                                 title = stringResource(R.string.filter_by),
                                                 onDismiss = menuState::hide,
                                                 onAll = {
-                                                    playlistSongsTypeFilter =
-                                                        PlaylistSongsTypeFilter.All
+                                                    coroutineScope.launch {
+                                                        appSettingsManager.updateSettings(
+                                                            appSettings.copy(
+                                                                playlistSongsTypeFilter = PlaylistSongsTypeFilter.All
+                                                            )
+                                                        )
+                                                    }
                                                 },
                                                 onOnlineSongs = {
-                                                    playlistSongsTypeFilter =
-                                                        PlaylistSongsTypeFilter.OnlineSongs
+                                                    coroutineScope.launch {
+                                                        appSettingsManager.updateSettings(
+                                                            appSettings.copy(
+                                                                playlistSongsTypeFilter = PlaylistSongsTypeFilter.OnlineSongs
+                                                            )
+                                                        )
+                                                    }
                                                 },
                                                 onFavorites = {
-                                                    playlistSongsTypeFilter =
-                                                        PlaylistSongsTypeFilter.Favorites
+                                                    coroutineScope.launch {
+                                                        appSettingsManager.updateSettings(
+                                                            appSettings.copy(
+                                                            playlistSongsTypeFilter =
+                                                                PlaylistSongsTypeFilter.Favorites
+                                                            )
+                                                        )
+                                                    }
                                                 },
                                                 onVideos = {
-                                                    playlistSongsTypeFilter =
-                                                        PlaylistSongsTypeFilter.Videos
+                                                    coroutineScope.launch {
+                                                        appSettingsManager.updateSettings(
+                                                            appSettings.copy(
+                                                                playlistSongsTypeFilter =
+                                                                    PlaylistSongsTypeFilter.Videos
+                                                            )
+                                                        )
+                                                    }
                                                 },
                                                 onLocal = {
-                                                    playlistSongsTypeFilter =
-                                                        PlaylistSongsTypeFilter.Local
+                                                    coroutineScope.launch {
+                                                        appSettingsManager.updateSettings(
+                                                            appSettings.copy(
+                                                                playlistSongsTypeFilter =
+                                                                    PlaylistSongsTypeFilter.Local
+                                                            )
+                                                        )
+                                                    }
                                                 },
                                                 onUnmatched = {
-                                                    playlistSongsTypeFilter =
-                                                        PlaylistSongsTypeFilter.Unmatched
+                                                    coroutineScope.launch {
+                                                        appSettingsManager.updateSettings(
+                                                            appSettings.copy(
+                                                                playlistSongsTypeFilter =
+                                                                    PlaylistSongsTypeFilter.Unmatched
+                                                            )
+                                                        )
+                                                    }
                                                 },
                                                 onExplicit = {
-                                                    playlistSongsTypeFilter =
-                                                        PlaylistSongsTypeFilter.Explicit
+                                                    coroutineScope.launch {
+                                                        appSettingsManager.updateSettings(
+                                                            appSettings.copy(
+                                                                playlistSongsTypeFilter =
+                                                                    PlaylistSongsTypeFilter.Explicit
+                                                            )
+                                                        )
+                                                    }
                                                 },
                                             )
                                         }
@@ -2467,7 +2564,7 @@ fun LocalPlaylistSongs(
 
             FloatingActionsContainerWithScrollToTop(lazyListState = lazyListState)
 
-            val showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
+            val showFloatingIcon = appSettings.showFloatingIcon
             if (uiType == UiType.ViMusic || showFloatingIcon)
                 FloatingActionsContainerWithScrollToTop(
                     lazyListState = lazyListState,

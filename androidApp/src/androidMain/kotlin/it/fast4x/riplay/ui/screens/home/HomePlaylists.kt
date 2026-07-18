@@ -62,11 +62,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.environment.EnvironmentExt
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.LocalOnDeviceViewModel
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -92,16 +95,6 @@ import it.fast4x.riplay.ui.components.themed.MultiFloatingActionsContainer
 import it.fast4x.riplay.ui.items.PlaylistItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.ENABLE_CREATE_MONTHLY_PLAYLISTS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SORT_BY
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_SORT_ORDER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYLIST_TYPE
-import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_MONTHLY_PLAYLISTS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_PINNED_PLAYLISTS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_PIPED_PLAYLISTS
 import kotlinx.coroutines.flow.map
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ViewType
@@ -127,15 +120,12 @@ import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.ImportPlaylistType
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
-import it.fast4x.riplay.extensions.preferences.PreferenceKey
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHORT_ON_DEVICE_FOLDER_NAME
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.tab.ImportSongsFromCSV
 import it.fast4x.riplay.ui.components.tab.ToolbarMenuButton
 import it.fast4x.riplay.ui.components.themed.EnumsMenu
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
 import it.fast4x.riplay.ui.components.themed.PlaylistsItemMenu
-import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.CheckAndCreateMonthlyPlaylist
 import it.fast4x.riplay.utils.LazyListContainer
@@ -183,10 +173,15 @@ fun HomePlaylists(
     val binder = LocalPlayerServiceBinder.current
     val selectedQueue = LocalSelectedQueue.current
 
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
     // Non-vital
     var plistId by remember { mutableLongStateOf(0L) }
-    var playlistType by rememberPreference(PLAYLIST_TYPE.key, PlaylistType.Playlist)
-    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    val playlistType = appSettings.playlistType
+    val disableScrollingText = appearanceSettings.disableScrollingText
 
     var items by persistList<PlaylistPreview>("home/playlists")
     var itemsOnDisplay by persistList<PlaylistPreview>("home/playlists/on_display")
@@ -352,14 +347,18 @@ fun HomePlaylists(
         }
     )
 
-    var importType by rememberPreference(PreferenceKey.IMPORT_PLAYLIST_TYPE.key, ImportPlaylistType.Riplay)
+    val importType = appSettings.importPlaylistType
     val importMenu: @Composable () -> Unit = {
         EnumsMenu(
             title = stringResource(R.string.import_playlist),
             onDismiss = menuState::hide,
             selectedValue = importType.menuItem,
             onValueSelected = {
-                importType = ImportPlaylistType.entries[it.ordinal]
+                coroutineScope.launch {
+                    appSettingsManager.updateSettings(
+                        appSettings.copy(importPlaylistType = ImportPlaylistType.entries[it.ordinal])
+                    )
+                }
                 when(importType) {
                     ImportPlaylistType.Riplay -> importPlaylistDialog.onShortClick()
                     else -> importPlaylistSpotifyDialog.onShortClick() //SmartMessage("Wait, not available", context = context)
@@ -382,12 +381,18 @@ fun HomePlaylists(
 
     val viewType = viewTypeToolbutton(R.string.viewType)
 
-    var shortOnDeviceFolderName by rememberPreference(SHORT_ON_DEVICE_FOLDER_NAME.key, false)
+    val shortOnDeviceFolderName = appSettings.shortOnDeviceFolderName
 
     val toggleOndeviceFolderName = ToolbarMenuButton.build(
         R.drawable.flip,
         R.string.toggle_ondevice_folder_name_instead_full_path,
-        onClick = { shortOnDeviceFolderName = !shortOnDeviceFolderName }
+        onClick = {
+            coroutineScope.launch {
+                appSettingsManager.updateSettings(
+                    appSettings.copy(shortOnDeviceFolderName = !shortOnDeviceFolderName)
+                )
+            }
+        }
     )
 
     var refreshing by remember { mutableStateOf(false) }
@@ -410,8 +415,8 @@ fun HomePlaylists(
 
     val onDeviceViewModel = LocalOnDeviceViewModel.current
 
-    var sortBy by rememberPreference(PLAYLIST_SORT_BY.key, PlaylistSortBy.DateAdded)
-    var sortOrder by rememberPreference(PLAYLIST_SORT_ORDER.key, SortOrder.Descending)
+    val sortBy = appSettings.playlistSortBy
+    val sortOrder = appSettings.playlistSortOrder
     val sortOrderIconRotation by animateFloatAsState(
         targetValue = if (sortOrder == SortOrder.Ascending) 0f else 180f,
         animationSpec = tween(durationMillis = 400, easing = LinearEasing), label = ""
@@ -421,7 +426,9 @@ fun HomePlaylists(
 
     LaunchedEffect(isNetworkConnected) {
         if (!isNetworkConnected && playlistType !in listOf(PlaylistType.OnDevicePlaylist))
-            playlistType = PlaylistType.OnDevicePlaylist
+            appSettingsManager.updateSettings(
+                appSettings.copy(playlistType = PlaylistType.OnDevicePlaylist)
+            )
     }
 
     LaunchedEffect(sortBy, sortOrder, playlistType) {
@@ -468,9 +475,9 @@ fun HomePlaylists(
         else lazyGridState.scrollToItem(scrollIndex, scrollOffset)
     }
 
-    val showPinnedPlaylists by rememberPreference(SHOW_PINNED_PLAYLISTS.key, true)
-    val showMonthlyPlaylists by rememberPreference(SHOW_MONTHLY_PLAYLISTS.key, true)
-    val showPipedPlaylists by rememberPreference(SHOW_PIPED_PLAYLISTS.key, true)
+    val showPinnedPlaylists = appSettings.showPinnedPlaylists
+    val showMonthlyPlaylists = appSettings.showMonthlyPlaylists
+    val showPipedPlaylists = appSettings.showPipedPlaylists
 
     val buttonsList = (if (isNetworkConnected) mutableListOf(PlaylistType.Playlist to stringResource(R.string.playlists)) else emptyList()).toMutableList()
     if (isNetworkConnected) {
@@ -484,7 +491,7 @@ fun HomePlaylists(
 
     newPlaylistDialog.Render()
 
-    val enableCreateMonthlyPlaylists by rememberPreference(ENABLE_CREATE_MONTHLY_PLAYLISTS.key, true)
+    val enableCreateMonthlyPlaylists = appSettings.enableCreateMonthlyPlaylists
     if (enableCreateMonthlyPlaylists)
         CheckAndCreateMonthlyPlaylist()
 
@@ -493,7 +500,13 @@ fun HomePlaylists(
             title = stringResource(R.string.sorting_order),
             onDismiss = menuState::hide,
             selectedValue = sortBy.menuItem,
-            onValueSelected = { sortBy = PlaylistSortBy.entries[it.ordinal] },
+            onValueSelected = {
+                coroutineScope.launch {
+                    appSettingsManager.updateSettings(
+                        appSettings.copy(playlistSortBy = PlaylistSortBy.entries[it.ordinal])
+                    )
+                }
+            },
             values = PlaylistSortBy.entries.map { it.menuItem },
             valueText = { stringResource(it.titleId) }
         )
@@ -530,7 +543,13 @@ fun HomePlaylists(
                         ButtonsRow(
                             buttons = buttonsList,
                             currentValue = playlistType,
-                            onValueUpdate = { playlistType = it },
+                            onValueUpdate = {
+                                coroutineScope.launch {
+                                    appSettingsManager.updateSettings(
+                                        appSettings.copy(playlistType = it)
+                                    )
+                                }
+                            },
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
@@ -592,7 +611,11 @@ fun HomePlaylists(
                                 // Se espanso -> Inverte ordine (e resetta timer)
                                 // Se chiuso -> Espande il chip
                                 if (isSortExpanded) {
-                                    sortOrder = if (sortOrder == SortOrder.Ascending) SortOrder.Descending else SortOrder.Ascending
+                                    coroutineScope.launch {
+                                        appSettingsManager.updateSettings(
+                                            appSettings.copy(playlistSortOrder = !sortOrder)
+                                        )
+                                    }
                                 } else {
                                     isSortExpanded = true
                                 }
@@ -1205,7 +1228,7 @@ fun HomePlaylists(
 
             FloatingActionsContainerWithScrollToTop(lazyGridState = lazyGridState)
 
-            val showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
+            val showFloatingIcon = appSettings.showFloatingIcon
             if (UiType.ViMusic.isCurrent() && showFloatingIcon)
                 MultiFloatingActionsContainer(
                     iconId = R.drawable.search,

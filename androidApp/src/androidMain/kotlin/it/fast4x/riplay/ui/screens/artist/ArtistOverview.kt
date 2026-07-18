@@ -58,6 +58,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -67,7 +68,8 @@ import it.fast4x.environment.models.BrowseEndpoint
 import it.fast4x.environment.requests.ArtistPage
 import it.fast4x.environment.utils.ArtistDiscographyType
 import it.fast4x.environment.utils.completed
-import it.fast4x.riplay.LocalAppearanceSettings
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -79,7 +81,6 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.data.models.Album
@@ -93,7 +94,6 @@ import it.fast4x.riplay.extensions.qrcodeanalyzer.GenerateQrButton
 import it.fast4x.riplay.extensions.musicbrainz.MBMetadataHelper
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.musicbrainz.repository.ArtistRepository
-import it.fast4x.riplay.extensions.musicbrainz.ui.ArtistInsightsScreen
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
@@ -123,12 +123,8 @@ import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.fadingEdge
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import it.fast4x.riplay.ui.components.themed.ExternalLinksSection
 import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.ui.components.themed.InfoBar
@@ -167,8 +163,10 @@ fun ArtistOverview(
 
     if (browseId == null) return
 
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val binder = LocalPlayerServiceBinder.current
     val windowInsets = LocalPlayerAwareWindowInsets.current
@@ -205,7 +203,7 @@ fun ArtistOverview(
     var showArtistSongsInLibrary by rememberSaveable { mutableStateOf(false) }
 
     val hapticFeedback = LocalHapticFeedback.current
-    val parentalControlEnabled by rememberPreference(PARENTAL_CONTROL_ENABLED.key, false)
+    val parentalControlEnabled = appSettings.parentalControlEnabled
     val menuState = LocalGlobalSheetState.current
 
     var readMore by remember { mutableStateOf(false) }
@@ -843,14 +841,10 @@ fun ArtistOverview(
                                             binder?.player?.enqueue(item.asMediaItem, queue = it)
                                         }
                                     ) {
-                                        //var forceRecompose by remember { mutableStateOf(false) }
                                         SongItem(
                                             song = item,
                                             thumbnailSizePx = songThumbnailSizePx,
                                             thumbnailSizeDp = songThumbnailSizeDp,
-                                            //disableScrollingText = disableScrollingText,
-                                            //isNowPlaying = false,
-                                            //forceRecompose = forceRecompose,
                                             modifier = Modifier
                                                 .combinedClickable(
                                                     onLongClick = {
@@ -1040,7 +1034,7 @@ fun ArtistOverview(
 
             }
 
-            val showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
+            val showFloatingIcon = appSettings.showFloatingIcon
             if (UiType.ViMusic.isCurrent() && showFloatingIcon)
                 artistPage?.radioEndpoint?.let { endpoint ->
 

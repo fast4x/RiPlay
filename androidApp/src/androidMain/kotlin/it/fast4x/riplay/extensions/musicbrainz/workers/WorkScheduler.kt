@@ -8,6 +8,10 @@ import it.fast4x.riplay.utils.appContext
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 import androidx.core.content.edit
+import it.fast4x.riplay.MainApplication
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 object WorkScheduler {
 
@@ -128,9 +132,11 @@ object WorkScheduler {
      * Usa SharedPreferences per tracciare lo stato.
      */
     private fun scheduleInitialSetupIfNeeded(workManager: WorkManager) {
-        val prefs = appContext().preferences
+        //val prefs = appContext().preferences
+        val appSettingsManager = (appContext() as MainApplication).appSettingsManager
 
-        if (prefs.getBoolean(PreferenceKey.INITIAL_SETUP_WORKER_DONE.key, false)) {
+        //if (prefs.getBoolean(PreferenceKey.INITIAL_SETUP_WORKER_DONE.key, false)) {
+        if (appSettingsManager.activeSettings.value.initialSetupWorkerDone) {
             return
         }
 
@@ -149,7 +155,14 @@ object WorkScheduler {
         )
 
         // Segna come schedulato ( verrà segnato done dal Worker stesso)
-        prefs.edit { putBoolean(PreferenceKey.INITIAL_SETUP_WORKER_DONE.key, true) }
+        //prefs.edit { putBoolean(PreferenceKey.INITIAL_SETUP_WORKER_DONE.key, true) }
+        CoroutineScope(Dispatchers.IO).launch {
+            appSettingsManager.updateSettings(
+                appSettingsManager.activeSettings.value.copy(
+                    initialSetupWorkerDone = true
+                )
+            )
+        }
     }
 
     /**

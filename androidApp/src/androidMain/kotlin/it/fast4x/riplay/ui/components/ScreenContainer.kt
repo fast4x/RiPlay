@@ -42,13 +42,13 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PlayerPosition
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.enums.UiType
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYER_POSITION
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.components.navigation.header.AppHeader
 import it.fast4x.riplay.ui.components.navigation.nav.AbstractNavigationBar
 import it.fast4x.riplay.ui.components.navigation.nav.HorizontalNavigationBar
@@ -69,6 +69,9 @@ fun ScreenContainer(
     navBarContent: @Composable (@Composable (Int, String, Int, Boolean) -> Unit) -> Unit,
     content: @Composable AnimatedVisibilityScope.(Int) -> Unit
 ) {
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
     val navigationBar: AbstractNavigationBar =
         when( NavigationBarPosition.current() ) {
             NavigationBarPosition.Left, NavigationBarPosition.Right ->
@@ -228,7 +231,7 @@ fun ScreenContainer(
                     navigationBar.Draw()
             }
 
-            val playerPosition by rememberPreference(PLAYER_POSITION.key, PlayerPosition.Bottom)
+            val playerPosition = appSettings.playerPosition
             val playerAlignment =
                 if (playerPosition == PlayerPosition.Top)
                     Alignment.TopCenter

@@ -2,22 +2,19 @@ package it.fast4x.riplay.utils
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import it.fast4x.environment.Environment
 import it.fast4x.environment.requests.HomePage
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.enums.PlayEventsType
 import it.fast4x.riplay.enums.TopPlaylistPeriod
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.AUTO_SHUFFLE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.MENU_STYLE
-import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.TOP_PLAYLIST_PERIOD
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.GlobalSheetState
 import it.fast4x.riplay.ui.components.themed.PeriodMenu
@@ -59,8 +56,9 @@ class HiddenSongs private constructor(
 
 @Composable
 fun randomSort(): MenuIcon = object: MenuIcon, DynamicColor, Descriptive {
-
-    override var isFirstColor: Boolean by rememberPreference(AUTO_SHUFFLE.key, false)
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    override var isFirstColor: Boolean = appSettings.autoShuffle
     override val iconId: Int = R.drawable.random
     override val messageId: Int = R.string.random_sorting
     override val menuIconTitle: String
@@ -79,11 +77,16 @@ class PeriodSelector private constructor(
     companion object {
         @JvmStatic
         @Composable
-        fun init() = PeriodSelector(
-            rememberPreference(TOP_PLAYLIST_PERIOD.key, TopPlaylistPeriod.PastWeek),
-            LocalGlobalSheetState.current,
-            rememberPreference(MENU_STYLE.key, MenuStyle.List)
-        )
+        fun init(): PeriodSelector {
+            val appSettingsManager = LocalAppSettingsManager.current
+            val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
+            return PeriodSelector(
+                remember { mutableStateOf(appSettings.topPlaylistPeriod) },
+                LocalGlobalSheetState.current,
+                remember { mutableStateOf(appSettings.menuStyle) }
+            )
+        }
     }
 
     var period: TopPlaylistPeriod = periodState.value

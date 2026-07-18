@@ -10,25 +10,18 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,40 +31,32 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.bodies.SearchSuggestionsBody
 import it.fast4x.environment.requests.searchSuggestionsWithItems
-import it.fast4x.riplay.LocalAppearanceSettings
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
-import it.fast4x.riplay.commonutils.cleanString
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
-import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.data.models.SearchQuery
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollToTop
-import it.fast4x.riplay.ui.components.themed.Header
 import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenu
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.riplay.ui.components.themed.TitleMiniSection
@@ -80,15 +65,8 @@ import it.fast4x.riplay.ui.items.ArtistItem
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.ui.styling.align
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
-import it.fast4x.riplay.ui.styling.medium
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PAUSE_SEARCH_HISTORY
-import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.secondary
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -111,10 +89,11 @@ fun OnlineSearch(
     onSearch: (String) -> Unit,
     decorationBox: @Composable (@Composable () -> Unit) -> Unit,
 ) {
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
-    val context = LocalContext.current
     var history by persistList<SearchQuery>("search/online/history")
 
     var reloadHistory by remember {
@@ -122,14 +101,13 @@ fun OnlineSearch(
     }
 
     LaunchedEffect(textFieldValue.text, reloadHistory) {
-        if (!context.preferences.getBoolean(PAUSE_SEARCH_HISTORY.key, false)) {
+        if (!appSettings.isPauseListenHistoryEnabled) {
             Database.queries("%${textFieldValue.text}%")
                 .distinctUntilChanged { old, new -> old.size == new.size }
                 .collect { history = it }
         }
     }
 
-    //var suggestionsResult by persist<Result<List<String>?>?>("search/online/suggestionsResult")
     var suggestionsResult by remember {
         mutableStateOf<Result<Environment.SearchSuggestions>?>(null)
     }
@@ -137,8 +115,6 @@ fun OnlineSearch(
     LaunchedEffect(textFieldValue.text) {
         if (textFieldValue.text.isNotEmpty()) {
             delay(200)
-            //suggestionsResult =
-            //    Innertube.searchSuggestions(SearchSuggestionsBody(input = textFieldValue.text))
             suggestionsResult =
                 Environment.searchSuggestionsWithItems(SearchSuggestionsBody(input = textFieldValue.text))
         }
@@ -162,8 +138,6 @@ fun OnlineSearch(
     val menuState = LocalGlobalSheetState.current
     val hapticFeedback = LocalHapticFeedback.current
     val binder = LocalPlayerServiceBinder.current
-
-    //val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
     val disableScrollingText = appearanceSettings.disableScrollingText
 
     Box(
@@ -183,49 +157,9 @@ fun OnlineSearch(
         ) {
             LazyColumn(
                 state = lazyListState,
-//                contentPadding = LocalPlayerAwareWindowInsets.current
-//                    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
                 modifier = Modifier
                     .fillMaxSize()
             ) {
-                /*
-                item(
-                    key = "header",
-                    contentType = 0
-                ) {
-                    Header(
-                        titleContent = {
-                            BasicTextField(
-                                value = textFieldValue,
-                                onValueChange = onTextFieldValueChanged,
-                                textStyle = typography().l.medium.align(TextAlign.Start),
-                                singleLine = true,
-                                maxLines = 1,
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                                keyboardActions = KeyboardActions(
-                                    onSearch = {
-                                        if (textFieldValue.text.isNotEmpty() && textFieldValue.text != "/") {
-                                            onSearch(cleanString(textFieldValue.text))
-                                        }
-                                    }
-                                ),
-                                cursorBrush = SolidColor(colorPalette().text),
-                                decorationBox = decorationBox,
-                                modifier = Modifier
-                                    .background(
-                                        //colorPalette().background4,
-                                        colorPalette().background1,
-                                        shape = thumbnailRoundness.shape()
-                                    )
-                                    .padding(all = 4.dp)
-                                    .focusRequester(focusRequester)
-                                    .fillMaxWidth()
-                            )
-                        },
-                        actionsContent = {},
-                    )
-                }
-                */
 
                 suggestionsResult?.getOrNull()?.let { suggestions ->
 
@@ -263,11 +197,8 @@ fun OnlineSearch(
                                             },
                                             onClick = {
                                                 binder?.player?.forcePlay(mediaItem)
-                                                //fastPlay(mediaItem, binder)
                                             }
                                         ),
-                                    //disableScrollingText = disableScrollingText,
-                                    //isNowPlaying = binder?.player?.isNowPlaying(mediaItem.mediaId)  ?: false
                                 )
                             }
                         }

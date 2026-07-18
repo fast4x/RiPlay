@@ -88,6 +88,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.util.UnstableApi
 import coil.compose.AsyncImage
@@ -98,7 +99,8 @@ import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.models.responses.CachedAccountProfile
 import it.fast4x.environment.requests.searchPage
 import it.fast4x.environment.utils.from
-import it.fast4x.riplay.LocalAppearanceSettings
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.Database.Companion.update
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -118,12 +120,6 @@ import it.fast4x.riplay.utils.getDeviceVolume
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isValidIP
 import it.fast4x.riplay.ui.styling.medium
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYBACK_DEVICE_VOLUME
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYBACK_DURATION
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYBACK_PITCH
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYBACK_SPEED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAYBACK_VOLUME
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.setDeviceVolume
 import it.fast4x.riplay.utils.colorPalette
@@ -144,12 +140,8 @@ import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.BASSBOOST_LEVEL
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.utils.isValidHex
 import it.fast4x.riplay.utils.isValidHttpUrl
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.LYRICS_SIZE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.LYRICS_SIZE_L
 import it.fast4x.riplay.utils.removeYTSongFromPlaylist
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.getUpdateDownloadUrl
@@ -461,8 +453,8 @@ fun SelectorArtistsDialog(
     onValueSelected: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
@@ -1167,29 +1159,15 @@ fun BlurParamsDialog(
     scaleValue: (Float) -> Unit,
     darkenFactorValue: (Float) -> Unit
 ) {
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val defaultStrength = 25f
-    //val defaultStrength2 = 30f
-    val defaultDarkenFactor = 0.2f
-    //var blurStrength  by rememberPreference(BLUR_SCALE.key, defaultStrength)
     val blurStrength = appearanceSettings.blurStrength
-    //var blurStrength2  by rememberPreference(blurStrength2Key.key, defaultStrength2)
-    //var blurDarkenFactor  by rememberPreference(BLUR_DARKEN_FACTOR.key, defaultDarkenFactor)
     val blurDarkenFactor = appearanceSettings.blurDarkenFactor
 
     val coroutineScope = rememberCoroutineScope()
 
-    /*
-    var isShowingLyrics by rememberSaveable {
-        mutableStateOf(false)
-    }
-    var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey.key, false)
-
-     */
-
-  //if (!isShowingLyrics || (isShowingLyrics && showlyricsthumbnail))
     DefaultDialog(
         onDismiss = {
             scaleValue(blurStrength)
@@ -1208,7 +1186,7 @@ fun BlurParamsDialog(
                 onClick = {
                     coroutineScope.launch {
                         val new = appearanceSettings.copy(blurStrength = defaultStrength)
-                        appearanceSettingsVieModel.updatePreset(new)
+                        appearanceSettingsManager.updatePreset(new)
                     }
                 },
                 icon = R.drawable.droplet,
@@ -1222,7 +1200,7 @@ fun BlurParamsDialog(
                 onSlide = {
                     coroutineScope.launch {
                         val new = appearanceSettings.copy(blurStrength = it)
-                        appearanceSettingsVieModel.updatePreset(new)
+                        appearanceSettingsManager.updatePreset(new)
                     }
                 },
                 onSlideComplete = {},
@@ -1296,27 +1274,19 @@ fun BlurParamsDialog(
         fadeValueEx: (Float) -> Unit,
         imageCoverSizeValue: (Float) -> Unit
     ) {
-        val appearanceSettingsVieModel = LocalAppearanceSettings.current
-        val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+        val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+        val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
         val defaultFade = 5f
         val defaultSpacing = 0f
         val defaultImageCoverSize = 50f
-        //var thumbnailSpacing by rememberPreference(THUMBNAIL_SPACING.key, defaultSpacing)
         val thumbnailSpacing = appearanceSettings.thumbnailSpacing
-        //var thumbnailSpacingL by rememberPreference(THUMBNAIL_SPACING_L.key, defaultSpacing)
         val thumbnailSpacingL = appearanceSettings.thumbnailSpacingL
-        //var thumbnailFade by rememberPreference(THUMBNAIL_FADE.key, defaultFade)
         val thumbnailFade = appearanceSettings.thumbnailFade
-        //var thumbnailFadeEx by rememberPreference(THUMBNAIL_FADE_EX.key, defaultFade)
         val thumbnailFadeEx = appearanceSettings.thumbnailFadeEx
-        //var fadingedge by rememberPreference(FADING_EDGE.key, false)
         val fadingedge = appearanceSettings.fadingedge
-        //var imageCoverSize by rememberPreference(VINYL_SIZE.key, defaultImageCoverSize)
         val imageCoverSize = appearanceSettings.imageCoverSize
-        //val showCoverThumbnailAnimation by rememberPreference(SHOW_COVER_THUMBNAIL_ANIMATION.key, false)
         val showCoverThumbnailAnimation = appearanceSettings.showCoverThumbnailAnimation
-        //val expandedplayer by rememberPreference(EXPANDED_PLAYER.key, false)
         val expandedplayer = appearanceSettings.expandedPlayer
 
         val coroutineScope = rememberCoroutineScope()
@@ -1342,7 +1312,7 @@ fun BlurParamsDialog(
                             coroutineScope.launch {
                                 val new =
                                     appearanceSettings.copy(imageCoverSize = defaultImageCoverSize)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                appearanceSettingsManager.updatePreset(new)
                             }
                         },
                         icon = R.drawable.music_album,
@@ -1356,7 +1326,7 @@ fun BlurParamsDialog(
                         onSlide = {
                             coroutineScope.launch {
                                 val new = appearanceSettings.copy(imageCoverSize = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                appearanceSettingsManager.updatePreset(new)
                             }
                         },
                         onSlideComplete = {
@@ -1381,7 +1351,7 @@ fun BlurParamsDialog(
                             onClick = {
                                 coroutineScope.launch {
                                     val new = appearanceSettings.copy(thumbnailFadeEx = defaultFade)
-                                    appearanceSettingsVieModel.updatePreset(new)
+                                    appearanceSettingsManager.updatePreset(new)
                                 }
                             },
                             icon = R.drawable.droplet,
@@ -1395,7 +1365,7 @@ fun BlurParamsDialog(
                             onSlide = {
                                 coroutineScope.launch {
                                     val new = appearanceSettings.copy(thumbnailFadeEx = it)
-                                    appearanceSettingsVieModel.updatePreset(new)
+                                    appearanceSettingsManager.updatePreset(new)
                                 }
                             },
                             onSlideComplete = {},
@@ -1473,7 +1443,7 @@ fun BlurParamsDialog(
                             onClick = {
                                 coroutineScope.launch {
                                     val new = appearanceSettings.copy(thumbnailFade = defaultFade)
-                                    appearanceSettingsVieModel.updatePreset(new)
+                                    appearanceSettingsManager.updatePreset(new)
                                 }
                             },
                             icon = R.drawable.droplet,
@@ -1487,7 +1457,7 @@ fun BlurParamsDialog(
                             onSlide = {
                                 coroutineScope.launch {
                                     val new = appearanceSettings.copy(thumbnailFade = it)
-                                    appearanceSettingsVieModel.updatePreset(new)
+                                    appearanceSettingsManager.updatePreset(new)
                                 }
                             },
                             onSlideComplete = {},
@@ -1509,7 +1479,7 @@ fun BlurParamsDialog(
                         onClick = {
                             coroutineScope.launch {
                                 val new = appearanceSettings.copy(thumbnailSpacing = defaultSpacing)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                appearanceSettingsManager.updatePreset(new)
                             }
                         },
                         icon = R.drawable.burger,
@@ -1523,7 +1493,7 @@ fun BlurParamsDialog(
                         onSlide = {
                             coroutineScope.launch {
                                 val new = appearanceSettings.copy(thumbnailSpacing = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                appearanceSettingsManager.updatePreset(new)
                             }
                         },
                         onSlideComplete = {},
@@ -1602,7 +1572,7 @@ fun BlurParamsDialog(
                             coroutineScope.launch {
                                 val new =
                                     appearanceSettings.copy(thumbnailSpacingL = defaultSpacing)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                appearanceSettingsManager.updatePreset(new)
                             }
                         },
                         icon = R.drawable.burger,
@@ -1617,7 +1587,7 @@ fun BlurParamsDialog(
                         onSlide = {
                             coroutineScope.launch {
                                 val new = appearanceSettings.copy(thumbnailSpacingL = it)
-                                appearanceSettingsVieModel.updatePreset(new)
+                                appearanceSettingsManager.updatePreset(new)
                             }
                         },
                         onSlideComplete = {},
@@ -1732,8 +1702,10 @@ fun LyricsSizeDialog(
     sizeValue: (Float) -> Unit,
     sizeValueL: (Float) -> Unit,
 ) {
-    var lyricsSize by rememberPreference(LYRICS_SIZE.key, 20f)
-    var lyricsSizeL by rememberPreference(LYRICS_SIZE_L.key, 20f)
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    var lyricsSize = appearanceSettings.lyricsSize
+    var lyricsSizeL = appearanceSettings.lyricsSizeL
     DefaultDialog(
         onDismiss = {
             sizeValue(lyricsSize)
@@ -1878,7 +1850,6 @@ fun SongMatchingDialog(
             val binder = LocalPlayerServiceBinder.current
             val songThumbnailSizeDp = Dimensions.thumbnails.song
             val songThumbnailSizePx = songThumbnailSizeDp.px
-            val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
 
             LaunchedEffect(Unit,startSearch) {
                 withContext(Dispatchers.IO) {
@@ -2062,8 +2033,11 @@ fun PlaybackParamsDialog(
     durationValue: (Float) -> Unit,
     scaleValue: (Float) -> Unit,
 ) {
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
@@ -2074,14 +2048,13 @@ fun PlaybackParamsDialog(
     val defaultDuration = 0f
     val defaultStrength = 25f
     val defaultBassboost = 0.5f
-    var playbackSpeed  by rememberPreference(PLAYBACK_SPEED.key,   defaultSpeed)
-    var playbackPitch  by rememberPreference(PLAYBACK_PITCH.key,   defaultPitch)
-    var playbackVolume  by rememberPreference(PLAYBACK_VOLUME.key, 0.5f)
-    var playbackDeviceVolume  by rememberPreference(PLAYBACK_DEVICE_VOLUME.key, getDeviceVolume(context))
-    var playbackDuration by rememberPreference(PLAYBACK_DURATION.key, defaultDuration)
-    //var blurStrength  by rememberPreference(BLUR_SCALE.key, defaultStrength)
+    var playbackSpeed = appSettings.playbackSpeed
+    var playbackPitch = appSettings.playbackPitch
+    var playbackVolume = appSettings.playbackVolume
+    var playbackDeviceVolume = appSettings.playbackDeviceVolume
+    var playbackDuration = appSettings.playbackDuration
     val blurStrength = appearanceSettings.blurStrength
-    var bassBoost  by rememberPreference(BASSBOOST_LEVEL.key, defaultBassboost)
+    var bassBoost = appSettings.bassBoostLevel
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -2114,7 +2087,7 @@ fun PlaybackParamsDialog(
                 onClick = {
                     coroutineScope.launch {
                         val new = appearanceSettings.copy(blurStrength = defaultStrength)
-                        appearanceSettingsVieModel.updatePreset(new)
+                        appearanceSettingsManager.updatePreset(new)
                     }
                 },
                 icon = R.drawable.droplet,
@@ -2127,7 +2100,7 @@ fun PlaybackParamsDialog(
                 onSlide = {
                     coroutineScope.launch {
                         val new = appearanceSettings.copy(blurStrength = it)
-                        appearanceSettingsVieModel.updatePreset(new)
+                        appearanceSettingsManager.updatePreset(new)
                     }
                 },
                 onSlideComplete = {},

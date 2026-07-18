@@ -161,8 +161,8 @@ import dev.chrisbanes.haze.hazeChild
 import dev.chrisbanes.haze.hazeEffect
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.NavigationEndpoint
-import it.fast4x.riplay.LocalAppSettings
-import it.fast4x.riplay.LocalAppearanceSettings
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalPlayerServiceState
 import it.fast4x.riplay.LocalSelectedQueue
@@ -179,12 +179,10 @@ import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.data.models.toUiMedia
 import it.fast4x.riplay.enums.AnimatedGradient
 import it.fast4x.riplay.enums.BackgroundProgress
-import it.fast4x.riplay.enums.CarouselSize
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.ColorPaletteName
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PlayerBackgroundColors
-import it.fast4x.riplay.enums.PlayerThumbnailSize
 import it.fast4x.riplay.enums.PlayerType
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.QueueLoopType
@@ -192,7 +190,6 @@ import it.fast4x.riplay.enums.QueueType
 import it.fast4x.riplay.enums.SongsNumber
 import it.fast4x.riplay.enums.SwipeAnimationNoThumbnail
 import it.fast4x.riplay.enums.ThumbnailCoverType
-import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ThumbnailType
 import it.fast4x.riplay.extensions.equalizer.InternalEqualizerScreen
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
@@ -316,30 +313,21 @@ fun UnifiedPlayer(
         onBack = onDismiss
     )
 
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
-    val appSettingsVieModel = LocalAppSettings.current
-    val appSettings = appSettingsVieModel.activeSettings.collectAsState().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val menuState = LocalGlobalSheetState.current
 
     val coroutineScope = rememberCoroutineScope()
 
-//    val playerThumbnailSize by rememberPreference(
-//        PLAYER_THUMBNAIL_SIZE.key,
-//        PlayerThumbnailSize.Biggest
-//    )
+
     val playerThumbnailSize = appearanceSettings.playerThumbnailSize
-//    val playerThumbnailSizeL by rememberPreference(
-//        PLAYER_THUMBNAIL_SIZE_L.key,
-//        PlayerThumbnailSize.Biggest
-//    )
     val playerThumbnailSizeL = appearanceSettings.playerThumbnailSizeL
 
-    //val disablePlayerHorizontalSwipe by rememberPreference(DISABLE_PLAYER_HORIZONTAL_SWIPE.key, false)
     val disablePlayerHorizontalSwipe = appearanceSettings.disablePlayerHorizontalSwipe
-    //val showlyricsthumbnail by rememberPreference(SHOW_LYRICS_THUMBNAIL.key, false)
     val showlyricsthumbnail = appearanceSettings.showLyricsThumbnail
 
     val binder = LocalPlayerServiceBinder.current
@@ -365,29 +353,14 @@ fun UnifiedPlayer(
         animationSpec = tween(durationMillis = 200), label = ""
     )
 
-    //val visualizerEnabled by rememberPreference(VISUALIZER_ENABLED.key, false)
     val visualizerEnabled = appearanceSettings.visualizerEnabled
 
-//    val defaultStrength = 25f
-//    val defaultDarkenFactor = 0.2f
-//    val defaultOffset = 0f
-//    val defaultSpacing = 0f
-//    val defaultFade = 5f
-    //val defaultImageCoverSize = 50f
-    //var blurStrength by rememberPreference(BLUR_SCALE.key, defaultStrength)
     val blurStrength = appearanceSettings.blurStrength
-    //var thumbnailSpacing by rememberPreference(THUMBNAIL_SPACING.key, defaultSpacing)
     val thumbnailSpacing = appearanceSettings.thumbnailSpacing
-    //var thumbnailSpacingL by rememberPreference(THUMBNAIL_SPACING_L.key, defaultSpacing)
     val thumbnailSpacingL = appearanceSettings.thumbnailSpacingL
-    //var thumbnailFade by rememberPreference(THUMBNAIL_FADE.key, defaultFade)
     val thumbnailFade = appearanceSettings.thumbnailFade
-    //var thumbnailFadeEx by rememberPreference(THUMBNAIL_FADE_EX.key, defaultFade)
     val thumbnailFadeEx = appearanceSettings.thumbnailFadeEx
-    //var imageCoverSize by rememberPreference(VINYL_SIZE.key, defaultImageCoverSize)
     val imageCoverSize = appearanceSettings.imageCoverSize
-    //var blurDarkenFactor by rememberPreference(BLUR_DARKEN_FACTOR.key, defaultDarkenFactor)
-    val blurDarkenFactor = appearanceSettings.blurDarkenFactor
 
     var showBlurPlayerDialog by rememberSaveable {
         mutableStateOf(false)
@@ -398,7 +371,6 @@ fun UnifiedPlayer(
     var isShowingLyrics by rememberSaveable {
         mutableStateOf(false)
     }
-    //val showvisthumbnail by rememberPreference(SHOW_VIS_THUMBNAIL.key, false)
     val showvisthumbnail = appearanceSettings.showvisthumbnail
 
     var isShowingVisualizer by rememberSaveable {
@@ -412,13 +384,13 @@ fun UnifiedPlayer(
             scaleValue = {
                 coroutineScope.launch {
                     val new = appearanceSettings.copy(blurStrength = it)
-                    appearanceSettingsVieModel.updatePreset(new)
+                    appearanceSettingsManager.updatePreset(new)
                 }
             },
             darkenFactorValue = {
                 coroutineScope.launch {
                     val new = appearanceSettings.copy(blurDarkenFactor = it)
-                    appearanceSettingsVieModel.updatePreset(new)
+                    appearanceSettingsManager.updatePreset(new)
                 }
             }
         )
@@ -432,31 +404,31 @@ fun UnifiedPlayer(
             spacingValue = {
                 coroutineScope.launch {
                     val new = appearanceSettings.copy(thumbnailSpacing = it)
-                    appearanceSettingsVieModel.updatePreset(new)
+                    appearanceSettingsManager.updatePreset(new)
                 }
             },
             spacingValueL = {
                 coroutineScope.launch {
                     val new = appearanceSettings.copy(thumbnailSpacingL = it)
-                    appearanceSettingsVieModel.updatePreset(new)
+                    appearanceSettingsManager.updatePreset(new)
                 }
             },
             fadeValue = {
                 coroutineScope.launch {
                     val new = appearanceSettings.copy(thumbnailFade = it)
-                    appearanceSettingsVieModel.updatePreset(new)
+                    appearanceSettingsManager.updatePreset(new)
                 }
             },
             fadeValueEx = {
                 coroutineScope.launch {
                     val new = appearanceSettings.copy(thumbnailFadeEx = it)
-                    appearanceSettingsVieModel.updatePreset(new)
+                    appearanceSettingsManager.updatePreset(new)
                 }
             },
             imageCoverSizeValue = {
                 coroutineScope.launch {
                     val new = appearanceSettings.copy(imageCoverSize = it)
-                    appearanceSettingsVieModel.updatePreset(new)
+                    appearanceSettingsManager.updatePreset(new)
                 }
             }
         )
@@ -471,15 +443,10 @@ fun UnifiedPlayer(
     var mediaItemIndex by remember {
         mutableIntStateOf(if (binder.player.mediaItemCount == 0) -1 else binder.player.currentMediaItemIndex)
     }
-    //val queueDurationExpanded by rememberPreference(QUEUE_DURATION_EXPANDED.key, true)
     val queueDurationExpanded = appearanceSettings.queueDurationExpanded
-    //val miniQueueExpanded by rememberPreference(MINI_QUEUE_EXPANDED.key, true)
     val miniQueueExpanded = appearanceSettings.miniQueueExpanded
-    //val statsExpanded by rememberPreference(STATS_EXPANDED.key, true)
     val statsExpanded = appearanceSettings.statsExpanded
-    //val actionExpanded by rememberPreference(ACTION_EXPANDED.key, true)
     val actionExpanded = appearanceSettings.actionExpanded
-    //val colorPaletteName by rememberPreference(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
     val colorPaletteName = appearanceSettings.colorPaletteName
 
     fun PagerState.offsetForPage(page: Int) = (currentPage - page) + currentPageOffsetFraction
@@ -518,7 +485,6 @@ fun UnifiedPlayer(
     }
 
 
-    //var queueLoopType by rememberPreference(QUEUE_LOOP_TYPE.key, defaultValue = QueueLoopType.Default)
     val queueLoopType = appSettings.queueLoopType
 
     binder.player.DisposableListener {
@@ -541,7 +507,7 @@ fun UnifiedPlayer(
                             else -> QueueLoopType.Default
                         }
                     )
-                    appSettingsVieModel.updateSettings(new)
+                    appSettingsManager.updateSettings(new)
                 }
                 super.onRepeatModeChanged(repeatMode)
             }
@@ -616,19 +582,18 @@ fun UnifiedPlayer(
             }
         )
     }
-    //val actionspacedevenly by rememberPreference(ACTIONS_SPACED_EVENLY.key, false)
     val actionspacedevenly = appearanceSettings.actionsSpacedEvenly
-    //var expandedplayer by rememberPreference(EXPANDED_PLAYER.key, false)
     val expandedplayer = appearanceSettings.expandedPlayer
 
     var updateBrush by rememberSaveable { mutableStateOf(false) }
 
-    if (showlyricsthumbnail) {
-        coroutineScope.launch {
+    LaunchedEffect(Unit, showlyricsthumbnail) {
+        if (showlyricsthumbnail) {
             val new = appearanceSettings.copy(expandedPlayer = false)
-            appearanceSettingsVieModel.updatePreset(new)
+            appearanceSettingsManager.updatePreset(new)
         }
     }
+
 
     LaunchedEffect(mediaItem.mediaId) {
         withContext(Dispatchers.IO) {
@@ -679,68 +644,38 @@ fun UnifiedPlayer(
         updateBrush = true
     }
 
-    //var showthumbnail by rememberPreference(SHOW_THUMBNAIL.key, true)
     val showthumbnail = appearanceSettings.showThumbnail
 
-    //val showButtonPlayerAddToPlaylist by rememberPreference(SHOW_BUTTON_PLAYER_ADD_TO_PLAYLIST.key, true)
     val showButtonPlayerAddToPlaylist = appearanceSettings.showButtonPlayerAddToPlaylist
-    //val showButtonPlayerArrow by rememberPreference(SHOW_BUTTON_PLAYER_ARROW.key, true)
-    val showButtonPlayerArrow = appearanceSettings.showButtonPlayerArrow
-    //val showButtonPlayerLoop by rememberPreference(SHOW_BUTTON_PLAYER_LOOP.key, true)
     val showButtonPlayerLoop = appearanceSettings.showButtonPlayerLoop
-    //val showButtonPlayerLyrics by rememberPreference(SHOW_BUTTON_PLAYER_LYRICS.key, true)
     val showButtonPlayerLyrics = appearanceSettings.showButtonPlayerLyrics
-    //val expandedplayertoggle by rememberPreference(EXPANDED_PLAYER_TOGGLE.key, true)
     val expandedplayertoggle = appearanceSettings.expandedPlayerToggle
-    //val showButtonPlayerShuffle by rememberPreference(SHOW_BUTTON_PLAYER_SHUFFLE.key, true)
     val showButtonPlayerShuffle = appearanceSettings.showButtonPlayerShuffle
-    //val showButtonPlayerSleepTimer by rememberPreference(SHOW_BUTTON_PLAYER_SLEEP_TIMER.key, false)
     val showButtonPlayerSleepTimer = appearanceSettings.showButtonPlayerSleepTimer
-    //val showButtonPlayerMenu by rememberPreference(SHOW_BUTTON_PLAYER_MENU.key, false)
     val showButtonPlayerMenu = appearanceSettings.showButtonPlayerMenu
-    //val showButtonPlayerStartRadio by rememberPreference(SHOW_BUTTON_PLAYER_START_RADIO.key, false)
     val showButtonPlayerStartRadio = appearanceSettings.showButtonPlayerStartRadio
-//    val showButtonPlayerSystemEqualizer by rememberPreference(
-//        SHOW_BUTTON_PLAYER_SYSTEM_EQUALIZER.key,
-//        false
-//    )
     val showButtonPlayerSystemEqualizer = appearanceSettings.showButtonPlayerSystemEqualizer
-    //val showButtonPlayerVideo by rememberPreference(SHOW_BUTTON_PLAYER_VIDEO.key, true)
     val showButtonPlayerVideo = appearanceSettings.showButtonPlayerVideo
 
-    //val showTotalTimeQueue by rememberPreference(SHOW_TOTAL_TIME_QUEUE.key, true)
     val showTotalTimeQueue = appearanceSettings.showTotalTimeQueue
-//    val backgroundProgress by rememberPreference(
-//        BACKGROUND_PROGRESS.key,
-//        BackgroundProgress.MiniPlayer
-//    )
     val backgroundProgress = appearanceSettings.backgroundProgress
 
 
     var showCircularSlider by rememberSaveable {
         mutableStateOf(false)
     }
-    //val showsongs by rememberPreference(SHOW_SONGS.key, SongsNumber.`2`)
     val showsongs = appearanceSettings.showsongs
-    //val showalbumcover by rememberPreference(SHOW_ALBUM_COVER.key, true)
     val showalbumcover = appearanceSettings.showalbumcover
-    //val tapqueue by rememberPreference(TAP_QUEUE.key, true)
     val tapqueue = appearanceSettings.tapqueue
-    //val swipeUpQueue by rememberPreference(SWIPE_UP_QUEUE.key, true)
     val swipeUpQueue = appearanceSettings.swipeUpQueue
-    //val playerType by rememberPreference(PLAYER_TYPE.key, PlayerType.Modern)
     val playerType = appearanceSettings.playerType
-    //val queueType by rememberPreference(QUEUE_TYPE.key, QueueType.Modern)
     val queueType = appearanceSettings.queueType
-    //val noblur by rememberPreference(NO_BLUR.key, true)
     val noblur = appearanceSettings.noblur
-    //val fadingedge by rememberPreference(FADING_EDGE.key, false)
     val fadingedge = appearanceSettings.fadingedge
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val screenHeight = configuration.screenHeightDp.dp
 
-    //var jumpPrevious by rememberPreference(JUMP_PREVIOUS.key,"3")
     val jumpPrevious = appearanceSettings.jumpPrevious
 
     if (isShowingSleepTimerDialog) {
@@ -896,7 +831,6 @@ fun UnifiedPlayer(
     var lightMuted by rememberSaveable { mutableStateOf(0) }
     var darkMuted by rememberSaveable { mutableStateOf(0) }
 
-    //val colorPaletteMode by rememberPreference(COLOR_PALETTE_MODE.key, ColorPaletteMode.Dark)
     val colorPaletteMode = appearanceSettings.colorPaletteMode
 
     var lightTheme =
@@ -912,15 +846,7 @@ fun UnifiedPlayer(
         )
     }
 
-//    val playerBackgroundColors by rememberPreference(
-//        PLAYER_BACKGROUND_COLORS.key,
-//        PlayerBackgroundColors.BlurredCoverColor
-//    )
     val playerBackgroundColors = appearanceSettings.playerBackgroundColors
-//    val animatedGradient by rememberPreference(
-//        ANIMATED_GRADIENT.key,
-//        AnimatedGradient.Linear
-//    )
     val animatedGradient = appearanceSettings.animatedGradient
     val isGradientBackgroundEnabled =
         playerBackgroundColors == PlayerBackgroundColors.ThemeColorGradient ||
@@ -1044,42 +970,23 @@ fun UnifiedPlayer(
     var showQueue by rememberSaveable { mutableStateOf(false) }
     var showSearchEntity by rememberSaveable { mutableStateOf(false) }
 
-//    val transparentBackgroundActionBarPlayer by rememberPreference(
-//        TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR.key,
-//        true
-//    )
     val transparentBackgroundActionBarPlayer = appearanceSettings.transparentBackgroundActionBarPlayer
 
-    //val showTopActionsBar by rememberPreference(SHOW_TOP_ACTIONS_BAR.key, true)
     val showTopActionsBar = appearanceSettings.showTopActionsBar
-    //val showPlayerActionsBar by rememberPreference(SHOW_PLAYER_ACTIONS_BAR.key, true)
     val showPlayerActionsBar = appearanceSettings.showPlayerActionsBar
 
     var containerModifier = Modifier
-        //.padding(bottom = bottomDp)
         .padding(bottom = 0.dp)
     var deltaX by rememberSaveable { mutableFloatStateOf(0f) }
-    //val blackgradient by rememberPreference(BLACK_GRADIENT.key, false)
     val blackgradient = appearanceSettings.blackgradient
-    //val bottomgradient by rememberPreference(BOTTOM_GRADIENT.key, false)
     val bottomgradient = appearanceSettings.bottomGradient
-    //val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
     val disableScrollingText = appearanceSettings.disableScrollingText
-    //var discoverIsEnabled by rememberPreference(DISCOVER.key, false)
     val discoverIsEnabled = appSettings.discoverIsEnabled
-    //val titleExpanded by rememberPreference(TITLE_EXPANDED.key, true)
     val titleExpanded = appearanceSettings.titleExpanded
-    //val timelineExpanded by rememberPreference(TIMELINE_EXPANDED.key, true)
     val timelineExpanded = appearanceSettings.timelineExpanded
-    //val controlsExpanded by rememberPreference(CONTROLS_EXPANDED.key, true)
     val controlsExpanded = appearanceSettings.controlsExpanded
 
-    //val showCoverThumbnailAnimation by rememberPreference(SHOW_COVER_THUMBNAIL_ANIMATION.key, false)
     val showCoverThumbnailAnimation = appearanceSettings.showCoverThumbnailAnimation
-//    var coverThumbnailAnimation by rememberPreference(
-//        COVER_THUMBNAIL_ANIMATION.key,
-//        ThumbnailCoverType.Vinyl
-//    )
     val coverThumbnailAnimation = appearanceSettings.coverThumbnailAnimation
 
     var valueGrad by rememberSaveable { mutableStateOf(2) }
@@ -1411,7 +1318,7 @@ fun UnifiedPlayer(
             onBlurScaleChange = {
                 coroutineScope.launch {
                     val new = appearanceSettings.copy(blurStrength = it)
-                    appearanceSettingsVieModel.updatePreset(new)
+                    appearanceSettingsManager.updatePreset(new)
                 }
             },
             isExplicit = mediaItem.isExplicit,
@@ -1459,7 +1366,7 @@ fun UnifiedPlayer(
                 if (jumpPrevious == "") {
                     coroutineScope.launch {
                         val new = appearanceSettings.copy(jumpPrevious = "0")
-                        appearanceSettingsVieModel.updatePreset(new)
+                        appearanceSettingsManager.updatePreset(new)
                     }
                 }
                 if (!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())) {
@@ -1605,14 +1512,10 @@ fun UnifiedPlayer(
         }
     }
 
-    //val playlistindicator by rememberPreference(PLAYLIST_INDICATOR.key, false)
     val playlistindicator = appearanceSettings.playlistIndicator
-    //val carousel by rememberPreference(CAROUSEL.key, true)
     val carousel = appearanceSettings.carousel
-    //val carouselSize by rememberPreference(CAROUSEL_SIZE.key, CarouselSize.Biggest)
     val carouselSize = appearanceSettings.carouselSize
 
-    //var showButtonPlayerDiscover by rememberPreference(SHOW_BUTTON_PLAYER_DISCOVER.key, false)
     val showButtonPlayerDiscover = appearanceSettings.showButtonPlayerDiscover
     val hazeState = remember { HazeState() }
 
@@ -1624,11 +1527,10 @@ fun UnifiedPlayer(
 
     val isNetworkConnected = rememberIsNetworkConnected()
 
-    val currentDiscoveryReason = binder.currentDiscoveryReason.collectAsState()
+    val currentDiscoveryReason = binder.currentDiscoveryReason.collectAsStateWithLifecycle()
 
     Box(
         modifier = Modifier
-            //.padding(windowInsets.only(WindowInsetsSides.Bottom).asPaddingValues())
             .fillMaxSize()
     ) {
         val actionsBarContent: @Composable () -> Unit = {
@@ -1801,7 +1703,7 @@ fun UnifiedPlayer(
                                     coroutineScope.launch {
                                         val new =
                                             appSettings.copy(discoverIsEnabled = !discoverIsEnabled)
-                                        appSettingsVieModel.updateSettings(new)
+                                        appSettingsManager.updateSettings(new)
                                     }
                                 },
                                 onLongClick = { SmartMessage(context.resources.getString(R.string.discoverinfo), context = context) },
@@ -1837,7 +1739,7 @@ fun UnifiedPlayer(
                                         val new = appSettings.copy(
                                             queueLoopType = setQueueLoopState(queueLoopType)
                                         )
-                                        appSettingsVieModel.updateSettings(new)
+                                        appSettingsManager.updateSettings(new)
                                     }
                                 },
                                 modifier = Modifier.size(24.dp))
@@ -1855,7 +1757,7 @@ fun UnifiedPlayer(
                                     coroutineScope.launch {
                                         val new =
                                             appearanceSettings.copy(expandedPlayer = !expandedplayer)
-                                        appearanceSettingsVieModel.updatePreset(new)
+                                        appearanceSettingsManager.updatePreset(new)
                                     }
                                 },
                                 modifier = Modifier.size(24.dp))
@@ -1894,9 +1796,7 @@ fun UnifiedPlayer(
                 }
         }
 
-        //val clickLyricsText by rememberPreference(CLICK_ON_LYRICS_TEXT.key, true)
         val clickLyricsText = appearanceSettings.clickLyricsText
-        //var extraspace by rememberPreference(EXTRA_SPACE.key, false)
         val extraspace = appearanceSettings.extraSpace
 
         val nextmedia = if (binder.player.mediaItemCount > 1
@@ -1923,16 +1823,10 @@ fun UnifiedPlayer(
             }
         }
 
-        //val thumbnailType by rememberPreference(THUMBNAIL_TYPE.key, ThumbnailType.Modern)
         val thumbnailType = appearanceSettings.thumbnailType
-        //val statsfornerds by rememberPreference(STATS_FOR_NERDS.key, false)
         val statsfornerds = appearanceSettings.statsfornerds
-        //val topPadding by rememberPreference(TOP_PADDING.key, true)
         val topPadding = appearanceSettings.topPadding
-//        var swipeAnimationNoThumbnail by rememberPreference(
-//            SWIPE_ANIMATIONS_NO_THUMBNAIL.key,
-//            SwipeAnimationNoThumbnail.Sliding
-//        )
+
         val swipeAnimationNoThumbnail = appearanceSettings.swipeAnimationNoThumbnail
 
 
@@ -2574,7 +2468,7 @@ fun UnifiedPlayer(
                                     onBlurScaleChange = {
                                         coroutineScope.launch {
                                             val new = appearanceSettings.copy(blurStrength = it)
-                                            appearanceSettingsVieModel.updatePreset(new)
+                                            appearanceSettingsManager.updatePreset(new)
                                         }
                                     },
                                     expandedplayer = expandedplayer,
@@ -2642,7 +2536,7 @@ fun UnifiedPlayer(
                                             coroutineScope.launch {
                                                 val new =
                                                     appearanceSettings.copy(jumpPrevious = "0")
-                                                appearanceSettingsVieModel.updatePreset(new)
+                                                appearanceSettingsManager.updatePreset(new)
                                             }
                                         }
                                         if (!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())) {
@@ -2879,7 +2773,7 @@ fun UnifiedPlayer(
                                                 coroutineScope.launch {
                                                     val new =
                                                         appearanceSettings.copy(showThumbnail = !showthumbnail)
-                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                    appearanceSettingsManager.updatePreset(new)
                                                 }
                                             }
                                         },
@@ -2917,7 +2811,7 @@ fun UnifiedPlayer(
                                                 coroutineScope.launch {
                                                     val new =
                                                         appearanceSettings.copy(blurStrength = it)
-                                                    appearanceSettingsVieModel.updatePreset(new)
+                                                    appearanceSettingsManager.updatePreset(new)
                                                 }
                                             },
                                             expandedplayer = expandedplayer,
@@ -2988,7 +2882,7 @@ fun UnifiedPlayer(
                                                     coroutineScope.launch {
                                                         val new =
                                                             appearanceSettings.copy(jumpPrevious = "0")
-                                                        appearanceSettingsVieModel.updatePreset(new)
+                                                        appearanceSettingsManager.updatePreset(new)
                                                     }
                                                 }
                                                 if (!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())) {
@@ -3838,7 +3732,7 @@ fun UnifiedPlayer(
                                     onBlurScaleChange = {
                                         coroutineScope.launch {
                                             val new = appearanceSettings.copy(blurStrength = it)
-                                            appearanceSettingsVieModel.updatePreset(new)
+                                            appearanceSettingsManager.updatePreset(new)
                                         }
                                     },
                                     expandedplayer = expandedplayer,
@@ -3911,7 +3805,7 @@ fun UnifiedPlayer(
                                             coroutineScope.launch {
                                                 val new =
                                                     appearanceSettings.copy(jumpPrevious = "0")
-                                                appearanceSettingsVieModel.updatePreset(new)
+                                                appearanceSettingsManager.updatePreset(new)
                                             }
                                         }
                                         if (!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())) {
@@ -3965,14 +3859,14 @@ fun UnifiedPlayer(
                 onDismiss = {
                     coroutineScope.launch {
                         val new = appSettings.copy(queueLoopType = it)
-                        appSettingsVieModel.updateSettings(new)
+                        appSettingsManager.updateSettings(new)
                     }
                     showQueue = false
                 },
                 onDiscoverClick = {
                     coroutineScope.launch {
                         val new = appSettings.copy(discoverIsEnabled = it)
-                        appSettingsVieModel.updateSettings(new)
+                        appSettingsManager.updateSettings(new)
                     }
                 }
             )

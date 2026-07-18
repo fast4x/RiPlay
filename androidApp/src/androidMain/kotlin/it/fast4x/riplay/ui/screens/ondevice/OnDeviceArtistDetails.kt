@@ -50,11 +50,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import it.fast4x.environment.models.NavigationEndpoint
-import it.fast4x.riplay.LocalAppearanceSettings
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -67,7 +69,6 @@ import it.fast4x.riplay.enums.ArtistItem
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.utils.thumbnailShape
@@ -93,10 +94,7 @@ import it.fast4x.riplay.utils.fadingEdge
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PARENTAL_CONTROL_ENABLED
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.forcePlay
 import kotlinx.coroutines.Dispatchers
@@ -119,8 +117,10 @@ fun OnDeviceArtistDetails(
 
     if (artistId == null) return
 
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val binder = LocalPlayerServiceBinder.current
     val windowInsets = LocalPlayerAwareWindowInsets.current
@@ -158,7 +158,7 @@ fun OnDeviceArtistDetails(
     var showArtistItems by rememberSaveable { mutableStateOf(false) }
 
     val hapticFeedback = LocalHapticFeedback.current
-    val parentalControlEnabled by rememberPreference(PARENTAL_CONTROL_ENABLED.key, false)
+    val parentalControlEnabled = appSettings.parentalControlEnabled
     val menuState = LocalGlobalSheetState.current
 
     var scrollToNowPlaying by remember {
@@ -390,14 +390,10 @@ fun OnDeviceArtistDetails(
                             binder?.player?.enqueue(item.asMediaItem, queue = it)
                         }
                     ) {
-                        //var forceRecompose by remember { mutableStateOf(false) }
                         SongItem(
                             song = item,
                             thumbnailSizePx = songThumbnailSizePx,
                             thumbnailSizeDp = songThumbnailSizeDp,
-                            //disableScrollingText = disableScrollingText,
-                            //isNowPlaying = false,
-                            //forceRecompose = forceRecompose,
                             modifier = Modifier
                                 .combinedClickable(
                                     onLongClick = {

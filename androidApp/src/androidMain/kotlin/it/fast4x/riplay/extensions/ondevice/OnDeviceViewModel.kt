@@ -31,6 +31,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.application
+import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.Artist
@@ -41,9 +42,8 @@ import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.data.models.SongEntity
-import it.fast4x.riplay.extensions.preferences.preferences
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_ON_DEVICE_PLAYLIST
 import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.isAtLeastAndroid13
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.currentCoroutineContext
@@ -77,6 +77,8 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
 
     private val contentResolver: ContentResolver = application.applicationContext.contentResolver
 
+    private val appSettingsManager = (appContext() as MainApplication).appSettingsManager
+
     private val contentObserver = object : ContentObserver(null) {
         override fun onChange(selfChange: Boolean, uri: Uri?) {
             // Called when change some data in device storage, example of uri. Must be checked if exists to understand if removed or added
@@ -102,8 +104,9 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun loadAudioFiles() {
-        val showOndevice = application.applicationContext.preferences
-            .getBoolean(SHOW_ON_DEVICE_PLAYLIST.key, true)
+        val showOndevice = appSettingsManager.activeSettings.value.showOnDevicePlaylist
+//            application.applicationContext.preferences
+//            .getBoolean(SHOW_ON_DEVICE_PLAYLIST.key, true)
 
         Timber.d("OnDeviceViewModel loadAudioFiles called showOndevice $showOndevice")
         if (!showOndevice) return

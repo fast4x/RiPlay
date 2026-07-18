@@ -2,13 +2,12 @@ package it.fast4x.riplay.utils
 
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.Languages
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.OTHER_LANGUAGE_APP
-import it.fast4x.riplay.extensions.preferences.rememberPreference
 import dev.rebelonion.translator.Language
+import it.fast4x.riplay.LocalAppSettingsManager
 import java.util.Locale
 
 fun getSystemlanguage(): Languages {
@@ -23,9 +22,10 @@ fun getSystemlanguage(): Languages {
 fun languageDestination (
     language: Languages? = null,
 ): Language {
-    //val languageApp  by rememberPreference(languageAppKey, Languages.English)
-    val otherLanguageApp  by rememberPreference(OTHER_LANGUAGE_APP.key, Languages.English)
-    //Timber.d("LanguageDestination: language $language otherLanguageApp $otherLanguageApp")
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
+    val otherLanguageApp = appSettings.otherLanguageApp
 
     return when (language ?: otherLanguageApp) {
         Languages.Afrikaans -> Language.AFRIKAANS
@@ -84,9 +84,10 @@ fun languageDestination (
 fun languageDestinationName (
     language: Languages? = null,
 ): String {
-    //val languageApp  by rememberPreference(languageAppKey, Languages.English)
-    val otherLanguageApp  by rememberPreference(OTHER_LANGUAGE_APP.key, Languages.English)
-    //Timber.d("LanguageDestination: language $language otherLanguageApp $otherLanguageApp")
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
+    val otherLanguageApp = appSettings.otherLanguageApp
 
     return when (language ?: otherLanguageApp) {
         Languages.System -> stringResource(R.string.system_language)

@@ -96,13 +96,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
-import it.fast4x.riplay.LocalAppSettings
-import it.fast4x.riplay.LocalAppearanceSettings
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.LOCAL_KEY_PREFIX
@@ -118,18 +119,7 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.enums.QueueType
-import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.extensions.exporter.Exporter
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISCOVER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.EXCLUDE_SONG_IF_IS_VIDEO
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUEUE_LOOP_TYPE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.QUEUE_TYPE
-import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.REORDER_IN_QUEUE_ENABLED
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_ARROW
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_BUTTON_PLAYER_DISCOVER
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.THUMBNAIL_ROUNDNESS
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.SwipeableQueueItem
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
@@ -238,27 +228,22 @@ fun Queue(
     onDismiss: (QueueLoopType) -> Unit,
     onDiscoverClick: (Boolean) -> Unit,
 ) {
-    val appearanceSettingsVieModel = LocalAppearanceSettings.current
-    val appearanceSettings = appearanceSettingsVieModel.activeSettings.collectAsState().value
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
-    val appSettingsVieModel = LocalAppSettings.current
-    val appSettings = appSettingsVieModel.activeSettings.collectAsState().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val windowInsets = WindowInsets.systemBars
     val context = LocalContext.current
-    //val showButtonPlayerArrow by rememberPreference(SHOW_BUTTON_PLAYER_ARROW.key, true)
-    //var queueType by rememberPreference(QUEUE_TYPE.key, QueueType.Essential)
     val queueType = appearanceSettings.queueType
-    //val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
     val disableScrollingText = appearanceSettings.disableScrollingText
     val binder = LocalPlayerServiceBinder.current
     binder?.player ?: return
     val binderPlayer = binder.player
 
-    //var queueLoopType by rememberPreference(QUEUE_LOOP_TYPE.key, defaultValue = QueueLoopType.Default)
     val queueLoopType = appSettings.queueLoopType
-    var excludeSongsIfAreVideos by rememberPreference(EXCLUDE_SONG_IF_IS_VIDEO.key, false)
-    //val excludeSongsIfAreVideos = appearanceSettings.excludeSongsIfAreVideos
+    val excludeSongsIfAreVideos = appSettings.excludeIfIsVideo
     val menuState = LocalGlobalSheetState.current
     val thumbnailSizeDp = Dimensions.thumbnails.song
     val thumbnailSizePx = thumbnailSizeDp.px
@@ -298,8 +283,7 @@ fun Queue(
     }
     val rippleIndication = ripple(bounded = false)
     val musicBarsTransition = updateTransition(targetState = mediaItemIndex, label = "")
-    var isReorderDisabled by rememberPreference(REORDER_IN_QUEUE_ENABLED.key, defaultValue = true)
-    //val isReorderDisabled = appearanceSettings.isReorderDisabled
+    val isReorderDisabled = appSettings.reorderInQueueEnabled
     var listMediaItems = remember { mutableListOf<MediaItem>() }
     var listMediaItemsIndex = remember { mutableListOf<Int>() }
     var selectQueueItems by remember { mutableStateOf(false) }
@@ -392,13 +376,10 @@ fun Queue(
     }
 
     val hapticFeedback = LocalHapticFeedback.current
-    //val showButtonPlayerDiscover by rememberPreference(SHOW_BUTTON_PLAYER_DISCOVER.key, false)
     val showButtonPlayerDiscover = appearanceSettings.showButtonPlayerDiscover
-    //var discoverIsEnabled by rememberPreference(DISCOVER.key, false)
     val discoverIsEnabled = appSettings.discoverIsEnabled
     var searching by rememberSaveable { mutableStateOf(false) }
     var filter: String? by rememberSaveable { mutableStateOf(null) }
-    //val thumbnailRoundness by rememberPreference(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
     var showQueues by rememberSaveable { mutableStateOf(false) }
     val maxHeightQueuesList by remember { derivedStateOf { getScreenDimensions().height.dp.div(8) } }
     val heightQueues = animateDpAsState(if (showQueues) maxHeightQueuesList else 20.dp)
@@ -1017,7 +998,7 @@ fun Queue(
                                 coroutineScope.launch {
                                     val new =
                                         appSettings.copy(discoverIsEnabled = !discoverIsEnabled)
-                                    appSettingsVieModel.updateSettings(new)
+                                    appSettingsManager.updateSettings(new)
                                 }
                                 onDiscoverClick(discoverIsEnabled)
                             },
@@ -1033,7 +1014,13 @@ fun Queue(
                         active = !isReorderDisabled,
                         size = 22,
                         onClick = {
-                            isReorderDisabled = !isReorderDisabled
+                            coroutineScope.launch {
+                                appSettingsManager.updateSettings(
+                                    appSettings.copy(
+                                        isReorderDisabled = !isReorderDisabled
+                                    )
+                                )
+                            }
                         }
                     )
 
@@ -1046,7 +1033,7 @@ fun Queue(
                             coroutineScope.launch {
                                 val new =
                                     appSettings.copy(queueLoopType = setQueueLoopState(queueLoopType))
-                                appSettingsVieModel.updateSettings(new)
+                                appSettingsManager.updateSettings(new)
                             }
                         }
                     )

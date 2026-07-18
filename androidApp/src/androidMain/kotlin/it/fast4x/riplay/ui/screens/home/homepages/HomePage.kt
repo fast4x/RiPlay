@@ -50,7 +50,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.util.Log
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.environment.Environment
@@ -59,11 +59,12 @@ import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.bodies.NextBody
 import it.fast4x.environment.requests.discoverPage
 import it.fast4x.environment.requests.relatedPage
+import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
-import it.fast4x.riplay.enums.Countries
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PlayEventsType
 import it.fast4x.riplay.enums.UiType
@@ -72,7 +73,6 @@ import it.fast4x.riplay.data.models.Blacklist
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.service.RecommendationService
-import it.fast4x.riplay.extensions.experimental.recommendationstrategy.ui.RecommendationsBlock
 import it.fast4x.riplay.extensions.listenerlevel.HomepageListenerLevelBadges
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.PullToRefreshBox
@@ -81,24 +81,13 @@ import it.fast4x.riplay.ui.components.themed.MultiFloatingActionsContainer
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.screens.welcome.WelcomeMessage
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAY_EVENTS_TYPE
-import it.fast4x.riplay.extensions.preferences.rememberPreference
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SELECTED_COUNTRY_CODE
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_MOODS_AND_GENRES
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_NEW_ALBUMS_ARTISTS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_NEW_ALBUMS
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SEARCH_TAB
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_TIPS
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
-import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LISTENER_LEVELS
 import it.fast4x.riplay.extensions.rewind.HomepageRewind
 import it.fast4x.riplay.ui.components.themed.ChipItemColored
 import it.fast4x.riplay.utils.isLocal
@@ -107,7 +96,6 @@ import it.fast4x.riplay.ui.components.themed.Menu
 import it.fast4x.riplay.ui.components.themed.MenuEntry
 import it.fast4x.riplay.ui.components.themed.MoodItemColored
 import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenu
-import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.components.themed.Title
 import it.fast4x.riplay.ui.components.themed.Title2Actions
 import it.fast4x.riplay.ui.components.themed.TitleMiniSection
@@ -120,7 +108,6 @@ import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.HomeDataCache
-import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.asVideoMediaItem
@@ -135,7 +122,6 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
-import java.net.URLEncoder
 
 @ExperimentalSerializationApi
 @OptIn(ExperimentalMaterial3Api::class)
@@ -158,10 +144,14 @@ fun HomePage(
     onSettingsClick: () -> Unit,
     recommendationService: RecommendationService
 ) {
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalGlobalSheetState.current
     val windowInsets = LocalPlayerAwareWindowInsets.current
-    var playEventType by rememberPreference(PLAY_EVENTS_TYPE.key, PlayEventsType.MostPlayed)
+    val playEventType = appSettings.playEventsType
 
     val scope = rememberCoroutineScope()
 
@@ -172,15 +162,15 @@ fun HomePage(
 
     var preferitesArtists by remember { mutableStateOf<List<Artist>>(emptyList()) }
 
-    val showNewAlbumsArtists by rememberPreference(SHOW_NEW_ALBUMS_ARTISTS.key, true)
-    val showMoodsAndGenres by rememberPreference(SHOW_MOODS_AND_GENRES.key, true)
-    val showNewAlbums by rememberPreference(SHOW_NEW_ALBUMS.key, true)
+    val showNewAlbumsArtists = appSettings.showNewAlbumsArtists
+    val showMoodsAndGenres = appSettings.showMoodsAndGenres
+    val showNewAlbums = appSettings.showNewAlbums
 
-    val showTips by rememberPreference(SHOW_TIPS.key, true)
-    val showListenerLevels by rememberPreference(SHOW_LISTENER_LEVELS.key, true)
+    val showTips = appSettings.showTips
+    val showListenerLevels = appSettings.showListenerLevels
     val refreshScope = rememberCoroutineScope()
 
-    var selectedCountryCode by rememberPreference(SELECTED_COUNTRY_CODE.key, Countries.ZZ)
+    val selectedCountryCode = appSettings.selectedCountryCode
 
     val blacklisted = remember {
         Database.blacklisted(listOf(BlacklistType.Song.name, BlacklistType.Video.name))
@@ -362,11 +352,11 @@ fun HomePage(
         .padding(top = 24.dp, bottom = 8.dp)
         .padding(endPaddingValues)
 
-    val showSearchTab by rememberPreference(SHOW_SEARCH_TAB.key, false)
+    val showSearchTab = appSettings.showSearchTab
 
     val hapticFeedback = LocalHapticFeedback.current
 
-    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
+    val disableScrollingText = appearanceSettings.disableScrollingText
 
 
     PullToRefreshBox(
@@ -490,7 +480,13 @@ fun HomePage(
                                         icon = R.drawable.chevron_up,
                                         text = stringResource(R.string.by_most_played_song),
                                         onClick = {
-                                            playEventType = PlayEventsType.MostPlayed
+                                            scope.launch {
+                                                appSettingsManager.updateSettings(
+                                                    appSettings.copy(
+                                                        playEventsType = PlayEventsType.MostPlayed
+                                                    )
+                                                )
+                                            }
                                             menuState.hide()
                                         }
                                     )
@@ -498,7 +494,13 @@ fun HomePage(
                                         icon = R.drawable.chevron_down,
                                         text = stringResource(R.string.by_last_played_song),
                                         onClick = {
-                                            playEventType = PlayEventsType.LastPlayed
+                                            scope.launch {
+                                                appSettingsManager.updateSettings(
+                                                    appSettings.copy(
+                                                        playEventsType = PlayEventsType.LastPlayed
+                                                    )
+                                                )
+                                            }
                                             menuState.hide()
                                         }
                                     )
@@ -506,7 +508,13 @@ fun HomePage(
                                         icon = R.drawable.random,
                                         text = stringResource(R.string.by_casual_played_song),
                                         onClick = {
-                                            playEventType = PlayEventsType.CasualPlayed
+                                            scope.launch {
+                                                appSettingsManager.updateSettings(
+                                                    appSettings.copy(
+                                                        playEventsType = PlayEventsType.CasualPlayed
+                                                    )
+                                                )
+                                            }
                                             menuState.hide()
                                         }
                                     )
@@ -967,7 +975,7 @@ fun HomePage(
 
 
 
-            val showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
+            val showFloatingIcon = appSettings.showFloatingIcon
             if (UiType.ViMusic.isCurrent() && showFloatingIcon)
                 MultiFloatingActionsContainer(
                     iconId = R.drawable.search,
