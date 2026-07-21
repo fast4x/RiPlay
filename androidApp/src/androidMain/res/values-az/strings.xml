@@ -1367,7 +1367,7 @@
     <string name="title_keywords">Keywords</string>
     <string name="title_external_links">External links</string>
     <string name="title_bio">Bio</string>
-    <string name="login_select_account">Select account</string>
+    <string name="login_select_account">Hesabı seç</string>
     <string name="title_qrcode_to_actions">QR code to actions</string>
     <string name="enable_create_and_read_qrcode">Enable create and read QR code</string>
     <string name="info_create_and_read_qr_code_for_artist_album_playlist_song">Create and read qr code for artist, album, playlist, song</string>
