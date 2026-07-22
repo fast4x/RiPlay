@@ -20,6 +20,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -61,6 +62,7 @@ import it.fast4x.riplay.utils.StartVoiceInput
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.typography
 import kotlinx.serialization.ExperimentalSerializationApi
+import timber.log.Timber
 
 @UnstableApi
 @OptIn(ExperimentalSerializationApi::class, ExperimentalMaterialApi::class, ExperimentalTextApi::class,
@@ -117,6 +119,7 @@ fun SearchScreen(
     var filterContentType by remember { mutableStateOf(ContentType.All) }
 
     val isSearchActive = submittedQuery.isNotEmpty()
+    Timber.d("SearchScreen: isSearchActive $isSearchActive")
 
     val (baseTabIndex, onBaseTabChanged) = rememberSaveable { mutableStateOf(0) }
     val (resultTabIndex, onResultTabChanged) = rememberSaveable { mutableStateOf(0) }
@@ -188,6 +191,7 @@ fun SearchScreen(
         }
     }
 
+    key(isSearchActive) {
         ScreenContainer(
             navController = navController,
             tabIndex = if (isSearchActive) resultTabIndex else baseTabIndex,
@@ -313,6 +317,7 @@ fun SearchScreen(
                         }
                     }
                 }
+            }
         }
     }
 }
