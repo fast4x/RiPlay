@@ -2169,6 +2169,25 @@ fun UnifiedPlayer(
 //                                                        }
 //                                                }
                                             }
+
+
+                                            // LYRICS IN LANDSCAPE
+                                            if (isShowingLyrics) {
+                                                Lyrics(
+                                                    mediaId = mediaItem.mediaId,
+                                                    isDisplayed = isShowingLyrics,
+                                                    onDismiss = {
+                                                        isShowingLyrics = false
+                                                    },
+                                                    ensureSongInserted = { Database.insert(mediaItem) },
+                                                    size = 1000.dp,
+                                                    mediaMetadataProvider = mediaItem::mediaMetadata,
+                                                    durationProvider = { positionAndDuration.second },
+                                                    //positionProvider = { positionAndDuration.first },
+                                                    isLandscape = isLandscape,
+                                                    clickLyricsText = clickLyricsText,
+                                                )
+                                            } else
                                             HorizontalPager(
                                                 state = pagerState,
                                                 pageSize = PageSize.Fixed(thumbnailSizeDp),
@@ -2265,6 +2284,7 @@ fun UnifiedPlayer(
                                                         interactionSource = remember { MutableInteractionSource() },
                                                         indication = null,
                                                         onClick = {
+                                                            Timber.d("UnifiedPlayer thumbnail onClick index $index pagerState.settledPage ${pagerState.settledPage} thumbnailTapEnabled $thumbnailTapEnabled")
                                                             if (index == pagerState.settledPage && thumbnailTapEnabled) {
                                                                 if (isShowingVisualizer) isShowingVisualizer =
                                                                     false

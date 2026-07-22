@@ -867,6 +867,7 @@ fun Lyrics(
                             .size(24.dp)
                     )
             }
+            /* // is not required to show controls in the lyrics screen
             if (!showlyricsthumbnail && isDisplayed && isLandscape && landscapeControls) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -968,6 +969,7 @@ fun Lyrics(
                 }
 
             }
+            */
 
             Box(
                 modifier = Modifier
