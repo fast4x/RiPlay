@@ -87,11 +87,12 @@ fun AppearancePresetDialog(
             ) { index ->
                 Image(
                     painter = painterResource(
-                        if(presets[index].id == "user_custom_legacy_preset")
-                            R.drawable.image
-                        else presets[index].imageRes ?: R.drawable.image),
+                        presets[index].imageRes ?: R.drawable.presetx),
+//                        if(presets[index].id == "user_custom_legacy_preset")
+//                            R.drawable.image
+//                        else presets[index].imageRes ?: R.drawable.image),
                     contentDescription = null,
-                    contentScale = ContentScale.FillBounds,
+                    contentScale = ContentScale.Inside,
                     colorFilter = null,
                     modifier = Modifier
                         .align(Alignment.Center)
