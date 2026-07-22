@@ -13,7 +13,6 @@ enum class NavRoutes {
     playlist,
     queue,
     search,
-    searchResults,
     settings,
     statistics,
     newAlbums,

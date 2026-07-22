@@ -69,6 +69,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 fun SearchScreen(
     navController: NavController,
     miniPlayer: @Composable () -> Unit = {},
+    query: String = ""
 ) {
     val appSettingsManager = LocalAppSettingsManager.current
     val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
@@ -79,12 +80,20 @@ fun SearchScreen(
     val (textFieldValue, onTextFieldValueChanged) = rememberSaveable(
         stateSaver = TextFieldValue.Saver
     ) {
-        mutableStateOf(TextFieldValue(text = "", selection = TextRange(0)))
+        mutableStateOf(
+            if (query.isEmpty()) {
+                TextFieldValue(text = "", selection = TextRange(0))
+            } else {
+                TextFieldValue(text = query, selection = TextRange(query.length))
+            }
+        )
     }
 
     PersistMapCleanup(tagPrefix = "search/")
 
-    var submittedQuery by rememberSaveable { mutableStateOf("") }
+    var submittedQuery by rememberSaveable { mutableStateOf(
+        if (query.isEmpty()) "" else query
+    ) }
 
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -131,7 +140,9 @@ fun SearchScreen(
 
             Box(
                 contentAlignment = Alignment.CenterStart,
-                modifier = Modifier.padding(horizontal = 10.dp).weight(1f)
+                modifier = Modifier
+                    .padding(horizontal = 10.dp)
+                    .weight(1f)
             ) {
                 if (textFieldValue.text.isEmpty())
                     BasicText(

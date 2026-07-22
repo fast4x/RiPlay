@@ -1826,8 +1826,8 @@ class MainActivity :
                             }
 
                             "search" -> uri.getQueryParameter("q")?.let { query ->
-                                val encodedQuery = URLEncoder.encode(query, "UTF-8")
-                                navController?.navigate(route = "${NavRoutes.searchResults.name}/$encodedQuery")
+                                //val encodedQuery = URLEncoder.encode(query, "UTF-8")
+                                navController?.navigate(route = "${NavRoutes.search.name}?text=$query")
                             }
 
                             else -> when {
@@ -1835,8 +1835,8 @@ class MainActivity :
                                 uri.host == "youtu.be" -> path
                                 path != "watch" && uri.host == null -> {
                                     path?.let { query ->
-                                        val encodedQuery = URLEncoder.encode(query, "UTF-8")
-                                        navController?.navigate(route = "${NavRoutes.searchResults.name}/$encodedQuery")
+                                        //val encodedQuery = URLEncoder.encode(query, "UTF-8")
+                                        navController?.navigate(route = "${NavRoutes.search.name}?text=$query")
                                     }
                                     null
                                 }
@@ -1845,9 +1845,11 @@ class MainActivity :
                                     shazamSongInfoExtractor(
                                         uri.toString(),
                                         { artist, title, error ->
-                                            Timber.d("MainActivity shazamSongInfoExtractor result $artist $title $error")
-                                            if (title.isNotEmpty())
-                                                navController?.navigate(route = "${NavRoutes.searchResults.name}/${title} ${artist}")
+                                            Timber.d("MainActivity shazamSongInfoExtractor result artist $artist title $title error $error")
+                                            if (title.isNotEmpty()) {
+                                                val query = "$title $artist"
+                                                navController?.navigate(route = "${NavRoutes.search.name}?text=$query")
+                                            }
 
                                         })
                                     null

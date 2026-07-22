@@ -157,7 +157,7 @@ fun SongInfoCard(tracks: List<Track>?, navController: NavController) {
                 .fillMaxWidth()
                 .clickable {
                     navController.navigate(
-                        "${NavRoutes.searchResults.name}/${
+                        "${NavRoutes.search.name}?text=${
                             cleanString(
                                 track.title
                             )

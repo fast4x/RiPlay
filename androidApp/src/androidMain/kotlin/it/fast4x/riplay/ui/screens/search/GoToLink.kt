@@ -178,8 +178,8 @@ fun GoToLink(
                                     }
 
                                     "search" -> uri.getQueryParameter("q")?.let { query ->
-                                        val encodedQuery = URLEncoder.encode(query, "UTF-8")
-                                        navController.navigate(route = "${NavRoutes.searchResults.name}/$encodedQuery")
+                                        //val encodedQuery = URLEncoder.encode(query, "UTF-8")
+                                        navController.navigate(route = "${NavRoutes.search.name}?text=$query")
                                     }
 
                                     else -> when {
@@ -192,7 +192,6 @@ fun GoToLink(
                                                 snapshotFlow { binder }.filterNotNull().first()
                                             withContext(Dispatchers.Main) {
                                                 binder.player.forcePlay(song.asMediaItem)
-                                                //fastPlay(song.asMediaItem, binder)
                                             }
                                         }
                                     }

@@ -531,11 +531,11 @@ fun AppNavigation(
                 )
             )
         ) { navBackStackEntry ->
-            val context = LocalContext.current
             val text = navBackStackEntry.arguments?.getString("text") ?: ""
             SearchScreen(
                 navController = navController,
                 miniPlayer = miniPlayer,
+                query = text
             )
         }
 
