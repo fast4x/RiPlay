@@ -1219,9 +1219,9 @@ Mach dich bereit, deine unvergesslichsten musikalischen Momente noch einmal zu e
     <string name="event_new_release">Neue Veröffentlichung</string>
     <string name="event_auto_backup">Automatisches Backup</string>
     <string name="event_notification_for_new_release">Benachrichtigen bei neuen Veröffentlichung</string>
-    <string name="event_from_your_favorites_artists">From your favorites Artists</string>
-    <string name="event_scheduled">Geplant</string>
-    <string name="event_running">Running</string>
+    <string name="event_from_your_favorites_artists">Von Ihren Lieblings-Künstlern</string>
+    <string name="event_scheduled">Zeitplan</string>
+    <string name="event_running">Wird ausgeführt</string>
     <string name="event_completed">Abgeschlossen</string>
     <string name="event_failed">Fehlgeschlagen</string>
     <string name="event_blocked">Blockiert</string>
