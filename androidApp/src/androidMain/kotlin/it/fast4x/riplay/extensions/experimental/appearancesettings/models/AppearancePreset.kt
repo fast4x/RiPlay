@@ -10,7 +10,7 @@ data class AppearancePreset(
     val imageUrl: String? = null,
     val author: String? = null,
     val shareUrl: String? = null,
-    val source: PresetSource = PresetSource.LOCAL,
+    val source: PresetSource = PresetSource.BUILTIN,
     val settings: AppearanceSettings
 )
 

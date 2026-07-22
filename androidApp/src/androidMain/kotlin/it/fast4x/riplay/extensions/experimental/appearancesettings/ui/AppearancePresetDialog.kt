@@ -32,12 +32,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.R
 import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearancePreset
+import it.fast4x.riplay.extensions.experimental.appearancesettings.models.PresetSource
 import it.fast4x.riplay.extensions.experimental.appearancesettings.models.PresetUiState
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.utils.colorPalette
@@ -51,11 +55,18 @@ fun AppearancePresetDialog(
     uiState: PresetUiState,
     onDismiss: () -> Unit,
     onSelect: (AppearancePreset) -> Unit,
-    onShare: (AppearancePreset) -> Unit = {}
+    onShare: (AppearancePreset) -> Unit = {},
+    onExport: (String) -> Unit,
+    onImport: () -> Unit,
+    onDelete: (String) -> Unit = {}
 ) {
     val presets = (uiState as? PresetUiState.Success)?.presets ?: emptyList()
     val images = presets.map { it.imageRes ?: R.drawable.preset0 }
     val pagerStateAppearance = rememberPagerState(pageCount = { images.size })
+
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
 
     val activeIndex = presets.indexOfFirst { it.id == activePresetId }
     LaunchedEffect(activeIndex) {
@@ -65,49 +76,14 @@ fun AppearancePresetDialog(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .background(color = colorPalette().background1)
+            .background(color = Color.Black).fillMaxSize()
     ) {
         Box {
-            AnimatedContent(
-                targetState = presets.getOrNull(pagerStateAppearance.currentPage),
-                transitionSpec = { fadeIn() togetherWith fadeOut() },
-                modifier = Modifier.align(Alignment.TopStart)
-            ) { preset ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceAround,
-                    verticalAlignment = Alignment.Bottom
-                ) {
-                    Text(
-                        text = preset?.name ?: "",
-                        style = typography().xxl,
-                        color = colorPalette().text,
-                        modifier = Modifier
-                            .padding(top = 16.dp)
-                            .background(
-                                colorPalette().background1.copy(alpha = 0.3f),
-                                getRoundnessShape()
-                            )
-                            .padding(horizontal = 12.dp, vertical = 4.dp)
-                    )
-                    Text(
-                        text = preset?.author?.let { " by $it" } ?: "",
-                        style = typography().xs,
-                        color = colorPalette().text,
-                        modifier = Modifier
-                            .padding(top = 32.dp)
-                            .background(
-                                colorPalette().background1.copy(alpha = 0.3f),
-                                getRoundnessShape()
-                            )
-                            .padding(horizontal = 12.dp, vertical = 4.dp)
-                    )
-                }
-            }
             HorizontalPager(
                 state = pagerStateAppearance,
                 pageSize = PageSize.Fill,
-                modifier = Modifier.fillMaxSize()
+                beyondViewportPageCount = 0,
+                modifier = Modifier.fillMaxWidth()
             ) { index ->
                 Image(
                     painter = painterResource(
@@ -119,28 +95,129 @@ fun AppearancePresetDialog(
                     colorFilter = null,
                     modifier = Modifier
                         .align(Alignment.Center)
-                        .fillMaxSize(.8f)
                 )
+            }
+            AnimatedContent(
+                targetState = presets.getOrNull(pagerStateAppearance.currentPage),
+                transitionSpec = { fadeIn() togetherWith fadeOut() },
+                modifier = Modifier.align(Alignment.TopStart).padding(top = 20.dp)
+            ) { preset ->
+                if (preset?.id == activePresetId)
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceAround,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.checkmark),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(colorPalette().text),
+                            modifier = Modifier
+                                .size(24.dp)
+                        )
+                    }
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    Column() {
+                        Text(
+                            text = preset?.name ?: "",
+                            style = typography().xxl,
+                            color = colorPalette().text,
+                            modifier = Modifier
+                                .padding(horizontal = 12.dp, vertical = 4.dp)
+                        )
+                        Text(
+                            text = preset?.source?.name ?: "",
+                            style = typography().xxxs,
+                            color = colorPalette().text,
+                            modifier = Modifier
+                                .padding(horizontal = 12.dp, vertical = 4.dp)
+                        )
+                    }
+
+                    Text(
+                        text = preset?.author?.let { " by $it" } ?: "",
+                        style = typography().xs,
+                        color = colorPalette().text,
+                        modifier = Modifier
+                            .padding(top = 32.dp)
+                            .padding(horizontal = 12.dp, vertical = 4.dp)
+                    )
+
+                }
             }
             Box(
                 modifier = Modifier
                     .padding(bottom = 30.dp)
-                    .padding(end = 15.dp)
-                    .background(colorPalette().accent, CircleShape)
-                    .align(Alignment.BottomEnd),
+                    .padding(horizontal = 15.dp)
+                    .background(
+                        colorPalette().accent.copy(alpha = .2f),
+                        appearanceSettings.thumbnailRoundness.shape()
+                    )
+                    .align(Alignment.BottomCenter),
             ) {
-                IconButton(
-                    icon = R.drawable.checkmark,
-                    color = colorPalette().background0,
-                    indication = ripple(false),
-                    onClick = {
-                        presets.getOrNull(pagerStateAppearance.settledPage)
-                            ?.let(onSelect)
-                    },
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .size(30.dp)
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(5.dp),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        icon = R.drawable.chevron_down,
+                        color = colorPalette().text,
+                        indication = ripple(false),
+                        onClick = onDismiss,
+                        modifier = Modifier
+                            .size(24.dp)
+                    )
+                    if (presets.getOrNull(pagerStateAppearance.settledPage)?.source != PresetSource.BUILTIN)
+                        IconButton(
+                            icon = R.drawable.close,
+                            color = colorPalette().text,
+                            indication = ripple(false),
+                            onClick = {
+                                val presetId = presets.getOrNull(pagerStateAppearance.settledPage)?.id
+                                if (presetId != null) onDelete(presetId)
+                            },
+                            modifier = Modifier
+                                .size(24.dp)
+                        )
+
+                    IconButton(
+                        icon = R.drawable.export,
+                        color = colorPalette().text,
+                        indication = ripple(false),
+                        onClick = {
+                            val presetName = presets.getOrNull(pagerStateAppearance.settledPage)?.name
+                            if (presetName != null) onExport(presetName)
+                        },
+                        modifier = Modifier
+                            .size(24.dp)
+                    )
+                    IconButton(
+                        icon = R.drawable.resource_import,
+                        color = colorPalette().text,
+                        indication = ripple(false),
+                        onClick = { onImport() },
+                        modifier = Modifier
+                            .size(24.dp)
+                    )
+
+                    if (presets.getOrNull(pagerStateAppearance.settledPage)?.id != activePresetId)
+                        IconButton(
+                            icon = R.drawable.checkmark,
+                            color = colorPalette().text,
+                            indication = ripple(false),
+                            onClick = {
+                                val preset = presets.getOrNull(pagerStateAppearance.settledPage)
+                                if (preset != null) onSelect(preset)
+                            },
+                            modifier = Modifier
+                                .size(24.dp)
+                        )
+                }
             }
             Row(
                 Modifier

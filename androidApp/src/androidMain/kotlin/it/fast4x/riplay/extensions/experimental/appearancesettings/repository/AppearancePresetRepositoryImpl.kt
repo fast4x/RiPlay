@@ -50,7 +50,7 @@ class AppearancePresetRepositoryImpl(
             name = "Aura",
             imageRes = R.drawable.preset0,
             author = "Fast4x",
-            source = PresetSource.LOCAL,
+            source = PresetSource.BUILTIN,
             settings = AppearanceSettings.Aura
         ),
         AppearancePreset(
@@ -58,7 +58,7 @@ class AppearancePresetRepositoryImpl(
             name     = "Deck",
             imageRes = R.drawable.preset1,
             author = "Fast4x",
-            source   = PresetSource.LOCAL,
+            source   = PresetSource.BUILTIN,
             settings = AppearanceSettings.Deck
         ),
         AppearancePreset(
@@ -66,7 +66,7 @@ class AppearancePresetRepositoryImpl(
             name     = "Zen",
             imageRes = R.drawable.preset2,
             author = "Fast4x",
-            source   = PresetSource.LOCAL,
+            source   = PresetSource.BUILTIN,
             settings = AppearanceSettings.Zen
         ),
         AppearancePreset(
@@ -74,7 +74,7 @@ class AppearancePresetRepositoryImpl(
             name     = "Noir",
             imageRes = R.drawable.preset3,
             author = "Fast4x",
-            source   = PresetSource.LOCAL,
+            source   = PresetSource.BUILTIN,
             settings = AppearanceSettings.Noir
         ),
         AppearancePreset(
@@ -82,7 +82,7 @@ class AppearancePresetRepositoryImpl(
             name     = "Prism",
             imageRes = R.drawable.preset4,
             author = "Fast4x",
-            source   = PresetSource.LOCAL,
+            source   = PresetSource.BUILTIN,
             settings = AppearanceSettings.Prism
         ),
         AppearancePreset(
@@ -90,7 +90,7 @@ class AppearancePresetRepositoryImpl(
             name     = "Groove",
             imageRes = R.drawable.preset5,
             author = "Fast4x",
-            source   = PresetSource.LOCAL,
+            source   = PresetSource.BUILTIN,
             settings = AppearanceSettings.Groove
         ),
     )
@@ -172,7 +172,7 @@ class AppearancePresetRepositoryImpl(
                 id = user_custom_legacy_preset,
                 name = "My old theme",
                 author = "You",
-                source = PresetSource.LOCAL,
+                source = PresetSource.BUILTIN,
                 settings = oldSettings
             )
             dao.insertPreset(customPreset.toEntity())
@@ -190,12 +190,12 @@ class AppearancePresetRepositoryImpl(
         // Controlla se esiste almeno un preset built-in
         if (dao.getPresetById("aura") == null) {
             val builtIns = listOf(
-                AppearancePreset(id = "aura", name = "Aura", imageRes = R.drawable.preset0, author = "Fast4x", source = PresetSource.LOCAL, settings = AppearanceSettings.Aura),
-                AppearancePreset(id = "deck", name = "Deck", imageRes = R.drawable.preset1, author = "Fast4x", source = PresetSource.LOCAL, settings = AppearanceSettings.Deck),
-                AppearancePreset(id = "zen", name = "Zen", imageRes = R.drawable.preset2, author = "Fast4x", source = PresetSource.LOCAL, settings = AppearanceSettings.Zen),
-                AppearancePreset(id = "noir", name = "Noir", imageRes = R.drawable.preset3, author = "Fast4x", source = PresetSource.LOCAL, settings = AppearanceSettings.Noir),
-                AppearancePreset(id = "prism", name = "Prism", imageRes = R.drawable.preset4, author = "Fast4x", source = PresetSource.LOCAL, settings = AppearanceSettings.Prism),
-                AppearancePreset(id = "groove", name = "Groove", imageRes = R.drawable.preset5, author = "Fast4x", source = PresetSource.LOCAL, settings = AppearanceSettings.Groove),
+                AppearancePreset(id = "aura", name = "Aura", imageRes = R.drawable.preset0, author = "Fast4x", source = PresetSource.BUILTIN, settings = AppearanceSettings.Aura),
+                AppearancePreset(id = "deck", name = "Deck", imageRes = R.drawable.preset1, author = "Fast4x", source = PresetSource.BUILTIN, settings = AppearanceSettings.Deck),
+                AppearancePreset(id = "zen", name = "Zen", imageRes = R.drawable.preset2, author = "Fast4x", source = PresetSource.BUILTIN, settings = AppearanceSettings.Zen),
+                AppearancePreset(id = "noir", name = "Noir", imageRes = R.drawable.preset3, author = "Fast4x", source = PresetSource.BUILTIN, settings = AppearanceSettings.Noir),
+                AppearancePreset(id = "prism", name = "Prism", imageRes = R.drawable.preset4, author = "Fast4x", source = PresetSource.BUILTIN, settings = AppearanceSettings.Prism),
+                AppearancePreset(id = "groove", name = "Groove", imageRes = R.drawable.preset5, author = "Fast4x", source = PresetSource.BUILTIN, settings = AppearanceSettings.Groove),
             )
             builtIns.map { it.toEntity() }.forEach { dao.insertPreset(it) }
         }

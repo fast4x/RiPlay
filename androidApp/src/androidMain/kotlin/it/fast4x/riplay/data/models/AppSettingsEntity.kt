@@ -7,5 +7,6 @@ import androidx.room.PrimaryKey
 data class AppSettingsEntity(
     @PrimaryKey val id: Int = 1,
     val activePresetId: String = "aura", // Il default
-    val settingsJson: String
+    val settingsJson: String,
+    val activeAppearanceJson: String
 )

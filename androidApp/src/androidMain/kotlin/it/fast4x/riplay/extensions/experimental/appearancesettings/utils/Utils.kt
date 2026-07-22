@@ -117,7 +117,7 @@ fun AppearancePreset.toEntity(): AppearancePresetEntity {
         author = author,
         imageUrl = imageUrl,
         localImageRes = imageRes,
-        isBuiltIn = source == PresetSource.LOCAL,
+        isBuiltIn = source == PresetSource.BUILTIN,
         settingsJson = DbSettingsJson.encodeToString(settings) // Usiamo il converter
     )
 }
@@ -130,7 +130,7 @@ fun AppearancePresetEntity.toDomain(): AppearancePreset {
         author = author,
         imageUrl = imageUrl,
         imageRes = localImageRes,
-        source = if (isBuiltIn) PresetSource.LOCAL else PresetSource.SHARED,
+        source = if (isBuiltIn) PresetSource.BUILTIN else PresetSource.SHARED,
         settings = DbSettingsJson.decodeFromString(settingsJson)
     )
 }

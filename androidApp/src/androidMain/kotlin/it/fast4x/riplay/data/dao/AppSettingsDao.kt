@@ -13,8 +13,14 @@ interface AppSettingsDao {
     @Query("SELECT settingsJson FROM app_settings WHERE id = 1")
     fun getSettings(): Flow<String>
 
+    @Query("SELECT activeAppearanceJson FROM app_settings WHERE id = 1")
+    fun getActiveAppearanceSettings(): Flow<String>
+
 
     @Query("UPDATE app_settings SET settingsJson = :jsonSettings WHERE id = 1")
     suspend fun updateSettings(jsonSettings: String)
+
+    @Query("UPDATE app_settings SET activeAppearanceJson = :jsonSettings WHERE id = 1")
+    suspend fun updateActiveAppearanceSettings(jsonSettings: String)
 
 }

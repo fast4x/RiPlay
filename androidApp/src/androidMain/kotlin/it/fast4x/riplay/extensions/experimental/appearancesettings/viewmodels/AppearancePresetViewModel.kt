@@ -4,11 +4,15 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.extensions.experimental.appearancesettings.repository.AppearancePresetRepository
 import it.fast4x.riplay.extensions.experimental.appearancesettings.repository.AppearancePresetRepositoryImpl
 import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearancePreset
+import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearanceSettings
 import it.fast4x.riplay.extensions.experimental.appearancesettings.models.PresetEvent
+import it.fast4x.riplay.extensions.experimental.appearancesettings.models.PresetSource
 import it.fast4x.riplay.extensions.experimental.appearancesettings.models.PresetUiState
+import it.fast4x.riplay.extensions.experimental.appearancesettings.utils.toDomain
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -22,6 +26,8 @@ import kotlinx.coroutines.launch
 class AppearancePresetViewModel(
     private val repository: AppearancePresetRepository
 ) : ViewModel() {
+
+    val dao = Database.appearancePresetDao()
 
     private val _uiState = MutableStateFlow<PresetUiState>(PresetUiState.Loading)
     val uiState: StateFlow<PresetUiState> = _uiState.asStateFlow()
@@ -63,6 +69,16 @@ class AppearancePresetViewModel(
                 .onSuccess { url -> _events.send(PresetEvent.Shared(url)) }
                 .onFailure { _events.send(PresetEvent.Error(it.message ?: "Errore condivisione")) }
         }
+    }
+    suspend fun getCurrentActivePreset(): AppearancePreset {
+        val id = activePresetId.value
+        return dao.getPresetById(id.toString())?.toDomain() ?: AppearancePreset(
+            id = "aura_fallback",
+            name = "Aura (Default)",
+            author = "Fast4x",
+            source = PresetSource.BUILTIN,
+            settings = AppearanceSettings.Aura
+        )
     }
 
     companion object {

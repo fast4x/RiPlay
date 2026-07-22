@@ -1025,24 +1025,13 @@ fun PlayerAppearanceSettings(
 
                 settingsItem {
                     if (!isLandscape) {
-                        Column {
-                            BasicText(
-                                text = stringResource(R.string.appearancepresets),
-                                style = typography().m.semiBold.copy(color = colorPalette().text),
-                                modifier = Modifier
-                                    .padding(all = 12.dp)
-                                    .clickable(onClick = {
-                                        appearanceChooser = true
-                                    })
-                            )
-                            BasicText(
-                                text = stringResource(R.string.appearancepresetssecondary),
-                                style = typography().xs.semiBold.copy(color = colorPalette().textSecondary),
-                                modifier = Modifier
-                                    .padding(start = 12.dp)
-                                    .padding(bottom = 10.dp)
-                            )
-                        }
+                        ButtonBarSettingEntry(
+                            title = stringResource(R.string.appearancepresets),
+                            text = "",
+                            icon = R.drawable.color_palette,
+                            iconColor = colorPalette().text,
+                            onClick = { appearanceChooser = true },
+                        )
 
                         if (search.input.isBlank() || stringResource(R.string.show_player_top_actions_bar).contains(
                                 search.input,
@@ -1080,10 +1069,7 @@ fun PlayerAppearanceSettings(
                                 )
                         }
                     }
-                }
 
-
-                settingsItem {
                     if (search.input.isBlank() || stringResource(R.string.playertype).contains(
                             search.input,
                             true
@@ -2713,28 +2699,28 @@ fun PlayerAppearanceSettings(
                     }
 
 
-                if (search.input.isBlank() || stringResource(R.string.show_song_cover).contains(
-                        search.input,
-                        true
-                    )
-                )
-                    //if (!isAtLeastAndroid13) {
-                        SettingsGroupSpacer()
-
-                        SettingsEntryGroupText(title = stringResource(R.string.lockscreen))
-
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.show_song_cover),
-                            text = stringResource(R.string.use_song_cover_on_lockscreen),
-                            isChecked = appSettings.isShowingThumbnailInLockscreen,
-                            onCheckedChange = {
-                                coroutineScope.launch {
-                                    val new = appSettings.copy(isShowingThumbnailInLockscreen = it)
-                                    appSettingsVieModel.updateSettings(new)
-                                }
-                            }
+                    if (search.input.isBlank() || stringResource(R.string.show_song_cover).contains(
+                            search.input,
+                            true
                         )
-                    //}
+                    )
+
+                    SettingsGroupSpacer()
+
+                    SettingsEntryGroupText(title = stringResource(R.string.lockscreen))
+
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.show_song_cover),
+                        text = stringResource(R.string.use_song_cover_on_lockscreen),
+                        isChecked = appSettings.isShowingThumbnailInLockscreen,
+                        onCheckedChange = {
+                            coroutineScope.launch {
+                                val new = appSettings.copy(isShowingThumbnailInLockscreen = it)
+                                appSettingsVieModel.updateSettings(new)
+                            }
+                        }
+                    )
+
 
                 }
 
@@ -2802,7 +2788,6 @@ fun PlayerAppearanceSettings(
                         val new = AppearanceSettings()
                         appearanceSettingsManager.updatePreset(new)
 
-                        //DefaultPlayerAppearanceSettings()
                         resetToDefault = false
                         navController.popBackStack()
                         SmartMessage(context.resources.getString(R.string.done), context = context)

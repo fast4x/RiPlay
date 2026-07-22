@@ -19,6 +19,10 @@ interface AppearancePresetDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPreset(preset: AppearancePresetEntity)
 
+    @Query("DELETE FROM appearance_presets WHERE id = :id")
+    suspend fun deletePreset(id: String)
+
+
     @Query("DELETE FROM appearance_presets WHERE isBuiltIn = 0")
     suspend fun deleteNonBuiltInPresets() // Utile se l'utente vuole fare "Ripristina predefiniti"
 
