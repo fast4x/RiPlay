@@ -897,6 +897,7 @@ fun UiSettings(
                         }
                     )
 
+                /*
                 if (search.input.isBlank() || stringResource(R.string.default_page).contains(
                         search.input,
                         true
@@ -924,6 +925,8 @@ fun UiSettings(
                             }
                         }
                     )
+
+                 */
 
                 if (search.input.isBlank() || stringResource(R.string.transition_effect).contains(
                         search.input,

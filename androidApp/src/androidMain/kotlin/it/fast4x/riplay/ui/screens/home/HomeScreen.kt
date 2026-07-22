@@ -48,6 +48,7 @@ import it.fast4x.riplay.ui.screens.home.homepages.HomePage
 import it.fast4x.riplay.ui.screens.home.homepages.HomePageExtended
 import it.fast4x.riplay.utils.CheckForNewVersion
 import kotlinx.serialization.ExperimentalSerializationApi
+import timber.log.Timber
 import kotlin.system.exitProcess
 
 
@@ -88,25 +89,9 @@ fun HomeScreen(
         mutableIntStateOf(openTabFromShortcut)
     }
 
-    val initialtabIndex = remember {
-        when (openTabFromShortcut1) {
-            -1 -> {
-                val savedTab = appSettings.indexNavigationTab
-                if (savedTab == HomeScreenTabs.Default) HomeScreenTabs.Home.index
-                else savedTab.index
-            }
-            else -> openTabFromShortcut1
-        }
-    }
+    //Timber.d("HomeScreen appSettings.homeScreenTabIndex ${appSettings.homeScreenTabIndex}")
 
-
-    val tabIndex = appSettings.homeScreenTabIndex
-
-    LaunchedEffect(Unit, initialtabIndex) {
-        appSettingsManager.updateSettings (
-            appSettings.copy(homeScreenTabIndex = initialtabIndex)
-        )
-    }
+    val tabIndex = if (openTabFromShortcut1 == -1) appSettings.homeScreenTabIndex else openTabFromShortcut1
 
     val offlineModeEnabled = appSettings.offlineModeEnabled
     LaunchedEffect(Unit, offlineModeEnabled) {
