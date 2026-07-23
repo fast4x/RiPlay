@@ -58,6 +58,7 @@ import it.fast4x.riplay.extensions.experimental.appsettings.models.AppSettings
 import it.fast4x.riplay.extensions.musicbrainz.repository.AlbumRepository
 import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
 import it.fast4x.riplay.utils.GlobalSharedData
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.getTitleMonthlyPlaylist
@@ -121,12 +122,17 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
     )
 
     private var settingsObserverJob: Job? = null
-    private lateinit var appSettingsManager: AppSettingsManager
-    private lateinit var appSettings: AppSettings
+    private val appSettingsManager: AppSettingsManager by lazy {
+        (appContext() as MainApplication).appSettingsManager
+    }
+
+    private var appSettings: AppSettings = AppSettings()
 
     private fun startObservingSettings() {
-        appSettingsManager = (application as MainApplication).appSettingsManager
-
+        // Devo essere sicuro che le impostazioni siano pronte
+        appSettings = runBlocking(Dispatchers.IO) {
+            appSettingsManager.waitForInitialization()
+        }
         settingsObserverJob = serviceScope.launch {
             appSettingsManager.activeSettings
                 .collect { settings ->
@@ -232,7 +238,6 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
 
     override fun onCreate() {
         super.onCreate()
-
         startObservingSettings()
 
         songsSortBy = appSettings.songSortBy

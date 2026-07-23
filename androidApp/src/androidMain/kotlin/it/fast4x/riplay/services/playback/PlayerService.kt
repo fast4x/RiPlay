@@ -406,8 +406,10 @@ class PlayerService : Service(),
     val relatedItemsService: RelatedItemsService = RelatedItemsService()
 
     private var settingsObserverJob: Job? = null
-    private lateinit var appSettingsManager: AppSettingsManager
-    private lateinit var appSettings: AppSettings
+    private val appSettingsManager: AppSettingsManager by lazy {
+        (appContext() as MainApplication).appSettingsManager
+    }
+    private var appSettings = appSettingsManager.activeSettings.value
 
 
     override fun onBind(intent: Intent?): AndroidBinder {
@@ -646,8 +648,10 @@ class PlayerService : Service(),
     }
 
     private fun startObservingSettings() {
-        appSettingsManager = (application as MainApplication).appSettingsManager
-
+        // Devo essere sicuro che le impostazioni siano pronte
+        appSettings = runBlocking(Dispatchers.IO) {
+            appSettingsManager.waitForInitialization()
+        }
         settingsObserverJob = serviceScope.launch {
             appSettingsManager.activeSettings      
                 .collect { settings -> 

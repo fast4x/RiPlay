@@ -16,6 +16,8 @@ class AppSettingsManager {
     private val _activeSettings = MutableStateFlow(AppSettings())
     val activeSettings: StateFlow<AppSettings> = _activeSettings.asStateFlow()
 
+    private var isInitialized = false
+
     suspend fun initialize() {
         try {
             val json = dao.getSettings().first()
@@ -25,7 +27,19 @@ class AppSettingsManager {
         } catch (e: Exception) {
             Timber.e(e, "AppSettingsManager Errore inizializzazione AppSettings dal DB, uso i default")
             dao.updateSettings(DbSettingsJson.encodeToString(AppSettings()))
+        } finally {
+            isInitialized = true
         }
+    }
+
+    suspend fun waitForInitialization(): AppSettings {
+        // Se l'Application ha già finito, ritorna subito i dati
+        if (isInitialized) {
+            return _activeSettings.value
+        }
+
+        // Se l'Application è ancora in esecuzione, aspettiamo il primo aggiornamento del Flow
+        return _activeSettings.first { isInitialized }
     }
 
     suspend fun updateSettings(newSettings: AppSettings) {
