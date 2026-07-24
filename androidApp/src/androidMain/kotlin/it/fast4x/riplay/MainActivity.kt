@@ -1842,11 +1842,12 @@ class MainActivity :
                                 }
 
                                 uri.host == "www.shazam.com" && (path == "track" || path == "song") -> {
+                                    Timber.d("MainActivity LaunchedEffect intentUriData uri.host shazam")
                                     shazamSongInfoExtractor(
                                         uri.toString(),
                                         { artist, title, error ->
                                             Timber.d("MainActivity shazamSongInfoExtractor result artist $artist title $title error $error")
-                                            if (title.isNotEmpty()) {
+                                            if (title.isNotEmpty() || artist.isNotEmpty()) {
                                                 val query = "$title $artist"
                                                 navController?.navigate(route = "${NavRoutes.search.name}?text=$query")
                                             }

@@ -7,7 +7,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
-import timber.log.Timber
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
@@ -18,56 +17,77 @@ fun shazamSongInfo(url: String, callback: (String, String, String?) -> Unit) {
     CoroutineScope(Dispatchers.IO).launch {
         try {
             val html = fetchHtml(url)
-
-            //saveFileToInternalStorage(appContext(), "shazam.html", html.orEmpty())
+            saveFileToInternalStorage(appContext(), "shazam.html", html.orEmpty())
 
             if (html != null) {
                 val doc = Jsoup.parse(html)
                 var title = ""
                 var artist = ""
 
-                // --- METODO 1: Selettori CSS "Resilienti" ---
-
-                // Titolo: usiamo "^=" che significa "inizia con".
-                // In questo modo ignoriamo l'hash __YYbL7 che cambierà domani!
-                val titleEl = doc.selectFirst("div[class^='NewTrackPageHeader_trackTitle__']")
-                if (titleEl != null) {
-                    title = titleEl.text().trim()
-                }
-
-                // Artista: usiamo il data-test-id che è rimasto stabile e non ha hash
+                // --- ESTRAZIONE ARTISTA (A 2 livelli di fallback) ---
                 val artistLink = doc.selectFirst("a[data-test-id='track_userevent_artist_link']")
                 if (artistLink != null) {
-                    // Prendiamo il testo. Se Jsoup prende anche testi di icone interni, facciamo un po' di pulizia
                     artist = artistLink.text().trim().replace(Regex("[^a-zA-Z0-9àèéìòùÀÈÉÌÒÙ\\s\\-']"), "").trim()
                 }
 
 
-                // --- METODO 2: Fallback dal Canonical URL (BULLET-PROOF al 100%) ---
-                // Se Shazam cambia radicalmente i nomi delle classi o i data-test-id,
-                // l'URL canonico rimarrà sempre formattato così per ragioni di SEO.
+                // --- ESTRAZIONE TITOLO (A 5 livelli di fallback) ---
 
+                // Livello 1: Ricerca "Contiene" (Copre qualsiasi variazione di ComponentName_trackTitle__)
+                var titleEl = doc.selectFirst("[class*='trackTitle'], [class*='TrackTitle']")
+                if (titleEl != null) {
+                    title = titleEl.text().trim()
+                }
+
+                // Livello 2: Cerca un Tag H1 o H2 che abbia le classi di testo di Shazam
+                if (title.isEmpty()) {
+                    titleEl = doc.selectFirst("h1[class*='Text-module'], h2[class*='Text-module']")
+                    if (titleEl != null) {
+                        title = titleEl.text().trim()
+                    }
+                }
+
+                // Livello 3: Fallback dal Canonical URL
                 if (title.isEmpty()) {
                     val canonical = doc.selectFirst("link[rel='canonical']")?.attr("href")
                     if (canonical != null) {
-                        val segments = canonical.split("/")
-                        // Esempio URL: https://www.shazam.com/track/690343079/i-want-to-quit-my-job
-                        if (segments.size >= 6 && segments[3] == "track") {
-                            // segments[5] è "i-want-to-quit-my-job"
-                            title = formatSlug(segments[5])
+                        // Cerca dove si trova "/track/" nell'URL, indipendentemente dalla lunghezza
+                        val trackIndex = canonical.indexOf("/track/")
+                        if (trackIndex != -1) {
+                            val afterTrack = canonical.substring(trackIndex + 7) // Salta "/track/"
+                            // afterTrack sarà "690343079/i-want-to-quit-my-job"
+                            val parts = afterTrack.split("/")
+                            if (parts.size > 1 && parts[1].isNotEmpty()) {
+                                title = formatSlug(parts[1])
+                            }
                         }
                     }
                 }
 
+                // Livello 4: "Nuclear Option" - Sfrutta il DOM fratello dell'artista
+                // Shazam mette quasi sempre Artista e Titolo nello stesso contenitore padre.
+                if (title.isEmpty() && artistLink != null) {
+                    val parent = artistLink.parent() // Il div che contiene il link dell'artista
+                    val grandParent = parent?.parent() // Il div che contiene sia il titolo che l'artista
+                    if (grandParent != null) {
+                        // Prendi tutti i div figli diretti
+                        val children = grandParent.children().select("div")
+                        // Cerca il div che NON contiene il link dell'artista (sarà il div del titolo)
+                        val titleContainer = children.firstOrNull {
+                            it.select("a[data-test-id='track_userevent_artist_link']").isEmpty()
+                        }
+                        if (titleContainer != null) {
+                            title = titleContainer.text().trim()
+                        }
+                    }
+                }
+
+                // Livello 5: Fallback artista dall'URL (se per qualche motivo fallisse anche quello)
                 if (artist.isEmpty()) {
-                    // Cerchiamo qualsiasi link che porti alla pagina dell'artista
                     val artistHref = doc.selectFirst("a[href^='/artist/']")?.attr("href")
                     if (artistHref != null) {
-                        // Esempio href: /artist/blessed-wealthy-bol/1728227002
                         val segments = artistHref.split("/")
-                        if (segments.size >= 3) {
-                            artist = formatSlug(segments[2])
-                        }
+                        if (segments.size >= 3) artist = formatSlug(segments[2])
                     }
                 }
 
@@ -88,7 +108,7 @@ fun shazamSongInfo(url: String, callback: (String, String, String?) -> Unit) {
 }
 
 /**
- * Funzione di supporto per trasformare "i-want-to-quit-my-job" in "I Want To Quit My Job"
+ * Trasforma "i-want-to-quit-my-job" in "I Want To Quit My Job"
  */
 private fun formatSlug(slug: String): String {
     return slug.replace("-", " ")
