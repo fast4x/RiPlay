@@ -4,31 +4,8 @@
       "id": "aura",
       "name": "Aura",
       "author": "Fast4x",
-      "imageUrl": "https://fast4x.github.io/RiPlay/themes/images/aura.png",
+      "imageUrl": "https://raw.githubusercontent.com/fast4x/RiPlay/main/themes/images/aura.png",
       "settings": {}
-    },
-    {
-      "id": "noir",
-      "name": "Noir",
-      "author": "Fast4x",
-      "imageUrl": "https://fast4x.github.io/RiPlay/themes/images/noir.png",
-      "settings": {
-        "showTopActionsBar": false,
-        "topPadding": false,
-        "playerTimelineType": "FakeAudioBar",
-        "playerControlsType": "Modern",
-        "colorPaletteName": "PureBlack",
-        "colorPaletteMode": "Dark",
-        "transparentBar": false,
-        "expandedPlayer": false,
-        "playerThumbnailSize": "Expanded",
-        "thumbnailType": "Essential",
-        "thumbnailRoundness": "Light",
-        "fadingedge": true,
-        "showButtonPlayerLoop": true,
-        "showButtonPlayerArrow": true,
-        "showButtonPlayerAddToPlaylist": false
-      }
     }
   ]
 }

@@ -16,7 +16,7 @@ interface AppearancePresetDao {
     @Query("SELECT * FROM appearance_presets WHERE id = :id")
     suspend fun getPresetById(id: String): AppearancePresetEntity?
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertPreset(preset: AppearancePresetEntity)
 
     @Query("DELETE FROM appearance_presets WHERE id = :id")
