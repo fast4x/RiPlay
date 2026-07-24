@@ -1,11 +1,11 @@
-package it.fast4x.riplay.extensions.experimental.appearancesettings
+package it.fast4x.riplay.extensions.appearancesettings
 
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearancePreset
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearanceSettings
-import it.fast4x.riplay.extensions.experimental.appearancesettings.repository.AppearancePresetRepository
-import it.fast4x.riplay.extensions.experimental.appearancesettings.repository.AppearancePresetRepositoryImpl
-import it.fast4x.riplay.extensions.experimental.appearancesettings.utils.toEntity
+import it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings
+
+import it.fast4x.riplay.extensions.appearancesettings.repository.AppearancePresetRepository
+import it.fast4x.riplay.extensions.appearancesettings.repository.AppearancePresetRepositoryImpl
+import it.fast4x.riplay.extensions.appearancesettings.utils.toEntity
 import it.fast4x.riplay.utils.DbSettingsJson
 import it.fast4x.riplay.utils.appContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +21,9 @@ class AppearanceSettingsManager {
     val daoApp = Database.appSettingsDao()
 
     val appearanncePresetRepository: AppearancePresetRepository =
-        AppearancePresetRepositoryImpl(appContext())
+        AppearancePresetRepositoryImpl(
+            appContext()
+        )
 
     private val _activeSettings = MutableStateFlow(AppearanceSettings())
     val activeSettings: StateFlow<AppearanceSettings> = _activeSettings.asStateFlow()
@@ -56,13 +58,13 @@ class AppearanceSettingsManager {
             val noCustomAppearanceSettings = customAppearanceSettings == "{}"
 
             if (noCustomAppearanceSettings) {
-                _activeSettings.value = DbSettingsJson.decodeFromString<AppearanceSettings>(customAppearanceSettings)
+                _activeSettings.value = DbSettingsJson.decodeFromString<it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings>(customAppearanceSettings)
                 Timber.d("AppearanceSettingsManager init: Successfully loaded CUSTOM settings for $id")
             } else {
                 val entity = daoAppearance.getPresetById(id)
                 if (entity != null) {
                     val settings =
-                        DbSettingsJson.decodeFromString<AppearanceSettings>(entity.settingsJson)
+                        DbSettingsJson.decodeFromString<it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings>(entity.settingsJson)
                     Timber.d("AppearanceSettingsManager init: Successfully loaded settings for $id")
                     _activeSettings.value = settings
                 } else {
@@ -75,7 +77,7 @@ class AppearanceSettingsManager {
         }
     }
 
-    suspend fun applyPreset(preset: AppearancePreset) {
+    suspend fun applyPreset(preset: it.fast4x.riplay.extensions.appearancesettings.models.AppearancePreset) {
         daoAppearance.setActivePreset(preset.id)
         _activeSettings.value = preset.settings
         _activeId.value = preset.id
@@ -86,7 +88,7 @@ class AppearanceSettingsManager {
         Timber.d("AppearanceSettingsManager applyPreset: Applied preset -> ${preset.id}")
     }
 
-    suspend fun updatePreset(settings: AppearanceSettings) {
+    suspend fun updatePreset(settings: it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings) {
         val currentId = _activeId.value
         Timber.d("AppearanceSettingsManager updatePreset: saved current preset id -> $currentId")
 
@@ -98,7 +100,7 @@ class AppearanceSettingsManager {
         _activeSettings.value = settings
     }
 
-    suspend fun importAndApplyPreset(preset: AppearancePreset) {
+    suspend fun importAndApplyPreset(preset: it.fast4x.riplay.extensions.appearancesettings.models.AppearancePreset) {
 
         var presetToImport = preset
 

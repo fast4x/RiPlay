@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.appearancesettings.models
+package it.fast4x.riplay.extensions.appearancesettings.models
 
 import androidx.compose.ui.graphics.Color
 import it.fast4x.riplay.enums.AnimatedGradient

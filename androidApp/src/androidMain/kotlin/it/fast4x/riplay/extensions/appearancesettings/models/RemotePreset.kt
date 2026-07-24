@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.appearancesettings.models
+package it.fast4x.riplay.extensions.appearancesettings.models
 
 import kotlinx.serialization.Serializable
 
@@ -13,5 +13,5 @@ data class RemotePreset(
 @Serializable
 data class RemoteThemesResponse(
     // Se la chiave "themes" non esiste nel JSON, tornerà una lista vuota di default. Zero crash.
-    val themes: List<AppearancePresetDto> = emptyList()
+    val themes: List<it.fast4x.riplay.extensions.appearancesettings.models.AppearancePresetDto> = emptyList()
 )

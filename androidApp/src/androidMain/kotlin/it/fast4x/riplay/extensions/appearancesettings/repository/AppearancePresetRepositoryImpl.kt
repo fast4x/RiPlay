@@ -1,13 +1,9 @@
-package it.fast4x.riplay.extensions.experimental.appearancesettings.repository
+package it.fast4x.riplay.extensions.appearancesettings.repository
 
 import android.content.Context
 import android.util.Base64
 import it.fast4x.riplay.R
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearancePreset
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearancePresetDto
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearanceSettings
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.PresetSource
-import it.fast4x.riplay.extensions.experimental.appearancesettings.utils.toDto
+import it.fast4x.riplay.extensions.appearancesettings.utils.toDto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -18,10 +14,14 @@ import java.net.HttpURLConnection
 import java.net.URL
 import androidx.core.net.toUri
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.RemoteThemesResponse
-import it.fast4x.riplay.extensions.experimental.appearancesettings.utils.fromCurrentSettings
-import it.fast4x.riplay.extensions.experimental.appearancesettings.utils.toDomain
-import it.fast4x.riplay.extensions.experimental.appearancesettings.utils.toEntity
+import it.fast4x.riplay.extensions.appearancesettings.models.AppearancePreset
+import it.fast4x.riplay.extensions.appearancesettings.models.AppearancePresetDto
+import it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings
+import it.fast4x.riplay.extensions.appearancesettings.models.PresetSource
+import it.fast4x.riplay.extensions.appearancesettings.models.RemoteThemesResponse
+import it.fast4x.riplay.extensions.appearancesettings.utils.fromCurrentSettings
+import it.fast4x.riplay.extensions.appearancesettings.utils.toDomain
+import it.fast4x.riplay.extensions.appearancesettings.utils.toEntity
 import it.fast4x.riplay.utils.DbSettingsJson
 import it.fast4x.riplay.utils.appContext
 import kotlinx.coroutines.flow.map
@@ -54,43 +54,43 @@ class AppearancePresetRepositoryImpl(
             settings = AppearanceSettings.Aura
         ),
         AppearancePreset(
-            id       = "deck",
-            name     = "Deck",
+            id = "deck",
+            name = "Deck",
             imageRes = R.drawable.preset1,
             author = "Fast4x",
-            source   = PresetSource.BUILTIN,
+            source = PresetSource.BUILTIN,
             settings = AppearanceSettings.Deck
         ),
         AppearancePreset(
-            id       = "zen",
-            name     = "Zen",
+            id = "zen",
+            name = "Zen",
             imageRes = R.drawable.preset2,
             author = "Fast4x",
-            source   = PresetSource.BUILTIN,
+            source = PresetSource.BUILTIN,
             settings = AppearanceSettings.Zen
         ),
         AppearancePreset(
-            id       = "noir",
-            name     = "Noir",
+            id = "noir",
+            name = "Noir",
             imageRes = R.drawable.preset3,
             author = "Fast4x",
-            source   = PresetSource.BUILTIN,
+            source = PresetSource.BUILTIN,
             settings = AppearanceSettings.Noir
         ),
         AppearancePreset(
-            id       = "prism",
-            name     = "Prism",
+            id = "prism",
+            name = "Prism",
             imageRes = R.drawable.preset4,
             author = "Fast4x",
-            source   = PresetSource.BUILTIN,
+            source = PresetSource.BUILTIN,
             settings = AppearanceSettings.Prism
         ),
         AppearancePreset(
-            id       = "groove",
-            name     = "Groove",
+            id = "groove",
+            name = "Groove",
             imageRes = R.drawable.preset5,
             author = "Fast4x",
-            source   = PresetSource.BUILTIN,
+            source = PresetSource.BUILTIN,
             settings = AppearanceSettings.Groove
         ),
     )
@@ -168,13 +168,14 @@ class AppearancePresetRepositoryImpl(
             val oldSettings = AppearanceSettings.fromCurrentSettings(context)
 
             // Crea un preset "Tema Personalizzato" con le impostazioni da sharedPrefernces
-            val customPreset = AppearancePreset(
-                id = user_custom_legacy_preset,
-                name = "My old theme",
-                author = "You",
-                source = PresetSource.BUILTIN,
-                settings = oldSettings
-            )
+            val customPreset =
+                AppearancePreset(
+                    id = user_custom_legacy_preset,
+                    name = "My old theme",
+                    author = "You",
+                    source = PresetSource.BUILTIN,
+                    settings = oldSettings
+                )
             dao.insertPreset(customPreset.toEntity())
 
             // Imposto come attivo!
@@ -190,12 +191,54 @@ class AppearancePresetRepositoryImpl(
         // Controlla se esiste almeno un preset built-in
         if (dao.getPresetById("aura") == null) {
             val builtIns = listOf(
-                AppearancePreset(id = "aura", name = "Aura", imageRes = R.drawable.preset0, author = "Fast4x", source = PresetSource.BUILTIN, settings = AppearanceSettings.Aura),
-                AppearancePreset(id = "deck", name = "Deck", imageRes = R.drawable.preset1, author = "Fast4x", source = PresetSource.BUILTIN, settings = AppearanceSettings.Deck),
-                AppearancePreset(id = "zen", name = "Zen", imageRes = R.drawable.preset2, author = "Fast4x", source = PresetSource.BUILTIN, settings = AppearanceSettings.Zen),
-                AppearancePreset(id = "noir", name = "Noir", imageRes = R.drawable.preset3, author = "Fast4x", source = PresetSource.BUILTIN, settings = AppearanceSettings.Noir),
-                AppearancePreset(id = "prism", name = "Prism", imageRes = R.drawable.preset4, author = "Fast4x", source = PresetSource.BUILTIN, settings = AppearanceSettings.Prism),
-                AppearancePreset(id = "groove", name = "Groove", imageRes = R.drawable.preset5, author = "Fast4x", source = PresetSource.BUILTIN, settings = AppearanceSettings.Groove),
+                AppearancePreset(
+                    id = "aura",
+                    name = "Aura",
+                    imageRes = R.drawable.preset0,
+                    author = "Fast4x",
+                    source = PresetSource.BUILTIN,
+                    settings = AppearanceSettings.Aura
+                ),
+                AppearancePreset(
+                    id = "deck",
+                    name = "Deck",
+                    imageRes = R.drawable.preset1,
+                    author = "Fast4x",
+                    source = PresetSource.BUILTIN,
+                    settings = AppearanceSettings.Deck
+                ),
+                AppearancePreset(
+                    id = "zen",
+                    name = "Zen",
+                    imageRes = R.drawable.preset2,
+                    author = "Fast4x",
+                    source = PresetSource.BUILTIN,
+                    settings = AppearanceSettings.Zen
+                ),
+                AppearancePreset(
+                    id = "noir",
+                    name = "Noir",
+                    imageRes = R.drawable.preset3,
+                    author = "Fast4x",
+                    source = PresetSource.BUILTIN,
+                    settings = AppearanceSettings.Noir
+                ),
+                AppearancePreset(
+                    id = "prism",
+                    name = "Prism",
+                    imageRes = R.drawable.preset4,
+                    author = "Fast4x",
+                    source = PresetSource.BUILTIN,
+                    settings = AppearanceSettings.Prism
+                ),
+                AppearancePreset(
+                    id = "groove",
+                    name = "Groove",
+                    imageRes = R.drawable.preset5,
+                    author = "Fast4x",
+                    source = PresetSource.BUILTIN,
+                    settings = AppearanceSettings.Groove
+                ),
             )
             builtIns.map { it.toEntity() }.forEach { dao.insertPreset(it) }
         }

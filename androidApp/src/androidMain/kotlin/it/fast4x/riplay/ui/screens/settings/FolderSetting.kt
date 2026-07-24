@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
-import it.fast4x.riplay.extensions.experimental.appsettings.models.AppSettings
+import it.fast4x.riplay.extensions.appsettings.models.AppSettings
 import it.fast4x.riplay.utils.colorPalette
 import kotlinx.coroutines.launch
 

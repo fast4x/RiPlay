@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.appsettings.models
+package it.fast4x.riplay.extensions.appsettings.models
 
 import it.fast4x.riplay.enums.AlbumSortBy
 import it.fast4x.riplay.enums.AlbumSwipeAction

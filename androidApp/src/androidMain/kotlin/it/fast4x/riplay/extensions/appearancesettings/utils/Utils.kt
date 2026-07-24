@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.appearancesettings.utils
+package it.fast4x.riplay.extensions.appearancesettings.utils
 
 import android.content.Context
 import android.net.Uri
@@ -22,10 +22,10 @@ import it.fast4x.riplay.enums.SongsNumber
 import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ThumbnailType
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearancePreset
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearancePresetDto
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearanceSettings
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.PresetSource
+import it.fast4x.riplay.extensions.appearancesettings.models.AppearancePreset
+import it.fast4x.riplay.extensions.appearancesettings.models.AppearancePresetDto
+import it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings
+import it.fast4x.riplay.extensions.appearancesettings.models.PresetSource
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.ACTION_EXPANDED
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.ACTIONS_SPACED_EVENLY
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.ALBUM_COVER_ROTATION

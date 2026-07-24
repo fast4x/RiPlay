@@ -35,7 +35,6 @@ import it.fast4x.riplay.enums.CarouselSize
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.ColorPaletteName
 import it.fast4x.riplay.enums.FontType
-import it.fast4x.riplay.enums.HomeScreenTabs
 import it.fast4x.riplay.enums.IconLikeType
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.enums.MessageType
@@ -56,7 +55,7 @@ import it.fast4x.riplay.enums.QueueType
 import it.fast4x.riplay.enums.ThumbnailType
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.enums.UiType
-import it.fast4x.riplay.extensions.experimental.appsettings.models.AppSettings
+import it.fast4x.riplay.extensions.appsettings.models.AppSettings
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.SmartMessage

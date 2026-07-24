@@ -183,7 +183,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
-import java.net.URLEncoder
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Objects
@@ -193,8 +192,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.extensions.appviewmodel.AppViewModelProvider
-import it.fast4x.riplay.extensions.experimental.appearancesettings.AppearanceSettingsManager
-import it.fast4x.riplay.extensions.experimental.appsettings.AppSettingsManager
+import it.fast4x.riplay.extensions.appsettings.AppSettingsManager
 import it.fast4x.riplay.extensions.qrcodeanalyzer.qrCodeToAction
 import it.fast4x.riplay.extensions.musicbrainz.viewmodels.AlbumInsightsViewModel
 import it.fast4x.riplay.extensions.musicbrainz.viewmodels.ArtistInsightsViewModel
@@ -2119,6 +2117,6 @@ val LocalArtistInsights = staticCompositionLocalOf<ArtistInsightsViewModel> { er
 
 val LocalAlbumInsights = staticCompositionLocalOf<AlbumInsightsViewModel> { error("No album insights provided")}
 
-val LocalAppearanceSettingsManager = staticCompositionLocalOf<AppearanceSettingsManager> { error("No appearance settings provided")}
+val LocalAppearanceSettingsManager = staticCompositionLocalOf<it.fast4x.riplay.extensions.appearancesettings.AppearanceSettingsManager> { error("No appearance settings provided")}
 
 val LocalAppSettingsManager = staticCompositionLocalOf<AppSettingsManager> { error("No app settings provided") }

@@ -64,10 +64,10 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.AnimatedGradient
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.SwipeAnimationNoThumbnail
-import it.fast4x.riplay.extensions.experimental.appearancesettings.AppearancePreferences
-import it.fast4x.riplay.extensions.experimental.appearancesettings.ui.AppearancePresetDialogHost
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearanceSettings
-import it.fast4x.riplay.extensions.experimental.appearancesettings.utils.fromShareString
+import it.fast4x.riplay.extensions.appearancesettings.AppearancePreferences
+import it.fast4x.riplay.extensions.appearancesettings.ui.AppearancePresetDialogHost
+import it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings
+import it.fast4x.riplay.extensions.appearancesettings.utils.fromShareString
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.themed.InputTextDialog

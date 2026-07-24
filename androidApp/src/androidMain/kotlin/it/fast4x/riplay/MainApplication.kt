@@ -20,8 +20,7 @@ import it.fast4x.riplay.extensions.appviewmodel.models.NetworkConnectivity
 import it.fast4x.riplay.extensions.appviewmodel.observeNetworkType
 import it.fast4x.riplay.utils.FileLoggingTree
 import it.fast4x.riplay.extensions.crashreporter.CrashReporter
-import it.fast4x.riplay.extensions.experimental.appearancesettings.AppearanceSettingsManager
-import it.fast4x.riplay.extensions.experimental.appsettings.AppSettingsManager
+import it.fast4x.riplay.extensions.appsettings.AppSettingsManager
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.service.RecommendationService
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.repository.UserProfileRepository
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.builders.UserProfileBuilder
@@ -69,7 +68,7 @@ class MainApplication : Application(), ImageLoaderFactory {
     }
 
     val appearanceSettingsManager by lazy {
-        AppearanceSettingsManager()
+        _root_ide_package_.it.fast4x.riplay.extensions.appearancesettings.AppearanceSettingsManager()
     }
 
     // Prepara Profile Builder

@@ -15,7 +15,6 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.IntentFilter
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.database.SQLException
@@ -48,7 +47,6 @@ import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.media.VolumeProviderCompat
 import androidx.media3.common.AudioAttributes
@@ -147,7 +145,6 @@ import it.fast4x.riplay.commonutils.setLikeState
 import it.fast4x.riplay.data.models.Format
 import it.fast4x.riplay.enums.LastFmScrobbleType
 import it.fast4x.riplay.enums.WallpaperType
-import it.fast4x.riplay.extensions.encryptedpreferences.encryptedPreferences
 import it.fast4x.riplay.extensions.lastfm.sendNowPlaying
 import it.fast4x.riplay.extensions.lastfm.sendScrobble
 import it.fast4x.riplay.extensions.players.getOnlineMetadata
@@ -187,7 +184,6 @@ import it.fast4x.riplay.utils.mediaItems
 import it.fast4x.riplay.utils.playAtIndex
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
-import it.fast4x.riplay.utils.setQueueLoopState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -223,9 +219,7 @@ import kotlin.math.sqrt
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.seconds
 import android.os.Binder as AndroidBinder
-import it.fast4x.riplay.extensions.experimental.appsettings.AppSettingsManager
-import it.fast4x.riplay.extensions.experimental.appsettings.models.AppSettings
-import kotlinx.coroutines.flow.distinctUntilChanged
+import it.fast4x.riplay.extensions.appsettings.AppSettingsManager
 import java.io.ByteArrayOutputStream
 
 

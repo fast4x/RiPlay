@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.appearancesettings.models
+package it.fast4x.riplay.extensions.appearancesettings.models
 
 sealed interface PresetEvent {
     data class Applied(val presetName: String) : PresetEvent

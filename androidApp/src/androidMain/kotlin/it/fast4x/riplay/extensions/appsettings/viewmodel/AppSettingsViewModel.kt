@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.appsettings.viewmodel
+package it.fast4x.riplay.extensions.appsettings.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -6,8 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.extensions.experimental.appsettings.AppSettingsManager
-import it.fast4x.riplay.extensions.experimental.appsettings.models.AppSettings
+import it.fast4x.riplay.extensions.appsettings.models.AppSettings
 import it.fast4x.riplay.utils.DbSettingsJson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow

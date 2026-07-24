@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.appearancesettings.ui
+package it.fast4x.riplay.extensions.appearancesettings.ui
 
 import android.content.Context
 import android.net.Uri
@@ -14,12 +14,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import it.fast4x.riplay.LocalAppearanceSettingsManager
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearancePresetDto
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.PresetEvent
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.PresetUiState
-import it.fast4x.riplay.extensions.experimental.appearancesettings.utils.toDomain
-import it.fast4x.riplay.extensions.experimental.appearancesettings.utils.toDto
-import it.fast4x.riplay.extensions.experimental.appearancesettings.viewmodels.AppearancePresetViewModel
+import it.fast4x.riplay.extensions.appearancesettings.models.AppearancePresetDto
+import it.fast4x.riplay.extensions.appearancesettings.models.PresetEvent
+import it.fast4x.riplay.extensions.appearancesettings.models.PresetUiState
+import it.fast4x.riplay.extensions.appearancesettings.utils.toDomain
+import it.fast4x.riplay.extensions.appearancesettings.utils.toDto
+import it.fast4x.riplay.extensions.appearancesettings.viewmodels.AppearancePresetViewModel
 import it.fast4x.riplay.utils.DbSettingsJson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

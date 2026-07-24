@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.appearancesettings.ui
+package it.fast4x.riplay.extensions.appearancesettings.ui
 
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedContent
@@ -40,9 +40,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.R
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearancePreset
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.PresetSource
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.PresetUiState
+import it.fast4x.riplay.extensions.appearancesettings.models.AppearancePreset
+import it.fast4x.riplay.extensions.appearancesettings.models.PresetSource
+import it.fast4x.riplay.extensions.appearancesettings.models.PresetUiState
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.getRoundnessShape
@@ -52,10 +52,10 @@ import it.fast4x.riplay.utils.typography
 @Composable
 fun AppearancePresetDialog(
     activePresetId: String?,
-    uiState: PresetUiState,
+    uiState: it.fast4x.riplay.extensions.appearancesettings.models.PresetUiState,
     onDismiss: () -> Unit,
-    onSelect: (AppearancePreset) -> Unit,
-    onShare: (AppearancePreset) -> Unit = {},
+    onSelect: (it.fast4x.riplay.extensions.appearancesettings.models.AppearancePreset) -> Unit,
+    onShare: (it.fast4x.riplay.extensions.appearancesettings.models.AppearancePreset) -> Unit = {},
     onExport: (String) -> Unit,
     onImport: () -> Unit,
     onDelete: (String) -> Unit = {}

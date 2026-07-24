@@ -1,8 +1,8 @@
-package it.fast4x.riplay.extensions.experimental.appearancesettings
+package it.fast4x.riplay.extensions.appearancesettings
 
 import android.content.Context
 import androidx.core.content.edit
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearanceSettings
+import it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.ACTION_EXPANDED
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.ACTIONS_SPACED_EVENLY
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.ACTIVE_APPEARANCE_PRESET_ID
@@ -84,7 +84,7 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.VISUALIZER_ENABLED
 class AppearancePreferences(context: Context) {
     private val prefs = context.preferences
 
-    fun applyFrom(settings: AppearanceSettings, presetId: String? = null) {
+    fun applyFrom(settings: it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings, presetId: String? = null) {
 
         prefs.edit {
             with(settings) {

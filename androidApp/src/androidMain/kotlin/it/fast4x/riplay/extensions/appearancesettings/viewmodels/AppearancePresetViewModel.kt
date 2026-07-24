@@ -1,18 +1,18 @@
-package it.fast4x.riplay.extensions.experimental.appearancesettings.viewmodels
+package it.fast4x.riplay.extensions.appearancesettings.viewmodels
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.extensions.experimental.appearancesettings.repository.AppearancePresetRepository
-import it.fast4x.riplay.extensions.experimental.appearancesettings.repository.AppearancePresetRepositoryImpl
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearancePreset
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearanceSettings
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.PresetEvent
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.PresetSource
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.PresetUiState
-import it.fast4x.riplay.extensions.experimental.appearancesettings.utils.toDomain
+import it.fast4x.riplay.extensions.appearancesettings.repository.AppearancePresetRepository
+import it.fast4x.riplay.extensions.appearancesettings.repository.AppearancePresetRepositoryImpl
+import it.fast4x.riplay.extensions.appearancesettings.models.AppearancePreset
+import it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings
+import it.fast4x.riplay.extensions.appearancesettings.models.PresetEvent
+import it.fast4x.riplay.extensions.appearancesettings.models.PresetSource
+import it.fast4x.riplay.extensions.appearancesettings.models.PresetUiState
+import it.fast4x.riplay.extensions.appearancesettings.utils.toDomain
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

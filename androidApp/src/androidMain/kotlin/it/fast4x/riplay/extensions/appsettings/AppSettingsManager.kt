@@ -1,7 +1,7 @@
-package it.fast4x.riplay.extensions.experimental.appsettings
+package it.fast4x.riplay.extensions.appsettings
 
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.extensions.experimental.appsettings.models.AppSettings
+import it.fast4x.riplay.extensions.appsettings.models.AppSettings
 import it.fast4x.riplay.utils.DbSettingsJson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

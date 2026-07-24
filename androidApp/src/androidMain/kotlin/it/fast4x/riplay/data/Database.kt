@@ -89,7 +89,7 @@ import it.fast4x.riplay.data.models.UserEraAffinity
 import it.fast4x.riplay.data.models.UserKeywordAffinity
 import it.fast4x.riplay.enums.AlbumNature
 import it.fast4x.riplay.enums.ArtistNature
-import it.fast4x.riplay.extensions.experimental.appearancesettings.models.AppearanceSettings
+import it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings
 import it.fast4x.riplay.extensions.musicbrainz.models.ExternalLink
 import it.fast4x.riplay.musicvault.MusicVaultState
 import it.fast4x.riplay.extensions.rewind.data.AlbumMostListened
@@ -4464,13 +4464,13 @@ object Converters {
         value?.let { try { AlbumNature.valueOf(it) } catch (e: IllegalArgumentException) { AlbumNature.UNKNOWN } }
 
     @TypeConverter
-    fun fromSettingsToString(settings: AppearanceSettings): String {
+    fun fromSettingsToString(settings: it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings): String {
         // Usiamo il custom serializer che ignora i default!
         return DbSettingsJson.encodeToString(settings)
     }
 
     @TypeConverter
-    fun fromStringToSettings(json: String): AppearanceSettings {
+    fun fromStringToSettings(json: String): it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings {
         // Deserializza in modo sicuro. Se il JSON è vecchio e mancante di campi,
         // usa i default di Kotlin. Zero crash.
         return DbSettingsJson.decodeFromString(json)
