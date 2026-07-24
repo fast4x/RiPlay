@@ -103,20 +103,6 @@ fun AppearancePresetDialog(
                 transitionSpec = { fadeIn() togetherWith fadeOut() },
                 modifier = Modifier.align(Alignment.TopStart).padding(top = 20.dp)
             ) { preset ->
-                if (preset?.id == activePresetId)
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceAround,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.checkmark),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(colorPalette().text),
-                            modifier = Modifier
-                                .size(24.dp)
-                        )
-                    }
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                     horizontalArrangement = Arrangement.SpaceAround,
@@ -149,6 +135,21 @@ fun AppearancePresetDialog(
                     )
 
                 }
+
+                if (preset?.id == activePresetId)
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(top = 60.dp),
+                        horizontalArrangement = Arrangement.SpaceAround,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.checkmark),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(colorPalette().text),
+                            modifier = Modifier
+                                .size(24.dp)
+                        )
+                    }
             }
             Box(
                 modifier = Modifier
@@ -236,7 +237,11 @@ fun AppearancePresetDialog(
                         animationSpec = tween(300, easing = EaseInOut)
                     )
                     val color = if (pagerStateAppearance.currentPage == iteration)
-                        Color.White else Color.White.copy(alpha = 0.5f)
+                        if(activeIndex == iteration) colorPalette().accent
+                        else Color.White else
+                            if(activeIndex == iteration) colorPalette().accent.copy(alpha = 0.5f)
+                            else Color.White.copy(alpha = 0.5f)
+
                     Box(
                         modifier = Modifier
                             .padding(4.dp)
