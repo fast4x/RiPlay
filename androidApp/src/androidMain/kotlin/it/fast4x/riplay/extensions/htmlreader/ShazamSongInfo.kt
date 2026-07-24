@@ -17,7 +17,7 @@ fun shazamSongInfo(url: String, callback: (String, String, String?) -> Unit) {
     CoroutineScope(Dispatchers.IO).launch {
         try {
             val html = fetchHtml(url)
-            saveFileToInternalStorage(appContext(), "shazam.html", html.orEmpty())
+            //saveFileToInternalStorage(appContext(), "shazam.html", html.orEmpty())
 
             if (html != null) {
                 val doc = Jsoup.parse(html)
