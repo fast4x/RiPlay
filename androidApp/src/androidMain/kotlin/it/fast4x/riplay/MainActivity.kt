@@ -156,7 +156,6 @@ import it.fast4x.riplay.utils.setDefaultPalette
 import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.extensions.databasebackup.BackupViewModel
 import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
-import it.fast4x.riplay.extensions.htmlreader.shazamSongInfoExtractor
 import it.fast4x.riplay.extensions.nsd.discoverNsdServices
 import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
 import it.fast4x.riplay.cast.ritune.models.toRiTuneDevice
@@ -193,6 +192,7 @@ import androidx.navigation.NavController
 import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.extensions.appviewmodel.AppViewModelProvider
 import it.fast4x.riplay.extensions.appsettings.AppSettingsManager
+import it.fast4x.riplay.extensions.shazam.handleShazamShare
 import it.fast4x.riplay.extensions.qrcodeanalyzer.qrCodeToAction
 import it.fast4x.riplay.extensions.musicbrainz.viewmodels.AlbumInsightsViewModel
 import it.fast4x.riplay.extensions.musicbrainz.viewmodels.ArtistInsightsViewModel
@@ -619,33 +619,6 @@ class MainActivity :
         Timber.d("MainActivity.onCreate launchedFromNotification: $launchedFromNotification intent $intent.action")
 
         intentUriData = intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri()
-
-        /*
-        with(preferences) {
-            if (getBoolean(IS_KEEP_SCREEN_ON_ENABLED.key, false)) {
-                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-            }
-
-            if (getBoolean(IS_PROXY_ENABLED.key, false)) {
-                val hostName = getString(PROXY_HOSTNAME.key, null)
-                val proxyPort = getInt(PROXY_PORT.key, 8080)
-                val proxyMode = getEnum(PROXY_MODE.key, Proxy.Type.HTTP)
-                if (isValidIP(hostName)) {
-                    hostName?.let { hName ->
-                        ProxyPreferences.preference =
-                            ProxyPreferenceItem(hName, proxyPort, proxyMode)
-                    }
-                } else {
-                    SmartMessage(
-                        "Your Proxy Hostname is invalid, please check it",
-                        PopupType.Warning,
-                        context = this@MainActivity
-                    )
-                }
-            }
-        }
-
-         */
 
         setContent {
 
@@ -1732,63 +1705,11 @@ class MainActivity :
                         navController?.let {
                             qrCodeToAction(uri.toString(), this@MainActivity, binder, it)
                         }
-                        /*
-                        val parts = uri.toString().split(":")
 
-                        if (parts.size >= 3) {
-                            val action = parts[1]
-                            val isLocal = parts[2] == LOCAL_KEY_PREFIX
-                            val mediaId = if (isLocal) parts[3] else parts[2]
-
-                            Timber.d("MainActivity LaunchedEffect intentUriData scheme riplay parts = $parts")
-                            when(action) {
-                                "play" -> {
-                                    val binder = snapshotFlow { binder }.filterNotNull().first()
-                                    val mediaItem = if (!isLocal)
-                                        Environment.song(mediaId)?.getOrNull()?.asMediaItem
-                                        else Database.songDao().getById(mediaId)?.asMediaItem
-
-                                    mediaItem?.let { media ->
-                                        withContext(Dispatchers.Main) {
-                                            if (!media.isExplicit && !preferences.getBoolean(
-                                                    PARENTAL_CONTROL_ENABLED.key,
-                                                    false
-                                                )
-                                            )
-                                                binder.player.forcePlay(media)
-                                            else
-                                                SmartMessage(
-                                                    "Parental control is enabled",
-                                                    PopupType.Warning,
-                                                    context = this@MainActivity
-                                                )
-                                        }
-                                    }
-                                }
-                                "artist" -> { navController?.navigate(route = "${NavRoutes.artist.name}/$mediaId")}
-                                "album" -> { navController?.navigate(route = "${NavRoutes.album.name}/$mediaId")}
-                                "localPlaylist" -> { navController?.navigate(route = "${NavRoutes.localPlaylist.name}/$mediaId") }
-                                "playlist" -> { navController?.navigate(route = "${NavRoutes.playlist.name}/$mediaId") }
-
-                            }
-
-                        }
-                         */
                         return@LaunchedEffect
                     }
 
-                    if (uri.host == "www.shazam.com") {
-                        uri = "${"https://"}${
-                            uri.toString().substringAfter("https://").substringBeforeLast("\"")
-                        }".toUri()
-                    }
-
                     Timber.d("MainActivity LaunchedEffect intentUriData $uri path ${uri.pathSegments.firstOrNull()} host ${uri.host}")
-                    Timber.d(
-                        "MainActivity LaunchedEffect intentUriData scheme ${"https://"}${
-                            uri.toString().substringAfter("https://").substringBeforeLast("\"")
-                        }"
-                    )
 
                     SmartMessage(
                         message = "${"RiPlay "}${getString(R.string.opening_url)}",
@@ -1840,17 +1761,14 @@ class MainActivity :
                                 }
 
                                 uri.host == "www.shazam.com" && (path == "track" || path == "song") -> {
-                                    Timber.d("MainActivity LaunchedEffect intentUriData uri.host shazam")
-                                    shazamSongInfoExtractor(
-                                        uri.toString(),
-                                        { artist, title, error ->
-                                            Timber.d("MainActivity shazamSongInfoExtractor result artist $artist title $title error $error")
-                                            if (title.isNotEmpty() || artist.isNotEmpty()) {
-                                                val query = "$title $artist"
-                                                navController?.navigate(route = "${NavRoutes.search.name}?text=$query")
-                                            }
-
-                                        })
+                                    Timber.d("MainActivity LaunchedEffect intentUriData uri.host shazam uri $uri")
+                                    handleShazamShare(uri.toString()) { artist, title, error ->
+                                        Timber.d("MainActivity handleShazamShare result artist $artist title $title error $error")
+                                        if (title.isNotEmpty() || artist.isNotEmpty()) {
+                                            val query = "$title $artist"
+                                            navController?.navigate(route = "${NavRoutes.search.name}?text=$query")
+                                        }
+                                    }
                                     null
                                 }
 
@@ -1861,7 +1779,6 @@ class MainActivity :
                                     withContext(Dispatchers.Main) {
                                         if (!song.explicit && !appSettings.parentalControlEnabled)
                                             binder.player.forcePlay(song.asMediaItem)
-                                        //fastPlay(song.asMediaItem, binder)
                                         else
                                             SmartMessage(
                                                 "Parental control is enabled",

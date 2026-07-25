@@ -1,17 +1,63 @@
-package it.fast4x.riplay.extensions.htmlreader
+package it.fast4x.riplay.extensions.shazam
 
-import it.fast4x.riplay.utils.appContext
-import it.fast4x.riplay.utils.saveFileToInternalStorage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
+import timber.log.Timber
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.util.Locale
+
+
+import java.util.regex.Pattern
+
+/**
+ * Funzione principale da chiamare quando si riceve un testo condiviso (Intent).
+ * Capisce da solo se deve estrarre i dati dal testo o se deve scaricare la pagina.
+ */
+suspend fun handleShazamShare(sharedText: String, callback: (String, String, String?) -> Unit) {
+    if (sharedText.isEmpty()) {
+        callback("", "", "Testo condiviso vuoto")
+        return
+    }
+
+    // Controllo se il testo corrisponde al formato dell'App Nativa di Shazam:
+    // "Titolo canzone di Nome Artista https://www.shazam.com/..."
+    val appSharePattern = Pattern.compile("^(.*?)\\s+di\\s+(.*?)\\s+(https?://\\S+)$", Pattern.CASE_INSENSITIVE)
+    val matcher = appSharePattern.matcher(sharedText.trim())
+
+    if (matcher.find()) {
+        val title = matcher.group(1)?.trim().orEmpty()
+        val artist = matcher.group(2)?.trim().orEmpty()
+        // val url = matcher.group(3) // Non serve, c'è già artista e titolo nel testo condiviso dall'app di shazam
+
+        if (title.isNotEmpty() && artist.isNotEmpty()) {
+            Timber.d("handleShazamShare Dati estratti direttamente dal testo condiviso - Titolo: $title, Artista: $artist")
+            withContext(Dispatchers.Main) {
+                callback(artist, title, null)
+            }
+            return // Nessuna chiamata di rete necessaria!
+        }
+    }
+
+    // Se si arriva qui, significa che è una condivisione dal browser (solo URL puro).
+    // Estraggo l'URL dal testo ed effettuo la chiamata
+    val urlRegex = Regex("https?://[\\w\\-]+(\\.[\\w\\-]+)+\\S*")
+    val url = urlRegex.find(sharedText)?.value
+
+    if (url != null) {
+        Timber.d("Condivisione da browser rilevata, avvio download HTML per URL: $url")
+        shazamSongInfo(url, callback)
+    } else {
+        withContext(Dispatchers.Main) {
+            callback("", "", "Nessun URL Shazam valido trovato nel testo")
+        }
+    }
+}
 
 fun shazamSongInfo(url: String, callback: (String, String, String?) -> Unit) {
     CoroutineScope(Dispatchers.IO).launch {
@@ -132,18 +178,17 @@ private fun fetchHtml(urlString: String): String? {
         connection.requestMethod = "GET"
         connection.connectTimeout = 10000
         connection.readTimeout = 10000
+        //connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36")
+
+        Timber.d("fetchHtml urlString: $urlString")
+        connection.connect()
 
         val inputStream: InputStream = connection.inputStream
         inputStream.bufferedReader(StandardCharsets.UTF_8).use { it.readText() }
     } catch (e: Exception) {
+        Timber.e("fetchHtml Exception: ${e.message}")
         null
     } finally {
         connection?.disconnect()
     }
-}
-
-fun shazamSongInfoExtractor(url: String, callback: (String, String, String?) -> Unit) {
-    shazamSongInfo(url, { artistResult, songTitleResult, errorMessage ->
-        callback (artistResult, songTitleResult, errorMessage)
-    })
 }
