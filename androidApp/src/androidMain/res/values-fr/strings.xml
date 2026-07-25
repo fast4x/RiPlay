@@ -1373,6 +1373,6 @@ Volume BAS : titre précédent</string>
     <string name="qrcode_export_share_print">Exporter / Partager / Imprimer</string>
     <string name="qr_code_as_png_format_2048x2048px_ideal_for_printing">QR code au format PNG, 2048 x 2048 px, idéal pour l\'impression</string>
     <string name="qr_code_frame_the_qr_code">Encadrez le QR code</string>
-    <string name="qr_code_camera_permission_denied">Camera permission denied. To scan the QR code, you need to enable the camera in your phone\'s settings.</string>
-    <string name="sync_favorites_with_ytm_account">Sync favorites with ytm account</string>
+    <string name="qr_code_camera_permission_denied">Accès à l\'appareil photo refusé. Pour scanner le QR code, vous devez activer l\'appareil photo dans les paramètres de votre téléphone.</string>
+    <string name="sync_favorites_with_ytm_account">Synchroniser les favoris avec le compte YouTube Music</string>
 </resources>
