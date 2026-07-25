@@ -97,7 +97,7 @@ class AppearancePresetRepositoryImpl(
 
 
     override fun syncRemotePresets(): Flow<Unit> = flow {
-        val url = URL("https://raw.githubusercontent.com/fast4x/RiPlay/main/themes/index.json")
+        val url = URL("https://fast4x.github.io/RiPlay/themes/index.json")
         val json = withContext(Dispatchers.IO) {
             (url.openConnection() as HttpURLConnection).apply {
                 connectTimeout = 5_000
