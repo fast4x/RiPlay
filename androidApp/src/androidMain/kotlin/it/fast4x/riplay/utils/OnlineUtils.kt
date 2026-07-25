@@ -36,7 +36,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
-import it.fast4x.environment.models.VideoOrSongInfo
+import it.fast4x.environment.models.VideoInfo
 import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.models.bodies.ContinuationBody
 import it.fast4x.environment.models.bodies.NextBody
@@ -486,7 +486,7 @@ fun ShowVideoOrSongInfo(
     if (videoId.isBlank()) return
 
     // Stato per gestire caricamento e dati
-    var info by remember { mutableStateOf<VideoOrSongInfo?>(null) }
+    var info by remember { mutableStateOf<VideoInfo?>(null) }
     var isLoading by remember { mutableStateOf(true) }
 
     LaunchedEffect(videoId) {

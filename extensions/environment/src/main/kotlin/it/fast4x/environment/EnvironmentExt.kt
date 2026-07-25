@@ -8,7 +8,7 @@ import it.fast4x.environment.models.Context
 import it.fast4x.environment.models.CreatePlaylistResponse
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.PlayerResponse
-import it.fast4x.environment.models.VideoOrSongInfo
+import it.fast4x.environment.models.VideoInfo
 import it.fast4x.environment.models.getContinuation
 import it.fast4x.environment.models.oddElements
 import it.fast4x.environment.requests.AlbumPage
@@ -538,8 +538,8 @@ object EnvironmentExt {
         songs ?: emptyList()
     }
 
-    suspend fun getVideOrSongInfo(videoId: String): Result<VideoOrSongInfo> = runCatching {
-        val response = Environment.getVideoOrSongInfo(videoId)
+    suspend fun getVideOrSongInfo(videoId: String): Result<VideoInfo> = runCatching {
+        val response = Environment.getVideoInfo(videoId)
         return response
     }.onFailure {
         println("EnvironmentExt getVideOrSongInfo error: ${it.stackTraceToString()}")

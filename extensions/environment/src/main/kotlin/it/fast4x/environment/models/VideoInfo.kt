@@ -1,6 +1,6 @@
 package it.fast4x.environment.models
 
-data class VideoOrSongInfo(
+data class VideoInfo(
     val videoId: String,
     val title: String? = null,
     val author: String? = null,
@@ -12,4 +12,5 @@ data class VideoOrSongInfo(
     val viewCount: Int? = null,
     val like: Int? = null,
     val dislike: Int? = null,
+    val rating: Double? = null,
 )

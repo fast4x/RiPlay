@@ -40,7 +40,7 @@ import it.fast4x.environment.models.ReturnYouTubeDislikeResponse
 import it.fast4x.environment.models.Runs
 import it.fast4x.environment.models.SectionListRenderer
 import it.fast4x.environment.models.Thumbnail
-import it.fast4x.environment.models.VideoOrSongInfo
+import it.fast4x.environment.models.VideoInfo
 import it.fast4x.environment.models.bodies.AccountMenuBody
 import it.fast4x.environment.models.bodies.Action
 import it.fast4x.environment.models.bodies.BrowseBody
@@ -52,7 +52,6 @@ import it.fast4x.environment.models.bodies.PlayerBody
 import it.fast4x.environment.models.bodies.PlaylistDeleteBody
 import it.fast4x.environment.models.bodies.SubscribeBody
 import it.fast4x.environment.models.responses.CachedAccountProfile
-import it.fast4x.environment.models.responses.SwitchAccountPayload
 import it.fast4x.environment.models.responses.toCachedProfiles
 import it.fast4x.environment.utils.ArtistDiscographyType
 import it.fast4x.environment.utils.EnvironmentLocale
@@ -1047,7 +1046,7 @@ object Environment {
             contentType(ContentType.Application.Json)
         }
 
-    suspend fun getVideoOrSongInfo(videoId: String): Result<VideoOrSongInfo> =
+    suspend fun getVideoInfo(videoId: String, extended: Boolean = true): Result<VideoInfo> =
         runCatching {
             val response = next(context = DefaultWeb2WithLocale, videoId, null, null, null, null, null).body<NextResponse>()
             val videoSecondary =
@@ -1066,9 +1065,11 @@ object Environment {
                     ?.find {
                         it?.videoPrimaryInfoRenderer != null
                     }?.videoPrimaryInfoRenderer
-            val returnYouTubeDislikeResponse =
+            val returnYouTubeDislikeResponse = if (extended)
                 returnYouTubeDislike(videoId).body<ReturnYouTubeDislikeResponse>()
-            return@runCatching VideoOrSongInfo(
+            else ReturnYouTubeDislikeResponse()
+
+            return@runCatching VideoInfo(
                 videoId = videoId,
                 title = videoPrimary
                     ?.title
@@ -1110,6 +1111,7 @@ object Environment {
                 viewCount = returnYouTubeDislikeResponse.viewCount,
                 like = returnYouTubeDislikeResponse.likes,
                 dislike = returnYouTubeDislikeResponse.dislikes,
+                rating = returnYouTubeDislikeResponse.rating,
             )
 
         }
