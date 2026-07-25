@@ -1,8 +1,23 @@
 package it.fast4x.riplay.musicvault
 
+import android.content.Context
+import com.chaquo.python.Python
+import com.chaquo.python.android.AndroidPlatform
 import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.utils.appContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import timber.log.Timber
+
+
+fun initializeMusicVault(coroutineScope: CoroutineScope, context: Context) {
+    coroutineScope.launch(Dispatchers.IO) {
+        if (!Python.isStarted()) {
+            Python.start(AndroidPlatform(context))
+        }
+    }
+}
 
 fun checkAndStartMusicVault(){
     val context = appContext()
@@ -10,8 +25,6 @@ fun checkAndStartMusicVault(){
     val appSettingsManager = (context as MainApplication).appSettingsManager
     val appSettings = appSettingsManager.activeSettings.value
 
-//    if (context.preferences.getBoolean(MUSIC_VAULT_ENABLED.key, false)
-//        && context.preferences.getBoolean(MUSIC_VAULT_DISCLAIMER_ACCEPTED.key, false)) {
     if (appSettings.musicVaultEnabled && appSettings.musicVaultDisclaimerAccepted) {
         val result = testAndStartChaquopy()
         Timber.d("Chaquopy $result")

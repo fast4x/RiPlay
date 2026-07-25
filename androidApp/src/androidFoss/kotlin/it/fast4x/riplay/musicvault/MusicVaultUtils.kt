@@ -6,6 +6,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.data.models.Song
+import kotlinx.coroutines.CoroutineScope
+
+fun initializeMusicVault(coroutineScope: CoroutineScope, context: Context) = null
 
 fun checkAndStartMusicVault() = null
 

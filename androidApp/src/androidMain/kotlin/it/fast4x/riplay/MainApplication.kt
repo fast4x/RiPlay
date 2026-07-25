@@ -10,8 +10,6 @@ import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
 import coil.request.CachePolicy
-import com.chaquo.python.Python
-import com.chaquo.python.android.AndroidPlatform
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.DatabaseInitializer
 import it.fast4x.riplay.enums.CoilDiskCacheMaxSize
@@ -33,6 +31,7 @@ import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategie
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.musicbrainz.workers.WorkScheduler
 import it.fast4x.riplay.extensions.musicbrainz.workers.WorkerDependencies
+import it.fast4x.riplay.musicvault.initializeMusicVault
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.utils.InitializeEnvironment
 import kotlinx.coroutines.CoroutineScope
@@ -129,11 +128,12 @@ class MainApplication : Application(), ImageLoaderFactory {
         /**** LOG *********/
 
         if (BuildConfig.FLAVOR == "full") {
-            appScopeIO.launch(Dispatchers.IO) {
-                if (!Python.isStarted()) {
-                    Python.start(AndroidPlatform(this@MainApplication))
-                }
-            }
+            initializeMusicVault(appScopeIO, this@MainApplication)
+//            appScopeIO.launch(Dispatchers.IO) {
+//                if (!Python.isStarted()) {
+//                    Python.start(AndroidPlatform(this@MainApplication))
+//                }
+//            }
         }
 
 
