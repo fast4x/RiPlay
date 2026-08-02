@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import it.fast4x.riplay.R
 import it.fast4x.riplay.utils.colorPalette
@@ -23,7 +24,7 @@ fun UpdateDialog(
     viewModel: UpdateViewModel = viewModel(),
     onClose: () -> Unit,
 ) {
-    val state by viewModel.updateState.collectAsState()
+    val state by viewModel.updateState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var showDialog by remember { mutableStateOf(true) }
 
@@ -33,6 +34,8 @@ fun UpdateDialog(
 
     when {
         state.isChecking -> {
+            // todo add better checking indicator in the future
+            /*
             AlertDialog(
                 onDismissRequest = { },
                 containerColor = colorPalette().background1,
@@ -47,7 +50,7 @@ fun UpdateDialog(
                 },
                 confirmButton = {}
             )
-
+             */
         }
 
         state.updateAvailable -> {

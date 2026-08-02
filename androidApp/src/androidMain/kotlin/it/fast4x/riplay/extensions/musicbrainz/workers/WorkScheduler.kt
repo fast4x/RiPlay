@@ -12,6 +12,7 @@ import it.fast4x.riplay.MainApplication
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 object WorkScheduler {
 
@@ -157,8 +158,9 @@ object WorkScheduler {
         // Segna come schedulato ( verrà segnato done dal Worker stesso)
         //prefs.edit { putBoolean(PreferenceKey.INITIAL_SETUP_WORKER_DONE.key, true) }
         CoroutineScope(Dispatchers.IO).launch {
+            val settings = appSettingsManager.waitForInitialization()
             appSettingsManager.updateSettings(
-                appSettingsManager.activeSettings.value.copy(
+                settings.copy(
                     initialSetupWorkerDone = true
                 )
             )

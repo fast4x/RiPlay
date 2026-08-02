@@ -7,6 +7,9 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface AppSettingsDao {
 
+    @Query("INSERT OR IGNORE INTO `app_settings` (`id`, `activePresetId`, `settingsJson`, `activeAppearanceJson`) VALUES (1, 'aura', '{}', '{}')")
+    suspend fun ensureBaselineRowExists()
+
     @Query("SELECT activePresetId FROM app_settings WHERE id = 1")
     fun getActivePreset(): Flow<String?>
 

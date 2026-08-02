@@ -197,8 +197,6 @@ data class AppSettings(
     val proxyHostname: String = "",
     val proxyPort: Int = 8080,
     val proxyMode: Proxy.Type = Proxy.Type.HTTP,
-    val loadedData: Boolean = false,
-    val appIsRunning: Boolean = false,
     val parentalControlEnabled: Boolean = false,
     val checkUpdateState: CheckUpdateState = CheckUpdateState.Enabled,
     val offlineModeEnabled: Boolean = false,
@@ -278,6 +276,7 @@ data class AppSettings(
     val statisticsCategory: StatisticsCategory = StatisticsCategory.Songs,
     val viewType: ViewType = ViewType.Grid,
     val isReorderDisabled: Boolean = false,
+    val isAndroidAutoEnabled: Boolean = true,
 
     )
 

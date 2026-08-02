@@ -632,34 +632,6 @@ class MainActivity :
 
                 Timber.d("MainActivity onCreate appSettings: $appSettings")
 
-                // Hide autostart permission dialog after showing the dialog
-                // Used in QuickPics for load data from remote instead of last saved in SharedPreferences
-                // Used for android auto to show notification to invite user launch app
-                val new = appSettings .copy(
-                    showAutostartPermissionDialog = false,
-                    loadedData = false,
-                    appIsRunning = true
-                )
-                LaunchedEffect(Unit)  { appSettingsManager.updateSettings(new) }
-
-                //preferences.edit(commit = true) { putBoolean(SHOW_AUTOSTART_PERMISSION_DIALOG.key, false) }
-
-                // Used in QuickPics for load data from remote instead of last saved in SharedPreferences
-                //preferences.edit(commit = true) { putBoolean(LOADED_DATA.key, false) }
-
-                // Used for android auto to show notification to invite user launch app
-                //preferences.edit(commit = true) { putBoolean(APP_IS_RUNNING.key, true) }
-
-//        if (!preferences.getBoolean(closeWithBackButtonKey.key, false))
-//            if (Build.VERSION.SDK_INT >= 33) {
-//                onBackInvokedDispatcher.registerOnBackInvokedCallback(
-//                    OnBackInvokedDispatcher.PRIORITY_DEFAULT
-//                ) {
-//                    //Log.d("onBackPress", "yeah")
-//                }
-//            }
-
-
                 if (appSettings.keepScreenEnabled) {
                     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 }
@@ -811,12 +783,17 @@ class MainActivity :
                     }.onFailure {
                         Timber.e("MainActivity.setContent visitorData.isEmpty() getInitialVisitorData ${it.stackTraceToString()}")
                         visitorData.value = "" //Environment._uMYwa66ycM
-//                        val new = appSettings.copy(ytVisitorData = "")
-//                        appSettingsViewModel.updateSettings(new)
                     }
 
                 LaunchedEffect(Unit, visitorData.value) {
-                    val new = appSettings.copy(ytVisitorData = visitorData.value)
+                    if (visitorData.value.isEmpty()
+                        || visitorData.value == "null"
+                        || visitorData.value == "") return@LaunchedEffect
+
+                    val settings = withContext(Dispatchers.IO) {
+                        appSettingsManager.waitForInitialization()
+                    }
+                    val new = settings.copy(ytVisitorData = visitorData.value)
                     appSettingsManager.updateSettings(new)
                 }
 
@@ -830,9 +807,6 @@ class MainActivity :
                     else {
                         Environment.cookie = ""
                         cookie.value = ""
-                        //preferences.edit { putString(YT_COOKIE.key, "") }
-//                        val new = appSettings.copy(ytCookie = "")
-//                        appSettingsViewModel.updateSettings(new)
                     }
                 }
 

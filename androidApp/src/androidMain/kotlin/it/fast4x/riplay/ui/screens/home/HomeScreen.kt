@@ -322,6 +322,7 @@ fun HomeScreen(
                 onClose = { showNewversionDialog = false },
                 onNoUpdateAvailable = {}
             )
+
     }
 
     // Exit app when user uses back

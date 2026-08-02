@@ -80,8 +80,8 @@ import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.EqualizerType
 import it.fast4x.riplay.extensions.updater.UpdateDialog
-import it.fast4x.riplay.services.playback.PlayerMediaBrowserService
 import it.fast4x.riplay.services.helpers.AudioDRCHelper
+import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
 import it.fast4x.riplay.ui.components.themed.settingsItem
@@ -191,25 +191,27 @@ fun GeneralSettings(
     val customDnsOverHttpsServer = appSettings.customDnsOverHttpsServer
     val context = LocalContext.current
 
-    var isAndroidAutoEnabled by remember {
-        val component = ComponentName(context, PlayerMediaBrowserService::class.java)
-        val disabledFlag = PackageManager.COMPONENT_ENABLED_STATE_DISABLED
-        val enabledFlag = PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+    val isAndroidAutoEnabled = appSettings.isAndroidAutoEnabled
 
-        mutableStateOf(
-            value = context.packageManager.getComponentEnabledSetting(component) == enabledFlag,
-            policy = object : SnapshotMutationPolicy<Boolean> {
-                override fun equivalent(a: Boolean, b: Boolean): Boolean {
-                    context.packageManager.setComponentEnabledSetting(
-                        component,
-                        if (b) enabledFlag else disabledFlag,
-                        PackageManager.DONT_KILL_APP
-                    )
-                    return a == b
-                }
-            }
-        )
-    }
+//    var isAndroidAutoEnabled by remember {
+//        val component = ComponentName(context, PlayerService::class.java)
+//        val disabledFlag = PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+//        val enabledFlag = PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+//
+//        mutableStateOf(
+//            value = context.packageManager.getComponentEnabledSetting(component) == enabledFlag,
+//            policy = object : SnapshotMutationPolicy<Boolean> {
+//                override fun equivalent(a: Boolean, b: Boolean): Boolean {
+//                    context.packageManager.setComponentEnabledSetting(
+//                        component,
+//                        if (b) enabledFlag else disabledFlag,
+//                        PackageManager.DONT_KILL_APP
+//                    )
+//                    return a == b
+//                }
+//            }
+//        )
+//    }
 
     val showShuffleSongsAA = appSettings.showShuffleSongsAA
     val showMonthlyPlaylistsAA = appSettings.showMonthlyPlaylistAA
@@ -1808,8 +1810,10 @@ fun GeneralSettings(
                             text = stringResource(R.string.enable_android_auto_support),
                             isChecked = isAndroidAutoEnabled,
                             onCheckedChange = {
-                                isAndroidAutoEnabled = it
-                                restartService = true
+                                coroutineScope.launch {
+                                    val new = appSettings.copy(isAndroidAutoEnabled = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
                             }
                         )
                         RestartPlayerService(restartService, onRestart = { restartService = false })

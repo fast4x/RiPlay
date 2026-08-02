@@ -16,17 +16,20 @@ class AppSettingsManager {
     private val _activeSettings = MutableStateFlow(AppSettings())
     val activeSettings: StateFlow<AppSettings> = _activeSettings.asStateFlow()
 
+    @Volatile
     private var isInitialized = false
 
     suspend fun initialize() {
         try {
+            dao.ensureBaselineRowExists()
+            Timber.d("AppSettingsManager inizializzazione AppSettings dal DB")
             val json = dao.getSettings().first()
-            if (json.isNotEmpty()) {
+            if (json != "{}") {
                 _activeSettings.value = DbSettingsJson.decodeFromString<AppSettings>(json)
             }
         } catch (e: Exception) {
             Timber.e(e, "AppSettingsManager Errore inizializzazione AppSettings dal DB, uso i default")
-            dao.updateSettings(DbSettingsJson.encodeToString(AppSettings()))
+
         } finally {
             isInitialized = true
         }
@@ -42,10 +45,29 @@ class AppSettingsManager {
         return _activeSettings.first { isInitialized }
     }
 
+
     suspend fun updateSettings(newSettings: AppSettings) {
+        val settings = DbSettingsJson.encodeToString(newSettings)
+        Timber.d("AppSettingsManager updateSettings newSettings: $settings")
         _activeSettings.value = newSettings // Aggiorna la RAM istantaneamente
-        dao.updateSettings(DbSettingsJson.encodeToString(newSettings)) // Aggiorna il DB
+        dao.updateSettings(settings) // Aggiorna il DB
     }
+
+
+//    suspend fun updateSettings(newSettings: AppSettings) {
+//        val json = DbSettingsJson.encodeToString(newSettings)
+//
+//        // LOG PARANOICO: Intercetta TUTTI i salvataggi
+//        Timber.e("BREAK!!! SALVATAGGIO INTERCETTATO !!! JSON lunghissima: $json")
+//
+//        // L'eccezione finta per avere lo stack trace CHIUDI
+//
+//        //println("BREAK!!! STACK TRACE DEL SALVATAGGIO !!!")
+//        //Exception("BREAK!!! Chi sta salvando?").printStackTrace()
+//
+//        _activeSettings.value = newSettings
+//        dao.updateSettings(json)
+//    }
 
 
 }

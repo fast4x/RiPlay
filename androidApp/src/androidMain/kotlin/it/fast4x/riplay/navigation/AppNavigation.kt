@@ -19,6 +19,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -47,6 +48,7 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.StatisticsType
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.data.models.Mood
+import it.fast4x.riplay.extensions.appsettings.models.AppSettings
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.ui.screens.player.common.Queue
 import it.fast4x.riplay.ui.screens.blacklist.BlacklistScreen
@@ -77,6 +79,8 @@ import it.fast4x.riplay.ui.screens.moodandchip.ChipListScreen
 import it.fast4x.riplay.ui.screens.onboarding.OnboardingScreen
 import it.fast4x.riplay.ui.screens.ondevice.OnDevicePlaylistScreen
 import it.fast4x.riplay.utils.MusicIdentifier
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 
@@ -275,8 +279,9 @@ fun AppNavigation(
                     appSettingsManager.updateSettings (
                         appSettings.copy(showOnboardingScreen = false)
                     )
+                    navController.navigate(route = NavRoutes.home.name)
                 }
-                navController.navigate(route = NavRoutes.home.name)
+
             }
         }
 
