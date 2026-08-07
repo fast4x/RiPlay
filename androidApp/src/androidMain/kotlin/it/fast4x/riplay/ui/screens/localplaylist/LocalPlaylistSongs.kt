@@ -234,7 +234,7 @@ fun LocalPlaylistSongs(
 
 
     val sortBy = appSettings.playlistSongsSortBy
-    val sortOrder = appSettings.songSortOrder
+    val sortOrder = appSettings.playlistSortOrder
 
     var filter: String? by rememberSaveable { mutableStateOf(null) }
 
