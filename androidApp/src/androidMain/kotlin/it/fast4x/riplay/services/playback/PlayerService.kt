@@ -237,6 +237,7 @@ import it.fast4x.riplay.utils.forcePlayAtIndex
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.debounce
 import java.io.ByteArrayOutputStream
+import kotlin.time.Duration.Companion.milliseconds
 
 const val SILENT_AUDIO_DATA_URI = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="
 
@@ -559,11 +560,14 @@ class PlayerService : MediaLibraryService(),
                 updateUnifiedNotification()
             }
 
+
             val currentMediaId = if (!song.isLocal) song.id else song.mediaId.toString()
 
-            if (lastOnlineMediaId != currentMediaId) {
-                if (onlineListenedDurationMs > 0) incrementOnlineListenedPlaytimeMs()
-                delay(200)
+            if (lastOnlineMediaId != currentMediaId && onlineListenedDurationMs > 0) {
+                Timber.d("PlayerService incrementOnlineListenedPlaytimeMs update currentSong onlineListenedDurationMs = $onlineListenedDurationMs" +
+                        " onlineMediaId = $currentMediaId currentMediaId = $currentMediaId")
+                incrementOnlineListenedPlaytimeMs()
+                delay(200.milliseconds)
                 onlineListenedDurationMs = 0L
                 lastOnlineMediaId = currentMediaId
             }
@@ -615,10 +619,15 @@ class PlayerService : MediaLibraryService(),
                 if (localMediaItem?.isLocal == false) {
                     if (_playerState.value.isPlaying) {
                         onlineListenedDurationMs += 1000
+                        if(onlineListenedDurationMs >= 20000 ) {
+                            incrementOnlineListenedPlaytimeMs()
+                            delay(200.milliseconds)
+                            onlineListenedDurationMs = 0L
+                        }
                     } else {
                         if (onlineListenedDurationMs > 0) {
                             incrementOnlineListenedPlaytimeMs()
-                            delay(200)
+                            delay(200.milliseconds)
                             onlineListenedDurationMs = 0L
                         }
                     }
