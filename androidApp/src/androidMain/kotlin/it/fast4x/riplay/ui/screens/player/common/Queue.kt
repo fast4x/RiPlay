@@ -1011,13 +1011,12 @@ fun Queue(
                     // Reorder lock
                     ActionIconButton(
                         icon = if (isReorderDisabled) R.drawable.locked else R.drawable.unlocked,
-                        active = !isReorderDisabled,
                         size = 22,
                         onClick = {
                             coroutineScope.launch {
                                 appSettingsManager.updateSettings(
                                     appSettingsManager.activeSettings.value.copy(
-                                        isReorderDisabled = !isReorderDisabled
+                                        reorderInQueueEnabled = !isReorderDisabled
                                     )
                                 )
                             }
