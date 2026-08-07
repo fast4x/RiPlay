@@ -199,26 +199,22 @@
 
         <service
             android:name=".services.playback.PlayerService"
-            android:exported="false"
-            android:foregroundServiceType="mediaPlayback"
             android:enabled="true"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback"
             android:stopWithTask="false">
 
             <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-            </intent-filter>
-
-        </service>
-
-        <service android:name=".services.playback.PlayerMediaBrowserService"
-            android:exported="true"
-            android:enabled="true"
-            tools:ignore="ExportedService">
-            <intent-filter>
+                <action android:name="androidx.media3.session.MediaSessionService" />
+                <action android:name="androidx.media3.session.MediaLibraryService" />
                 <action android:name="android.media.browse.MediaBrowserService" />
-            </intent-filter>
-        </service>
 
+                <!-- FONDAMENTALE PER GOOGLE ASSISTANT: Abilita il comando "Riproduci musica su [NomeApp]" -->
+                <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+        </service>
 
         <receiver android:name=".ui.widgets.PlayerVerticalWidgetReceiver"
             android:exported="true">

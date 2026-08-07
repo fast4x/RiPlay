@@ -32,7 +32,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -56,8 +55,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -77,7 +74,7 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
-import it.fast4x.riplay.services.playback.PlaybackState
+import it.fast4x.riplay.services.playback.common.PlaybackState
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
@@ -89,7 +86,6 @@ import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.styling.favoritesOverlay
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.PlayerViewModel
 import it.fast4x.riplay.utils.PlayerViewModelFactory
@@ -139,19 +135,19 @@ fun UnifiedMiniPlayer(
     val playerState = LocalPlayerServiceState.current
     val shouldBePlaying = playerState.isPlaying
 
-    var nullableMediaItem by remember {
-        mutableStateOf(binder.player.currentMediaItem, neverEqualPolicy())
-    }
+//    var nullableMediaItem by remember {
+//        mutableStateOf(binder.player.currentMediaItem, neverEqualPolicy())
+//    }
 
-    binder.player.DisposableListener {
-        object : Player.Listener {
-            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                nullableMediaItem = mediaItem
-            }
-        }
-    }
+//    binder.player.DisposableListener {
+//        object : Player.Listener {
+//            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+//                nullableMediaItem = mediaItem
+//            }
+//        }
+//    }
 
-    val mediaItem = nullableMediaItem ?: return
+    val mediaItem = playerState.mediaInfo?.mediaItem ?: return // nullableMediaItem ?: return
 
     var likedAt by rememberSaveable {
         mutableStateOf<Long?>(null)

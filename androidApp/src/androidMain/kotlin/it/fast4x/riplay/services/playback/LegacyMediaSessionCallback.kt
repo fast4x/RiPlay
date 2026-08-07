@@ -1,28 +1,16 @@
 package it.fast4x.riplay.services.playback
 
+
 import android.content.Intent
 import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
 import android.view.KeyEvent
-import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.SessionCommand
-import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.data.models.Song
-import it.fast4x.riplay.enums.MaxTopPlaylistItems
-import it.fast4x.riplay.extensions.preferences.PreferenceKey
-import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.utils.forcePlayAtIndex
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import timber.log.Timber
-import kotlin.collections.emptyList
 
 @UnstableApi
-class PlayerMediaSessionCallback (
+class LegacyMediaSessionCallback (
     val binder: PlayerService.Binder,
     val onPlayClick: () -> Unit,
     val onPauseClick: () -> Unit,
@@ -79,6 +67,7 @@ class PlayerMediaSessionCallback (
         binder.playFromSearch(query)
     }
 
+    /*
     @OptIn(UnstableApi::class)
     override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
         Timber.d("MediaSessionCallback onPlayFromMediaId mediaId $mediaId called")
@@ -141,6 +130,7 @@ class PlayerMediaSessionCallback (
             }
         }
     }
+    */
 
     /*
     @OptIn(UnstableApi::class)
@@ -292,3 +282,4 @@ object MediaSessionConstants {
     val CommandStartRadio = SessionCommand(ACTION_START_RADIO, Bundle.EMPTY)
     val CommandSearch = SessionCommand(ACTION_SEARCH, Bundle.EMPTY)
 }
+

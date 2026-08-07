@@ -48,6 +48,7 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.StatisticsType
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.data.models.Mood
+import it.fast4x.riplay.enums.QueueType
 import it.fast4x.riplay.extensions.appsettings.models.AppSettings
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.ui.screens.player.common.Queue
@@ -79,6 +80,7 @@ import it.fast4x.riplay.ui.screens.moodandchip.ChipListScreen
 import it.fast4x.riplay.ui.screens.onboarding.OnboardingScreen
 import it.fast4x.riplay.ui.screens.ondevice.OnDevicePlaylistScreen
 import it.fast4x.riplay.utils.MusicIdentifier
+import it.fast4x.riplay.utils.colorPalette
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -105,8 +107,8 @@ fun AppNavigation(
     val appearanceSettingsManager = LocalAppearanceSettingsManager.current
     val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
-    //val transitionEffect by rememberPreference(TRANSITION_EFFECT.key, TransitionEffect.SlideHorizontal)
     val transitionEffect = appSettings.transitionEffect
+    val queueType = appearanceSettings.queueType
 
     @Composable
     fun modalBottomSheetPage(
@@ -126,7 +128,8 @@ fun AppNavigation(
                 //if (navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED)
                     navController.popBackStack()
             },
-            containerColor = Color.Transparent,
+            containerColor = if (queueType == QueueType.Modern) colorPalette().background2.copy(alpha = 0.5f) else colorPalette().background2,
+            contentColor = if (queueType == QueueType.Modern) colorPalette().background2.copy(alpha = 0.5f) else colorPalette().background2,
             dragHandle = {
                 Surface(
                     modifier = Modifier.padding(vertical = 0.dp),
@@ -277,7 +280,7 @@ fun AppNavigation(
             OnboardingScreen{
                 coroutineScope.launch {
                     appSettingsManager.updateSettings (
-                        appSettings.copy(showOnboardingScreen = false)
+                        appSettingsManager.activeSettings.value.copy(showOnboardingScreen = false)
                     )
                     navController.navigate(route = NavRoutes.home.name)
                 }

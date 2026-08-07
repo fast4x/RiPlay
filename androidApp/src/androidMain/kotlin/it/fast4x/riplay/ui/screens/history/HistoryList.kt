@@ -178,7 +178,7 @@ fun HistoryList(
                         currentValue = historyType,
                         onValueUpdate = {
                             coroutineScope.launch {
-                                appSettingsManager.updateSettings(appSettings.copy(historyType = it))
+                                appSettingsManager.updateSettings(appSettingsManager.activeSettings.value.copy(historyType = it))
                             }
                         },
                         modifier = Modifier.padding(horizontal = 12.dp)

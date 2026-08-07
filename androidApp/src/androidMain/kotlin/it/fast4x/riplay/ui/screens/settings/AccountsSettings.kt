@@ -129,10 +129,6 @@ fun AccountsSettings() {
 
         val accountChannelHandle = appSettings.ytAccountChannelHandle
         val accountThumbnail = appSettings.ytAccountThumbnail
-        var isLoggedIn = remember(cookie) {
-            "SID" in parseCookieString(cookie) ||
-                    "LOGIN_INFO" in parseCookieString(cookie)
-        }
 
         val jsonCachedAccounts = appSettings.ytCachedAccounts
         var cachedAccounts = try {
@@ -153,16 +149,18 @@ fun AccountsSettings() {
             isChecked = isYouTubeLoginEnabled,
             onCheckedChange = {
                 coroutineScope.launch {
-                    val new = appSettings.copy(enableYtLogin = it)
+                    val new = appSettingsManager.activeSettings.value.copy(enableYtLogin = it)
                     appSettingsManager.updateSettings(new)
-                    if (!it) {
-                        val new = appSettings.copy(
-                            ytAccountName = "",
-                            ytAccountChannelHandle = "",
-                            ytAccountThumbnail = ""
-                        )
-                        appSettingsManager.updateSettings(new)
-                    }
+                    // Usiamo solo se quando l'utente disattiva vogliamo rimuovere i dati di login
+//                    if (!it) {
+//                        appSettingsManager.updateSettings(
+//                            new.copy(
+//                                ytAccountName = "",
+//                                ytAccountChannelHandle = "",
+//                                ytAccountThumbnail = ""
+//                            )
+//                        )
+//                    }
                 }
 
             }
@@ -180,7 +178,7 @@ fun AccountsSettings() {
 
                     ){
 
-                        if (isLoggedIn && accountThumbnail != "")
+                        if (isYtLoggedIn() && accountThumbnail != "")
                             AsyncImage(
                                 model = accountThumbnail,
                                 contentDescription = null,
@@ -192,16 +190,16 @@ fun AccountsSettings() {
                         Column {
                             ButtonBarSettingEntry(
                                 isEnabled = true,
-                                title = if (isLoggedIn) stringResource(R.string.disconnect) else stringResource(
+                                title = if (isYtLoggedIn()) stringResource(R.string.disconnect) else stringResource(
                                     R.string.connect
                                 ),
                                 text = stringResource(R.string.login_connect_or_disconnect_your_account),
                                 icon = R.drawable.internet,
                                 iconColor = colorPalette().text,
                                 onClick = {
-                                    if (isLoggedIn) {
+                                    if (isYtLoggedIn()) {
                                         coroutineScope.launch {
-                                            val new = appSettings.copy(
+                                            val new = appSettingsManager.activeSettings.value.copy(
                                                 ytCookie = "",
                                                 ytAccountName = "",
                                                 ytAccountChannelHandle = "",
@@ -223,7 +221,7 @@ fun AccountsSettings() {
                                 }
                             )
 
-                            if (isLoggedIn) {
+                            if (isYtLoggedIn()) {
 
                                 if (cachedAccounts.isNotEmpty())
                                     ButtonBarSettingEntry(
@@ -247,7 +245,7 @@ fun AccountsSettings() {
                                         if (accountThumbnail == "" || accountName == "" || accountEmail == "")
                                             GlobalScope.launch {
                                                 Environment.accountInfo().onSuccess {
-                                                    val new = appSettings.copy(
+                                                    val new = appSettingsManager.activeSettings.value.copy(
                                                         ytAccountName = it?.name.orEmpty(),
                                                         ytAccountEmail = it?.email.orEmpty(),
                                                         ytAccountChannelHandle =
@@ -269,7 +267,7 @@ fun AccountsSettings() {
                                     isChecked = isSyncEnabled,
                                     onCheckedChange = {
                                         coroutineScope.launch {
-                                            val new = appSettings.copy(enableYtSync = it)
+                                            val new = appSettingsManager.activeSettings.value.copy(enableYtSync = it)
                                             appSettingsManager.updateSettings(new)
                                         }
                                     }
@@ -332,7 +330,7 @@ fun AccountsSettings() {
             isChecked = isEnabledLastfm,
             onCheckedChange = {
                 coroutineScope.launch {
-                    val new = appSettings.copy(isEnabledLastFM = it)
+                    val new = appSettingsManager.activeSettings.value.copy(isEnabledLastFM = it)
                     appSettingsManager.updateSettings(new)
                 }
             },
@@ -353,7 +351,7 @@ fun AccountsSettings() {
                     onClick = {
                         if (lastFmSessionToken.isNotEmpty()) {
                             coroutineScope.launch {
-                                val new = appSettings.copy(lastFMSessionToken = "")
+                                val new = appSettingsManager.activeSettings.value.copy(lastFMSessionToken = "")
                                 appSettingsManager.updateSettings(new)
                             }
                         } else
@@ -396,7 +394,7 @@ fun AccountsSettings() {
                     selectedValue = lastfmScrobbleType,
                     onValueSelected = {
                         coroutineScope.launch {
-                            val new = appSettings.copy(lastFmScrobbleType = it)
+                            val new = appSettingsManager.activeSettings.value.copy(lastFmScrobbleType = it)
                             appSettingsManager.updateSettings(new)
                         }
                     },
@@ -426,7 +424,7 @@ fun AccountsSettings() {
             isChecked = isDiscordPresenceEnabled,
             onCheckedChange = {
                 coroutineScope.launch {
-                    val new = appSettings.copy(isDiscordPresenceEnabled = it)
+                    val new = appSettingsManager.activeSettings.value.copy(isDiscordPresenceEnabled = it)
                     appSettingsManager.updateSettings(new)
                 }
             }
@@ -447,7 +445,7 @@ fun AccountsSettings() {
                     onClick = {
                         if (discordPersonalAccessToken.isNotEmpty()) {
                             coroutineScope.launch {
-                                val new = appSettings.copy(discordPersonalAccessToken = "")
+                                val new = appSettingsManager.activeSettings.value.copy(discordPersonalAccessToken = "")
                                 appSettingsManager.updateSettings(new)
                             }
                         } else
@@ -499,7 +497,7 @@ fun AccountsSettings() {
                             //Timber.d("DiscordLoginAndGetToken DiscordPresence: token $token user $username avatar $avatar")
                             loginDiscord = false
                             coroutineScope.launch {
-                                val new = appSettings.copy(
+                                val new = appSettingsManager.activeSettings.value.copy(
                                     discordPersonalAccessToken = token,
                                     discordAccountName = username,
                                 )
@@ -529,7 +527,7 @@ fun AccountsSettings() {
             isChecked = isEnabledMusicIdentifier,
             onCheckedChange = {
                 coroutineScope.launch {
-                    val new = appSettings.copy(enableMusicIdentifier = it)
+                    val new = appSettingsManager.activeSettings.value.copy(enableMusicIdentifier = it)
                     appSettingsManager.updateSettings(new)
                 }
             },
@@ -545,7 +543,7 @@ fun AccountsSettings() {
                     selectedValue = musicIdentifierProvider,
                     onValueSelected = {
                         coroutineScope.launch {
-                            val new = appSettings.copy(musicIdentifierProvider = it)
+                            val new = appSettingsManager.activeSettings.value.copy(musicIdentifierProvider = it)
                             appSettingsManager.updateSettings(new)
                         }
                     },
@@ -571,7 +569,7 @@ fun AccountsSettings() {
                             currentText = musicIdentifierApi,
                             onTextSave = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(musicIdentifierApi = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(musicIdentifierApi = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
@@ -647,7 +645,8 @@ fun isYtLoggedIn(): Boolean {
     val appSettingsManager = (appContext() as MainApplication).appSettingsManager
     val appSettings = appSettingsManager.activeSettings.value
     val cookie = appSettings.ytCookie
-    val isLoggedIn = cookie?.let { parseCookieString(it) }?.contains("SAPISID") == true && isYtLoginEnabled()
+    Timber.d(" AccountSettings isYtLoggedIn cookie = $cookie")
+    val isLoggedIn = cookie.let { parseCookieString(it) }.contains("SAPISID") && isYtLoginEnabled()
     return isLoggedIn
 }
 

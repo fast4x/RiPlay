@@ -61,8 +61,8 @@ import it.fast4x.riplay.enums.PlayerControlsType
 import it.fast4x.riplay.enums.PlayerPlayButtonType
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
-import it.fast4x.riplay.services.playback.PlaybackState
-import it.fast4x.riplay.services.playback.PlayerState
+import it.fast4x.riplay.services.playback.common.PlaybackState
+import it.fast4x.riplay.services.playback.common.PlayerState
 import it.fast4x.riplay.ui.components.themed.CustomElevatedButton
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.PlayerCircularLoader

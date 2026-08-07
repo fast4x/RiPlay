@@ -1,8 +1,8 @@
 package it.fast4x.riplay.extensions.appearancesettings
 
 import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.extensions.appearancesettings.models.AppearancePreset
 import it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings
-
 import it.fast4x.riplay.extensions.appearancesettings.repository.AppearancePresetRepository
 import it.fast4x.riplay.extensions.appearancesettings.repository.AppearancePresetRepositoryImpl
 import it.fast4x.riplay.extensions.appearancesettings.utils.toEntity
@@ -55,16 +55,15 @@ class AppearanceSettingsManager {
 
             // L'utente ha delle personalizzazioni attive?
             val customAppearanceSettings = daoApp.getActiveAppearanceSettings().first()
-            val noCustomAppearanceSettings = customAppearanceSettings == "{}"
 
-            if (noCustomAppearanceSettings) {
-                _activeSettings.value = DbSettingsJson.decodeFromString<it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings>(customAppearanceSettings)
+            if (customAppearanceSettings != "{}" && !customAppearanceSettings.isEmpty()) {
+                _activeSettings.value = DbSettingsJson.decodeFromString<AppearanceSettings>(customAppearanceSettings)
                 Timber.d("AppearanceSettingsManager init: Successfully loaded CUSTOM settings for $id")
             } else {
                 val entity = daoAppearance.getPresetById(id)
                 if (entity != null) {
                     val settings =
-                        DbSettingsJson.decodeFromString<it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings>(entity.settingsJson)
+                        DbSettingsJson.decodeFromString<AppearanceSettings>(entity.settingsJson)
                     Timber.d("AppearanceSettingsManager init: Successfully loaded settings for $id")
                     _activeSettings.value = settings
                 } else {
@@ -77,7 +76,7 @@ class AppearanceSettingsManager {
         }
     }
 
-    suspend fun applyPreset(preset: it.fast4x.riplay.extensions.appearancesettings.models.AppearancePreset) {
+    suspend fun applyPreset(preset: AppearancePreset) {
         daoAppearance.setActivePreset(preset.id)
         _activeSettings.value = preset.settings
         _activeId.value = preset.id
@@ -88,19 +87,21 @@ class AppearanceSettingsManager {
         Timber.d("AppearanceSettingsManager applyPreset: Applied preset -> ${preset.id}")
     }
 
-    suspend fun updatePreset(settings: it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings) {
+    suspend fun updatePreset(settings: AppearanceSettings) {
         val currentId = _activeId.value
         Timber.d("AppearanceSettingsManager updatePreset: saved current preset id -> $currentId")
 
         // Sovrascrive le impostazioni di default del preset
         //daoAppearance.updatePresetSettings(currentId, DbSettingsJson.encodeToString(settings))
 
+        // Aggiorno subito la ram
+        _activeSettings.value = settings
         // Salva le impostazioni personalizzate nella tabella app_settings senza sovrascrivere il preset corrente
         daoApp.updateActiveAppearanceSettings(DbSettingsJson.encodeToString(settings))
-        _activeSettings.value = settings
+
     }
 
-    suspend fun importAndApplyPreset(preset: it.fast4x.riplay.extensions.appearancesettings.models.AppearancePreset) {
+    suspend fun importAndApplyPreset(preset: AppearancePreset) {
 
         var presetToImport = preset
 

@@ -383,13 +383,13 @@ fun UnifiedPlayer(
             onDismiss = { showBlurPlayerDialog = false },
             scaleValue = {
                 coroutineScope.launch {
-                    val new = appearanceSettings.copy(blurStrength = it)
+                    val new = appearanceSettingsManager.activeSettings.value.copy(blurStrength = it)
                     appearanceSettingsManager.updatePreset(new)
                 }
             },
             darkenFactorValue = {
                 coroutineScope.launch {
-                    val new = appearanceSettings.copy(blurDarkenFactor = it)
+                    val new = appearanceSettingsManager.activeSettings.value.copy(blurDarkenFactor = it)
                     appearanceSettingsManager.updatePreset(new)
                 }
             }
@@ -403,31 +403,31 @@ fun UnifiedPlayer(
             onDismiss = { showThumbnailOffsetDialog = false },
             spacingValue = {
                 coroutineScope.launch {
-                    val new = appearanceSettings.copy(thumbnailSpacing = it)
+                    val new = appearanceSettingsManager.activeSettings.value.copy(thumbnailSpacing = it)
                     appearanceSettingsManager.updatePreset(new)
                 }
             },
             spacingValueL = {
                 coroutineScope.launch {
-                    val new = appearanceSettings.copy(thumbnailSpacingL = it)
+                    val new = appearanceSettingsManager.activeSettings.value.copy(thumbnailSpacingL = it)
                     appearanceSettingsManager.updatePreset(new)
                 }
             },
             fadeValue = {
                 coroutineScope.launch {
-                    val new = appearanceSettings.copy(thumbnailFade = it)
+                    val new = appearanceSettingsManager.activeSettings.value.copy(thumbnailFade = it)
                     appearanceSettingsManager.updatePreset(new)
                 }
             },
             fadeValueEx = {
                 coroutineScope.launch {
-                    val new = appearanceSettings.copy(thumbnailFadeEx = it)
+                    val new = appearanceSettingsManager.activeSettings.value.copy(thumbnailFadeEx = it)
                     appearanceSettingsManager.updatePreset(new)
                 }
             },
             imageCoverSizeValue = {
                 coroutineScope.launch {
-                    val new = appearanceSettings.copy(imageCoverSize = it)
+                    val new = appearanceSettingsManager.activeSettings.value.copy(imageCoverSize = it)
                     appearanceSettingsManager.updatePreset(new)
                 }
             }
@@ -489,9 +489,9 @@ fun UnifiedPlayer(
 
     binder.player.DisposableListener {
         object : Player.Listener {
-            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                nullableMediaItem = mediaItem
-            }
+//            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+//                nullableMediaItem = mediaItem
+//            }
 
             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
                 mediaItems = timeline.mediaItems
@@ -500,7 +500,7 @@ fun UnifiedPlayer(
 
             override fun onRepeatModeChanged(repeatMode: Int) {
                 coroutineScope.launch {
-                    val new = appSettings.copy(
+                    val new = appSettingsManager.activeSettings.value.copy(
                         queueLoopType = when (repeatMode) {
                             Player.REPEAT_MODE_ONE -> QueueLoopType.RepeatOne
                             Player.REPEAT_MODE_ALL -> QueueLoopType.RepeatAll
@@ -515,7 +515,7 @@ fun UnifiedPlayer(
         }
     }
 
-    val mediaItem = nullableMediaItem ?: return
+    val mediaItem = playerState.mediaInfo?.mediaItem ?: return
 
     /*
     val requestLog = remember(mediaItem.mediaId) {
@@ -589,7 +589,7 @@ fun UnifiedPlayer(
 
     LaunchedEffect(Unit, showlyricsthumbnail) {
         if (showlyricsthumbnail) {
-            val new = appearanceSettings.copy(expandedPlayer = false)
+            val new = appearanceSettingsManager.activeSettings.value.copy(expandedPlayer = false)
             appearanceSettingsManager.updatePreset(new)
         }
     }
@@ -1317,7 +1317,7 @@ fun UnifiedPlayer(
             modifier = modifierValue,
             onBlurScaleChange = {
                 coroutineScope.launch {
-                    val new = appearanceSettings.copy(blurStrength = it)
+                    val new = appearanceSettingsManager.activeSettings.value.copy(blurStrength = it)
                     appearanceSettingsManager.updatePreset(new)
                 }
             },
@@ -1365,7 +1365,7 @@ fun UnifiedPlayer(
             onPrevious = {
                 if (jumpPrevious == "") {
                     coroutineScope.launch {
-                        val new = appearanceSettings.copy(jumpPrevious = "0")
+                        val new = appearanceSettingsManager.activeSettings.value.copy(jumpPrevious = "0")
                         appearanceSettingsManager.updatePreset(new)
                     }
                 }
@@ -1702,7 +1702,7 @@ fun UnifiedPlayer(
                                 onClick = {
                                     coroutineScope.launch {
                                         val new =
-                                            appSettings.copy(discoverIsEnabled = !discoverIsEnabled)
+                                            appSettingsManager.activeSettings.value.copy(discoverIsEnabled = !discoverIsEnabled)
                                         appSettingsManager.updateSettings(new)
                                     }
                                 },
@@ -1736,7 +1736,7 @@ fun UnifiedPlayer(
                             if (showButtonPlayerLoop) IconButton(icon = getIconQueueLoopState(queueLoopType), color = colorPalette().accent,
                                 onClick = {
                                     coroutineScope.launch {
-                                        val new = appSettings.copy(
+                                        val new = appSettingsManager.activeSettings.value.copy(
                                             queueLoopType = setQueueLoopState(queueLoopType)
                                         )
                                         appSettingsManager.updateSettings(new)
@@ -1756,7 +1756,7 @@ fun UnifiedPlayer(
                                 onClick = {
                                     coroutineScope.launch {
                                         val new =
-                                            appearanceSettings.copy(expandedPlayer = !expandedplayer)
+                                            appearanceSettingsManager.activeSettings.value.copy(expandedPlayer = !expandedplayer)
                                         appearanceSettingsManager.updatePreset(new)
                                     }
                                 },
@@ -2487,7 +2487,7 @@ fun UnifiedPlayer(
                                     onCollapse = onDismiss,
                                     onBlurScaleChange = {
                                         coroutineScope.launch {
-                                            val new = appearanceSettings.copy(blurStrength = it)
+                                            val new = appearanceSettingsManager.activeSettings.value.copy(blurStrength = it)
                                             appearanceSettingsManager.updatePreset(new)
                                         }
                                     },
@@ -2555,7 +2555,7 @@ fun UnifiedPlayer(
                                         if (jumpPrevious == "") {
                                             coroutineScope.launch {
                                                 val new =
-                                                    appearanceSettings.copy(jumpPrevious = "0")
+                                                    appearanceSettingsManager.activeSettings.value.copy(jumpPrevious = "0")
                                                 appearanceSettingsManager.updatePreset(new)
                                             }
                                         }
@@ -2792,7 +2792,7 @@ fun UnifiedPlayer(
                                             if (!showlyricsthumbnail && !showvisthumbnail) {
                                                 coroutineScope.launch {
                                                     val new =
-                                                        appearanceSettings.copy(showThumbnail = !showthumbnail)
+                                                        appearanceSettingsManager.activeSettings.value.copy(showThumbnail = !showthumbnail)
                                                     appearanceSettingsManager.updatePreset(new)
                                                 }
                                             }
@@ -2830,7 +2830,7 @@ fun UnifiedPlayer(
                                             onBlurScaleChange = {
                                                 coroutineScope.launch {
                                                     val new =
-                                                        appearanceSettings.copy(blurStrength = it)
+                                                        appearanceSettingsManager.activeSettings.value.copy(blurStrength = it)
                                                     appearanceSettingsManager.updatePreset(new)
                                                 }
                                             },
@@ -2901,7 +2901,7 @@ fun UnifiedPlayer(
                                                 if (jumpPrevious == "") {
                                                     coroutineScope.launch {
                                                         val new =
-                                                            appearanceSettings.copy(jumpPrevious = "0")
+                                                            appearanceSettingsManager.activeSettings.value.copy(jumpPrevious = "0")
                                                         appearanceSettingsManager.updatePreset(new)
                                                     }
                                                 }
@@ -3751,7 +3751,7 @@ fun UnifiedPlayer(
                                     onCollapse = onDismiss,
                                     onBlurScaleChange = {
                                         coroutineScope.launch {
-                                            val new = appearanceSettings.copy(blurStrength = it)
+                                            val new = appearanceSettingsManager.activeSettings.value.copy(blurStrength = it)
                                             appearanceSettingsManager.updatePreset(new)
                                         }
                                     },
@@ -3824,7 +3824,7 @@ fun UnifiedPlayer(
                                         if (jumpPrevious == "") {
                                             coroutineScope.launch {
                                                 val new =
-                                                    appearanceSettings.copy(jumpPrevious = "0")
+                                                    appearanceSettingsManager.activeSettings.value.copy(jumpPrevious = "0")
                                                 appearanceSettingsManager.updatePreset(new)
                                             }
                                         }
@@ -3858,8 +3858,8 @@ fun UnifiedPlayer(
         CustomModalBottomSheet(
             showSheet = showQueue,
             onDismissRequest = { showQueue = false },
-            containerColor = if (queueType == QueueType.Modern) Color.Transparent else colorPalette().background2,
-            contentColor = if (queueType == QueueType.Modern) Color.Transparent else colorPalette().background2,
+            containerColor = if (queueType == QueueType.Modern) colorPalette().background2.copy(alpha = 0.5f) else colorPalette().background2,
+            contentColor = if (queueType == QueueType.Modern) colorPalette().background2.copy(alpha = 0.5f) else colorPalette().background2,
             modifier = Modifier
                 .fillMaxWidth()
                 .conditional(queueType == QueueType.Modern) { hazeEffect(state = hazeState) },
@@ -3878,14 +3878,14 @@ fun UnifiedPlayer(
                 hidePlayer = {},
                 onDismiss = {
                     coroutineScope.launch {
-                        val new = appSettings.copy(queueLoopType = it)
+                        val new = appSettingsManager.activeSettings.value.copy(queueLoopType = it)
                         appSettingsManager.updateSettings(new)
                     }
                     showQueue = false
                 },
                 onDiscoverClick = {
                     coroutineScope.launch {
-                        val new = appSettings.copy(discoverIsEnabled = it)
+                        val new = appSettingsManager.activeSettings.value.copy(discoverIsEnabled = it)
                         appSettingsManager.updateSettings(new)
                     }
                 }

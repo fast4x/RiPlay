@@ -482,7 +482,7 @@ fun HomePage(
                                         onClick = {
                                             scope.launch {
                                                 appSettingsManager.updateSettings(
-                                                    appSettings.copy(
+                                                    appSettingsManager.activeSettings.value.copy(
                                                         playEventsType = PlayEventsType.MostPlayed
                                                     )
                                                 )
@@ -496,7 +496,7 @@ fun HomePage(
                                         onClick = {
                                             scope.launch {
                                                 appSettingsManager.updateSettings(
-                                                    appSettings.copy(
+                                                    appSettingsManager.activeSettings.value.copy(
                                                         playEventsType = PlayEventsType.LastPlayed
                                                     )
                                                 )
@@ -510,7 +510,7 @@ fun HomePage(
                                         onClick = {
                                             scope.launch {
                                                 appSettingsManager.updateSettings(
-                                                    appSettings.copy(
+                                                    appSettingsManager.activeSettings.value.copy(
                                                         playEventsType = PlayEventsType.CasualPlayed
                                                     )
                                                 )

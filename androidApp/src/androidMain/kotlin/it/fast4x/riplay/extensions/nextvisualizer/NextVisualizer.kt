@@ -186,7 +186,7 @@ fun NextVisualizer() {
                 if (currentVisualizer > 0) return@LaunchedEffect
 
                 appSettingsManager.updateSettings(
-                    appSettings.copy(currentVisualizer = 0)
+                    appSettingsManager.activeSettings.value.copy(currentVisualizer = 0)
                 )
             }
 
@@ -263,14 +263,14 @@ fun NextVisualizer() {
                                 if (currentVisualizer <= visualizersList.lastIndex) {
                                     coroutineScope.launch {
                                         appSettingsManager.updateSettings(
-                                            appSettings.copy(currentVisualizer = currentVisualizer - 1)
+                                            appSettingsManager.activeSettings.value.copy(currentVisualizer = currentVisualizer - 1)
                                         )
                                     }
                                 }
                                 if (currentVisualizer < 0) {
                                     coroutineScope.launch {
                                         appSettingsManager.updateSettings(
-                                            appSettings.copy(currentVisualizer = visualizersList.lastIndex)
+                                            appSettingsManager.activeSettings.value.copy(currentVisualizer = visualizersList.lastIndex)
                                         )
                                     }
                                 }
@@ -290,7 +290,7 @@ fun NextVisualizer() {
                             onClick = {
                                 coroutineScope.launch {
                                     appSettingsManager.updateSettings(
-                                        appSettings.copy(
+                                        appSettingsManager.activeSettings.value.copy(
                                             currentVisualizer =
                                             if (currentVisualizer < visualizersList.lastIndex) currentVisualizer + 1 else 0)
                                     )

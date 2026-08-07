@@ -33,7 +33,7 @@ import it.fast4x.riplay.enums.PlayerControlsType
 import it.fast4x.riplay.enums.PlayerInfoType
 import it.fast4x.riplay.enums.PlayerPlayButtonType
 import it.fast4x.riplay.enums.PlayerType
-import it.fast4x.riplay.services.playback.PlayerState
+import it.fast4x.riplay.services.playback.common.PlayerState
 import it.fast4x.riplay.ui.screens.player.unified.components.controls.UnifiedInfoAlbumAndArtistEssential
 import it.fast4x.riplay.ui.screens.player.unified.components.controls.UnifiedInfoAlbumAndArtistModern
 import it.fast4x.riplay.utils.applyIf

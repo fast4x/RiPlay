@@ -203,7 +203,7 @@ private fun HamburgerMenu(
                     onCheckedChange = {
                         scope.launch {
                             appSettingsManager.updateSettings(
-                                appSettings.copy(offlineModeEnabled = it)
+                                appSettingsManager.activeSettings.value.copy(offlineModeEnabled = it)
                             )
                         }
                     }

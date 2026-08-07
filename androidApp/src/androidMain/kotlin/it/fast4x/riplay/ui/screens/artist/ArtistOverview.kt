@@ -40,6 +40,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -94,6 +95,7 @@ import it.fast4x.riplay.extensions.qrcodeanalyzer.GenerateQrButton
 import it.fast4x.riplay.extensions.musicbrainz.MBMetadataHelper
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.musicbrainz.repository.ArtistRepository
+import it.fast4x.riplay.services.playback.MediaLibraryServiceCallback
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
@@ -209,6 +211,8 @@ fun ArtistOverview(
     var readMore by remember { mutableStateOf(false) }
 
     var showFastShare by remember { mutableStateOf(false) }
+
+    val coroutineScope = rememberCoroutineScope()
 
     LoaderScreen(show = artistPage == null)
 
@@ -552,9 +556,25 @@ fun ArtistOverview(
                                     val bookmarkedAt =
                                         if (artist?.bookmarkedAt == null) System.currentTimeMillis() else null
 
-                                    Database.asyncTransaction {
-                                        artist?.copy(bookmarkedAt = bookmarkedAt)
-                                            ?.let(::update)
+                                    coroutineScope.launch(Dispatchers.Main) {
+                                        withContext(Dispatchers.IO) {
+                                            artist?.let {
+                                                Database.artistDao()
+                                                    .upsert(it.copy(bookmarkedAt = bookmarkedAt))
+                                            }
+                                        }
+
+
+                                        binder?.notifyAutoChildrenChanged(
+                                            MediaLibraryServiceCallback.MediaId.ARTISTS_IN_LIBRARY
+                                        )
+                                        binder?.notifyAutoChildrenChanged(
+                                            MediaLibraryServiceCallback.MediaId.ARTISTS_ONDEVICE
+                                        )
+                                        binder?.notifyAutoChildrenChanged(
+                                            MediaLibraryServiceCallback.MediaId.ARTISTS_FAVORITES
+                                        )
+
                                     }
 
                                     if (bookmarkedAt != null) // Aggiorna discografia

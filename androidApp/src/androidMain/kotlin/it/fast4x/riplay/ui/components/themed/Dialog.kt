@@ -1185,7 +1185,7 @@ fun BlurParamsDialog(
             IconButton(
                 onClick = {
                     coroutineScope.launch {
-                        val new = appearanceSettings.copy(blurStrength = defaultStrength)
+                        val new = appearanceSettingsManager.activeSettings.value.copy(blurStrength = defaultStrength)
                         appearanceSettingsManager.updatePreset(new)
                     }
                 },
@@ -1199,7 +1199,7 @@ fun BlurParamsDialog(
                 state = blurStrength,
                 onSlide = {
                     coroutineScope.launch {
-                        val new = appearanceSettings.copy(blurStrength = it)
+                        val new = appearanceSettingsManager.activeSettings.value.copy(blurStrength = it)
                         appearanceSettingsManager.updatePreset(new)
                     }
                 },
@@ -1311,7 +1311,7 @@ fun BlurParamsDialog(
                         onClick = {
                             coroutineScope.launch {
                                 val new =
-                                    appearanceSettings.copy(imageCoverSize = defaultImageCoverSize)
+                                    appearanceSettingsManager.activeSettings.value.copy(imageCoverSize = defaultImageCoverSize)
                                 appearanceSettingsManager.updatePreset(new)
                             }
                         },
@@ -1325,7 +1325,7 @@ fun BlurParamsDialog(
                         state = imageCoverSize,
                         onSlide = {
                             coroutineScope.launch {
-                                val new = appearanceSettings.copy(imageCoverSize = it)
+                                val new = appearanceSettingsManager.activeSettings.value.copy(imageCoverSize = it)
                                 appearanceSettingsManager.updatePreset(new)
                             }
                         },
@@ -1350,7 +1350,7 @@ fun BlurParamsDialog(
                         IconButton(
                             onClick = {
                                 coroutineScope.launch {
-                                    val new = appearanceSettings.copy(thumbnailFadeEx = defaultFade)
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(thumbnailFadeEx = defaultFade)
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             },
@@ -1364,7 +1364,7 @@ fun BlurParamsDialog(
                             state = thumbnailFadeEx,
                             onSlide = {
                                 coroutineScope.launch {
-                                    val new = appearanceSettings.copy(thumbnailFadeEx = it)
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(thumbnailFadeEx = it)
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             },
@@ -3024,6 +3024,9 @@ fun CachedAccountsSelectorDialog(
     onValueSelected: (CachedAccountProfile) -> Unit,
     valueText: @Composable (CachedAccountProfile) -> String = { it.toString() }
 ){
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             modifier = modifier,
@@ -3065,14 +3068,14 @@ fun CachedAccountsSelectorDialog(
                         .verticalScroll(rememberScrollState())
                 ) {
                     cachedAccounts.forEach { account ->
-                        val isSelected = account.isSelected
+                        val isSelected = account.name == appSettings.ytAccountName //account.isSelected
 
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .selectable(
-                                    selected = isSelected == true,
+                                    selected = isSelected,
                                     onClick = {
                                         onValueSelected(account)
                                         onDismiss()
@@ -3083,7 +3086,7 @@ fun CachedAccountsSelectorDialog(
                         ) {
 
                             RadioButton(
-                                selected = isSelected == true,
+                                selected = isSelected,
                                 onClick = null,
                                 colors = RadioButtonDefaults.colors(
                                     selectedColor = colorPalette().accent,
@@ -3105,7 +3108,7 @@ fun CachedAccountsSelectorDialog(
                             Text(
                                 text = account.name.toString(),
                                 style = typography().xs.medium.merge(
-                                    TextStyle(color = if (isSelected == true) colorPalette().accent else colorPalette().text)
+                                    TextStyle(color = if (isSelected) colorPalette().accent else colorPalette().text)
                                 )
                             )
                         }

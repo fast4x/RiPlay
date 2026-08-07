@@ -1,5 +1,6 @@
-package it.fast4x.riplay.services.playback
+package it.fast4x.riplay.services.playback.deprecated
 
+/*
 import android.content.ComponentName
 import android.content.ContentResolver
 import android.content.Context
@@ -1317,6 +1318,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
         notifyChildrenChanged(MediaId.PLAYLISTS)
     }
 
+    /*
     object MediaId {
         const val FAULT = "fault"
         const val ROOT = "root"
@@ -1354,6 +1356,7 @@ class PlayerMediaBrowserService : MediaBrowserServiceCompat(),
 
         fun forSearched(id: String) = "$SEARCHED/$id"
     }
+    */
 }
 
 private const val MEDIA_SEARCH_SUPPORTED = "android.media.browse.SEARCH_SUPPORTED"
@@ -1362,3 +1365,6 @@ private const val CONTENT_STYLE_PLAYABLE_HINT = "android.media.browse.CONTENT_ST
 private const val CONTENT_STYLE_SUPPORTED = "android.media.browse.CONTENT_STYLE_SUPPORTED"
 private const val CONTENT_STYLE_LIST = 1
 private const val CONTENT_STYLE_GRID = 2
+
+
+ */

@@ -1228,7 +1228,7 @@ fun LocalPlaylistSongs(
                                     onSmartRecommendationClick = {
                                         coroutineScope.launch {
                                             appSettingsManager.updateSettings(
-                                                appSettings.copy(
+                                                appSettingsManager.activeSettings.value.copy(
                                                     isRecommendationEnabled = !appSettings.isRecommendationEnabled
                                                 )
                                             )
@@ -1303,13 +1303,13 @@ fun LocalPlaylistSongs(
                                     //if (sortBy == PlaylistSongSortBy.Position && sortOrder == SortOrder.Ascending) {
                                     coroutineScope.launch {
                                         appSettingsManager.updateSettings(
-                                            appSettings.copy(
+                                            appSettingsManager.activeSettings.value.copy(
                                                 isReorderDisabled = !isReorderDisabled,
                                             )
                                         )
                                         if (!isReorderDisabled) {
                                             appSettingsManager.updateSettings(
-                                                appSettings.copy(
+                                                appSettingsManager.activeSettings.value.copy(
                                                     playlistSongsSortBy = PlaylistSongSortBy.Position,
                                                     playlistSortOrder = SortOrder.Ascending
                                                 )
@@ -1326,33 +1326,7 @@ fun LocalPlaylistSongs(
                                 }
                             )
 
-//                        HeaderIconButton(
-//                            icon = R.drawable.downloaded,
-//                            enabled = playlistSongs.any { it.song.likedAt != -1L },
-//                            color = if (playlistSongs.any { it.song.likedAt != -1L }) colorPalette.text else colorPalette.textDisabled,
-//                            onClick = {},
-//                            modifier = Modifier
-//                                .combinedClickable(
-//                                    onClick = {
-//                                        if (playlistSongs.any { it.song.likedAt != -1L }) {
-//                                            showConfirmDownloadAllDialog = true
-//                                        } else {
-//                                            SmartMessage(
-//                                                context.resources.getString(R.string.disliked_this_collection),
-//                                                type = PopupType.Error,
-//                                                context = context
-//                                            )
-//                                        }
-//                                    },
-//                                    onLongClick = {
-//                                        SmartMessage(
-//                                            context.resources.getString(R.string.info_download_all_songs),
-//                                            context = context
-//                                        )
-//                                    }
-//                                )
-//                        )
-
+//
 
                             if (showConfirmMatchAllDialog) {
                                 ConfirmationDialog(
@@ -1365,25 +1339,6 @@ fun LocalPlaylistSongs(
                                     }
                                 )
                             }
-
-//                        HeaderIconButton(
-//                            icon = R.drawable.download,
-//                            enabled = playlistSongs.isNotEmpty(),
-//                            color = if (playlistSongs.isNotEmpty()) colorPalette.text else colorPalette.textDisabled,
-//                            onClick = {},
-//                            modifier = Modifier
-//                                .combinedClickable(
-//                                    onClick = {
-//                                        showConfirmDeleteDownloadDialog = true
-//                                    },
-//                                    onLongClick = {
-//                                        SmartMessage(
-//                                            context.resources.getString(R.string.info_remove_all_downloaded_songs),
-//                                            context = context
-//                                        )
-//                                    }
-//                                )
-//                        )
 
 
                             if ((playlistPreview?.playlist?.isYoutubePlaylist) == false && unmatchedSongsCount>0) {
@@ -1816,7 +1771,7 @@ fun LocalPlaylistSongs(
                                 onClick = {
                                     coroutineScope.launch {
                                         appSettingsManager.updateSettings(
-                                            appSettings.copy(
+                                            appSettingsManager.activeSettings.value.copy(
                                                 playlistSortOrder = !sortOrder,
                                                 isReorderDisabled = !(sortBy == PlaylistSongSortBy.Position && sortOrder == SortOrder.Ascending)
                                             )
@@ -1859,7 +1814,7 @@ fun LocalPlaylistSongs(
                                                 onTitle = {
                                                     coroutineScope.launch {
                                                         appSettingsManager.updateSettings(
-                                                            appSettings.copy(
+                                                            appSettingsManager.activeSettings.value.copy(
                                                                 playlistSongsSortBy = PlaylistSongSortBy.Title,
                                                                 isReorderDisabled = true
                                                             )

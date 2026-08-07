@@ -179,7 +179,7 @@ fun MultiFloatingActionsButton (
                                 change.consume()
                                 scope.launch {
                                     appSettingsManager.updateSettings(
-                                        appSettings.copy(
+                                        appSettingsManager.activeSettings.value.copy(
                                             multiFloatActionIconOffsetX = offsetX + dragAmount.x,
                                             multiFloatActionIconOffsetY = offsetY + dragAmount.y
                                         )

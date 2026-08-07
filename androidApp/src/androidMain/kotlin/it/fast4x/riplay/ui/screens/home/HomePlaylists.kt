@@ -356,7 +356,7 @@ fun HomePlaylists(
             onValueSelected = {
                 coroutineScope.launch {
                     appSettingsManager.updateSettings(
-                        appSettings.copy(importPlaylistType = ImportPlaylistType.entries[it.ordinal])
+                        appSettingsManager.activeSettings.value.copy(importPlaylistType = ImportPlaylistType.entries[it.ordinal])
                     )
                 }
                 when(importType) {
@@ -389,7 +389,7 @@ fun HomePlaylists(
         onClick = {
             coroutineScope.launch {
                 appSettingsManager.updateSettings(
-                    appSettings.copy(shortOnDeviceFolderName = !shortOnDeviceFolderName)
+                    appSettingsManager.activeSettings.value.copy(shortOnDeviceFolderName = !shortOnDeviceFolderName)
                 )
             }
         }
@@ -427,7 +427,7 @@ fun HomePlaylists(
     LaunchedEffect(isNetworkConnected) {
         if (!isNetworkConnected && playlistType !in listOf(PlaylistType.OnDevicePlaylist))
             appSettingsManager.updateSettings(
-                appSettings.copy(playlistType = PlaylistType.OnDevicePlaylist)
+                appSettingsManager.activeSettings.value.copy(playlistType = PlaylistType.OnDevicePlaylist)
             )
     }
 
@@ -503,7 +503,7 @@ fun HomePlaylists(
             onValueSelected = {
                 coroutineScope.launch {
                     appSettingsManager.updateSettings(
-                        appSettings.copy(playlistSortBy = PlaylistSortBy.entries[it.ordinal])
+                        appSettingsManager.activeSettings.value.copy(playlistSortBy = PlaylistSortBy.entries[it.ordinal])
                     )
                 }
             },
@@ -546,7 +546,7 @@ fun HomePlaylists(
                             onValueUpdate = {
                                 coroutineScope.launch {
                                     appSettingsManager.updateSettings(
-                                        appSettings.copy(playlistType = it)
+                                        appSettingsManager.activeSettings.value.copy(playlistType = it)
                                     )
                                 }
                             },
@@ -613,7 +613,7 @@ fun HomePlaylists(
                                 if (isSortExpanded) {
                                     coroutineScope.launch {
                                         appSettingsManager.updateSettings(
-                                            appSettings.copy(playlistSortOrder = !sortOrder)
+                                            appSettingsManager.activeSettings.value.copy(playlistSortOrder = !sortOrder)
                                         )
                                     }
                                 } else {

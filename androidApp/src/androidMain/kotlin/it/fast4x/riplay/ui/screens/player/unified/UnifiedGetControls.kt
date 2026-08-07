@@ -16,12 +16,14 @@ import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.enums.PlayerControlsType
-import it.fast4x.riplay.services.playback.PlayerState
+import it.fast4x.riplay.services.playback.common.PlayerState
 import it.fast4x.riplay.ui.components.themed.PlaybackParamsDialog
 import it.fast4x.riplay.ui.screens.player.unified.components.controls.UnifiedControlsEssential
 import it.fast4x.riplay.ui.screens.player.unified.components.controls.UnifiedControlsModern
 import kotlinx.coroutines.launch
+import kotlinx.serialization.ExperimentalSerializationApi
 
+@OptIn(ExperimentalSerializationApi::class)
 @UnstableApi
 @Composable
 fun UnifiedGetControls(
@@ -57,7 +59,7 @@ fun UnifiedGetControls(
             speedValue = {
                 scope.launch {
                     appSettingsManager.updateSettings(
-                        appSettings.copy(
+                        appSettingsManager.activeSettings.value.copy(
                             playbackSpeed = it
                         )
                     )

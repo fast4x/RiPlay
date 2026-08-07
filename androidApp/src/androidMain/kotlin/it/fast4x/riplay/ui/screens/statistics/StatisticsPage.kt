@@ -240,7 +240,7 @@ fun StatisticsPage(
                     onValueUpdate = {
                         scope.launch {
                             appSettingsManager.updateSettings(
-                                appSettings.copy(
+                                appSettingsManager.activeSettings.value.copy(
                                     statisticsCategory = it
                                 )
                             )

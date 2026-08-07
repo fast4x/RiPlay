@@ -201,7 +201,7 @@ fun DataSettings() {
                 selectedValue = coilDiskCacheMaxSize,
                 onValueSelected = {
                     coroutineScope.launch {
-                        val new = appSettings.copy(
+                        val new = appSettingsManager.activeSettings.value.copy(
                             coilDiskCacheMaxSize = it
                         )
                         appSettingsManager.updateSettings(new)
@@ -239,7 +239,7 @@ fun DataSettings() {
                     setValue = {
                         //Log.d("customCache", it)
                         coroutineScope.launch {
-                            val new = appSettings.copy(
+                            val new = appSettingsManager.activeSettings.value.copy(
                                 coilCustomDiskCache = it.toInt()
                             )
                             appSettingsManager.updateSettings(new)

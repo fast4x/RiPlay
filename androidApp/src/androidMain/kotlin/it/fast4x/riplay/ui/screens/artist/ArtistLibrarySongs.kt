@@ -118,55 +118,55 @@ fun ArtistLibrarySongs(
             onDismiss = menuState::hide,
             onTitle = {
                 scope.launch {
-                    val new = appSettings.copy(songSortBy = SongSortBy.Title)
+                    val new = appSettingsManager.activeSettings.value.copy(songSortBy = SongSortBy.Title)
                     appSettingsManager.updateSettings(new)
                 }
             },
             onDatePlayed = {
                 scope.launch {
-                    val new = appSettings.copy(songSortBy = SongSortBy.DatePlayed)
+                    val new = appSettingsManager.activeSettings.value.copy(songSortBy = SongSortBy.DatePlayed)
                     appSettingsManager.updateSettings(new)
                 }
             },
             onDateAdded = {
                 scope.launch {
-                    val new = appSettings.copy(songSortBy = SongSortBy.DateAdded)
+                    val new = appSettingsManager.activeSettings.value.copy(songSortBy = SongSortBy.DateAdded)
                     appSettingsManager.updateSettings(new)
                 }
             },
             onPlayTime = {
                 scope.launch {
-                    val new = appSettings.copy(songSortBy = SongSortBy.PlayTime)
+                    val new = appSettingsManager.activeSettings.value.copy(songSortBy = SongSortBy.PlayTime)
                     appSettingsManager.updateSettings(new)
                 }
             },
             onRelativePlayTime = {
                 scope.launch {
-                    val new = appSettings.copy(songSortBy = SongSortBy.RelativePlayTime)
+                    val new = appSettingsManager.activeSettings.value.copy(songSortBy = SongSortBy.RelativePlayTime)
                     appSettingsManager.updateSettings(new)
                 }
             },
             onDateLiked = {
                 scope.launch {
-                    val new = appSettings.copy(songSortBy = SongSortBy.DateLiked)
+                    val new = appSettingsManager.activeSettings.value.copy(songSortBy = SongSortBy.DateLiked)
                     appSettingsManager.updateSettings(new)
                 }
             },
             onArtist = {
                 scope.launch {
-                    val new = appSettings.copy(songSortBy = SongSortBy.Artist)
+                    val new = appSettingsManager.activeSettings.value.copy(songSortBy = SongSortBy.Artist)
                     appSettingsManager.updateSettings(new)
                 }
             },
             onAlbum = {
                 scope.launch {
-                    val new = appSettings.copy(songSortBy = SongSortBy.AlbumName)
+                    val new = appSettingsManager.activeSettings.value.copy(songSortBy = SongSortBy.AlbumName)
                     appSettingsManager.updateSettings(new)
                 }
             },
             onDuration = {
                 scope.launch {
-                    val new = appSettings.copy(songSortBy = SongSortBy.Duration)
+                    val new = appSettingsManager.activeSettings.value.copy(songSortBy = SongSortBy.Duration)
                     appSettingsManager.updateSettings(new)
                 }
             }
@@ -226,7 +226,7 @@ fun ArtistLibrarySongs(
                                 onClick = {
                                     scope.launch {
                                         appSettingsManager.updateSettings(
-                                            appSettings.copy(songSortOrder = !sortOrder)
+                                            appSettingsManager.activeSettings.value.copy(songSortOrder = !sortOrder)
                                         )
                                     }
                                 },

@@ -620,6 +620,7 @@ object Environment {
     }.onFailure {
         println("Environment Error in getAccountListWithPageId(): ${it.stackTraceToString()}")
     }
+
     suspend fun getAccountsList(): Result<List<CachedAccountProfile>> = runCatching {
             val res = getAccountSwitcherEndpoint()
                     .bodyAsText()

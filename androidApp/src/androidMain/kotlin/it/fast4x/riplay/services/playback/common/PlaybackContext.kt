@@ -1,4 +1,4 @@
-package it.fast4x.riplay.services.playback
+package it.fast4x.riplay.services.playback.common
 
 import it.fast4x.riplay.enums.PlaybackOrigin
 import kotlinx.coroutines.flow.MutableStateFlow

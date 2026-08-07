@@ -1,4 +1,4 @@
-package it.fast4x.riplay.services.playback
+package it.fast4x.riplay.services.playback.common
 
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.util.UnstableApi
@@ -7,10 +7,6 @@ import androidx.media3.common.util.UnstableApi
 class PlayableFormatNotFoundException : PlaybackException(null, null, ERROR_CODE_REMOTE_ERROR)
 @UnstableApi
 class UnplayableException : PlaybackException(null, null, ERROR_CODE_REMOTE_ERROR)
-@UnstableApi
-class InterruptedException : PlaybackException(null, null, ERROR_CODE_REMOTE_ERROR)
-@UnstableApi
-class StreamExpiredException : PlaybackException(null, null, ERROR_CODE_REMOTE_ERROR)
 @UnstableApi
 class LoginRequiredException : PlaybackException(null, null, ERROR_CODE_REMOTE_ERROR)
 @UnstableApi
@@ -23,8 +19,4 @@ class NoInternetException : PlaybackException(null, null, ERROR_CODE_IO_NETWORK_
 class TimeoutException : PlaybackException(null, null, ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT)
 @UnstableApi
 class UnknownException : PlaybackException(null, null, ERROR_CODE_REMOTE_ERROR)
-@UnstableApi
-class FakeException : PlaybackException(null, null, ERROR_CODE_IO_NETWORK_CONNECTION_FAILED)
-@UnstableApi
-class AccessDeniedToPlayableFormatException : PlaybackException(null, null, ERROR_CODE_REMOTE_ERROR)
 

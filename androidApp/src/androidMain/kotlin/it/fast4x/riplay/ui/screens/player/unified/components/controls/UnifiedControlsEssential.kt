@@ -70,8 +70,8 @@ import it.fast4x.riplay.enums.PlayerPlayButtonType
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
-import it.fast4x.riplay.services.playback.PlaybackState
-import it.fast4x.riplay.services.playback.PlayerState
+import it.fast4x.riplay.services.playback.common.PlaybackState
+import it.fast4x.riplay.services.playback.common.PlayerState
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.PlayerCircularLoader
 import it.fast4x.riplay.ui.components.themed.SelectorArtistsDialog
@@ -445,7 +445,7 @@ fun UnifiedControlsEssential(
             override fun onRepeatModeChanged(repeatMode: Int) {
                 coroutineScope.launch {
                     appSettingsManager.updateSettings(
-                        appSettings.copy(
+                        appSettingsManager.activeSettings.value.copy(
                             queueLoopType = when (repeatMode) {
                                 Player.REPEAT_MODE_ONE -> QueueLoopType.RepeatOne
                                 Player.REPEAT_MODE_ALL -> QueueLoopType.RepeatAll
@@ -665,7 +665,7 @@ fun UnifiedControlsEssential(
         color = colorPalette().text,
         onClick = {
             coroutineScope.launch {
-                val new = appSettings.copy(queueLoopType = setQueueLoopState(queueLoopType))
+                val new = appSettingsManager.activeSettings.value.copy(queueLoopType = setQueueLoopState(queueLoopType))
                 appSettingsManager.updateSettings(new)
             }
         },

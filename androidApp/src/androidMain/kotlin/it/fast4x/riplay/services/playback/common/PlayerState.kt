@@ -1,4 +1,4 @@
-package it.fast4x.riplay.services.playback
+package it.fast4x.riplay.services.playback.common
 
 import androidx.media3.common.MediaItem
 import it.fast4x.riplay.enums.QueueLoopType

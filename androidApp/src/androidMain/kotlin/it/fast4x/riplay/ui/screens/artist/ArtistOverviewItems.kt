@@ -574,7 +574,7 @@ fun ArtistOverviewItems(
                                 onClick = {
                                     coroutineScope.launch {
                                         appSettingsManager.updateSettings(
-                                            appSettings.copy(songSortOrder = !sortOrder)
+                                            appSettingsManager.activeSettings.value.copy(songSortOrder = !sortOrder)
                                         )
                                     }
                                 },

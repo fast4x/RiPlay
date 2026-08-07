@@ -268,7 +268,7 @@ fun HomeArtists(
             onValueSelected = {
                 coroutineScope.launch {
                     appSettingsManager.updateSettings(
-                        appSettings.copy(artistSortBy = ArtistSortBy.entries[it.ordinal])
+                        appSettingsManager.activeSettings.value.copy(artistSortBy = ArtistSortBy.entries[it.ordinal])
                     )
                 }
             },
@@ -317,7 +317,7 @@ fun HomeArtists(
                             onValueUpdate = {
                                 coroutineScope.launch {
                                     appSettingsManager.updateSettings(
-                                        appSettings.copy(artistType = it)
+                                        appSettingsManager.activeSettings.value.copy(artistType = it)
                                     )
                                 }
                             },
@@ -385,7 +385,7 @@ fun HomeArtists(
                                 if (isSortExpanded) {
                                     coroutineScope.launch {
                                         appSettingsManager.updateSettings(
-                                            appSettings.copy(artistSortOrder = !sortOrder)
+                                            appSettingsManager.activeSettings.value.copy(artistSortOrder = !sortOrder)
 
                                         )
                                     }

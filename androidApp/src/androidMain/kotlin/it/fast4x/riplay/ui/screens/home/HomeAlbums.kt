@@ -273,7 +273,7 @@ fun HomeAlbums(
             onValueSelected = {
                 coroutineScope.launch {
                     appSettingsManager.updateSettings(
-                        appSettings.copy(albumSortBy = AlbumSortBy.entries[it.ordinal])
+                        appSettingsManager.activeSettings.value.copy(albumSortBy = AlbumSortBy.entries[it.ordinal])
                     )
                 }
             },
@@ -316,7 +316,7 @@ fun HomeAlbums(
                             onValueUpdate = {
                                 coroutineScope.launch {
                                     appSettingsManager.updateSettings(
-                                    appSettings.copy(albumType = it)
+                                        appSettingsManager.activeSettings.value.copy(albumType = it)
                                     )
 
                                 }
@@ -384,7 +384,7 @@ fun HomeAlbums(
                                 if (isSortExpanded) {
                                     coroutineScope.launch {
                                         appSettingsManager.updateSettings(
-                                            appSettings.copy(albumSortOrder = !sortOrder)
+                                            appSettingsManager.activeSettings.value.copy(albumSortOrder = !sortOrder)
                                         )
                                     }
                                 } else {

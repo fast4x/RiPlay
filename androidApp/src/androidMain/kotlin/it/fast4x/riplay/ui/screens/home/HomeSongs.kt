@@ -568,7 +568,7 @@ fun HomeSongs(
                         onValueSelected = {
                             coroutineScope.launch {
                                 appSettingsManager.updateSettings(
-                                    appSettings.copy(
+                                    appSettingsManager.activeSettings.value.copy(
                                         onDeviceSongSortBy = OnDeviceSongSortBy.entries[it.ordinal]
                                     )
                                 )
@@ -585,7 +585,7 @@ fun HomeSongs(
                         onValueSelected = {
                             coroutineScope.launch {
                                 appSettingsManager.updateSettings(
-                                    appSettings.copy(
+                                    appSettingsManager.activeSettings.value.copy(
                                         onDeviceFolderSortBy = OnDeviceFolderSortBy.entries[it.ordinal]
                                     )
                                 )
@@ -603,7 +603,7 @@ fun HomeSongs(
                     onValueSelected = {
                         coroutineScope.launch {
                             appSettingsManager.updateSettings(
-                                appSettings.copy(
+                                appSettingsManager.activeSettings.value.copy(
                                     songSortBy = SongSortBy.entries[it.ordinal]
                                 )
                             )
@@ -665,7 +665,7 @@ fun HomeSongs(
                                 onValueUpdate = {
                                     coroutineScope.launch {
                                         appSettingsManager.updateSettings(
-                                            appSettings.copy(
+                                            appSettingsManager.activeSettings.value.copy(
                                                 builtInPlaylist = it
                                             )
                                         )
@@ -736,9 +736,9 @@ fun HomeSongs(
                                             coroutineScope.launch {
                                                 appSettingsManager.updateSettings(
                                                     if (builtInPlaylist != BuiltInPlaylist.OnDevice)
-                                                    appSettings.copy(songSortOrder = !sortOrder)
+                                                        appSettingsManager.activeSettings.value.copy(songSortOrder = !sortOrder)
                                                 else
-                                                    appSettings.copy(songSortOrder = !sortOrderOnDevice)
+                                                        appSettingsManager.activeSettings.value.copy(songSortOrder = !sortOrderOnDevice)
                                                 )
                                             }
                                         } else {
@@ -770,7 +770,7 @@ fun HomeSongs(
                                         PeriodMenu(onDismiss = {
                                             coroutineScope.launch {
                                                 appSettingsManager.updateSettings(
-                                                    appSettings.copy(
+                                                    appSettingsManager.activeSettings.value.copy(
                                                         topPlaylistPeriod = it
                                                     )
                                                 )
@@ -875,7 +875,7 @@ fun HomeSongs(
                                 onClick = {
                                     coroutineScope.launch {
                                         appSettingsManager.updateSettings(
-                                            appSettings.copy(
+                                            appSettingsManager.activeSettings.value.copy(
                                                 autoShuffle = !autoShuffle
                                             )
                                         )
@@ -901,7 +901,7 @@ fun HomeSongs(
                                 onClick = {
                                     coroutineScope.launch {
                                         appSettingsManager.updateSettings(
-                                            appSettings.copy(
+                                            appSettingsManager.activeSettings.value.copy(
                                                 showFoldersOnDevice = !showFolders
                                             )
                                         )

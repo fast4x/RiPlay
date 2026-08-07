@@ -42,6 +42,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
 
@@ -100,9 +101,9 @@ class MainApplication : Application(), ImageLoaderFactory {
         )
 
         Dependencies.init(this)
-        runBlocking {
-            // Inizializza le impostazioni di app ed aspetto, in attesa che il db venga inizializzato in onCreate
-            // uso runBlocking perchè devo essere sicuro che il db e le impostazioni siano pronte
+
+        // Inizializza le impostazioni di app ed aspetto
+        appScopeIO.launch {
             appSettingsManager.initialize()
             appearanceSettingsManager.initialize()
         }

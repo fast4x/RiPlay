@@ -96,7 +96,7 @@ import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.services.playback.PlayerService
-import it.fast4x.riplay.services.playback.PlayerState
+import it.fast4x.riplay.services.playback.common.PlayerState
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.themed.PlayerMenu
@@ -206,7 +206,7 @@ fun TvUnifiedPlayer(
             }
             override fun onRepeatModeChanged(repeatMode: Int) {
                 coroutineScope.launch {
-                    val new = appSettings.copy(
+                    val new = appSettingsManager.activeSettings.value.copy(
                         queueLoopType = when (repeatMode) {
                             Player.REPEAT_MODE_ONE -> QueueLoopType.RepeatOne
                             Player.REPEAT_MODE_ALL -> QueueLoopType.RepeatAll
@@ -431,7 +431,7 @@ fun TvUnifiedPlayer(
                     onQueueLoopTypeChange = {
                         coroutineScope.launch {
                             appSettingsManager.updateSettings(
-                                appSettings.copy(queueLoopType = it)
+                                appSettingsManager.activeSettings.value.copy(queueLoopType = it)
                             )
                         }
                     },
@@ -518,7 +518,7 @@ fun TvUnifiedPlayer(
                 hidePlayer = {},
                 onDismiss = {
                     coroutineScope.launch {
-                        appSettingsManager.updateSettings(appSettings.copy(queueLoopType = it))
+                        appSettingsManager.updateSettings(appSettingsManager.activeSettings.value.copy(queueLoopType = it))
                     }
                     showQueue = false
                 },

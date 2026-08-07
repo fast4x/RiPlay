@@ -66,7 +66,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import dev.rebelonion.translator.Translator
 import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
@@ -122,7 +121,6 @@ import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.formatAsTime
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.utils.languageDestination
 import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
@@ -140,6 +138,7 @@ import it.fast4x.riplay.extensions.qrcodeanalyzer.GenerateQrButton
 import it.fast4x.riplay.extensions.musicbrainz.MBMetadataHelper
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.musicbrainz.repository.AlbumRepository
+import it.fast4x.riplay.services.playback.MediaLibraryServiceCallback
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.ExternalLinksSection
@@ -152,7 +151,6 @@ import it.fast4x.riplay.ui.components.themed.QueuesDialog
 import it.fast4x.riplay.ui.components.themed.RatingBar
 import it.fast4x.riplay.ui.components.themed.Title
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
-import it.fast4x.riplay.utils.CustomHttpClient
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.addToYtPlaylist
@@ -161,6 +159,7 @@ import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.utils.mediaItemSetLiked
 import it.fast4x.riplay.utils.isPrimaryAction
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 
@@ -197,6 +196,7 @@ fun AlbumDetails(
     val parentalControlEnabled = appSettings.parentalControlEnabled
     val disableScrollingText = appearanceSettings.disableScrollingText
     val isNetworkConnected = rememberIsNetworkConnected()
+    val coroutineScope = rememberCoroutineScope()
     LoaderScreen(show = songs.isEmpty())
 
     LaunchedEffect(browseId) {
@@ -643,7 +643,8 @@ fun AlbumDetails(
                                     )
 
                                     GenerateQrButton(
-                                        Modifier.align(Alignment.TopCenter)
+                                        Modifier
+                                            .align(Alignment.TopCenter)
                                             .padding(top = 5.dp),
                                         QrType.album, browseId
                                     )
@@ -766,13 +767,26 @@ fun AlbumDetails(
                                             val bookmarkedAt =
                                                 if (album?.bookmarkedAt == null) System.currentTimeMillis() else null
 
-                                            Database.asyncTransaction {
-                                                album
-                                                    ?.copy(bookmarkedAt = bookmarkedAt)
-                                                    ?.let(::update)
+                                            coroutineScope.launch(Dispatchers.Main) {
+                                                withContext(Dispatchers.IO) {
+                                                    album?.let {
+                                                        Database.albumDao()
+                                                            .upsert(it.copy(bookmarkedAt = bookmarkedAt))
+                                                    }
+                                                }
+
+
+                                                binder?.notifyAutoChildrenChanged(
+                                                    MediaLibraryServiceCallback.MediaId.ALBUMS_FAVORITES
+                                                )
+                                                binder?.notifyAutoChildrenChanged(
+                                                    MediaLibraryServiceCallback.MediaId.ALBUMS_IN_LIBRARY
+                                                )
+                                                binder?.notifyAutoChildrenChanged(
+                                                    MediaLibraryServiceCallback.MediaId.ALBUMS_ON_DEVICE
+                                                )
+
                                             }
-
-
 
                                             if (isYtSyncEnabled())
                                                 CoroutineScope(Dispatchers.IO).launch {

@@ -275,7 +275,7 @@ fun Lyrics(
                         menuState.hide()
                         coroutineScope.launch {
                             appSettingsManager.updateSettings(
-                                appSettings.copy(otherLanguageApp = it)
+                                appSettingsManager.activeSettings.value.copy(otherLanguageApp = it)
                             )
                         }
                         showLanguagesList = false
@@ -329,13 +329,13 @@ fun Lyrics(
         LyricsSizeDialog(onDismiss = { showLyricsSizeDialog = false },
             sizeValue = {
                 coroutineScope.launch {
-                    val new = appearanceSettings.copy(lyricsSize = it)
+                    val new = appearanceSettingsManager.activeSettings.value.copy(lyricsSize = it)
                     appearanceSettingsManager.updatePreset(new)
                 }
             },
             sizeValueL = {
                 coroutineScope.launch {
-                    val new = appearanceSettings.copy(lyricsSizeL = it)
+                    val new = appearanceSettingsManager.activeSettings.value.copy(lyricsSizeL = it)
                     appearanceSettingsManager.updatePreset(new)
                 }
             })
@@ -814,7 +814,7 @@ fun Lyrics(
                                             menuState.hide()
                                             coroutineScope.launch {
                                                 val new =
-                                                    appearanceSettings.copy(lyricsFontSize = LyricsFontSize.Light)
+                                                    appearanceSettingsManager.activeSettings.value.copy(lyricsFontSize = LyricsFontSize.Light)
                                                 appearanceSettingsManager.updatePreset(new)
                                             }
                                         }
@@ -827,7 +827,7 @@ fun Lyrics(
                                             menuState.hide()
                                             coroutineScope.launch {
                                                 val new =
-                                                    appearanceSettings.copy(lyricsFontSize = LyricsFontSize.Medium)
+                                                    appearanceSettingsManager.activeSettings.value.copy(lyricsFontSize = LyricsFontSize.Medium)
                                                 appearanceSettingsManager.updatePreset(new)
                                             }
                                         }
@@ -840,7 +840,7 @@ fun Lyrics(
                                             menuState.hide()
                                             coroutineScope.launch {
                                                 val new =
-                                                    appearanceSettings.copy(lyricsFontSize = LyricsFontSize.Heavy)
+                                                    appearanceSettingsManager.activeSettings.value.copy(lyricsFontSize = LyricsFontSize.Heavy)
                                                 appearanceSettingsManager.updatePreset(new)
                                             }
                                         }
@@ -853,7 +853,7 @@ fun Lyrics(
                                             menuState.hide()
                                             coroutineScope.launch {
                                                 val new =
-                                                    appearanceSettings.copy(lyricsFontSize = LyricsFontSize.Large)
+                                                    appearanceSettingsManager.activeSettings.value.copy(lyricsFontSize = LyricsFontSize.Large)
                                                 appearanceSettingsManager.updatePreset(new)
                                             }
                                         }
@@ -995,7 +995,7 @@ fun Lyrics(
                             when {
                                 isShowingSynchronizedLyrics && isShowingSynchronizedWordByWordLyrics -> {
                                     coroutineScope.launch {
-                                        val new = appearanceSettings.copy(
+                                        val new = appearanceSettingsManager.activeSettings.value.copy(
                                             isShowingSynchronizedWordByWordLyrics = false
                                         )
                                         appearanceSettingsManager.updatePreset(new)
@@ -1005,14 +1005,14 @@ fun Lyrics(
                                 isShowingSynchronizedLyrics && !isShowingSynchronizedWordByWordLyrics -> {
                                     coroutineScope.launch {
                                         val new =
-                                            appearanceSettings.copy(isShowingSynchronizedLyrics = false)
+                                            appearanceSettingsManager.activeSettings.value.copy(isShowingSynchronizedLyrics = false)
                                         appearanceSettingsManager.updatePreset(new)
                                     }
                                 }
 
                                 else -> {
                                     coroutineScope.launch {
-                                        val new = appearanceSettings.copy(
+                                        val new = appearanceSettingsManager.activeSettings.value.copy(
                                             isShowingSynchronizedLyrics = true,
                                             isShowingSynchronizedWordByWordLyrics = true
                                         )
@@ -1067,7 +1067,7 @@ fun Lyrics(
                                                 onClick = {
                                                     menuState.hide()
                                                     coroutineScope.launch {
-                                                        val new = appearanceSettings.copy(
+                                                        val new = appearanceSettingsManager.activeSettings.value.copy(
                                                             landscapeControls = !landscapeControls
                                                         )
                                                         appearanceSettingsManager.updatePreset(new)
@@ -1090,7 +1090,7 @@ fun Lyrics(
                                                                 menuState.hide()
                                                                 coroutineScope.launch {
                                                                     val new =
-                                                                        appearanceSettings.copy(
+                                                                        appearanceSettingsManager.activeSettings.value.copy(
                                                                             lyricsAlignment = LyricsAlignment.Left
                                                                         )
                                                                     appearanceSettingsManager.updatePreset(
@@ -1107,7 +1107,7 @@ fun Lyrics(
                                                                 menuState.hide()
                                                                 coroutineScope.launch {
                                                                     val new =
-                                                                        appearanceSettings.copy(
+                                                                        appearanceSettingsManager.activeSettings.value.copy(
                                                                             lyricsAlignment = LyricsAlignment.Center
                                                                         )
                                                                     appearanceSettingsManager.updatePreset(
@@ -1124,7 +1124,7 @@ fun Lyrics(
                                                                 menuState.hide()
                                                                 coroutineScope.launch {
                                                                     val new =
-                                                                        appearanceSettings.copy(
+                                                                        appearanceSettingsManager.activeSettings.value.copy(
                                                                             lyricsAlignment = LyricsAlignment.Right
                                                                         )
                                                                     appearanceSettingsManager.updatePreset(
@@ -1154,7 +1154,7 @@ fun Lyrics(
                                                                     menuState.hide()
                                                                     coroutineScope.launch {
                                                                         val new =
-                                                                            appearanceSettings.copy(
+                                                                            appearanceSettingsManager.activeSettings.value.copy(
                                                                                 lyricsFontSize = LyricsFontSize.Light
                                                                             )
                                                                         appearanceSettingsManager.updatePreset(
@@ -1171,7 +1171,7 @@ fun Lyrics(
                                                                     menuState.hide()
                                                                     coroutineScope.launch {
                                                                         val new =
-                                                                            appearanceSettings.copy(
+                                                                            appearanceSettingsManager.activeSettings.value.copy(
                                                                                 lyricsFontSize = LyricsFontSize.Medium
                                                                             )
                                                                         appearanceSettingsManager.updatePreset(
@@ -1188,7 +1188,7 @@ fun Lyrics(
                                                                     menuState.hide()
                                                                     coroutineScope.launch {
                                                                         val new =
-                                                                            appearanceSettings.copy(
+                                                                            appearanceSettingsManager.activeSettings.value.copy(
                                                                                 lyricsFontSize = LyricsFontSize.Heavy
                                                                             )
                                                                         appearanceSettingsManager.updatePreset(
@@ -1205,7 +1205,7 @@ fun Lyrics(
                                                                     menuState.hide()
                                                                     coroutineScope.launch {
                                                                         val new =
-                                                                            appearanceSettings.copy(
+                                                                            appearanceSettingsManager.activeSettings.value.copy(
                                                                                 lyricsFontSize = LyricsFontSize.Large
                                                                             )
                                                                         appearanceSettingsManager.updatePreset(
@@ -1222,7 +1222,7 @@ fun Lyrics(
                                                                     menuState.hide()
                                                                     coroutineScope.launch {
                                                                         val new =
-                                                                            appearanceSettings.copy(
+                                                                            appearanceSettingsManager.activeSettings.value.copy(
                                                                                 lyricsFontSize = LyricsFontSize.Custom
                                                                             )
                                                                         appearanceSettingsManager.updatePreset(
@@ -1255,7 +1255,7 @@ fun Lyrics(
                                                                     menuState.hide()
                                                                     coroutineScope.launch {
                                                                         val new =
-                                                                            appearanceSettings.copy(
+                                                                            appearanceSettingsManager.activeSettings.value.copy(
                                                                                 lyricsColor = LyricsColor.Thememode
                                                                             )
                                                                         appearanceSettingsManager.updatePreset(
@@ -1272,7 +1272,7 @@ fun Lyrics(
                                                                     menuState.hide()
                                                                     coroutineScope.launch {
                                                                         val new =
-                                                                            appearanceSettings.copy(
+                                                                            appearanceSettingsManager.activeSettings.value.copy(
                                                                                 lyricsColor = LyricsColor.White
                                                                             )
                                                                         appearanceSettingsManager.updatePreset(
@@ -1289,7 +1289,7 @@ fun Lyrics(
                                                                     menuState.hide()
                                                                     coroutineScope.launch {
                                                                         val new =
-                                                                            appearanceSettings.copy(
+                                                                            appearanceSettingsManager.activeSettings.value.copy(
                                                                                 lyricsColor = LyricsColor.Black
                                                                             )
                                                                         appearanceSettingsManager.updatePreset(
@@ -1306,7 +1306,7 @@ fun Lyrics(
                                                                     menuState.hide()
                                                                     coroutineScope.launch {
                                                                         val new =
-                                                                            appearanceSettings.copy(
+                                                                            appearanceSettingsManager.activeSettings.value.copy(
                                                                                 lyricsColor = LyricsColor.Accent
                                                                             )
                                                                         appearanceSettingsManager.updatePreset(
@@ -1323,7 +1323,7 @@ fun Lyrics(
                                                                     menuState.hide()
                                                                     coroutineScope.launch {
                                                                         val new =
-                                                                            appearanceSettings.copy(
+                                                                            appearanceSettingsManager.activeSettings.value.copy(
                                                                                 lyricsColor = LyricsColor.FluidRainbow
                                                                             )
                                                                         appearanceSettingsManager.updatePreset(
@@ -1361,7 +1361,7 @@ fun Lyrics(
                                                                     menuState.hide()
                                                                     coroutineScope.launch {
                                                                         val new =
-                                                                            appearanceSettings.copy(
+                                                                            appearanceSettingsManager.activeSettings.value.copy(
                                                                                 lyricsOutline = LyricsOutline.None
                                                                             )
                                                                         appearanceSettingsManager.updatePreset(
@@ -1378,7 +1378,7 @@ fun Lyrics(
                                                                     menuState.hide()
                                                                     coroutineScope.launch {
                                                                         val new =
-                                                                            appearanceSettings.copy(
+                                                                            appearanceSettingsManager.activeSettings.value.copy(
                                                                                 lyricsOutline = LyricsOutline.Thememode
                                                                             )
                                                                         appearanceSettingsManager.updatePreset(
@@ -1395,7 +1395,7 @@ fun Lyrics(
                                                                     menuState.hide()
                                                                     coroutineScope.launch {
                                                                         val new =
-                                                                            appearanceSettings.copy(
+                                                                            appearanceSettingsManager.activeSettings.value.copy(
                                                                                 lyricsOutline = LyricsOutline.White
                                                                             )
                                                                         appearanceSettingsManager.updatePreset(
@@ -1412,7 +1412,7 @@ fun Lyrics(
                                                                     menuState.hide()
                                                                     coroutineScope.launch {
                                                                         val new =
-                                                                            appearanceSettings.copy(
+                                                                            appearanceSettingsManager.activeSettings.value.copy(
                                                                                 lyricsOutline = LyricsOutline.Black
                                                                             )
                                                                         appearanceSettingsManager.updatePreset(
@@ -1429,7 +1429,7 @@ fun Lyrics(
                                                                     menuState.hide()
                                                                     coroutineScope.launch {
                                                                         val new =
-                                                                            appearanceSettings.copy(
+                                                                            appearanceSettingsManager.activeSettings.value.copy(
                                                                                 lyricsOutline = LyricsOutline.Rainbow
                                                                             )
                                                                         appearanceSettingsManager.updatePreset(
@@ -1447,7 +1447,7 @@ fun Lyrics(
                                                                         menuState.hide()
                                                                         coroutineScope.launch {
                                                                             val new =
-                                                                                appearanceSettings.copy(
+                                                                                appearanceSettingsManager.activeSettings.value.copy(
                                                                                     lyricsOutline = LyricsOutline.Glow
                                                                                 )
                                                                             appearanceSettingsManager.updatePreset(
@@ -1500,7 +1500,7 @@ fun Lyrics(
                                                                 menuState.hide()
                                                                 coroutineScope.launch {
                                                                     val new =
-                                                                        appearanceSettings.copy(
+                                                                        appearanceSettingsManager.activeSettings.value.copy(
                                                                             romanization = Romanization.Off
                                                                         )
                                                                     appearanceSettingsManager.updatePreset(
@@ -1517,7 +1517,7 @@ fun Lyrics(
                                                                 menuState.hide()
                                                                 coroutineScope.launch {
                                                                     val new =
-                                                                        appearanceSettings.copy(
+                                                                        appearanceSettingsManager.activeSettings.value.copy(
                                                                             romanization = Romanization.Original
                                                                         )
                                                                     appearanceSettingsManager.updatePreset(
@@ -1534,7 +1534,7 @@ fun Lyrics(
                                                                 menuState.hide()
                                                                 coroutineScope.launch {
                                                                     val new =
-                                                                        appearanceSettings.copy(
+                                                                        appearanceSettingsManager.activeSettings.value.copy(
                                                                             romanization = Romanization.Translated
                                                                         )
                                                                     appearanceSettingsManager.updatePreset(
@@ -1552,7 +1552,7 @@ fun Lyrics(
                                                                     menuState.hide()
                                                                     coroutineScope.launch {
                                                                         val new =
-                                                                            appearanceSettings.copy(
+                                                                            appearanceSettingsManager.activeSettings.value.copy(
                                                                                 romanization = Romanization.Both
                                                                             )
                                                                         appearanceSettingsManager.updatePreset(
@@ -1574,7 +1574,7 @@ fun Lyrics(
                                                 menuState.hide()
                                                 coroutineScope.launch {
                                                     val new =
-                                                        appearanceSettings.copy(showSecondLine = !showSecondLine)
+                                                        appearanceSettingsManager.activeSettings.value.copy(showSecondLine = !showSecondLine)
                                                     appearanceSettingsManager.updatePreset(new)
                                                 }
                                             }
@@ -1588,7 +1588,7 @@ fun Lyrics(
                                                 onClick = {
                                                     menuState.hide()
                                                     coroutineScope.launch {
-                                                        val new = appearanceSettings.copy(
+                                                        val new = appearanceSettingsManager.activeSettings.value.copy(
                                                             lyricsSizeAnimate = !lyricsSizeAnimate
                                                         )
                                                         appearanceSettingsManager.updatePreset(new)
@@ -1613,7 +1613,7 @@ fun Lyrics(
                                                                     menuState.hide()
                                                                     coroutineScope.launch {
                                                                         val new =
-                                                                            appearanceSettings.copy(
+                                                                            appearanceSettingsManager.activeSettings.value.copy(
                                                                                 lyricsHighlight = LyricsHighlight.None
                                                                             )
                                                                         appearanceSettingsManager.updatePreset(
@@ -1630,7 +1630,7 @@ fun Lyrics(
                                                                     menuState.hide()
                                                                     coroutineScope.launch {
                                                                         val new =
-                                                                            appearanceSettings.copy(
+                                                                            appearanceSettingsManager.activeSettings.value.copy(
                                                                                 lyricsHighlight = LyricsHighlight.White
                                                                             )
                                                                         appearanceSettingsManager.updatePreset(
@@ -1647,7 +1647,7 @@ fun Lyrics(
                                                                     menuState.hide()
                                                                     coroutineScope.launch {
                                                                         val new =
-                                                                            appearanceSettings.copy(
+                                                                            appearanceSettingsManager.activeSettings.value.copy(
                                                                                 lyricsHighlight = LyricsHighlight.Black
                                                                             )
                                                                         appearanceSettingsManager.updatePreset(
@@ -1677,7 +1677,7 @@ fun Lyrics(
                                                                     menuState.hide()
                                                                     coroutineScope.launch {
                                                                         val new =
-                                                                            appearanceSettings.copy(
+                                                                            appearanceSettingsManager.activeSettings.value.copy(
                                                                                 lyricsBackground = LyricsBackground.None
                                                                             )
                                                                         appearanceSettingsManager.updatePreset(
@@ -1694,7 +1694,7 @@ fun Lyrics(
                                                                     menuState.hide()
                                                                     coroutineScope.launch {
                                                                         val new =
-                                                                            appearanceSettings.copy(
+                                                                            appearanceSettingsManager.activeSettings.value.copy(
                                                                                 lyricsBackground = LyricsBackground.White
                                                                             )
                                                                         appearanceSettingsManager.updatePreset(
@@ -1711,7 +1711,7 @@ fun Lyrics(
                                                                     menuState.hide()
                                                                     coroutineScope.launch {
                                                                         val new =
-                                                                            appearanceSettings.copy(
+                                                                            appearanceSettingsManager.activeSettings.value.copy(
                                                                                 lyricsBackground = LyricsBackground.Black
                                                                             )
                                                                         appearanceSettingsManager.updatePreset(
@@ -1748,7 +1748,7 @@ fun Lyrics(
                                                             onClick = {
                                                                 coroutineScope.launch {
                                                                     val new =
-                                                                        appearanceSettings.copy(
+                                                                        appearanceSettingsManager.activeSettings.value.copy(
                                                                             isShowingSynchronizedLyrics = false,
                                                                             isShowingSynchronizedWordByWordLyrics = false
                                                                         )
@@ -1777,7 +1777,7 @@ fun Lyrics(
                                                             onClick = {
                                                                 coroutineScope.launch {
                                                                     val new =
-                                                                        appearanceSettings.copy(
+                                                                        appearanceSettingsManager.activeSettings.value.copy(
                                                                             isShowingSynchronizedLyrics = true,
                                                                             isShowingSynchronizedWordByWordLyrics = false
                                                                         )
@@ -1807,7 +1807,7 @@ fun Lyrics(
                                                             onClick = {
                                                                 coroutineScope.launch {
                                                                     val new =
-                                                                        appearanceSettings.copy(
+                                                                        appearanceSettingsManager.activeSettings.value.copy(
                                                                             isShowingSynchronizedLyrics = true,
                                                                             isShowingSynchronizedWordByWordLyrics = true
                                                                         )

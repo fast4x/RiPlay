@@ -97,7 +97,7 @@ fun HomeScreen(
     LaunchedEffect(Unit, offlineModeEnabled) {
         if (offlineModeEnabled) {
             appSettingsManager.updateSettings(
-                appSettings.copy(
+                appSettingsManager.activeSettings.value.copy(
                     homeScreenTabIndex = 1
                 )
             )
@@ -126,7 +126,7 @@ fun HomeScreen(
         {
             coroutineScope.launch {
                 appSettingsManager.updateSettings(
-                    appSettings.copy(homeScreenTabIndex = it)
+                    appSettingsManager.activeSettings.value.copy(homeScreenTabIndex = it)
                 )
             }
         },

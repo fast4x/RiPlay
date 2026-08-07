@@ -127,11 +127,11 @@ fun GeneralSettings(
     ) { isGranted ->
         coroutineScope.launch {
             if (isGranted) {
-                val new = appSettings.copy(resumeOrPausePlaybackWhenCall = true)
+                val new = appSettingsManager.activeSettings.value.copy(resumeOrPausePlaybackWhenCall = true)
                 appSettingsManager.updateSettings(new)
                 restartService = true
             } else {
-                val new = appSettings.copy(resumeOrPausePlaybackWhenCall = false)
+                val new = appSettingsManager.activeSettings.value.copy(resumeOrPausePlaybackWhenCall = false)
                 appSettingsManager.updateSettings(new)
             }
         }
@@ -384,7 +384,7 @@ fun GeneralSettings(
                             selectedValue = checkUpdateState,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(checkUpdateState = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(checkUpdateState = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
@@ -440,7 +440,7 @@ fun GeneralSettings(
                             selectedValue = languageApp,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(languageApp = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(languageApp = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
@@ -467,7 +467,7 @@ fun GeneralSettings(
                             isChecked = enabledQrCodeActions,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(qrCodeToActions = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(qrCodeToActions = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                             }
@@ -507,7 +507,7 @@ fun GeneralSettings(
                             selectedValue = useDnsOverHttpsType,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(dnsOverHttpsType = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(dnsOverHttpsType = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                                 restartActivity = true
@@ -523,7 +523,7 @@ fun GeneralSettings(
                                     currentText = customDnsOverHttpsServer,
                                     onTextSave = {
                                         coroutineScope.launch {
-                                            val new = appSettings.copy(customDnsOverHttpsServer = it)
+                                            val new = appSettingsManager.activeSettings.value.copy(customDnsOverHttpsServer = it)
                                             appSettingsManager.updateSettings(new)
                                         }
                                         restartActivity = true
@@ -557,7 +557,7 @@ fun GeneralSettings(
                             isChecked = isProxyEnabled,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(proxyEnabled = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(proxyEnabled = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                             }
@@ -571,7 +571,7 @@ fun GeneralSettings(
                                     selectedValue = proxyMode,
                                     onValueSelected = {
                                         coroutineScope.launch {
-                                            val new = appSettings.copy(proxyMode = it)
+                                            val new = appSettingsManager.activeSettings.value.copy(proxyMode = it)
                                             appSettingsManager.updateSettings(new)
                                         }
                                     },
@@ -583,7 +583,7 @@ fun GeneralSettings(
                                     currentText = proxyHost,
                                     onTextSave = {
                                         coroutineScope.launch {
-                                            val new = appSettings.copy(proxyHostname = it)
+                                            val new = appSettingsManager.activeSettings.value.copy(proxyHostname = it)
                                             appSettingsManager.updateSettings(new)
                                         }
                                     },
@@ -595,7 +595,7 @@ fun GeneralSettings(
                                     currentText = proxyPort.toString(),
                                     onTextSave = {
                                         coroutineScope.launch {
-                                            val new = appSettings.copy(proxyPort = it.toIntOrNull() ?: 1080)
+                                            val new = appSettingsManager.activeSettings.value.copy(proxyPort = it.toIntOrNull() ?: 1080)
                                             appSettingsManager.updateSettings(new)
                                         }
                                     })
@@ -634,7 +634,7 @@ fun GeneralSettings(
                             isChecked = isKeepScreenOnEnabled,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(keepScreenEnabled = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(keepScreenEnabled = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                             }
@@ -700,7 +700,7 @@ fun GeneralSettings(
                             isChecked = isEnabledVoiceInput,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(enableVoiceInput = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(enableVoiceInput = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                             }
@@ -730,7 +730,7 @@ fun GeneralSettings(
                                 onValueSelected = {
                                     coroutineScope.launch {
                                         val new =
-                                            appSettings.copy(closeBackgroundPlayerAfterMinutes = it)
+                                            appSettingsManager.activeSettings.value.copy(closeBackgroundPlayerAfterMinutes = it)
                                         appSettingsManager.updateSettings(new)
                                     }
                                 },
@@ -788,7 +788,7 @@ fun GeneralSettings(
                                 onValueChange = {
                                     if (it.isDigitsOnly())
                                         coroutineScope.launch {
-                                            val new = appearanceSettings.copy(jumpPrevious = it)
+                                            val new = appearanceSettingsManager.activeSettings.value.copy(jumpPrevious = it)
                                             appearanceSettingsManager.updatePreset(new)
                                         }
                                 },
@@ -812,7 +812,7 @@ fun GeneralSettings(
                             selectedValue = minTimeForEvent,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(minTimeForEvent = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(minTimeForEvent = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
@@ -840,7 +840,7 @@ fun GeneralSettings(
                             selectedValue = excludeSongWithDurationLimit,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(excludeSongWithDurationLimit = if (it == DurationInMinutes.`0`) DurationInMinutes.`1` else it)
+                                    val new = appSettingsManager.activeSettings.value.copy(excludeSongWithDurationLimit = if (it == DurationInMinutes.`0`) DurationInMinutes.`1` else it)
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
@@ -878,7 +878,7 @@ fun GeneralSettings(
                             isChecked = excludeSongsIfAreVideos,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(excludeIfIsVideo = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(excludeIfIsVideo = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                                 restartService = true
@@ -897,7 +897,7 @@ fun GeneralSettings(
                             selectedValue = pauseBetweenSongs,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(pauseBetweenSongs = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(pauseBetweenSongs = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
@@ -928,7 +928,7 @@ fun GeneralSettings(
                             isChecked = isPauseOnVolumeZeroEnabled,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(isPauseOnVolumeZeroEnabled = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(isPauseOnVolumeZeroEnabled = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                             }
@@ -944,7 +944,7 @@ fun GeneralSettings(
                             selectedValue = playbackFadeAudioDuration,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(playbackFadeAudioDuration = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(playbackFadeAudioDuration = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
@@ -972,7 +972,7 @@ fun GeneralSettings(
                             isChecked = keepPlayerMinimized,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(keepPlayerMinimized = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(keepPlayerMinimized = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                             }
@@ -990,7 +990,7 @@ fun GeneralSettings(
                             isChecked = disableClosingPlayerSwipingDown,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(disableClosingPlayerSwipingDown = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(disableClosingPlayerSwipingDown = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                             }
@@ -1007,7 +1007,7 @@ fun GeneralSettings(
                             isChecked = autoLoadSongsInQueue,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(autoLoadSongsInQueue = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(autoLoadSongsInQueue = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                                 restartService = true
@@ -1026,7 +1026,7 @@ fun GeneralSettings(
                             selectedValue = maxSongsInQueue,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(maxSongsInQueue = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(maxSongsInQueue = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
@@ -1055,7 +1055,7 @@ fun GeneralSettings(
                             selectedValue = filterContentType,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(filterContentType = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(filterContentType = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
@@ -1075,7 +1075,7 @@ fun GeneralSettings(
                             isChecked = discoverIsEnabled,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(discoverIsEnabled = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(discoverIsEnabled = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                             }
@@ -1092,7 +1092,7 @@ fun GeneralSettings(
                             isChecked = playlistindicator,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appearanceSettings.copy(playlistIndicator = it)
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(playlistIndicator = it)
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             }
@@ -1108,7 +1108,7 @@ fun GeneralSettings(
                             selectedValue = nowPlayingIndicator,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(nowPlayingIndicator = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(nowPlayingIndicator = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
@@ -1128,7 +1128,7 @@ fun GeneralSettings(
                             isChecked = persistentQueue,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(persistentQueue = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(persistentQueue = it)
                                     appSettingsManager.updateSettings(new)
                                 }
 
@@ -1148,7 +1148,7 @@ fun GeneralSettings(
                                     isChecked = resumePlaybackOnStart,
                                     onCheckedChange = {
                                         coroutineScope.launch {
-                                            val new = appSettings.copy(resumePlaybackOnStart = it)
+                                            val new = appSettingsManager.activeSettings.value.copy(resumePlaybackOnStart = it)
                                             appSettingsManager.updateSettings(new)
                                         }
 
@@ -1174,7 +1174,7 @@ fun GeneralSettings(
                             isChecked = closeWithBackButton,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(closeWithBackButton = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(closeWithBackButton = it)
                                     appSettingsManager.updateSettings(new)
                                 }
 
@@ -1195,7 +1195,7 @@ fun GeneralSettings(
                             onCheckedChange = {
                                 coroutineScope.launch {
                                     appSettingsManager.updateSettings(
-                                        appSettings.copy(
+                                        appSettingsManager.activeSettings.value.copy(
                                             skipMediaOnError = it
                                         )
                                     )
@@ -1220,7 +1220,7 @@ fun GeneralSettings(
                             onCheckedChange = {
                                 coroutineScope.launch {
                                     appSettingsManager.updateSettings(
-                                        appSettings.copy(
+                                        appSettingsManager.activeSettings.value.copy(
                                             skipSilenceEnabled = it
                                         )
                                     )
@@ -1248,7 +1248,7 @@ fun GeneralSettings(
                                     onSlideComplete = {
                                         coroutineScope.launch {
                                             appSettingsManager.updateSettings(
-                                                appSettings.copy(
+                                                appSettingsManager.activeSettings.value.copy(
                                                     minimumSilenceDuration = newValue.toLong() * 1000L
                                                 )
                                             )
@@ -1280,7 +1280,7 @@ fun GeneralSettings(
                             onCheckedChange = {
                                 coroutineScope.launch {
                                     appSettingsManager.updateSettings(
-                                        appSettings.copy(
+                                        appSettingsManager.activeSettings.value.copy(
                                             parentalControlEnabled = it
                                         )
                                     )
@@ -1300,7 +1300,7 @@ fun GeneralSettings(
                             onCheckedChange = {
                                 coroutineScope.launch {
                                     appSettingsManager.updateSettings(
-                                        appSettings.copy(
+                                        appSettingsManager.activeSettings.value.copy(
                                             shakeEventEnabled = it
                                         )
                                     )
@@ -1323,7 +1323,7 @@ fun GeneralSettings(
                             onCheckedChange = {
                                 coroutineScope.launch {
                                     appSettingsManager.updateSettings(
-                                        appSettings.copy(
+                                        appSettingsManager.activeSettings.value.copy(
                                             enablePictureInPicture = it
                                         )
                                     )
@@ -1343,7 +1343,7 @@ fun GeneralSettings(
                                     onValueSelected = {
                                         coroutineScope.launch {
                                             appSettingsManager.updateSettings(
-                                                appSettings.copy(
+                                                appSettingsManager.activeSettings.value.copy(
                                                     pipModule = it
                                                 )
                                             )
@@ -1365,7 +1365,7 @@ fun GeneralSettings(
                                     onCheckedChange = {
                                         coroutineScope.launch {
                                             appSettingsManager.updateSettings(
-                                                appSettings.copy(
+                                                appSettingsManager.activeSettings.value.copy(
                                                     enablePictureInPictureAuto = it
                                                 )
                                             )
@@ -1392,7 +1392,7 @@ fun GeneralSettings(
                             onValueSelected = {
                                 coroutineScope.launch {
                                     appSettingsManager.updateSettings(
-                                        appSettings.copy(
+                                        appSettingsManager.activeSettings.value.copy(
                                             equalizerType = it
                                         )
                                     )
@@ -1429,7 +1429,7 @@ fun GeneralSettings(
                             onCheckedChange = {
                                 coroutineScope.launch {
                                     appSettingsManager.updateSettings(
-                                        appSettings.copy(
+                                        appSettingsManager.activeSettings.value.copy(
                                             volumeNormalizationEnabled = it
                                         )
                                     )
@@ -1463,7 +1463,7 @@ fun GeneralSettings(
                                     onSlideComplete = {
                                         coroutineScope.launch {
                                             appSettingsManager.updateSettings(
-                                                appSettings.copy(
+                                                appSettingsManager.activeSettings.value.copy(
                                                     loudnessBaseGain = newValue
                                                 )
                                             )
@@ -1483,7 +1483,7 @@ fun GeneralSettings(
                                     onSlideComplete = {
                                         coroutineScope.launch {
                                             appSettingsManager.updateSettings(
-                                                appSettings.copy(
+                                                appSettingsManager.activeSettings.value.copy(
                                                     volumeBoostLevel = newValueVolume
                                                 )
                                             )
@@ -1510,7 +1510,7 @@ fun GeneralSettings(
                             onCheckedChange = {
                                 coroutineScope.launch {
                                     appSettingsManager.updateSettings(
-                                        appSettings.copy(
+                                        appSettingsManager.activeSettings.value.copy(
                                             bassBoostEnabled = it
                                         )
                                     )
@@ -1537,7 +1537,7 @@ fun GeneralSettings(
                                     onSlideComplete = {
                                         coroutineScope.launch {
                                             appSettingsManager.updateSettings(
-                                                appSettings.copy(
+                                                appSettingsManager.activeSettings.value.copy(
                                                     bassBoostLevel = newValue
                                                 )
                                             )
@@ -1562,7 +1562,7 @@ fun GeneralSettings(
                             onValueSelected = {
                                 coroutineScope.launch {
                                     appSettingsManager.updateSettings(
-                                        appSettings.copy(
+                                        appSettingsManager.activeSettings.value.copy(
                                             audioReverbPreset = it
                                         )
                                     )
@@ -1588,7 +1588,7 @@ fun GeneralSettings(
                             onCheckedChange = {
                                 coroutineScope.launch {
                                     appSettingsManager.updateSettings(
-                                        appSettings.copy(
+                                        appSettingsManager.activeSettings.value.copy(
                                             handleAudioFocusEnabled = it
                                         )
                                     )
@@ -1610,7 +1610,7 @@ fun GeneralSettings(
                             onCheckedChange = {
                                 coroutineScope.launch {
                                     appSettingsManager.updateSettings(
-                                        appSettings.copy(
+                                        appSettingsManager.activeSettings.value.copy(
                                             disableAudioDrc = it
                                         )
                                     )
@@ -1649,7 +1649,7 @@ fun GeneralSettings(
                             selectedValue = castType,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(castType = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(castType = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                                 restartActivity = true
@@ -1685,7 +1685,7 @@ fun GeneralSettings(
                                 onCheckedChange = {
                                     coroutineScope.launch {
                                         val new =
-                                            appSettings.copy(resumeOrPausePlaybackWhenDeviceBt = it)
+                                            appSettingsManager.activeSettings.value.copy(resumeOrPausePlaybackWhenDeviceBt = it)
                                         appSettingsManager.updateSettings(new)
                                     }
 
@@ -1699,7 +1699,7 @@ fun GeneralSettings(
                                 onCheckedChange = {
                                     coroutineScope.launch {
                                         val new =
-                                            appSettings.copy(resumeOrPausePlaybackWhenDeviceWired = it)
+                                            appSettingsManager.activeSettings.value.copy(resumeOrPausePlaybackWhenDeviceWired = it)
                                         appSettingsManager.updateSettings(new)
                                     }
 
@@ -1733,7 +1733,7 @@ fun GeneralSettings(
                             onCheckedChange = {
                                 coroutineScope.launch {
                                     appSettingsManager.updateSettings(
-                                        appSettings.copy(
+                                        appSettingsManager.activeSettings.value.copy(
                                             isPauseListenHistoryEnabled = it
                                         )
                                     )
@@ -1770,7 +1770,7 @@ fun GeneralSettings(
                         onCheckedChange = {
                             coroutineScope.launch {
                                 appSettingsManager.updateSettings(
-                                    appSettings.copy(
+                                    appSettingsManager.activeSettings.value.copy(
                                         pauseSearchHistory = it
                                     )
                                 )
@@ -1811,7 +1811,7 @@ fun GeneralSettings(
                             isChecked = isAndroidAutoEnabled,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(isAndroidAutoEnabled = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(isAndroidAutoEnabled = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                             }
@@ -1834,7 +1834,7 @@ fun GeneralSettings(
                                     isChecked = showGridAA,
                                     onCheckedChange = {
                                         coroutineScope.launch {
-                                            val new = appSettings.copy(showGridAA = it)
+                                            val new = appSettingsManager.activeSettings.value.copy(showGridAA = it)
                                             appSettingsManager.updateSettings(new)
                                         }
                                     }
@@ -1851,7 +1851,7 @@ fun GeneralSettings(
                                     selectedValue = androidAutoPlaylistLimit,
                                     onValueSelected = {
                                         coroutineScope.launch {
-                                            val new = appSettings.copy(androidAutoPlaylistLimit = it)
+                                            val new = appSettingsManager.activeSettings.value.copy(androidAutoPlaylistLimit = it)
                                             appSettingsManager.updateSettings(new)
                                             }
                                     },
@@ -1873,7 +1873,7 @@ fun GeneralSettings(
                                     isChecked = showMonthlyPlaylistsAA,
                                     onCheckedChange = {
                                         coroutineScope.launch {
-                                            val new = appSettings.copy(showMonthlyPlaylistAA = it)
+                                            val new = appSettingsManager.activeSettings.value.copy(showMonthlyPlaylistAA = it)
                                             appSettingsManager.updateSettings(new)
                                         }
                                     }
@@ -1890,7 +1890,7 @@ fun GeneralSettings(
                                     isChecked = showPodcastAA,
                                     onCheckedChange = {
                                         coroutineScope.launch {
-                                            val new = appSettings.copy(showPodcastAA = it)
+                                            val new = appSettingsManager.activeSettings.value.copy(showPodcastAA = it)
                                             appSettingsManager.updateSettings(new)
                                         }
                                     }
@@ -1907,7 +1907,7 @@ fun GeneralSettings(
                                     isChecked = showPinnedAA,
                                     onCheckedChange = {
                                         coroutineScope.launch {
-                                            val new = appSettings.copy(showPinnedAA = it)
+                                            val new = appSettingsManager.activeSettings.value.copy(showPinnedAA = it)
                                             appSettingsManager.updateSettings(new)
                                         }
                                     }
@@ -1924,7 +1924,7 @@ fun GeneralSettings(
                                     isChecked = showInLibraryAA,
                                     onCheckedChange = {
                                         coroutineScope.launch {
-                                            val new = appSettings.copy(showInLibraryAA = it)
+                                            val new = appSettingsManager.activeSettings.value.copy(showInLibraryAA = it)
                                             appSettingsManager.updateSettings(new)
                                         }
                                     }
@@ -1941,7 +1941,7 @@ fun GeneralSettings(
                                     isChecked = showOnDeviceAA,
                                     onCheckedChange = {
                                         coroutineScope.launch {
-                                            val new = appSettings.copy(showOnDeviceAA = it)
+                                            val new = appSettingsManager.activeSettings.value.copy(showOnDeviceAA = it)
                                             appSettingsManager.updateSettings(new)
                                         }
                                     }
@@ -1958,7 +1958,7 @@ fun GeneralSettings(
                                     isChecked = showTopSongsAA,
                                     onCheckedChange = {
                                         coroutineScope.launch {
-                                            val new = appSettings.copy(showTopSongsAA = it)
+                                            val new = appSettingsManager.activeSettings.value.copy(showTopSongsAA = it)
                                             appSettingsManager.updateSettings(new)
                                         }
                                     }
@@ -1975,7 +1975,7 @@ fun GeneralSettings(
                                     isChecked = showAllSongsAA,
                                     onCheckedChange = {
                                         coroutineScope.launch {
-                                            val new = appSettings.copy(showAllSongsAA = it)
+                                            val new = appSettingsManager.activeSettings.value.copy(showAllSongsAA = it)
                                             appSettingsManager.updateSettings(new)
                                         }
                                     }
@@ -1992,7 +1992,7 @@ fun GeneralSettings(
                                     isChecked = showShuffleSongsAA,
                                     onCheckedChange = {
                                         coroutineScope.launch {
-                                            val new = appSettings.copy(showShuffleSongsAA = it)
+                                            val new = appSettingsManager.activeSettings.value.copy(showShuffleSongsAA = it)
                                             appSettingsManager.updateSettings(new)
                                         }
                                     }

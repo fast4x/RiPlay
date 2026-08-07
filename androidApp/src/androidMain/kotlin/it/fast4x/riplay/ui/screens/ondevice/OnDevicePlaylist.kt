@@ -906,7 +906,7 @@ fun OnDevicePlaylist(
                                 onClick = {
                                     coroutineScope.launch {
                                         appSettingsManager.updateSettings(
-                                            appSettings.copy(
+                                            appSettingsManager.activeSettings.value.copy(
                                                 songSortOrder = !sortOrder
                                             )
                                         )
@@ -936,7 +936,7 @@ fun OnDevicePlaylist(
                                                 onTitle = {
                                                     coroutineScope.launch {
                                                         appSettingsManager.updateSettings(
-                                                            appSettings.copy(
+                                                            appSettingsManager.activeSettings.value.copy(
                                                                 onDeviceSongSortBy = OnDeviceSongSortBy.Title
                                                             )
                                                         )
@@ -945,7 +945,7 @@ fun OnDevicePlaylist(
                                                 onDateAdded = {
                                                     coroutineScope.launch {
                                                         appSettingsManager.updateSettings(
-                                                            appSettings.copy(
+                                                            appSettingsManager.activeSettings.value.copy(
                                                                 onDeviceSongSortBy = OnDeviceSongSortBy.DateAdded
                                                             )
                                                         )
@@ -954,7 +954,7 @@ fun OnDevicePlaylist(
                                                 onArtist = {
                                                     coroutineScope.launch {
                                                         appSettingsManager.updateSettings(
-                                                            appSettings.copy(
+                                                            appSettingsManager.activeSettings.value.copy(
                                                                 onDeviceSongSortBy = OnDeviceSongSortBy.Artist
                                                             )
                                                         )
@@ -963,7 +963,7 @@ fun OnDevicePlaylist(
                                                 onAlbum = {
                                                     coroutineScope.launch {
                                                         appSettingsManager.updateSettings(
-                                                            appSettings.copy(
+                                                            appSettingsManager.activeSettings.value.copy(
                                                                 onDeviceSongSortBy = OnDeviceSongSortBy.Album
                                                             )
                                                         )

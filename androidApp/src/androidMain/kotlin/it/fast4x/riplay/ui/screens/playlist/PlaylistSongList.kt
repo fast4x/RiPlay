@@ -85,10 +85,8 @@ import it.fast4x.riplay.LocalSelectedQueue
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.commonutils.durationTextToMillis
-import it.fast4x.riplay.commonutils.setLikeState
 import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.data.Database.Companion.like
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.data.models.defaultQueue
@@ -102,6 +100,7 @@ import it.fast4x.riplay.extensions.qrcodeanalyzer.GenerateQrButton
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.riplay.extensions.persist.persistList
+import it.fast4x.riplay.services.playback.MediaLibraryServiceCallback
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.ShimmerHost
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
@@ -213,15 +212,7 @@ fun PlaylistSongList(
         }
     }
 
-    @Composable
-    fun checkLike(mediaId : String, song: Environment. SongItem) : Boolean {
-        LaunchedEffect(Unit, mediaId) {
-            withContext(Dispatchers.IO) {
-                isLiked = like( mediaId, setLikeState(song.asSong.likedAt))
-            }
-        }
-        return true
-    }
+
 
     LoaderScreen(show = playlistPage == null)
 
@@ -305,6 +296,7 @@ fun PlaylistSongList(
     }
 
     var dislikedSongs by persistList<String>("")
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         Database.dislikedSongsById().filterNotNull()
@@ -318,12 +310,14 @@ fun PlaylistSongList(
             value = playlistPage?.playlist?.title ?: "",
             placeholder = "https://........",
             setValue = { text ->
-                Database.asyncTransaction {
-                    val playlistId = insert(Playlist(name = text, browseId = browseId))
+                coroutineScope.launch(Dispatchers.Main) {
+                    withContext(Dispatchers.IO) {
+                        Database.asyncTransaction {
+                            val playlistId = insert(Playlist(name = text, browseId = browseId))
 
-                    playlistPage?.songs
+                            playlistPage?.songs
                                 ?.map(Environment.SongItem::asMediaItem)
-                                ?.onEach( ::insert )
+                                ?.onEach(::insert)
                                 ?.mapIndexed { index, mediaItem ->
                                     SongPlaylistMap(
                                         songId = mediaItem.mediaId,
@@ -332,10 +326,34 @@ fun PlaylistSongList(
                                     ).default()
                                 }
                                 ?.onEach(::insert)
+                        }
+                    }
 
+                    binder?.notifyAutoChildrenChanged(
+                        MediaLibraryServiceCallback.MediaId.PLAYLISTS
+                    )
+                    binder?.notifyAutoChildrenChanged(
+                        MediaLibraryServiceCallback.MediaId.PLAYLISTS_IN_LIBRARY
+                    )
+                    binder?.notifyAutoChildrenChanged(
+                        MediaLibraryServiceCallback.MediaId.PLAYLISTS_PINNED
+                    )
+                    binder?.notifyAutoChildrenChanged(
+                        MediaLibraryServiceCallback.MediaId.PLAYLISTS_MONTHLY
+                    )
+                    binder?.notifyAutoChildrenChanged(
+                        MediaLibraryServiceCallback.MediaId.PLAYLISTS_PODCAST
+                    )
+                    binder?.notifyAutoChildrenChanged(
+                        MediaLibraryServiceCallback.MediaId.PLAYLISTS_ONDEVICE
+                    )
 
+                    SmartMessage(
+                        context.resources.getString(R.string.done),
+                        PopupType.Success,
+                        context = context
+                    )
                 }
-                SmartMessage(context.resources.getString(R.string.done), PopupType.Success, context = context)
             }
         )
     }
@@ -348,7 +366,7 @@ fun PlaylistSongList(
 
     val lazyListState = rememberLazyListState()
 
-    val coroutineScope = rememberCoroutineScope()
+
 
     var showFastShare by remember { mutableStateOf(false) }
     var showDirectFastShare by remember { mutableStateOf(false) }
@@ -494,7 +512,8 @@ fun PlaylistSongList(
                                 )
 
                                 GenerateQrButton(
-                                    Modifier.align(Alignment.TopCenter)
+                                    Modifier
+                                        .align(Alignment.TopCenter)
                                         .padding(top = 5.dp),
                                     QrType.playlist, browseId
                                 )

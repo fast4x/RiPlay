@@ -997,7 +997,7 @@ fun Queue(
                             onClick = {
                                 coroutineScope.launch {
                                     val new =
-                                        appSettings.copy(discoverIsEnabled = !discoverIsEnabled)
+                                        appSettingsManager.activeSettings.value.copy(discoverIsEnabled = !discoverIsEnabled)
                                     appSettingsManager.updateSettings(new)
                                 }
                                 onDiscoverClick(discoverIsEnabled)
@@ -1016,7 +1016,7 @@ fun Queue(
                         onClick = {
                             coroutineScope.launch {
                                 appSettingsManager.updateSettings(
-                                    appSettings.copy(
+                                    appSettingsManager.activeSettings.value.copy(
                                         isReorderDisabled = !isReorderDisabled
                                     )
                                 )
@@ -1032,7 +1032,7 @@ fun Queue(
                         onClick = {
                             coroutineScope.launch {
                                 val new =
-                                    appSettings.copy(queueLoopType = setQueueLoopState(queueLoopType))
+                                    appSettingsManager.activeSettings.value.copy(queueLoopType = setQueueLoopState(queueLoopType))
                                 appSettingsManager.updateSettings(new)
                             }
                         }

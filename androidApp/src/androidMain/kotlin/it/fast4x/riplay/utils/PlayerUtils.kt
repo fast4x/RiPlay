@@ -58,7 +58,7 @@ val Song.isSpotifyTrack: Boolean
 
 val DataSpec.isLocal
     @OptIn(UnstableApi::class)
-    get() = key?.startsWith(LOCAL_KEY_PREFIX) == true
+    get() = key?.startsWith(LOCAL_KEY_PREFIX) == true || uri.toString().startsWith(LOCAL_KEY_PREFIX)
 
 val DataSpec.isMusicVault
     @OptIn(UnstableApi::class)

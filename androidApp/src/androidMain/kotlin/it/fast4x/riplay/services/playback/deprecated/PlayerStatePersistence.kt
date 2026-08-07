@@ -1,8 +1,4 @@
-package it.fast4x.riplay.services.playback
-
-import android.content.Context
-import it.fast4x.riplay.extensions.preferences.preferences
-import timber.log.Timber
+package it.fast4x.riplay.services.playback.deprecated
 
 /*
 class PlayerStatePersistence(context: Context) {

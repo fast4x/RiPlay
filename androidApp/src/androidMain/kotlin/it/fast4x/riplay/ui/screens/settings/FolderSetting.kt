@@ -53,7 +53,7 @@ fun FolderSetting(
             )
             scope.launch {
                 appSettingsManager.updateSettings(
-                    appSettings.copy(
+                    appSettingsManager.activeSettings.value.copy(
                         folderPath = extractPathFromTreeUri(
                             it
                         )
@@ -86,7 +86,7 @@ fun FolderSetting(
             Text(
                 text = stringResource(R.string.settings_music_vault_restore_default_folder),
                 color = colorPalette().text,
-                modifier = Modifier.clickable { scope.launch { appSettingsManager.updateSettings(appSettings.copy(folderPath = AppSettings().folderPath)) } }
+                modifier = Modifier.clickable { scope.launch { appSettingsManager.updateSettings(appSettingsManager.activeSettings.value.copy(folderPath = AppSettings().folderPath)) } }
             )
         }
     }

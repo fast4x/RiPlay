@@ -29,7 +29,7 @@ class EqualizerHelper(private val context: Context) {
 
             scope.launch {
                 appSettingsManager.updateSettings(
-                    appSettings.copy(
+                    appSettingsManager.activeSettings.value.copy(
                         eqEnabled = isEnabled,
                         eqPreset = presetName,
                         eqBands = bandsString
@@ -207,7 +207,7 @@ class EqualizerHelper(private val context: Context) {
         try {
             equalizer?.enabled = enabled
             scope.launch {
-                appSettingsManager.updateSettings(appSettings.copy(eqEnabled = enabled))
+                appSettingsManager.updateSettings(appSettingsManager.activeSettings.value.copy(eqEnabled = enabled))
             }
         } catch (e: Exception) {
             Timber.d("EqualizerHelper Errore set enabled ${e.message}")

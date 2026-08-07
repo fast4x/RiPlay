@@ -8,11 +8,11 @@ import androidx.media3.common.Player.REPEAT_MODE_ONE
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.SessionCommand
 import it.fast4x.riplay.R
-import it.fast4x.riplay.services.playback.MediaSessionConstants.CommandSearch
-import it.fast4x.riplay.services.playback.MediaSessionConstants.CommandStartRadio
-import it.fast4x.riplay.services.playback.MediaSessionConstants.CommandToggleLike
-import it.fast4x.riplay.services.playback.MediaSessionConstants.CommandToggleRepeatMode
-import it.fast4x.riplay.services.playback.MediaSessionConstants.CommandToggleShuffle
+import it.fast4x.riplay.services.playback.MediaLibraryServiceCallback.MediaSessionConstants.CommandSearch
+import it.fast4x.riplay.services.playback.MediaLibraryServiceCallback.MediaSessionConstants.CommandStartRadio
+import it.fast4x.riplay.services.playback.MediaLibraryServiceCallback.MediaSessionConstants.CommandToggleLike
+import it.fast4x.riplay.services.playback.MediaLibraryServiceCallback.MediaSessionConstants.CommandToggleRepeatMode
+import it.fast4x.riplay.services.playback.MediaLibraryServiceCallback.MediaSessionConstants.CommandToggleShuffle
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.utils.appContext
 

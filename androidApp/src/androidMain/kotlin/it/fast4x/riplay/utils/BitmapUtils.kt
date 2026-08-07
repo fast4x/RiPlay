@@ -25,6 +25,7 @@ import timber.log.Timber
 import java.util.concurrent.ExecutionException
 import kotlin.toString
 import androidx.core.graphics.createBitmap
+import androidx.core.graphics.drawable.toBitmap
 import coil.transform.Transformation
 
 suspend fun getBitmapFromUrl(context: Context, url: String): Bitmap {
@@ -48,6 +49,7 @@ class BitmapLoader(
     private val scope: CoroutineScope,
     private val bitmapSize: Int,
 ) : BitmapLoader {
+
     override fun supportsMimeType(mimeType: String): Boolean = mimeType.startsWith("image/")
 
     override fun decodeBitmap(data: ByteArray): ListenableFuture<Bitmap> =
@@ -57,23 +59,36 @@ class BitmapLoader(
 
     override fun loadBitmap(uri: Uri): ListenableFuture<Bitmap> =
         scope.future(Dispatchers.IO) {
+            val targetUrl = uri.toString().toThumbnail(bitmapSize)
+
             val result = context.imageLoader.execute(
                 ImageRequest.Builder(context)
-                    //.networkCachePolicy(CachePolicy.ENABLED)
-                    .data(uri.toString().toThumbnail(bitmapSize))
+                    .data(targetUrl)
                     .size(bitmapSize)
                     .bitmapConfig(Bitmap.Config.ARGB_8888)
-                    .allowHardware(false)
-                    .diskCacheKey(uri.toString().toThumbnail(bitmapSize).toString())
+                    .allowHardware(false) // Mantiene la bitmap software per Android Auto
+                    .diskCacheKey(targetUrl)
                     .build()
             )
+
+            // 1. GESTIONE ERRORI CORRETTA: Lanciamo l'eccezione originale senza annidarla
             if (result is ErrorResult) {
-                throw ExecutionException(result.throwable)
+                throw result.throwable
             }
+
+            // 2. ESTRAZIONE SICURA DELLA BITMAP: Evita il ClassCastException con i Drawable complessi
             try {
-                (result.drawable as BitmapDrawable).bitmap
+                val drawable = result.drawable
+                if (drawable is BitmapDrawable) {
+                    drawable.bitmap
+                } else {
+                    // Se Coil restituisce un CrossfadeDrawable o altro, lo convertiamo in modo sicuro in Bitmap
+                    drawable?.toBitmap(width = bitmapSize, height = bitmapSize, config = Bitmap.Config.ARGB_8888)
+                        ?: error("Drawable convertito è nullo")
+                }
             } catch (e: Exception) {
-                throw ExecutionException(e)
+                // Lanciamo l'eccezione nativa, ci penserà la coroutine a impacchettarla per Media3
+                throw e
             }
         }
 }

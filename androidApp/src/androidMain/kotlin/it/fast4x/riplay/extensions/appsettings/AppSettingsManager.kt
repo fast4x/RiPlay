@@ -53,12 +53,12 @@ class AppSettingsManager {
         dao.updateSettings(settings) // Aggiorna il DB
     }
 
-
+// Da usare in debug per intercettare la provenienza della chiamata
 //    suspend fun updateSettings(newSettings: AppSettings) {
 //        val json = DbSettingsJson.encodeToString(newSettings)
 //
 //        // LOG PARANOICO: Intercetta TUTTI i salvataggi
-//        Timber.e("BREAK!!! SALVATAGGIO INTERCETTATO !!! JSON lunghissima: $json")
+//        Timber.e("BREAK!!! SALVATAGGIO INTERCETTATO !!! lunghezza json = ${json.length} JSON: $json")
 //
 //        // L'eccezione finta per avere lo stack trace CHIUDI
 //

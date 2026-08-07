@@ -72,7 +72,7 @@ fun MusicVaultFolderSetting() {
 
             coroutineScope.launch {
                 appSettingsManager.updateSettings(
-                    appSettings.copy(musicVaultPath = it.toString())
+                    appSettingsManager.activeSettings.value.copy(musicVaultPath = it.toString())
                 )
             }
             Timber.d("MusicVaultFolderSetting folderPicke.r musicVaultPath: $musicVaultPath")
@@ -108,7 +108,7 @@ fun MusicVaultFolderSetting() {
                     // verrà interpretata come "usa la cartella di default"
                     coroutineScope.launch {
                         appSettingsManager.updateSettings(
-                            appSettings.copy(musicVaultPath = "")
+                            appSettingsManager.activeSettings.value.copy(musicVaultPath = "")
                         )
                     }
                 }

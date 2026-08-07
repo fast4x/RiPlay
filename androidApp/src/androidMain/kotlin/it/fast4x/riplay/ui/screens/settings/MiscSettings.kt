@@ -175,11 +175,11 @@ fun MiscSettings() {
                             coroutineScope.launch {
                                 if (it) {
                                     if (disclaimerAccepted) {
-                                        val new = appSettings.copy(musicVaultEnabled = true)
+                                        val new = appSettingsManager.activeSettings.value.copy(musicVaultEnabled = true)
                                         appSettingsManager.updateSettings(new)
                                     } else showDisclaimer = true
                                 } else {
-                                    val new = appSettings.copy(
+                                    val new = appSettingsManager.activeSettings.value.copy(
                                         musicVaultEnabled = false,
                                         musicVaultDisclaimerAccepted = false
                                     )
@@ -194,7 +194,7 @@ fun MiscSettings() {
                         MusicVaultDisclaimerDialog(
                             onAccept = {
                                 coroutineScope.launch {
-                                    val new = appSettings.copy(
+                                    val new = appSettingsManager.activeSettings.value.copy(
                                         musicVaultEnabled = true,
                                         musicVaultDisclaimerAccepted = true
                                     )
@@ -247,7 +247,7 @@ fun MiscSettings() {
                     isChecked = logDebugEnabled,
                     onCheckedChange = {
                         coroutineScope.launch {
-                            val new = appSettings.copy(logDebugEnabled = it)
+                            val new = appSettingsManager.activeSettings.value.copy(logDebugEnabled = it)
                             appSettingsManager.updateSettings(new)
                         }
 

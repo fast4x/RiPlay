@@ -421,7 +421,7 @@ fun AutoBackupContent(
             )
             scope.launch {
                 appSettingsManager.updateSettings (
-                    appSettings.copy(autoBackupFolder = uri.toString())
+                    appSettingsManager.activeSettings.value.copy(autoBackupFolder = uri.toString())
                 )
             }
         }

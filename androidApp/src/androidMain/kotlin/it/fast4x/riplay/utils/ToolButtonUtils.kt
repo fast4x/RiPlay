@@ -30,7 +30,7 @@ fun viewTypeToolbutton(messageId: Int): MenuIcon = object : MenuIcon, DynamicCol
     override fun onShortClick() {
         scope.launch {
             appSettingsManager.updateSettings(
-                appSettings.copy(
+                appSettingsManager.activeSettings.value.copy(
                     viewType = if (viewType == ViewType.Grid) ViewType.List else ViewType.Grid
                 )
             )

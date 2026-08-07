@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,11 +28,14 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.ui.components.themed.CachedAccountsSelectorDialog
 import it.fast4x.riplay.ui.components.themed.DefaultDialog
 import it.fast4x.riplay.ui.components.themed.LoaderScreen
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.json.JSONTokener
 import timber.log.Timber
+import kotlin.time.Duration.Companion.milliseconds
 
 private const val VISITOR_DATA_SCRIPT =
     "(function() { return window.yt && window.yt.config_ ? window.yt.config_.VISITOR_DATA : null; })()"
@@ -71,7 +75,6 @@ fun AccountLogin(
     var showSelectorDialog by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(true) }
 
-    //val jsonCachedAccounts by rememberPreference(PreferenceKey.YT_CACHED_ACCOUNTS.key, "")
     val jsonCachedAccounts = appSettings.ytCachedAccounts
     Timber.d("AccountLogin INITIAL CachedAccountProfile jsonString $jsonCachedAccounts ")
     val cachedAccounts = remember(jsonCachedAccounts) {
@@ -107,13 +110,13 @@ fun AccountLogin(
 
                         Timber.d("AccountLogin: save login preferences")
                         appSettingsManager.updateSettings(
-                            appSettings.copy(
+                            appSettingsManager.activeSettings.value.copy(
                                 ytPageId = account.pageId.toString(),
                                 ytAuthUser = account.authUser.toString(),
                                 ytAccountName = account.name.toString(),
                                 ytAccountEmail = account.email.toString(),
                                 ytAccountChannelHandle = account.channelHandle.toString(),
-                                ytAccountThumbnail = account.thumbnailUrl.toString()
+                                ytAccountThumbnail = account.thumbnailUrl.toString(),
                             )
                         )
 //                        localContext.preferences.edit {putString(PreferenceKey.YT_PAGEID.key, account.pageId)}
@@ -238,28 +241,42 @@ fun AccountLogin(
                         val currentUrl = this.url
                         val freshCookie = CookieManager.getInstance().getCookie(currentUrl)
 
-                        Timber.d("AccountLogin: User confirmed login.")
+                        Timber.d("AccountLogin: loadSessionAction -> freshCookie = $freshCookie")
 
                         refreshYouTubeConfig { refreshedVisitorData, refreshedDataSyncId ->
                             scope.launch {
-                                delay(200)
-
                                 Timber.d("AccountLogin: save login preferences")
-                                appSettingsManager.updateSettings(
-                                    appSettings.copy(
-                                        ytCookie = freshCookie,
-                                        ytVisitorData = refreshedVisitorData,
-                                        ytDataSyncId = refreshedDataSyncId
+
+                                // Leggo lo stato
+                                val currentState = appSettingsManager.activeSettings.value
+
+                                withContext(Dispatchers.IO) {
+                                    appSettingsManager.updateSettings(
+                                        currentState.copy(
+                                            ytCookie = freshCookie.toString()
+                                        )
                                     )
-                                )
-//                                context.preferences.edit { putString(YT_VISITOR_DATA.key, refreshedVisitorData) }
-//                                context.preferences.edit { putString(YT_DATA_SYNC_ID.key, refreshedDataSyncId) }
-//                                context.preferences.edit { putString(YT_COOKIE.key, freshCookie) }
-                                delay(200)
+                                    Timber.d("AccountLogin: loadSessionAction -> saved freshCookie = $freshCookie")
+                                }
+
+                                delay(200.milliseconds)
+
+                                // Rileggo lo stato
+                                val stateWithCookie = appSettingsManager.activeSettings.value
+
+                                withContext(Dispatchers.IO) {
+                                    appSettingsManager.updateSettings(
+                                        stateWithCookie.copy(
+                                            ytVisitorData = refreshedVisitorData,
+                                            ytDataSyncId = refreshedDataSyncId
+                                        )
+                                    )
+                                    Timber.d("AccountLogin: loadSessionAction -> saved visitorData = $refreshedVisitorData and dataSyncId = $refreshedDataSyncId")
+                                }
+
+                                delay(200.milliseconds)
 
                                 Timber.d("AccountLogin: Initialize Environment")
-                                Timber.d("AccountLogin: freshCookie $freshCookie")
-
                                 Environment.cookie = freshCookie
                                 Environment.dataSyncId = refreshedDataSyncId
                                 Environment.visitorData = refreshedVisitorData
@@ -267,46 +284,43 @@ fun AccountLogin(
                                 Timber.d("AccountLogin: Initialized, get account info")
 
                                 Environment.accountInfo().onSuccess {
-                                    appSettingsManager.updateSettings(
-                                        appSettings.copy(
-                                            ytAccountName = it?.name.orEmpty(),
-                                            ytAccountEmail = it?.email.orEmpty(),
-                                            ytAccountChannelHandle = it?.channelHandle.orEmpty(),
-                                            ytAccountThumbnail = it?.thumbnailUrl.orEmpty()
-                                        )
-                                    )
-//                                    context.preferences.edit { putString(YT_ACCOUNT_NAME.key, it?.name.orEmpty()) }
-//                                    context.preferences.edit { putString(YT_ACCOUNT_EMAIL.key, it?.email.orEmpty()) }
-//                                    context.preferences.edit { putString(YT_ACCOUNT_CHANNEL_HANDLE.key, it?.channelHandle.orEmpty()) }
-//                                    context.preferences.edit { putString(YT_ACCOUNT_THUMBNAIL.key, it?.thumbnailUrl.orEmpty()) }
-                                    delay(200)
+                                    // Rileggo ancora lo stato
+                                    val stateWithInfo = appSettingsManager.activeSettings.value
 
-                                    Timber.d("AccountLogin: Logged in as ${it?.name}, restarting app...")
+                                    withContext(Dispatchers.IO) {
+                                        appSettingsManager.updateSettings(
+                                            stateWithInfo.copy(
+                                                ytAccountName = it?.name.orEmpty(),
+                                                ytAccountEmail = it?.email.orEmpty(),
+                                                ytAccountChannelHandle = it?.channelHandle.orEmpty(),
+                                                ytAccountThumbnail = it?.thumbnailUrl.orEmpty(),
+                                            )
+                                        )
+                                    }
+
+                                    delay(200.milliseconds)
+                                    Timber.d("AccountLogin: Logged in as ${it?.name}")
 
                                 }.onFailure {
                                     Timber.e(it, "AccountLogin: Authentication error")
+                                    return@launch
                                 }
 
-                                /*
-                                Environment.getRawAccountListWithPageId().onSuccess {
-                                    saveFileToInternalStorage(context, "AccountSwitcherResponse", it)
-                                }.onFailure {
-                                    Timber.e(it, "AccountLogin: getRawAccountListWithPageId error ${it.message}")
-                                }
-                                 */
                                 Environment.getAccountsList().onSuccess {
                                     Timber.d("AccountLogin: getAccountsList $it")
                                     val jsonString = Json.encodeToString(it)
                                     Timber.d("AccountLogin: getAccountsList salva jsonString $jsonString")
+
+                                    // Ancora una volta per essere sicuro che sia aggiornato
+                                    val finalState = appSettingsManager.activeSettings.value
+
                                     appSettingsManager.updateSettings(
-                                        appSettings.copy(ytCachedAccounts = jsonString)
+                                        finalState.copy(ytCachedAccounts = jsonString)
                                     )
-                                    //context.preferences.edit { putString(PreferenceKey.YT_CACHED_ACCOUNTS.key, jsonString) }
-                                    delay(200)
+                                    delay(200.milliseconds)
                                 }.onFailure {
                                     Timber.e(it, "AccountLogin: getAccountsList error ${it.message}")
                                 }
-
                             }
                         }
                     }

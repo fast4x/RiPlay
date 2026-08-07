@@ -409,7 +409,7 @@ fun HomePageExtended(
                         onClick = {
                             scope.launch {
                                 appSettingsManager.updateSettings(
-                                    appSettings.copy(homeType = when (homeType) {
+                                    appSettingsManager.activeSettings.value.copy(homeType = when (homeType) {
                                         HomeType.Tabbed -> HomeType.Classic
                                         else ->  HomeType.Tabbed
                                     })
@@ -453,7 +453,7 @@ fun HomePageExtended(
             onPlayEventTypeClick = {
                 scope.launch {
                     appSettingsManager.updateSettings(
-                        appSettings.copy(playEventsType = it)
+                        appSettingsManager.activeSettings.value.copy(playEventsType = it)
                     )
                 }
             },
@@ -512,7 +512,7 @@ fun HomePageExtended(
             onSelectCountryCode = {
                 refreshScope.launch {
                     appSettingsManager.updateSettings(
-                        appSettings.copy(selectedCountryCode = it)
+                        appSettingsManager.activeSettings.value.copy(selectedCountryCode = it)
                     )
                 }
             },

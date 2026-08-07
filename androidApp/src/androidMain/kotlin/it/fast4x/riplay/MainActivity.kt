@@ -162,7 +162,7 @@ import it.fast4x.riplay.cast.ritune.models.toRiTuneDevice
 import it.fast4x.riplay.cast.ritune.RiTuneCastSelector
 import it.fast4x.riplay.enums.CastType
 import it.fast4x.riplay.extensions.storagewarning.StorageWarningChecker
-import it.fast4x.riplay.services.playback.PlayerState
+import it.fast4x.riplay.services.playback.common.PlayerState
 import it.fast4x.riplay.ui.components.Snowfall
 import it.fast4x.riplay.ui.screens.player.unified.components.core.UnifiedPlayerView
 import it.fast4x.riplay.ui.screens.player.unified.UnifiedMiniPlayer
@@ -763,9 +763,7 @@ class MainActivity :
                     AppCompatDelegate.setApplicationLocales(if (languageApp.code == "") sysLocale else appLocale)
                 }
 
-                //cookie.value = preferences.getString(YT_COOKIE.key, "").toString()
                 cookie.value = appSettings.ytCookie
-                //visitorData.value = preferences.getString(YT_VISITOR_DATA.key, "").toString()
                 visitorData.value = appSettings.ytVisitorData
 
 
