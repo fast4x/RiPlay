@@ -3320,11 +3320,11 @@ private var pausedByZeroVolume = false
 
     fun updateWidgetState() {
         Timber.d("PlayerService updateWidgetState _playerState ${_playerState.value.isPlaying}")
-        val isPlaying = _playerState.value.isPlaying
-        val title = cleanPrefix(player.mediaMetadata.title.toString())
-        val artist = player.mediaMetadata.artist.toString()
+        serviceScope.launch {
+            val isPlaying = _playerState.value.isPlaying
+            val title = withContext(Dispatchers.Main) { cleanPrefix(player.mediaMetadata.title.toString()) }
+            val artist = withContext(Dispatchers.Main) { player.mediaMetadata.artist.toString() }
 
-        serviceScope.launch(Dispatchers.IO) {
             val artworkBase64 = getOptimizedArtworkBase64(bitmapProvider?.bitmap)
 
             playerHorizontalWidget.updateState(
