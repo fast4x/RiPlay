@@ -8,6 +8,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -68,7 +69,7 @@ fun HomeScreen(
     openTabFromShortcut: Int
 ) {
     val appSettingsManager = LocalAppSettingsManager.current
-    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appSettings = appSettingsManager.activeSettings.collectAsState().value
 
     val recommendationService = Dependencies.application.recommendationService
 
@@ -78,9 +79,6 @@ fun HomeScreen(
 
     val saveableStateHolder = rememberSaveableStateHolder()
 
-    //val preferences = LocalContext.current.preferences
-    //val enableQuickPicksPage by rememberPreference(enableQuickPicksPageKey.key, true)
-
     val isNetworkConnected = rememberIsNetworkConnected()
 
     val coroutineScope = rememberCoroutineScope()
@@ -89,9 +87,12 @@ fun HomeScreen(
         mutableIntStateOf(openTabFromShortcut)
     }
 
-    //Timber.d("HomeScreen appSettings.homeScreenTabIndex ${appSettings.homeScreenTabIndex}")
+    Timber.d("HomeScreen appSettings.homeScreenTabIndex ${appSettings.homeScreenTabIndex} openTabFromShortcut1 $openTabFromShortcut1")
 
-    val tabIndex = if (openTabFromShortcut1 == -1) appSettings.homeScreenTabIndex else openTabFromShortcut1
+    var tabIndex = appSettings.homeScreenTabIndex
+    LaunchedEffect(Unit,appSettings.homeScreenTabIndex) {
+        tabIndex = appSettings.homeScreenTabIndex
+    }
 
     val offlineModeEnabled = appSettings.offlineModeEnabled
     LaunchedEffect(Unit, offlineModeEnabled) {
@@ -120,6 +121,7 @@ fun HomeScreen(
         }
     }
 
+
     ScreenContainer(
         navController,
         tabIndex,
@@ -129,6 +131,7 @@ fun HomeScreen(
                     appSettingsManager.activeSettings.value.copy(homeScreenTabIndex = it)
                 )
             }
+            Timber.d("HomeScreen clicked  homeScreenTabIndex = $it in db = ${appSettingsManager.activeSettings.value.homeScreenTabIndex}")
         },
         miniPlayer,
         transitionEffect = transitionEffect,
@@ -142,7 +145,7 @@ fun HomeScreen(
 
         }
     ) { currentTabIndex ->
-        saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
+        //saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
             when (currentTabIndex) {
                 0 -> when(homePageType) {
                     HomePagetype.Extended -> HomePageExtended(
@@ -308,7 +311,7 @@ fun HomeScreen(
                 )
 
             }
-        }
+        //}
     }
 
 
