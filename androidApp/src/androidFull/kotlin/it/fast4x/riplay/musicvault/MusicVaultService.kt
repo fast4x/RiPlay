@@ -133,31 +133,3 @@ object MusicVaultService {
     }
 
 }
-
-/* How to
-// Avvia il download
-MusicVaultService.enqueue(context, song)
-
-// Cancella il download
-MusicVaultService.cancel(context, song.id)
-
-// Osserva lo stato (in un ViewModel o Composable)
-MusicVaultService.observeState(context, song.id)
-    .collect { state ->
-        when (state) {
-            MusicVaultState.DOWNLOADING -> // mostra progress
-            MusicVaultState.COMPLETED   -> // mostra icona completato
-            MusicVaultState.FAILED      -> // mostra errore
-            else -> {}
-        }
-    }
-
-// Riproduci con ExoPlayer
-val file = MusicVaultService.resolveAudioFile(context, song)
-if (file != null) {
-    // file.absolutePath a ExoPlayer
-} else {
-    // file non trovato, riscaricare?
-}
-
- */
