@@ -138,7 +138,7 @@ fun OnboardingScreen(
             )
 
             val btGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                checkPermission(Manifest.permission.BLUETOOTH_CONNECT)
+                checkPermission(Manifest.permission.BLUETOOTH)
             } else {
                 true
             }
@@ -152,7 +152,7 @@ fun OnboardingScreen(
                     status = if (btGranted) PermissionStatus.GRANTED else PermissionStatus.NOT_REQUESTED,
                     onRequest = {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                            permissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
+                            permissionLauncher.launch(Manifest.permission.BLUETOOTH)
                         }
                     }
                 )

@@ -177,7 +177,6 @@ import it.fast4x.riplay.musicvault.MusicVaultEvents
 import it.fast4x.riplay.musicvault.MusicVaultRepository
 import it.fast4x.riplay.musicvault.MusicVaultState
 import it.fast4x.riplay.services.helpers.AudioDRCHelper
-import it.fast4x.riplay.services.helpers.BluetoothConnectHelper
 import it.fast4x.riplay.services.helpers.EqualizerHelper
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.ui.widgets.PlayerHorizontalWidget
@@ -379,8 +378,6 @@ class PlayerService : MediaLibraryService(),
 
     var firstTimeStarted by mutableStateOf(true)
 
-    private var bluetoothReceiver: BluetoothConnectHelper? = null
-
     private val riTuneCastClient: RiTuneCastClient = RiTuneCastClient()
     private var riTuneObserverJob: Job? = null
     private var riTunePlayerState: RiTunePlayerState? = null
@@ -398,10 +395,10 @@ class PlayerService : MediaLibraryService(),
     private var audioDeviceCallback: AudioDeviceCallback? = null
     private val handler = Handler(Looper.getMainLooper())
     private val bluetoothDeviceTypes = buildSet {
-        add(AudioDeviceInfo.TYPE_BLUETOOTH_A2DP)
-        add(AudioDeviceInfo.TYPE_BLUETOOTH_SCO)
+        add(AudioDeviceInfo.TYPE_BLUETOOTH_A2DP) // Cuffie e stereo multimediali standard
+        add(AudioDeviceInfo.TYPE_BLUETOOTH_SCO) // Auricolari in modalità chiamata / Mono headset
         if (isAtLeastAndroid12) {
-            add(AudioDeviceInfo.TYPE_BLE_HEADSET)
+            add(AudioDeviceInfo.TYPE_BLE_HEADSET) // Nuove cuffie e auricolari True Wireless con Bluetooth LE Audio (Android 13+)
         }
     }
 
@@ -1874,7 +1871,6 @@ class PlayerService : MediaLibraryService(),
             cache.release()
             loudnessEnhancer?.release()
             audioVolumeObserver.unregister()
-            //bluetoothReceiver?.unregister()
             discordPresenceManager?.onStop()
 
             endedObserverJob?.cancel()
@@ -2488,19 +2484,12 @@ private var pausedByZeroVolume = false
         val resumeOnBt = appSettings.resumeOrPausePlaybackWhenDeviceBt
         val resumeOnWired = appSettings.resumeOrPausePlaybackWhenDeviceWired
 
-        // Se l'utente ha disabilitato entrambe, rimuovo il callback e risparmiiamo risorse
         if (!resumeOnBt && !resumeOnWired) {
             unregisterAudioDeviceCallback()
             return
         }
 
-        // Evitiamo di ricreare il callback se è già registrato
         if (audioDeviceCallback != null) return
-
-        // Verifica permesso Bluetooth (Android 12+)
-        val hasBtPermission = if (isAtLeastAndroid12) {
-            ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
-        } else true
 
         audioDeviceCallback = object : AudioDeviceCallback() {
 
@@ -2513,16 +2502,13 @@ private var pausedByZeroVolume = false
             }
 
             override fun onAudioDevicesAdded(addedDevices: Array<AudioDeviceInfo>) {
-
                 val hasNewBt = addedDevices.any(::isBluetoothSink)
                 val hasNewWired = addedDevices.any(::isWiredSink)
 
-                // Logica di Play: rispettiamo le preferenze dell'utente
                 val shouldPlay = (hasNewBt && resumeOnBt) || (hasNewWired && resumeOnWired)
 
                 if (shouldPlay) {
                     val local = currentSong.value?.isLocal == true
-                    Timber.d("PlayerService AudioDeviceAdded song local = $local _internalOnlinePlayer = ${_internalOnlinePlayer.value}")
                     if (local) {
                         player.play()
                     } else {
@@ -2536,23 +2522,17 @@ private var pausedByZeroVolume = false
             }
 
             override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo>) {
-
                 val removedBt = removedDevices.any(::isBluetoothSink)
                 val removedWired = removedDevices.any(::isWiredSink)
 
                 if (removedBt || removedWired) {
-                    // Prima di mettere in pausa, controllo se ci sono ALTRI dispositivi collegati
                     val currentDevices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
                     val hasRemainingBt = currentDevices?.any(::isBluetoothSink) == true
                     val hasRemainingWired = currentDevices?.any(::isWiredSink) == true
 
-                    // Mettiamo in pausa SOLO se non ci sono più dispositivi di output validi ??
-                    // Questo evita che la musica si fermi se scollego il jack
-                    // ma ho ancora le cuffie BT collegate.
                     if (!hasRemainingBt && !hasRemainingWired) {
                         player.pause()
                         _internalOnlinePlayer.value?.pause()
-
                         SmartMessage(getString(R.string.music_paused_headphones_disconnected), context = this@PlayerService)
                     }
                 }
