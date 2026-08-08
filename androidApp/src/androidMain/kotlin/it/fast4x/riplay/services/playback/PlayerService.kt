@@ -3696,8 +3696,10 @@ private var pausedByZeroVolume = false
                 for (i in 0 until itemCount) {
                     val mediaItem = player.getMediaItemAt(i)
                     val itemId = mediaItem.mediaId
+                    val currentMediaItem = player.currentMediaItem
 
-                    if (itemId == songId) {
+                    // Aggiorno il mediaitem in coda ma solo se non è in riproduzione
+                    if (itemId == songId && currentMediaItem?.mediaId != songId ) {
                         if (fileName.isNotEmpty()) {
                             // Costruzione URI corretto
                             val uri = if (fileName.startsWith("content://")) {
