@@ -3,6 +3,9 @@ package it.fast4x.androidyoutubeplayer.core.player.views
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
+import android.media.AudioManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -148,68 +151,43 @@ internal class WebViewYouTubePlayer constructor(
 
     loadDataWithBaseURL(playerOptions.getOrigin(), htmlPage, "text/html", "utf-8", null)
 
-    /* iniettato direttamente nel file raw
-    // Fix downgrade volume
-    webViewClient = object : WebViewClient() {
-      override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-        super.onPageStarted(view, url, favicon)
-        view?.evaluateJavascript("""
-            (function() {
-                // Salva il costruttore originale
-                const OriginalAudioContext = window.AudioContext || window.webkitAudioContext;
-                
-                function PatchedAudioContext(options) {
-                    const ctx = new OriginalAudioContext(options);
-                    
-                    // Disabilita compressore
-                    const origCompressor = ctx.createDynamicsCompressor.bind(ctx);
-                    ctx.createDynamicsCompressor = function() {
-                        const c = origCompressor();
-                        c.threshold.value = 0;
-                        c.knee.value = 0;
-                        c.ratio.value = 1;
-                        c.attack.value = 0;
-                        c.release.value = 0;
-                        return c;
-                    };
-                    
-                    return ctx;
-                }
-                
-                // Sostituisci globalmente
-                PatchedAudioContext.prototype = OriginalAudioContext.prototype;
-                window.AudioContext = PatchedAudioContext;
-                window.webkitAudioContext = PatchedAudioContext;
-            })();
-        """, null)
-      }
-    }
-    */
-
-      // TODO MAYBE NOT NEEDED
-      /*
     webChromeClient = object : WebChromeClient() {
 
-        /*
-      override fun onShowCustomView(view: View, callback: CustomViewCallback) {
-        super.onShowCustomView(view, callback)
-        listener.onEnterFullscreen(view) { callback.onCustomViewHidden() }
+      private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+      private var focusRequest: AudioFocusRequest? = null
+
+      // Rileva quando la WebView richiede il playback multimediale (HTML5 Video)
+      override fun getDefaultVideoPoster(): Bitmap? {
+        requestAudioFocusEarly()
+        return super.getDefaultVideoPoster()
       }
 
-      override fun onHideCustomView() {
-        super.onHideCustomView()
-        listener.onExitFullscreen()
-      }
-         */
+      private fun requestAudioFocusEarly() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+          val playbackAttributes = AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_MEDIA)
+            .setContentType(AudioAttributes.CONTENT_TYPE_MOVIE)
+            .build()
 
-      override fun getDefaultVideoPoster(): Bitmap {
-        val result = super.getDefaultVideoPoster()
-        // if the video's thumbnail is not in memory, show a black screen
-        return result ?: createBitmap(1, 1, Bitmap.Config.RGB_565)
+          focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+            .setAudioAttributes(playbackAttributes)
+            .setAcceptsDelayedFocusGain(false)
+            .setWillPauseWhenDucked(false) // Impedisce l'attenuazione automatica
+            .setOnAudioFocusChangeListener { /* Gestisci variazioni se necessario */ }
+            .build()
+
+          focusRequest?.let { audioManager.requestAudioFocus(it) }
+        } else {
+          @Suppress("DEPRECATION")
+          audioManager.requestAudioFocus(
+            { },
+            AudioManager.STREAM_MUSIC,
+            AudioManager.AUDIOFOCUS_GAIN
+          )
+        }
       }
 
     }
-       */
 
 
   }

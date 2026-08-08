@@ -201,6 +201,13 @@ function hideTabletPopup() {
               hideVideoTitle()
               hideTabletPopup()
               hideCaption()
+              // Forza il volume al massimo internamente all'iframe JS
+              event.target.setVolume(100);
+              // Smuta dopo un piccolissimo delay (es. 200-400ms), sufficiente
+              // ad ingannare il fade-in del compressore audio della WebView
+              setTimeout(function() {
+                  event.target.unMute();
+              }, 300);
               YouTubePlayerBridge.sendReady()
     	    },
     		  onStateChange: function(event) { sendPlayerStateChange(event.data) },

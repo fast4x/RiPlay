@@ -1668,6 +1668,8 @@ class PlayerService : MediaLibraryService(),
                 .controls(0)
                 .listType("playlist")
                 .origin(resources.getString(R.string.env_fqqhBZd0cf))
+                .autoplay(1)
+                .mute(1)
                 .build()
 
 
