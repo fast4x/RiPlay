@@ -3,6 +3,11 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
+    <!-- Sblocca i DNS e i canali TCP prima che JS inizi a computare -->
+    <link rel="preconnect" href="https://youtube.com">
+    <link rel="preconnect" href="https://rr---sn-*.googlevideo.com">
+    <link rel="dns-prefetch" href="https://ytimg.com">
+
     <style type="text/css">
       html, body {
           height: 100%;
@@ -13,6 +18,12 @@
           overflow: hidden;
           position: fixed;
       }
+
+      /* Ottimizzazione GPU: dice ad Android di isolare il rendering di questa View */
+        #player {
+            will-change: transform;
+            transform: translateZ(0);
+        }
     </style>
 
     <script>

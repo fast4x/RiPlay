@@ -135,11 +135,24 @@ internal class WebViewYouTubePlayer constructor(
 
   @SuppressLint("SetJavaScriptEnabled")
   private fun initWebView(playerOptions: IFramePlayerOptions, videoId: String?) {
+
+    // Forza il rendering Hardware esplicito per questa WebView
+    setLayerType(LAYER_TYPE_HARDWARE, null)
+
+    // Impedisce alla WebView di generare eventi sonori di click o focus nativi
+    isSoundEffectsEnabled = false
+    isHapticFeedbackEnabled = false
+
     settings.apply {
       javaScriptEnabled = true
       domStorageEnabled = true
       mediaPlaybackRequiresUserGesture = false
-      cacheMode = WebSettings.LOAD_NO_CACHE
+
+      //cacheMode = WebSettings.LOAD_NO_CACHE
+
+      // Ottimizzazione aggressiva della Cache
+      cacheMode = WebSettings.LOAD_DEFAULT // Usa la cache se valida, altrimenti scarica
+
     }
 
     addJavascriptInterface(youTubePlayerBridge, "YouTubePlayerBridge")
