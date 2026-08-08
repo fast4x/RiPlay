@@ -156,7 +156,6 @@ import it.fast4x.riplay.utils.setDefaultPalette
 import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.extensions.databasebackup.BackupViewModel
 import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
-import it.fast4x.riplay.extensions.nsd.discoverNsdServices
 import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
 import it.fast4x.riplay.cast.ritune.models.toRiTuneDevice
 import it.fast4x.riplay.cast.ritune.RiTuneCastSelector
@@ -196,6 +195,7 @@ import it.fast4x.riplay.extensions.shazam.handleShazamShare
 import it.fast4x.riplay.extensions.qrcodeanalyzer.qrCodeToAction
 import it.fast4x.riplay.extensions.musicbrainz.viewmodels.AlbumInsightsViewModel
 import it.fast4x.riplay.extensions.musicbrainz.viewmodels.ArtistInsightsViewModel
+import it.fast4x.riplay.extensions.nsd.NsdDiscoveryManager
 import it.fast4x.riplay.extensions.preferences.cleanUpUnusedPreferences
 import it.fast4x.riplay.ui.screens.player.unified.TvUnifiedPlayer
 import it.fast4x.riplay.utils.isTvMode
@@ -297,128 +297,6 @@ class MainActivity :
     }
 
     private var showAutostartPermissionDialog = false
-
-    /*
-    private val permissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        val allGranted = permissions.entries.all { it.value }
-        if (allGranted) {
-            Timber.d("MainActivity all permissions are granted.")
-            // After standard permissions check autostart permission
-            checkAndRequestAutostartPermission()
-        } else {
-            Timber.w("MainActivity Some permissions are not granted.")
-            permissions.entries.forEach { (permission, isGranted) ->
-                if (!isGranted) {
-                    Timber.w("MainActivity Permission Not GRANTED: $permission")
-                }
-            }
-        }
-    }
-
-
-    private fun checkAndRequestStandardPermissions() {
-        val permissionsToRequest = mutableListOf<String>()
-
-        if (isAtLeastAndroid13) {
-            permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
-            permissionsToRequest.add(Manifest.permission.READ_MEDIA_AUDIO)
-            //In the future for local video
-            //permissionsToRequest.add(Manifest.permission.READ_MEDIA_VIDEO)
-        } else {
-            permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
-        }
-
-        if (isAtLeastAndroid12 && preferences.getBoolean(RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_BT.key, false))
-            permissionsToRequest.add(Manifest.permission.BLUETOOTH_CONNECT)
-
-
-        val permissionsNotGranted = permissionsToRequest.filter {
-            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
-        }
-
-        if (permissionsNotGranted.isNotEmpty()) {
-            permissionLauncher.launch(permissionsNotGranted.toTypedArray())
-        } else {
-            Timber.d("MainActivity Standard permissions already granted.")
-            if (showAutostartPermissionDialog)
-                checkAndRequestAutostartPermission()
-        }
-    }
-
-
-    private fun checkAndRequestAutostartPermission() {
-        val manufacturer = Build.MANUFACTURER.lowercase()
-
-        if (isManufacturerWithAutostart()) {
-            Timber.d("MainActivity Found vendor with autostart restrictions: $manufacturer")
-            showAutostartDialog()
-        } else {
-            Timber.d("MainActivity Vendor known already granted.")
-        }
-    }
-
-
-
-    private fun showAutostartDialog() {
-        AlertDialog.Builder(this)
-            .setTitle(resources.getString(R.string.enable_autostart))
-            .setMessage(getString(R.string.to_ensure_that_the_app_is_working_properly_in_the_background_e_g_for_notifications_or_music_playback_you_must_enable_autostart_do_you_want_to_open_the_settings_to_activate_it))
-            .setPositiveButton(getString(R.string.open_settings_now)) { _, _ ->
-                openAutostartSettings()
-            }
-            .setNegativeButton(getString(R.string.later), null)
-            .setCancelable(false)
-            .show()
-    }
-
-
-
-    private fun openAutostartSettings() {
-        try {
-            val intent = when (Build.MANUFACTURER.lowercase()) {
-                "xiaomi" -> Intent().apply {
-                    component = ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity")
-                }
-                "huawei" -> Intent().apply {
-                    component = ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.appcontrol.activity.StartupAppControlActivity")
-                }
-                "oppo" -> Intent().apply {
-                    component = ComponentName("com.coloros.safecenter", "com.coloros.safecenter.permission.startup.StartupAppListActivity")
-                }
-                "vivo" -> Intent().apply {
-                    component = ComponentName("com.iqoo.secure", "com.iqoo.secure.ui.phoneoptimize.AddWhiteListActivity")
-                }
-                "oneplus" -> Intent().apply {
-                    component = ComponentName("com.oneplus.security", "com.oneplus.security.chainlaunch.view.ChainLaunchAppListActivity")
-                }
-                "samsung" -> { // Samsung is more complicated, often going into battery settings
-                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                        data = Uri.fromParts("package", packageName, null)
-                    }
-                }
-                else -> {
-                    // Generic fallback, open app settings
-                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                        data = Uri.fromParts("package", packageName, null)
-                    }
-                }
-            }
-            startActivity(intent)
-            SmartMessage( "Search for 'Autostart' or 'Allow Startup' and activate it for this app.", context = this)
-        } catch (e: Exception) {
-            Timber.e("MainActivity Unable to open autostart settings. $e")
-            // Ultimate fallback: O, open app settings
-            val fallbackIntent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                data = Uri.fromParts("package", packageName, null)
-            }
-            startActivity(fallbackIntent)
-            SmartMessage( "Open the app settings and look for battery or autostart options.", context= this)
-        }
-    }
-
-     */
 
     override fun onStart() {
         super.onStart()
@@ -654,16 +532,22 @@ class MainActivity :
                 }
 
 
+                val nsdDiscoveryManager = remember { NsdDiscoveryManager(this) }
 
-                if (appSettings.castType == CastType.RITUNECAST) {
-                    //registerNsdService()
-                    discoverNsdServices(
-                        onServiceFound = { devices ->
-                            GlobalSharedData.riTuneDevices.value =
-                                devices.map { device -> device.toRiTuneDevice() }.toMutableStateList()
-                        }
-                    )
+                LaunchedEffect(appSettings.castType) {
+                    if (appSettings.castType == CastType.RITUNECAST) {
+                        nsdDiscoveryManager.discoverServices("_RiPlayLinkApp._tcp.")
+                            .collect { devicesList ->
+                                GlobalSharedData.riTuneDevices.value = devicesList
+                                    .map { device -> device.toRiTuneDevice() }
+                                    .toMutableStateList()
+                            }
+                    } else {
+                        // Se l'utente cambia tipo di cast, svuota la lista in modo pulito
+                        GlobalSharedData.riTuneDevices.value = mutableListOf()
+                    }
                 }
+
 
                 if (appSettings.shakeEventEnabled) {
                     sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
