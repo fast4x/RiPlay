@@ -160,9 +160,9 @@ fun OnDeviceAlbumDetails(
     val isNetworkConnected = rememberIsNetworkConnected()
 
     LaunchedEffect(Unit) {
-        Database.albumSongs(albumId).collect {
-            songs = if (parentalControlEnabled)
-                it.filter { !it.title.startsWith(EXPLICIT_PREFIX) } else it
+        Database.albumSongs(albumId).collect { list ->
+            songs = (if (parentalControlEnabled)
+                list.filter { !it.title.startsWith(EXPLICIT_PREFIX) } else list).reversed()
         }
     }
 
