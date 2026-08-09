@@ -108,11 +108,13 @@ import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.HomeDataCache
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.asVideoMediaItem
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
+import it.fast4x.riplay.utils.saveFileToInternalStorage
 import it.fast4x.riplay.utils.toMediaItem
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.CoroutineScope
@@ -220,12 +222,13 @@ fun HomePage(
                             val song = songs.firstOrNull { item ->
                                 blacklisted.value?.map { it.path }?.contains(item.id) == false
                             }
-                            val songId = if (song?.isLocal == true) song.mediaId else song?.id
+                            val songId = if (song?.isLocal == true) {
+                                song.mediaId ?: song.id
+                            } else song?.id
 
-                            if (relatedPage == null || trending?.id != song?.id || trending?.mediaId != song?.id) {
+                            if (relatedPage == null) {
                                 // Leggo relatedPage dalla cache se disponibile
-                                if (relatedPage == null && HomeDataCache.relatedPage != null
-                                    && trending?.id == HomeDataCache.trending?.id) {
+                                if (HomeDataCache.relatedPage != null) {
                                     relatedPage = HomeDataCache.relatedPage
                                     trending = HomeDataCache.trending
                                 } else {
@@ -248,14 +251,18 @@ fun HomePage(
                             else songs.shuffled()).firstOrNull { item ->
                                 blacklisted.value?.map { it.path }?.contains(item.id) == false
                             }
-                            val songId = if (song?.isLocal == true) song.mediaId else song?.id
+                            val songId = if (song?.isLocal == true) {
+                                song.mediaId ?: song.id
+                            } else song?.id
 
-                            if (relatedPage == null || trending?.id != song?.id || trending?.mediaId != song?.id) {
-                                if (relatedPage == null && HomeDataCache.relatedPage != null
-                                    && trending?.id == HomeDataCache.trending?.id) {
+                            if (relatedPage == null) {
+                                if (HomeDataCache.relatedPage != null) {
                                     relatedPage = HomeDataCache.relatedPage
                                     trending = HomeDataCache.trending
                                 } else {
+//                                    val json = Environment.rawNext(NextBody(videoId = (songId ?: "HZnNt9nnEhw"))).getOrNull()
+//                                    saveFileToInternalStorage(appContext(), "related.json", json ?: "")
+
                                     relatedPage = Environment.relatedPage(
                                         NextBody(videoId = (songId ?: "HZnNt9nnEhw"))
                                     )?.getOrNull().let { result ->

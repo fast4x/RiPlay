@@ -4,6 +4,7 @@ package it.fast4x.environment.requests
 import io.ktor.client.call.body
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.BrowseResponse
 import it.fast4x.environment.models.MusicCarouselShelfRenderer
@@ -19,10 +20,16 @@ import kotlinx.serialization.ExperimentalSerializationApi
 
 @ExperimentalSerializationApi
 suspend fun Environment.relatedPage(body: NextBody) = runCatchingNonCancellable {
-    val nextResponse = client.post(_NXIvG4ve8N) {
-        setBody(body)
-        mask("contents.singleColumnMusicWatchNextResultsRenderer.tabbedRenderer.watchNextTabbedResultsRenderer.tabs.tabRenderer(endpoint,title)")
-    }.body<NextResponse>()
+
+    val nextResponse = next(
+        body.context,
+        body.videoId,
+        body.playlistId,
+        body.playlistSetVideoId,
+        body.index,
+        body.params,
+        body.continuation
+    ).body<NextResponse>()
 
     val browseId = nextResponse
         .contents
@@ -30,26 +37,22 @@ suspend fun Environment.relatedPage(body: NextBody) = runCatchingNonCancellable 
         ?.tabbedRenderer
         ?.watchNextTabbedResultsRenderer
         ?.tabs
-        ?.getOrNull(2)
+        ?.getOrNull(3)
         ?.tabRenderer
         ?.endpoint
         ?.browseEndpoint
         ?.browseId
-        ?: return@runCatchingNonCancellable null
 
     val response = client.post(_3djbhqyLpE) {
+        setLogin(setLogin = true)
         setBody(BrowseBody(browseId = browseId))
-        mask("contents.sectionListRenderer.contents.musicCarouselShelfRenderer(header.musicCarouselShelfBasicHeaderRenderer(title,strapline),contents($musicResponsiveListItemRendererMask,$musicTwoRowItemRendererMask))")
     }.body<BrowseResponse>()
 
     val sectionListRenderer = response
         .contents
         ?.sectionListRenderer
 
-    println("mediaItem Innertube RelatedPage sectionListRenderer ${sectionListRenderer
-        ?.findSectionByTitle("You might also like")
-        ?.musicCarouselShelfRenderer
-        ?.contents}")
+    println("Environment relatedPage sectionListRenderer $sectionListRenderer")
 
     Environment.RelatedPage(
         songs = sectionListRenderer

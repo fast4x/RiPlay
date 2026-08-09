@@ -60,6 +60,7 @@ import it.fast4x.environment.utils.ProxyPreferences
 import it.fast4x.environment.utils.getProxy
 import it.fast4x.environment.utils.parseCookieString
 import it.fast4x.environment.utils.sha1
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
@@ -942,6 +943,10 @@ object Environment {
         browse(DefaultWeb.client, browseId, params, continuation, setLogin).bodyAsText()
     }
 
+    suspend fun rawNext(body: NextBody) = runCatching {
+        next(body.context, body.videoId, body.playlistId, body.playlistSetVideoId, body.index, body.params, body.continuation).bodyAsText()
+    }
+
     suspend fun next(
         context: Context = DefaultWeb2WithLocale,
         videoId: String?,
@@ -951,7 +956,7 @@ object Environment {
         params: String?,
         continuation: String? = null,
     ) = client.post(_NXIvG4ve8N) {
-        setLogin(context.client, false)
+        setLogin(context.client, true)
         setBody(
             NextBody(
                 context = context,
@@ -963,14 +968,15 @@ object Environment {
                 continuation = continuation,
             )
         )
-        parameter("continuation", continuation)
-        parameter("ctoken", continuation)
-        if (continuation != null) {
-            parameter("type", "next")
-        }
+//        parameter("continuation", continuation)
+//        parameter("ctoken", continuation)
+//        if (continuation != null) {
+//            parameter("type", "next")
+//        }
     }
 
 
+    @OptIn(ExperimentalSerializationApi::class)
     suspend fun library(browseId: String, tabIndex: Int = 0) = runCatching {
         val response = browse(
             browseId = browseId,
