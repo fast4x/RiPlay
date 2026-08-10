@@ -9,6 +9,9 @@ import androidx.core.os.bundleOf
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
+import it.fast4x.environment.Environment
+import it.fast4x.environment.models.NavigationEndpoint
+import it.fast4x.environment.models.Thumbnail
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.EXPLICIT_PREFIX
 import it.fast4x.riplay.data.Database
@@ -323,4 +326,15 @@ val MediaItem.origin: String
         this.isMusicVault -> "MUSIC VAULT"
         this.isLocal -> appContext().resources.getString(R.string.local_now_playing_title)
         else -> appContext().resources.getString(R.string.online_now_playing_title)
+    }
+
+val Song.asSongItem: Environment.SongItem
+    get() {
+        return Environment.SongItem(
+            info = Environment.Info(title,NavigationEndpoint.Endpoint.Watch(videoId = id)),
+            authors = listOf(Environment.Info(artistsText,null)),
+            album = null,
+            durationText = durationText,
+            thumbnail = Thumbnail(thumbnailUrl.toString(), 100, 100)
+        )
     }

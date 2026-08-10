@@ -43,6 +43,8 @@ suspend fun Environment.relatedPage(body: NextBody) = runCatchingNonCancellable 
         ?.browseEndpoint
         ?.browseId
 
+    println("Environment relatedPage related browseId $browseId")
+
     val response = client.post(_3djbhqyLpE) {
         setLogin(setLogin = true)
         setBody(BrowseBody(browseId = browseId))

@@ -56,6 +56,7 @@ import androidx.navigation.NavController
 import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.NavigationEndpoint
+import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.models.bodies.NextBody
 import it.fast4x.environment.requests.discoverPage
 import it.fast4x.environment.requests.relatedPage
@@ -73,6 +74,7 @@ import it.fast4x.riplay.data.models.Blacklist
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.service.RecommendationService
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.utils.RecommendationConstants
 import it.fast4x.riplay.extensions.listenerlevel.HomepageListenerLevelBadges
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.PullToRefreshBox
@@ -111,8 +113,11 @@ import it.fast4x.riplay.utils.HomeDataCache
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
+import it.fast4x.riplay.utils.asSongItem
 import it.fast4x.riplay.utils.asVideoMediaItem
 import it.fast4x.riplay.utils.forcePlay
+import it.fast4x.riplay.utils.getForgottenSongs
+import it.fast4x.riplay.utils.getUnplayedSongs
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 import it.fast4x.riplay.utils.saveFileToInternalStorage
 import it.fast4x.riplay.utils.toMediaItem
@@ -232,11 +237,13 @@ fun HomePage(
                                     relatedPage = HomeDataCache.relatedPage
                                     trending = HomeDataCache.trending
                                 } else {
-                                    relatedPage = Environment.relatedPage(
-                                        NextBody(videoId = (songId ?: "HZnNt9nnEhw"))
-                                    )?.getOrNull().let { result ->
-                                        result?.copyFiltered(blacklisted.value)
-                                    }
+                                    relatedPage = Environment.relatedPage(NextBody(videoId = songId))
+                                        ?.getOrNull()
+                                        ?.copyFiltered(blacklisted.value)
+                                        ?.takeIf { it.songs?.isNotEmpty() == true }
+                                        ?: getForgottenSongs().copyFiltered(blacklisted.value)
+                                                ?: getUnplayedSongs().copyFiltered(blacklisted.value)
+
                                     HomeDataCache.relatedPage = relatedPage
                                 }
                             }
@@ -260,14 +267,13 @@ fun HomePage(
                                     relatedPage = HomeDataCache.relatedPage
                                     trending = HomeDataCache.trending
                                 } else {
-//                                    val json = Environment.rawNext(NextBody(videoId = (songId ?: "HZnNt9nnEhw"))).getOrNull()
-//                                    saveFileToInternalStorage(appContext(), "related.json", json ?: "")
+                                    relatedPage = Environment.relatedPage(NextBody(videoId = songId))
+                                        ?.getOrNull()
+                                        ?.copyFiltered(blacklisted.value)
+                                        ?.takeIf { it.songs?.isNotEmpty() == true }
+                                        ?: getForgottenSongs().copyFiltered(blacklisted.value)
+                                        ?: getUnplayedSongs().copyFiltered(blacklisted.value)
 
-                                    relatedPage = Environment.relatedPage(
-                                        NextBody(videoId = (songId ?: "HZnNt9nnEhw"))
-                                    )?.getOrNull().let { result ->
-                                        result?.copyFiltered(blacklisted.value)
-                                    }
                                     HomeDataCache.relatedPage = relatedPage
                                 }
                             }

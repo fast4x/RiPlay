@@ -11,10 +11,12 @@ import it.fast4x.environment.Environment
 import it.fast4x.environment.requests.HomePage
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.enums.PlayEventsType
 import it.fast4x.riplay.enums.TopPlaylistPeriod
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.utils.RecommendationConstants
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.GlobalSheetState
 import it.fast4x.riplay.ui.components.themed.PeriodMenu
@@ -23,6 +25,10 @@ import it.fast4x.riplay.ui.components.tab.toolbar.DualIcon
 import it.fast4x.riplay.ui.components.tab.toolbar.DynamicColor
 import it.fast4x.riplay.ui.components.tab.toolbar.Menu
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
+import it.fast4x.riplay.utils.asSongItem
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 class HiddenSongs private constructor(
     private val showHiddenState: MutableState<Boolean>
@@ -137,4 +143,34 @@ object HomeDataCache {
         lastCountryCode = null
         lastPlayEventType = null
     }
+}
+
+suspend fun getForgottenSongs(): Environment.RelatedPage? {
+    val now = System.currentTimeMillis()
+    val olderThan = now - (RecommendationConstants.FORGOTTEN_GEMS_MIN_AGE_DAYS * 24L * 3_600_000L)
+    val forgottenSongs = withContext(Dispatchers.IO) {
+        Database.songDao().getForgottenSongs(
+            olderThan = olderThan,
+            minTotalPlayMs = 60_000L,
+            limit = 15
+        )
+    }
+    Timber.d("HomePage getSongs getForgottenSongs: ${forgottenSongs.size}")
+    return if (forgottenSongs.isEmpty()) null else Environment.RelatedPage(
+        songs = forgottenSongs.map { it.asSongItem },
+        artists = emptyList(),
+        playlists = emptyList(),
+        albums = emptyList()
+    )
+}
+
+suspend fun getUnplayedSongs(): Environment.RelatedPage? {
+    val unplayedSongs = withContext(Dispatchers.IO) { Database.songDao().getUnplayedSongs() }
+    Timber.d("HomePage getSongs getUnplayedSongs: ${unplayedSongs.size}")
+    return if (unplayedSongs.isEmpty()) null else Environment.RelatedPage(
+        songs = unplayedSongs.map { it.asSongItem },
+        artists = emptyList(),
+        playlists = emptyList(),
+        albums = emptyList()
+    )
 }

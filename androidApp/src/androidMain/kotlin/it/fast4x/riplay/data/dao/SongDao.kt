@@ -99,6 +99,13 @@ interface SongDao {
 """)
     suspend fun getSongsByTitleLike(title: String, excludeSongId: String = "", limit: Int): List<Song>
 
+    @Query("""
+        SELECT s.* FROM song s
+        WHERE s.totalPlayTimeMs = 0
+        LIMIT :limit
+    """)
+    suspend fun getUnplayedSongs(limit: Int = 15): List<Song>
+
     @Upsert
     fun upsert(song: Song)
 
