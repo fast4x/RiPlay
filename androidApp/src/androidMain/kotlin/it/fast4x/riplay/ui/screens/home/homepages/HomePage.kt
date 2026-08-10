@@ -242,7 +242,7 @@ fun HomePage(
                                         ?.copyFiltered(blacklisted.value)
                                         ?.takeIf { it.songs?.isNotEmpty() == true }
                                         ?: getForgottenSongs().copyFiltered(blacklisted.value)
-                                                ?: getUnplayedSongs().copyFiltered(blacklisted.value)
+                                        ?: getUnplayedSongs().copyFiltered(blacklisted.value)
 
                                     HomeDataCache.relatedPage = relatedPage
                                 }
