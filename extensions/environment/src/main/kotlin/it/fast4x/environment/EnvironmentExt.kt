@@ -1,6 +1,7 @@
 package it.fast4x.environment
 
 import io.ktor.client.call.body
+import io.ktor.client.statement.bodyAsText
 import it.fast4x.environment.Environment.getBestQuality
 import it.fast4x.environment.models.BrowseEndpoint
 import it.fast4x.environment.models.BrowseResponse
@@ -8,13 +9,18 @@ import it.fast4x.environment.models.Context
 import it.fast4x.environment.models.CreatePlaylistResponse
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.PlayerResponse
+import it.fast4x.environment.models.Thumbnail
 import it.fast4x.environment.models.VideoInfo
 import it.fast4x.environment.models.getContinuation
 import it.fast4x.environment.models.oddElements
+import it.fast4x.environment.models.responses.userchannel.UserChannelProfilePage
+import it.fast4x.environment.models.responses.userchannel.UserChannelSection
+import it.fast4x.environment.models.responses.userchannel.parseUserChannelProfile
 import it.fast4x.environment.requests.AlbumPage
 import it.fast4x.environment.requests.ArtistItemsContinuationPage
 import it.fast4x.environment.requests.ArtistItemsPage
 import it.fast4x.environment.requests.ArtistPage
+import it.fast4x.environment.requests.ArtistSection
 import it.fast4x.environment.requests.HistoryPage
 import it.fast4x.environment.requests.HomePage
 import it.fast4x.environment.requests.NewReleaseAlbumPage
@@ -212,6 +218,10 @@ object EnvironmentExt {
         val sections = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
             ?.tabRenderer?.content?.sectionListRenderer?.contents
             ?.mapNotNull(ArtistPage::fromSectionListRendererContent)
+            ?: response.contents?.twoColumnBrowseResultsRenderer?.tabs?.firstOrNull()
+                ?.tabRenderer?.content?.sectionListRenderer?.contents
+                ?.mapNotNull(ArtistPage::fromSectionListRendererContent)
+        println("EnvironmentExt getArtistPage() response sections: $sections")
 
         ArtistPage(
             artist = Environment.ArtistItem(
@@ -545,6 +555,113 @@ object EnvironmentExt {
         println("EnvironmentExt getVideOrSongInfo error: ${it.stackTraceToString()}")
     }
 
+    suspend fun getUserChannelProfilePage(profileUrl: String): Result<ArtistPage?> = runCatching {
+        val cleanProfile = profileUrl.substringAfter("@").substringBefore("?")
+        val cleanUrl = "https://www.youtube.com/@$cleanProfile"
+        //println("EnvironmentExt getUserChannelPage cleanUrl $cleanUrl")
+        val userInfo = Environment.rawResolveUrl(cleanUrl).getOrNull()?.endpoint?.browseEndpoint ?: return@runCatching null
+        val userChannelRawResponse = Environment.browseForUser(userInfo.browseId, params="EghmZWF0dXJlZPIGBAoCMgA%3D").bodyAsText()
+        val userChannelProfilePage = parseUserChannelProfile(userChannelRawResponse)
+        //println("EnvironmentExt getUserChannelPage userChannelPage $userChannelProfilePage")
+
+        val artistPage = ArtistPage(
+            artist = Environment.ArtistItem(
+                info = Environment.Info(
+                    name = userChannelProfilePage.name,
+                    endpoint = NavigationEndpoint.Endpoint.Browse(
+                        browseId = userInfo.browseId,
+                    )
+                ),
+                thumbnail = Thumbnail(userChannelProfilePage.avatarUrl.toString(), 512, 512),
+                channelId = userChannelProfilePage.channelId,
+                subscribersCountText = null
+            ),
+            sections = userChannelProfilePage.sections.map { section ->
+                ArtistSection(
+                    title = section.title.toString(),
+                    items = when (section) {
+                        is UserChannelSection.FeaturedVideo -> { emptyList() }
+                        is UserChannelSection.PlaylistSection -> {
+                            section.playlists.map { item ->
+                                Environment.PlaylistItem(
+                                    info = Environment.Info(
+                                        name = item.title,
+                                        endpoint = NavigationEndpoint.Endpoint.Browse(
+                                            browseId = item.id
+                                        )
+                                    ),
+                                    songCount = section.playlists.size,
+                                    thumbnail = Thumbnail(item.thumbnailUrl.toString(), 512, 512),
+                                    channel = null,
+                                    isEditable = false
+                                )
+
+                            }
+                        }
+                        is UserChannelSection.VideoSection -> {
+                            section.videos.map { item ->
+                                Environment.VideoItem(
+                                    info = Environment.Info(
+                                        name = item.title,
+                                        endpoint = NavigationEndpoint.Endpoint.Watch(
+                                            videoId = item.id
+                                        )
+                                    ),
+                                    authors = listOf(
+                                        Environment.Info(
+                                            name = userChannelProfilePage.name,
+                                            endpoint = NavigationEndpoint.Endpoint.Browse(
+                                                browseId = userInfo.browseId,
+                                            )
+                                        )
+                                    ),
+                                    thumbnail = Thumbnail(item.thumbnailUrl.toString(), 512, 512),
+                                    viewsText = null,
+                                    durationText = null
+                                )
+                            }
+
+                        }
+                        is UserChannelSection.ShortsSection -> {
+                            section.shorts.map { item ->
+                                Environment.VideoItem(
+                                    info = Environment.Info(
+                                        name = item.title,
+                                        endpoint = NavigationEndpoint.Endpoint.Watch(
+                                            videoId = item.videoId
+                                        )
+                                    ),
+                                    authors = listOf(
+                                        Environment.Info(
+                                            name = userChannelProfilePage.name,
+                                            endpoint = NavigationEndpoint.Endpoint.Browse(
+                                                browseId = userInfo.browseId,
+                                            )
+                                        )
+                                    ),
+                                    thumbnail = Thumbnail(item.thumbnailUrl.toString(), 512, 512),
+                                    viewsText = null,
+                                    durationText = null,
+                                )
+                            }
+                        }
+                    },
+                    moreEndpoint = null
+                )
+            },
+            description = userChannelProfilePage.description,
+            subscribers = userChannelProfilePage.subscribersText,
+            shuffleEndpoint = null,
+            radioEndpoint = null,
+
+        )
+
+       return@runCatching artistPage
+
+    }.onFailure {
+        println("EnvironmentExt getUserChannelPage error: ${it.stackTraceToString()}")
+    }
+
     /**************
      * Simple Metadata Player
      */
@@ -556,7 +673,7 @@ object EnvironmentExt {
 
     suspend fun addPlaybackToHistory(playlistId: String? = null, playbackTracking: String) = runCatching {
         val cpn = (1..16).map {
-            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"[Random.Default.nextInt(
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"[Random.nextInt(
                 0,
                 64
             )]

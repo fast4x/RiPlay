@@ -188,6 +188,7 @@ import kotlin.math.sqrt
 import androidx.compose.ui.platform.LocalLocale
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import it.fast4x.environment.EnvironmentExt
 import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.extensions.appviewmodel.AppViewModelProvider
 import it.fast4x.riplay.extensions.appsettings.AppSettingsManager
@@ -835,243 +836,6 @@ class MainActivity :
                     }
                 }
 
-
-                /*
-                // React to theme mode changes without requiring app restart (include palette mode key)
-                DisposableEffect(binder, colorPaletteMode, !lightTheme) {
-
-
-                    val listener =
-                        SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
-                            when (key) {
-
-                                LANGUAGE_APP.key -> {
-                                    val lang = sharedPreferences.getEnum(
-                                        LANGUAGE_APP.key,
-                                        Languages.English
-                                    )
-
-
-                                    val systemLangCode =
-                                        AppCompatDelegate.getApplicationLocales().get(0).toString()
-
-                                    val sysLocale: LocaleListCompat =
-                                        LocaleListCompat.forLanguageTags(systemLangCode)
-                                    val appLocale: LocaleListCompat =
-                                        LocaleListCompat.forLanguageTags(lang.code)
-                                    AppCompatDelegate.setApplicationLocales(if (lang.code == "") sysLocale else appLocale)
-                                }
-
-                                // todo improve enum in live state
-                                UI_TYPE.key,
-                                DISABLE_PLAYER_HORIZONTAL_SWIPE.key,
-                                DISABLE_CLOSING_PLAYER_SWIPING_DOWN.key,
-                                SHOW_SEARCH_TAB.key,
-                                NAVIGATION_BAR_POSITION.key,
-                                NAVIGATION_BAR_TYPE.key,
-                                SHOW_TOTAL_TIME_QUEUE.key,
-                                BACKGROUND_PROGRESS.key,
-                                TRANSITION_EFFECT.key,
-                                PLAYER_BACKGROUND_COLORS.key,
-                                MINI_PLAYER_TYPE.key,
-                                RESTART_ACTIVITY.key
-                                    -> {
-                                    this@MainActivity.recreate()
-                                    Timber.d("MainActivity.recreate()")
-                                }
-
-                                COLOR_PALETTE_NAME.key, COLOR_PALETTE_MODE.key,
-                                CUSTOM_THEME_LIGHT_BACKGROUND_0.key,
-                                CUSTOM_THEME_LIGHT_BACKGROUND_1.key,
-                                CUSTOM_THEME_LIGHT_BACKGROUND_2.key,
-                                CUSTOM_THEME_LIGHT_BACKGROUND_3.key,
-                                CUSTOM_THEME_LIGHT_BACKGROUND_4.key,
-                                CUSTOM_THEME_LIGHT_TEXT.key,
-                                CUSTOM_THEME_LIGHT_TEXT_SECONDARY.key,
-                                CUSTOM_THEME_LIGHT_TEXT_DISABLED.key,
-                                CUSTOM_THEME_LIGHT_ICON_BUTTON_PLAYER.key,
-                                CUSTOM_THEME_LIGHT_ACCENT.key,
-                                CUSTOM_THEME_DARK_BACKGROUND_0.key,
-                                CUSTOM_THEME_DARK_BACKGROUND_1.key,
-                                CUSTOM_THEME_DARK_BACKGROUND_2.key,
-                                CUSTOM_THEME_DARK_BACKGROUND_3.key,
-                                CUSTOM_THEME_DARK_BACKGROUND_4.key,
-                                CUSTOM_THEME_DARK_TEXT.key,
-                                CUSTOM_THEME_DARK_TEXT_SECONDARY.key,
-                                CUSTOM_THEME_DARK_TEXT_DISABLED.key,
-                                CUSTOM_THEME_DARK_ICON_BUTTON_PLAYER.key,
-                                CUSTOM_THEME_DARK_ACCENT.key,
-                                CUSTOM_COLOR.key
-                                    -> {
-                                    val colorPaletteName =
-                                        sharedPreferences.getEnum(
-                                            COLOR_PALETTE_NAME.key,
-                                            ColorPaletteName.Dynamic
-                                        )
-
-//                                    val newColorPaletteMode = sharedPreferences.getEnum(
-//                                        COLOR_PALETTE_MODE.key,
-//                                        ColorPaletteMode.Dark
-//                                    )
-                                    val newColorPaletteMode = appearanceSettings.colorPaletteMode
-                                    val isNewPitchBlack =
-                                        newColorPaletteMode == ColorPaletteMode.PitchBlack
-                                    val isNewDark =
-                                        newColorPaletteMode == ColorPaletteMode.Dark || isNewPitchBlack || (newColorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme)
-                                    val newLightTheme = !isNewDark
-
-                                    var colorPalette = colorPaletteOf(
-                                        colorPaletteName,
-                                        newColorPaletteMode,
-                                        newLightTheme.not()
-                                    )
-
-                                    if (colorPaletteName == ColorPaletteName.Dynamic) {
-                                        val artworkUri =
-                                            (binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri.toString()
-                                                .toThumbnail(
-                                                    1200
-                                                )
-                                                ?: "")
-                                        artworkUri.let {
-                                            if (it.isNotEmpty())
-                                                setDynamicPalette(it)
-                                            else {
-
-                                                setSystemBarAppearance(colorPalette.isDark)
-                                                appearance = appearance.copy(
-                                                    colorPalette = if (!isNewPitchBlack) colorPalette else colorPalette.copy(
-                                                        background0 = Color.Black,
-                                                        background1 = Color.Black,
-                                                        background2 = Color.Black,
-                                                        background3 = Color.Black,
-                                                        background4 = Color.Black,
-                                                        // text = Color.White
-                                                    ),
-                                                    typography = appearance.typography.copy(
-                                                        colorPalette.text
-                                                    ),
-                                                )
-                                            }
-
-                                        }
-
-                                    } else {
-
-                                        if (colorPaletteName == ColorPaletteName.MaterialYou) {
-                                            colorPalette = dynamicColorPaletteOf(
-                                                Color(localMonet.getAccentColor(this@MainActivity)),
-                                                newLightTheme.not()
-                                            )
-                                        }
-
-                                        if (colorPaletteName == ColorPaletteName.Customized) {
-                                            colorPalette = customColorPalette(
-                                                colorPalette,
-                                                this@MainActivity,
-                                                isSystemInDarkTheme,
-                                                appearanceSettings.colorPaletteMode
-                                            )
-                                        }
-                                        if (colorPaletteName == ColorPaletteName.CustomColor) {
-                                            Timber.d("MainActivity.startApp SetContent DisposableEffect customColor PRE colorPalette: $colorPalette")
-                                            colorPalette = dynamicColorPaletteOf(
-                                                Color(customColor),
-                                                newLightTheme.not()
-                                            )
-                                            Timber.d("MainActivity.startApp SetContent DisposableEffect customColor POST colorPalette: $colorPalette")
-                                        }
-
-                                        setSystemBarAppearance(colorPalette.isDark)
-
-                                        appearance = appearance.copy(
-                                            colorPalette = if (!isNewPitchBlack) colorPalette else colorPalette.copy(
-                                                background0 = Color.Black,
-                                                background1 = Color.Black,
-                                                background2 = Color.Black,
-                                                background3 = Color.Black,
-                                                background4 = Color.Black,
-                                                text = Color.White
-                                            ),
-                                            typography = appearance.typography.copy(if (!isNewPitchBlack) colorPalette.text else Color.White),
-                                        )
-                                    }
-                                }
-
-                                THUMBNAIL_ROUNDNESS.key -> {
-                                    val thumbnailRoundness =
-                                        sharedPreferences.getEnum(
-                                            THUMBNAIL_ROUNDNESS.key,
-                                            ThumbnailRoundness.Light
-                                        )
-
-                                    appearance = appearance.copy(
-                                        thumbnailShape = thumbnailRoundness.shape()
-                                    )
-                                }
-
-                                USE_SYSTEM_FONT.key, APPLY_FONT_PADDING.key, FONT_TYPE.key -> {
-                                    val useSystemFont =
-                                        sharedPreferences.getBoolean(USE_SYSTEM_FONT.key, false)
-                                    val applyFontPadding =
-                                        sharedPreferences.getBoolean(APPLY_FONT_PADDING.key, false)
-                                    val fontType =
-                                        sharedPreferences.getEnum(FONT_TYPE.key, FontType.Rubik)
-
-                                    appearance = appearance.copy(
-                                        typography = typographyOf(
-                                            appearance.colorPalette.text,
-                                            useSystemFont,
-                                            applyFontPadding,
-                                            fontType
-                                        ),
-                                    )
-                                }
-
-                                YT_COOKIE.key -> cookie.value =
-                                    sharedPreferences.getString(YT_COOKIE.key, "").toString()
-
-                                YT_VISITOR_DATA.key -> {
-                                    if (visitorData.value.isEmpty())
-                                        visitorData.value =
-                                            sharedPreferences.getString(YT_VISITOR_DATA.key, "")
-                                                .toString()
-                                }
-
-                                IS_ENABLED_FULLSCREEN.key -> enableFullscreenMode()
-                                CLOSE_BACKGROUND_PLAYER.key -> isclosebackgroundPlayerEnabled =
-                                    sharedPreferences.getBoolean(
-                                        CLOSE_BACKGROUND_PLAYER.key,
-                                        false
-                                    )
-
-                            }
-                        }
-
-                    with(preferences) {
-                        registerOnSharedPreferenceChangeListener(listener)
-
-                        val colorPaletteName =
-                            appearanceSettings.colorPaletteName
-                            //getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
-                        if (colorPaletteName == ColorPaletteName.Dynamic) {
-                            setDynamicPalette(
-                                (binder?.player?.currentMediaItem?.mediaMetadata?.artworkUri.toString()
-                                    .toThumbnail(
-                                        1200
-                                    )
-                                    ?: "")
-                            )
-                        }
-
-                        onDispose {
-                            unregisterOnSharedPreferenceChangeListener(listener)
-                        }
-                    }
-                }
-
-                 */
-
                 val rippleConfiguration =
                     remember(appearance.colorPalette.text, appearance.colorPalette.isDark) {
                         RippleConfiguration(color = appearance.colorPalette.text)
@@ -1556,6 +1320,8 @@ class MainActivity :
                 LaunchedEffect(intentUriData) {
                     var uri = intentUriData ?: return@LaunchedEffect
 
+                    Timber.d("MainActivity LaunchedEffect intentUriData uri $uri")
+
                     if (uri.scheme == "riplay") {
                         val binder = snapshotFlow { binder }.filterNotNull().first()
                         navController?.let {
@@ -1593,6 +1359,7 @@ class MainActivity :
                             }
 
                             "channel", "c" -> uri.lastPathSegment?.let { channelId ->
+                                Timber.d("MainActivity LaunchedEffect intentUriData channelId $channelId")
                                 try {
                                     navController?.navigate(route = "${NavRoutes.artist.name}/$channelId")
                                 } catch (e: Exception) {
@@ -1606,6 +1373,25 @@ class MainActivity :
                             }
 
                             else -> when {
+                                path?.startsWith("@") == true -> {
+                                    SmartMessage("Channel is work in progress, wait new version please.", context = this@MainActivity)
+                                    //EnvironmentExt.getUserChannelProfilePage(path)
+                                    /*
+                                    val cleanProfile = path.substringAfter("@").substringBefore("?")
+                                    val cleanUrl = "https://www.youtube.com/@$cleanProfile"
+                                    Timber.d("MainActivity LaunchedEffect intentUriData profile $cleanUrl")
+                                    val userInfo = Environment.rawResolveUrl(cleanUrl).getOrNull()?.endpoint?.browseEndpoint ?: return@launch
+                                    Timber.d("MainActivity LaunchedEffect intentUriData profile $cleanUrl browseId = ${userInfo.browseId}")
+                                    val userPage = Environment.rawBrowse(userInfo.browseId, params="EghmZWF0dXJlZPIGBAoCMgA%3D")
+                                    saveFileToInternalStorage(appContext(),"userPage.json", userPage.toString() )
+                                    */
+//                                    try {
+//                                        navController?.navigate(route = "${NavRoutes.artist.name}/${userInfo.browseId}")
+//                                    } catch (e: Exception) {
+//                                        Timber.e("MainActivity.setContent intentUriData ${e.stackTraceToString()}")
+//                                    }
+                                    return@launch
+                                }
                                 path == "watch" -> uri.getQueryParameter("v")
                                 uri.host == "youtu.be" -> path
                                 path != "watch" && uri.host == null -> {

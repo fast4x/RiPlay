@@ -34,6 +34,7 @@ import androidx.core.net.toUri
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.environment.Environment
+import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.requests.playlistPage
 import it.fast4x.environment.requests.song
@@ -44,6 +45,7 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.InputTextField
+import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.ui.styling.semiBold
@@ -58,6 +60,7 @@ import kotlinx.coroutines.withContext
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.LazyListContainer
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.forcePlay
 import kotlinx.serialization.ExperimentalSerializationApi
 import java.net.URLEncoder
@@ -183,6 +186,11 @@ fun GoToLink(
                                     }
 
                                     else -> when {
+                                        path?.startsWith("@") == true -> {
+                                            //EnvironmentExt.getUserChannelProfilePage(path)
+                                            SmartMessage("Channel is work in progress, wait new version please.", context = appContext())
+                                            return@launch
+                                        }
                                         path == "watch" -> uri.getQueryParameter("v")
                                         uri.host == "youtu.be" -> path
                                         else -> null

@@ -30,6 +30,7 @@ import it.fast4x.environment.models.BrowseResponse
 import it.fast4x.environment.models.Context
 import it.fast4x.environment.models.Context.Client
 import it.fast4x.environment.models.Context.Companion.DefaultWeb
+import it.fast4x.environment.models.Context.Companion.DefaultWeb2
 import it.fast4x.environment.models.Context.Companion.DefaultWeb2WithLocale
 import it.fast4x.environment.models.GridRenderer
 import it.fast4x.environment.models.MusicNavigationButtonRenderer
@@ -50,8 +51,12 @@ import it.fast4x.environment.models.bodies.LikeBody
 import it.fast4x.environment.models.bodies.NextBody
 import it.fast4x.environment.models.bodies.PlayerBody
 import it.fast4x.environment.models.bodies.PlaylistDeleteBody
+import it.fast4x.environment.models.bodies.ResolveUrlBody
 import it.fast4x.environment.models.bodies.SubscribeBody
+import it.fast4x.environment.models.responses.BrowseEndpoint
 import it.fast4x.environment.models.responses.CachedAccountProfile
+import it.fast4x.environment.models.responses.Endpoint
+import it.fast4x.environment.models.responses.ResolveUrlResponse
 import it.fast4x.environment.models.responses.toCachedProfiles
 import it.fast4x.environment.utils.ArtistDiscographyType
 import it.fast4x.environment.utils.EnvironmentLocale
@@ -290,6 +295,7 @@ object Environment {
             val CommunityPlaylist = SearchFilter("EgeKAQQoAEABagoQAxAEEAoQCRAF")
             val FeaturedPlaylist = SearchFilter("EgeKAQQoADgBagwQDhAKEAMQBRAJEAQ%3D")
             val Podcast = SearchFilter("EgWKAQJQAWoIEBAQERADEBU%3D")
+            val UserChannel = SearchFilter("EgIQAg%3D%3D")
         }
     }
 
@@ -900,7 +906,27 @@ object Environment {
         )
     }
 
-
+    suspend fun browseForUser(
+        browseId: String? = null,
+        params: String? = null,
+        continuation: String? = null,
+        setLogin: Boolean = true,
+    ) = client.post(_3djbhqyLpE) {
+        setLogin(DefaultWeb2WithLocale.client, setLogin)
+        setBody(
+            BrowseBody(
+                context = DefaultWeb2WithLocale,
+                browseId = browseId,
+                params = params,
+                continuation = continuation
+            )
+        )
+        parameter("continuation", continuation)
+        parameter("ctoken", continuation)
+        if (continuation != null) {
+            parameter("type", "next")
+        }
+    }
 
     suspend fun browse(
         ytClient: Client = DefaultWeb.client,
@@ -940,11 +966,23 @@ object Environment {
         continuation: String? = null,
         setLogin: Boolean = true,
     ) = runCatching {
-        browse(DefaultWeb.client, browseId, params, continuation, setLogin).bodyAsText()
+        browseForUser(browseId, params, continuation, setLogin).bodyAsText()
     }
 
     suspend fun rawNext(body: NextBody) = runCatching {
         next(body.context, body.videoId, body.playlistId, body.playlistSetVideoId, body.index, body.params, body.continuation).bodyAsText()
+    }
+
+    suspend fun rawResolveUrl(url: String) = runCatching {
+        val response = client.post("youtubei/v1/navigation/resolve_url") {
+            setLogin(setLogin = true)
+            setBody(ResolveUrlBody(
+                context = Context.DefaultWeb2,
+                url = url
+            )
+            )
+        }
+        response.body<ResolveUrlResponse>()
     }
 
     suspend fun next(

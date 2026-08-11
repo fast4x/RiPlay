@@ -3,6 +3,7 @@ package it.fast4x.environment.requests
 import io.ktor.client.call.body
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.ContinuationResponse
 import it.fast4x.environment.models.MusicResponsiveListItemRenderer
@@ -16,10 +17,19 @@ suspend fun <T : Environment.Item> Environment.searchPage(
     body: SearchBody,
     fromMusicShelfRendererContent: (MusicShelfRenderer.Content) -> T?
 ) = runCatchingNonCancellable {
-    val response = client.post(_QPmE9fYezr) {
+
+
+    val responseApi = client.post(_QPmE9fYezr) {
+        setLogin(clientType = body.context.client, setLogin = true)
         setBody(body)
-        mask("contents.tabbedSearchResultsRenderer.tabs.tabRenderer.content.sectionListRenderer.contents.musicShelfRenderer(continuations,contents.$musicResponsiveListItemRendererMask)")
-    }.body<SearchResponse>()
+        //mask("contents.tabbedSearchResultsRenderer.tabs.tabRenderer.content.sectionListRenderer.contents.musicShelfRenderer(continuations,contents.$musicResponsiveListItemRendererMask)")
+    }
+
+    println("Environment.searchPage responseApi ${responseApi.bodyAsText()}")
+
+    val response = responseApi.body<SearchResponse>()
+
+    println("Environment.searchPage response ${response.contents}")
 
     response
         .contents
@@ -33,6 +43,8 @@ suspend fun <T : Environment.Item> Environment.searchPage(
         ?.lastOrNull()
         ?.musicShelfRenderer
         ?.toItemsPage(fromMusicShelfRendererContent)
+}?.onFailure {
+    println("Environment.searchPage error ${it.stackTraceToString()}")
 }
 
 suspend fun <T : Environment.Item> Environment.searchPage(

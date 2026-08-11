@@ -209,6 +209,7 @@ fun SearchScreen(
                     item(4, stringResource(R.string.playlists), R.drawable.playlist, true)
                     item(5, stringResource(R.string.featured), R.drawable.featured_playlist, true)
                     item(6, stringResource(R.string.podcasts), R.drawable.podcast, true)
+                    //item(7, stringResource(R.string.autosync_channels), R.drawable.battery_charging, true)
                 } else {
                     item(0, stringResource(R.string.online), R.drawable.internet, true)
                     item(1, stringResource(R.string.library), R.drawable.playlist, true)

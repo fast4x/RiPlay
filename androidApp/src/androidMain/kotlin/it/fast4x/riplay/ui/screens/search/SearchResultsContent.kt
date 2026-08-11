@@ -31,6 +31,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.environment.Environment
+import it.fast4x.environment.models.Context
 import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.models.bodies.ContinuationBody
 import it.fast4x.environment.models.bodies.SearchBody
@@ -154,8 +155,6 @@ fun SearchResultsContent(
         onSaveHistory()
     }
 
-    // INCOLLA QUI IL TUO WHEN(TABINDEX) CON TUTTE LE ITEMSPAGE (0 -> Canzoni, 1 -> Album, ecc)
-    // Ricorda di usare la variabile 'query' passata come parametro, non più letta da navBackStackEntry!
     when ( tabIndex ) {
         0 -> {
             val localBinder = LocalPlayerServiceBinder.current
@@ -681,6 +680,53 @@ fun SearchResultsContent(
 
                         Environment.searchPage(
                             body = SearchBody(query = query, params = filter.value),
+                            fromMusicShelfRendererContent = Environment.PlaylistItem::from
+                        )
+                    } else {
+                        Environment.searchPage(
+                            body = ContinuationBody(continuation = continuation),
+                            fromMusicShelfRendererContent = Environment.PlaylistItem::from
+                        )
+                    }
+                },
+                emptyItemsText = emptyItemsText,
+                headerContent = headerContent,
+                itemContent = { playlist ->
+                    PlaylistItem(
+                        playlist = playlist,
+                        thumbnailSizePx = thumbnailSizePx,
+                        thumbnailSizeDp = thumbnailSizeDp,
+                        showSongsCount = false,
+                        modifier = Modifier
+                            .clickable(onClick = {
+                                //playlistRoute(playlist.key)
+                                println("mediaItem searchResultScreen playlist key ${playlist.key}")
+                                navController.navigate("${NavRoutes.podcast.name}/${playlist.key}")
+                            }),
+                        disableScrollingText = disableScrollingText
+                    )
+                },
+                itemPlaceholderContent = {
+                    PlaylistItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
+                },
+                filterContentType = filterContentType
+            )
+        }
+
+        7 -> {
+            val thumbnailSizeDp = Dimensions.thumbnails.playlist
+            val thumbnailSizePx = thumbnailSizeDp.px
+            //val thumbnailSizeDp = 108.dp
+            //val thumbnailSizePx = thumbnailSizeDp.px
+
+            ItemsPage(
+                tag = "searchResults/$query/userchannels",
+                itemsPageProvider = { continuation ->
+                    if (continuation == null) {
+                        val filter = Environment.SearchFilter.UserChannel
+
+                        Environment.searchPage(
+                            body = SearchBody(context = Context.DefaultWeb2WithLocale, query = query, params = filter.value),
                             fromMusicShelfRendererContent = Environment.PlaylistItem::from
                         )
                     } else {
