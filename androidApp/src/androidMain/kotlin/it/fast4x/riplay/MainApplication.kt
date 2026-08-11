@@ -68,7 +68,7 @@ class MainApplication : Application(), ImageLoaderFactory {
     }
 
     val appearanceSettingsManager by lazy {
-        _root_ide_package_.it.fast4x.riplay.extensions.appearancesettings.AppearanceSettingsManager()
+        it.fast4x.riplay.extensions.appearancesettings.AppearanceSettingsManager()
     }
 
     // Prepara Profile Builder

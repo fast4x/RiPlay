@@ -1,7 +1,7 @@
 
 [versions]
 compose-plugin = "1.11.0"
-agp = "9.2.0"
+agp = "9.2.1"
 kotlin = "2.4.10"
 kotlin-ksp = "2.3.10"
 kotlin-coroutine = "1.11.0"

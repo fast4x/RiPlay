@@ -191,6 +191,7 @@ import androidx.navigation.NavController
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.extensions.appviewmodel.AppViewModelProvider
+import it.fast4x.riplay.extensions.appearancesettings.AppearanceSettingsManager
 import it.fast4x.riplay.extensions.appsettings.AppSettingsManager
 import it.fast4x.riplay.extensions.shazam.handleShazamShare
 import it.fast4x.riplay.extensions.qrcodeanalyzer.qrCodeToAction
@@ -1676,6 +1677,6 @@ val LocalArtistInsights = staticCompositionLocalOf<ArtistInsightsViewModel> { er
 
 val LocalAlbumInsights = staticCompositionLocalOf<AlbumInsightsViewModel> { error("No album insights provided")}
 
-val LocalAppearanceSettingsManager = staticCompositionLocalOf<it.fast4x.riplay.extensions.appearancesettings.AppearanceSettingsManager> { error("No appearance settings provided")}
+val LocalAppearanceSettingsManager = staticCompositionLocalOf<AppearanceSettingsManager> { error("No appearance settings provided")}
 
 val LocalAppSettingsManager = staticCompositionLocalOf<AppSettingsManager> { error("No app settings provided") }
