@@ -266,20 +266,22 @@ fun SearchScreen(
                 Box(modifier = Modifier.weight(1f)) {
                     saveableStateHolder.SaveableStateProvider(currentTabIndex) {
                         if (isSearchActive) {
-                            SearchResultsContent(
-                                query = submittedQuery,
-                                tabIndex = currentTabIndex,
-                                filterContentType = filterContentType,
-                                onFilterChanged = { filterContentType = it },
-                                navController = navController,
-                                onSaveHistory = {
-                                    if (!appSettings.isPauseListenHistoryEnabled) {
-                                        Database.asyncTransaction { insert(SearchQuery(query = textFieldValue.text)) }
-                                    }
-                                },
-                                focusRequester = focusRequester,
-                                keyboardController = keyboardController
-                            )
+                            key(submittedQuery) {
+                                SearchResultsContent(
+                                    query = submittedQuery,
+                                    tabIndex = currentTabIndex,
+                                    filterContentType = filterContentType,
+                                    onFilterChanged = { filterContentType = it },
+                                    navController = navController,
+                                    onSaveHistory = {
+                                        if (!appSettings.isPauseListenHistoryEnabled) {
+                                            Database.asyncTransaction { insert(SearchQuery(query = textFieldValue.text)) }
+                                        }
+                                    },
+                                    focusRequester = focusRequester,
+                                    keyboardController = keyboardController
+                                )
+                            }
                         } else {
                             when (currentTabIndex) {
                                 0 -> OnlineSearch(
