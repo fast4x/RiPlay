@@ -231,7 +231,7 @@ fun ScreenContainer(
                     navigationBar.Draw()
             }
 
-            val playerPosition = appSettings.playerPosition
+            val playerPosition = if (UiType.RiPlay.isCurrent()) appSettings.playerPosition else PlayerPosition.Bottom
             val playerAlignment =
                 if (playerPosition == PlayerPosition.Top)
                     Alignment.TopCenter

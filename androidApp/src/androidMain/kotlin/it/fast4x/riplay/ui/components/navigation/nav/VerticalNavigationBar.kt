@@ -213,27 +213,10 @@ class VerticalNavigationBar(
             Box(
                 contentAlignment = Alignment.TopCenter,
                 modifier = Modifier
-                    /*
-                    .height(
-                        if( UiType.ViMusic.isCurrent() )
-                            if ( showStatsIconInNav() )
-                                Dimensions.headerHeight
-                            else
-                                Dimensions.halfheaderHeight
-                        else 0.dp
-                    )*/
                     .padding( top = boxPadding )
 
             ) {
-                // Show settings and statistics buttons in homepage
-                // Show back button in other screens
-//                if( navController.currentBackStackEntry?.destination?.route == NavRoutes.home.name ) {
-//                    SettingsButton().Draw()
-//                    StatsButton().Draw()
-//                } else
-//                    BackButton().Draw()
-                if(navController.currentBackStackEntry?.destination?.route != NavRoutes.home.name
-                    && UiType.ViMusic.isCurrent())
+                if (UiType.ViMusic.isCurrent() && NavRoutes.home.isNotHere(navController))
                     BackButton().Draw()
             }
 
@@ -251,7 +234,7 @@ class VerticalNavigationBar(
                         Dimensions.navigationRailWidthLandscape
                     else
                         Dimensions.navigationRailWidth
-                //val iconHeight: Dp = Dimensions.halfheaderHeight
+
                 if ( showSearchIconInNav() )
                     Box(
                         contentAlignment = Alignment.TopCenter,

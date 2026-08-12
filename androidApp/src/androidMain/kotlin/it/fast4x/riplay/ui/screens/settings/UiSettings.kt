@@ -39,6 +39,7 @@ import it.fast4x.riplay.enums.IconLikeType
 import it.fast4x.riplay.enums.MenuStyle
 import it.fast4x.riplay.enums.MessageType
 import it.fast4x.riplay.enums.MiniPlayerType
+import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.NavigationBarType
 import it.fast4x.riplay.enums.PlayerBackgroundColors
@@ -279,12 +280,8 @@ fun UiSettings(
                         title = stringResource(R.string.interface_in_use),
                         selectedValue = uiType,
                         onValueSelected = {
-                            coroutineScope.launch {
-                                val new = appSettingsManager.activeSettings.value.copy(uiType = it)
-                                appSettingsManager.updateSettings(new)
-                            }
 
-                            if (uiType == UiType.ViMusic) {
+                            if (it == UiType.ViMusic) {
                                 coroutineScope.launch {
                                     val new = appearanceSettingsManager.activeSettings.value.copy(
                                         showTopActionsBar = false,
@@ -338,53 +335,13 @@ fun UiSettings(
                                         disableIconButtonOnTop = true,
                                         showSearchTab = true,
                                         showStatsInNavbar = true,
-                                        navigationBarPosition = NavigationBarPosition.Left
+                                        navigationBarPosition = NavigationBarPosition.Left,
+                                        playerPosition = PlayerPosition.Bottom,
+                                        uiType = it
                                     )
                                     appSettingsManager.updateSettings(newsettings)
                                 }
 
-                                //showTopActionsBar = false
-//                                playerType = PlayerType.Modern
-//                                queueType = QueueType.Modern
-//                                fadingedge = false
-//                                carousel = true
-//                                carouselSize = CarouselSize.Medium
-//                                thumbnailType = ThumbnailType.Essential
-//                                playerTimelineSize = PlayerTimelineSize.Medium
-//                                playerInfoShowIcons = true
-//                                miniPlayerType = MiniPlayerType.Modern
-//                                playerSwapControlsWithTimeline = false
-//                                transparentBackgroundActionBarPlayer = false
-//                                playerControlsType = PlayerControlsType.Essential
-//                                playerPlayButtonType = PlayerPlayButtonType.Disabled
-//                                buttonzoomout = true
-//                                iconLikeType = IconLikeType.Essential
-                                //playerBackgroundColors = PlayerBackgroundColors.CoverColorGradient
-//                                blackgradient = true
-//                                showTotalTimeQueue = false
-//                                showRemainingSongTime = false
-//                                showNextSongsInPlayer = false
-//                                disableScrollingText = false
-//                                clickLyricsText = true
-//                                playerEnableLyricsPopupMessage = true
-//                                backgroundProgress = BackgroundProgress.MiniPlayer
-//                                transparentBackgroundActionBarPlayer = true
-//                                actionspacedevenly = false
-//                                tapqueue = false
-//                                swipeUpQueue = true
-//                                showButtonPlayerDiscover = false
-//                                showButtonPlayerAddToPlaylist = false
-//                                showButtonPlayerLoop = false
-//                                showButtonPlayerShuffle = false
-//                                showButtonPlayerLyrics = false
-//                                expandedplayertoggle = false
-//                                showButtonPlayerSleepTimer = false
-//                                showButtonPlayerSystemEqualizer = false
-//                                showButtonPlayerArrow = false
-//                                showButtonPlayerShuffle = false
-//                                showButtonPlayerMenu = true
-                                //showthumbnail = true
-                                //keepPlayerMinimized = false
                             } else {
                                 coroutineScope.launch {
                                     val new = appearanceSettingsManager.activeSettings.value.copy(
@@ -397,12 +354,15 @@ fun UiSettings(
                                     val newsettings = appSettingsManager.activeSettings.value.copy(
                                         disablePlayerHorizontalSwipe = false,
                                         disableIconButtonOnTop = false,
+                                        navigationBarPosition = NavigationBarPosition.Bottom,
+                                        uiType = it
                                     )
                                     appSettingsManager.updateSettings(newsettings)
                                 }
 
                             }
 
+                            navController.navigate(NavRoutes.home.name)
 
                         },
                         valueText = {
@@ -830,27 +790,30 @@ fun UiSettings(
                         }
                     )
 
-                if (search.input.isBlank() || stringResource(R.string.player_position).contains(
-                        search.input,
-                        true
+                if (UiType.RiPlay.isCurrent()) {
+                    if (search.input.isBlank() || stringResource(R.string.player_position).contains(
+                            search.input,
+                            true
+                        )
                     )
-                )
-                    EnumValueSelectorSettingsEntry(
-                        title = stringResource(R.string.player_position),
-                        selectedValue = playerPosition,
-                        onValueSelected = {
-                            coroutineScope.launch {
-                                val new = appSettingsManager.activeSettings.value.copy(playerPosition = it)
-                                appSettingsManager.updateSettings(new)
+                        EnumValueSelectorSettingsEntry(
+                            title = stringResource(R.string.player_position),
+                            selectedValue = playerPosition,
+                            onValueSelected = {
+                                coroutineScope.launch {
+                                    val new =
+                                        appSettingsManager.activeSettings.value.copy(playerPosition = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
+                            },
+                            valueText = {
+                                when (it) {
+                                    PlayerPosition.Top -> stringResource(R.string.position_top)
+                                    PlayerPosition.Bottom -> stringResource(R.string.position_bottom)
+                                }
                             }
-                        },
-                        valueText = {
-                            when (it) {
-                                PlayerPosition.Top -> stringResource(R.string.position_top)
-                                PlayerPosition.Bottom -> stringResource(R.string.position_bottom)
-                            }
-                        }
-                    )
+                        )
+                }
 
                 if (search.input.isBlank() || stringResource(R.string.menu_style).contains(
                         search.input,

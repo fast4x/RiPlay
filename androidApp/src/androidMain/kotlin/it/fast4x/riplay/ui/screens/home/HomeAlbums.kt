@@ -301,7 +301,7 @@ fun HomeAlbums(
                     Spacer(modifier = Modifier.weight(1f))
                 }
 
-                // 2. Control Bar Unificata (FIX APPLICATO QUI)
+                // 2. Control Bar Unificata
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

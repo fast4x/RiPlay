@@ -629,20 +629,9 @@ fun HomeSongs(
                 Column(modifier = Modifier
                     .fillMaxWidth()
                     .background(colorPalette().background0)) {
-                    // 0. Optional Header for ViMusic
-                    if (UiType.ViMusic.isCurrent())
-                        HeaderWithIcon(
-                            title = stringResource(R.string.songs),
-                            iconId = R.drawable.search,
-                            enabled = true,
-                            showIcon = !showSearchTab,
-                            modifier = Modifier,
-                            onClick = onSearchClick
-                        )
 
                     // 1. Modern Header (Clean)
                     TabHeader(R.string.songs) {
-                        //if (UiType.RiPlay.isCurrent()) TitleSection(title = stringResource(R.string.songs))
                         HeaderInfo(
                             title = if (builtInPlaylist == BuiltInPlaylist.OnDevice) "${filteredSongs.size}" else "${items.size}",
                             iconId = R.drawable.musical_notes
