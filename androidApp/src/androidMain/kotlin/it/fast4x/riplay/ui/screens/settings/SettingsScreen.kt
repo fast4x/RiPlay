@@ -91,14 +91,14 @@ fun SettingsScreen(
     val (tabIndex, onTabChanged) = rememberSaveable {
         mutableStateOf(0)
     }
-    //val transitionEffect by rememberPreference(TRANSITION_EFFECT.key, TransitionEffect.SlideHorizontal)
+
     val transitionEffect = appSettings.transitionEffect
 
     ScreenContainer(
         navController,
         tabIndex,
         onTabChanged,
-        //miniPlayer,
+        miniPlayer,
         transitionEffect = transitionEffect,
         navBarContent = { item ->
             item(0, stringResource(R.string.tab_general), R.drawable.app_icon, true)
