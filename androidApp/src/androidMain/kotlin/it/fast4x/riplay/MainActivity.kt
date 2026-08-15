@@ -24,6 +24,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
@@ -190,6 +191,7 @@ import androidx.compose.ui.platform.LocalLocale
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import dev.kdrag0n.monet.theme.ColorScheme
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.extensions.appviewmodel.AppViewModelProvider
@@ -202,16 +204,12 @@ import it.fast4x.riplay.extensions.musicbrainz.viewmodels.ArtistInsightsViewMode
 import it.fast4x.riplay.extensions.nsd.NsdDiscoveryManager
 import it.fast4x.riplay.extensions.preferences.cleanUpUnusedPreferences
 import it.fast4x.riplay.ui.screens.player.unified.TvUnifiedPlayer
+import it.fast4x.riplay.utils.isTVDevice
 import it.fast4x.riplay.utils.isTvMode
 
 
 @UnstableApi
-class MainActivity :
-    MonetCompatActivity(),
-    //AppCompatActivity()
-    MonetColorsChangedListener
-{
-    //lateinit var internetConnectivityObserver: InternetConnectivityObserver
+class MainActivity : AppCompatActivity() {
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -237,8 +235,8 @@ class MainActivity :
     private var lastAcceleration = 0f
     private var shakeCounter = 0
 
-    private var _monet: MonetCompat? by mutableStateOf(null)
-    val localMonet get() = _monet ?: throw MonetActivityAccessException()
+    private var _monet: MonetCompat? = null
+    private val localMonet: MonetCompat get() = _monet ?: MonetCompat.getInstance()
 
     private val pipState: MutableState<Boolean> = mutableStateOf(false)
 
@@ -343,8 +341,6 @@ class MainActivity :
 //            )
 //        }
 
-        MonetCompat.enablePaletteCompat()
-
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(
                 scrim = Color.Transparent.toArgb(),
@@ -364,23 +360,46 @@ class MainActivity :
 
         enableFullscreenMode()
 
-        MonetCompat.setup(this)
-        _monet = MonetCompat.getInstance()
-        localMonet.setDefaultPalette()
-
-        localMonet.addMonetColorsChangedListener(
-            listener = this,
-            notifySelf = false
-        )
-        localMonet.updateMonetColors()
-
-        Timber.d("MainActivity.onCreate Before localMonet.invokeOnReady")
-
-        localMonet.invokeOnReady(this) {
-            Timber.d("MainActivity.onCreate Inside localMonet.invokeOnReady")
+        val isTv = isTVDevice()
+        if (isTv) {
+            // Nella tv non c'è wallpaper manager quindi ignoriamo monet
+            Timber.d("MainActivity.onCreate - Rilevata Android TV: Skip MonetCompat")
             cleanTempAudioCache(this)
-
             startApp()
+        } else {
+            // Flusso originale per smartphone/tablet
+            Timber.d("MainActivity.onCreate - Dispositivo standard: Inizializzazione MonetCompat")
+
+            MonetCompat.enablePaletteCompat()
+            MonetCompat.setup(this)
+            _monet = MonetCompat.getInstance()
+            localMonet.setDefaultPalette()
+
+            // Inizializzazione del listener nativo di MonetCompat
+            localMonet.addMonetColorsChangedListener(
+                listener = object : MonetColorsChangedListener {
+                    override fun onMonetColorsChanged(
+                        monet: MonetCompat,
+                        monetColors: ColorScheme,
+                        isInitialChange: Boolean
+                    ) {
+                        Timber.d("MainActivity.onCreate MonetColorsChangedListener colors changed")
+                    }
+
+                },
+                notifySelf = false
+            )
+
+
+            localMonet.updateMonetColors()
+
+            Timber.d("MainActivity.onCreate Before localMonet.invokeOnReady")
+
+            localMonet.invokeOnReady(this) {
+                Timber.d("MainActivity.onCreate Inside localMonet.invokeOnReady")
+                cleanTempAudioCache(this)
+                startApp()
+            }
         }
 
         checkIfAppIsRunningInBackground()
@@ -1627,15 +1646,6 @@ class MainActivity :
         super.onDestroy()
 
         Timber.d("MainActivity.onDestroy")
-        //preferences.edit(commit = true) { putBoolean(APP_IS_RUNNING.key, false) }
-
-        runCatching {
-            localMonet.removeMonetColorsChangedListener(this)
-            _monet = null
-        }.onFailure {
-            Timber.e("MainActivity.onDestroy removeMonetColorsChangedListener ${it.stackTraceToString()}")
-        }
-
     }
 
     private fun setSystemBarAppearance(isDark: Boolean) {
@@ -1663,28 +1673,6 @@ class MainActivity :
         const val action_rescuecenter = "it.fast4x.riplay.action.rescuecenter"
         const val action_musicidentifier = "it.fast4x.riplay.action.musicidentifier"
     }
-
-
-//    override fun onMonetColorsChanged(
-//        monet: MonetCompat,
-//        monetColors: ColorScheme,
-//        isInitialChange: Boolean
-//    ) {
-//        super<MonetCompatActivity>.onMonetColorsChanged(monet, monetColors, isInitialChange)
-//
-//        val colorPaletteName =
-//            appearanceSettingsViewModel.activeSettings.value.colorPaletteName
-//            //preferences.getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
-//        if (!isInitialChange && colorPaletteName == ColorPaletteName.MaterialYou) {
-//            /*
-//            monet.updateMonetColors()
-//            monet.invokeOnReady {
-//                startApp()
-//            }
-//             */
-//            this@MainActivity.recreate()
-//        }
-//    }
 
 }
 
