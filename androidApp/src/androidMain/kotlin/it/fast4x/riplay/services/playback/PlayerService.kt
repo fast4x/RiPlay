@@ -3,6 +3,7 @@ package it.fast4x.riplay.services.playback
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.ActivityManager
+import android.app.ForegroundServiceStartNotAllowedException
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -380,7 +381,7 @@ class PlayerService : MediaLibraryService(),
 
     private val riTuneCastClient: RiTuneCastClient = RiTuneCastClient()
     private var riTuneObserverJob: Job? = null
-    private var riTunePlayerState: RiTunePlayerState? = null
+    //private var riTunePlayerState: RiTunePlayerState? = null
 
     private lateinit var equalizerHelper: EqualizerHelper
 
@@ -438,6 +439,8 @@ class PlayerService : MediaLibraryService(),
     var artistSortOrder: SortOrder = SortOrder.Descending
     var albumSortOrder: SortOrder = SortOrder.Descending
     //**********
+
+    private var isServiceInForeground = false
 
 
     override fun onBind(intent: Intent?) = super.onBind(intent) ?: binder
@@ -763,7 +766,7 @@ class PlayerService : MediaLibraryService(),
     @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
-        startForeground()
+        //startForeground()
         Timber.d("PlayerService onStartCommand intent action ${intent?.action}")
         when (intent?.action) {
             Action.play.value -> { if (localMediaItem?.isLocal == true) player.play() else _internalOnlinePlayer.value?.play() }
@@ -778,6 +781,14 @@ class PlayerService : MediaLibraryService(),
 
     @ExperimentalCoroutinesApi
     private fun startForeground(loading: Boolean = false) {
+
+        // Se siamo già in foreground e non è un caricamento, usiamo il NotificationManager per aggiornare
+        if (isServiceInForeground && !loading) {
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.notify(NOTIFICATION_ID, notification())
+            return
+        }
+
         //Timber.d("PlayerService startForeground called from: ${Thread.currentThread().stackTrace.joinToString("\n")}")
         val notification = if (loading) {
             NotificationCompat
@@ -794,16 +805,23 @@ class PlayerService : MediaLibraryService(),
             notification()
         }
 
-        ServiceCompat.startForeground(
-            this,
-            NOTIFICATION_ID,
-            notification,
-            if (isAtLeastAndroid11) {
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+        try {
+            ServiceCompat.startForeground(
+                this,
+                NOTIFICATION_ID,
+                notification,
+                if (isAtLeastAndroid11) ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK else 0
+            )
+            isServiceInForeground = true
+        } catch (e: Exception) {
+            if (isAtLeastAndroid12 && e is ForegroundServiceStartNotAllowedException) {
+                // Fallback per i produttori OEM aggressivi
+                Timber.e("PlayerService Impossibile portare il servizio in foreground da background.")
             } else {
-                0
+                throw e
             }
-        )
+        }
+
     }
 
     private fun initializeVariables() {
@@ -1899,6 +1917,10 @@ class PlayerService : MediaLibraryService(),
         }.onFailure {
             Timber.e("Failed onDestroy in PlayerService ${it.stackTraceToString()}")
         }
+
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        isServiceInForeground = false
+        stopSelf()
 
         super.onDestroy()
     }
