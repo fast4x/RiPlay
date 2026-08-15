@@ -205,21 +205,32 @@ function hideTabletPopup() {
     	player = new YT.Player('youTubePlayerDOM', {
     			
         height: '100%',
-    	  width: '100%',
+    	width:  '100%',
     			
         events: {
     	    onReady: function(event) {
+    	      // Applica ottimizzazioni
               hideVideoTitle()
               hideTabletPopup()
               hideCaption()
-              // Forza il volume al massimo internamente all'iframe JS
-              event.target.setVolume(100);
-              // Smuta dopo un piccolissimo delay (es. 200-400ms), sufficiente
-              // ad ingannare il fade-in del compressore audio della WebView
-              setTimeout(function() {
-                  event.target.unMute();
-              }, 300);
+
+              // Invia ready al bridge
               YouTubePlayerBridge.sendReady()
+
+              // Ciclo di forzatura asincrono per rompere l'attenuazione del volume se possibile
+              var checks = 0;
+              var audioInterval = setInterval(function() {
+                  if (player && typeof player.unMute === 'function') {
+                      player.unMute();
+                      player.setVolume(100); // Forza il reset del guadagno hardware
+                  }
+
+                  checks++;
+                  if (checks >= 6) { // 10 tentativi coprono circa 2 secondi, la finestra critica
+                      clearInterval(audioInterval);
+                  }
+              }, 500);
+
     	    },
     		  onStateChange: function(event) { sendPlayerStateChange(event.data) },
     		  onPlaybackQualityChange: function(event) { YouTubePlayerBridge.sendPlaybackQualityChange(event.data) },

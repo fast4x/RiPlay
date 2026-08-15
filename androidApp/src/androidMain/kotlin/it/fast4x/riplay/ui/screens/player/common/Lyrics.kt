@@ -169,10 +169,9 @@ import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.themed.Loader
 import it.fast4x.riplay.utils.CustomHttpClient
-import it.fast4x.riplay.utils.PlayerViewModel
-import it.fast4x.riplay.utils.PlayerViewModelFactory
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.getRoundnessShape
+import it.fast4x.riplay.utils.rememberPlayerPositionAndDuration
 import it.fast4x.simpmusiclyrics.SimpMusicClient
 
 
@@ -211,12 +210,8 @@ fun Lyrics(
     val appSettingsManager = LocalAppSettingsManager.current
     val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
-    val factory = remember(binder) {
-        PlayerViewModelFactory(binder)
-    }
-    val playerViewModel: PlayerViewModel = viewModel(factory = factory)
-    val positionAndDuration by playerViewModel.positionAndDuration.collectAsStateWithLifecycle()
-    val positionProvider = { positionAndDuration.first }
+    val (currentPosition, duration) = rememberPlayerPositionAndDuration(binder)
+    val positionProvider = { currentPosition }
     //Timber.d("LyricsNew positionAndDuration ${positionAndDuration.first}")
 
     val showlyricsthumbnail = appearanceSettings.showLyricsThumbnail

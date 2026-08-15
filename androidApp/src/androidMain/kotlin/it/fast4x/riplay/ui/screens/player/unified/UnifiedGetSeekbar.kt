@@ -53,11 +53,10 @@ import it.fast4x.riplay.ui.components.SeekBarSegmentColored
 import it.fast4x.riplay.ui.components.SeekBarSinusoidalWave
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.utils.PlayerViewModel
-import it.fast4x.riplay.utils.PlayerViewModelFactory
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.isCompositionLaunched
+import it.fast4x.riplay.utils.rememberPlayerPositionAndDuration
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.delay
 import timber.log.Timber
@@ -88,16 +87,10 @@ fun UnifiedGetSeekBar(
 
     val binder = LocalPlayerServiceBinder.current
 
-    val factory = remember(binder) {
-        PlayerViewModelFactory(binder)
-    }
-    val playerViewModel: PlayerViewModel = viewModel(factory = factory)
-    val positionAndDuration by playerViewModel.positionAndDuration.collectAsStateWithLifecycle()
-    val position = positionAndDuration.first
-    val duration = positionAndDuration.second
+    val (currentPosition, duration) = rememberPlayerPositionAndDuration(binder)
 
     val transparentbar = appearanceSettings.transparentBar
-    val animatedPosition = remember { Animatable(position.toFloat()) }
+    val animatedPosition = remember { Animatable(currentPosition.toFloat()) }
     var isSeeking by remember { mutableStateOf(false) }
     val showRemainingSongTime = appearanceSettings.showRemainingSongTime
     val pauseBetweenSongs = appSettings.pauseBetweenSongs
@@ -107,10 +100,10 @@ fun UnifiedGetSeekBar(
         if (compositionLaunched) animatedPosition.animateTo(0f)
     }
     val colorPaletteMode = appearanceSettings.colorPaletteMode
-    LaunchedEffect(position) {
+    LaunchedEffect(currentPosition) {
         if (!isSeeking && !animatedPosition.isRunning)
             animatedPosition.animateTo(
-                position.toFloat(), tween(
+                currentPosition.toFloat(), tween(
                     durationMillis = 1000,
                     easing = LinearEasing
                 )
@@ -134,7 +127,7 @@ fun UnifiedGetSeekBar(
             && playerTimelineType != PlayerTimelineType.ColoredBar
         )
             SeekBar(
-                value = scrubbingPosition ?: position,
+                value = scrubbingPosition ?: currentPosition,
                 minimumValue = 0,
                 maximumValue = duration,
                 onDragStart = {
@@ -176,7 +169,7 @@ fun UnifiedGetSeekBar(
         )
     */
             SeekBar(
-                value = scrubbingPosition ?: position,
+                value = scrubbingPosition ?: currentPosition,
                 minimumValue = 0,
                 maximumValue = duration,
                 onDragStart = {
@@ -199,7 +192,7 @@ fun UnifiedGetSeekBar(
 
         if (playerTimelineType == PlayerTimelineType.ThinBar)
             SeekBar(
-                value = scrubbingPosition ?: position,
+                value = scrubbingPosition ?: currentPosition,
                 minimumValue = 0,
                 maximumValue = duration,
                 onDragStart = {
@@ -225,7 +218,7 @@ fun UnifiedGetSeekBar(
 
         if (playerTimelineType == PlayerTimelineType.Wavy) {
             SeekBarSinusoidalWave(
-                value = scrubbingPosition ?: position,
+                value = scrubbingPosition ?: currentPosition,
                 minimumValue = 0,
                 maximumValue = duration,
                 onDragStart = {
@@ -249,7 +242,7 @@ fun UnifiedGetSeekBar(
 
         if (playerTimelineType == PlayerTimelineType.FakeAudioBar)
             SeekBarAudioForms(
-                value = scrubbingPosition ?: position,
+                value = scrubbingPosition ?: currentPosition,
                 minimumValue = 0,
                 maximumValue = duration,
                 onDragStart = {
@@ -272,7 +265,7 @@ fun UnifiedGetSeekBar(
 
         if (playerTimelineType == PlayerTimelineType.ColoredBar)
             SeekBarSegmentColored(
-                value = scrubbingPosition ?: position,
+                value = scrubbingPosition ?: currentPosition,
                 minimumValue = 0,
                 maximumValue = duration,
                 onDragStart = {
@@ -315,8 +308,8 @@ fun UnifiedGetSeekBar(
                     indication = ripple(false),
                     onClick = {
                         val skippedPosition = 5000
-                        Timber.d("UnifiedGetSeekbar fast seek position $position skippedPosition $skippedPosition")
-                        onSeekTo(( position - 5000).toFloat())
+                        Timber.d("UnifiedGetSeekbar fast seek position $currentPosition skippedPosition $skippedPosition")
+                        onSeekTo(( currentPosition - 5000).toFloat())
                     }
                 )
         ){
@@ -345,13 +338,13 @@ fun UnifiedGetSeekBar(
                 }
             Box{
                 BasicText(
-                    text = formatAsDuration(position),
+                    text = formatAsDuration(currentPosition),
                     style = typography().xxs.semiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 BasicText(
-                    text = formatAsDuration(position),
+                    text = formatAsDuration(currentPosition),
                     style = typography().xxs.semiBold.merge(TextStyle(
                         drawStyle = Stroke(width = 1.0f, join = StrokeJoin.Round),
                         color = if (!textoutline) Color.Transparent else if (colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))) Color.White.copy(0.5f)
@@ -365,7 +358,7 @@ fun UnifiedGetSeekBar(
 
         if (duration != C.TIME_UNSET) {
             var timeRemaining by remember { mutableIntStateOf( 0 ) }
-            timeRemaining = (duration.toInt() - position.toInt())
+            timeRemaining = (duration.toInt() - currentPosition.toInt())
             var paused by remember { mutableStateOf(false) }
 
             if (pauseBetweenSongs != PauseBetweenSongs.`0`)
@@ -432,7 +425,7 @@ fun UnifiedGetSeekBar(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = ripple(false),
                             onClick = {
-                                onSeekTo(( position + 5000).toFloat())
+                                onSeekTo(( currentPosition + 5000).toFloat())
                             }
                         )
                 ){

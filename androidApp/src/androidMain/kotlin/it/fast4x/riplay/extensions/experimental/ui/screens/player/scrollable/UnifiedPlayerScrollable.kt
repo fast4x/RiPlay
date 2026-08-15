@@ -310,8 +310,6 @@ import it.fast4x.riplay.utils.BlurTransformation
 import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.LandscapeToSquareTransformation
-import it.fast4x.riplay.utils.PlayerViewModel
-import it.fast4x.riplay.utils.PlayerViewModelFactory
 import it.fast4x.riplay.utils.SearchOnlineEntity
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.addToOnlineLikedSong
@@ -340,6 +338,7 @@ import it.fast4x.riplay.utils.mediaItems
 import it.fast4x.riplay.utils.playAtIndex
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
+import it.fast4x.riplay.utils.rememberPlayerPositionAndDuration
 import it.fast4x.riplay.utils.rememberSavableAnimatable
 import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import it.fast4x.riplay.utils.saturate
@@ -560,15 +559,11 @@ fun UnifiedPlayerScrollable(
         ?: flowOf(null))
         .collectAsState(initial = null)
 
-    val factory = remember(binder) {
-        PlayerViewModelFactory(binder)
-    }
-    val playerViewModel: PlayerViewModel = viewModel(factory = factory)
-    val positionAndDuration by playerViewModel.positionAndDuration.collectAsStateWithLifecycle()
+    val (currentPosition, duration) = rememberPlayerPositionAndDuration(binder)
 
     val timeRemaining by remember {
         derivedStateOf {
-            positionAndDuration.second.toInt() - positionAndDuration.first.toInt()
+            duration.toInt() - currentPosition.toInt()
         }
     }
 
@@ -1336,7 +1331,7 @@ fun UnifiedPlayerScrollable(
             timelineExpanded = timelineExpanded,
             controlsExpanded = controlsExpanded,
             isShowingLyrics = isShowingLyrics,
-            media = mediaItem.toUiMedia(positionAndDuration.second.toLong()),
+            media = mediaItem.toUiMedia(duration),
             title = mediaItem.mediaMetadata.title?.toString() ?: "",
             artist = mediaItem.mediaMetadata.artist?.toString(),
             artistIds = artistsInfo,
@@ -1386,7 +1381,7 @@ fun UnifiedPlayerScrollable(
             onNext = { binder.player.playNext() },
             onPrevious = {
                 if (jumpPrevious == "") jumpPrevious = "0"
-                if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())){
+                if(!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && currentPosition > jumpPrevious.toFloat())){
                     binder.onlinePlayer?.seekTo(0f)
                 }
                 else binder.player.playPrevious()
@@ -2375,8 +2370,8 @@ fun UnifiedPlayerScrollable(
                                                 color = color.favoritesOverlay,
                                                 topLeft = Offset.Zero,
                                                 size = Size(
-                                                    width = positionAndDuration.first.toFloat() /
-                                                            positionAndDuration.second.absoluteValue * size.width,
+                                                    width = currentPosition.toFloat() /
+                                                            duration.absoluteValue * size.width,
                                                     height = size.maxDimension
                                                 )
                                             )
@@ -2440,8 +2435,7 @@ fun UnifiedPlayerScrollable(
                                                 ensureSongInserted = { Database.insert(mediaItem) },
                                                 size = 1000.dp,
                                                 mediaMetadataProvider = mediaItem::mediaMetadata,
-                                                durationProvider = { positionAndDuration.second },
-                                                //positionProvider = { positionAndDuration.first },
+                                                durationProvider = { duration },
                                                 isLandscape = isLandscape,
                                                 clickLyricsText = clickLyricsText,
                                                 modifier = Modifier
@@ -2832,7 +2826,7 @@ fun UnifiedPlayerScrollable(
                                             controlsExpanded = controlsExpanded,
                                             isShowingLyrics = isShowingLyrics,
                                             media = binder.player.getMediaItemAt(index)
-                                                .toUiMedia(positionAndDuration.second.toLong()),
+                                                .toUiMedia(duration),
                                             title = binder.player.getMediaItemAt(index).mediaMetadata.title?.toString(),
                                             artist = binder.player.getMediaItemAt(index).mediaMetadata.artist?.toString(),
                                             artistIds = artistsInfo,
@@ -2890,7 +2884,7 @@ fun UnifiedPlayerScrollable(
                                             onNext = { binder.player.playNext() },
                                             onPrevious = {
                                                 if (jumpPrevious == "") jumpPrevious = "0"
-                                                if (!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())) {
+                                                if (!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && currentPosition > jumpPrevious.toFloat())) {
                                                     binder.onlinePlayer?.seekTo(0f)
                                                 } else binder.player.playPrevious()
                                             },
@@ -3164,7 +3158,7 @@ fun UnifiedPlayerScrollable(
                                                     controlsExpanded = controlsExpanded,
                                                     isShowingLyrics = isShowingLyrics,
                                                     media = binder.player.getMediaItemAt(index)
-                                                        .toUiMedia(positionAndDuration.second.toLong()),
+                                                        .toUiMedia(duration),
                                                     title = binder.player.getMediaItemAt(index).mediaMetadata.title?.toString(),
                                                     artist = binder.player.getMediaItemAt(index).mediaMetadata.artist?.toString(),
                                                     artistIds = artistsInfo,
@@ -3227,7 +3221,7 @@ fun UnifiedPlayerScrollable(
                                                     onNext = { binder.player.playNext() },
                                                     onPrevious = {
                                                         if (jumpPrevious == "") jumpPrevious = "0"
-                                                        if (!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())) {
+                                                        if (!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && currentPosition > jumpPrevious.toFloat())) {
                                                             binder.onlinePlayer?.seekTo(0f)
                                                         } else binder.player.playPrevious()
                                                     },
@@ -3269,8 +3263,8 @@ fun UnifiedPlayerScrollable(
                                             color = color.favoritesOverlay,
                                             topLeft = Offset.Zero,
                                             size = Size(
-                                                width = positionAndDuration.first.toFloat() /
-                                                        positionAndDuration.second.absoluteValue * size.width,
+                                                width = currentPosition.toFloat() /
+                                                        duration.absoluteValue * size.width,
                                                 height = size.maxDimension
                                             )
                                         )
@@ -3798,8 +3792,7 @@ fun UnifiedPlayerScrollable(
                                             ensureSongInserted = { Database.insert(mediaItem) },
                                             size = 1000.dp,
                                             mediaMetadataProvider = mediaItem::mediaMetadata,
-                                            durationProvider = { positionAndDuration.second },
-                                            //positionProvider = { positionAndDuration.first },
+                                            durationProvider = { duration },
                                             isLandscape = isLandscape,
                                             clickLyricsText = clickLyricsText,
                                         )
@@ -4034,7 +4027,7 @@ fun UnifiedPlayerScrollable(
                                             controlsExpanded = controlsExpanded,
                                             isShowingLyrics = isShowingLyrics,
                                             media = binder.player.getMediaItemAt(index)
-                                                .toUiMedia(positionAndDuration.second.toLong()),
+                                                .toUiMedia(duration),
                                             title = binder.player.getMediaItemAt(index).mediaMetadata.title?.toString(),
                                             artist = binder.player.getMediaItemAt(index).mediaMetadata.artist?.toString(),
                                             artistIds = artistsInfo,
@@ -4095,7 +4088,7 @@ fun UnifiedPlayerScrollable(
                                             onNext = { binder.player.playNext() },
                                             onPrevious = {
                                                 if (jumpPrevious == "") jumpPrevious = "0"
-                                                if (!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())) {
+                                                if (!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && currentPosition > jumpPrevious.toFloat())) {
                                                     binder.onlinePlayer?.seekTo(0f)
                                                 } else binder.player.playPrevious()
                                             },

@@ -87,8 +87,6 @@ import it.fast4x.riplay.ui.styling.favoritesOverlay
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.GlobalSharedData
-import it.fast4x.riplay.utils.PlayerViewModel
-import it.fast4x.riplay.utils.PlayerViewModelFactory
 import it.fast4x.riplay.utils.addToOnlineLikedSong
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.applyIf
@@ -101,6 +99,7 @@ import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
+import it.fast4x.riplay.utils.rememberPlayerPositionAndDuration
 import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
@@ -159,11 +158,7 @@ fun UnifiedMiniPlayer(
 
     val miniPlayerType = appearanceSettings.miniPlayerType
 
-    val factory = remember(binder) {
-        PlayerViewModelFactory(binder)
-    }
-    val playerViewModel: PlayerViewModel = viewModel(factory = factory)
-    val positionAndDuration by playerViewModel.positionAndDuration.collectAsStateWithLifecycle()
+    val (currentPosition, duration) = rememberPlayerPositionAndDuration(binder)
 
     var updateLike by rememberSaveable { mutableStateOf(false) }
     var updateDislike by rememberSaveable { mutableStateOf(false) }
@@ -337,8 +332,8 @@ fun UnifiedMiniPlayer(
                             color = colorPalette.favoritesOverlay,
                             topLeft = Offset.Zero,
                             size = Size(
-                                width = positionAndDuration.first.toFloat() /
-                                        positionAndDuration.second.absoluteValue * size.width,
+                                width = currentPosition.toFloat() /
+                                        duration.absoluteValue * size.width,
                                 height = size.maxDimension
                             )
                         )

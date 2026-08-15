@@ -25,7 +25,6 @@ class SongsShuffle private constructor(
 ): MenuIcon, Descriptive {
 
     companion object {
-        @JvmStatic
         @Composable
         fun init( songs: () -> Flow<List<MediaItem>> ) =
             SongsShuffle( LocalPlayerServiceBinder.current, songs )
@@ -40,7 +39,6 @@ class SongsShuffle private constructor(
     override fun onShortClick() {
         CoroutineScope( Dispatchers.IO ).launch {
             songs().collect {
-                //fastPlay(binder = binder, mediaItems = it, withShuffle = true )
                 playShuffledSongs( it, appContext(), binder )
                 throw CancellationException()
             }

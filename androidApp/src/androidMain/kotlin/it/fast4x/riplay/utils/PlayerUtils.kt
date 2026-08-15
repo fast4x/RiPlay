@@ -6,6 +6,7 @@ import android.content.Context
 import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.produceState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -42,6 +43,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import java.util.ArrayDeque
+import kotlin.time.Duration.Companion.milliseconds
 
 
 const val LOCAL_KEY_PREFIX = "local:"
@@ -187,16 +189,10 @@ fun Player.forceSeekToNext() {
 
 fun Player.playNext() {
     forceSeekToNext()
-//    CoroutineScope(Dispatchers.Main).launch {
-//        restoreGlobalVolume()
-//    }
 }
 
 fun Player.playPrevious() {
     forceSeekToPrevious()
-//    CoroutineScope(Dispatchers.Main).launch {
-//        restoreGlobalVolume()
-//    }
 }
 
 @UnstableApi
@@ -277,13 +273,6 @@ fun Player.canAddedToQueue(mediaItem: MediaItem, queue: Queues): Boolean {
 
     return true
 }
-
-fun Player.findNextMediaItemById(mediaId: String): MediaItem? = runCatching {
-    for (i in currentMediaItemIndex until mediaItemCount) {
-        if (getMediaItemAt(i).mediaId == mediaId) return getMediaItemAt(i)
-    }
-    return null
-}.getOrNull()
 
 fun Player.findMediaItemIndexById(mediaId: String): Int {
     for (i in currentMediaItemIndex until mediaItemCount) {
@@ -436,71 +425,6 @@ val Player.mediaItems: List<MediaItem>
         override fun get(index: Int): MediaItem = getMediaItemAt(index)
     }
 
-fun Player.getCurrentQueueIndex(): Int {
-    if (currentTimeline.isEmpty) {
-        return -1
-    }
-    var index = 0
-    var currentMediaItemIndex = currentMediaItemIndex
-    while (currentMediaItemIndex != C.INDEX_UNSET) {
-        currentMediaItemIndex = currentTimeline.getPreviousWindowIndex(currentMediaItemIndex, REPEAT_MODE_OFF, shuffleModeEnabled)
-        if (currentMediaItemIndex != C.INDEX_UNSET) {
-            index++
-        }
-    }
-    return index
-}
-
-fun Player.togglePlayPause() {
-    if (!playWhenReady && playbackState == Player.STATE_IDLE) {
-        prepare()
-    }
-    playWhenReady = !playWhenReady
-}
-
-fun Player.toggleRepeatMode() {
-    repeatMode = when (repeatMode) {
-        REPEAT_MODE_OFF -> REPEAT_MODE_ALL
-        REPEAT_MODE_ALL -> REPEAT_MODE_ONE
-        REPEAT_MODE_ONE -> REPEAT_MODE_OFF
-        else -> throw IllegalStateException()
-    }
-}
-
-fun Player.toggleShuffleMode() {
-    shuffleModeEnabled = !shuffleModeEnabled
-}
-
-fun Player.getQueueWindows(): List<Timeline.Window> {
-    val timeline = currentTimeline
-    if (timeline.isEmpty) {
-        return emptyList()
-    }
-    val queue = ArrayDeque<Timeline.Window>()
-    val queueSize = timeline.windowCount
-
-    val currentMediaItemIndex: Int = currentMediaItemIndex
-    queue.add(timeline.getWindow(currentMediaItemIndex, Timeline.Window()))
-
-    var firstMediaItemIndex = currentMediaItemIndex
-    var lastMediaItemIndex = currentMediaItemIndex
-    val shuffleModeEnabled = shuffleModeEnabled
-    while ((firstMediaItemIndex != C.INDEX_UNSET || lastMediaItemIndex != C.INDEX_UNSET) && queue.size < queueSize) {
-        if (lastMediaItemIndex != C.INDEX_UNSET) {
-            lastMediaItemIndex = timeline.getNextWindowIndex(lastMediaItemIndex, REPEAT_MODE_OFF, shuffleModeEnabled)
-            if (lastMediaItemIndex != C.INDEX_UNSET) {
-                queue.add(timeline.getWindow(lastMediaItemIndex, Timeline.Window()))
-            }
-        }
-        if (firstMediaItemIndex != C.INDEX_UNSET && queue.size < queueSize) {
-            firstMediaItemIndex = timeline.getPreviousWindowIndex(firstMediaItemIndex, REPEAT_MODE_OFF, shuffleModeEnabled)
-            if (firstMediaItemIndex != C.INDEX_UNSET) {
-                queue.addFirst(timeline.getWindow(firstMediaItemIndex, Timeline.Window()))
-            }
-        }
-    }
-    return queue.toList()
-}
 
 @Composable
 inline fun Player.DisposableListener(crossinline listenerProvider: () -> Player.Listener) {
@@ -512,94 +436,25 @@ inline fun Player.DisposableListener(crossinline listenerProvider: () -> Player.
 }
 
 @OptIn(UnstableApi::class)
-fun Player.positionAndDurationStateFlow(
-    scope: CoroutineScope,
-    binder: PlayerService.Binder?
-): StateFlow<Pair<Long, Long>> {
+@Composable
+fun rememberPlayerPositionAndDuration(binder: PlayerService.Binder?): Pair<Long, Long> {
+    val player = binder?.player
+    val default = 0L to 0L
 
-    var onlineCurrentSecond = 0f
-    var onlineCurrentDuration = 0f
-    var playerIsPlaying = false
+    if (player == null) return default
 
-    binder?.onlinePlayerCurrentSecond?.collectLatest(scope) { onlineCurrentSecond = it }
-    binder?.onlinePlayerCurrentDuration?.collectLatest(scope) { onlineCurrentDuration = it }
-    binder?.playerState?.collectLatest(scope) { playerIsPlaying = it.isPlaying }
-
-    fun currentPositionAndDuration(): Pair<Long, Long> =
-        if (currentMediaItem?.isLocal == true) {
-            currentPosition to duration
-        } else {
-            (onlineCurrentSecond.toLong() * 1000L) to (onlineCurrentDuration.toLong() * 1000L)
-        }
-
-    return callbackFlow {
-        var isSeeking = false
-
-        val listener = object : Player.Listener {
-
-            override fun onPlaybackStateChanged(playbackState: Int) {
-                if (playbackState == Player.STATE_READY) {
-                    isSeeking = false
-                }
+    return produceState(initialValue = default, player) {
+        while (isActive) {
+            value = if (player.currentMediaItem?.isLocal == true) {
+                player.currentPosition to player.duration
+            } else {
+                val onlineCurrentSecond = binder.onlinePlayerCurrentSecond.value
+                val onlineCurrentDuration = binder.onlinePlayerCurrentDuration.value
+                (onlineCurrentSecond.toLong() * 1000L) to (onlineCurrentDuration.toLong() * 1000L)
             }
-
-            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                isSeeking = false
-                trySend(currentPositionAndDuration())
-            }
-
-            override fun onPositionDiscontinuity(
-                oldPosition: Player.PositionInfo,
-                newPosition: Player.PositionInfo,
-                reason: Int
-            ) {
-                if (reason == Player.DISCONTINUITY_REASON_SEEK && currentMediaItem?.isLocal == true) {
-                    isSeeking = true
-                    trySend(currentPosition to duration)
-                }
-            }
+            delay(200.milliseconds) // Aggiorna l'UI 5 volte al secondo, fluido e non pesante
         }
-
-        addListener(listener)
-
-        val pollJob = launch {
-            while (isActive) {
-                delay(if (playerIsPlaying) 100L else 500L)
-                if (!isSeeking) trySend(currentPositionAndDuration())
-            }
-        }
-
-        awaitClose {
-            removeListener(listener)
-            pollJob.cancel()
-        }
-    }.stateIn(
-        scope = scope,
-        started = SharingStarted.Eagerly,
-        initialValue = currentPositionAndDuration()
-    )
-}
-
-@UnstableApi
-class PlayerViewModel (
-    private val binder: PlayerService.Binder?
-) : ViewModel() {
-    val positionAndDuration: StateFlow<Pair<Long, Long>> =
-        binder?.player?.positionAndDurationStateFlow(viewModelScope, binder)
-            ?: flowOf(0L to 0L).stateIn(viewModelScope, SharingStarted.Eagerly, 0L to 0L)
-}
-
-@UnstableApi
-class PlayerViewModelFactory(
-    private val binder: PlayerService.Binder?
-) : ViewModelProvider.Factory {
-    @Suppress("UNCHECKED_CAST")
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(PlayerViewModel::class.java)) {
-            return PlayerViewModel(binder) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
+    }.value
 }
 
 

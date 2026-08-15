@@ -251,7 +251,7 @@ class PlayerService : MediaLibraryService(),
     private lateinit var unifiedMediaSession: MediaSessionCompat
     private var mediaLibrarySession: MediaLibrarySession? = null
     private lateinit var mediaLibrarySessionCallback: MediaLibraryServiceCallback
-    private lateinit var hybridPlayer: HybridPlayer
+    lateinit var hybridPlayer: HybridPlayer
 
     val cache: SimpleCache by lazy {
         PrincipalCache.getInstance(this)
@@ -1388,6 +1388,7 @@ class PlayerService : MediaLibraryService(),
                     )
                     hybridPlayer.forwardEventsToSession(timelineEvents)
                 }
+                hybridPlayer.updateCurrentMediaItemDuration(duration.toLong() * 1000L)
             }
 
             override fun onStateChange(

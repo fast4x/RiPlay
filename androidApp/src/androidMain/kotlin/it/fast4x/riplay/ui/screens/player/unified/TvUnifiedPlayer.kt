@@ -111,8 +111,6 @@ import it.fast4x.riplay.utils.BlurTransformation
 import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.LandscapeToSquareTransformation
-import it.fast4x.riplay.utils.PlayerViewModel
-import it.fast4x.riplay.utils.PlayerViewModelFactory
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.conditional
@@ -124,6 +122,7 @@ import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.mediaItems
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
+import it.fast4x.riplay.utils.rememberPlayerPositionAndDuration
 import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.utils.shuffleQueue
 import it.fast4x.riplay.utils.typography
@@ -221,10 +220,7 @@ fun TvUnifiedPlayer(
 
     val mediaItem = nullableMediaItem ?: return
 
-    // ── ViewModel / position ─────────────────────────────────────
-    val factory = remember(binder) { PlayerViewModelFactory(binder) }
-    val playerViewModel: PlayerViewModel = viewModel(factory = factory)
-    val positionAndDuration by playerViewModel.positionAndDuration.collectAsStateWithLifecycle()
+    val (currentPosition, duration) = rememberPlayerPositionAndDuration(binder)
 
     // ── DB info ──────────────────────────────────────────────────
     var albumInfo by remember {
@@ -392,8 +388,8 @@ fun TvUnifiedPlayer(
 
                 // Seek bar
                 TvSeekBar(
-                    position = positionAndDuration.first.toFloat(),
-                    duration = positionAndDuration.second.toFloat(),
+                    position = currentPosition.toFloat(),
+                    duration = duration.toFloat(),
                     onSeek = { pos ->
                         if (binder.player.currentMediaItem?.isLocal == true)
                             binder.player.seekTo(pos.toLong())
@@ -413,7 +409,7 @@ fun TvUnifiedPlayer(
                     binder = binder,
                     playerState = playerState,
                     mediaItem = mediaItem,
-                    positionAndDuration = positionAndDuration,
+                    positionAndDuration = Pair(currentPosition, duration),
                     jumpPrevious = jumpPrevious,
                     playPauseFocusRequester = playPauseFocusRequester,
                     seekBarFocusRequester = seekBarFocusRequester,
@@ -474,7 +470,7 @@ fun TvUnifiedPlayer(
         if (isShowingLyrics) {
             TvLyricsOverlay(
                 mediaItem = mediaItem,
-                positionAndDuration = positionAndDuration,
+                positionAndDuration = Pair(currentPosition, duration),
                 isLandscape = true,
                 onDismiss = { isShowingLyrics = false },
                 disableScrollingText = disableScrollingText,

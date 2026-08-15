@@ -8,6 +8,8 @@ android {
 
     defaultConfig {
         minSdk = 21
+
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     namespace = "it.fast4x.androidyoutubeplayer"

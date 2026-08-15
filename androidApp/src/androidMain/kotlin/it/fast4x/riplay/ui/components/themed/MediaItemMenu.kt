@@ -127,8 +127,6 @@ import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
-import it.fast4x.riplay.utils.PlayerViewModel
-import it.fast4x.riplay.utils.PlayerViewModelFactory
 import it.fast4x.riplay.utils.addSongToYtPlaylist
 import it.fast4x.riplay.utils.addToOnlineLikedSong
 import it.fast4x.riplay.utils.asSong
@@ -141,6 +139,7 @@ import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.utils.SetupWriteSettingsPermission
 import it.fast4x.riplay.utils.getLocalFileUri
 import it.fast4x.riplay.utils.getRoundnessShape
+import it.fast4x.riplay.utils.rememberPlayerPositionAndDuration
 import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import it.fast4x.riplay.utils.setRingtoneSmart
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -1742,12 +1741,8 @@ fun MediaItemMenu(
                         ?: flowOf(null))
                         .collectAsState(initial = null)
 
-                    val factory = remember(binder) {
-                        PlayerViewModelFactory(binder)
-                    }
-                    val playerViewModel: PlayerViewModel = viewModel(factory = factory)
-                    val positionAndDuration by playerViewModel.positionAndDuration.collectAsStateWithLifecycle()
-                    val timeRemaining = positionAndDuration.second.toInt() - positionAndDuration.first.toInt()
+                    val (currentPosition, duration) = rememberPlayerPositionAndDuration(binder)
+                    val timeRemaining = duration.toInt() - currentPosition.toInt()
 
                     Timber.d("SleepTimer sleepTimerMillisLeft $sleepTimerMillisLeft timeRemaining $timeRemaining")
 

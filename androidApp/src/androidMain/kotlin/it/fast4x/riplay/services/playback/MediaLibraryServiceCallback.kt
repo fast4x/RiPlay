@@ -3,6 +3,8 @@ package it.fast4x.riplay.services.playback
 import android.content.ContentResolver
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.annotation.DrawableRes
 import androidx.compose.ui.util.fastFilter
 import androidx.core.net.toUri
@@ -71,6 +73,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.guava.future
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 import java.util.concurrent.ConcurrentHashMap
@@ -878,7 +881,17 @@ class MediaLibraryServiceCallback(
         Timber.d("MediaLibraryCallback onCustomCommand $customCommand customAction ${customCommand.customAction}")
         when (customCommand.customAction) {
             MediaSessionConstants.CommandSearch.customAction -> { binder.actionSearch() }
-            MediaSessionConstants.CommandToggleLike.customAction -> { binder.toggleLike() }
+            MediaSessionConstants.CommandToggleLike.customAction -> {
+                playerService.serviceScope.launch {
+                    binder.toggleLike()
+                    withContext(Dispatchers.Main) {
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            playerService.hybridPlayer.onRefreshCustomLayoutListener?.invoke()
+                        }, 100)
+                        updateCustomLayout(session)
+                    }
+                }
+            }
             MediaSessionConstants.CommandStartRadio.customAction -> {
                 session.player.currentMediaItem?.let {
                     binder.stopRadio()
@@ -892,7 +905,6 @@ class MediaLibraryServiceCallback(
             MediaSessionConstants.CommandToggleShuffle.customAction -> { binder.toggleShuffle() }
             MediaSessionConstants.CommandToggleRepeatMode.customAction -> { binder.toggleRepeat()}
         }
-        updateCustomLayout(session)
         return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
     }
 
