@@ -2766,6 +2766,13 @@ fun PlayerAppearanceSettings(
 
                 }
 
+                settingsItem(
+                    isHeader = true
+                ) {
+                    SettingsGroupSpacer()
+                    SettingsEntryGroupText(stringResource(R.string.settings_reset))
+                }
+
                 settingsItem {
                     SettingsGroupSpacer()
                     var resetToDefault by remember { mutableStateOf(false) }
@@ -2791,34 +2798,36 @@ fun PlayerAppearanceSettings(
 
 
                     SettingsGroupSpacer()
-                    ButtonBarSettingEntry(
-                        title = stringResource(R.string.export_appearance_settings),
-                        text = stringResource(R.string.info_backup_or_share_appearance_settings),
-                        icon = R.drawable.export,
-                        iconColor = colorPalette().text,
-                        onClick = { isExporting = true },
-                    )
 
-                    ButtonBarSettingEntry(
-                        title = stringResource(R.string.import_appearance_settings),
-                        text = stringResource(R.string.info_restore_backup_or_shared_appearance_settings),
-                        icon = R.drawable.resource_import,
-                        iconColor = colorPalette().text,
-                        onClick = {
-                            try {
-                                importLauncher.launch(
-                                    arrayOf(
-                                        "text/*"
-                                    )
-                                )
-                            } catch (e: ActivityNotFoundException) {
-                                SmartMessage(
-                                    context.resources.getString(R.string.info_not_find_app_open_doc),
-                                    type = PopupType.Warning, context = context
-                                )
-                            }
-                        },
-                    )
+//                    ButtonBarSettingEntry(
+//                        title = stringResource(R.string.export_appearance_settings),
+//                        text = stringResource(R.string.info_backup_or_share_appearance_settings),
+//                        icon = R.drawable.export,
+//                        iconColor = colorPalette().text,
+//                        onClick = { isExporting = true },
+//                    )
+//
+//                    ButtonBarSettingEntry(
+//                        title = stringResource(R.string.import_appearance_settings),
+//                        text = stringResource(R.string.info_restore_backup_or_shared_appearance_settings),
+//                        icon = R.drawable.resource_import,
+//                        iconColor = colorPalette().text,
+//                        onClick = {
+//                            try {
+//                                importLauncher.launch(
+//                                    arrayOf(
+//                                        "text/*"
+//                                    )
+//                                )
+//                            } catch (e: ActivityNotFoundException) {
+//                                SmartMessage(
+//                                    context.resources.getString(R.string.info_not_find_app_open_doc),
+//                                    type = PopupType.Warning, context = context
+//                                )
+//                            }
+//                        },
+//                    )
+
                 }
 
 
