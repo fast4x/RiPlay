@@ -1,10 +1,12 @@
 package it.fast4x.riplay.services.playback
 
 import android.content.ContentResolver
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.KeyEvent
 import androidx.annotation.DrawableRes
 import androidx.compose.ui.util.fastFilter
 import androidx.core.net.toUri
@@ -93,7 +95,9 @@ class MediaLibraryServiceCallback(
     val appSettings = playerService.appSettings
     private val androidAutoPackages = setOf(
         "com.google.android.projection.gearhead",   // Android Auto
-        "com.google.android.automotiveui"            // Android Automotive OS
+        "com.google.android.gms", // Android Auto
+        "com.android.systemui", // Android Auto
+        "com.google.android.automotiveui"  // Android Automotive OS
     )
 
     // Cache thread-safe globale nel tuo Callback
@@ -910,6 +914,44 @@ class MediaLibraryServiceCallback(
         // Questo impedisce a Media3 di disiscrivere Android Auto se onGetItem non è implementato,
         // sbloccando la ricezione di ogni futuro "notifyChildrenChanged".
         return Futures.immediateFuture(LibraryResult.ofVoid())
+    }
+
+    override fun onMediaButtonEvent(
+        session: MediaSession,
+        controllerInfo: MediaSession.ControllerInfo,
+        intent: Intent
+    ): Boolean {
+        val keyEvent = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT) as? KeyEvent
+
+        if (keyEvent != null && keyEvent.action == KeyEvent.ACTION_UP) {
+            val hybridPlayer = playerService.hybridPlayer // Prendi l'istanza del tuo player
+
+            when (keyEvent.keyCode) {
+                KeyEvent.KEYCODE_MEDIA_PLAY -> {
+                    hybridPlayer.play()
+                    return true
+                }
+                KeyEvent.KEYCODE_MEDIA_PAUSE -> {
+                    hybridPlayer.pause()
+                    return true
+                }
+                KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
+                    if (hybridPlayer.isPlaying) hybridPlayer.pause() else hybridPlayer.play()
+                    return true
+                }
+                KeyEvent.KEYCODE_MEDIA_NEXT -> {
+                    hybridPlayer.seekToNext()
+                    return true
+                }
+                KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
+                    hybridPlayer.seekToPrevious()
+                    return true
+                }
+            }
+        }
+
+
+        return super.onMediaButtonEvent(session, controllerInfo, intent)
     }
 
     private fun uriFor(@DrawableRes id: Int) = Uri.Builder()

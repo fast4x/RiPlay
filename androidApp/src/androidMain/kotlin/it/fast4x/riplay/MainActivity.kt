@@ -810,7 +810,6 @@ class MainActivity : AppCompatActivity() {
 
                         val fontType = appSettings.fontType
 
-                        //TODO CHECK MATERIALYOU OR MONIT
                         if (colorPaletteName == ColorPaletteName.MaterialYou) {
                             colorPalette = dynamicColorPaletteOf(
                                 Color(localMonet.getAccentColor(this@MainActivity)),
