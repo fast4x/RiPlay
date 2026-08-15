@@ -51,6 +51,10 @@
         android:usesPermissionFlags="neverForLocation"
         tools:targetApi="s" />
 
+    <!-- Permesso obbligatorio specifico per Android 17+ per mDNS/NSD e socket locali -->
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
+
+
 
     <uses-feature    android:name="android.software.leanback" android:required="false" />
     <uses-feature    android:name="android.hardware.touchscreen" android:required="false" />

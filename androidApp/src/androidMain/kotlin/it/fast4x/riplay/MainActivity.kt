@@ -5,6 +5,7 @@ import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
@@ -186,6 +187,7 @@ import java.util.Date
 import java.util.Objects
 import kotlin.math.sqrt
 import androidx.compose.ui.platform.LocalLocale
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import it.fast4x.environment.EnvironmentExt
@@ -533,23 +535,65 @@ class MainActivity :
                     }
                 }
 
-
+                // Istanzia il manager NSD
                 val nsdDiscoveryManager = remember { NsdDiscoveryManager(this) }
+                val scope = rememberCoroutineScope()
 
-                LaunchedEffect(appSettings.castType) {
-                    if (appSettings.castType == CastType.RITUNECAST) {
+                // Costante per il permesso di Android 17 (Usa la stringa esplicita per retrocompatibilità)
+                val localNetworkPermission = "android.permission.ACCESS_LOCAL_NETWORK"
+
+                // Funzione helper isolata che avvia la raccolta dati dal Flow
+                fun startNsdCollection() {
+                    scope.launch {
                         nsdDiscoveryManager.discoverServices("_RiPlayLinkApp._tcp.")
                             .collect { devicesList ->
                                 GlobalSharedData.riTuneDevices.value = devicesList
                                     .map { device -> device.toRiTuneDevice() }
                                     .toMutableStateList()
                             }
+                    }
+                }
+
+                // Launcher per la richiesta del permesso di runtime (Android 17+)
+                val permissionLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.RequestPermission()
+                ) { isGranted ->
+                    if (isGranted) {
+                        // Permesso concesso, avvia il discovery
+                        startNsdCollection()
+                    } else {
+                        // Permesso negato, resetta lo stato della UI per evitare loop o disattiva il cast
+                        GlobalSharedData.riTuneDevices.value = mutableListOf()
+                        // Opzionale: rimetti appSettings.castType a CastType.NONE o mostra un avviso
+                    }
+                }
+
+                // Gestione del ciclo di vita reattivo condizionale
+                LaunchedEffect(appSettings.castType) {
+                    if (appSettings.castType == CastType.RITUNECAST) {
+                        // Verifica se siamo su Android 17+ (API 37) o versioni successive
+                        if (Build.VERSION.SDK_INT >= 37) {
+                            val isGranted = ContextCompat.checkSelfPermission(
+                                this@MainActivity,
+                                localNetworkPermission
+                            ) == PackageManager.PERMISSION_GRANTED
+
+                            if (isGranted) {
+                                // Abbiamo già il permesso, partiamo direttamente in silenzio
+                                startNsdCollection()
+                            } else {
+                                // Primo avvio o permesso revocato: chiedi il consenso all'utente
+                                permissionLauncher.launch(localNetworkPermission)
+                            }
+                        } else {
+                            // Versioni precedenti ad Android 17: mDNS è libero, partiamo subito senza prompt!
+                            startNsdCollection()
+                        }
                     } else {
                         // Se l'utente cambia tipo di cast, svuota la lista in modo pulito
                         GlobalSharedData.riTuneDevices.value = mutableListOf()
                     }
                 }
-
 
                 if (appSettings.shakeEventEnabled) {
                     sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
