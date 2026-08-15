@@ -65,19 +65,6 @@ fun isKeepScreenOnEnabled() = getAppSettings().keepScreenEnabled
 fun isEnabledLastFm() = getAppSettings().isEnabledLastFM && getlastFmSessionKey().isNotEmpty()
 
 
-
-
-fun shuffleSongsAAEnabled() = getAppSettings().showShuffleSongsAA
-fun showMonthlyPlaylistsAA() = getAppSettings().showMonthlyPlaylistAA
-fun showOnDeviceAA() = getAppSettings().showOnDeviceAA
-fun showInLibraryAA() = getAppSettings().showInLibraryAA
-fun showTopSongstAA() = getAppSettings().showTopSongsAA
-fun showAllSongstAA() = getAppSettings().showAllSongsAA
-fun showPodcastAA() = getAppSettings().showPodcastAA
-fun showPinnedAA() = getAppSettings().showPinnedAA
-fun showGridAA() = getAppSettings().showGridAA
-
-
 object GlobalSharedData {
     var riTuneDevices: MutableState<List<RiTuneDevice>> = mutableStateOf(emptyList())
     var riTuneConnected = mutableStateOf(false)

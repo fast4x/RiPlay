@@ -81,6 +81,7 @@ import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.EqualizerType
 import it.fast4x.riplay.extensions.updater.UpdateDialog
 import it.fast4x.riplay.services.helpers.AudioDRCHelper
+import it.fast4x.riplay.services.playback.MediaLibraryServiceCallback
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
@@ -1836,6 +1837,20 @@ fun GeneralSettings(
                                         coroutineScope.launch {
                                             val new = appSettingsManager.activeSettings.value.copy(showGridAA = it)
                                             appSettingsManager.updateSettings(new)
+                                            binder?.let { service ->
+                                                service.notifyAutoChildrenChanged(
+                                                    MediaLibraryServiceCallback.MediaId.SONGS
+                                                )
+                                                service.notifyAutoChildrenChanged(
+                                                    MediaLibraryServiceCallback.MediaId.ARTISTS_FAVORITES
+                                                )
+                                                service.notifyAutoChildrenChanged(
+                                                    MediaLibraryServiceCallback.MediaId.ALBUMS_FAVORITES
+                                                )
+                                                service.notifyAutoChildrenChanged(
+                                                    MediaLibraryServiceCallback.MediaId.PLAYLISTS
+                                                )
+                                            }
                                         }
                                     }
                                 )
@@ -1853,7 +1868,21 @@ fun GeneralSettings(
                                         coroutineScope.launch {
                                             val new = appSettingsManager.activeSettings.value.copy(androidAutoPlaylistLimit = it)
                                             appSettingsManager.updateSettings(new)
-                                            }
+                                        }
+                                        binder?.let { service ->
+                                            service.notifyAutoChildrenChanged(
+                                                MediaLibraryServiceCallback.MediaId.SONGS
+                                            )
+                                            service.notifyAutoChildrenChanged(
+                                                MediaLibraryServiceCallback.MediaId.ARTISTS_FAVORITES
+                                            )
+                                            service.notifyAutoChildrenChanged(
+                                                MediaLibraryServiceCallback.MediaId.ALBUMS_FAVORITES
+                                            )
+                                            service.notifyAutoChildrenChanged(
+                                                MediaLibraryServiceCallback.MediaId.PLAYLISTS
+                                            )
+                                        }
                                     },
                                     valueText = {
                                         it.number?.toString()
@@ -1875,6 +1904,9 @@ fun GeneralSettings(
                                         coroutineScope.launch {
                                             val new = appSettingsManager.activeSettings.value.copy(showMonthlyPlaylistAA = it)
                                             appSettingsManager.updateSettings(new)
+                                            binder?.notifyAutoChildrenChanged(
+                                                MediaLibraryServiceCallback.MediaId.PLAYLISTS
+                                            )
                                         }
                                     }
                                 )
@@ -1892,6 +1924,9 @@ fun GeneralSettings(
                                         coroutineScope.launch {
                                             val new = appSettingsManager.activeSettings.value.copy(showPodcastAA = it)
                                             appSettingsManager.updateSettings(new)
+                                            binder?.notifyAutoChildrenChanged(
+                                                MediaLibraryServiceCallback.MediaId.PLAYLISTS
+                                            )
                                         }
                                     }
                                 )
@@ -1909,6 +1944,9 @@ fun GeneralSettings(
                                         coroutineScope.launch {
                                             val new = appSettingsManager.activeSettings.value.copy(showPinnedAA = it)
                                             appSettingsManager.updateSettings(new)
+                                            binder?.notifyAutoChildrenChanged(
+                                                MediaLibraryServiceCallback.MediaId.PLAYLISTS
+                                            )
                                         }
                                     }
                                 )
@@ -1926,6 +1964,20 @@ fun GeneralSettings(
                                         coroutineScope.launch {
                                             val new = appSettingsManager.activeSettings.value.copy(showInLibraryAA = it)
                                             appSettingsManager.updateSettings(new)
+                                            binder?.let { service ->
+                                                service.notifyAutoChildrenChanged(
+                                                    MediaLibraryServiceCallback.MediaId.SONGS
+                                                )
+                                                service.notifyAutoChildrenChanged(
+                                                    MediaLibraryServiceCallback.MediaId.ARTISTS_FAVORITES
+                                                )
+                                                service.notifyAutoChildrenChanged(
+                                                    MediaLibraryServiceCallback.MediaId.ALBUMS_FAVORITES
+                                                )
+                                                service.notifyAutoChildrenChanged(
+                                                    MediaLibraryServiceCallback.MediaId.PLAYLISTS
+                                                )
+                                            }
                                         }
                                     }
                                 )
@@ -1943,6 +1995,20 @@ fun GeneralSettings(
                                         coroutineScope.launch {
                                             val new = appSettingsManager.activeSettings.value.copy(showOnDeviceAA = it)
                                             appSettingsManager.updateSettings(new)
+                                            binder?.let { service ->
+                                                service.notifyAutoChildrenChanged(
+                                                    MediaLibraryServiceCallback.MediaId.SONGS
+                                                )
+                                                service.notifyAutoChildrenChanged(
+                                                    MediaLibraryServiceCallback.MediaId.ARTISTS_FAVORITES
+                                                )
+                                                service.notifyAutoChildrenChanged(
+                                                    MediaLibraryServiceCallback.MediaId.ALBUMS_FAVORITES
+                                                )
+                                                service.notifyAutoChildrenChanged(
+                                                    MediaLibraryServiceCallback.MediaId.PLAYLISTS
+                                                )
+                                            }
                                         }
                                     }
                                 )
@@ -1960,6 +2026,9 @@ fun GeneralSettings(
                                         coroutineScope.launch {
                                             val new = appSettingsManager.activeSettings.value.copy(showTopSongsAA = it)
                                             appSettingsManager.updateSettings(new)
+                                            binder?.notifyAutoChildrenChanged(
+                                                MediaLibraryServiceCallback.MediaId.SONGS
+                                            )
                                         }
                                     }
                                 )
@@ -1977,6 +2046,9 @@ fun GeneralSettings(
                                         coroutineScope.launch {
                                             val new = appSettingsManager.activeSettings.value.copy(showAllSongsAA = it)
                                             appSettingsManager.updateSettings(new)
+                                            binder?.notifyAutoChildrenChanged(
+                                                MediaLibraryServiceCallback.MediaId.SONGS
+                                            )
                                         }
                                     }
                                 )
@@ -1994,6 +2066,9 @@ fun GeneralSettings(
                                         coroutineScope.launch {
                                             val new = appSettingsManager.activeSettings.value.copy(showShuffleSongsAA = it)
                                             appSettingsManager.updateSettings(new)
+                                            binder?.notifyAutoChildrenChanged(
+                                                MediaLibraryServiceCallback.MediaId.SONGS
+                                            )
                                         }
                                     }
                                 )

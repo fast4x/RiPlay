@@ -58,15 +58,6 @@ import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.getTitleMonthlyPlaylist
 import it.fast4x.riplay.utils.seamlessQueue
-import it.fast4x.riplay.utils.showAllSongstAA
-import it.fast4x.riplay.utils.showGridAA
-import it.fast4x.riplay.utils.showInLibraryAA
-import it.fast4x.riplay.utils.showMonthlyPlaylistsAA
-import it.fast4x.riplay.utils.showOnDeviceAA
-import it.fast4x.riplay.utils.showPinnedAA
-import it.fast4x.riplay.utils.showPodcastAA
-import it.fast4x.riplay.utils.showTopSongstAA
-import it.fast4x.riplay.utils.shuffleSongsAAEnabled
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -187,7 +178,7 @@ class MediaLibraryServiceCallback(
             // altre opzioni di configurazione
             putBoolean(MEDIA_SEARCH_SUPPORTED, true)
             putBoolean(CONTENT_STYLE_SUPPORTED, true)
-            putInt(CONTENT_STYLE_BROWSABLE_HINT, if (showGridAA()) CONTENT_STYLE_GRID else CONTENT_STYLE_LIST)
+            putInt(CONTENT_STYLE_BROWSABLE_HINT, if (playerService.appSettings.showGridAA) CONTENT_STYLE_GRID else CONTENT_STYLE_LIST)
             putInt(CONTENT_STYLE_PLAYABLE_HINT, CONTENT_STYLE_LIST)
         }
 
@@ -251,10 +242,10 @@ class MediaLibraryServiceCallback(
                             .map { it.song.asPlayableMediaItem }
                             .toMutableList()
                             .apply {
-                                if (showOnDeviceAA()) add(0, ondeviceBrowserMediaItem)
-                                if (shuffleSongsAAEnabled()) add(0, shuffleBrowserMediaItem)
-                                if (showTopSongstAA()) add(0, topBrowserMediaItem)
-                                if (showAllSongstAA()) add(0, allBrowserMediaItem)
+                                if (playerService.appSettings.showOnDeviceAA) add(0, ondeviceBrowserMediaItem)
+                                if (playerService.appSettings.showShuffleSongsAA) add(0, shuffleBrowserMediaItem)
+                                if (playerService.appSettings.showTopSongsAA) add(0, topBrowserMediaItem)
+                                if (playerService.appSettings.showAllSongsAA) add(0, allBrowserMediaItem)
                             }
                     }
 
@@ -298,7 +289,7 @@ class MediaLibraryServiceCallback(
                                 .playlistPreviews(playerService.playlistSortBy, playerService.songSortOrder)
                                 .first()
                                 .fastFilter {
-                                    if (showMonthlyPlaylistsAA()) true
+                                    if (playerService.appSettings.showMonthlyPlaylistAA) true
                                     else !it.playlist.name.startsWith(MONTHLY_PREFIX)
                                 }
                                 .map { it.asBrowserMediaItem(Database.playlistThumbnailUrls(it.playlist.id).first().take(1)) }
@@ -306,11 +297,11 @@ class MediaLibraryServiceCallback(
                                 .map { it.asCleanMediaItem }
                                 .toMutableList()
                                 .apply {
-                                    if (showOnDeviceAA()) add(0, playlistsOnDeviceBrowserMediaItem)
-                                    if (showMonthlyPlaylistsAA()) add(0, playlistsMonthlyBrowserMediaItem)
-                                    if (showPinnedAA()) add(0, playlistsPinnedBrowserMediaItem)
-                                    if (showPodcastAA()) add(0, playlistsPodcastBrowserMediaItem)
-                                    if (showInLibraryAA()) add(0, playlistsInLibraryBrowserMediaItem)
+                                    if (playerService.appSettings.showOnDeviceAA) add(0, playlistsOnDeviceBrowserMediaItem)
+                                    if (playerService.appSettings.showMonthlyPlaylistAA) add(0, playlistsMonthlyBrowserMediaItem)
+                                    if (playerService.appSettings.showPinnedAA) add(0, playlistsPinnedBrowserMediaItem)
+                                    if (playerService.appSettings.showPodcastAA) add(0, playlistsPodcastBrowserMediaItem)
+                                    if (playerService.appSettings.showInLibraryAA) add(0, playlistsInLibraryBrowserMediaItem)
                                 }
                         } else {
                             val playlistLimit = playerService.appSettings.androidAutoPlaylistLimit.number
@@ -433,8 +424,8 @@ class MediaLibraryServiceCallback(
                                 .map { it.asBrowserMediaItem(MediaId.ARTISTS_FAVORITES) }
                                 .toMutableList()
                                 .apply {
-                                    if (showOnDeviceAA()) add(0,artistsOnDeviceBrowserMediaItem)
-                                    if (showInLibraryAA()) add(0,artistsInLibraryBrowserMediaItem)
+                                    if (playerService.appSettings.showOnDeviceAA) add(0,artistsOnDeviceBrowserMediaItem)
+                                    if (playerService.appSettings.showInLibraryAA) add(0,artistsInLibraryBrowserMediaItem)
                                 }
                         } else {
                             val artist = Database.artist(id).first()
@@ -581,8 +572,8 @@ class MediaLibraryServiceCallback(
                                 .map { it.asBrowserMediaItem(MediaId.ALBUMS_FAVORITES) }
                                 .toMutableList()
                                 .apply {
-                                    if (showOnDeviceAA()) add(0,albumsOnDeviceBrowserMediaItem)
-                                    if (showInLibraryAA()) add(0,albumsInLibraryBrowserMediaItem)
+                                    if (playerService.appSettings.showOnDeviceAA) add(0,albumsOnDeviceBrowserMediaItem)
+                                    if (playerService.appSettings.showInLibraryAA) add(0,albumsInLibraryBrowserMediaItem)
                                 }
                         } else {
                             Timber.d("MediaLibraryCallback onLoadChildren inside albums SONGS id $id")
