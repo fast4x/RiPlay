@@ -56,6 +56,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -279,8 +280,12 @@ fun TvUnifiedPlayer(
     val topRowFocusRequester = remember { FocusRequester() }
     val bottomRowFocusRequester = remember { FocusRequester() }
 
+    // ── Gestione Focus Iniziale Sicura ───────────────────────────
     LaunchedEffect(Unit) {
-        playPauseFocusRequester.requestFocus()
+        // Evita il fallimento silenzioso del focus attendendo il frame di layout
+        android.view.Choreographer.getInstance().postFrameCallback {
+            playPauseFocusRequester.requestFocus()
+        }
     }
 
     // ── TV Focus indicator modifier ──────────────────────────────
@@ -289,7 +294,6 @@ fun TvUnifiedPlayer(
     BackHandler(onBack = onDismiss)
 
     // ── Background ───────────────────────────────────────────────
-    //val blurStrength by rememberPreference(BLUR_SCALE.key, 25f)
     val blurStrength = appearanceSettings.blurStrength
     val backgroundRequest = remember(mediaItem.mediaId) {
         ImageRequest.Builder(context)
@@ -309,6 +313,25 @@ fun TvUnifiedPlayer(
         modifier = Modifier
             .fillMaxSize()
             .background(color.background1)
+            .onKeyEvent { keyEvent ->
+                if (keyEvent.type == KeyEventType.KeyDown) {
+                    when (keyEvent.key) {
+                        Key.MediaPlayPause, Key.DirectionCenter -> {
+                            if (playerState.isPlaying) binder.player.pause() else binder.player.play()
+                            true
+                        }
+                        Key.MediaFastForward -> {
+                            binder.player.seekTo(binder.player.currentPosition + 10000)
+                            true
+                        }
+                        Key.MediaRewind -> {
+                            binder.player.seekTo((binder.player.currentPosition - 10000).coerceAtLeast(0))
+                            true
+                        }
+                        else -> false
+                    }
+                } else false
+            }
     ) {
         // Blurred background image
         AsyncImage(
@@ -397,8 +420,6 @@ fun TvUnifiedPlayer(
                             binder.onlinePlayer?.seekTo(pos.div(1000))
                     },
                     focusRequester = seekBarFocusRequester,
-                    nextFocusUp = topRowFocusRequester,
-                    nextFocusDown = playPauseFocusRequester,
                     modifier = Modifier
                         .fillMaxWidth(0.9f)
                         .padding(bottom = 32.dp)
@@ -412,8 +433,6 @@ fun TvUnifiedPlayer(
                     positionAndDuration = Pair(currentPosition, duration),
                     jumpPrevious = jumpPrevious,
                     playPauseFocusRequester = playPauseFocusRequester,
-                    seekBarFocusRequester = seekBarFocusRequester,
-                    bottomRowFocusRequester = bottomRowFocusRequester,
                     modifier = Modifier.padding(bottom = 24.dp)
                 )
 
@@ -458,9 +477,6 @@ fun TvUnifiedPlayer(
                         }
                     },
                     onDismiss = onDismiss,
-                    focusRequester = bottomRowFocusRequester,
-                    topRowFocusRequester = topRowFocusRequester,
-                    playPauseFocusRequester = playPauseFocusRequester,
                     modifier = Modifier
                 )
             }
@@ -706,14 +722,12 @@ private fun TvSeekBar(
     position: Float,
     duration: Float,
     onSeek: (Float) -> Unit,
-    focusRequester: FocusRequester,
-    nextFocusUp: FocusRequester,
-    nextFocusDown: FocusRequester,
     modifier: Modifier = Modifier,
+    focusRequester: FocusRequester = remember { FocusRequester() },
 ) {
     val color = colorPalette()
     var isFocused by remember { mutableStateOf(false) }
-    val stepMs = 5000f // 5 secondi per press del D-pad
+    val stepMs = 5000f // 5 secondi per ogni pressione del D-pad
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -725,32 +739,34 @@ private fun TvSeekBar(
             modifier = Modifier.width(64.dp)
         )
 
-        // BoxWithConstraints ci permette di conoscere la larghezza effettiva (maxWidth)
-        BoxWithConstraints(
+        // Usiamo un normale Box: l'ordine corretto dei modificatori stabilizza il focus
+        Box(
             modifier = Modifier
                 .weight(1f)
-                .height(32.dp) // Target grande per il focus da TV
+                .height(32.dp)
+                // 1. Rendiamo il componente focalizzabile prima di tutto il resto
+                .focusable()
+                // 2. Agganciamo il requester e gli eventi di ascolto dello stato
                 .focusRequester(focusRequester)
-                .focusProperties {
-                    up = nextFocusUp
-                    down = nextFocusDown
-                }
                 .onFocusChanged { isFocused = it.isFocused }
-                .focusable() // FONDAMENTALE: rende il Box capace di ricevere focus e key events
+                // 3. Gestiamo gli input del telecomando in modo prioritario
                 .onKeyEvent { keyEvent ->
                     if (keyEvent.type != KeyEventType.KeyDown) return@onKeyEvent false
                     when (keyEvent.key) {
                         Key.DirectionLeft -> {
                             onSeek((position - stepMs).coerceAtLeast(0f))
-                            true
+                            true // Consuma l'evento: il focus resta inchiodato sulla seekbar
                         }
                         Key.DirectionRight -> {
                             onSeek((position + stepMs).coerceAtMost(duration))
-                            true
+                            true // Consuma l'evento: il focus resta inchiodato sulla seekbar
                         }
+                        // Freccia Su e Freccia Giù NON vengono intercettati qui,
+                        // permettendo al focus di muoversi naturalmente ai controlli sopra/sotto
                         else -> false
                     }
                 }
+                // 4. Stile visivo del focus
                 .clip(RoundedCornerShape(4.dp))
                 .background(color.background2.copy(alpha = 0.4f))
                 .border(
@@ -760,22 +776,26 @@ private fun TvSeekBar(
                 )
                 .padding(vertical = 12.dp)
         ) {
-            val progress = if (duration > 0) position / duration else 0f
+            val progress = if (duration > 0) (position / duration).coerceIn(0f, 1f) else 0f
 
-            // Barra di riempimento del progresso
+            // Disegniamo la barra in modo efficiente senza BoxWithConstraints
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .fillMaxWidth(progress)
+                    .fillMaxWidth(progress.coerceAtLeast(0.001f)) // Evita lo 0f assoluto
                     .background(color.accent)
             )
 
-            // Pallino (Thumb) indicator
+            // Il pallino segue il progresso usando Modifier.align con un offset basato su frazione
+            // Se preferisci mantenerlo millimetrico, puoi rimettere BoxWithConstraints,
+            // l'importante è aver corretto l'ordine dei modificatori sopra!
             Box(
                 modifier = Modifier
                     .align(Alignment.CenterStart)
-                    // Ora maxWidth è disponibile come Dp in BoxWithConstraintsScope
-                    .offset(x = (progress * maxWidth) - 6.dp)
+                    .graphicsLayer {
+                        // Sposta il pallino fluidamente senza scatenare un intero re-layout della UI
+                        translationX = progress * size.width - (6.dp.toPx())
+                    }
                     .size(12.dp)
                     .background(Color.White, CircleShape)
             )
@@ -789,6 +809,7 @@ private fun TvSeekBar(
     }
 }
 
+
 /**
  * Main transport controls: Previous, Rewind, Play/Pause, Forward, Next
  */
@@ -800,12 +821,9 @@ private fun MainControlsRow(
     mediaItem: MediaItem,
     positionAndDuration: Pair<Long, Long>,
     jumpPrevious: String,
-    playPauseFocusRequester: FocusRequester,
-    seekBarFocusRequester: FocusRequester,
-    bottomRowFocusRequester: FocusRequester,
+    playPauseFocusRequester: FocusRequester, // Teniamo solo questo per il focus iniziale all'avvio
     modifier: Modifier = Modifier,
 ) {
-    val color = colorPalette()
     val riTuneClient = binder.riTuneCastClient
     val scope = rememberCoroutineScope()
 
@@ -829,10 +847,7 @@ private fun MainControlsRow(
                 } else {
                     binder.player.playPrevious()
                 }
-            },
-            focusRequester = remember { FocusRequester() },
-            nextFocusUp = seekBarFocusRequester,
-            nextFocusDown = bottomRowFocusRequester,
+            }
         )
 
         // Rewind 10s
@@ -842,13 +857,10 @@ private fun MainControlsRow(
             onClick = {
                 val newPos = (binder.player.currentPosition - 10000).coerceAtLeast(0)
                 binder.player.seekTo(newPos)
-            },
-            focusRequester = remember { FocusRequester() },
-            nextFocusUp = seekBarFocusRequester,
-            nextFocusDown = bottomRowFocusRequester,
+            }
         )
 
-        // Play / Pause
+        // Play / Pause (L'unico che mantiene il controllo del focus per l'avvio)
         TvPlayerButton(
             icon = if (playerState.isPlaying) R.drawable.pause else R.drawable.play,
             contentDescription = if (playerState.isPlaying) "Pause" else "Play",
@@ -875,9 +887,7 @@ private fun MainControlsRow(
                 }
             },
             focusRequester = playPauseFocusRequester,
-            nextFocusUp = seekBarFocusRequester,
-            nextFocusDown = bottomRowFocusRequester,
-            isPrimary = true,
+            isPrimary = true
         )
 
         // Forward 10s
@@ -888,23 +898,18 @@ private fun MainControlsRow(
                 val newPos = (binder.player.currentPosition + 10000)
                     .coerceAtMost(binder.player.duration)
                 binder.player.seekTo(newPos)
-            },
-            focusRequester = remember { FocusRequester() },
-            nextFocusUp = seekBarFocusRequester,
-            nextFocusDown = bottomRowFocusRequester,
+            }
         )
 
         // Next
         TvPlayerButton(
             icon = R.drawable.play_skip_forward,
             contentDescription = "Next",
-            onClick = { binder.player.playNext() },
-            focusRequester = remember { FocusRequester() },
-            nextFocusUp = seekBarFocusRequester,
-            nextFocusDown = bottomRowFocusRequester,
+            onClick = { binder.player.playNext() }
         )
     }
 }
+
 
 /**
  * Secondary actions: Loop, Shuffle, Lyrics, Visualizer, Queue, Menu, Close
@@ -923,21 +928,17 @@ private fun SecondaryActionsRow(
     onShowQueue: () -> Unit,
     onShowMenu: () -> Unit,
     onDismiss: () -> Unit,
-    focusRequester: FocusRequester,
-    topRowFocusRequester: FocusRequester,
-    playPauseFocusRequester: FocusRequester,
     modifier: Modifier = Modifier,
 ) {
     val color = colorPalette()
     val binder = LocalPlayerServiceBinder.current
+
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
-            .focusRequester(focusRequester)
-            .focusProperties {
-                up = playPauseFocusRequester
-            }
+        // Lasciamo la Row pulita. Saranno i TvPlayerButton interni a ricevere
+        // fluidamente il focus in base alla loro posizione sullo schermo.
     ) {
         // Loop
         TvPlayerButton(
@@ -1003,6 +1004,7 @@ private fun SecondaryActionsRow(
     }
 }
 
+
 // ═══════════════════════════════════════════════════════════════════
 // Reusable TV button with focus indicator
 // ═══════════════════════════════════════════════════════════════════
@@ -1012,32 +1014,33 @@ fun TvPlayerButton(
     @DrawableRes icon: Int,
     contentDescription: String,
     onClick: () -> Unit,
-    focusRequester: FocusRequester = remember { FocusRequester() },
-    nextFocusUp: FocusRequester? = null,
-    nextFocusDown: FocusRequester? = null,
+    modifier: Modifier = Modifier,
+    focusRequester: FocusRequester? = null,
     tint: Color = colorPalette().text,
     isPrimary: Boolean = false,
 ) {
     val color = colorPalette()
     var isFocused by remember { mutableStateOf(false) }
+
+    // Animazione fluida per il telecomando TV
     val scale by animateFloatAsState(
         targetValue = if (isFocused) 1.15f else 1f,
-        animationSpec = tween(150), label = "scale"
+        animationSpec = tween(150),
+        label = "scale"
     )
 
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .focusRequester(focusRequester)
-            .then(
-                if (nextFocusUp != null) Modifier.focusProperties { up = nextFocusUp }
-                else Modifier
-            )
-            .then(
-                if (nextFocusDown != null) Modifier.focusProperties { down = nextFocusDown }
-                else Modifier
-            )
+        modifier = modifier
+            // 1. ORDINE FONDAMENTALE: Prima dichiariamo che il Box può essere focalizzato
+            .focusable()
+            // 2. Applichiamo il requester SOLO se viene passato dall'esterno (es. al Play/Pause)
+            .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
+            // 3. Ascoltiamo il cambio di stato del focus per attivare l'animazione grafica
             .onFocusChanged { isFocused = it.isFocused }
+            // 4. Gestiamo il click del tasto centrale del telecomando D-pad
+            .clickable(onClick = onClick)
+            // 5. Dimensioni e design (la scala grafica viene applicata dopo il focus per non rompere i calcoli geometrici della TV)
             .size(if (isPrimary) 72.dp else 52.dp)
             .scale(scale)
             .clip(CircleShape)
@@ -1051,7 +1054,6 @@ fun TvPlayerButton(
                     Modifier.border(2.dp, color.accent, CircleShape)
                 else Modifier
             )
-            .clickable(onClick = onClick)
     ) {
         Icon(
             painter = painterResource(icon),
@@ -1061,6 +1063,7 @@ fun TvPlayerButton(
         )
     }
 }
+
 
 /**
  * Focus indicator modifier for TV: adds a glow/border on focus.
