@@ -141,6 +141,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -839,65 +840,50 @@ fun HomePlaylists(
                                                                     coroutineScope.launch(
                                                                         Dispatchers.IO
                                                                     ) {
-                                                                        Database.playlistSongs(
-                                                                            preview.playlist.id
-                                                                        )
-                                                                            .distinctUntilChanged()
-                                                                            .map { it?.map(Song::asMediaItem) }
-                                                                            .onEach {
-                                                                                withContext(
-                                                                                    Dispatchers.Main
-                                                                                ) {
-                                                                                    binder?.player?.addNext(
-                                                                                        it
-                                                                                            ?: emptyList(),
-                                                                                        appContext(),
-                                                                                        selectedQueue
-                                                                                            ?: defaultQueue()
-                                                                                    )
-                                                                                }
+                                                                        val mediaItems =
+                                                                            Database.playlistSongs(
+                                                                                preview.playlist.id
+                                                                            ).first().map { it.asMediaItem }
+
+                                                                            withContext(Dispatchers.Main) {
+                                                                                binder?.player?.addNext(
+                                                                                    mediaItems,
+                                                                                    appContext(),
+                                                                                    selectedQueue
+                                                                                        ?: defaultQueue()
+                                                                                )
                                                                             }
-                                                                            .collect()
+
                                                                     }
                                                                 },
                                                                 onPlayNow = {
-                                                                    coroutineScope.launch(
-                                                                        Dispatchers.IO
-                                                                    ) {
-                                                                        Database.playlistSongs(
-                                                                            preview.playlist.id
-                                                                        )
-                                                                            .distinctUntilChanged()
-                                                                            .map { it?.map(Song::asMediaItem) }
-                                                                            .onEach {
-                                                                                if (it != null)
-                                                                                    binder?.player?.forcePlayFromBeginning(
-                                                                                        it
-                                                                                    )
-                                                                            }
-                                                                            .collect()
+                                                                    coroutineScope.launch {
+                                                                        val mediaItems =
+                                                                            Database.playlistSongs(
+                                                                                preview.playlist.id
+                                                                            ).first().map { it.asMediaItem }
+
+                                                                        withContext(Dispatchers.Main) {
+                                                                            binder?.player?.forcePlayFromBeginning(mediaItems)
+                                                                        }
+
                                                                     }
                                                                 },
                                                                 onShufflePlay = {
                                                                     coroutineScope.launch(
                                                                         Dispatchers.IO
                                                                     ) {
-                                                                        Database.playlistSongs(
-                                                                            preview.playlist.id
-                                                                        )
-                                                                            .distinctUntilChanged()
-                                                                            .map { it?.map(Song::asMediaItem) }
-                                                                            .onEach {
-                                                                                withContext(
-                                                                                    Dispatchers.Main
-                                                                                ) {
-                                                                                    if (it != null)
-                                                                                        binder?.player?.forcePlayFromBeginning(
-                                                                                            it.shuffled()
-                                                                                        )
-                                                                                }
+                                                                        val mediaItems =
+                                                                            Database.playlistSongs(
+                                                                                preview.playlist.id
+                                                                            ).first().map { it.asMediaItem }.shuffled()
+
+                                                                            withContext(Dispatchers.Main) {
+                                                                                binder?.player?.forcePlayFromBeginning(
+                                                                                    mediaItems
+                                                                                )
                                                                             }
-                                                                            .collect()
+
                                                                     }
                                                                 },
                                                                 onBlacklist = {
