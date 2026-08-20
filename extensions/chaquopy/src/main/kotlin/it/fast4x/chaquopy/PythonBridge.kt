@@ -12,15 +12,24 @@ import it.fast4x.riplay.PythonResponse
 class PythonEngineImpl : PythonEngine {
     override fun executeScript(url: String, privateDir: String): PythonResponse {
         val py = Python.getInstance()
-        val result =  py.getModule("MusicVault")
+        val result = py.getModule("MusicVault")
             .callAttr("download_audio", url, privateDir)
 
-        val path              = result.callAttr("get", "path").toString()
-        val fileName          = result.callAttr("get", "filename").toString()
-        val thumbnailFileName = result.callAttr("get", "thumbnail_filename").toString()
-        val title             = result.callAttr("get", "title").toString()
-        val duration          = result.callAttr("get", "duration").toInt()
-        val artist            = result.callAttr("get", "artist").toString()
+        // Nel caso di errore Python
+        val errorObj = result.callAttr("get", "error")
+        if (errorObj != null) {
+            throw Exception("Python Script Error: ${errorObj.toString()}")
+        }
+
+        val path              = result.callAttr("get", "path")?.toString() ?: ""
+        val fileName          = result.callAttr("get", "filename")?.toString() ?: ""
+        val thumbnailFileName = result.callAttr("get", "thumbnail_filename")?.toString() ?: ""
+        val title             = result.callAttr("get", "title")?.toString() ?: ""
+
+        val durationObj = result.callAttr("get", "duration")
+        val duration = durationObj?.toInt() ?: 0
+
+        val artist            = result.callAttr("get", "artist")?.toString() ?: ""
 
         return PythonResponse(
             path = path,

@@ -32,6 +32,8 @@ chaquopy {
     defaultConfig {
         version = "3.13"
         pip {
+            // Forza pip a cercare sempre l'ultima versione su PyPI ad ogni sync/build
+            options("--upgrade")
             install("yt-dlp")
         }
     }
