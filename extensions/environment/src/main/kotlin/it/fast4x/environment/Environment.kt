@@ -1243,6 +1243,9 @@ object Environment {
         }
     )
 
+    //Deezer api urls:
+    // Track info > ISRC code > https://api.deezer.com/2.0/track/isrc:USWB11200587
+    // Track page > Id code > https://www.deezer.com/it/track/37734411
     suspend fun deezerTrackInfo(isrc: String): Result<DeezerTrack?> =
         runCatching {
             val trackUrl = "https://api.deezer.com/2.0/track/isrc:$isrc"
