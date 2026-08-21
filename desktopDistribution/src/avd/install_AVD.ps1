@@ -17,7 +17,7 @@ $ABI          = "x86_64"
 $SYSTEM_IMAGE = "system-images;android-$ANDROID_API;google_apis;$ABI"
 
 $CMDTOOLS_URL    = "https://dl.google.com/android/repository/commandlinetools-win-11076708_latest.zip"
-$CMDTOOLS_SHA256 = "b771501a747e1d1699cad34f09fd2ed0e30f1ad3c3c75b71b0bbdf18a3e6dce9"
+$CMDTOOLS_SHA256 = ""
 $JDK_URL         = "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.11%2B9/OpenJDK17U-jdk_x64_windows_hotspot_17.0.11_9.msi"
 
 $ANDROID_SDK_ROOT = "$env:LOCALAPPDATA\Android\sdk"
