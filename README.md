@@ -146,9 +146,7 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 
 ## 📲 Installation on PC
 **How to?**
-- [Installer AVD and RiPlay - Windows and Linux](/desktopDistribution/redist/Installer%20AVD%20and%20RiPlay%20-%20Windows%20and%20Linux.7z)
-- [Installer WSA and RiPlay - Only Windows](/desktopDistribution/redist/Installer%20WSA%20and%20RiPlay%20-%20Only%20Windows.7z)
-- [Installer WAYDROID and RiPlay - Only Linux](/desktopDistribution/redist/Installer%20WAYDROID%20and%20RiPlay%20-%20Only%20Linux.7z)
+- Simple download from the [latest release](https://github.com/fast4x/RiPlay/releases/latest), preferred installer for Windows and Linux, only for Windows or only for Linux
 
 
 ## ❓ Need Help?
