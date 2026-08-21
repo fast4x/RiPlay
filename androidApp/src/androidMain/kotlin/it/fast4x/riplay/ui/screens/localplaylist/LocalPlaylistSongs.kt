@@ -259,9 +259,9 @@ fun LocalPlaylistSongs(
 
     }
 
-    println("LocalPlaylistSongs isSpotifyPlaylist $isSpotifyPlaylist")
-    println("LocalPlaylistSongs isDeezerPlaylist $isDeezerPlaylist")
-    println("LocalPlaylistSongs playlistAllSongs $playlistAllSongs")
+//    println("LocalPlaylistSongs isSpotifyPlaylist $isSpotifyPlaylist")
+//    println("LocalPlaylistSongs isDeezerPlaylist $isDeezerPlaylist")
+//    println("LocalPlaylistSongs playlistAllSongs $playlistAllSongs")
 
     LaunchedEffect(Unit, playlistAllSongs, filter, playlistSongsTypeFilter) {
         when (playlistSongsTypeFilter) {
@@ -430,7 +430,7 @@ fun LocalPlaylistSongs(
                 else currentDragInfo.first to toIndex
 
                 move(fromIndex, toIndex)
-                println("reorderableLazyListState dragInfo from ${fromIndex} to ${toIndex}")
+                //println("reorderableLazyListState dragInfo from ${fromIndex} to ${toIndex}")
             }
         } else dragInfo = null
 
@@ -444,7 +444,7 @@ fun LocalPlaylistSongs(
                Database.asyncTransaction {
                     move(playlistId, fromIndex, toIndex)
                 }
-                println("reorderableLazyListState.isAnyItemDragging moved from ${fromIndex} to ${toIndex}")
+                //println("reorderableLazyListState.isAnyItemDragging moved from ${fromIndex} to ${toIndex}")
                 dragInfo = null
             }
         }
@@ -643,128 +643,6 @@ fun LocalPlaylistSongs(
                     plistName
                 )
             }
-            /*
-            coroutineScope.launch (Dispatchers.IO){
-                context.applicationContext.contentResolver.openOutputStream(uri)
-                    ?.use { outputStream ->
-                        csvWriter().open(outputStream) {
-                            writeRow(
-                                "PlaylistBrowseId",
-                                "PlaylistName",
-                                "MediaId",
-                                "Title",
-                                "Artists",
-                                "Duration",
-                                "ThumbnailUrl",
-                                "AlbumId",
-                                "AlbumTitle",
-                                "ArtistIds"
-                            )
-                            if (listMediaItems.isEmpty()) {
-                                playlistSongs.forEach {
-                                    val artistInfos = Database.songArtistInfo(it.asMediaItem.mediaId)
-                                    val albumInfo = Database.songAlbumInfo(it.asMediaItem.mediaId)
-                                    writeRow(
-                                        playlistPreview?.playlist?.browseId,
-                                        plistName,
-                                        it.song.id,
-                                        it.song.title,
-                                        artistInfos.joinToString(",") { it.name ?: "" },
-                                        it.song.durationText,
-                                        it.song.thumbnailUrl,
-                                        albumInfo?.id,
-                                        albumInfo?.name,
-                                        artistInfos.joinToString(",") { it.id }
-                                    )
-                                }
-                            } else {
-                                listMediaItems.forEach {
-                                    val artistInfos = Database.songArtistInfo(it.mediaId)
-                                    val albumInfo = Database.songAlbumInfo(it.mediaId)
-                                    writeRow(
-                                        playlistPreview?.playlist?.browseId,
-                                        plistName,
-                                        it.mediaId,
-                                        it.mediaMetadata.title,
-                                        artistInfos.joinToString(",") { it.name ?: "" },
-                                        it.asSong.durationText,
-                                        it.mediaMetadata.artworkUri,
-                                        albumInfo?.id,
-                                        albumInfo?.name,
-                                        artistInfos.joinToString(",") { it.id }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-             */
-        }
-
-    val importLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-            if (uri == null) return@rememberLauncherForActivityResult
-
-            context.applicationContext.contentResolver.openInputStream(uri)
-                ?.use { inputStream ->
-                    csvReader().open(inputStream) {
-                        readAllWithHeaderAsSequence().forEachIndexed { index, row: Map<String, String> ->
-
-                            Database.asyncTransaction {
-                                plistId = row["PlaylistName"]?.let {
-                                    Database.playlistExistByName(
-                                        it
-                                    )
-                                } ?: 0L
-
-                                if (plistId == 0L) {
-                                    plistId = row["PlaylistName"]?.let {
-                                        Database.insert(
-                                            Playlist(
-                                                name = it,
-                                                browseId = row["PlaylistBrowseId"]
-                                            )
-                                        )
-                                    } ?: 0L
-                                } else {
-                                    /**/
-                                    if (row["MediaId"] != null && row["Title"] != null) {
-                                        val song =
-                                            row["MediaId"]?.let {
-                                                row["Title"]?.let { it1 ->
-                                                    Song(
-                                                        id = it,
-                                                        title = it1,
-                                                        artistsText = row["Artists"],
-                                                        durationText = row["Duration"],
-                                                        thumbnailUrl = row["ThumbnailUrl"]
-                                                    )
-                                                }
-                                            }
-                                        Database.asyncTransaction {
-                                            if (song != null) {
-                                                Database.insert(song)
-                                                Database.insert(
-                                                    SongPlaylistMap(
-                                                        songId = song.id,
-                                                        playlistId = plistId,
-                                                        position = index
-                                                    ).default()
-                                                )
-                                            }
-                                        }
-
-
-                                    }
-                                    /**/
-                                }
-                            }
-
-                        }
-                    }
-
-                }
         }
 
     var isRenaming by rememberSaveable {
@@ -787,9 +665,9 @@ fun LocalPlaylistSongs(
                 if (isRenaming) {
                     CoroutineScope(Dispatchers.IO).launch {
                         if (isYtSyncEnabled() && (playlistPreview?.playlist?.isEditable == true)) {
-                            println("Innertube YtMusic try to rename Playlist with browseId: ${playlistPreview?.playlist?.browseId}, name: $text")
+                            //println("Innertube YtMusic try to rename Playlist with browseId: ${playlistPreview?.playlist?.browseId}, name: $text")
                             playlistPreview?.playlist?.browseId?.let {
-                                println("Innertube YtMusic renamePlaylist with id: $it, name: $text")
+                                //println("Innertube YtMusic renamePlaylist with id: $it, name: $text")
                                 EnvironmentExt.renamePlaylist(cleanPrefix(it), text)
                             }
                         }
@@ -1021,8 +899,8 @@ fun LocalPlaylistSongs(
                         }
                     )
                 }
-            } else {
-                println("LocalPlaylistSongs Conversione playlist")
+            } //else {
+                //println("LocalPlaylistSongs Conversione playlist")
 //                playlistAllSongs.filter { it.song.id.startsWith("spotify") }
 //                    .forEach { song ->
 //                        jobs.add(
@@ -1031,7 +909,7 @@ fun LocalPlaylistSongs(
 //                            }
 //                        )
 //                    }
-            }
+          //  }
             while(jobs.isNotEmpty()){
                 val oldSize = jobs.size
                 jobs.removeIf{it.isCompleted}
@@ -1063,8 +941,8 @@ fun LocalPlaylistSongs(
         content = playlistPreview?.playlist ?: return
     )
 
-    println("LocalPlaylistSongs playlist browseId ${playlistPreview?.playlist?.browseId}")
-    println("LocalPlaylistSongs ${playlistAllSongs}")
+//    println("LocalPlaylistSongs playlist browseId ${playlistPreview?.playlist?.browseId}")
+//    println("LocalPlaylistSongs ${playlistAllSongs}")
 
 
     PullToRefreshBox(
@@ -1651,7 +1529,7 @@ fun LocalPlaylistSongs(
                                                                     )
                                                                 }
                                                             }
-                                                            println("pipedInfo mediaitemmenu uuid ${playlistPreview.playlist.browseId}")
+                                                            //println("pipedInfo mediaitemmenu uuid ${playlistPreview.playlist.browseId}")
 
 
                                                             listMediaItems.clear()

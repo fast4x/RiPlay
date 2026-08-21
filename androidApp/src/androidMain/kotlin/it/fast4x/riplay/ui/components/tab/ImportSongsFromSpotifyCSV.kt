@@ -46,7 +46,7 @@ class ImportSongsFromSpotifyCSV private constructor(
 
                     csvReader().open(inputStream) {
                         readAllWithHeaderAsSequence().forEachIndexed { index, row: Map<String, String> ->
-                            println("mediaItem index song $index")
+                           // println("mediaItem index song $index")
 
                             Database.asyncTransaction {
                                 beforeTransaction( index, row, fileName )

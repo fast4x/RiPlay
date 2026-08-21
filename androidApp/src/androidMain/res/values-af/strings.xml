@@ -1352,6 +1352,7 @@
     <string name="exit_from_riplay">Exit from RiPlay</string>
     <string name="settings_title_on_device_music_folder">On device music folder</string>
     <string name="import_playlist_riplay">Import playlist from RiPlay</string>
+
     <string name="import_playlist_exportify_net">Import playlist from Exportify.net</string>
     <string name="settings_automatic_playback">Automatic Playback</string>
     <string name="settings_bt_title_bluetooth_audio_devices">Bluetooth audio devices</string>
@@ -1383,4 +1384,6 @@
     <string name="webdav_sync">WebDAV Sync</string>
     <string name="webdav_sync_now">Sync now</string>
     <string name="webdav_scan_subfolders">Scan subfolders</string>
+    <string name="import_playlist_tune_my_music_deezer"><![CDATA[TuneMyMusic > Deezer]]></string>
+    <string name="import_playlist_exportify_net_spotify"><![CDATA[Exportify.net > Spotify]]></string>
 </resources>

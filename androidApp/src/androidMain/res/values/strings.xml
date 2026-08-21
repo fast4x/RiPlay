@@ -1384,4 +1384,5 @@
     <string name="webdav_sync_now">Sync now</string>
     <string name="webdav_scan_subfolders">Scan subfolders</string>
     <string name="import_playlist_tune_my_music_deezer"><![CDATA[TuneMyMusic > Deezer]]></string>
+    <string name="import_playlist_exportify_net_spotify"><![CDATA[Exportify.net > Spotify]]></string>
 </resources>

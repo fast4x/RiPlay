@@ -11,7 +11,7 @@ enum class ImportPlaylistType {
     val titleId: Int
         get() = when(this) {
             Riplay -> R.string.import_playlist_riplay
-            ExportifyNet -> R.string.import_playlist_exportify_net
+            ExportifyNet -> R.string.import_playlist_exportify_net_spotify
             TuneMyMusicDeezer -> R.string.import_playlist_tune_my_music_deezer
         }
 
