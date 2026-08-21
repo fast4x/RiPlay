@@ -578,7 +578,7 @@ fun LocalPlaylistSongs(
         }
     }
 
-    val isReorderDisabled = appSettings.reorderInQueueEnabled
+    val isReorderDisabled = appSettings.isReorderDisabled
 
     val playlistThumbnailSizeDp = Dimensions.thumbnails.playlist
     val playlistThumbnailSizePx = playlistThumbnailSizeDp.px
