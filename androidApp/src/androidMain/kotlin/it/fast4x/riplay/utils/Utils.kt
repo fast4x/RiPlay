@@ -25,6 +25,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import it.fast4x.riplay.LocalAppSettingsManager
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 
 const val EXPLICIT_BUNDLE_TAG = "is_explicit"
@@ -76,7 +78,46 @@ fun String.capitalized(): String =
         else it.toString()
     }
 
-fun formatAsDuration(millis: Long) = DateUtils.formatElapsedTime(millis / 1000).removePrefix("0")
+//fun formatAsDuration(millis: Long) = DateUtils.formatElapsedTime(millis / 1000).removePrefix("0")
+fun formatAsDuration(millis: Long): String {
+    if (millis <= 0) return "0:00"
+
+    val totalSeconds = millis / 1000
+    val seconds = totalSeconds % 60
+    val totalMinutes = totalSeconds / 60
+    val minutes = totalMinutes % 60
+    val hours = totalMinutes / 60
+
+    return if (hours > 0) {
+        String.format("%d:%02d:%02d", hours, minutes, seconds) // Es. 1:05:30
+    } else {
+        String.format("%d:%02d", minutes, seconds)             // Es. 3:45
+    }
+}
+
+/**
+ * Stima la durata di un brano in millisecondi basandosi sulla dimensione del file
+ * e su un bitrate ipotizzato per il formato.
+ *
+ * @param contentLength Dimensione in byte del file.
+ * @param extension L'estensione del file (es. "mp3", "opus", "flac").
+ * @return Durata stimata in millisecondi.
+ */
+fun estimateDurationMillis(contentLength: Long, extension: String): Long {
+    if (contentLength <= 0) return 0L
+
+    // Euristica dei bitrate medi aggiornata
+    val assumedBitrateKbps = when (extension.lowercase()) {
+        "mp3", "m4a", "aac" -> 190    // Media tra 128 e 256 (molto diffusi)
+        "opus", "ogg"      -> 128     // 128, standard per Opus
+        "flac", "wav"      -> 1000    // Lossless
+        else               -> 128     // Fallback
+    }
+
+    val estimatedSeconds = (contentLength * 8) / (assumedBitrateKbps * 1000)
+
+    return estimatedSeconds * 1000
+}
 
 fun formatAsTime(millis: Long): String {
     val timePart1 = Duration.ofMillis(millis).toMinutes().minutes

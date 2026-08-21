@@ -82,6 +82,7 @@ import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.isExclusivelyLocal
 import it.fast4x.riplay.utils.isRelated
 import it.fast4x.riplay.utils.isSpotifyTrack
+import it.fast4x.riplay.utils.isWebDav
 import kotlinx.serialization.ExperimentalSerializationApi
 
 
@@ -456,6 +457,12 @@ fun SongItem(
                         )
                         song.isSpotifyTrack -> IconButton(
                             icon = R.drawable.alert,
+                            color = colorPalette.accent,
+                            enabled = true,
+                            onClick = noOp,
+                        )
+                        song.isWebDav -> IconButton(
+                            icon = R.drawable.cloud,
                             color = colorPalette.accent,
                             enabled = true,
                             onClick = noOp,

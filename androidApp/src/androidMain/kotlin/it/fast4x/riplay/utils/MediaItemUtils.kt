@@ -129,7 +129,7 @@ val Song.asMediaItem: MediaItem
                         }
                     }
                     // Canzone locale da MediaStore
-                    isLocal -> ContentUris.withAppendedId(
+                    isLocal && !isWebDav -> ContentUris.withAppendedId(
                         MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                         id.substringAfter(LOCAL_KEY_PREFIX).toLong()
                     )
@@ -246,7 +246,7 @@ val SongEntity.asMediaItem: MediaItem
                     }
                 }
                 // Canzone locale da MediaStore
-                song.isLocal -> ContentUris.withAppendedId(
+                song.isLocal && !song.isWebDav -> ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     song.id.substringAfter(LOCAL_KEY_PREFIX).toLong()
                 )
@@ -324,6 +324,7 @@ val MediaItem.asRelated: MediaItem
 val MediaItem.origin: String
     get() = when {
         this.isMusicVault -> "MUSIC VAULT"
+        this.isWebDav -> "WEBDAV"
         this.isLocal -> appContext().resources.getString(R.string.local_now_playing_title)
         else -> appContext().resources.getString(R.string.online_now_playing_title)
     }

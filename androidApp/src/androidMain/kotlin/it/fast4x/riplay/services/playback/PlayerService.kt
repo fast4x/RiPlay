@@ -41,6 +41,7 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Base64
 import android.view.LayoutInflater
 import androidx.annotation.OptIn
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -65,6 +66,7 @@ import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.SimpleCache
+import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER
 import androidx.media3.exoplayer.ExoPlayer
@@ -228,14 +230,19 @@ import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.seconds
 import android.os.Binder as AndroidBinder
 import it.fast4x.riplay.extensions.appsettings.AppSettingsManager
+import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavConfig
 import it.fast4x.riplay.services.playback.common.MediaInfo
 import it.fast4x.riplay.services.playback.common.PlaybackContext
 import it.fast4x.riplay.services.playback.common.PlaybackState
 import it.fast4x.riplay.services.playback.common.PlayerState
 import it.fast4x.riplay.utils.BitmapLoader
+import it.fast4x.riplay.utils.CryptoManager
 import it.fast4x.riplay.utils.forcePlayAtIndex
+import it.fast4x.riplay.utils.formatAsDuration
+import it.fast4x.riplay.utils.isWebDav
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.debounce
+import okhttp3.OkHttpClient
 import java.io.ByteArrayOutputStream
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -484,7 +491,6 @@ class PlayerService : MediaLibraryService(),
 
         checkAndRestoreTimer()
 
-
         initializeAudioManager()
         initializeAudioVolumeObserver()
         initializeAudioEqualizer()
@@ -575,15 +581,16 @@ class PlayerService : MediaLibraryService(),
 
 
             val format = Database.format(currentMediaId).first()
-            if (format == null && !song.isLocal) {
+            if (format == null && (!song.isLocal || song.isWebDav)) {
                 getOnlineMetadata(currentMediaId)
                     ?.let {
-                        Timber.d("PlayerService onCreate update currentSong onlinemetadata it $it")
+                        //Timber.d("PlayerService onCreate update currentSong onlinemetadata it $it")
+                        val duratiomMs = it.videoDetails?.lengthSeconds?.toLong()
                         try {
                             Database.insert(
                                 Format(
                                     songId = currentMediaId,
-                                    contentLength = it.videoDetails?.lengthSeconds?.toLong(),
+                                    contentLength = duratiomMs,
                                     loudnessDb = it.playerConfig?.audioConfig?.loudnessDb
                                         ?: it.playerConfig?.audioConfig?.perceptualLoudnessDb?.toFloat(),
                                     playbackUrl = it.playbackTracking?.videostatsPlaybackUrl?.baseUrl
@@ -592,6 +599,13 @@ class PlayerService : MediaLibraryService(),
                         } catch (e: Exception) {
                             Timber.e("PlayerService onCreate update currentSong exception ${e.stackTraceToString()}")
                         }
+
+
+                        // Aggiorno la durata se è nulla nel db
+                        if (currentSong.value?.durationText == "0:00" && duratiomMs != null) {
+                            Database.updateDurationText(song.id, formatAsDuration(duratiomMs))
+                        }
+
 
                     }
             }
@@ -2048,7 +2062,7 @@ private var pausedByZeroVolume = false
 
         if (totalPlayTimeMs > 5000) {
             Timber.d("PlayerService onPlaybackStatsReady INCREMENT totalPlayTimeMs $totalPlayTimeMs mediaItem ${mediaItem.mediaId}")
-            Database.asyncTransaction {
+            serviceScope.launch {
                 Database.incrementTotalPlayTimeMs(mediaItem.mediaId, totalPlayTimeMs)
             }
         }
@@ -2058,7 +2072,7 @@ private var pausedByZeroVolume = false
 
         if (totalPlayTimeMs > minTimeForEvent.ms) {
             Timber.d("PlayerService onPlaybackStatsReady INSERT EVENT totalPlayTimeMs $totalPlayTimeMs")
-            Database.asyncTransaction {
+            serviceScope.launch {
                 try {
                     Database.insert(
                         Event(
@@ -3266,6 +3280,52 @@ private var pausedByZeroVolume = false
         DefaultExtractorsFactory()
     )
 
+    fun createCacheDataSource(): CacheDataSource.Factory {
+
+        val webDavConfig = WebDavConfig(
+            baseUrl = appSettings.webDavUrl,
+            username = appSettings.webDavUsername,
+            password = CryptoManager.decrypt(appSettings.webDavPassword)
+        )
+
+        // 1. Configura il client OkHttp con le credenziali WebDAV (se presenti)
+        val okHttpClient = OkHttpClient.Builder()
+            .proxy(Environment.proxy)
+            .apply {
+                addInterceptor { chain ->
+                    val request = chain.request().newBuilder()
+                        .header(
+                            "Authorization",
+                            okhttp3.Credentials.basic(webDavConfig.username, webDavConfig.password)
+                        )
+                        .build()
+                    chain.proceed(request)
+                }
+            }
+            .build()
+
+        // 2. Crea la factory HTTP che usa il nostro OkHttp
+        val okHttpDataSourceFactory = OkHttpDataSource.Factory(okHttpClient)
+            .setUserAgent("RiPlayUserAgent") // Opzionale ma consigliato
+
+        // 3. Unisci locale e remoto!
+        // DefaultDataSource userà okHttpDataSourceFactory per il traffico web,
+        // e le API native di Android per i file locali.
+        val upstreamDataSourceFactory = DefaultDataSource.Factory(
+            this,
+            okHttpDataSourceFactory
+        )
+
+        // 4. Assembla la Cache
+        return CacheDataSource
+            .Factory()
+            .setCache(cache)
+            // ATTENZIONE: Rimuovi o modifica questa riga (leggi sotto)
+            // .setCacheWriteDataSinkFactory(null)
+            .setUpstreamDataSourceFactory(upstreamDataSourceFactory)
+    }
+
+    /*
     fun createCacheDataSource(): CacheDataSource.Factory =
         CacheDataSource
             .Factory()
@@ -3288,6 +3348,8 @@ private var pausedByZeroVolume = false
                 ),
             )
              */
+
+     */
     private fun createRendersFactory() = object : DefaultRenderersFactory(this) {
         override fun buildAudioSink(
             context: Context,
@@ -3781,6 +3843,7 @@ private var pausedByZeroVolume = false
         }
     }
 
+    @Stable
     open inner class Binder : AndroidBinder() {
 
         val coroutineScope: CoroutineScope

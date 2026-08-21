@@ -26,8 +26,8 @@ import it.fast4x.riplay.enums.HomeType
 import it.fast4x.riplay.enums.ImportPlaylistType
 import it.fast4x.riplay.enums.Languages
 import it.fast4x.riplay.enums.LastFmScrobbleType
-import it.fast4x.riplay.enums.LocalPlayerCacheLocation
-import it.fast4x.riplay.enums.LocalPlayerDiskCacheMaxSize
+import it.fast4x.riplay.enums.ExoPlayerCacheLocation
+import it.fast4x.riplay.enums.ExoPlayerDiskCacheMaxSize
 import it.fast4x.riplay.enums.MaxSongs
 import it.fast4x.riplay.enums.MaxStatisticsItems
 import it.fast4x.riplay.enums.MaxTopPlaylistItems
@@ -64,7 +64,6 @@ import it.fast4x.riplay.enums.ViewType
 import it.fast4x.riplay.enums.WallpaperType
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.getDeviceVolume
-import it.fast4x.riplay.utils.getSystemlanguage
 import kotlinx.serialization.Serializable
 import java.net.Proxy
 
@@ -232,9 +231,9 @@ data class AppSettings(
     val nowPlayingIndicator: MusicAnimationType = MusicAnimationType.Bubbles,
     val equalizerType: EqualizerType = EqualizerType.Internal,
     val maxSongsInQueue: MaxSongs = MaxSongs.`500`,
-    val exoPlayerDiskCacheMaxSize: LocalPlayerDiskCacheMaxSize = LocalPlayerDiskCacheMaxSize.`2GB`,
+    val exoPlayerDiskCacheMaxSize: ExoPlayerDiskCacheMaxSize = ExoPlayerDiskCacheMaxSize.`2GB`,
     val exoPlayerCustomCache: Int = 32,
-    val exoPlayerCacheLocation: LocalPlayerCacheLocation = LocalPlayerCacheLocation.System,
+    val exoPlayerCacheLocation: ExoPlayerCacheLocation = ExoPlayerCacheLocation.System,
     val playbackVolume: Float = 0.5f,
     val playbackDeviceVolume: Float = getDeviceVolume(appContext()),
     val historyType: HistoryType = HistoryType.History,
@@ -277,6 +276,11 @@ data class AppSettings(
     val viewType: ViewType = ViewType.Grid,
     val isReorderDisabled: Boolean = false,
     val isAndroidAutoEnabled: Boolean = true,
-
+    val isWebDavEnabled: Boolean = false,
+    val webDavUrl: String = "",
+    val webDavUsername: String = "",
+    val webDavPassword: String = "",
+    val webDavFolder: String = "",
+    val isWebDavScanSubfoldersEnabled: Boolean = false,
     )
 

@@ -18,6 +18,7 @@ import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
+import java.util.UUID
 
 @RequiresApi(Build.VERSION_CODES.O)
 fun moveDir(src: Path, dest: Path): Boolean {
@@ -180,4 +181,31 @@ fun getSafeDefaultDir(context: Context, dir: String): File {
     }
 
     return dir
+}
+
+/**
+ * Salva i byte della copertina nella memoria persistente dell'app (filesDir).
+ * Ritorna un percorso locale sotto forma di Stringa (es. "file:///data/.../files/covers/uuid.jpg")
+ */
+fun saveByteArrayToFilesDir(context: Context, bytes: ByteArray?): String? {
+    if (bytes == null || bytes.isEmpty()) return null
+
+    return try {
+        // filesDir per garantire persistenza contro la pulizia cache
+        val coversDir = File(context.filesDir, "extracted_covers").apply { mkdirs() }
+
+        // UUID per evitare collisioni di nomi
+        val file = File(coversDir, "${UUID.randomUUID()}.jpg")
+
+        FileOutputStream(file).use { output ->
+            output.write(bytes)
+            output.flush()
+        }
+
+        // Ritorna l'URI del file locale
+        file.toURI().toString()
+    } catch (e: Exception) {
+        Timber.e(e, "saveByteArrayToFilesDir: Errore nel salvare la cover estratta in filesDir")
+        null
+    }
 }

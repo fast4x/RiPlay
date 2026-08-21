@@ -33,6 +33,8 @@ import it.fast4x.riplay.extensions.musicbrainz.workers.WorkScheduler
 import it.fast4x.riplay.extensions.musicbrainz.workers.WorkerDependencies
 import it.fast4x.riplay.musicvault.initializeMusicVault
 import it.fast4x.riplay.services.playback.PlayerService
+import it.fast4x.riplay.utils.CryptoManager
+import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.InitializeEnvironment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

@@ -88,6 +88,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
@@ -96,6 +97,7 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import io.github.oikvpqya.compose.fastscroller.VerticalScrollbar
 import io.github.oikvpqya.compose.fastscroller.rememberScrollbarAdapter
 import it.fast4x.riplay.BuildConfig
+import it.fast4x.riplay.Dependencies
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.extensions.persist.persistList
@@ -187,6 +189,7 @@ import it.fast4x.riplay.ui.components.themed.EnumsMenu
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 import it.fast4x.riplay.utils.isMusicVault
+import it.fast4x.riplay.utils.isWebDav
 import kotlinx.coroutines.delay
 import kotlinx.serialization.ExperimentalSerializationApi
 
@@ -312,6 +315,9 @@ fun HomeSongs(
     val buttonsList = (if (isNetworkConnected) listOf(BuiltInPlaylist.All to stringResource(R.string.all)) else emptyList()).toMutableList()
 
     if (showFavoritesPlaylist && isNetworkConnected) buttonsList += BuiltInPlaylist.Favorites to stringResource(R.string.favorites)
+
+    if (appSettings.isWebDavEnabled) buttonsList += BuiltInPlaylist.WebDav to stringResource(R.string.webdav)
+
     if (showMyTopPlaylist && isNetworkConnected) buttonsList += BuiltInPlaylist.Top to String.format(stringResource(R.string.my_playlist_top), maxTopPlaylistItems.number)
 
     if (BuildConfig.FLAVOR == "full")
@@ -423,6 +429,16 @@ fun HomeSongs(
                     }
 
             }
+
+            BuiltInPlaylist.WebDav -> {
+                Database.songDao().getWebDavSongsAsFlow().collect { it ->
+                    items = it.filter { item ->
+                        blacklisted.value?.map { it.path }?.contains(item.song.id) == false
+                                && item.song.isWebDav
+                    }
+                    //Timber.d("HomeSongs: WebDav collect songs = ${items.size}")
+                }
+            }
         }
     }
 
@@ -529,11 +545,12 @@ fun HomeSongs(
             onDismiss = { isExporting = false },
             title = stringResource(R.string.enter_the_playlist_name),
             value = when (builtInPlaylist) {
-                BuiltInPlaylist.All -> context.resources.getString(R.string.songs)
-                BuiltInPlaylist.OnDevice, BuiltInPlaylist.MusicVault -> context.resources.getString(R.string.on_device)
-                BuiltInPlaylist.Favorites -> context.resources.getString(R.string.favorites)
-                BuiltInPlaylist.Top -> context.resources.getString(R.string.playlist_top)
-                BuiltInPlaylist.Disliked -> context.resources.getString(R.string.disliked)
+                BuiltInPlaylist.All -> stringResource(R.string.songs)
+                BuiltInPlaylist.OnDevice, BuiltInPlaylist.MusicVault -> stringResource(R.string.on_device)
+                BuiltInPlaylist.Favorites -> stringResource(R.string.favorites)
+                BuiltInPlaylist.Top -> stringResource(R.string.playlist_top)
+                BuiltInPlaylist.Disliked -> stringResource(R.string.disliked)
+                BuiltInPlaylist.WebDav -> stringResource(R.string.webdav)
             },
             placeholder = stringResource(R.string.enter_the_playlist_name),
             setValue = { text ->
@@ -1087,9 +1104,10 @@ fun HomeSongs(
                                 FolderItem(
                                     folder = folderItem, thumbnailSizeDp = thumbnailSizeDp,
                                     modifier = Modifier
-                                        .combinedClickable(onClick = { currentFolderPath =
-                                            currentFolderPath.removeSuffix("/")
-                                                .substringBeforeLast("/") + "/"
+                                        .combinedClickable(onClick = {
+                                            currentFolderPath =
+                                                currentFolderPath.removeSuffix("/")
+                                                    .substringBeforeLast("/") + "/"
                                         })
                                         .animateItem(
                                             fadeInSpec = tween(200),

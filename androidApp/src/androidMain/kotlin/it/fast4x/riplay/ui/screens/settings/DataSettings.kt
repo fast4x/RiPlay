@@ -37,9 +37,12 @@ import coil.Coil
 import coil.annotation.ExperimentalCoilApi
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalBackupManager
+import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.CacheType
 import it.fast4x.riplay.enums.CoilDiskCacheMaxSize
+import it.fast4x.riplay.enums.ExoPlayerCacheLocation
+import it.fast4x.riplay.enums.ExoPlayerDiskCacheMaxSize
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.ui.components.themed.CacheSpaceIndicator
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
@@ -55,6 +58,7 @@ import it.fast4x.riplay.ui.components.themed.DefaultDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -65,11 +69,15 @@ import java.util.Date
 @Composable
 fun DataSettings() {
     val context = LocalContext.current
+    val binder = LocalPlayerServiceBinder.current
     val backupViewModel = LocalBackupManager.current
     val backupUiState by backupViewModel.uiState.collectAsState()
 
     val appSettingsManager = LocalAppSettingsManager.current
     val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
+    val coroutineScope = rememberCoroutineScope()
+    var restartService by rememberSaveable { mutableStateOf(false) }
 
     val backupLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/octet-stream")
@@ -101,8 +109,26 @@ fun DataSettings() {
 
 
     var showCoilCustomDiskCacheDialog by remember { mutableStateOf(false) }
-
     val coilCustomDiskCache = appSettings.coilCustomDiskCache
+    var showExoPlayerCustomDiskCacheDialog by remember { mutableStateOf(false) }
+    val exoPlayerCustomCache = appSettings.exoPlayerCustomCache
+    val exoPlayerDiskCacheMaxSize = appSettings.exoPlayerDiskCacheMaxSize
+    val exoPlayerCacheLocation = appSettings.exoPlayerCacheLocation
+    var cleanCacheOfflineSongs by remember { mutableStateOf(false) }
+
+    if (cleanCacheOfflineSongs) {
+        ConfirmationDialog(
+            text = stringResource(R.string.do_you_really_want_to_delete_cache),
+            onDismiss = {
+                cleanCacheOfflineSongs = false
+            },
+            onConfirm = {
+                binder?.cache?.keys?.forEach { song ->
+                    binder.cache.removeResource(song)
+                }
+            }
+        )
+    }
 
     var isExporting by remember { mutableStateOf(false) }
     var isImporting by remember { mutableStateOf(false) }
@@ -144,8 +170,51 @@ fun DataSettings() {
         )
     }
 
-    val coroutineScope = rememberCoroutineScope()
-    var restartService by rememberSaveable { mutableStateOf(false) }
+    if (showCoilCustomDiskCacheDialog) {
+        InputNumericDialog(
+            title = stringResource(R.string.set_custom_cache),
+            placeholder = stringResource(R.string.enter_value_in_mb),
+            value = coilCustomDiskCache.toString(),
+            valueMin = "32",
+            onDismiss = { showCoilCustomDiskCacheDialog = false },
+            setValue = {
+                //Log.d("customCache", it)
+                coroutineScope.launch {
+                    val new = appSettingsManager.activeSettings.value.copy(
+                        coilCustomDiskCache = it.toInt()
+                    )
+                    appSettingsManager.updateSettings(new)
+                }
+
+                showCoilCustomDiskCacheDialog = false
+                restartService = true
+            }
+        )
+        RestartPlayerService(restartService, onRestart = { restartService = false } )
+    }
+
+    if (showExoPlayerCustomDiskCacheDialog) {
+        InputNumericDialog(
+            title = stringResource(R.string.set_custom_cache),
+            placeholder = stringResource(R.string.enter_value_in_mb),
+            value = exoPlayerCustomCache.toString(),
+            valueMin = "32",
+            onDismiss = { showExoPlayerCustomDiskCacheDialog = false },
+            setValue = {
+                coroutineScope.launch {
+                    val new = appSettingsManager.activeSettings.value.copy(
+                        exoPlayerCustomCache = it.toInt()
+                    )
+                    appSettingsManager.updateSettings(new)
+                }
+
+                showExoPlayerCustomDiskCacheDialog = false
+                restartService = true
+            }
+        )
+        RestartPlayerService(restartService, onRestart = { restartService = false } )
+    }
+
 
     Column(
         modifier = Modifier
@@ -207,10 +276,9 @@ fun DataSettings() {
                         appSettingsManager.updateSettings(new)
                     }
 
-                    if (coilDiskCacheMaxSize == CoilDiskCacheMaxSize.Custom)
+                    if (it == CoilDiskCacheMaxSize.Custom) {
                         showCoilCustomDiskCacheDialog = true
-
-                    restartService = true
+                    } else restartService = true
                 },
                 valueText = {
                     when (it) {
@@ -229,31 +297,97 @@ fun DataSettings() {
             )
             RestartPlayerService(restartService, onRestart = { restartService = false } )
 
-            if (showCoilCustomDiskCacheDialog) {
-                InputNumericDialog(
-                    title = stringResource(R.string.set_custom_cache),
-                    placeholder = stringResource(R.string.enter_value_in_mb),
-                    value = coilCustomDiskCache.toString(),
-                    valueMin = "32",
-                    onDismiss = { showCoilCustomDiskCacheDialog = false },
-                    setValue = {
-                        //Log.d("customCache", it)
-                        coroutineScope.launch {
-                            val new = appSettingsManager.activeSettings.value.copy(
-                                coilCustomDiskCache = it.toInt()
-                            )
-                            appSettingsManager.updateSettings(new)
-                        }
-
-                        showCoilCustomDiskCacheDialog = false
-                        restartService = true
-                    }
-                )
-                RestartPlayerService(restartService, onRestart = { restartService = false } )
-            }
-
             CacheSpaceIndicator(cacheType = CacheType.Images, horizontalPadding = 20.dp)
         }
+
+        binder?.cache?.let { cache ->
+            val diskCacheSize = remember(cache.cacheSpace, cleanCacheOfflineSongs) {
+                cache.cacheSpace
+            }
+
+            //SettingsGroup {
+            EnumValueSelectorSettingsEntry(
+                title = stringResource(R.string.song_cache_max_size),
+                titleSecondary = when (exoPlayerDiskCacheMaxSize) {
+                    ExoPlayerDiskCacheMaxSize.Disabled -> ""
+                    ExoPlayerDiskCacheMaxSize.Custom -> Formatter.formatShortFileSize(context, diskCacheSize) +
+                            "/${Formatter.formatShortFileSize(context,
+                                exoPlayerCustomCache.toLong() * 1000 * 1000
+                            )}" + " ${stringResource(R.string.used)}"
+                    else -> Formatter.formatShortFileSize(context, diskCacheSize) +
+                            " ${stringResource(R.string.used)}" +
+                            when (exoPlayerDiskCacheMaxSize) {
+                                ExoPlayerDiskCacheMaxSize.Unlimited-> ""
+                                // only needed because of UNLIMITED
+                                else -> " (${diskCacheSize * 100 / exoPlayerDiskCacheMaxSize.bytes}%)"
+                            }
+                },
+                trailingContent = {
+                    HeaderIconButton(
+                        icon = R.drawable.trash,
+                        enabled = true,
+                        color = colorPalette().text,
+                        onClick = { cleanCacheOfflineSongs = true }
+                    )
+                },
+                selectedValue = exoPlayerDiskCacheMaxSize,
+                onValueSelected = {
+                    Timber.d("DataSettings exoPlayerDiskCacheMaxSize: $it")
+                    if (it == ExoPlayerDiskCacheMaxSize.Custom) {
+                        showExoPlayerCustomDiskCacheDialog = true
+                    } else restartService = true
+
+                    coroutineScope.launch {
+                        val new = appSettingsManager.activeSettings.value.copy(
+                            exoPlayerDiskCacheMaxSize = it
+                        )
+                        appSettingsManager.updateSettings(new)
+                    }
+                },
+                valueText = {
+                    when (it) {
+                        ExoPlayerDiskCacheMaxSize.Disabled -> stringResource(R.string.turn_off)
+                        ExoPlayerDiskCacheMaxSize.Unlimited -> stringResource(R.string.unlimited)
+                        ExoPlayerDiskCacheMaxSize.Custom -> stringResource(R.string.custom)
+                        ExoPlayerDiskCacheMaxSize.`32MB` -> "32MB"
+                        ExoPlayerDiskCacheMaxSize.`512MB` -> "512MB"
+                        ExoPlayerDiskCacheMaxSize.`1GB` -> "1GB"
+                        ExoPlayerDiskCacheMaxSize.`2GB` -> "2GB"
+                        ExoPlayerDiskCacheMaxSize.`4GB` -> "4GB"
+                        ExoPlayerDiskCacheMaxSize.`8GB` -> "8GB"
+
+                    }
+                }
+            )
+            RestartPlayerService(restartService, onRestart = { restartService = false } )
+
+            CacheSpaceIndicator(cacheType = CacheType.CachedSongs, horizontalPadding = 20.dp)
+            //}
+        }
+
+        EnumValueSelectorSettingsEntry(
+            title = stringResource(R.string.set_cache_location),
+            selectedValue = exoPlayerCacheLocation,
+            onValueSelected = {
+                coroutineScope.launch {
+                    val new = appSettingsManager.activeSettings.value.copy(
+                        exoPlayerCacheLocation = it
+                    )
+                    appSettingsManager.updateSettings(new)
+                }
+
+                restartService = true
+            },
+            valueText = {
+                when (it) {
+                    ExoPlayerCacheLocation.Private -> stringResource(R.string.cache_location_private)
+                    ExoPlayerCacheLocation.System -> stringResource(R.string.cache_location_system)
+                }
+            }
+        )
+
+        SettingsDescription(stringResource(R.string.info_private_cache_location_can_t_cleaned))
+        RestartPlayerService(restartService, onRestart = { restartService = false } )
 
         SettingsGroupSpacer()
 

@@ -655,7 +655,7 @@ fun InputNumericDialog(
                         text = it.take(10)
                         errorMessage = null
                     },
-                    label = { Text(placeholder) },
+                    label = { Text(placeholder, color = colorPalette().textSecondary) },
                     isError = errorMessage != null,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -684,7 +684,7 @@ fun InputNumericDialog(
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text(stringResource(R.string.cancel))
+                        Text(stringResource(R.string.cancel), color = colorPalette().textSecondary)
                     }
 
                     Spacer(modifier = Modifier.width(8.dp))

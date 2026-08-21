@@ -6,5 +6,6 @@ enum class BuiltInPlaylist {
     Top,
     OnDevice,
     Disliked,
-    MusicVault;
+    MusicVault,
+    WebDav;
 }

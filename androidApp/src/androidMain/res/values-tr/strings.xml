@@ -1374,4 +1374,13 @@
     <string name="qr_code_frame_the_qr_code">QR kodunu çerçeveleyin</string>
     <string name="qr_code_camera_permission_denied">Kamera izni reddedildi. QR kodunu taramak için telefonunuzun ayarlarından kamerayı etkinleştirmeniz gerekir.</string>
     <string name="sync_favorites_with_ytm_account">Sık kullanılanları YTM hesabıyla senkronize et</string>
+    <string name="webdav">WebDAV</string>
+    <string name="webdav_enable">Enable WebDAV</string>
+    <string name="webdav_url">WebDAV url</string>
+    <string name="webdav_username">WebDAV username</string>
+    <string name="webdav_password">WebDAV password</string>
+    <string name="webdav_folder">WebDAV folder</string>
+    <string name="webdav_sync">WebDAV Sync</string>
+    <string name="webdav_sync_now">Sync now</string>
+    <string name="webdav_scan_subfolders">Scan subfolders</string>
 </resources>

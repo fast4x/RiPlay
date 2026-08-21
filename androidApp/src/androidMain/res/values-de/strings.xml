@@ -1377,4 +1377,13 @@ Mach dich bereit, deine unvergesslichsten musikalischen Momente noch einmal zu e
     <string name="qr_code_frame_the_qr_code">Frame the QR code</string>
     <string name="qr_code_camera_permission_denied">Camera permission denied. To scan the QR code, you need to enable the camera in your phone\'s settings.</string>
     <string name="sync_favorites_with_ytm_account">Sync favorites with ytm account</string>
+    <string name="webdav">WebDAV</string>
+    <string name="webdav_enable">Enable WebDAV</string>
+    <string name="webdav_url">WebDAV url</string>
+    <string name="webdav_username">WebDAV username</string>
+    <string name="webdav_password">WebDAV password</string>
+    <string name="webdav_folder">WebDAV folder</string>
+    <string name="webdav_sync">WebDAV Sync</string>
+    <string name="webdav_sync_now">Sync now</string>
+    <string name="webdav_scan_subfolders">Scan subfolders</string>
 </resources>

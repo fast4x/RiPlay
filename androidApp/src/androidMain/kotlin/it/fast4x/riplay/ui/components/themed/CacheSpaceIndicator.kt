@@ -18,7 +18,7 @@ import coil.annotation.ExperimentalCoilApi
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.enums.CacheType
-import it.fast4x.riplay.enums.LocalPlayerDiskCacheMaxSize
+import it.fast4x.riplay.enums.ExoPlayerDiskCacheMaxSize
 
 
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -38,7 +38,7 @@ fun CacheSpaceIndicator(
     when (cacheType) {
         CacheType.Images -> {}
         CacheType.CachedSongs -> {
-            if (localPlayerDiskCacheMaxSize == LocalPlayerDiskCacheMaxSize.Unlimited) return
+            if (localPlayerDiskCacheMaxSize == ExoPlayerDiskCacheMaxSize.Unlimited) return
         }
     }
 

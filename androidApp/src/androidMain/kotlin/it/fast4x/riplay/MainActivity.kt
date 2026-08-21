@@ -197,6 +197,7 @@ import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.extensions.appviewmodel.AppViewModelProvider
 import it.fast4x.riplay.extensions.appearancesettings.AppearanceSettingsManager
 import it.fast4x.riplay.extensions.appsettings.AppSettingsManager
+import it.fast4x.riplay.extensions.experimental.webdavlibrary.WebDavLibraryViewModel
 import it.fast4x.riplay.extensions.shazam.handleShazamShare
 import it.fast4x.riplay.extensions.qrcodeanalyzer.qrCodeToAction
 import it.fast4x.riplay.extensions.musicbrainz.viewmodels.AlbumInsightsViewModel
@@ -288,6 +289,10 @@ class MainActivity : AppCompatActivity() {
     }
     private val albumInsightsViewModel: AlbumInsightsViewModel by viewModels {
         AlbumInsightsViewModel(application)
+    }
+
+    private val webDavLibraryViewModel: WebDavLibraryViewModel by viewModels {
+        WebDavLibraryViewModel()
     }
 
     private val appearanceSettingsManager by lazy {
@@ -1117,6 +1122,7 @@ class MainActivity : AppCompatActivity() {
                                 LocalRiTuneSheetState provides castSheetState,
                                 LocalArtistInsights provides artistInsightsViewModel,
                                 LocalAlbumInsights provides albumInsightsViewModel,
+                                LocalWebDavLibrary provides webDavLibraryViewModel,
                                 LocalAppearanceSettingsManager provides appearanceSettingsManager,
                                 LocalAppSettingsManager provides appSettingsManager,
                                 //LocalOnlinePlayerPlayingState provides onlinePlayerPlayingState,
@@ -1703,10 +1709,9 @@ val LocalOnDeviceViewModel = staticCompositionLocalOf<OnDeviceViewModel> { error
 //    staticCompositionLocalOf<Boolean> { error("No player sheet state provided") }
 
 val LocalRiTuneSheetState = staticCompositionLocalOf<BottomSheetState> { error("No RiTune sheet provided") }
-
 val LocalArtistInsights = staticCompositionLocalOf<ArtistInsightsViewModel> { error("No artist insights provided")}
-
 val LocalAlbumInsights = staticCompositionLocalOf<AlbumInsightsViewModel> { error("No album insights provided")}
+val LocalWebDavLibrary = staticCompositionLocalOf<WebDavLibraryViewModel> { error("No webdav library provided")}
 
 val LocalAppearanceSettingsManager = staticCompositionLocalOf<AppearanceSettingsManager> { error("No appearance settings provided")}
 

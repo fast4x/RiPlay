@@ -15,10 +15,8 @@ import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.NoOpCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import it.fast4x.riplay.MainApplication
-import it.fast4x.riplay.enums.LocalPlayerCacheLocation
-import it.fast4x.riplay.enums.LocalPlayerDiskCacheMaxSize
-import it.fast4x.riplay.extensions.preferences.getEnum
-import it.fast4x.riplay.extensions.preferences.preferences
+import it.fast4x.riplay.enums.ExoPlayerCacheLocation
+import it.fast4x.riplay.enums.ExoPlayerDiskCacheMaxSize
 import timber.log.Timber
 import java.io.File
 
@@ -54,11 +52,11 @@ object PrincipalCache {
     private var databaseProvider: StandaloneDatabaseProvider? = null
     private val localPlayerCacheLocation = appSettings.exoPlayerCacheLocation
     private val directoryLocation =
-        if (localPlayerCacheLocation == LocalPlayerCacheLocation.Private) appContext().filesDir else appContext().cacheDir
+        if (localPlayerCacheLocation == ExoPlayerCacheLocation.Private) appContext().filesDir else appContext().cacheDir
 
     private val cacheSize = appSettings.exoPlayerDiskCacheMaxSize
 
-    private val cacheDirName = if (cacheSize == LocalPlayerDiskCacheMaxSize.Disabled) "riplay_no_cache" else "riplay_cache"
+    private val cacheDirName = if (cacheSize == ExoPlayerDiskCacheMaxSize.Disabled) "riplay_no_cache" else "riplay_cache"
 
     private val directory = directoryLocation.resolve(cacheDirName).also { dir ->
         if (dir.exists()) return@also
@@ -76,8 +74,8 @@ object PrincipalCache {
         appContext().filesDir.resolve("coil").deleteRecursively()
     }
     private val cacheEvictor = when (val size = appSettings.exoPlayerDiskCacheMaxSize) {
-        LocalPlayerDiskCacheMaxSize.Unlimited -> NoOpCacheEvictor()
-        LocalPlayerDiskCacheMaxSize.Custom -> LeastRecentlyUsedCacheEvictor(exoPlayerCustomCache)
+        ExoPlayerDiskCacheMaxSize.Unlimited -> NoOpCacheEvictor()
+        ExoPlayerDiskCacheMaxSize.Custom -> LeastRecentlyUsedCacheEvictor(exoPlayerCustomCache)
         else -> LeastRecentlyUsedCacheEvictor(size.bytes)
     }
 

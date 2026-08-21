@@ -21,12 +21,14 @@ import timber.log.Timber
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import androidx.core.net.toUri
+import it.fast4x.riplay.utils.WEBDAV_KEY_PREFIX
+import it.fast4x.riplay.utils.isWebDav
 
 @OptIn(UnstableApi::class)
 internal fun PlayerService.createLocalDataSourceFactory(): DataSource.Factory {
     return ResolvingDataSource.Factory(createCacheDataSource()) { dataSpec ->
 
-        Timber.d("PlayerService createLocalDataSourceFactory dataSpec: uri=${dataSpec.uri} key=${dataSpec.key}")
+        //Timber.d("PlayerService createLocalDataSourceFactory dataSpec: uri=${dataSpec.uri} key=${dataSpec.key}")
 
         var song: Song? = null
 
@@ -34,7 +36,7 @@ internal fun PlayerService.createLocalDataSourceFactory(): DataSource.Factory {
             song = runBlocking {
                 Database.getSong(cleanPrefix(dataSpec.key.toString()))
             }
-            Timber.d("PlayerService createLocalDataSourceFactory get song from db $song")
+            //Timber.d("PlayerService createLocalDataSourceFactory get song from db $song")
         }
 
         when {
@@ -47,7 +49,7 @@ internal fun PlayerService.createLocalDataSourceFactory(): DataSource.Factory {
                     )
                 }
 
-                Timber.d("PlayerService createLocalDataSourceFactory file as tree > song $song")
+                //Timber.d("PlayerService createLocalDataSourceFactory file as tree > song $song")
 
                 // 1. Chiediamo al Repository di risolvere il file (ritorna Uri o File)
                 val resolvedFile = MusicVaultRepository.resolveAudioFile(song)
@@ -60,7 +62,7 @@ internal fun PlayerService.createLocalDataSourceFactory(): DataSource.Factory {
                 }
 
                 if (playableUri != null) {
-                    Timber.d("PlayerService MusicVault playableUri: $playableUri")
+                    //Timber.d("PlayerService MusicVault playableUri: $playableUri")
                     // 3. INIETTIAMO L'URI REALE NEL DATASPEC
                     // Manteniamo la key originale intatta per non rompere la cache di ExoPlayer
                     return@Factory dataSpec.withUri(playableUri)
@@ -74,7 +76,7 @@ internal fun PlayerService.createLocalDataSourceFactory(): DataSource.Factory {
             }
 
             dataSpec.isLocal && dataSpec.isLocalUri -> {
-                Timber.d("PlayerService createLocalDataSourceFactory dataSpec.isLocalUri: YES")
+                //Timber.d("PlayerService createLocalDataSourceFactory dataSpec.isLocalUri: YES")
                 return@Factory dataSpec
             }
 
@@ -84,12 +86,20 @@ internal fun PlayerService.createLocalDataSourceFactory(): DataSource.Factory {
                     else MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
                 val id = dataSpec.key?.removePrefix(LOCAL_KEY_PREFIX) ?: dataSpec.uri.toString().removePrefix(LOCAL_KEY_PREFIX)
                 val contentUri = contentUriBase.buildUpon().appendPath(id).build()
-                Timber.d("PlayerService createLocalDataSourceFactory dataSpec.isLocal: yes contentUri: $contentUri")
+                //Timber.d("PlayerService createLocalDataSourceFactory dataSpec.isLocal: yes contentUri: $contentUri")
                 return@Factory dataSpec.withUri(contentUri)
             }
 
+            dataSpec.isWebDav -> {
+                //Timber.d("PlayerService createLocalDataSourceFactory dataSpec.isWebDav: YES")
+                return@Factory dataSpec.withUri(dataSpec.uri.toString().removePrefix(
+                    WEBDAV_KEY_PREFIX
+                ).toUri())
+            }
+
+
             else -> {
-                Timber.d("PlayerService createLocalDataSourceFactory: Intercettato brano online/YT. Reindirizzo a /dev/null per evitare l'errore.")
+                //Timber.d("PlayerService createLocalDataSourceFactory: Intercettato brano online/YT. Reindirizzo a /dev/null per evitare l'errore.")
                 return@Factory dataSpec.withUri("file:///dev/null".toUri())
 
             }

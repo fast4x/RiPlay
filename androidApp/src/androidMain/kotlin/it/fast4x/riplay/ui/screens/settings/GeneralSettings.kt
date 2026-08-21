@@ -599,7 +599,8 @@ fun GeneralSettings(
                                             val new = appSettingsManager.activeSettings.value.copy(proxyPort = it.toIntOrNull() ?: 1080)
                                             appSettingsManager.updateSettings(new)
                                         }
-                                    })
+                                    }
+                                )
                             }
                         }
                     }

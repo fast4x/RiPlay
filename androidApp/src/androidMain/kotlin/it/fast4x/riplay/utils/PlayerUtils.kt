@@ -7,15 +7,9 @@ import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.produceState
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import androidx.media3.common.Player.REPEAT_MODE_ALL
-import androidx.media3.common.Player.REPEAT_MODE_OFF
-import androidx.media3.common.Player.REPEAT_MODE_ONE
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSpec
@@ -31,24 +25,19 @@ import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
-import java.util.ArrayDeque
 import kotlin.time.Duration.Companion.milliseconds
 
 
 const val LOCAL_KEY_PREFIX = "local:"
 const val MUSIC_VAULT_KEY_PREFIX = "musicvault:"
 const val SPOTIFY_TRACK_KEY_PREFIX = "spotify:track:"
+
+const val WEBDAV_KEY_PREFIX = "webdav:"
 
 val String.isSpotifyTrack: Boolean
         get() = this.startsWith(SPOTIFY_TRACK_KEY_PREFIX)
@@ -60,7 +49,9 @@ val Song.isSpotifyTrack: Boolean
 
 val DataSpec.isLocal
     @OptIn(UnstableApi::class)
-    get() = key?.startsWith(LOCAL_KEY_PREFIX) == true || uri.toString().startsWith(LOCAL_KEY_PREFIX)
+    get() = key?.startsWith(LOCAL_KEY_PREFIX) == true
+            || uri.toString().startsWith(LOCAL_KEY_PREFIX)
+
 
 val DataSpec.isMusicVault
     @OptIn(UnstableApi::class)
@@ -70,14 +61,25 @@ val DataSpec.isMusicVault
 val DataSpec.isLocalUri get() = uri.toString().startsWith("content://")
 
 @get:OptIn(UnstableApi::class)
+val DataSpec.isWebDav
+    get() =  key?.startsWith(WEBDAV_KEY_PREFIX) == true
+            || uri.toString().startsWith(WEBDAV_KEY_PREFIX)
+
+@get:OptIn(UnstableApi::class)
 val MediaItem.isLocal get() = mediaId.startsWith(LOCAL_KEY_PREFIX)
         || mediaMetadata.extras?.getString("musicVaultState") == MusicVaultState.COMPLETED.name
+        || mediaId.startsWith(WEBDAV_KEY_PREFIX)
+
 @get:OptIn(UnstableApi::class)
 val MediaItem.isMusicVault get() =
     mediaMetadata.extras?.getString("musicVaultState") == MusicVaultState.COMPLETED.name
 
+@get:OptIn(UnstableApi::class)
+val MediaItem.isWebDav get() = mediaId.startsWith(WEBDAV_KEY_PREFIX)
+
 val Song.isLocal get() = id.startsWith(LOCAL_KEY_PREFIX)
         || musicVaultState == MusicVaultState.COMPLETED
+        || id.startsWith(WEBDAV_KEY_PREFIX)
 
 val Song.isExclusivelyLocal get() = id.startsWith(LOCAL_KEY_PREFIX)
 
@@ -85,6 +87,8 @@ val Song.isExclusivelyLocal get() = id.startsWith(LOCAL_KEY_PREFIX)
 val Song.isMusicVault get() = musicVaultState == MusicVaultState.COMPLETED
 
 val String.isLocal get() = this.startsWith(LOCAL_KEY_PREFIX)
+
+val Song.isWebDav get() = this.id.startsWith(WEBDAV_KEY_PREFIX)
 
 fun Player.isNowPlaying(mediaId: String): Boolean {
     return mediaId == currentMediaItem?.mediaId
@@ -173,7 +177,9 @@ fun Player.forcePlayAtIndex(mediaItems: List<MediaItem>, mediaItemIndex: Int) {
 
 @UnstableApi
 fun Player.forcePlayFromBeginning(mediaItems: List<MediaItem>) =
-    forcePlayAtIndex(mediaItems, 0)
+    CoroutineScope(Dispatchers.Main).launch {
+        forcePlayAtIndex(mediaItems, 0)
+    }
 
 fun Player.forceSeekToPrevious() {
     val prevIndex = previousMediaItemIndex

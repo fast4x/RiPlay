@@ -2,8 +2,12 @@ package it.fast4x.riplay.data.dao
 
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Upsert
 import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.data.models.SongEntity
+import it.fast4x.riplay.utils.WEBDAV_KEY_PREFIX
+import kotlinx.coroutines.flow.Flow
 
 
 @Dao
@@ -105,6 +109,19 @@ interface SongDao {
         LIMIT :limit
     """)
     suspend fun getUnplayedSongs(limit: Int = 15): List<Song>
+
+    @Query("""
+        SELECT s.* FROM song s
+        WHERE s.totalPlayTimeMs > 0
+        LIMIT :limit
+    """)
+    suspend fun getPlayedSongs(limit: Int = 15): List<Song>
+
+    @Query("""
+        SELECT * FROM Song WHERE id LIKE '$WEBDAV_KEY_PREFIX%'
+    """)
+    @RewriteQueriesToDropUnusedColumns
+    fun getWebDavSongsAsFlow(): Flow<List<SongEntity>>
 
     @Upsert
     fun upsert(song: Song)
