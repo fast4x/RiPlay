@@ -177,7 +177,7 @@ import it.fast4x.riplay.utils.addToYtLikedSongs
 import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.formatAsDuration
-import it.fast4x.riplay.utils.getAlbumVersionFromVideo
+import it.fast4x.riplay.utils.matchSongInPlaylist
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.move
@@ -193,9 +193,11 @@ import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.riplay.ui.components.themed.SongMatchingDialog
+import it.fast4x.riplay.utils.isDeezerTrack
 import it.fast4x.riplay.utils.isSpotifyTrack
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
+import kotlin.time.Duration.Companion.milliseconds
 
 @ExperimentalSerializationApi
 @KotlinCsvExperimental
@@ -241,6 +243,7 @@ fun LocalPlaylistSongs(
     val disableScrollingText = appearanceSettings.disableScrollingText
     val playlistSongsTypeFilter = appSettings.playlistSongsTypeFilter
     var isSpotifyPlaylist by remember { mutableStateOf(false) }
+    var isDeezerPlaylist by remember { mutableStateOf(false) }
 
     val isNetworkConnected = rememberIsNetworkConnected()
 
@@ -249,6 +252,7 @@ fun LocalPlaylistSongs(
             .collect { songs ->
                 playlistAllSongs = songs
                 isSpotifyPlaylist = songs.any { it.song.id.startsWith("spotify") }
+                isDeezerPlaylist = songs.any { it.song.id.startsWith("deezer") }
             }
 
 
@@ -256,6 +260,7 @@ fun LocalPlaylistSongs(
     }
 
     println("LocalPlaylistSongs isSpotifyPlaylist $isSpotifyPlaylist")
+    println("LocalPlaylistSongs isDeezerPlaylist $isDeezerPlaylist")
     println("LocalPlaylistSongs playlistAllSongs $playlistAllSongs")
 
     LaunchedEffect(Unit, playlistAllSongs, filter, playlistSongsTypeFilter) {
@@ -277,7 +282,7 @@ fun LocalPlaylistSongs(
 
             PlaylistSongsTypeFilter.Unmatched -> {
                 playlistSongs =
-                    playlistAllSongs.filter { (it.song.thumbnailUrl == "" && !it.asMediaItem.isLocal) || it.song.isSpotifyTrack }
+                    playlistAllSongs.filter { (it.song.thumbnailUrl == "" && !it.asMediaItem.isLocal) || it.song.isSpotifyTrack || it.song.isDeezerTrack }
             }
 
             PlaylistSongsTypeFilter.Favorites -> {
@@ -820,7 +825,7 @@ fun LocalPlaylistSongs(
     val playlistNotPipedType =
         playlistPreview?.playlist?.name?.startsWith(PIPED_PREFIX, 0, true) == false
     val hapticFeedback = LocalHapticFeedback.current
-    val unmatchedSongsCount = playlistSongs.filter { (it.song.thumbnailUrl == "" && !it.asMediaItem.isLocal) || it.song.isSpotifyTrack  }.size
+    val unmatchedSongsCount = playlistSongs.filter { (it.song.thumbnailUrl == "" && !it.asMediaItem.isLocal) || it.song.isSpotifyTrack || it.song.isDeezerTrack }.size
 
     val editThumbnailLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
@@ -918,7 +923,7 @@ fun LocalPlaylistSongs(
                 playlistSongsSortByPosition.forEachIndexed { index, video ->
                     if (video.song.id == (cleanPrefix(video.song.title)+video.song.artistsText).filter{it.isLetterOrDigit()}){
                         jobs.add(coroutineScope.launch(Dispatchers.IO) {
-                            getAlbumVersionFromVideo(
+                            matchSongInPlaylist(
                                 song = video.song,
                                 playlistId = playlistId,
                                 position = index,
@@ -932,7 +937,7 @@ fun LocalPlaylistSongs(
                     val oldSize = jobs.size
                     jobs.removeIf{it.isCompleted}
                     songsMatched += oldSize - jobs.size
-                    delay(10)
+                    delay(10.milliseconds)
                 }
                 showGetAlbumVersionDialogueExt = false
                 getAlbumVersion = false
@@ -950,7 +955,7 @@ fun LocalPlaylistSongs(
             playlistSongsSortByPosition.forEachIndexed { index, video ->
                 if ((video.song.thumbnailUrl?.startsWith("https://lh3.googleusercontent.com") == false) && !(video.song.id.startsWith(LOCAL_KEY_PREFIX))) {
                     jobs.add(coroutineScope.launch(Dispatchers.IO) {
-                        getAlbumVersionFromVideo(
+                        matchSongInPlaylist(
                             song = video.song,
                             playlistId = playlistId,
                             position = index,
@@ -979,11 +984,14 @@ fun LocalPlaylistSongs(
     LaunchedEffect(Unit,playlistUpdateDialog){
         Database.asyncTransaction {
 
-            totalSongsToUpdate = if (!isSpotifyPlaylist) playlistAllSongs.filter { it.song.thumbnailUrl?.startsWith("https://lh3.googleusercontent.com/") == true
+            totalSongsToUpdate = if (!isSpotifyPlaylist && !isDeezerPlaylist) playlistAllSongs.filter { it.song.thumbnailUrl?.startsWith("https://lh3.googleusercontent.com/") == true
                     && !((songAlbumInfo(it.asMediaItem.mediaId)?.id != null)
                     && songArtistInfo(it.asMediaItem.mediaId).isNotEmpty()
                     && !it.song.artistsText.isNullOrBlank()) }.size
-            else playlistAllSongs.filter { it.song.id.startsWith("spotify") }.size
+            else playlistAllSongs.filter {
+                it.song.id.startsWith("spotify")
+                        || it.song.id.startsWith("deezer")
+            }.size
         }
     }
 
@@ -999,7 +1007,7 @@ fun LocalPlaylistSongs(
         withContext(Dispatchers.IO) {
             songsUpdated = 0
             val jobs = mutableListOf<Job>()
-            if (!isSpotifyPlaylist) {
+            if (!isSpotifyPlaylist && !isDeezerPlaylist) {
                 playlistAllSongs.filter {
                     it.song.thumbnailUrl?.startsWith("https://lh3.googleusercontent.com/") == true
                             && !((songAlbumInfo(it.asMediaItem.mediaId)?.id != null) && songArtistInfo(
@@ -1028,7 +1036,7 @@ fun LocalPlaylistSongs(
                 val oldSize = jobs.size
                 jobs.removeIf{it.isCompleted}
                 songsUpdated += oldSize - jobs.size
-                delay(10)
+                delay(10.milliseconds)
             }
             playlistUpdateDialog = false
         }

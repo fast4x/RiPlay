@@ -347,7 +347,7 @@ suspend fun Result<LibraryPage?>.completed(): Result<LibraryPage> = runCatching 
 
 @ExperimentalSerializationApi
 @OptIn(UnstableApi::class)
-suspend fun getAlbumVersionFromVideo(song: Song,playlistId : Long, position : Int, playlist : Playlist?) {
+suspend fun matchSongInPlaylist(song: Song, playlistId : Long, position : Int, playlist : Playlist?) {
     val isExtPlaylist = (song.thumbnailUrl == "") && (song.durationText != "0:00")
     var songNotFound: Song
     var random4Digit  = Random.nextInt(1000, 10000)

@@ -122,6 +122,7 @@ import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.tab.ImportSongsFromCSV
+import it.fast4x.riplay.ui.components.tab.ImportSongsFromDeezerCSV
 import it.fast4x.riplay.ui.components.tab.ToolbarMenuButton
 import it.fast4x.riplay.ui.components.themed.EnumsMenu
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
@@ -299,6 +300,55 @@ fun HomePlaylists(
         }
     )
 
+    val importPlaylistDeezerDialog = ImportSongsFromDeezerCSV.init(
+        beforeTransaction = { _, row, pname ->
+            time = formattedDate
+            val playlistName = row["Playlist name"] ?: "${pname?.substringBeforeLast('.')} $time"
+            plistId = playlistName.let {
+                Database.playlistExistByName(it)
+            }
+
+            if (plistId == 0L)
+                plistId = playlistName.let {
+                    Database.insert(Playlist(plistId, it))
+                }
+        },
+        afterTransaction = { index, song, album, artists ->
+            if (song.id.isBlank()) return@init
+
+            Database.insert(song)
+            Database.insert(
+                SongPlaylistMap(
+                    songId = song.id,
+                    playlistId = plistId,
+                    position = index
+                ).default()
+            )
+
+            if (album.id != "") {
+                Database.insert(
+                    album,
+                    SongAlbumMap(
+                        songId = song.id,
+                        albumId = album.id,
+                        position = null
+                    )
+                )
+            }
+            if (artists.isNotEmpty()) {
+                Database.insert(
+                    artists,
+                    artists.map { artist ->
+                        SongArtistMap(
+                            songId = song.id,
+                            artistId = artist.id
+                        )
+                    }
+                )
+            }
+        }
+    )
+
     val importPlaylistDialog = ImportSongsFromCSV.init(
         beforeTransaction = { _, row ->
             time = formattedDate
@@ -362,7 +412,8 @@ fun HomePlaylists(
                 }
                 when(importType) {
                     ImportPlaylistType.Riplay -> importPlaylistDialog.onShortClick()
-                    else -> importPlaylistSpotifyDialog.onShortClick() //SmartMessage("Wait, not available", context = context)
+                    ImportPlaylistType.ExportifyNet -> importPlaylistSpotifyDialog.onShortClick()
+                    ImportPlaylistType.TuneMyMusicDeezer -> importPlaylistDeezerDialog.onShortClick()
                 }
             },
             values = ImportPlaylistType.entries.map { it.menuItem },

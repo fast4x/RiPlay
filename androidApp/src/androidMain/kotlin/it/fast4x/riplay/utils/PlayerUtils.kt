@@ -36,15 +36,19 @@ import kotlin.time.Duration.Companion.milliseconds
 const val LOCAL_KEY_PREFIX = "local:"
 const val MUSIC_VAULT_KEY_PREFIX = "musicvault:"
 const val SPOTIFY_TRACK_KEY_PREFIX = "spotify:track:"
+const val DEEZER_TRACK_KEY_PREFIX = "deezer:track:"
 
 const val WEBDAV_KEY_PREFIX = "webdav:"
 
 val String.isSpotifyTrack: Boolean
         get() = this.startsWith(SPOTIFY_TRACK_KEY_PREFIX)
-
-
 val Song.isSpotifyTrack: Boolean
     get() = this.id.startsWith(SPOTIFY_TRACK_KEY_PREFIX)
+
+val Song.isDeezerTrack: Boolean
+    get() = this.id.startsWith(DEEZER_TRACK_KEY_PREFIX)
+val String.isDeezerTrack: Boolean
+    get() = this.startsWith(DEEZER_TRACK_KEY_PREFIX)
 
 
 val DataSpec.isLocal

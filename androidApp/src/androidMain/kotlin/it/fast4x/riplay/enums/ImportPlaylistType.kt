@@ -5,18 +5,21 @@ import it.fast4x.riplay.R
 
 enum class ImportPlaylistType {
     Riplay,
-    ExportifyNet;
+    ExportifyNet,
+    TuneMyMusicDeezer;
 
     val titleId: Int
         get() = when(this) {
             Riplay -> R.string.import_playlist_riplay
             ExportifyNet -> R.string.import_playlist_exportify_net
+            TuneMyMusicDeezer -> R.string.import_playlist_tune_my_music_deezer
         }
 
     val iconId: Int
         get() = when(this) {
             Riplay -> R.drawable.app_icon
-            ExportifyNet -> R.drawable.resource_import
+            ExportifyNet -> R.drawable.logo_spotify
+            TuneMyMusicDeezer -> R.drawable.logo_deezer
         }
 
     val menuItem: GenericMenuItem

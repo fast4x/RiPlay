@@ -57,6 +57,7 @@ import it.fast4x.environment.models.responses.BrowseEndpoint
 import it.fast4x.environment.models.responses.CachedAccountProfile
 import it.fast4x.environment.models.responses.Endpoint
 import it.fast4x.environment.models.responses.ResolveUrlResponse
+import it.fast4x.environment.models.responses.providers.DeezerTrack
 import it.fast4x.environment.models.responses.toCachedProfiles
 import it.fast4x.environment.utils.ArtistDiscographyType
 import it.fast4x.environment.utils.EnvironmentLocale
@@ -1241,6 +1242,17 @@ object Environment {
             ArtistDiscographyType.Single -> ARTIST_DISCOGRAPHY_SINGLE_PARAMS
         }
     )
+
+    suspend fun deezerTrackInfo(isrc: String): Result<DeezerTrack?> =
+        runCatching {
+            val trackUrl = "https://api.deezer.com/2.0/track/isrc:$isrc"
+            val response = client.get(trackUrl)
+                .body<DeezerTrack>()
+
+            response
+        }.onFailure {
+            println("Environment deezerTrackInfo error ${it.message}")
+        }
 
 }
 

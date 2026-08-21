@@ -79,6 +79,7 @@ import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.musicvault.MusicVaultButton
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.getRoundnessShape
+import it.fast4x.riplay.utils.isDeezerTrack
 import it.fast4x.riplay.utils.isExclusivelyLocal
 import it.fast4x.riplay.utils.isRelated
 import it.fast4x.riplay.utils.isSpotifyTrack
@@ -449,7 +450,7 @@ fun SongItem(
                 ) {
                     val song = mediaItem.asSong
                     when {
-                        song.isExclusivelyLocal && !song.isSpotifyTrack -> IconButton(
+                        song.isExclusivelyLocal && !song.isSpotifyTrack && !song.isDeezerTrack -> IconButton(
                             icon = R.drawable.folder,
                             color = colorPalette.accent,
                             enabled = true,
@@ -463,6 +464,12 @@ fun SongItem(
                         )
                         song.isWebDav -> IconButton(
                             icon = R.drawable.cloud,
+                            color = colorPalette.accent,
+                            enabled = true,
+                            onClick = noOp,
+                        )
+                        song.isDeezerTrack -> IconButton(
+                            icon = R.drawable.alert,
                             color = colorPalette.accent,
                             enabled = true,
                             onClick = noOp,
