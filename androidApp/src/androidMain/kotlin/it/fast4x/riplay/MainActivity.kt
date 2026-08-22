@@ -189,7 +189,9 @@ import java.util.Objects
 import kotlin.math.sqrt
 import androidx.compose.ui.platform.LocalLocale
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import dev.kdrag0n.monet.theme.ColorScheme
 import it.fast4x.environment.EnvironmentExt
@@ -204,6 +206,7 @@ import it.fast4x.riplay.extensions.musicbrainz.viewmodels.AlbumInsightsViewModel
 import it.fast4x.riplay.extensions.musicbrainz.viewmodels.ArtistInsightsViewModel
 import it.fast4x.riplay.extensions.nsd.NsdDiscoveryManager
 import it.fast4x.riplay.extensions.preferences.cleanUpUnusedPreferences
+import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import it.fast4x.riplay.ui.screens.player.unified.TvUnifiedPlayer
 import it.fast4x.riplay.utils.isTVDevice
 import it.fast4x.riplay.utils.isTvMode
@@ -365,45 +368,59 @@ class MainActivity : AppCompatActivity() {
 
         enableFullscreenMode()
 
-        val isTv = isTVDevice()
-        if (isTv) {
-            // Nella tv non c'è wallpaper manager quindi ignoriamo monet
-            Timber.d("MainActivity.onCreate - Rilevata Android TV: Skip MonetCompat")
-            cleanTempAudioCache(this)
-            startApp()
-        } else {
-            // Flusso originale per smartphone/tablet
-            Timber.d("MainActivity.onCreate - Dispositivo standard: Inizializzazione MonetCompat")
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                PlayerService.isServiceReady.collect { isReady ->
+                    if (isReady) {
+                        Timber.d("MainActivity - PlayerService pronto! Sblocco la UI.")
 
-            MonetCompat.enablePaletteCompat()
-            MonetCompat.setup(this)
-            _monet = MonetCompat.getInstance()
-            localMonet.setDefaultPalette()
+                        val isTv = isTVDevice()
+                        if (isTv) {
+                            // Nella tv non c'è wallpaper manager quindi ignoriamo monet
+                            Timber.d("MainActivity.onCreate - Rilevata Android TV: Skip MonetCompat")
+                            cleanTempAudioCache(this@MainActivity)
+                            startApp()
+                        } else {
+                            // Flusso originale per smartphone/tablet
+                            Timber.d("MainActivity.onCreate - Dispositivo standard: Inizializzazione MonetCompat")
 
-            // Inizializzazione del listener nativo di MonetCompat
-            localMonet.addMonetColorsChangedListener(
-                listener = object : MonetColorsChangedListener {
-                    override fun onMonetColorsChanged(
-                        monet: MonetCompat,
-                        monetColors: ColorScheme,
-                        isInitialChange: Boolean
-                    ) {
-                        Timber.d("MainActivity.onCreate MonetColorsChangedListener colors changed")
+                            MonetCompat.enablePaletteCompat()
+                            MonetCompat.setup(this@MainActivity)
+                            _monet = MonetCompat.getInstance()
+                            localMonet.setDefaultPalette()
+
+                            // Inizializzazione del listener nativo di MonetCompat
+                            localMonet.addMonetColorsChangedListener(
+                                listener = object : MonetColorsChangedListener {
+                                    override fun onMonetColorsChanged(
+                                        monet: MonetCompat,
+                                        monetColors: ColorScheme,
+                                        isInitialChange: Boolean
+                                    ) {
+                                        Timber.d("MainActivity.onCreate MonetColorsChangedListener colors changed")
+                                    }
+
+                                },
+                                notifySelf = false
+                            )
+
+
+                            localMonet.updateMonetColors()
+
+                            Timber.d("MainActivity.onCreate Before localMonet.invokeOnReady")
+
+                            localMonet.invokeOnReady(this@MainActivity) {
+                                Timber.d("MainActivity.onCreate Inside localMonet.invokeOnReady")
+                                cleanTempAudioCache(this@MainActivity)
+                                startApp()
+                            }
+                        }
+
+                    } else {
+                        Timber.d("MainActivity - In attesa del PlayerService...")
+                        // todo visualizzare loader?
                     }
-
-                },
-                notifySelf = false
-            )
-
-
-            localMonet.updateMonetColors()
-
-            Timber.d("MainActivity.onCreate Before localMonet.invokeOnReady")
-
-            localMonet.invokeOnReady(this) {
-                Timber.d("MainActivity.onCreate Inside localMonet.invokeOnReady")
-                cleanTempAudioCache(this)
-                startApp()
+                }
             }
         }
 
