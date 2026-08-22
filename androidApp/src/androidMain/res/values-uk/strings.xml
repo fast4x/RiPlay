@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Скинути швидкі клавіші</string>
     <string name="quick_picks_are_cleared">Швидкий вибір очищено</string>
     <string name="backup">ПІДТРИМКА</string>
-    <string name="personal_preference">Особисті налаштування (тобто режим теми) і кеш не враховуються.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Резервне копіювання</string>
     <string name="export_the_database">Експортуйте базу даних на зовнішнє сховище</string>
     <string name="restore">ВІДНОВИТИ</string>

@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Empfehlungen zurücksetzen</string>
     <string name="quick_picks_are_cleared">Empfehlungen werden gelöscht</string>
     <string name="backup">SICHERUNG</string>
-    <string name="personal_preference">Persönliche Einstellungen (z.B. das Farbschema) und der Cache sind ausgeschlossen.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Sichern</string>
     <string name="export_the_database">Die Datenbank im externen Speicher sichern</string>
     <string name="restore">WIEDERHERSTELLEN</string>

@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Zresetuj sugestie</string>
     <string name="quick_picks_are_cleared">Sugestie zostały zresetowane</string>
     <string name="backup">KOPIA ZAPASOWA</string>
-    <string name="personal_preference">Preferencje osobiste (np. wariant motywu) i pamięć podręczna zostaną pominięte.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Kopia zapasowa</string>
     <string name="export_the_database">Eksportuj bazę danych do pamięci zewnętrznej</string>
     <string name="restore">PRZYWRACANIE</string>

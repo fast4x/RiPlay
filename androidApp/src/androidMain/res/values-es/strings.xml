@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Restablecer selecciones rápidas</string>
     <string name="quick_picks_are_cleared">Selecciones rápidas borradas</string>
     <string name="backup">RESPALDO</string>
-    <string name="personal_preference">Se excluyen las preferencias personales (por ejemplo el modo de tema) y la caché.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Respaldo</string>
     <string name="export_the_database">Exportar base de datos a un almacenamiento externo</string>
     <string name="restore">RESTAURAR</string>

@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Reinitialisar le selectiones rapide</string>
     <string name="quick_picks_are_cleared">Le selectiones rapide ha essite radite</string>
     <string name="backup">COPIA DE SECURITATE</string>
-    <string name="personal_preference">Personal preferences (i.e. the theme mode) and the cache are excluded.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Copia de securitate</string>
     <string name="export_the_database">Export the database to the external storage</string>
     <string name="restore">RESTAURAR</string>

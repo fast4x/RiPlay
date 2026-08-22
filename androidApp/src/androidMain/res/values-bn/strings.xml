@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">কুইক পিক রিসেট করুন</string>
     <string name="quick_picks_are_cleared">কুইক পিক মোছা হয়েছে</string>
     <string name="backup">ব্যাকআপ</string>
-    <string name="personal_preference">ব্যক্তিগত পছন্দ (যেমন থিম মোড) আর ক্যাশে ছাড়া</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">ব্যাক আপ</string>
     <string name="export_the_database">ডাটাবেস কে এক্সটার্নাল স্টোরেজে নিন</string>
     <string name="restore">রিস্টোর করুন</string>

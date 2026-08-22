@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Aukeraketa azkarrak berrerazi</string>
     <string name="quick_picks_are_cleared">Aukeraketa azkarrak garbitzen dira</string>
     <string name="backup">BABESKOPIA</string>
-    <string name="personal_preference">Hobespen pertsonalak (adib. gaiaren modua) eta cachea baztertuta daude.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Babeskopia</string>
     <string name="export_the_database">Datu-basea kanpoko biltegiratzera exportetu</string>
     <string name="restore">BERRESKURATU</string>

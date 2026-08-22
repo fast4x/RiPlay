@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">重置精選</string>
     <string name="quick_picks_are_cleared">已清除精選</string>
     <string name="backup">備份</string>
-    <string name="personal_preference">個人偏好(例如主題模式) 和暫存被排除在外。</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">備份</string>
     <string name="export_the_database">將資料匯出至外部空間</string>
     <string name="restore">還原</string>

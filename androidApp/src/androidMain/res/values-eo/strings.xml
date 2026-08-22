@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Rekomencigi rapidajn elektojn</string>
     <string name="quick_picks_are_cleared">Rapidaj elektoj estas forigitaj</string>
     <string name="backup">REZERVOJ</string>
-    <string name="personal_preference">Personaj preferoj (t.e. la haŭta reĝimo) kaj la kaŝmemoro estas ekskluditaj.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Rezervo</string>
     <string name="export_the_database">Eksporti la datumbazon al la ekstera stokado</string>
     <string name="restore">RESTARIGI</string>

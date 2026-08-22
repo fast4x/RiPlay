@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">おすすめをリセット</string>
     <string name="quick_picks_are_cleared">おすすめを消去しました</string>
     <string name="backup">バックアップ</string>
-    <string name="personal_preference">個人設定 (テーマの種類など) とキャッシュは含まれません。</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">バックアップ</string>
     <string name="export_the_database">データベースを外部の記憶装置にエクスポート</string>
     <string name="restore">復元</string>

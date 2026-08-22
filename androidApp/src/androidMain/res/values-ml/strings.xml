@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">ക്വിക്ക് പിക്കുകൾ റീസെറ്റ് ചെയ്യുക</string>
     <string name="quick_picks_are_cleared">ക്വിക്ക് പിക്കുകൾ മായ്ച് കളയപ്പെട്ടു</string>
     <string name="backup">ബാക്കപ്പ്</string>
-    <string name="personal_preference">വ്യക്തിഗത മുൻഗണനകൾ (ഉദാഹരണത്തിന് തീം മോഡ്) കാഷെയും ഒഴിവാക്കിയിരിക്കുന്നു.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">ബാക്കപ്പ്</string>
     <string name="export_the_database">ഡാറ്റാബേസ് എക്സ്റ്റേണൽ സ്റ്റോറേജിലേക്ക് എക്സ്പോർട്ട് ചെയ്യുക</string>
     <string name="restore">പുനഃസ്ഥാപിക്കുക</string>

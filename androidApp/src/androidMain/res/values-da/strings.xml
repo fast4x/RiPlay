@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Nulstil hurtige valg</string>
     <string name="quick_picks_are_cleared">Hurtige valg ryddes</string>
     <string name="backup">SIKKERHEDSKOPI</string>
-    <string name="personal_preference">Personlige præferencer (fx tema tilstand) og cachen inkluderes ikke.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Sikkerhedskopi</string>
     <string name="export_the_database">Eksportér databasen til det eksterne lager</string>
     <string name="restore">GENDAN</string>

@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Lähtesta kiirvalikud</string>
     <string name="quick_picks_are_cleared">Kiirvalikud on kustutatud</string>
     <string name="backup">VARUKOOPIA</string>
-    <string name="personal_preference">Isiklikud eelistused (nt teemalaad) ja vahemälu on välja jäetud.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Varunda</string>
     <string name="export_the_database">Ekspordi andmebaas välisele salvestusseadmele</string>
     <string name="restore">TAASTE</string>

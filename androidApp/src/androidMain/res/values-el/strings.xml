@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Επαναφορά γρήγορων επιλογών</string>
     <string name="quick_picks_are_cleared">Οι γρήγορες επιλογές καθαρίστηκαν</string>
     <string name="backup">ΑΝΤΙΓΡΑΦΑ ΑΣΦΑΛΕΙΑΣ</string>
-    <string name="personal_preference">Εξαιρούνται οι προτιμήσεις (π.χ. η λειτουργία θέματος) και η κρυφή μνήμη.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Αποθήκευση</string>
     <string name="export_the_database">Εξαγωγή της βάσης δεδομένων στον εξωτερικό αποθηκευτικό χώρο</string>
     <string name="restore">ΕΠΑΝΑΦΟΡΑ</string>

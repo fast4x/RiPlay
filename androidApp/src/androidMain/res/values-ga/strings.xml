@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Athshocraigh roghanna ghasta</string>
     <string name="quick_picks_are_cleared">Tá roghanna ghasta glanta</string>
     <string name="backup">DÉAN CÓIP CHÚLTACA</string>
-    <string name="personal_preference">Fágtar rogha pearsanta (i.e. Modh an téama) agus taisce amach.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Backup</string>
     <string name="export_the_database">Cuardaigh bunachar sonraí don stóráil sheachtrach</string>
     <string name="restore">ATHBHUNAIGH</string>

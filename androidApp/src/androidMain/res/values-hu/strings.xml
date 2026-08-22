@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Ajánlatok visszaállítása</string>
     <string name="quick_picks_are_cleared">Ajánlatok törlésre kerültek</string>
     <string name="backup">BIZTONSÁGI MENTÉS</string>
-    <string name="personal_preference">A személyes beállítások (pl: a téma mód) és a gyorsítótár kizárva.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Biztonsági mentés</string>
     <string name="export_the_database">Exportálja az adatbázist a külső tárolóra</string>
     <string name="restore">VISSZAÁLLÍTÁS</string>

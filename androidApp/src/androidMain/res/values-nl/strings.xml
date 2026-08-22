@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Snelle keuzes resetten</string>
     <string name="quick_picks_are_cleared">Snelle keuzes zijn gereset</string>
     <string name="backup">BACK-UP</string>
-    <string name="personal_preference">Persoonlijke voorkeuren (b.v.b. de themamodus) en de cache zijn uitgesloten.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Back-up</string>
     <string name="export_the_database">Exporteer de database naar de externe opslag</string>
     <string name="restore">HERSTEL</string>

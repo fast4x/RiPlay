@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Resetuj brze odabire</string>
     <string name="quick_picks_are_cleared">Brzi odabiri su obrisani</string>
     <string name="backup">REZERVNA KOPIJA</string>
-    <string name="personal_preference">Lične postavke (tj. režim teme) i keš memorija su isključeni.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Rezervna kopija</string>
     <string name="export_the_database">Izvezite bazu podataka u spoljnu memoriju</string>
     <string name="restore">VRATI</string>

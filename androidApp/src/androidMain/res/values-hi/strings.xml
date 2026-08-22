@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">त्वरित चयन रीसेट करें</string>
     <string name="quick_picks_are_cleared">त्वरित चयन साफ़ कर दिए जाते हैं</string>
     <string name="backup">बैकअप</string>
-    <string name="personal_preference">व्यक्तिगत प्राथमिकताएँ (अर्थात थीम मोड) और कैश को बाहर रखा गया है।</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">बैकअप_1</string>
     <string name="export_the_database">डेटाबेस को बाह्य संग्रहण में निर्यात करें</string>
     <string name="restore">पुनर्स्थापन</string>

@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Nollaa pikavalinnat</string>
     <string name="quick_picks_are_cleared">Pikavalinnat nollattu</string>
     <string name="backup">VARMUUSKOPIOINTI</string>
-    <string name="personal_preference">Henkilökohtaiset asetukset (esim. teematila) ja välimuisti eivät sisälly.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Varmuuskopioi</string>
     <string name="export_the_database">Vie tietokanta ulkoiseen tallennustilaan</string>
     <string name="restore">PALAUTA</string>

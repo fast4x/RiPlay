@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Reset quick picks</string>
     <string name="quick_picks_are_cleared">Quick picks are cleared</string>
     <string name="backup">BACKUP</string>
-    <string name="personal_preference">Personal preferences (i.e. the theme mode) and the cache are excluded.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Backup</string>
     <string name="export_the_database">Export the database to the external storage</string>
     <string name="restore">RESTORE</string>

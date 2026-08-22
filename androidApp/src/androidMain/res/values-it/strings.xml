@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Reset Scelte rapide</string>
     <string name="quick_picks_are_cleared">Scelte rapide cancellate</string>
     <string name="backup">BACKUP</string>
-    <string name="personal_preference">Le preferenze personali (ovvero la modalità tema) e la cache sono escluse.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Backup</string>
     <string name="export_the_database">Esporta il database su un supporto esterno</string>
     <string name="restore">RIPRISTINO</string>

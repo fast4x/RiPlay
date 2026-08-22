@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Cəld seçimləri sıfırla</string>
     <string name="quick_picks_are_cleared">Cəld seçimlər təmizlənir</string>
     <string name="backup">NÜSXƏLƏ</string>
-    <string name="personal_preference">Şəxsi seçimlər (yəni tema rejimi) və qalıq istisnadır.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Nüsxələ</string>
     <string name="export_the_database">Məlumat bazasını xarici yaddaşa köçür</string>
     <string name="restore">BƏRPA ET</string>

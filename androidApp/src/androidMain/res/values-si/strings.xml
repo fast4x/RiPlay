@@ -80,7 +80,7 @@ CC-BY-SA 3.0</string>
     <string name="reset_quick_picks">Quick picks රීසෙට් කරන්න</string>
     <string name="quick_picks_are_cleared">Quick picks හිස් කර ඇත</string>
     <string name="backup">BACKUP</string>
-    <string name="personal_preference">තමන්ගේ Preference හා Cache ගණන් නොගනී.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Backup</string>
     <string name="export_the_database">දත්ත පිටත storage එකකට යවන්න</string>
     <string name="restore">RESTORE</string>

@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">விரைவு தேர்வுகளை மீட்டமை</string>
     <string name="quick_picks_are_cleared">விரைவு தேர்வுகள் அழிக்கப்பட்டன</string>
     <string name="backup">காப்புப்பிரதி</string>
-    <string name="personal_preference">தனிப்பட்ட விருப்பங்கள் (எ.கா. தோற்ற அமைப்பு) மற்றும் தற்காலிகச் சேமிப்பு ஆகியவை விலக்கப்பட்டது.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">காப்புப்பிரதி</string>
     <string name="export_the_database">தரவுத்தளத்தை வெளிப்புற சேமிப்பிற்கு ஏற்றுமதி செய்யவும்</string>
     <string name="restore">மீட்டமை</string>

@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Herstel vinnige voorstelle</string>
     <string name="quick_picks_are_cleared">Vinnige voorstelle is herstel</string>
     <string name="backup">RUGSTEUN</string>
-    <string name="personal_preference">Personal preferences (i.e. the theme mode) and the cache are excluded.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Rugsteun</string>
     <string name="export_the_database">Export the database to the external storage</string>
     <string name="restore">HERSTEL</string>

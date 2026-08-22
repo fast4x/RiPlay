@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">إعادة ضبط الإختيارات السريعة</string>
     <string name="quick_picks_are_cleared">تم حذف الإختيارات السريعة</string>
     <string name="backup">نسخ احتياطي</string>
-    <string name="personal_preference">يتم استبعاد التفضيلات الشخصية (أي وضع الثيم) وذاكرة التخزين المؤقت.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">النسخ الاحتياطي</string>
     <string name="export_the_database">تصدير قاعدة البيانات إلى وحدة التخزين الخارجية</string>
     <string name="restore">إستعادة</string>

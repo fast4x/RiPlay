@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Återställ snabbval</string>
     <string name="quick_picks_are_cleared">Snabbval är rensade</string>
     <string name="backup">BACKUP</string>
-    <string name="personal_preference">Personliga inställningar (dvs. Temat) och cachen säkerhetskopieras inte.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Säkerhetskopiera</string>
     <string name="export_the_database">Exportera databasen till extern lagring</string>
     <string name="restore">ÅTERSTÄLL</string>

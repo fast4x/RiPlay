@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Resetează selecțiile rapide</string>
     <string name="quick_picks_are_cleared">Selecțiile rapide au fost șterse</string>
     <string name="backup">COPIE DE SIGURANȚĂ</string>
-    <string name="personal_preference">Preferințele personale (de exemplu: „modul tematic\") și memoria cache sunt excluse.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Copie de siguranță</string>
     <string name="export_the_database">Exportă baza de date pe stocarea externă</string>
     <string name="restore">RESTABILIRE</string>

@@ -80,7 +80,7 @@
     <string name="reset_quick_picks">Сброс данных Обзора</string>
     <string name="quick_picks_are_cleared">Данные Обзора очищены</string>
     <string name="backup">БЭКАП</string>
-    <string name="personal_preference">Личные настройки (например, режим темы) и кэш исключены.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Бэкап</string>
     <string name="export_the_database">Экспорт данных в локальное хранилище</string>
     <string name="restore">ВОССТАНОВИТЬ</string>

@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Đặt lại lựa chọn nhanh</string>
     <string name="quick_picks_are_cleared">Lựa chọn nhanh đã được làm sạch</string>
     <string name="backup">SAO LƯU</string>
-    <string name="personal_preference">Personal preferences (i.e. the theme mode) and the cache are excluded.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Sao lưu</string>
     <string name="export_the_database">Export the database to the external storage</string>
     <string name="restore">KHÔI PHỤC</string>

@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Restableix les eleccions ràpides</string>
     <string name="quick_picks_are_cleared">Les eleccions ràpides s\'han esborrat</string>
     <string name="backup">CÒPIA DE SEGURETAT</string>
-    <string name="personal_preference">S\'exclouen les preferències personals (és a dir, el mode de tema) i la memòria cau.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Còpia de seguretat</string>
     <string name="export_the_database">Exporteu la base de dades a l\'emmagatzematge extern</string>
     <string name="restore">RESTAURA</string>

@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">אפס בחירות מהירות</string>
     <string name="quick_picks_are_cleared">בחירות מהירות נמחקות</string>
     <string name="backup">גיבוי</string>
-    <string name="personal_preference">העדפות אישיות (כלומר ערכת הנושא) והמטמון אינם נכללים.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">גיבוי</string>
     <string name="export_the_database">ייצא את מסד הנתונים לאחסון החיצוני</string>
     <string name="restore">לשחזר</string>

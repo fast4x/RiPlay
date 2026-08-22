@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">추천 초기화</string>
     <string name="quick_picks_are_cleared">추천이 초기화되었습니다</string>
     <string name="backup">백업</string>
-    <string name="personal_preference">개인 설정(예: 테마 모드)과 캐시는 제외됩니다.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">백업하기</string>
     <string name="export_the_database">데이터베이스를 외부 저장소로 내보내기</string>
     <string name="restore">복원</string>

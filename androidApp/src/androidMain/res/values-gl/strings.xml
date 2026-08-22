@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Restablecer escollas rápidas</string>
     <string name="quick_picks_are_cleared">As escollas rápidas foron borradas</string>
     <string name="backup">COPIA DE SEGURANZA</string>
-    <string name="personal_preference">As preferencias persoais (é dicir, o modo de tema) e a caché están excluídas.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Copia de seguranza</string>
     <string name="export_the_database">Exportar a base de datos ao almacenamento externo</string>
     <string name="restore">RESTAURAR</string>

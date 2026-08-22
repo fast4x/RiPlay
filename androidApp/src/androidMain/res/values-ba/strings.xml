@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Тиҙ һайлауҙы ташларға</string>
     <string name="quick_picks_are_cleared">Тиҙ һайлауҙар таҙартылған</string>
     <string name="backup">РЕЗЕРВ КҮСЕРМӘ</string>
-    <string name="personal_preference">Шәхси көйләүҙәр (мәҫәлән, тема режимы) һәм кэш сығарылғандан.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Резерв күсермә</string>
     <string name="export_the_database">Мәғлүмәт базаһын урындағы һаҡлауысҡа күсерергә</string>
     <string name="restore">ҠАЙТАРЫУ</string>

@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">ତ୍ୱରିତ ଚୟନଗୁଡ଼ିକୁ ପୁନଃସ୍ଥାପନ କରନ୍ତୁ</string>
     <string name="quick_picks_are_cleared">ତ୍ବରିତ ପିକଗୁଡ଼ିକୁ ସଫା କରାଯାଇଛି</string>
     <string name="backup">ନକଲ ସଂରକ୍ଷଣ</string>
-    <string name="personal_preference">ବ୍ୟକ୍ତିଗତ ପସନ୍ଦଗୁଡ଼ିକ (ଯେପରିକି ବିଷୟବସ୍ତୁ ଧାରା) ଏବଂ କ୍ୟାଶେକୁ ବାଦ ଦିଆଯାଇଛି ।.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">ନକଲ ସଂରକ୍ଷଣ</string>
     <string name="export_the_database">ଡାଟାବେସକୁ ବାହ୍ୟ ଭଣ୍ଡାରକୁ ରପ୍ତାନି କରନ୍ତୁ</string>
     <string name="restore">ପୁନଃସ୍ଥାପନ କରନ୍ତୁ</string>

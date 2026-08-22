@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Tilbakestill hurtiganbefalinger</string>
     <string name="quick_picks_are_cleared">Hurtiganbefalinger er tømt</string>
     <string name="backup">BACKUP</string>
-    <string name="personal_preference">Personlige innstillinger (f.eks. temamodus) og mellomlager er ekskludert.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Sikkerhetskopi</string>
     <string name="export_the_database">Eksporter database til ekstern lagring</string>
     <string name="restore">GJENOPPRETT</string>

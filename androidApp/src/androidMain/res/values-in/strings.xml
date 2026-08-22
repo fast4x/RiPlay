@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Setel ulang Pilihan cepat</string>
     <string name="quick_picks_are_cleared">Pilihan cepat telah dikosongkan</string>
     <string name="backup">PENCADANGAN</string>
-    <string name="personal_preference">Preferensi pribadi (mode tema) dan cache tidak termasuk.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Cadangkan</string>
     <string name="export_the_database">Ekspor basis data ke penyimpanan eksternal</string>
     <string name="restore">PEMULIHAN</string>

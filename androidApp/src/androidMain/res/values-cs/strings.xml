@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Obnovení rychlého výběru</string>
     <string name="quick_picks_are_cleared">Rychlý výběr je vymazán</string>
     <string name="backup">ZÁLOHA</string>
-    <string name="personal_preference">Osobní předvolby (tj. režim tématu) a mezipaměť jsou vynechány.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Zálohovat</string>
     <string name="export_the_database">Export databáze do externího úložiště</string>
     <string name="restore">OBNOVENÍ</string>

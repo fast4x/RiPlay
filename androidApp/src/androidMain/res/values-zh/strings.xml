@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">重置快速选择</string>
     <string name="quick_picks_are_cleared">快速选择已清除</string>
     <string name="backup">备份</string>
-    <string name="personal_preference">个人偏好（例如主题模式）和缓存被排除在外。</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">备份</string>
     <string name="export_the_database">将数据库导出到外部存储器</string>
     <string name="restore">恢复</string>

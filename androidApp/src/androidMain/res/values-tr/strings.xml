@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Hızlı seçimleri sıfırla</string>
     <string name="quick_picks_are_cleared">Hızlı seçimler temizlendi</string>
     <string name="backup">YEDEKLE</string>
-    <string name="personal_preference">Kişisel tercihler (ör. tema modu) ve önbellek hariçtir.</string>
+    <string name="personal_preference">Backup includes all settings.</string>
     <string name="backup_1">Yedekle</string>
     <string name="export_the_database">Veritabanını harici depolama birimine aktar</string>
     <string name="restore">ESKİ HALİNE GETİR</string>
