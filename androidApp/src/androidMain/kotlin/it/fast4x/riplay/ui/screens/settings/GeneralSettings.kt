@@ -931,26 +931,6 @@ fun GeneralSettings(
                             }
                         )
 
-                    if (search.input.isBlank() || stringResource(R.string.effect_title_crossfade).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
-                        EnumValueSelectorSettingsEntry(
-                            title = stringResource(R.string.effect_title_crossfade),
-                            titleSecondary = stringResource(R.string.effect_subtitle_crossfade_fade_between_tracks_in_queue),
-                            selectedValue = crossfadeDuration,
-                            onValueSelected = {
-                                coroutineScope.launch {
-                                    val new = appSettingsManager.activeSettings.value.copy(crossfadeDuration = it)
-                                    appSettingsManager.updateSettings(new)
-                                }
-                            },
-                            valueText = { it.title }
-                        )
-
-                    }
-
 
                     if (search.input.isBlank() || stringResource(R.string.player_keep_minimized).contains(
                             search.input,
@@ -1407,6 +1387,26 @@ fun GeneralSettings(
                 }
 
                 settingsItem {
+
+                    if (search.input.isBlank() || stringResource(R.string.effect_title_crossfade).contains(
+                            search.input,
+                            true
+                        )
+                    ) {
+                        EnumValueSelectorSettingsEntry(
+                            title = stringResource(R.string.effect_title_crossfade),
+                            titleSecondary = stringResource(R.string.effect_subtitle_crossfade_fade_between_tracks_in_queue),
+                            selectedValue = crossfadeDuration,
+                            onValueSelected = {
+                                coroutineScope.launch {
+                                    val new = appSettingsManager.activeSettings.value.copy(crossfadeDuration = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
+                            },
+                            valueText = { it.title }
+                        )
+
+                    }
 
                     if (search.input.isBlank() || stringResource(R.string.loudness_normalization).contains(
                             search.input,
