@@ -4407,7 +4407,7 @@ private fun updateOnlineNearEndTicks() {
     }
 
     companion object {
-        // Controllo totale sulla disponibilità del servizio
+        // Controllo totale sulla disponibilità del servizio esterno al binder
         private val _isServiceReady = MutableStateFlow(false)
         val isServiceReady: StateFlow<Boolean> = _isServiceReady.asStateFlow()
 
