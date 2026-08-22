@@ -6,6 +6,7 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -26,8 +27,17 @@ fun QrCodeScanner(
 ) {
     val context = LocalContext.current
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
+    var cameraProvider: ProcessCameraProvider? = null
     val backgroundExecutor: ExecutorService = remember { Executors.newSingleThreadExecutor() }
     val scope = rememberCoroutineScope()
+
+    DisposableEffect(Unit) {
+        cameraProvider = cameraProviderFuture.get()
+
+        onDispose {
+            cameraProvider?.unbindAll()
+        }
+    }
 
     AndroidView(
         factory = { ctx ->
@@ -40,12 +50,10 @@ fun QrCodeScanner(
     ) { previewView ->
 
         scope.launch {
-            val cameraProvider = withContext(Dispatchers.IO) {
-                cameraProviderFuture.get()
-            }
+
 
             try {
-                cameraProvider.unbindAll()
+                cameraProvider?.unbindAll()
 
                 val preview = Preview.Builder().build().also {
                     it.surfaceProvider = previewView.surfaceProvider
@@ -60,7 +68,7 @@ fun QrCodeScanner(
 
                 val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
-                cameraProvider.bindToLifecycle(
+                cameraProvider?.bindToLifecycle(
                     previewView.findViewTreeLifecycleOwner()!!,
                     cameraSelector,
                     preview, imageAnalysis

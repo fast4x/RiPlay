@@ -1394,7 +1394,7 @@ class MainActivity : AppCompatActivity() {
                     if (uri.scheme == "riplay") {
                         val binder = snapshotFlow { binder }.filterNotNull().first()
                         navController?.let {
-                            qrCodeToAction(uri.toString(), this@MainActivity, binder, it)
+                            qrCodeToAction(uri.toString(), binder, it)
                         }
 
                         return@LaunchedEffect

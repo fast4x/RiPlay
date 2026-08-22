@@ -13,6 +13,7 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.isExplicit
@@ -21,9 +22,10 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 @OptIn(UnstableApi::class)
-suspend fun qrCodeToAction(content: String, context: Context, binder: PlayerService.Binder, navController: NavController){
+suspend fun qrCodeToAction(content: String, binder: PlayerService.Binder, navController: NavController){
     if (content.isNotEmpty()) {
 
+        val context = appContext()
         val appSettingsManager = (context as MainApplication).appSettingsManager
 
         val parts = content.split(":")
@@ -33,7 +35,6 @@ suspend fun qrCodeToAction(content: String, context: Context, binder: PlayerServ
             val isLocal = parts[2] == LOCAL_KEY_PREFIX
             val mediaId = if (isLocal) parts[3] else parts[2]
 
-            Timber.d("MainActivity LaunchedEffect intentUriData scheme riplay parts = $parts")
             when(action) {
                 "play" -> {
                     val mediaItem = if (!isLocal)
@@ -53,10 +54,10 @@ suspend fun qrCodeToAction(content: String, context: Context, binder: PlayerServ
                         }
                     }
                 }
-                "artist" -> { navController?.navigate(route = "${NavRoutes.artist.name}/$mediaId")}
-                "album" -> { navController?.navigate(route = "${NavRoutes.album.name}/$mediaId")}
-                "localPlaylist" -> { navController?.navigate(route = "${NavRoutes.localPlaylist.name}/$mediaId") }
-                "playlist" -> { navController?.navigate(route = "${NavRoutes.playlist.name}/$mediaId") }
+                "artist" -> { navController.navigate(route = "${NavRoutes.artist.name}/$mediaId")}
+                "album" -> { navController.navigate(route = "${NavRoutes.album.name}/$mediaId")}
+                "localPlaylist" -> { navController.navigate(route = "${NavRoutes.localPlaylist.name}/$mediaId") }
+                "playlist" -> { navController.navigate(route = "${NavRoutes.playlist.name}/$mediaId") }
 
             }
 

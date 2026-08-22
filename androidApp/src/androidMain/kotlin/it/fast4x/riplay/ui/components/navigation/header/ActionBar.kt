@@ -533,7 +533,7 @@ fun ActionBar(
                         onQrCodeScanned = {
                             scope.launch {
                                 val binder = snapshotFlow { binder }.filterNotNull().first()
-                                qrCodeToAction(it, context, binder, navController)
+                                qrCodeToAction(it, binder, navController)
                             }
                             sheet.hide()
                         },
