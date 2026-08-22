@@ -1,9 +1,7 @@
 package it.fast4x.riplay.ui.screens.settings
 
 import android.content.ActivityNotFoundException
-import android.content.ComponentName
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -28,7 +26,6 @@ import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SnapshotMutationPolicy
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -48,7 +45,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
-import it.fast4x.riplay.enums.DurationInMilliseconds
 import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.enums.MinTimeForEvent
 import it.fast4x.riplay.enums.MaxSongs
@@ -82,7 +78,6 @@ import it.fast4x.riplay.enums.EqualizerType
 import it.fast4x.riplay.extensions.updater.UpdateDialog
 import it.fast4x.riplay.services.helpers.AudioDRCHelper
 import it.fast4x.riplay.services.playback.MediaLibraryServiceCallback
-import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
 import it.fast4x.riplay.ui.components.themed.settingsItem
@@ -156,7 +151,7 @@ fun GeneralSettings(
     val search = Search.init()
 
     val shakeEventEnabled = appSettings.shakeEventEnabled
-    val playbackFadeAudioDuration = appSettings.playbackFadeAudioDuration
+    val crossfadeDuration = appSettings.crossfadeDuration
     val excludeSongWithDurationLimit = appSettings.excludeSongWithDurationLimit
     val excludeSongsIfAreVideos = appSettings.excludeIfIsVideo
     val playlistindicator = appearanceSettings.playlistIndicator
@@ -936,30 +931,24 @@ fun GeneralSettings(
                             }
                         )
 
-                    if (search.input.isBlank() || stringResource(R.string.effect_fade_audio).contains(
+                    if (search.input.isBlank() || stringResource(R.string.effect_title_crossfade).contains(
                             search.input,
                             true
                         )
                     ) {
                         EnumValueSelectorSettingsEntry(
-                            title = stringResource(R.string.effect_fade_audio),
-                            selectedValue = playbackFadeAudioDuration,
+                            title = stringResource(R.string.effect_title_crossfade),
+                            titleSecondary = stringResource(R.string.effect_subtitle_crossfade_fade_between_tracks_in_queue),
+                            selectedValue = crossfadeDuration,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appSettingsManager.activeSettings.value.copy(playbackFadeAudioDuration = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(crossfadeDuration = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
-                            valueText = {
-                                when (it) {
-                                    DurationInMilliseconds.Disabled -> stringResource(R.string.vt_disabled)
-                                    else -> {
-                                        it.toString()
-                                    }
-                                }
-                            }
+                            valueText = { it.title }
                         )
-                        SettingsDescription(text = stringResource(R.string.effect_fade_audio_description))
+
                     }
 
 

@@ -1690,7 +1690,12 @@ fun UnifiedPlayer(
 
                             if (showButtonPlayerVideo) IconButton(
                                 icon = R.drawable.left_and_right_arrows,
-                                color = colorPalette().accent, enabled = true, onClick = { binder.callPause {}; showSearchEntity = true }, modifier = Modifier.size(28.dp))
+                                color = colorPalette().accent, enabled = true,
+                                onClick = {
+                                    binder.player.pause()
+                                    binder.onlinePlayer?.pause()
+                                    showSearchEntity = true
+                                          }, modifier = Modifier.size(28.dp))
 
                             if (showButtonPlayerDiscover) IconButton(
                                 icon = R.drawable.star_brilliant, color = if (discoverIsEnabled) colorPalette().text else colorPalette().textDisabled,

@@ -13,8 +13,8 @@ import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.CoilDiskCacheMaxSize
 import it.fast4x.riplay.enums.ContentType
 import it.fast4x.riplay.enums.Countries
+import it.fast4x.riplay.enums.CrossfadeDuration
 import it.fast4x.riplay.enums.DnsOverHttpsType
-import it.fast4x.riplay.enums.DurationInMilliseconds
 import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.enums.EqualizerType
 import it.fast4x.riplay.enums.FontType
@@ -180,7 +180,6 @@ data class AppSettings(
     val disableAudioDrc: Boolean = false,
     val notificationPlayerFirstIcon: NotificationButtons = NotificationButtons.Repeat,
     val notificationPlayerSecondIcon: NotificationButtons = NotificationButtons.Favorites,
-    val playbackFadeAudioDuration: DurationInMilliseconds = DurationInMilliseconds.Disabled,
     val bassBoostEnabled: Boolean = false,
     val bassBoostLevel: Float = 0.5f,
     val audioReverbPreset: PresetsReverb = PresetsReverb.NONE,
@@ -282,5 +281,7 @@ data class AppSettings(
     val webDavPassword: String = "",
     val webDavFolder: String = "",
     val isWebDavScanSubfoldersEnabled: Boolean = false,
+    val userVolume: Float = 1.0f,
+    val crossfadeDuration: CrossfadeDuration = CrossfadeDuration.Off,
     )
 

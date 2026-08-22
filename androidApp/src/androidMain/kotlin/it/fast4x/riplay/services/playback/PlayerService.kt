@@ -1,6 +1,5 @@
 package it.fast4x.riplay.services.playback
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.app.ForegroundServiceStartNotAllowedException
@@ -15,7 +14,6 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.IntentFilter
-import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.database.SQLException
 import android.graphics.Bitmap
@@ -96,7 +94,6 @@ import it.fast4x.environment.requests.searchPage
 import it.fast4x.environment.utils.from
 import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.MainApplication
-import it.fast4x.riplay.enums.DurationInMilliseconds
 import it.fast4x.riplay.data.models.Event
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.ui.components.themed.SmartMessage
@@ -110,7 +107,6 @@ import it.fast4x.riplay.utils.isAtLeastAndroid13
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 import it.fast4x.riplay.utils.isAtLeastAndroid81
-import it.fast4x.riplay.utils.startFadeAnimator
 import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.utils.timer
 import it.fast4x.riplay.R
@@ -156,7 +152,6 @@ import it.fast4x.riplay.extensions.lastfm.sendScrobble
 import it.fast4x.riplay.extensions.players.getOnlineMetadata
 import it.fast4x.riplay.cast.ritune.RiTuneCastClient
 import it.fast4x.riplay.cast.ritune.models.RiTuneConnectionStatus
-import it.fast4x.riplay.cast.ritune.models.RiTunePlayerState
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
 import it.fast4x.riplay.data.models.QueuedMediaItem
 import it.fast4x.riplay.data.models.defaultQueueId
@@ -164,6 +159,7 @@ import it.fast4x.riplay.enums.AlbumSortBy
 import it.fast4x.riplay.enums.ArtistSortBy
 import it.fast4x.riplay.enums.AudioQualityFormat
 import it.fast4x.riplay.enums.CastType
+import it.fast4x.riplay.enums.CrossfadeDuration
 import it.fast4x.riplay.enums.NotificationButtons
 import it.fast4x.riplay.enums.PlaybackOrigin
 import it.fast4x.riplay.enums.PlaylistSongSortBy
@@ -449,6 +445,11 @@ class PlayerService : MediaLibraryService(),
 
     private var isServiceInForeground = false
 
+    private var isFading = false // Flag per ignorare il fade del crossfade
+    private var crossfadeJob: Job? = null
+    private var fadeInJob: Job? = null
+    private val FADE_IN_DURATION_MS = 2000L // Durata di default del fade in
+
 
     override fun onBind(intent: Intent?) = super.onBind(intent) ?: binder
 
@@ -503,7 +504,7 @@ class PlayerService : MediaLibraryService(),
         initializeSensorListener()
         initializeSongCoverInLockScreen()
         initializeMedleyMode()
-        initializePlaybackParameters()
+        applyPlaybackParameters()
         initializeAudioDRCHelper()
 
         initializeRiTune()
@@ -660,16 +661,16 @@ class PlayerService : MediaLibraryService(),
 
                     //Workaround to fix volume bug in webview in some devices. Same for youtube music app
                     // todo maybe not works
-                    whatchDogVolume += 1
-                    if (whatchDogVolume > 2) {
-                        withContext(Dispatchers.Main) {
-                            _internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
-                        }
-                        whatchDogVolume = 0
-                        //Timber.d("PlayerService onCreate whatchDogVolume fired")
-                    }
+//                    whatchDogVolume += 1
+//                    if (whatchDogVolume > 2) {
+//                        withContext(Dispatchers.Main) {
+//                            _internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
+//                        }
+//                        whatchDogVolume = 0
+//                        //Timber.d("PlayerService onCreate whatchDogVolume fired")
+//                    }
                 }
-                delay(1000)
+                delay(1000.milliseconds)
             }
         }
 
@@ -865,32 +866,32 @@ class PlayerService : MediaLibraryService(),
             .inflate(R.layout.youtube_player, null, false) as YouTubePlayerView
     }
 
-    private fun initializePlaybackParameters() {
-        when (localMediaItem?.isLocal) {
-            false -> {
-                val playbackSpeed = appSettings.playbackSpeed
-                val onlinePlabackRate = when {
-                    (playbackSpeed.toDouble() in 0.0..0.25) -> PlayerConstants.PlaybackRate.RATE_0_25
-                    (playbackSpeed.toDouble() in 0.26..0.5) -> PlayerConstants.PlaybackRate.RATE_0_5
-                    (playbackSpeed.toDouble() in 0.51..0.75) -> PlayerConstants.PlaybackRate.RATE_0_75
-                    (playbackSpeed.toDouble() in 0.76..1.0) -> PlayerConstants.PlaybackRate.RATE_1
-                    (playbackSpeed.toDouble() in 1.01..1.25) -> PlayerConstants.PlaybackRate.RATE_1_25
-                    (playbackSpeed.toDouble() in 1.26..1.5) -> PlayerConstants.PlaybackRate.RATE_1_5
-                    (playbackSpeed.toDouble() in 1.51..1.75) -> PlayerConstants.PlaybackRate.RATE_1_75
-                    (playbackSpeed.toDouble() > 1.76) -> PlayerConstants.PlaybackRate.RATE_2
-                    else -> PlayerConstants.PlaybackRate.RATE_1
-                }
-                _internalOnlinePlayer.value?.setPlaybackRate(onlinePlabackRate)
+    private fun applyPlaybackParameters() {
+        val speed = appSettings.playbackSpeed
+        val pitch = appSettings.playbackPitch
+
+        if (localMediaItem?.isLocal == false) {
+            // Mappatura matematica al valore discreto di YouTube più vicino
+            val ytValidRates = floatArrayOf(0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f)
+            val closestYtRate = ytValidRates.minByOrNull { kotlin.math.abs(it - speed) } ?: 1.0f
+
+            // Mappa il float nell'enum della libreria
+            val onlineRate = when (closestYtRate) {
+                0.25f -> PlayerConstants.PlaybackRate.RATE_0_25
+                0.5f -> PlayerConstants.PlaybackRate.RATE_0_5
+                0.75f -> PlayerConstants.PlaybackRate.RATE_0_75
+                1.25f -> PlayerConstants.PlaybackRate.RATE_1_25
+                1.5f -> PlayerConstants.PlaybackRate.RATE_1_5
+                1.75f -> PlayerConstants.PlaybackRate.RATE_1_75
+                2.0f -> PlayerConstants.PlaybackRate.RATE_2
+                else -> PlayerConstants.PlaybackRate.RATE_1
             }
 
-            else -> {
-                player.playbackParameters = PlaybackParameters(
-                    appSettings.playbackSpeed,
-                    appSettings.playbackPitch
-                )
-            }
+            _internalOnlinePlayer.value?.setPlaybackRate(onlineRate)
+        } else {
+            // ExoPlayer gestisce speed e pitch in modo continuo e perfetto
+            hybridPlayer.playbackParameters = PlaybackParameters(speed, pitch)
         }
-
     }
 
     private fun initializeMedleyMode() {
@@ -947,8 +948,14 @@ class PlayerService : MediaLibraryService(),
                 if (isCastActive) {
                     withContext(Dispatchers.Main) {
                         when (playerState) {
-                            PlayerConstants.PlayerState.PLAYING -> startEndedObserver()
-                            else -> stopEndedObserver()
+                            PlayerConstants.PlayerState.PLAYING -> {
+                                startEndedObserver()
+                                startCrossfadeMonitor()
+                            }
+                            else -> {
+                                stopEndedObserver()
+                                stopCrossFadeMonitor()
+                            }
                         }
 
                         playerState?.let { updatePlayerState(it) }
@@ -1473,7 +1480,7 @@ class PlayerService : MediaLibraryService(),
                         if (!firstTimeStarted) {
                             if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                                 youTubePlayer.unMute()
-                                youTubePlayer.setVolume(getSystemMediaVolume())
+                                //youTubePlayer.setVolume(getSystemMediaVolume())
                                 youTubePlayer.play()
                             }
 //                                else
@@ -1495,6 +1502,7 @@ class PlayerService : MediaLibraryService(),
                         lastError = null  // reset errore dopo riproduzione riuscita
                         onlineNearEndTicks = 0
                         startEndedObserver()
+                        startCrossfadeMonitor()
                         sendOpenExternalEqualizerIntent()
 
                         if (::hybridPlayer.isInitialized) {
@@ -1504,6 +1512,7 @@ class PlayerService : MediaLibraryService(),
                     PlayerConstants.PlayerState.PAUSED -> {
                         onlineNearEndTicks = 0
                         stopEndedObserver()
+                        stopCrossFadeMonitor()
                         sendCloseExternalEqualizerIntent()
 
                         if (::hybridPlayer.isInitialized) {
@@ -1622,7 +1631,7 @@ class PlayerService : MediaLibraryService(),
                             }
                         }
 
-                    youTubePlayer.setVolume(getSystemMediaVolume())
+                    //youTubePlayer.setVolume(getSystemMediaVolume())
                     return
                 }
 
@@ -1991,19 +2000,19 @@ private fun updateOnlineNearEndTicks() {
     }
 }
 
-private var pausedByZeroVolume = false
+    private var pausedByZeroVolume = false
     override fun onAudioVolumeChanged(currentVolume: Int, maxVolume: Int) {
         if (appSettings.isPauseOnVolumeZeroEnabled) {
             if ((player.isPlaying || _playerState.value.isPlaying) && currentVolume < 1) {
                 if (player.currentMediaItem?.isLocal == true) {
-                    binder.callPause {}
+                    player.pause()
                 } else {
                     _internalOnlinePlayer.value?.pause()
                 }
                 pausedByZeroVolume = true
             } else if (pausedByZeroVolume && currentVolume >= 1) {
                 if (player.currentMediaItem?.isLocal == true) {
-                    binder.player.play()
+                    player.play()
                 } else {
                     _internalOnlinePlayer.value?.play()
                 }
@@ -2011,11 +2020,32 @@ private var pausedByZeroVolume = false
             }
         }
 
-        if (localMediaItem?.isLocal == false) {
-            val onlineVolume = getSystemMediaVolume()
-            Timber.d("PlayerService onAudioVolumeChanged currentVolume $currentVolume onlineVolume $onlineVolume")
-            _internalOnlinePlayer.value?.setVolume(onlineVolume)
+        // Questo serve per il FadeOut
+
+        // Se è in corso un fade out automatico, fermiamoci subito!
+        if (isFading) {
+            fadeInJob?.cancel()
+            crossfadeJob?.cancel() // Ferma anche il fade out se l'utente cambia volume a fine brano
+            isFading = false
         }
+
+        // Converto il volume di sistema (es. 0-15) nel float del player (0.0-1.0)
+        val newPlayerVolume = currentVolume.toFloat() / maxVolume.toFloat()
+
+        serviceScope.launch(Dispatchers.IO) {
+            appSettingsManager.updateSettings(appSettings.copy(userVolume = newPlayerVolume))
+        }
+
+        // Ora, impostiamo il volume su HybridPlayer per mantenerlo sincronizzato
+        // QUESTO farà scattare l'onVolumeChanged di ExoPlayer se serve,
+        // o aggiornerà la WebView se è attiva.
+        hybridPlayer.setVolume(newPlayerVolume)
+
+//        if (localMediaItem?.isLocal == false) {
+//            val onlineVolume = getSystemMediaVolume()
+//            Timber.d("PlayerService onAudioVolumeChanged currentVolume $currentVolume onlineVolume $onlineVolume")
+//            _internalOnlinePlayer.value?.setVolume(onlineVolume)
+//        }
     }
 
     override fun onAudioVolumeDirectionChanged(direction: Int) {
@@ -2097,6 +2127,11 @@ private var pausedByZeroVolume = false
         Timber.d("PlayerService onMediaItemTransition mediaId=${mediaItem?.mediaId} uri=${mediaItem?.localConfiguration?.uri} musicVaultState=${mediaItem?.mediaMetadata?.extras?.getString("musicVaultState")} musicVaultFileName=${mediaItem?.mediaMetadata?.extras?.getString("musicVaultFileName")}")
 
         if (mediaItem == null) return
+
+        // Ferma il fade out se era in corso (es. l'utente ha premuto "Next" a metà brano)
+        stopCrossFadeMonitor()
+
+        applyPlaybackParameters()
 
         val origin = PlaybackContext.currentOrigin.value
         val suggestionInfo = PlaybackContext.currentSuggestionInfo.value
@@ -2184,6 +2219,8 @@ private var pausedByZeroVolume = false
 
                 if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                     _internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
+                    // Avvia il fade in per il nuovo brano appena parte il play
+                    startFadeIn(appSettings.userVolume)
                     Timber.d("PlayerService onMediaItemTransition mediaItem not local, inside")
                 }
                 else
@@ -2197,7 +2234,7 @@ private var pausedByZeroVolume = false
                         )
                     }
 
-                _internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
+                //_internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
 
                 // Recupera genere
                 val mbclient = MusicBrainz()
@@ -2234,6 +2271,9 @@ private var pausedByZeroVolume = false
                     player.prepare()
                     player.playWhenReady = true
                     player.play()
+
+                    // Avvia il fade in per il nuovo brano
+                    startFadeIn(appSettings.userVolume)
                 }
             }
 
@@ -2433,6 +2473,24 @@ private var pausedByZeroVolume = false
 
     }
 
+    /**
+     * Collega il LoudnessEnhancer alla sessione audio specifica di ExoPlayer.
+     */
+    @OptIn(UnstableApi::class)
+    private fun setupLoudnessEnhancerForExo() {
+        if (loudnessEnhancer != null) return
+
+        try {
+            val audioSessionId = hybridPlayer.audioSessionId
+
+            if (audioSessionId != C.AUDIO_SESSION_ID_UNSET) {
+                loudnessEnhancer = LoudnessEnhancer(audioSessionId)
+                Timber.d("PlayerService LoudnessEnhancer attached to ExoPlayer session: $audioSessionId")
+            }
+        } catch (e: Exception) {
+            Timber.e("PlayerService Errore inizializzazione LoudnessEnhancer: ${e.message}")
+        }
+    }
     @ExperimentalCoroutinesApi
     @UnstableApi
     private fun initializeNormalizeVolume() {
@@ -2441,22 +2499,18 @@ private var pausedByZeroVolume = false
             loudnessEnhancer?.release()
             loudnessEnhancer = null
             volumeNormalizationJob?.cancel()
-            player.volume = 1f
+            hybridPlayer.volume = hybridPlayer.volume // Reset al volume utente
             return
         }
 
-        try {
-            loudnessEnhancer?.release()
-        } catch (e: Exception) {
-            Timber.e("PlayerService initializeNormalizeVolume Errore durante il release di LoudnessEnhancer: ${e.message}")
-        }
-        loudnessEnhancer = null
-        loudnessEnhancer = LoudnessEnhancer(0)
+        // Collego l'enhancer alla sessione audio di ExoPlayer
+        setupLoudnessEnhancerForExo()
+
 
         val baseGain = appSettings.loudnessBaseGain
         val boostLevel = appSettings.volumeBoostLevel
 
-        if (currentSong.value?.isLocal == true && currentSong.value?.mediaId?.isEmpty() == true) return
+        //if (currentSong.value?.isLocal == true && currentSong.value?.mediaId?.isEmpty() == true) return
 
         volumeNormalizationJob?.cancel()
         volumeNormalizationJob = serviceScope.launch(Dispatchers.Main) {
@@ -2474,12 +2528,20 @@ private var pausedByZeroVolume = false
                         0
                     } else it
                 }
-                try {
-                    loudnessEnhancer?.setTargetGain((baseGain.toMb() + boostLevel.toMb()) - loudnessMb)
-                    loudnessEnhancer?.enabled = true
-                } catch (e: Exception) {
-                    Timber.e("PlayerService maybeNormalizeVolume apply targetGain ${e.stackTraceToString()}")
-                }
+                    try {
+                        // Calcolo il guadagno target (in millibel)
+                        val targetGainMb = (baseGain.toMb() + boostLevel.toMb()) - loudnessMb
+
+                        // Applico il guadagno a ExoPlayer
+                        loudnessEnhancer?.setTargetGain(targetGainMb)
+                        loudnessEnhancer?.enabled = true
+
+                        // Applico l'attenuazione all'HybridPlayer per i brani online
+                        hybridPlayer.setYtLoudnessDb(loudnessDb ?: 0f)
+
+                    } catch (e: Exception) {
+                        Timber.e("PlayerService apply targetGain ${e.stackTraceToString()}")
+                    }
             }
         }
     }
@@ -2873,9 +2935,7 @@ private var pausedByZeroVolume = false
 
     }
 
-
     /*
-    @RequiresApi(Build.VERSION_CODES.O)
     @ExperimentalCoroutinesApi
     @FlowPreview
     @Suppress("DEPRECATION")
@@ -2893,7 +2953,6 @@ private var pausedByZeroVolume = false
 
         val notification = notification()
 
-        //if (notification == null) {
         isNotificationStarted = false
 
         runCatching {
@@ -2939,49 +2998,28 @@ private var pausedByZeroVolume = false
         }
 
     }
-    */
+
+     */
+
 
     @ExperimentalCoroutinesApi
     @UnstableApi
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         Timber.d("Playerservice onIsPlayingChanged $isPlaying called")
-//        if (localMediaItem?.isLocal == false) return
-//        Timber.d("Playerservice onIsPlayingChanged $isPlaying after called")
 
         val currentState = _playerState.value
         if (isPlaying) {
             startEndedObserver()
+            startCrossfadeMonitor()
             _playerState.value = currentState.copy(playbackState = PlaybackState.PLAYING)
         }
         else {
             stopEndedObserver()
+            stopCrossFadeMonitor()
             _playerState.value = currentState.copy(playbackState = PlaybackState.PAUSED)
         }
 
-        /*
-        if (closeServiceWhenPlayerPausedAfterMinutes != DurationInMinutes.Disabled) {
-            if (!isPlaying && closingTimerStarted == false) {
-                Timber.d("PlayerService closingTimer started")
-                binder.startSleepTimer(closeServiceWhenPlayerPausedAfterMinutes.minutesInMilliSeconds)
-                closingTimerStarted = true
-            }
-            if (isPlaying && closingTimerStarted == true) {
-                Timber.d("PlayerService closingTimer cancelled")
-                binder.cancelSleepTimer()
-                closingTimerStarted = false
-            }
-        }
-         */
-
         isPlayingNow = isPlaying
-        val fadeDisabled = appSettings.playbackFadeAudioDuration == DurationInMilliseconds.Disabled
-        val duration = appSettings.playbackFadeAudioDuration.milliSeconds
-        if (isPlayingNow && !fadeDisabled)
-            startFadeAnimator(
-                player = binder.player,
-                duration = duration,
-                fadeIn = true
-            )
 
         updateWidgetState()
         updateUnifiedNotification()
@@ -2994,72 +3032,6 @@ private var pausedByZeroVolume = false
 
         super.onIsPlayingChanged(isPlaying)
     }
-
-    /*
-    @ExperimentalCoroutinesApi
-    @UnstableApi
-    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
-        sharedPreferences ?: return
-
-        when (key) {
-            PERSISTENT_QUEUE.key -> {
-                isPersistentQueueEnabled = sharedPreferences.getBoolean(key, true)
-            }
-            RESUME_PLAYBACK_ON_START.key  -> {
-                isResumePlaybackOnStart = sharedPreferences.getBoolean(key, false)
-            }
-            SKIP_SILENCE.key -> {
-                player.skipSilenceEnabled = sharedPreferences.getBoolean(key, false)
-            }
-            EXCLUDE_SONG_IF_IS_VIDEO.key -> {
-                excludeIfIsVideoEnabled = sharedPreferences.getBoolean(key, false)
-            }
-            PARENTAL_CONTROL_ENABLED.key -> {
-                parentalControlEnabled = sharedPreferences.getBoolean(key, false)
-            }
-            QUEUE_LOOP_TYPE.key -> {
-                player.repeatMode =
-                    sharedPreferences.getEnum(key, QueueLoopType.Default).type
-            }
-//            closebackgroundPlayerKey -> {
-//                    isclosebackgroundPlayerEnabled = sharedPreferences.getBoolean(Key.key, false)
-//            }
-            CLOSE_PLAYER_SERVICE_AFTER_MINUTES.key -> {
-                closeServiceAfterMinutes =
-                    sharedPreferences.getEnum(key,
-                        DurationInMinutes.Disabled)
-            }
-            /*
-            closePlayerServiceWhenPausedAfterMinutesKey.key -> {
-                closeServiceWhenPlayerPausedAfterMinutes =
-                    sharedPreferences.getEnum(Key.key,
-                        DurationInMinutes.Disabled)
-            }
-             */
-            IS_SHOWING_THUMBNAIL_IN_LOCKSCREEN.key -> {
-                isShowingThumbnailInLockscreen = sharedPreferences.getBoolean(key, true)
-                initializeSongCoverInLockScreen()
-            }
-            PLAYBACK_DURATION.key -> {
-                medleyDuration = sharedPreferences.getFloat(key, 0f)
-                initializeMedleyMode()
-            }
-            EXO_PLAYER_MIN_TIME_FOR_EVENT.key -> {
-                minTimeForEvent = sharedPreferences.getEnum(key,
-                    MinTimeForEvent.`20s`)
-            }
-            RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_BT.key,
-            PreferenceKey.RESUME_OR_PAUSE_PLAYBACK_WHEN_DEVICE_WIRED.key -> initializeAudioDeviceCallback()
-            BASSBOOST_LEVEL.key, BASSBOOST_ENABLED.key -> initializeBassBoost()
-            AUDIO_REVERB_PRESET.key -> initializeReverb()
-            VOLUME_NORMALIZATION.key, LOUDNESS_BASE_GAIN.key, VOLUME_BOOST_LEVEL.key -> initializeNormalizeVolume()
-            PLAYBACK_PITCH.key, PLAYBACK_SPEED.key -> initializePlaybackParameters()
-            CAST_TYPE.key -> initializeRiTune()
-            DISABLE_AUDIO_DRC.key -> initializeAudioDRCHelper()
-        }
-    }
-
-     */
 
     @ExperimentalCoroutinesApi
     private fun initializeBassBoost() {
@@ -3074,7 +3046,11 @@ private var pausedByZeroVolume = false
         }
 
         runCatching {
-            if (bassBoost == null) bassBoost = BassBoost(0, 0)
+            // Collego l'audiosession di exoplayer
+            val audioSessionId = hybridPlayer.audioSessionId
+            if (audioSessionId == C.AUDIO_SESSION_ID_UNSET) return@runCatching
+
+            if (bassBoost == null) bassBoost = BassBoost(0, audioSessionId)
             val bassboostLevel =
                 ((appSettings.bassBoostLevel) * 1000f).toInt().toShort()
             Timber.d("PlayerService processBassBoost bassboostLevel $bassboostLevel")
@@ -3103,15 +3079,130 @@ private var pausedByZeroVolume = false
         }
 
         runCatching {
+            // Collego l'audiosession di exoplayer
+            val audioSessionId = hybridPlayer.audioSessionId
+            if (audioSessionId == C.AUDIO_SESSION_ID_UNSET) return@runCatching
+
             if (reverbPreset == null) reverbPreset = PresetReverb(1,
-                //player.audioSessionId
-                0
+                audioSessionId
             )
 
             reverbPreset?.enabled = false
             reverbPreset?.preset = presetType.preset
             reverbPreset?.enabled = true
             reverbPreset?.id?.let { player.setAuxEffectInfo(AuxEffectInfo(it, 1f)) }
+        }
+    }
+
+    @kotlin.OptIn(ExperimentalCoroutinesApi::class)
+    override fun onAudioSessionIdChanged(audioSessionId: Int) {
+        super.onAudioSessionIdChanged(audioSessionId)
+        Timber.d("PlayerService ExoPlayer Audio Session ID changed to: $audioSessionId")
+
+        // Quando la sessione cambia, vanno ricreati gli effetti e collegati alla nuova sessione
+        runCatching {
+            bassBoost?.release()
+            bassBoost = null
+            reverbPreset?.release()
+            reverbPreset = null
+            loudnessEnhancer?.release()
+            loudnessEnhancer = null
+        }
+
+        // Riapplico gli effetti se sono abilitati nelle impostazioni
+        initializeBassBoost()
+        initializeReverb()
+        initializeNormalizeVolume()
+    }
+
+    private fun startCrossfadeMonitor() {
+        if (appSettings.crossfadeDuration == CrossfadeDuration.Off) return
+
+        crossfadeJob?.cancel()
+        crossfadeJob = serviceScope.launch(Dispatchers.Main) {
+            while (isActive) {
+                delay(200.milliseconds)
+                val duration = hybridPlayer.duration
+                val position = hybridPlayer.currentPosition
+
+                if (duration > 0) {
+                    val timeLeft = duration - position
+
+                    if (timeLeft in 0..appSettings.crossfadeDuration.milliseconds && !isFading) {
+                        isFading = true
+
+                        // SCOPRIAMO CHI È IL PROSSIMO BRANO
+                        val nextMediaItem = hybridPlayer.getMediaItemAt(hybridPlayer.nextMediaItemIndex)
+
+                        val isNextExo = nextMediaItem.isLocal
+
+                        if (isNextExo) {
+                            // Exo -> Exo (Crossfade Gapless)
+                            startExoToExoCrossfade()
+                        } else {
+                            // Exo -> WebView (Dissolvenza)
+                            startWebViewFadeOut()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun stopCrossFadeMonitor() {
+        crossfadeJob?.cancel()
+        crossfadeJob = null
+    }
+
+    private fun startFadeIn(targetVolume: Float) {
+        if (appSettings.crossfadeDuration == CrossfadeDuration.Off) return
+
+        fadeInJob?.cancel() // Se c'era un vecchio fade in corso, cancellalo
+
+        isFading = true
+        hybridPlayer.setVolume(0f) // Inizia il nuovo brano dal silenzio
+
+        fadeInJob = serviceScope.launch(Dispatchers.Main) {
+            val steps = 20 // Alza il volume per step di 20 punti
+            val stepDelay = FADE_IN_DURATION_MS / steps
+
+            for (i in 1..steps) {
+                val progress = i.toFloat() / steps
+                hybridPlayer.setVolume(targetVolume * progress)
+                delay(stepDelay.milliseconds)
+            }
+
+            // Infine imposto il volume target su HybridPlayer
+            hybridPlayer.setVolume(targetVolume)
+            isFading = false // Fine del fade, la UI può tornare a comandare
+        }
+    }
+
+    private fun startExoToExoCrossfade() {
+        // Usiamo un job temporaneo solo per il fade out del brano Exo
+        serviceScope.launch(Dispatchers.Main) {
+            val steps = 15
+            val stepDelay = appSettings.crossfadeDuration.milliseconds / steps
+            for (i in 1..steps) {
+                val progress = 1f - (i.toFloat() / steps)
+                hybridPlayer.setVolume(appSettings.userVolume * progress)
+                delay(stepDelay.milliseconds)
+            }
+            // ExoPlayer passerà al brano successivo in modo gapless.
+            // L'onMediaItemTransition se ne accorgerà e farà partire il Fade In!
+        }
+    }
+
+    private fun startWebViewFadeOut() {
+        serviceScope.launch(Dispatchers.Main) {
+            val steps = 15
+            val stepDelay = appSettings.crossfadeDuration.milliseconds / steps
+            for (i in 1..steps) {
+                val progress = 1f - (i.toFloat() / steps)
+                hybridPlayer.setVolume(appSettings.userVolume * progress)
+                delay(stepDelay.milliseconds)
+            }
+            // Quando il volume è a 0, la canzone finisce e parte onMediaItemTransition.
         }
     }
 
@@ -3540,7 +3631,7 @@ private var pausedByZeroVolume = false
                     }
                 }
 
-                delay(200)
+                delay(200.milliseconds)
             }
         }
     }
@@ -4075,22 +4166,22 @@ private var pausedByZeroVolume = false
              */
         }
 
-        fun callPause(onPause: () -> Unit) {
-            val fadeDisabled = appSettings.playbackFadeAudioDuration == DurationInMilliseconds.Disabled
-            val duration = appSettings.playbackFadeAudioDuration.milliSeconds
-            if (player.isPlaying) {
-                if (fadeDisabled) {
-                    player.pause()
-                    onPause()
-                } else {
-                    //fadeOut
-                    startFadeAnimator(player, duration, false) {
-                        player.pause()
-                        onPause()
-                    }
-                }
-            }
-        }
+//        fun callPause(onPause: () -> Unit) {
+//            val fadeDisabled = appSettings.playbackFadeAudioDuration == DurationInMilliseconds.Disabled
+//            val duration = appSettings.playbackFadeAudioDuration.milliSeconds
+//            if (player.isPlaying) {
+//                if (fadeDisabled) {
+//                    player.pause()
+//                    onPause()
+//                } else {
+//                    //fadeOut
+//                    startFadeAnimator(player, duration, false) {
+//                        player.pause()
+//                        onPause()
+//                    }
+//                }
+//            }
+//        }
 
         fun actionSearch() {
             startActivity(Intent(applicationContext, MainActivity::class.java)

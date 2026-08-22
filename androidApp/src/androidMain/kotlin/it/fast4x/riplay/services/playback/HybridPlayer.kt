@@ -10,6 +10,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.commonutils.durationTextToMillis
 import timber.log.Timber
+import kotlin.math.pow
 
 // Interfaccia che il tuo wrapper YouTube DEVE implementare per parlarti
 interface YouTubeControl {
@@ -32,6 +33,10 @@ class HybridPlayer (
     private val exoPlayer: Player,
     private val youtubeControl: YouTubeControl
 ) : ForwardingPlayer(exoPlayer) {
+
+    // Variabili per la normalizzazione YouTube
+    private var userVolume: Float = 1.0f
+    private var ytLoudnessDb: Float = 0f
 
     var onRefreshCustomLayoutListener: (() -> Unit)? = null
 
@@ -111,6 +116,10 @@ class HybridPlayer (
     fun switchToExo() {
         activeEngine = ActiveEngine.EXOPLAYER
         mainHandler.removeCallbacks(positionUpdater)
+
+        // Impostiamo il volume scelto dall'utente per ExoPlayer
+        exoPlayer.volume = userVolume
+
         hybridListeners.forEach { listener ->
             listener.onTimelineChanged(currentTimeline, Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED)
         }
@@ -374,15 +383,20 @@ class HybridPlayer (
     }
 
     override fun getVolume(): Float {
-        return if (activeEngine == ActiveEngine.YOUTUBE) youtubeControl.getVolume() else exoPlayer.volume
+        return if (activeEngine == ActiveEngine.YOUTUBE) youtubeControl.getVolume() else userVolume
     }
 
     override fun setVolume(volume: Float) {
-        if (activeEngine == ActiveEngine.YOUTUBE) youtubeControl.setVolume(volume) else exoPlayer.volume =
-            volume
+        // Salviamo sempre il volume scelto dall'utente
+        userVolume = volume
+        // Applichiamo la logica
+        if (activeEngine == ActiveEngine.YOUTUBE) {
+            applyYtVolumeNormalization()
+        } else {
+            exoPlayer.volume = userVolume
+        }
     }
 
-    // All'interno di HybridPlayer
     fun updateCurrentMediaItemDuration(durationMs: Long) {
         if (activeEngine == ActiveEngine.YOUTUBE) {
             val currentItem = currentMediaItem ?: return
@@ -402,6 +416,38 @@ class HybridPlayer (
             hybridListeners.forEach {
                 it.onTimelineChanged(exoPlayer.currentTimeline, Player.TIMELINE_CHANGE_REASON_SOURCE_UPDATE)
             }
+        }
+    }
+
+    /**
+     * Chiamato dal PlayerService quando recupera il loudnessDb dal DB.
+     */
+    fun setYtLoudnessDb(loudnessDb: Float) {
+        ytLoudnessDb = loudnessDb
+        if (activeEngine == ActiveEngine.YOUTUBE) {
+            applyYtVolumeNormalization()
+        }
+    }
+
+    /**
+     * Applica l'attenuazione se siamo su YouTube.
+     */
+    private fun applyYtVolumeNormalization() {
+        if (activeEngine == ActiveEngine.YOUTUBE) {
+            // Formula: fattore = 10^(-loudnessDb / 20)
+            // Se loudnessDb è +5 (brano forte), il fattore sarà ~0.56 (attenua)
+            // Se loudnessDb è -5 (brano debole), il fattore sarebbe ~1.77, ma minOf lo blocca a 1.0
+            val normalizationFactor = 10.0.pow((-ytLoudnessDb / 20.0)).toFloat()
+
+            // Il volume finale non può mai superare 1.0 (limite fisico della WebView)
+            val finalVolume = minOf(1.0f, userVolume * normalizationFactor)
+
+            youtubeControl.setVolume(finalVolume)
+            Timber.d("HybridPlayer applyYtVolumeNormalization YT Normalization: userVol=$userVolume, loudness=$ytLoudnessDb, finalVol=$finalVolume")
+        } else {
+            // Se è attivo ExoPlayer, il volume è gestito dal LoudnessEnhancer nativo,
+            // quindi resettiamo il volume di ExoPlayer al puro volume utente.
+            exoPlayer.volume = userVolume
         }
     }
 

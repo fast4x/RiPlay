@@ -1886,7 +1886,7 @@ fun UnifiedPlayerScrollable(
                                             color = colorPalette().accent,
                                             enabled = true,
                                             onClick = {
-                                                binder.callPause {}
+                                                //binder.callPause {}
                                                 showSearchEntity = true
                                             },
                                             modifier = Modifier
