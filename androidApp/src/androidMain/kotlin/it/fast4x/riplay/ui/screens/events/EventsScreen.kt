@@ -49,6 +49,7 @@ import it.fast4x.riplay.utils.isWorkScheduled
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.styling.semiBold
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 
 const val workNameNewRelease = "weeklyOrDailyCheckNewFromArtistsWork"
@@ -222,13 +223,16 @@ fun StatusHeader(
             fontWeight = FontWeight.Bold
         )
         if (isScheduled) {
-            Spacer(modifier = Modifier.width(8.dp))
-            val timeRemaining = (nextRunTimeMs?.minus(System.currentTimeMillis())) ?: 0L
-            Text(
-                text = "• ${formatTimeRemaining(timeRemaining)}",
-                style = typography().xs,
-                color = colorPalette().textSecondary
-            )
+            val remainingText = formatTimeRemaining(nextRunTimeMs)
+            //Timber.d("EventsScreen nextRunTimeMs = $nextRunTimeMs, remainingText = $remainingText")
+            if (remainingText.isNotEmpty()) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "• $remainingText",
+                    style = typography().xs,
+                    color = colorPalette().textSecondary
+                )
+            }
         }
     }
 
