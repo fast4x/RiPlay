@@ -11,6 +11,34 @@ data class PlayerState(
 ) {
     val isPlaying: Boolean
         get() = playbackState == PlaybackState.PLAYING
+
+    fun withMediaTransition(
+        mediaItem: MediaItem,
+        queueIndex: Int,
+        queueSize: Int,
+    ): PlayerState = copy(
+        mediaInfo = MediaInfo(
+            mediaItem = mediaItem,
+            queueIndex = queueIndex,
+            queueSize = queueSize,
+        ),
+        errorMessage = null,
+    )
+
+    fun withDatabaseMediaItemIfCurrent(
+        currentMediaId: String?,
+        databaseMediaItem: MediaItem,
+        queueIndex: Int,
+        queueSize: Int,
+    ): PlayerState = if (currentMediaId == databaseMediaItem.mediaId) {
+        withMediaTransition(
+            mediaItem = databaseMediaItem,
+            queueIndex = queueIndex,
+            queueSize = queueSize,
+        )
+    } else {
+        this
+    }
 }
 
 data class PlayerSettings(
