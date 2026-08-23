@@ -59,7 +59,7 @@ class MainApplication : Application(), ImageLoaderFactory {
     )
 
     private val appScopeMain = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-    private val appScopeIO = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    val appScopeIO = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     val appViewModelFactory by lazy {
         AppViewModel.factory(this)

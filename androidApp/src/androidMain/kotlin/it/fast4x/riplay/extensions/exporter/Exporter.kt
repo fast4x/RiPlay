@@ -69,7 +69,7 @@ object Exporter {
                                 plistName,
                                 it.id,
                                 it.title,
-                                artistInfos.joinToString(",") { it.name ?: "" },
+                                artistInfos.joinToString(",") { it.name ?: "" }.ifEmpty { it.artistsText },
                                 it.durationText,
                                 it.thumbnailUrl,
                                 albumInfo?.id,
