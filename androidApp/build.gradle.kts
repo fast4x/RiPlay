@@ -123,6 +123,12 @@ kotlin {
         implementation(libs.zxing.core)
 
     }
+
+    sourceSets {
+        androidUnitTest.dependencies {
+            implementation(kotlin("test"))
+        }
+    }
 }
 
 val localProperties = Properties()
