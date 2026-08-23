@@ -57,7 +57,7 @@ private fun ViMusicHeader( titleId: Int, additionalContent: @Composable () -> Un
 }
 
 @Composable
-private fun RiMusicHeader( titleId: Int, additionalContent: @Composable () -> Unit ) {
+private fun RiPlayHeader(titleId: Int, additionalContent: @Composable () -> Unit ) {
     Title( titleId )
     additionalContent()
 }
@@ -107,7 +107,7 @@ fun TabHeader(
             .fillMaxWidth()
     ) {
         when( UiType.current() ) {
-            UiType.RiPlay -> RiMusicHeader( titleId, additionalContent )
+            UiType.RiPlay -> RiPlayHeader( titleId, additionalContent )
             UiType.ViMusic -> ViMusicHeader( titleId, additionalContent )
         }
     }
