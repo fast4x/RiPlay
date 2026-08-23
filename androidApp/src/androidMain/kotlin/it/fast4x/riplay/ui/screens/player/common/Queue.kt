@@ -409,7 +409,7 @@ fun Queue(
     Box(
         modifier = Modifier
             .padding(windowInsets.only(WindowInsetsSides.Horizontal).asPaddingValues())
-            .background(if (queueType == QueueType.Modern) Color.Transparent else colorPalette().background1)
+            .background(if (queueType == QueueType.Modern) colorPalette().background1.copy(alpha = 0.7f) else colorPalette().background1)
             .fillMaxSize()
     ) {
         var dragInfo by remember { mutableStateOf<Pair<Int, Int>?>(null) }
@@ -970,13 +970,6 @@ fun Queue(
                         )
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
-                    // Dismiss arrow — leftmost
-                    ActionIconButton(
-                        icon = R.drawable.chevron_down,
-                        size = 22,
-                        onClick = { onDismiss(queueLoopType) }
-                    )
-
                     // Search
                     ActionIconButton(
                         icon = R.drawable.search_circle,
@@ -1156,6 +1149,13 @@ fun Queue(
                                 .alpha(if (windows.isNotEmpty()) 1f else 0.4f)
                         )
                     }
+
+                    // Dismiss arrow — leftmost
+                    ActionIconButton(
+                        icon = R.drawable.chevron_down,
+                        size = 22,
+                        onClick = { onDismiss(queueLoopType) }
+                    )
                 }
             }
         }
