@@ -151,6 +151,7 @@ import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.themed.LyricsSizeDialog
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.ui.styling.ColorPalette
+import it.fast4x.riplay.utils.LatestValueProvider
 import it.fast4x.riplay.utils.SynchronizedLyricsLines
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
@@ -211,7 +212,8 @@ fun Lyrics(
     val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val (currentPosition, duration) = rememberPlayerPositionAndDuration(binder)
-    val positionProvider = { currentPosition }
+    val positionProvider = remember { LatestValueProvider(currentPosition) }
+    positionProvider.value = currentPosition
     //Timber.d("LyricsNew positionAndDuration ${positionAndDuration.first}")
 
     val showlyricsthumbnail = appearanceSettings.showLyricsThumbnail
@@ -538,7 +540,7 @@ fun Lyrics(
                         else LRCLyricsKaraokeParser
                             .parse(currentLyrics?.lrcSynced ?: "", isOnline = binder?.player?.currentMediaItem?.isLocal == true)
                         invalidLrc = false
-                        SynchronizedLyricsLines(sentences) { positionProvider() }
+                        SynchronizedLyricsLines(sentences, positionProvider)
                     }
 
                     val lazyListState = rememberLazyListState()
