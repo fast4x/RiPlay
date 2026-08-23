@@ -91,7 +91,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.paint
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -130,8 +129,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import androidx.compose.ui.util.lerp
 import androidx.compose.ui.zIndex
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
@@ -695,7 +692,7 @@ fun UnifiedPlayerScrollable(
                 confirmText = stringResource(R.string.stop),
                 onDismiss = { isShowingSleepTimerDialog = false },
                 onConfirm = {
-                    binder.cancelSleepTimer()
+                    binder.cancelTimer()
                     delayedSleepTimer = false
                     //onDismiss()
                 }

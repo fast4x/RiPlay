@@ -88,8 +88,6 @@ import androidx.media3.common.util.UnstableApi
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.kieronquinn.monetcompat.app.MonetCompatActivity
-import com.kieronquinn.monetcompat.core.MonetActivityAccessException
 import com.kieronquinn.monetcompat.core.MonetCompat
 import com.kieronquinn.monetcompat.interfaces.MonetColorsChangedListener
 import it.fast4x.androidyoutubeplayer.core.player.views.YouTubePlayerView
@@ -194,7 +192,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import dev.kdrag0n.monet.theme.ColorScheme
-import it.fast4x.environment.EnvironmentExt
 import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.extensions.appviewmodel.AppViewModelProvider
 import it.fast4x.riplay.extensions.appearancesettings.AppearanceSettingsManager
@@ -206,7 +203,6 @@ import it.fast4x.riplay.extensions.musicbrainz.viewmodels.AlbumInsightsViewModel
 import it.fast4x.riplay.extensions.musicbrainz.viewmodels.ArtistInsightsViewModel
 import it.fast4x.riplay.extensions.nsd.NsdDiscoveryManager
 import it.fast4x.riplay.extensions.preferences.cleanUpUnusedPreferences
-import it.fast4x.riplay.ui.components.themed.LoaderScreen
 import it.fast4x.riplay.ui.screens.player.unified.TvUnifiedPlayer
 import it.fast4x.riplay.utils.isTVDevice
 import it.fast4x.riplay.utils.isTvMode
@@ -219,7 +215,7 @@ class MainActivity : AppCompatActivity() {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             if (service is PlayerService.Binder) {
                 this@MainActivity.binder = service
-                service.cancelSleepTimer() // cancel sleep timer when service is connected, before app was closed
+                service.cancelTimer() // cancel sleep timer when service is connected, before app was closed
             }
 
         }
@@ -313,18 +309,26 @@ class MainActivity : AppCompatActivity() {
 
         val intent = Intent(this, PlayerService::class.java)
 
-        try {
-            if (isAtLeastAndroid8)
-                startForegroundService(intent)
-            else
-                startService(intent)
-        } catch (e: Exception) {
-            Timber.e("MainActivity onStart startService PlayerService Exception: $e")
+        // Chiamo startForegroundService SOLO se il servizio non è già pronto in memoria!
+        if (!PlayerService.isServiceReady.value) {
+            try {
+                Timber.d("MainActivity.onStart - Servizio non pronto, avvio in foreground")
+                if (isAtLeastAndroid8) {
+                    startForegroundService(intent)
+                } else {
+                    startService(intent)
+                }
+            } catch (e: Exception) {
+                Timber.e("MainActivity.onStart startService PlayerService Exception: $e")
+            }
+        } else {
+            Timber.d("MainActivity.onStart - Il servizio è già attivo in background/foreground. Salto startForegroundService.")
         }
 
+        // Infine il binding del service alla activity va fatto SEMPRE, sia al primo start che al resume
         bindService(intent, serviceConnection, BIND_AUTO_CREATE)
-
     }
+
 
     @ExperimentalSerializationApi
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)

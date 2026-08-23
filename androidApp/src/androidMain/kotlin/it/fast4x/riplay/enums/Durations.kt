@@ -61,7 +61,7 @@ enum class DurationInMinutes {
     `150`,
     `180`;
 
-    val minutesInMilliSeconds: Long get() =
+    val milliSeconds: Long get() =
         when (this) {
             Disabled -> -1
             `0` -> 0

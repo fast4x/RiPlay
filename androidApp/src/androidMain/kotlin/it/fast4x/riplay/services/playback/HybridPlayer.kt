@@ -185,7 +185,7 @@ class HybridPlayer (
     // --- OVERRIDE CRITICI PER INGANNARE MEDIA3 E GOOGLE ASSISTANT ---
 
     override fun isPlaying(): Boolean {
-        Timber.d("HybridPlayer isPlaying() called: activeEngine = $activeEngine isPlaying = ${super.isPlaying} youtubeControl.isPlaying() = ${youtubeControl.isPlaying()}")
+        //Timber.d("HybridPlayer isPlaying() called: activeEngine = $activeEngine isPlaying = ${super.isPlaying} youtubeControl.isPlaying() = ${youtubeControl.isPlaying()}")
         return if (activeEngine == ActiveEngine.YOUTUBE) {
             playbackState == Player.STATE_READY && youtubePlayWhenReady // youtubeControl.isPlaying()
         }
@@ -203,7 +203,7 @@ class HybridPlayer (
     override fun getCurrentPosition(): Long {
         val currentPosition = if (activeEngine == ActiveEngine.YOUTUBE) (playerService._currentSecond.value * 1000L).toLong()
         else super.getCurrentPosition()
-        Timber.d("HybridPlayer activeEngine = $activeEngine getCurrentPosition = $currentPosition")
+        //Timber.d("HybridPlayer activeEngine = $activeEngine getCurrentPosition = $currentPosition")
         return currentPosition
     }
 
@@ -443,7 +443,7 @@ class HybridPlayer (
             val finalVolume = minOf(1.0f, userVolume * normalizationFactor)
 
             youtubeControl.setVolume(finalVolume)
-            Timber.d("HybridPlayer applyYtVolumeNormalization YT Normalization: userVol=$userVolume, loudness=$ytLoudnessDb, finalVol=$finalVolume")
+            //Timber.d("HybridPlayer applyYtVolumeNormalization YT Normalization: userVol=$userVolume, loudness=$ytLoudnessDb, finalVol=$finalVolume")
         } else {
             // Se è attivo ExoPlayer, il volume è gestito dal LoudnessEnhancer nativo,
             // quindi resettiamo il volume di ExoPlayer al puro volume utente.

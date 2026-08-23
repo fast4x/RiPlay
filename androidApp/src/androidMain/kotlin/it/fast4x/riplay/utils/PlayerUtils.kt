@@ -317,7 +317,7 @@ fun Player.excludeMediaItems(mediaItems: List<MediaItem>, context: Context): Lis
                         ?.let { durationTextToMillis(it) }
                         ?: 0L
 
-                    durationMillis < excludeSongWithDurationLimit.minutesInMilliSeconds
+                    durationMillis < excludeSongWithDurationLimit.milliSeconds
                 } catch (e: Exception) {
                     Timber.w(e, "Errore parsing durata per ${item.mediaId}")
                     false
@@ -380,7 +380,7 @@ fun Player.excludeMediaItem(mediaItem: MediaItem, context: Context): Boolean {
                 0L
             }
 
-            val excludedSong = durationMillis <= excludeSongWithDurationLimit.minutesInMilliSeconds
+            val excludedSong = durationMillis <= excludeSongWithDurationLimit.milliSeconds
 
             if (excludedSong) {
                 showExcludedMessage(context, R.string.message_excluded_s_songs, 1)

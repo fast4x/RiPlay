@@ -688,6 +688,44 @@ class PlayerService : MediaLibraryService(),
         updateWidgetState()
     }
 
+    @kotlin.OptIn(ExperimentalCoroutinesApi::class)
+    private fun handleForeground(isPlaying: Boolean) {
+        if (isPlaying) {
+            // Se riproduce qualcosa dopo aver impostato un timer, viene cancellato
+            binder.cancelTimer()
+            // Qualsiasi sia il player attivo (Exo o l'altro), se sta suonando rimettiamo il foreground
+            startForeground(loading = false)
+            //Timber.d("PlayerService handleForeground - Lancio foreground")
+        } else {
+            // Se va in pausa, stop o buffering, sganciamo il foreground in sicurezza
+            detachForegroundSafely()
+            // Se va in pausa, ci rimane per almeno 15 minuti e non è attiva l'opzione di chiusura automatica, chiudiamo il servizio per liberare memoria
+            if (closeServiceAfterMinutes == DurationInMinutes.Disabled) {
+                binder.startSleepTimer(DurationInMinutes.`15`.milliSeconds)
+            }
+            //Timber.d("PlayerService handleForeground - Sgancio foreground")
+        }
+    }
+
+    private fun detachForegroundSafely() {
+        if (isServiceInForeground) {
+            try {
+                if (isAtLeastAndroid7) {
+                    // STOP_FOREGROUND_DETACH mantiene la notifica visibile nel pannello media
+                    // ma rimuove lo stato di servizio in primo piano aggressivo
+                    stopForeground(STOP_FOREGROUND_DETACH)
+                } else {
+                    @Suppress("DEPRECATION")
+                    stopForeground(false) // Comportamento legacy per versioni vecchie
+                }
+                isServiceInForeground = false
+                Timber.d("PlayerService detachForegroundSafely - Sganciato il foreground in modo sicuro (In Pausa)")
+            } catch (e: Exception) {
+                Timber.e("PlayerService detachForegroundSafely - Errore durante il stopForeground detach: $e")
+            }
+        }
+    }
+
     private fun startObservingSettings() {
         // Devo essere sicuro che le impostazioni siano pronte
         appSettings = runBlocking(Dispatchers.IO) {
@@ -1158,6 +1196,7 @@ class PlayerService : MediaLibraryService(),
         serviceScope.launch { initializeOnlinePlayer(skipAutoload = true) }
     }
 
+    @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     private fun initializeHybridPlayerAndSession() {
 
         player = ExoPlayer.Builder(this)
@@ -1203,6 +1242,7 @@ class PlayerService : MediaLibraryService(),
         // Crea l'Hybrid Player
         hybridPlayer = HybridPlayer(this,player, ytControlWrapper)
 
+        // Listener specifico per hybridPlayer e refreshare il layout di AA
         hybridPlayer.onRefreshCustomLayoutListener = {
             val activeSession = mediaLibrarySession
             if (activeSession != null) {
@@ -1494,6 +1534,7 @@ class PlayerService : MediaLibraryService(),
 
                     }
                     PlayerConstants.PlayerState.PLAYING -> {
+                        handleForeground(true)
                         lastError = null  // reset errore dopo riproduzione riuscita
                         onlineNearEndTicks = 0
                         startEndedObserver()
@@ -1505,6 +1546,7 @@ class PlayerService : MediaLibraryService(),
                         }
                     }
                     PlayerConstants.PlayerState.PAUSED -> {
+                        handleForeground(false)
                         onlineNearEndTicks = 0
                         stopEndedObserver()
                         stopCrossFadeMonitor()
@@ -1514,33 +1556,11 @@ class PlayerService : MediaLibraryService(),
                             hybridPlayer.invalidateYouTubePlayPause()
                         }
                     }
-//                        PlayerConstants.PlayerState.ENDED -> {
-//                            Timber.d("PlayerService onlinePlayerView: onStateChange ENDED regular playNext()")
-//                            player.playNext()
-//                        }
+
                     else -> {}
                 }
 
-                /*
-                if (closeServiceWhenPlayerPausedAfterMinutes != DurationInMinutes.Disabled) {
-                    if (state != PlayerConstants.PlayerState.PLAYING && closingTimerStarted == false) {
-                        Timber.d("PlayerService closingTimer started")
-                        binder.startSleepTimer(closeServiceWhenPlayerPausedAfterMinutes.minutesInMilliSeconds)
-                        closingTimerStarted = true
-                    }
-                    if (state == PlayerConstants.PlayerState.PLAYING && closingTimerStarted == true) {
-                        Timber.d("PlayerService closingTimer cancelled")
-                        binder.cancelSleepTimer()
-                        closingTimerStarted = false
-                    }
-                }
-                 */
-
                 isPlayingNow = state == PlayerConstants.PlayerState.PLAYING
-
-//                if (::hybridPlayer.isInitialized) {
-//                    hybridPlayer.invalidateYouTubeState()
-//                }
 
                 updateUnifiedNotification()
                 updateDiscordPresence()
@@ -1848,7 +1868,7 @@ class PlayerService : MediaLibraryService(),
     override fun onTaskRemoved(rootIntent: Intent?) {
         Timber.d("PlayerService onTaskRemoved closeServiceAfterMinutes $closeServiceAfterMinutes")
         if (closeServiceAfterMinutes != DurationInMinutes.Disabled) {
-            binder.startSleepTimer(closeServiceAfterMinutes.minutesInMilliSeconds)
+            binder.startSleepTimer(closeServiceAfterMinutes.milliSeconds)
         }
     }
 
@@ -3004,6 +3024,8 @@ private fun updateOnlineNearEndTicks() {
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         Timber.d("Playerservice onIsPlayingChanged $isPlaying called")
 
+        handleForeground(isPlaying)
+
         val currentState = _playerState.value
         if (isPlaying) {
             startEndedObserver()
@@ -4045,7 +4067,7 @@ private fun updateOnlineNearEndTicks() {
             }, 300L)
         }
 
-        fun cancelSleepTimer() {
+        fun cancelTimer() {
             Timber.d("PlayerService cancelSleepTimer")
             timerJob?.cancel()
             timerJob = null

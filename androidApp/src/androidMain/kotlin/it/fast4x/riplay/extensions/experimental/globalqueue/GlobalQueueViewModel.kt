@@ -112,7 +112,7 @@ class GlobalQueueViewModel() : ViewModel(), ViewModelProvider.Factory {
             if (excludeSongWithDurationLimit != DurationInMinutes.Disabled) {
                 val excludedSong = (mediaItem.mediaMetadata.extras?.getString("durationText")?.let { it1 ->
                     durationTextToMillis(it1)
-                } ?: 0) <= excludeSongWithDurationLimit.minutesInMilliSeconds
+                } ?: 0) <= excludeSongWithDurationLimit.milliSeconds
 
                 if (excludedSong)
                     CoroutineScope(Dispatchers.Main).launch {
@@ -154,7 +154,7 @@ class GlobalQueueViewModel() : ViewModel(), ViewModelProvider.Factory {
                 filteredMediaItems = mediaItems.filter {
                     (it.mediaMetadata.extras?.getString("durationText")?.let { it1 ->
                         durationTextToMillis(it1)
-                    } ?: 0) < excludeSongWithDurationLimit.minutesInMilliSeconds
+                    } ?: 0) < excludeSongWithDurationLimit.milliSeconds
                 }
 
                 val excludedSongs = mediaItems.size - filteredMediaItems.size

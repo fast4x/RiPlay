@@ -88,7 +88,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
@@ -97,7 +96,6 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import io.github.oikvpqya.compose.fastscroller.VerticalScrollbar
 import io.github.oikvpqya.compose.fastscroller.rememberScrollbarAdapter
 import it.fast4x.riplay.BuildConfig
-import it.fast4x.riplay.Dependencies
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.extensions.persist.persistList
@@ -136,7 +134,6 @@ import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollT
 import it.fast4x.riplay.ui.components.themed.FolderItemMenu
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
 import it.fast4x.riplay.ui.components.themed.HeaderInfo
-import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.InHistoryMediaItemMenu
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
@@ -396,7 +393,7 @@ fun HomeSongs(
                                     items = it.filter { item ->
                                         if (excludeSongWithDurationLimit == DurationInMinutes.Disabled) true
                                         else (item.song.durationText?.let { durationTextToMillis(it) }
-                                            ?: 0L) < excludeSongWithDurationLimit.minutesInMilliSeconds
+                                            ?: 0L) < excludeSongWithDurationLimit.milliSeconds
                                     }.filter { item ->
                                         blacklisted.value?.map { it.path }
                                             ?.contains(item.song.id) == false
@@ -410,7 +407,7 @@ fun HomeSongs(
                                 items = it.filter { item ->
                                     if (excludeSongWithDurationLimit == DurationInMinutes.Disabled) true
                                     else (item.song.durationText?.let { durationTextToMillis(it) }
-                                        ?: 0L) < excludeSongWithDurationLimit.minutesInMilliSeconds
+                                        ?: 0L) < excludeSongWithDurationLimit.milliSeconds
                                 }.filter { item ->
                                     blacklisted.value?.map { it.path }
                                         ?.contains(item.song.id) == false
