@@ -17,6 +17,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.milliseconds
 
+class LatestValueProvider<T>(initialValue: T) : () -> T {
+    var value: T = initialValue
+
+    override fun invoke(): T = value
+}
+
 class SynchronizedLyricsLines(val sentences: List<LRCLyricLine>, private val positionProvider: () -> Long) {
     var index by mutableStateOf(currentIndex)
         private set
