@@ -537,14 +537,14 @@ fun HomeAlbums(
                                                             onChangeAlbumCover = { showDialogChangeAlbumCover = true },
                                                             album = album,
                                                             onPlayNext = {
-                                                                binder?.player?.addNext(
+                                                                binder?.exoPlayer?.addNext(
                                                                     songs.map(Song::asMediaItem),
                                                                     context,
                                                                     selectedQueue ?: defaultQueue()
                                                                 )
                                                             },
                                                             onEnqueue = {
-                                                                binder?.player?.enqueue(
+                                                                binder?.exoPlayer?.enqueue(
                                                                     songs.map(Song::asMediaItem),
                                                                     context
                                                                 )
@@ -694,14 +694,14 @@ fun HomeAlbums(
                                                             onChangeAlbumCover = { showDialogChangeAlbumCover = true },
                                                             album = album,
                                                             onPlayNext = {
-                                                                binder?.player?.addNext(
+                                                                binder?.exoPlayer?.addNext(
                                                                     songs.map(Song::asMediaItem),
                                                                     context,
                                                                     selectedQueue ?: defaultQueue()
                                                                 )
                                                             },
                                                             onEnqueue = {
-                                                                binder?.player?.enqueue(
+                                                                binder?.exoPlayer?.enqueue(
                                                                     songs.map(Song::asMediaItem),
                                                                     context
                                                                 )

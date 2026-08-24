@@ -135,7 +135,7 @@ class WebDavLibraryRepository() {
 
         withContext(Dispatchers.IO) {
             client.newCall(request).execute().use { response ->
-                // 201 = Creata, 405 = Già esiste (Method Not Allowed). Entrambi sono OK per noi.
+                // 201 = Creata, 405 = Già esiste (Method Not Allowed).
                 if (response.code != 201 && response.code != 405) {
                     throw IOException("Impossibile creare la cartella remota: ${response.code}")
                 }
@@ -144,9 +144,9 @@ class WebDavLibraryRepository() {
     }
 
     /**
-     * Esegue il backup di un file locale in modo atomico.
+     * Esegue il backup di un file locale in modo atomico (Upload .tmp -> MOVE).
      */
-    suspend fun uploadBackupFile(config: WebDavConfig, remoteFolder: String, localFile: File) {
+    suspend fun uploadFileAtomically(config: WebDavConfig, remoteFolder: String, localFile: File) {
         // 1. Assicurati che la cartella di backup esista
         ensureRemoteFolderExists(config, remoteFolder)
 
@@ -157,7 +157,7 @@ class WebDavLibraryRepository() {
         val requestBody = localFile.asRequestBody("application/octet-stream".toMediaType())
         val putRequest = Request.Builder()
             .url(tempUrl)
-            .put(requestBody) // Comando PUT
+            .put(requestBody)
             .header("Authorization", Credentials.basic(config.username, config.password))
             .build()
 
@@ -173,13 +173,13 @@ class WebDavLibraryRepository() {
                 .url(tempUrl)
                 .method("MOVE", "".toRequestBody("application/xml".toMediaType()))
                 .header("Destination", finalUrl.toString())
-                .header("Overwrite", "T") // T = True, sovrascrivi il file esistente
+                .header("Overwrite", "T") // T = True, sovrascrivi il vecchio backup
                 .header("Authorization", Credentials.basic(config.username, config.password))
                 .build()
 
             client.newCall(moveRequest).execute().use { response ->
+                // 204 No Content è il successo standard per MOVE
                 if (!response.isSuccessful && response.code != 204) {
-                    // 204 No Content è il successo standard per MOVE
                     throw IOException("Impossibile finalizzare il backup (MOVE fallito): ${response.code}")
                 }
             }

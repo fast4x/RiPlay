@@ -330,8 +330,8 @@ fun UnifiedPlayer(
 
     val binder = LocalPlayerServiceBinder.current
 
-    binder?.player ?: return
-    if (binder.player.currentTimeline.windowCount == 0) return
+    binder?.exoPlayer ?: return
+    if (binder.exoPlayer.currentTimeline.windowCount == 0) return
 
     val playerState = LocalPlayerServiceState.current
 
@@ -342,7 +342,7 @@ fun UnifiedPlayer(
     }
 
     var nullableMediaItem by remember {
-        mutableStateOf(binder.player.currentMediaItem, mediaItemPolicy)
+        mutableStateOf(binder.exoPlayer.currentMediaItem, mediaItemPolicy)
     }
 
     var isRotated by rememberSaveable { mutableStateOf(false) }
@@ -436,10 +436,10 @@ fun UnifiedPlayer(
     val context = LocalContext.current
     val selectedQueue = LocalSelectedQueue.current
     var mediaItems by remember {
-        mutableStateOf(binder.player.currentTimeline.mediaItems)
+        mutableStateOf(binder.exoPlayer.currentTimeline.mediaItems)
     }
     var mediaItemIndex by remember {
-        mutableIntStateOf(if (binder.player.mediaItemCount == 0) -1 else binder.player.currentMediaItemIndex)
+        mutableIntStateOf(if (binder.exoPlayer.mediaItemCount == 0) -1 else binder.exoPlayer.currentMediaItemIndex)
     }
     val queueDurationExpanded = appearanceSettings.queueDurationExpanded
     val miniQueueExpanded = appearanceSettings.miniQueueExpanded
@@ -485,7 +485,7 @@ fun UnifiedPlayer(
 
     val queueLoopType = appSettings.queueLoopType
 
-    binder.player.DisposableListener {
+    binder.exoPlayer.DisposableListener {
         object : Player.Listener {
 //            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
 //                nullableMediaItem = mediaItem
@@ -493,7 +493,7 @@ fun UnifiedPlayer(
 
             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
                 mediaItems = timeline.mediaItems
-                mediaItemIndex = binder.player.currentMediaItemIndex
+                mediaItemIndex = binder.exoPlayer.currentMediaItemIndex
             }
 
             override fun onRepeatModeChanged(repeatMode: Int) {
@@ -855,7 +855,7 @@ fun UnifiedPlayer(
             try {
                 val bitmap = getBitmapFromUrl(
                     context,
-                    binder.player.currentWindow?.mediaItem?.mediaMetadata?.artworkUri.toString().toThumbnail(1200)
+                    binder.exoPlayer.currentWindow?.mediaItem?.mediaMetadata?.artworkUri.toString().toThumbnail(1200)
                         .toString()
                 )
 
@@ -1055,10 +1055,10 @@ fun UnifiedPlayer(
                         onDragEnd = {
                             if (!disablePlayerHorizontalSwipe && playerType == PlayerType.Essential) {
                                 if (deltaX > 5) {
-                                    binder.player.playPrevious()
+                                    binder.exoPlayer.playPrevious()
                                     Timber.d("OnlinePlayer Swipe to LEFT 1 deltaX $deltaX")
                                 } else if (deltaX < -5) {
-                                    binder.player.playNext()
+                                    binder.exoPlayer.playNext()
                                     Timber.d("OnlinePlayer Swipe to RIGHT 1 deltaX $deltaX")
                                 }
 
@@ -1318,8 +1318,8 @@ fun UnifiedPlayer(
             isExplicit = mediaItem.isExplicit,
             onPlay = {
                 if (!GlobalSharedData.riTuneCastActive) {
-                    if (binder.player.currentMediaItem?.isLocal == true)
-                        binder.player.play()
+                    if (binder.exoPlayer.currentMediaItem?.isLocal == true)
+                        binder.exoPlayer.play()
                     else
                         binder.onlinePlayer?.play()
                 } else
@@ -1331,8 +1331,8 @@ fun UnifiedPlayer(
             },
             onPause = {
                 if (!GlobalSharedData.riTuneCastActive) {
-                    if (binder.player.currentMediaItem?.isLocal == true)
-                        binder.player.pause()
+                    if (binder.exoPlayer.currentMediaItem?.isLocal == true)
+                        binder.exoPlayer.pause()
                     else
                         binder.onlinePlayer?.pause()
                 } else
@@ -1344,8 +1344,8 @@ fun UnifiedPlayer(
             },
             onSeekTo = {
                 if (!GlobalSharedData.riTuneCastActive) {
-                    if (binder.player.currentMediaItem?.isLocal == true)
-                        binder.player.seekTo(it.toLong())
+                    if (binder.exoPlayer.currentMediaItem?.isLocal == true)
+                        binder.exoPlayer.seekTo(it.toLong())
                     else
                         binder.onlinePlayer?.seekTo(it.div(1000))
                 } else
@@ -1355,7 +1355,7 @@ fun UnifiedPlayer(
                         )
                     }
             },
-            onNext = { binder.player.playNext() },
+            onNext = { binder.exoPlayer.playNext() },
             onPrevious = {
                 if (jumpPrevious == "") {
                     coroutineScope.launch {
@@ -1363,9 +1363,9 @@ fun UnifiedPlayer(
                         appearanceSettingsManager.updatePreset(new)
                     }
                 }
-                if (!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && currentPosition > jumpPrevious.toFloat())) {
+                if (!binder.exoPlayer.hasPreviousMediaItem() || (jumpPrevious != "0" && currentPosition > jumpPrevious.toFloat())) {
                     binder.onlinePlayer?.seekTo(0f)
-                } else binder.player.playPrevious()
+                } else binder.exoPlayer.playPrevious()
             },
             playerState = playerState,
         )
@@ -1473,10 +1473,10 @@ fun UnifiedPlayer(
                         .detectGestures(
                             detectPlayerGestures = true,
                             onSwipeToLeft = {
-                                binder.player.playNext()
+                                binder.exoPlayer.playNext()
                             },
                             onSwipeToRight = {
-                                binder.player.playPrevious()
+                                binder.exoPlayer.playPrevious()
                             },
                             onTap = {
                                 showControls = !showControls
@@ -1585,15 +1585,15 @@ fun UnifiedPlayer(
                                     .fillMaxWidth()
                                     .height(50.dp)
                             ) {
-                                val nextMediaItemIndex = binder.player.nextMediaItemIndex
+                                val nextMediaItemIndex = binder.exoPlayer.nextMediaItemIndex
                                 val pagerStateQueue = rememberPagerState(pageCount = { mediaItems.size })
                                 val scope = rememberCoroutineScope()
                                 val fling = PagerDefaults.flingBehavior(state = pagerStateQueue, snapPositionalThreshold = 0.15f, pagerSnapDistance = PagerSnapDistance.atMost(showsongs.number))
-                                pagerStateQueue.LaunchedEffectScrollToPage(binder.player.currentMediaItemIndex + 1)
+                                pagerStateQueue.LaunchedEffectScrollToPage(binder.exoPlayer.currentMediaItemIndex + 1)
 
                                 // Freccia sinistra/destra
                                 Icon(
-                                    painter = painterResource(id = if (pagerStateQueue.currentPage > binder.player.currentMediaItemIndex) R.drawable.chevron_forward else if (pagerStateQueue.currentPage == binder.player.currentMediaItemIndex) R.drawable.play else R.drawable.chevron_back),
+                                    painter = painterResource(id = if (pagerStateQueue.currentPage > binder.exoPlayer.currentMediaItemIndex) R.drawable.chevron_forward else if (pagerStateQueue.currentPage == binder.exoPlayer.currentMediaItemIndex) R.drawable.play else R.drawable.chevron_back),
                                     contentDescription = null,
                                     modifier = Modifier
                                         .size(25.dp)
@@ -1603,9 +1603,9 @@ fun UnifiedPlayer(
                                             interactionSource = remember { MutableInteractionSource() }) {
                                             scope.launch {
                                                 if (!appRunningInBackground) pagerStateQueue.animateScrollToPage(
-                                                    binder.player.currentMediaItemIndex + 1
+                                                    binder.exoPlayer.currentMediaItemIndex + 1
                                                 )
-                                                else pagerStateQueue.scrollToPage(binder.player.currentMediaItemIndex + 1)
+                                                else pagerStateQueue.scrollToPage(binder.exoPlayer.currentMediaItemIndex + 1)
                                             }
                                         },
                                     tint = colorPalette().accent
@@ -1618,18 +1618,18 @@ fun UnifiedPlayer(
                                 }
 
                                 HorizontalPager(state = pagerStateQueue, pageSize = threePagesPerViewport, pageSpacing = 10.dp, flingBehavior = fling, modifier = Modifier.weight(1f)) { index ->
-                                    if (index !in 0 until binder.player.mediaItemCount) return@HorizontalPager
+                                    if (index !in 0 until binder.exoPlayer.mediaItemCount) return@HorizontalPager
 
                                     Row(
                                         horizontalArrangement = Arrangement.Center,
                                         modifier = Modifier.combinedClickable(
-                                            onClick = { binder.player.playAtIndex(index) },
+                                            onClick = { binder.exoPlayer.playAtIndex(index) },
                                             onLongClick = {
                                                 if (index in mediaItems.indices) {
-                                                    binder.player.addNext(binder.player.getMediaItemAt(index), queue = selectedQueue ?: defaultQueue())
+                                                    binder.exoPlayer.addNext(binder.exoPlayer.getMediaItemAt(index), queue = selectedQueue ?: defaultQueue())
                                                     scope.launch {
-                                                        if (!appRunningInBackground) pagerStateQueue.animateScrollToPage(binder.player.currentMediaItemIndex + 1)
-                                                        else pagerStateQueue.scrollToPage(binder.player.currentMediaItemIndex + 1)
+                                                        if (!appRunningInBackground) pagerStateQueue.animateScrollToPage(binder.exoPlayer.currentMediaItemIndex + 1)
+                                                        else pagerStateQueue.scrollToPage(binder.exoPlayer.currentMediaItemIndex + 1)
                                                     }
                                                     SmartMessage(context.resources.getString(R.string.addednext), type = PopupType.Info, context = context)
                                                 }
@@ -1638,7 +1638,7 @@ fun UnifiedPlayer(
                                     ) {
                                         if (showalbumcover) {
                                             AsyncImage(
-                                                model = ImageRequest.Builder(LocalContext.current).data(binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString().toThumbnail(1200)).size(1200, 1200).transformations(LandscapeToSquareTransformation(1200)).build(),
+                                                model = ImageRequest.Builder(LocalContext.current).data(binder.exoPlayer.getMediaItemAt(index).mediaMetadata.artworkUri.toString().toThumbnail(1200)).size(1200, 1200).transformations(LandscapeToSquareTransformation(1200)).build(),
                                                 contentDescription = null, contentScale = ContentScale.Crop,
                                                 modifier = Modifier
                                                     .padding(end = 5.dp)
@@ -1650,14 +1650,14 @@ fun UnifiedPlayer(
                                         Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxSize()) {
                                             // USO DEL NUOVO OUTLINETEXT
                                             OutlineText(
-                                                text = cleanPrefix(binder.player.getMediaItemAt(index).mediaMetadata.title?.toString() ?: ""),
+                                                text = cleanPrefix(binder.exoPlayer.getMediaItemAt(index).mediaMetadata.title?.toString() ?: ""),
                                                 style = TextStyle(color = colorPalette().text, fontSize = typography().xxs.semiBold.fontSize),
                                                 disableScrollingText = disableScrollingText,
                                                 textoutline = textoutline,
                                                 colorPaletteMode = colorPaletteMode
                                             )
                                             OutlineText(
-                                                text = binder.player.getMediaItemAt(index).mediaMetadata.artist?.toString() ?: "",
+                                                text = binder.exoPlayer.getMediaItemAt(index).mediaMetadata.artist?.toString() ?: "",
                                                 style = TextStyle(color = colorPalette().text, fontSize = typography().xxs.semiBold.fontSize),
                                                 disableScrollingText = disableScrollingText,
                                                 textoutline = textoutline,
@@ -1668,7 +1668,7 @@ fun UnifiedPlayer(
                                 }
 
                                 if (showsongs == SongsNumber.`1`) {
-                                    IconButton(icon = R.drawable.trash, color = Color.White, enabled = true, onClick = { binder.player.removeMediaItem(nextMediaItemIndex) }, modifier = Modifier
+                                    IconButton(icon = R.drawable.trash, color = Color.White, enabled = true, onClick = { binder.exoPlayer.removeMediaItem(nextMediaItemIndex) }, modifier = Modifier
                                         .weight(0.07f)
                                         .size(40.dp)
                                         .padding(vertical = 7.5.dp))
@@ -1691,7 +1691,7 @@ fun UnifiedPlayer(
                                 icon = R.drawable.left_and_right_arrows,
                                 color = colorPalette().accent, enabled = true,
                                 onClick = {
-                                    binder.player.pause()
+                                    binder.exoPlayer.pause()
                                     binder.onlinePlayer?.pause()
                                     showSearchEntity = true
                                           }, modifier = Modifier.size(28.dp))
@@ -1743,7 +1743,7 @@ fun UnifiedPlayer(
                                 },
                                 modifier = Modifier.size(24.dp))
 
-                            if (showButtonPlayerShuffle) IconButton(icon = R.drawable.shuffle, color = colorPalette().accent, enabled = true, onClick = { binder.player.shuffleQueue() }, modifier = Modifier.size(24.dp))
+                            if (showButtonPlayerShuffle) IconButton(icon = R.drawable.shuffle, color = colorPalette().accent, enabled = true, onClick = { binder.exoPlayer.shuffleQueue() }, modifier = Modifier.size(24.dp))
 
                             if (showButtonPlayerLyrics) IconButton(
                                 icon = R.drawable.song_lyrics, color = if (isShowingLyrics) colorPalette().accent else Color.Gray, enabled = true,
@@ -1773,7 +1773,7 @@ fun UnifiedPlayer(
 
                             if (showButtonPlayerSystemEqualizer) IconButton(icon = R.drawable.equalizer, color = colorPalette().accent, enabled = true, onClick = { equalizer?.let { menuState.display { SheetBody { InternalEqualizerScreen(it) } } } }, modifier = Modifier.size(24.dp))
 
-                            if (showButtonPlayerStartRadio) IconButton(icon = R.drawable.radio, color = colorPalette().accent, enabled = true, onClick = { binder.stopRadio(); binder.player.seamlessPlay(mediaItem); binder.setupRadio(NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)) }, modifier = Modifier.size(28.dp))
+                            if (showButtonPlayerStartRadio) IconButton(icon = R.drawable.radio, color = colorPalette().accent, enabled = true, onClick = { binder.stopRadio(); binder.exoPlayer.seamlessPlay(mediaItem); binder.setupRadio(NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)) }, modifier = Modifier.size(28.dp))
 
                             IconButton(icon = R.drawable.list, color = colorPalette().accent, enabled = true, onClick = { showQueue = true }, modifier = Modifier.size(28.dp))
 
@@ -1798,10 +1798,10 @@ fun UnifiedPlayer(
         val clickLyricsText = appearanceSettings.clickLyricsText
         val extraspace = appearanceSettings.extraSpace
 
-        val nextmedia = if (binder.player.mediaItemCount > 1
-            && binder.player.currentMediaItemIndex + 1 < binder.player.mediaItemCount
+        val nextmedia = if (binder.exoPlayer.mediaItemCount > 1
+            && binder.exoPlayer.currentMediaItemIndex + 1 < binder.exoPlayer.mediaItemCount
         )
-            binder.player.getMediaItemAt(binder.player.currentMediaItemIndex + 1) else MediaItem.EMPTY
+            binder.exoPlayer.getMediaItemAt(binder.exoPlayer.currentMediaItemIndex + 1) else MediaItem.EMPTY
 
         var songPlaylist1 by rememberSaveable {
             mutableStateOf(0)
@@ -1891,12 +1891,12 @@ fun UnifiedPlayer(
                                     state = pagerStateFS,
                                     snapPositionalThreshold = 0.20f
                                 )
-                                pagerStateFS.LaunchedEffectScrollToPage(binder.player.currentMediaItemIndex)
+                                pagerStateFS.LaunchedEffectScrollToPage(binder.exoPlayer.currentMediaItemIndex)
 
                                 if (!showQueue) {
                                     //PATCH
                                     pagerStateFS.LaunchedEffectPlayAtIndexOnUserSwipe(
-                                        player = binder.player
+                                        player = binder.exoPlayer
                                     )
 //                                    LaunchedEffect(pagerStateFS) {
 //                                        var previousPage = pagerStateFS.settledPage
@@ -1920,7 +1920,7 @@ fun UnifiedPlayer(
                                     userScrollEnabled = !((albumCoverRotation || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) && (isShowingLyrics || showthumbnail)),
                                     modifier = Modifier
                                 ) { index ->
-                                    if (!(index < binder.player.mediaItemCount && index >= 0)) return@HorizontalPager
+                                    if (!(index < binder.exoPlayer.mediaItemCount && index >= 0)) return@HorizontalPager
 
                                     var currentRotation by rememberSaveable {
                                         mutableFloatStateOf(0f)
@@ -1957,10 +1957,10 @@ fun UnifiedPlayer(
                                     val blurRadius = if ((isShowingLyrics && !isShowingVisualizer) || !noblur)
                                         blurStrength.toInt() else 0
 
-                                    val request = remember(index, binder.player.getMediaItemAt(index).mediaId, showthumbnail, blurRadius) {
+                                    val request = remember(index, binder.exoPlayer.getMediaItemAt(index).mediaId, showthumbnail, blurRadius) {
                                         ImageRequest.Builder(context)
                                             .data(
-                                                binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
+                                                binder.exoPlayer.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
                                                     .toThumbnail(1200)
                                             )
                                             .size(1200, 1200)
@@ -2051,10 +2051,10 @@ fun UnifiedPlayer(
                                                 onDragEnd = {
                                                     if (!disablePlayerHorizontalSwipe) {
                                                         if (deltaX > 5) {
-                                                            binder.player.playPrevious()
+                                                            binder.exoPlayer.playPrevious()
                                                             Timber.d("OnlinePlayer Swipe to LEFT 2 deltaX $deltaX")
                                                         } else if (deltaX < -5) {
-                                                            binder.player.playNext()
+                                                            binder.exoPlayer.playNext()
                                                             Timber.d("OnlinePlayer Swipe to RIGHT 2 deltaX $deltaX")
                                                         }
 
@@ -2101,10 +2101,10 @@ fun UnifiedPlayer(
                                                     onDragEnd = {
                                                         if (!disablePlayerHorizontalSwipe) {
                                                             if (deltaX > 5) {
-                                                                binder.player.playPrevious()
+                                                                binder.exoPlayer.playPrevious()
                                                                 Timber.d("OnlinePlayer Swipe to LEFT 3 deltaX $deltaX")
                                                             } else if (deltaX < -5) {
-                                                                binder.player.playNext()
+                                                                binder.exoPlayer.playNext()
                                                                 Timber.d("OnlinePlayer Swipe to RIGHT 3 deltaX $deltaX")
                                                             }
 
@@ -2140,19 +2140,19 @@ fun UnifiedPlayer(
 
                                             LaunchedEffect(
                                                 pagerState,
-                                                binder.player.currentMediaItemIndex
+                                                binder.exoPlayer.currentMediaItemIndex
                                             ) {
                                                 if (appRunningInBackground || isShowingLyrics) {
-                                                    pagerState.scrollToPage(binder.player.currentMediaItemIndex)
+                                                    pagerState.scrollToPage(binder.exoPlayer.currentMediaItemIndex)
                                                 } else {
-                                                    pagerState.animateScrollToPage(binder.player.currentMediaItemIndex)
+                                                    pagerState.animateScrollToPage(binder.exoPlayer.currentMediaItemIndex)
                                                 }
                                             }
 
                                             if (!showQueue) {
                                                 //PATH
                                                 pagerState.LaunchedEffectPlayAtIndexOnUserSwipe(
-                                                    player = binder.player
+                                                    player = binder.exoPlayer
                                                 )
 //                                                LaunchedEffect(pagerState) {
 //                                                    var previousPage = pagerState.settledPage
@@ -2208,12 +2208,12 @@ fun UnifiedPlayer(
                                                     )
                                                     .conditional(fadingedge) { horizontalFadingEdge() }
                                             ) { index ->
-                                                if (!(index < binder.player.mediaItemCount && index >= 0)) return@HorizontalPager
+                                                if (!(index < binder.exoPlayer.mediaItemCount && index >= 0)) return@HorizontalPager
 
-                                                val request = remember(index, binder.player.getMediaItemAt(index).mediaId) {
+                                                val request = remember(index, binder.exoPlayer.getMediaItemAt(index).mediaId) {
                                                     ImageRequest.Builder(context)
                                                         .data(
-                                                            binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
+                                                            binder.exoPlayer.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
                                                                 .toThumbnail(1200)
                                                         )
                                                         .size(1200, 1200)
@@ -2268,7 +2268,7 @@ fun UnifiedPlayer(
                                                                 && coverThumbnailAnimation != ThumbnailCoverType.AudioCassetteWithCover
                                                     ) {
                                                         doubleShadowDrop(
-                                                            if (showCoverThumbnailAnimation && !binder.player.getMediaItemAt(
+                                                            if (showCoverThumbnailAnimation && !binder.exoPlayer.getMediaItemAt(
                                                                     index
                                                                 ).isVideo
                                                             ) CircleShape else thumbnailRoundness.shape(),
@@ -2288,7 +2288,7 @@ fun UnifiedPlayer(
                                                                 isShowingLyrics = !isShowingLyrics
                                                             }
                                                             if (index != pagerState.settledPage) {
-                                                                binder.player.playAtIndex(index)
+                                                                binder.exoPlayer.playAtIndex(index)
                                                             }
                                                         },
                                                         onLongClick = {
@@ -2297,7 +2297,7 @@ fun UnifiedPlayer(
                                                         }
                                                     )
 
-                                                if (!binder.player.getMediaItemAt(index).isVideo) {
+                                                if (!binder.exoPlayer.getMediaItemAt(index).isVideo) {
                                                     if (showCoverThumbnailAnimation) {
                                                         when (coverThumbnailAnimation) {
                                                             ThumbnailCoverType.CD, ThumbnailCoverType.Vinyl, ThumbnailCoverType.CDWithCover -> {
@@ -2376,16 +2376,16 @@ fun UnifiedPlayer(
                                                                 contentScale = ContentScale.Fit,
                                                                 modifier = coverModifier
                                                             )
-                                                            if (isDragged && index == binder.player.currentMediaItemIndex) {
+                                                            if (isDragged && index == binder.exoPlayer.currentMediaItemIndex) {
                                                                 Box(
                                                                     modifier = Modifier
                                                                         .align(Alignment.Center)
                                                                         .matchParentSize()
                                                                 ) {
                                                                     NowPlayingSongIndicator(
-                                                                        binder.player.getMediaItemAt(
-                                                                            binder.player.currentMediaItemIndex
-                                                                        ).mediaId, binder.player,
+                                                                        binder.exoPlayer.getMediaItemAt(
+                                                                            binder.exoPlayer.currentMediaItemIndex
+                                                                        ).mediaId, binder.exoPlayer,
                                                                         Dimensions.thumbnails.album
                                                                     )
                                                                 }
@@ -2433,10 +2433,10 @@ fun UnifiedPlayer(
                                                         onDragEnd = {
                                                             if (!disablePlayerHorizontalSwipe) {
                                                                 if (deltaX > 5) {
-                                                                    binder.player.playPrevious()
+                                                                    binder.exoPlayer.playPrevious()
                                                                     Timber.d("OnlinePlayer Swipe to LEFT 4 deltaX $deltaX")
                                                                 } else if (deltaX < -5) {
-                                                                    binder.player.playNext()
+                                                                    binder.exoPlayer.playNext()
                                                                     Timber.d("OnlinePlayer Swipe to RIGHT 4 deltaX $deltaX")
                                                                 }
 
@@ -2472,12 +2472,12 @@ fun UnifiedPlayer(
                             } else {
 
                                 val index = (if (!showthumbnail) {
-                                    if (pagerStateFS.currentPage > binder.player.currentTimeline.windowCount) 0 else pagerStateFS.currentPage
-                                } else if (pagerState.currentPage > binder.player.currentTimeline.windowCount) 0 else pagerState.currentPage).coerceIn(
+                                    if (pagerStateFS.currentPage > binder.exoPlayer.currentTimeline.windowCount) 0 else pagerStateFS.currentPage
+                                } else if (pagerState.currentPage > binder.exoPlayer.currentTimeline.windowCount) 0 else pagerState.currentPage).coerceIn(
                                     0,
-                                    (binder.player.mediaItemCount) - 1
+                                    (binder.exoPlayer.mediaItemCount) - 1
                                 )
-                                if (!(index < binder.player.mediaItemCount && index >= 0)) return
+                                if (!(index < binder.exoPlayer.mediaItemCount && index >= 0)) return
 
                                 UnifiedControls(
                                     navController = navController,
@@ -2493,19 +2493,19 @@ fun UnifiedPlayer(
                                     timelineExpanded = timelineExpanded,
                                     controlsExpanded = controlsExpanded,
                                     isShowingLyrics = isShowingLyrics,
-                                    media = binder.player.getMediaItemAt(index)
+                                    media = binder.exoPlayer.getMediaItemAt(index)
                                         .toUiMedia(duration),
-                                    title = binder.player.getMediaItemAt(index).mediaMetadata.title?.toString(),
-                                    artist = binder.player.getMediaItemAt(index).mediaMetadata.artist?.toString(),
+                                    title = binder.exoPlayer.getMediaItemAt(index).mediaMetadata.title?.toString(),
+                                    artist = binder.exoPlayer.getMediaItemAt(index).mediaMetadata.artist?.toString(),
                                     artistIds = artistsInfo,
                                     albumId = albumId,
-                                    isExplicit = binder.player.getMediaItemAt(index).isExplicit,
+                                    isExplicit = binder.exoPlayer.getMediaItemAt(index).isExplicit,
                                     modifier = Modifier
                                         .padding(vertical = 8.dp),
                                     onPlay = {
                                         if (!GlobalSharedData.riTuneCastActive) {
-                                            if (binder.player.currentMediaItem?.isLocal == true)
-                                                binder.player.play()
+                                            if (binder.exoPlayer.currentMediaItem?.isLocal == true)
+                                                binder.exoPlayer.play()
                                             else
                                                 binder.onlinePlayer?.play()
                                         } else
@@ -2513,15 +2513,15 @@ fun UnifiedPlayer(
                                                 riTuneClient.sendCommand(
                                                     RiTuneRemoteCommand(
                                                         "play",
-                                                        mediaId = binder.player.getMediaItemAt(index).mediaId
+                                                        mediaId = binder.exoPlayer.getMediaItemAt(index).mediaId
                                                     )
                                                 )
                                             }
                                     },
                                     onPause = {
                                         if (!GlobalSharedData.riTuneCastActive) {
-                                            if (binder.player.currentMediaItem?.isLocal == true)
-                                                binder.player.pause()
+                                            if (binder.exoPlayer.currentMediaItem?.isLocal == true)
+                                                binder.exoPlayer.pause()
                                             else
                                                 binder.onlinePlayer?.pause()
                                         } else
@@ -2533,8 +2533,8 @@ fun UnifiedPlayer(
                                     },
                                     onSeekTo = {
                                         if (!GlobalSharedData.riTuneCastActive) {
-                                            if (binder.player.currentMediaItem?.isLocal == true)
-                                                binder.player.seekTo(it.toLong())
+                                            if (binder.exoPlayer.currentMediaItem?.isLocal == true)
+                                                binder.exoPlayer.seekTo(it.toLong())
                                             else
                                                 binder.onlinePlayer?.seekTo(it.div(1000))
                                         } else
@@ -2547,7 +2547,7 @@ fun UnifiedPlayer(
                                                 )
                                             }
                                     },
-                                    onNext = { binder.player.playNext() },
+                                    onNext = { binder.exoPlayer.playNext() },
                                     onPrevious = {
                                         if (jumpPrevious == "") {
                                             coroutineScope.launch {
@@ -2556,9 +2556,9 @@ fun UnifiedPlayer(
                                                 appearanceSettingsManager.updatePreset(new)
                                             }
                                         }
-                                        if (!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && currentPosition > jumpPrevious.toFloat())) {
+                                        if (!binder.exoPlayer.hasPreviousMediaItem() || (jumpPrevious != "0" && currentPosition > jumpPrevious.toFloat())) {
                                             binder.onlinePlayer?.seekTo(0f)
-                                        } else binder.player.playPrevious()
+                                        } else binder.exoPlayer.playPrevious()
                                     },
                                     playerState = playerState,
                                 )
@@ -2604,12 +2604,12 @@ fun UnifiedPlayer(
                     val scaleAnimationFloat by animateFloatAsState(
                         if (isDraggedFS) 0.85f else 1f, label = ""
                     )
-                    pagerStateFS.LaunchedEffectScrollToPage(binder.player.currentMediaItemIndex)
+                    pagerStateFS.LaunchedEffectScrollToPage(binder.exoPlayer.currentMediaItemIndex)
 
                     if (!showQueue) {
                         //PATCH
                         pagerStateFS.LaunchedEffectPlayAtIndexOnUserSwipe(
-                            player = binder.player,
+                            player = binder.exoPlayer,
                             delayBeforePlayMs = if (swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Fade) 0L else 400L
                         )
 //                        LaunchedEffect(pagerStateFS) {
@@ -2638,7 +2638,7 @@ fun UnifiedPlayer(
                                 false
                             }
                     ) { index ->
-                        if (!(index < binder.player.mediaItemCount && index >= 0)) return@HorizontalPager
+                        if (!(index < binder.exoPlayer.mediaItemCount && index >= 0)) return@HorizontalPager
 
                         var currentRotation by rememberSaveable {
                             mutableFloatStateOf(0f)
@@ -2688,10 +2688,10 @@ fun UnifiedPlayer(
                             val blurRadius = if ((isShowingLyrics && !isShowingVisualizer) || !noblur)
                                 blurStrength.toInt() else 0
 
-                            val request = remember(index, binder.player.getMediaItemAt(index).mediaId, showthumbnail, blurRadius) {
+                            val request = remember(index, binder.exoPlayer.getMediaItemAt(index).mediaId, showthumbnail, blurRadius) {
                                 ImageRequest.Builder(context)
                                     .data(
-                                        binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
+                                        binder.exoPlayer.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
                                             .toThumbnail(1200)
                                     )
                                     .size(1200, 1200)
@@ -2836,20 +2836,20 @@ fun UnifiedPlayer(
                                             timelineExpanded = timelineExpanded,
                                             controlsExpanded = controlsExpanded,
                                             isShowingLyrics = isShowingLyrics,
-                                            media = binder.player.getMediaItemAt(index)
+                                            media = binder.exoPlayer.getMediaItemAt(index)
                                                 .toUiMedia(duration),
-                                            title = binder.player.getMediaItemAt(index).mediaMetadata.title?.toString(),
-                                            artist = binder.player.getMediaItemAt(index).mediaMetadata.artist?.toString(),
+                                            title = binder.exoPlayer.getMediaItemAt(index).mediaMetadata.title?.toString(),
+                                            artist = binder.exoPlayer.getMediaItemAt(index).mediaMetadata.artist?.toString(),
                                             artistIds = artistsInfo,
                                             albumId = albumId,
-                                            isExplicit = binder.player.getMediaItemAt(index).isExplicit,
+                                            isExplicit = binder.exoPlayer.getMediaItemAt(index).isExplicit,
                                             modifier = Modifier
                                                 .padding(vertical = 4.dp)
                                                 .fillMaxWidth(),
                                             onPlay = {
                                                 if (!GlobalSharedData.riTuneCastActive) {
-                                                    if (binder.player.currentMediaItem?.isLocal == true)
-                                                        binder.player.play()
+                                                    if (binder.exoPlayer.currentMediaItem?.isLocal == true)
+                                                        binder.exoPlayer.play()
                                                     else
                                                         binder.onlinePlayer?.play()
                                                 } else
@@ -2857,7 +2857,7 @@ fun UnifiedPlayer(
                                                         riTuneClient.sendCommand(
                                                             RiTuneRemoteCommand(
                                                                 "play",
-                                                                mediaId = binder.player.getMediaItemAt(
+                                                                mediaId = binder.exoPlayer.getMediaItemAt(
                                                                     index
                                                                 ).mediaId
                                                             )
@@ -2866,8 +2866,8 @@ fun UnifiedPlayer(
                                             },
                                             onPause = {
                                                 if (!GlobalSharedData.riTuneCastActive) {
-                                                    if (binder.player.currentMediaItem?.isLocal == true)
-                                                        binder.player.pause()
+                                                    if (binder.exoPlayer.currentMediaItem?.isLocal == true)
+                                                        binder.exoPlayer.pause()
                                                     else
                                                         binder.onlinePlayer?.pause()
                                                 } else
@@ -2879,8 +2879,8 @@ fun UnifiedPlayer(
                                             },
                                             onSeekTo = {
                                                 if (!GlobalSharedData.riTuneCastActive) {
-                                                    if (binder.player.currentMediaItem?.isLocal == true)
-                                                        binder.player.seekTo(it.toLong())
+                                                    if (binder.exoPlayer.currentMediaItem?.isLocal == true)
+                                                        binder.exoPlayer.seekTo(it.toLong())
                                                     else
                                                         binder.onlinePlayer?.seekTo(it.div(1000))
                                                 } else
@@ -2893,7 +2893,7 @@ fun UnifiedPlayer(
                                                         )
                                                     }
                                             },
-                                            onNext = { binder.player.playNext() },
+                                            onNext = { binder.exoPlayer.playNext() },
                                             onPrevious = {
                                                 if (jumpPrevious == "") {
                                                     coroutineScope.launch {
@@ -2902,9 +2902,9 @@ fun UnifiedPlayer(
                                                         appearanceSettingsManager.updatePreset(new)
                                                     }
                                                 }
-                                                if (!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && currentPosition > jumpPrevious.toFloat())) {
+                                                if (!binder.exoPlayer.hasPreviousMediaItem() || (jumpPrevious != "0" && currentPosition > jumpPrevious.toFloat())) {
                                                     binder.onlinePlayer?.seekTo(0f)
-                                                } else binder.player.playPrevious()
+                                                } else binder.exoPlayer.playPrevious()
                                             },
                                             playerState = playerState,
                                         )
@@ -3162,12 +3162,12 @@ fun UnifiedPlayer(
                                         snapPositionalThreshold = 0.25f
                                     )
 
-                                    pagerState.LaunchedEffectScrollToPage(binder.player.currentMediaItemIndex)
+                                    pagerState.LaunchedEffectScrollToPage(binder.exoPlayer.currentMediaItemIndex)
 
                                     if (!showQueue) {
                                         //PATCH
                                         pagerState.LaunchedEffectPlayAtIndexOnUserSwipe(
-                                            player = binder.player
+                                            player = binder.exoPlayer
                                         )
 //                                        LaunchedEffect(pagerState) {
 //                                            var previousPage = pagerState.settledPage
@@ -3219,12 +3219,12 @@ fun UnifiedPlayer(
                                                 )
                                             }
                                     ) { index ->
-                                        if (!(index < binder.player.mediaItemCount && index >= 0)) return@VerticalPager
+                                        if (!(index < binder.exoPlayer.mediaItemCount && index >= 0)) return@VerticalPager
 
-                                        val request = remember(index, binder.player.getMediaItemAt(index).mediaId) {
+                                        val request = remember(index, binder.exoPlayer.getMediaItemAt(index).mediaId) {
                                             ImageRequest.Builder(context)
                                                 .data(
-                                                    binder.player.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
+                                                    binder.exoPlayer.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
                                                         .toThumbnail(1200)
                                                 )
                                                 .size(1200, 1200)
@@ -3281,7 +3281,7 @@ fun UnifiedPlayer(
                                                         && coverThumbnailAnimation != ThumbnailCoverType.AudioCassetteWithCover
                                             ) {
                                                 doubleShadowDrop(
-                                                    if (showCoverThumbnailAnimation && !binder.player.getMediaItemAt(
+                                                    if (showCoverThumbnailAnimation && !binder.exoPlayer.getMediaItemAt(
                                                             index
                                                         ).isVideo
                                                     ) CircleShape else thumbnailRoundness.shape(),
@@ -3300,7 +3300,7 @@ fun UnifiedPlayer(
                                                         isShowingLyrics = !isShowingLyrics
                                                     }
                                                     if (index != pagerState.settledPage) {
-                                                        binder.player.playAtIndex(index)
+                                                        binder.exoPlayer.playAtIndex(index)
                                                     }
                                                 },
                                                 onLongClick = {
@@ -3309,7 +3309,7 @@ fun UnifiedPlayer(
                                                 }
                                             )
 
-                                        if (!binder.player.getMediaItemAt(index).isVideo) {
+                                        if (!binder.exoPlayer.getMediaItemAt(index).isVideo) {
                                             if (showCoverThumbnailAnimation) {
                                                 when (coverThumbnailAnimation) {
                                                     ThumbnailCoverType.CD, ThumbnailCoverType.Vinyl, ThumbnailCoverType.CDWithCover -> {
@@ -3384,7 +3384,7 @@ fun UnifiedPlayer(
 
                                                     val isVideo =
                                                         rememberSaveable {
-                                                            binder.player.getMediaItemAt(
+                                                            binder.exoPlayer.getMediaItemAt(
                                                                 index
                                                             ).isVideo
                                                         }
@@ -3396,16 +3396,16 @@ fun UnifiedPlayer(
                                                             modifier = coverModifier
                                                         )
 
-                                                    if (isDragged && expandedplayer && index == binder.player.currentMediaItemIndex) {
+                                                    if (isDragged && expandedplayer && index == binder.exoPlayer.currentMediaItemIndex) {
                                                         Box(
                                                             modifier = Modifier
                                                                 .align(Alignment.Center)
                                                                 .matchParentSize()
                                                         ) {
                                                             NowPlayingSongIndicator(
-                                                                binder.player.getMediaItemAt(
-                                                                    binder.player.currentMediaItemIndex
-                                                                ).mediaId, binder.player,
+                                                                binder.exoPlayer.getMediaItemAt(
+                                                                    binder.exoPlayer.currentMediaItemIndex
+                                                                ).mediaId, binder.exoPlayer,
                                                                 Dimensions.thumbnails.album
                                                             )
                                                         }
@@ -3498,10 +3498,10 @@ fun UnifiedPlayer(
                                         onDragEnd = {
                                             if (!disablePlayerHorizontalSwipe) {
                                                 if (deltaX > 5) {
-                                                    binder.player.playPrevious()
+                                                    binder.exoPlayer.playPrevious()
                                                     Timber.d("OnlinePlayer Swipe to LEFT 5 deltaX $deltaX")
                                                 } else if (deltaX < -5) {
-                                                    binder.player.playNext()
+                                                    binder.exoPlayer.playNext()
                                                     Timber.d("OnlinePlayer Swipe to RIGHT 5 deltaX $deltaX")
                                                 }
 
@@ -3736,10 +3736,10 @@ fun UnifiedPlayer(
                                 )
                             } else if (!(swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Scale && isDraggedFS)) {
                                 val index = (if (!showthumbnail) {
-                                    if (pagerStateFS.currentPage > binder.player.currentTimeline.windowCount) 0 else pagerStateFS.currentPage
-                                } else if (pagerState.currentPage > binder.player.currentTimeline.windowCount) 0 else pagerState.currentPage).coerceIn(
+                                    if (pagerStateFS.currentPage > binder.exoPlayer.currentTimeline.windowCount) 0 else pagerStateFS.currentPage
+                                } else if (pagerState.currentPage > binder.exoPlayer.currentTimeline.windowCount) 0 else pagerState.currentPage).coerceIn(
                                     0,
-                                    (binder.player.mediaItemCount) - 1
+                                    (binder.exoPlayer.mediaItemCount) - 1
                                 )
 
                                 UnifiedControls(
@@ -3756,20 +3756,20 @@ fun UnifiedPlayer(
                                     timelineExpanded = timelineExpanded,
                                     controlsExpanded = controlsExpanded,
                                     isShowingLyrics = isShowingLyrics,
-                                    media = binder.player.getMediaItemAt(index)
+                                    media = binder.exoPlayer.getMediaItemAt(index)
                                         .toUiMedia(duration),
-                                    title = binder.player.getMediaItemAt(index).mediaMetadata.title?.toString(),
-                                    artist = binder.player.getMediaItemAt(index).mediaMetadata.artist?.toString(),
+                                    title = binder.exoPlayer.getMediaItemAt(index).mediaMetadata.title?.toString(),
+                                    artist = binder.exoPlayer.getMediaItemAt(index).mediaMetadata.artist?.toString(),
                                     artistIds = artistsInfo,
                                     albumId = albumId,
-                                    isExplicit = binder.player.getMediaItemAt(index).isExplicit,
+                                    isExplicit = binder.exoPlayer.getMediaItemAt(index).isExplicit,
                                     modifier = Modifier
                                         .padding(vertical = 4.dp)
                                         .fillMaxWidth(),
                                     onPlay = {
                                         if (!GlobalSharedData.riTuneCastActive) {
-                                            if (binder.player.currentMediaItem?.isLocal == true)
-                                                binder.player.play()
+                                            if (binder.exoPlayer.currentMediaItem?.isLocal == true)
+                                                binder.exoPlayer.play()
                                             else
                                                 binder.onlinePlayer?.play()
                                         } else
@@ -3778,7 +3778,7 @@ fun UnifiedPlayer(
                                                     riTuneClient.sendCommand(
                                                         RiTuneRemoteCommand(
                                                             "play",
-                                                            mediaId = binder.player.getMediaItemAt(
+                                                            mediaId = binder.exoPlayer.getMediaItemAt(
                                                                 index
                                                             ).mediaId
                                                         )
@@ -3788,8 +3788,8 @@ fun UnifiedPlayer(
                                     },
                                     onPause = {
                                         if (!GlobalSharedData.riTuneCastActive) {
-                                            if (binder.player.currentMediaItem?.isLocal == true)
-                                                binder.player.pause()
+                                            if (binder.exoPlayer.currentMediaItem?.isLocal == true)
+                                                binder.exoPlayer.pause()
                                             else
                                                 binder.onlinePlayer?.pause()
                                         } else
@@ -3801,8 +3801,8 @@ fun UnifiedPlayer(
                                     },
                                     onSeekTo = {
                                         if (!GlobalSharedData.riTuneCastActive) {
-                                            if (binder.player.currentMediaItem?.isLocal == true)
-                                                binder.player.seekTo(it.toLong())
+                                            if (binder.exoPlayer.currentMediaItem?.isLocal == true)
+                                                binder.exoPlayer.seekTo(it.toLong())
                                             else
                                                 binder.onlinePlayer?.seekTo(it.div(1000))
                                         } else
@@ -3815,7 +3815,7 @@ fun UnifiedPlayer(
                                                 )
                                             }
                                     },
-                                    onNext = { binder.player.playNext() },
+                                    onNext = { binder.exoPlayer.playNext() },
                                     onPrevious = {
                                         if (jumpPrevious == "") {
                                             coroutineScope.launch {
@@ -3824,9 +3824,9 @@ fun UnifiedPlayer(
                                                 appearanceSettingsManager.updatePreset(new)
                                             }
                                         }
-                                        if (!binder.player.hasPreviousMediaItem() || (jumpPrevious != "0" && currentPosition > jumpPrevious.toFloat())) {
+                                        if (!binder.exoPlayer.hasPreviousMediaItem() || (jumpPrevious != "0" && currentPosition > jumpPrevious.toFloat())) {
                                             binder.onlinePlayer?.seekTo(0f)
-                                        } else binder.player.playPrevious()
+                                        } else binder.exoPlayer.playPrevious()
                                     },
                                     playerState = playerState,
                                 )

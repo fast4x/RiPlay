@@ -274,7 +274,7 @@ private fun AlbumSection(
                 SongRow(
                     index = index + 1,
                     song = song,
-                    isPlaying = song.id == binder?.player?.currentMediaItem?.mediaId
+                    isPlaying = song.id == binder?.exoPlayer?.currentMediaItem?.mediaId
                 )
                 if (index < visibleSongs.lastIndex) {
                     HorizontalDivider(

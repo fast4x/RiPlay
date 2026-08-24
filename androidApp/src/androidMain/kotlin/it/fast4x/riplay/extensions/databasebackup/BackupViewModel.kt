@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.IOException
+import kotlin.time.Duration.Companion.milliseconds
 
 sealed class BackupUiState {
     object Idle : BackupUiState()
@@ -51,7 +52,7 @@ class BackupViewModel(
         viewModelScope.launch {
             _uiState.value = BackupUiState.BackingUp
             context.stopService(Intent(context, PlayerService::class.java))
-            delay(1500)
+            delay(1500.milliseconds)
             try {
                 backupManager.backupDatabase(backupUri)
                 _uiState.value = BackupUiState.Success("Backup completed!")

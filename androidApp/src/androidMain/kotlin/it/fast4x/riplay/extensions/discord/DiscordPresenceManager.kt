@@ -21,7 +21,6 @@ import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import it.fast4x.environment.Environment
 import it.fast4x.riplay.MainApplication
-import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.appviewmodel.isNetworkConnected
 import it.fast4x.riplay.utils.isLocal
@@ -494,14 +493,14 @@ fun updateDiscordPresenceWithOfflinePlayer(
     discordPresenceManager: DiscordPresenceManager?,
     binder: PlayerService.Binder
 ) {
-    if (binder.player.currentMediaItem?.isLocal == false) return
+    if (binder.exoPlayer.currentMediaItem?.isLocal == false) return
 
     val appSettingsManager = (appContext() as MainApplication).appSettingsManager
 
     val isDiscordPresenceEnabled = appSettingsManager.activeSettings.value.isDiscordPresenceEnabled //globalContext().preferences.getBoolean(IS_DISCORD_PRESENCE_ENABLED.key, false)
     if (!isDiscordPresenceEnabled || !isAtLeastAndroid8) return
 
-    val player = binder.player
+    val player = binder.exoPlayer
 
     val discordPersonalAccessToken = appSettingsManager.activeSettings.value.discordPersonalAccessToken
 //        globalContext().encryptedPreferences.getString(

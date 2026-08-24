@@ -61,10 +61,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.LinearGradientShader
@@ -142,7 +140,6 @@ import kotlinx.coroutines.withContext
 import dev.rebelonion.translator.Language
 import dev.rebelonion.translator.Translator
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.enums.ColorPaletteName
 import it.fast4x.riplay.extensions.lyricshelper.models.LRCLyricLine
 import it.fast4x.riplay.extensions.lyricshelper.parsers.LRCLyricsKaraokeParser
 import it.fast4x.riplay.utils.isLocal
@@ -153,18 +150,14 @@ import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.ui.styling.ColorPalette
 import it.fast4x.riplay.utils.LatestValueProvider
 import it.fast4x.riplay.utils.SynchronizedLyricsLines
-import it.fast4x.riplay.utils.playNext
-import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.toLyricLine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
-import kotlin.Float.Companion.POSITIVE_INFINITY
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import androidx.compose.ui.unit.TextUnit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.services.playback.PlayerService
@@ -538,7 +531,7 @@ fun Lyrics(
                     val synchronizedLyrics = remember(isShowingSynchronizedLyrics, isShowingSynchronizedWordByWordLyrics, lyricsText) {
                         val sentences = if (!isShowingSynchronizedWordByWordLyrics) LrcLib.Lyrics(lyricsText).sentences.toLyricLine()
                         else LRCLyricsKaraokeParser
-                            .parse(currentLyrics?.lrcSynced ?: "", isOnline = binder?.player?.currentMediaItem?.isLocal == true)
+                            .parse(currentLyrics?.lrcSynced ?: "", isOnline = binder?.exoPlayer?.currentMediaItem?.isLocal == true)
                         invalidLrc = false
                         SynchronizedLyricsLines(sentences, positionProvider)
                     }
@@ -1853,7 +1846,7 @@ fun Lyrics(
                                             onClick = {
                                                 menuState.hide()
                                                 val mediaMetadata =
-                                                    binder?.player?.currentMediaItem?.mediaMetadata
+                                                    binder?.exoPlayer?.currentMediaItem?.mediaMetadata
                                                         ?: return@MenuEntry
 
                                                 try {
@@ -2198,9 +2191,9 @@ fun getAlignment(lyricsAlignment: LyricsAlignment): Alignment {
 @androidx.annotation.OptIn(UnstableApi::class)
 fun seekToLyric(binder: PlayerService.Binder?, sentence: LRCLyricLine) {
     val positionMs = sentence.timeMs
-    if (binder?.player?.currentMediaItem?.isLocal == true) {
+    if (binder?.exoPlayer?.currentMediaItem?.isLocal == true) {
         Timber.d("Seeking local player to $positionMs ms")
-        binder?.player?.seekTo(positionMs)
+        binder?.exoPlayer?.seekTo(positionMs)
     } else {
         val positionSeconds = positionMs / 1000f
         Timber.d("Seeking online player to $positionSeconds s")

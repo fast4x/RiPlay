@@ -56,7 +56,6 @@ import androidx.navigation.NavController
 import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.NavigationEndpoint
-import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.models.bodies.NextBody
 import it.fast4x.environment.requests.discoverPage
 import it.fast4x.environment.requests.relatedPage
@@ -74,7 +73,6 @@ import it.fast4x.riplay.data.models.Blacklist
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.service.RecommendationService
-import it.fast4x.riplay.extensions.experimental.recommendationstrategy.utils.RecommendationConstants
 import it.fast4x.riplay.extensions.listenerlevel.HomepageListenerLevelBadges
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.PullToRefreshBox
@@ -110,16 +108,13 @@ import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.HomeDataCache
-import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
-import it.fast4x.riplay.utils.asSongItem
 import it.fast4x.riplay.utils.asVideoMediaItem
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.getForgottenSongs
 import it.fast4x.riplay.utils.getUnplayedSongs
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
-import it.fast4x.riplay.utils.saveFileToInternalStorage
 import it.fast4x.riplay.utils.toMediaItem
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.CoroutineScope
@@ -538,8 +533,8 @@ fun HomePage(
                         onClick2 = {
                             //trending?.let { fastPlay(it.asMediaItem, binder, relatedInit?.songs?.map { it.asMediaItem }) }
                             binder?.stopRadio()
-                            trending?.let { binder?.player?.forcePlay(it.asMediaItem) }
-                            binder?.player?.addMediaItems(relatedPage?.songs?.map { it.asMediaItem }
+                            trending?.let { binder?.exoPlayer?.forcePlay(it.asMediaItem) }
+                            binder?.exoPlayer?.addMediaItems(relatedPage?.songs?.map { it.asMediaItem }
                                 ?: emptyList())
                         }
 
@@ -627,7 +622,7 @@ fun HomePage(
                                                     song.asVideoMediaItem
 
                                                 binder?.stopRadio()
-                                                binder?.player?.forcePlay(mediaItem)
+                                                binder?.exoPlayer?.forcePlay(mediaItem)
                                                 //binder?.player?.playOnline(mediaItem)
                                                 //fastPlay(mediaItem, binder)
                                                 binder?.setupRadio(
@@ -696,7 +691,7 @@ fun HomePage(
 
                                                 binder?.stopRadio()
                                                 withContext(Dispatchers.Main) {
-                                                    binder?.player?.forcePlay(mediaItem)
+                                                    binder?.exoPlayer?.forcePlay(mediaItem)
                                                 }
                                                 binder?.setupRadio(
                                                     NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
@@ -829,7 +824,7 @@ fun HomePage(
                                             //disableScrollingText = disableScrollingText,
                                             //isNowPlaying = false,
                                             modifier = Modifier.clickable(onClick = {
-                                                binder?.player?.forcePlay(item.asMediaItem)
+                                                binder?.exoPlayer?.forcePlay(item.asMediaItem)
                                                 //fastPlay(item.asMediaItem, binder)
                                             })
                                         )
@@ -889,7 +884,7 @@ fun HomePage(
 //                                                if (isVideoEnabled())
 //                                                    binder?.player?.playOnline(item.asMediaItem)
 //                                                else
-                                                binder?.player?.forcePlay(item.asMediaItem)
+                                                binder?.exoPlayer?.forcePlay(item.asMediaItem)
                                                 //fastPlay(item.asMediaItem, binder)
                                             })
                                         )

@@ -440,7 +440,7 @@ fun UnifiedControlsEssential(
     val coroutineScope = rememberCoroutineScope()
     val binder = LocalPlayerServiceBinder.current
 
-    binder?.player?.DisposableListener {
+    binder?.exoPlayer?.DisposableListener {
         object : Player.Listener {
             override fun onRepeatModeChanged(repeatMode: Int) {
                 coroutineScope.launch {

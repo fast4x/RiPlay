@@ -135,8 +135,8 @@ data class OnlineRadio (
             var mediaIdFound = false
             runBlocking {
                 withContext(Dispatchers.Main) {
-                    for (i in 0 until (binder?.player?.mediaItemCount ?: 0) - 1) {
-                        if (mediaId == binder?.player?.getMediaItemAt(i)?.mediaId) {
+                    for (i in 0 until (binder?.exoPlayer?.mediaItemCount ?: 0) - 1) {
+                        if (mediaId == binder?.exoPlayer?.getMediaItemAt(i)?.mediaId) {
                             mediaIdFound = true
                             return@withContext
                         }
@@ -296,7 +296,7 @@ fun SearchOnlineEntity (
                                 else -> throw IllegalArgumentException("Unknown media type")
                             },
                             onPlayNext = {
-                                binder?.player?.addNext(
+                                binder?.exoPlayer?.addNext(
                                     when (media) {
                                         is Environment.VideoItem -> media.asMediaItem
                                         is Environment.SongItem -> media.asMediaItem
@@ -306,7 +306,7 @@ fun SearchOnlineEntity (
                                 )
                             },
                             onEnqueue = {
-                                binder?.player?.enqueue(when (media) {
+                                binder?.exoPlayer?.enqueue(when (media) {
                                     is Environment.VideoItem -> media.asMediaItem
                                     is Environment.SongItem -> media.asMediaItem
                                     else -> throw IllegalArgumentException("Unknown media type")
@@ -335,7 +335,7 @@ fun SearchOnlineEntity (
                                             },
                                             onClick = {
                                                 //binder?.stopRadio()
-                                                binder?.player?.forcePlay(media.asMediaItem, true)
+                                                binder?.exoPlayer?.forcePlay(media.asMediaItem, true)
                                                 //binder?.setupRadio(media.info?.endpoint)
                                                 onDismiss()
                                             }
@@ -367,7 +367,7 @@ fun SearchOnlineEntity (
                                             },
                                             onClick = {
                                                 //binder?.stopRadio()
-                                                binder?.player?.forcePlay(media.asMediaItem, true)
+                                                binder?.exoPlayer?.forcePlay(media.asMediaItem, true)
                                                 //binder?.setupRadio(media.info?.endpoint)
                                                 onDismiss()
                                             }

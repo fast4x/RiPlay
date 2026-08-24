@@ -1,8 +1,13 @@
 package it.fast4x.riplay.extensions.experimental.webdavlibrary
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.work.Constraints
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import it.fast4x.environment.models.PlayerResponse
 import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.data.Database
@@ -10,7 +15,6 @@ import it.fast4x.riplay.data.models.Format
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavBrowserState
 import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavConfig
-import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavItem
 import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavSongMetadata
 import it.fast4x.riplay.extensions.players.getOnlineMetadata
 import it.fast4x.riplay.utils.WEBDAV_KEY_PREFIX
@@ -70,9 +74,9 @@ class WebDavLibraryViewModel () : ViewModel(), ViewModelProvider.Factory {
                     // FASE 1: Sincronizzazione immediata con il DB
                     val updatedSongs = songs.map { song ->
                         Timber.d("WebDavLibraryViewModel upserting song = $song")
-                        val mId = song.mediaId ?: return@map song
+                        val mId = song.mediaId
 
-                        val songInDb = Database.songDao().getById(mId)
+                        val songInDb = mId?.let { Database.songDao().getById(it) }
                         Timber.d("WebDavLibraryViewModel upserting songInDb = $songInDb")
                         if (songInDb != null) {
                             // Aggiorna l'oggetto in memoria con i dati reali del DB
@@ -96,7 +100,7 @@ class WebDavLibraryViewModel () : ViewModel(), ViewModelProvider.Factory {
 
                     // FASE 2: Recupero asincrono dei metadati online per i brani nuovi
                     updatedSongs
-                        .filter { !it.mediaId.isNullOrBlank() }
+                        .filter { it.id.isNotBlank() }
                         .forEach { songToFetch ->
                             Timber.d("WebDavLibraryViewModel upserting songToFetch = $songToFetch")
                             // Lancio una coroutine per ogni brano da recuperare
@@ -203,5 +207,19 @@ class WebDavLibraryViewModel () : ViewModel(), ViewModelProvider.Factory {
 
             }
         }
+    }
+
+    fun databaseBackupSync(context: Context) {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.UNMETERED) // Solo Wi-Fi (risparmio dati)
+            .setRequiresBatteryNotLow(true) // Non farlo se la batteria è al 5%
+            .build()
+
+        val backupRequest = OneTimeWorkRequestBuilder<WebDavDatabaseSyncBackupWorker>()
+            .setConstraints(constraints)
+            .build()
+
+        WorkManager.getInstance(context)
+            .enqueue(backupRequest)
     }
 }

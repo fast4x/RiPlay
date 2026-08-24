@@ -326,7 +326,7 @@ fun getVisualizers(): List<Painter> {
             try {
                 bitmapCover = getBitmapFromUrl(
                     context,
-                    binder?.player?.currentWindow?.mediaItem?.mediaMetadata?.artworkUri.toString()
+                    binder?.exoPlayer?.currentWindow?.mediaItem?.mediaMetadata?.artworkUri.toString()
                         .toThumbnail(1200).toString()
                 )
             } catch (e: Exception) {
@@ -346,14 +346,14 @@ fun getVisualizers(): List<Painter> {
     }
      */
 
-    binder?.player?.DisposableListener {
+    binder?.exoPlayer?.DisposableListener {
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 coroutineScope.launch {
                     try {
                         bitmapCover = getBitmapFromUrl(
                             context,
-                            binder.player.currentWindow?.mediaItem?.mediaMetadata?.artworkUri.toString()
+                            binder.exoPlayer.currentWindow?.mediaItem?.mediaMetadata?.artworkUri.toString()
                                 .toThumbnail(1200).toString()
                         )
                     } catch (e: Exception) {

@@ -1,6 +1,5 @@
 package it.fast4x.riplay.extensions.qrcodeanalyzer
 
-import android.content.Context
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -19,7 +18,6 @@ import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.isExplicit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 @OptIn(UnstableApi::class)
 suspend fun qrCodeToAction(content: String, binder: PlayerService.Binder, navController: NavController){
@@ -44,7 +42,7 @@ suspend fun qrCodeToAction(content: String, binder: PlayerService.Binder, navCon
                     mediaItem?.let { media ->
                         withContext(Dispatchers.Main) {
                             if (!media.isExplicit && !appSettingsManager.activeSettings.value.parentalControlEnabled)
-                                binder.player.forcePlay(media)
+                                binder.exoPlayer.forcePlay(media)
                             else
                                 SmartMessage(
                                     "Parental control is enabled",

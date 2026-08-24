@@ -13,6 +13,7 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
+import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.R
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.AnimatedGradient
@@ -116,9 +117,11 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BACKGRO
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BAR
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.VISUALIZER_ENABLED
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.WALLPAPER_TYPE
+import it.fast4x.riplay.utils.appContext
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Date
+import androidx.core.net.toUri
 
 class AutoBackupWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
 
@@ -132,9 +135,12 @@ class AutoBackupWorker(context: Context, params: WorkerParameters) : CoroutineWo
 
         return try {
             Timber.d("AutoBackupWorker: Start...")
+            val appSettingsManager = (appContext() as MainApplication).appSettingsManager
+            val appSettings = appSettingsManager.activeSettings.value
 
-            val selectedFolderUri = context.preferences.getString(AUTO_BACKUP_FOLDER.key, "")
-            val savedUri = Uri.parse(selectedFolderUri)
+
+            val selectedFolderUri = appSettings.autoBackupFolder //context.preferences.getString(AUTO_BACKUP_FOLDER.key, "")
+            val savedUri = selectedFolderUri.toUri()
             val folder = DocumentFile.fromTreeUri(context, savedUri)
 
             if (folder == null || !folder.exists()) {

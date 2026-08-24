@@ -4,8 +4,6 @@ import androidx.annotation.OptIn
 import kotlin.random.Random
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.core.animateDp
-import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -14,7 +12,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -36,14 +33,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
@@ -57,7 +48,6 @@ import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.formatMillis
-import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.typography
 import kotlin.math.PI
 import kotlin.math.roundToInt
@@ -96,7 +86,7 @@ fun SeekBarSinusoidalWave(
     }
 
     val binder = LocalPlayerServiceBinder.current
-    val mediaItem = binder?.player?.currentMediaItem
+    val mediaItem = binder?.exoPlayer?.currentMediaItem
     val buffered = binder?.onlinePlayerBufferedFraction?.collectAsState()
 
     val timeText = remember(draggingValue) { formatMillis(draggingValue) }

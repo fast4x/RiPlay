@@ -13,7 +13,7 @@ fun rewindPlayMedia(song: Song?, binder: PlayerService.Binder?) {
     if (binder == null || song == null) return
 
     if (song.isLocal)
-        binder.player.forcePlay(song.asMediaItem)
+        binder.exoPlayer.forcePlay(song.asMediaItem)
     else
         binder.onlinePlayer?.loadVideo(song.id, 0f)
 
@@ -23,6 +23,6 @@ fun rewindPlayMedia(song: Song?, binder: PlayerService.Binder?) {
 fun rewindPauseMedia(binder: PlayerService.Binder?) {
     if (binder == null) return
 
-    binder.player.pause()
+    binder.exoPlayer.pause()
     binder.onlinePlayer?.pause()
 }

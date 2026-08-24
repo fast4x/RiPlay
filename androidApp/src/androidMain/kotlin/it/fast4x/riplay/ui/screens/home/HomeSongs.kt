@@ -795,7 +795,7 @@ fun HomeSongs(
                             onClick = {
                                 nowPlayingItem = -1; scrollToNowPlaying = false
                                 items.forEachIndexed { index, song ->
-                                    if (song.song.asMediaItem.mediaId == binder?.player?.currentMediaItem?.mediaId) nowPlayingItem = index
+                                    if (song.song.asMediaItem.mediaId == binder?.exoPlayer?.currentMediaItem?.mediaId) nowPlayingItem = index
                                 }
                                 if (nowPlayingItem > -1) scrollToNowPlaying = true
                             },
@@ -863,7 +863,7 @@ fun HomeSongs(
                                 if (items.filter { it.song.likedAt != -1L }.isNotEmpty()) {
                                     val itemsLimited = if (items.filter { it.song.likedAt != -1L }.size > maxSongsInQueue.number) items.filter { it.song.likedAt != -1L }.shuffled().take(maxSongsInQueue.number.toInt()) else items.filter { it.song.likedAt != -1L }
                                     binder?.stopRadio()
-                                    binder?.player?.forcePlayFromBeginning(itemsLimited.shuffled().map(SongEntity::asMediaItem))
+                                    binder?.exoPlayer?.forcePlayFromBeginning(itemsLimited.shuffled().map(SongEntity::asMediaItem))
                                 } else {
                                     SmartMessage(context.resources.getString(R.string.disliked_this_collection), type = PopupType.Error, context = context)
                                 }
@@ -928,12 +928,12 @@ fun HomeSongs(
                                             if (builtInPlaylist == BuiltInPlaylist.OnDevice) items = filteredSongs
                                             if (listMediaItems.isEmpty()) {
                                                 if (items.any { it.song.likedAt != -1L }) {
-                                                    binder?.player?.addNext(items.filter { it.song.likedAt != -1L }.map(SongEntity::asMediaItem), context, selectedQueue ?: defaultQueue())
+                                                    binder?.exoPlayer?.addNext(items.filter { it.song.likedAt != -1L }.map(SongEntity::asMediaItem), context, selectedQueue ?: defaultQueue())
                                                 } else {
                                                     SmartMessage(context.resources.getString(R.string.disliked_this_collection), type = PopupType.Error, context = context)
                                                 }
                                             } else {
-                                                binder?.player?.addNext(listMediaItems, context, selectedQueue ?: defaultQueue())
+                                                binder?.exoPlayer?.addNext(listMediaItems, context, selectedQueue ?: defaultQueue())
                                                 listMediaItems.clear(); selectItems = false
                                             }
                                         },
@@ -941,12 +941,12 @@ fun HomeSongs(
                                             if (builtInPlaylist == BuiltInPlaylist.OnDevice) items = filteredSongs
                                             if (listMediaItems.isEmpty()) {
                                                 if (items.any { it.song.likedAt != -1L }) {
-                                                    binder?.player?.enqueue(items.filter { it.song.likedAt != -1L }.map(SongEntity::asMediaItem), context)
+                                                    binder?.exoPlayer?.enqueue(items.filter { it.song.likedAt != -1L }.map(SongEntity::asMediaItem), context)
                                                 } else {
                                                     SmartMessage(context.resources.getString(R.string.disliked_this_collection), type = PopupType.Error, context = context)
                                                 }
                                             } else {
-                                                binder?.player?.enqueue(listMediaItems, context)
+                                                binder?.exoPlayer?.enqueue(listMediaItems, context)
                                                 listMediaItems.clear(); selectItems = false
                                             }
                                         },
@@ -1129,7 +1129,7 @@ fun HomeSongs(
                                                     folder = folder,
                                                     onDismiss = menuState::hide,
                                                     onEnqueue = {
-                                                        binder?.player?.enqueue(
+                                                        binder?.exoPlayer?.enqueue(
                                                             folder.getAllSongs()
                                                                 .map { it.asMediaItem }, context
                                                         )
@@ -1181,7 +1181,7 @@ fun HomeSongs(
                     }
 
                     itemsIndexed(items = filteredSongs.distinctBy { it.song.id }, key = { _, song -> song.song.id }) { index, song ->
-                        SwipeablePlaylistItem(mediaItem = song.asMediaItem, onPlayNext = { binder?.player?.addNext(song.asMediaItem, queue = selectedQueue ?: defaultQueue()) }) {
+                        SwipeablePlaylistItem(mediaItem = song.asMediaItem, onPlayNext = { binder?.exoPlayer?.addNext(song.asMediaItem, queue = selectedQueue ?: defaultQueue()) }) {
                             SongItem(
                                 song = song.song, thumbnailSizeDp = thumbnailSizeDp, thumbnailSizePx = thumbnailSizePx,
                                 onThumbnailContent = {
@@ -1203,7 +1203,7 @@ fun HomeSongs(
                                                 ), shape = thumbnailShape()
                                             ))
                                     }
-                                    NowPlayingSongIndicator(song.asMediaItem.mediaId, binder?.player)
+                                    NowPlayingSongIndicator(song.asMediaItem.mediaId, binder?.exoPlayer)
                                 },
                                 trailingContent = {
                                     val checkedState = rememberSaveable { mutableStateOf(false) }
@@ -1233,7 +1233,7 @@ fun HomeSongs(
                                             if (!selectItems) {
                                                 searching = false; filter =
                                                     null; binder?.stopRadio()
-                                                binder?.player?.forcePlayAtIndex(
+                                                binder?.exoPlayer?.forcePlayAtIndex(
                                                     filteredSongs.map(
                                                         SongEntity::asMediaItem
                                                     ), index
@@ -1302,7 +1302,7 @@ fun HomeSongs(
                         })
                     }
 
-                    SwipeablePlaylistItem(mediaItem = song.song.asMediaItem, onPlayNext = { binder?.player?.addNext(song.song.asMediaItem, queue = selectedQueue ?: defaultQueue()) }) {
+                    SwipeablePlaylistItem(mediaItem = song.song.asMediaItem, onPlayNext = { binder?.exoPlayer?.addNext(song.song.asMediaItem, queue = selectedQueue ?: defaultQueue()) }) {
                         val checkedState = rememberSaveable { mutableStateOf(false) }
                         SongItem(
                             song = song.song, thumbnailSizePx = thumbnailSizePx, thumbnailSizeDp = thumbnailSizeDp,
@@ -1335,7 +1335,7 @@ fun HomeSongs(
                                         .padding(horizontal = 8.dp, vertical = 4.dp)
                                         .align(Alignment.BottomCenter))
                                 }
-                                if (nowPlayingItem > -1) NowPlayingSongIndicator(song.song.asMediaItem.mediaId, binder?.player)
+                                if (nowPlayingItem > -1) NowPlayingSongIndicator(song.song.asMediaItem.mediaId, binder?.exoPlayer)
                                 if (builtInPlaylist == BuiltInPlaylist.Top) BasicText(text = (index + 1).toString(), style = typography().m.semiBold.center.color(colorPalette().onOverlay), maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier
                                     .fillMaxWidth()
                                     .background(
@@ -1418,7 +1418,7 @@ fun HomeSongs(
                                             }
                                             val itemsLimited = items.slice(itemsRange)
                                             binder?.stopRadio()
-                                            binder?.player?.forcePlayAtIndex(
+                                            binder?.exoPlayer?.forcePlayAtIndex(
                                                 itemsLimited.filter { it.song.likedAt != -1L }
                                                     .map(SongEntity::asMediaItem),
                                                 itemsLimited.filter { it.song.likedAt != -1L }

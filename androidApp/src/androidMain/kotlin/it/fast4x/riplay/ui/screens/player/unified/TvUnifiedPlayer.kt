@@ -15,7 +15,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,7 +23,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -49,7 +47,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
@@ -69,9 +66,7 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.times
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
@@ -148,8 +143,8 @@ fun TvUnifiedPlayer(
     onDismiss: () -> Unit,
 ) {
     val binder = LocalPlayerServiceBinder.current
-    binder?.player ?: return
-    if (binder.player.currentTimeline.windowCount == 0) return
+    binder?.exoPlayer ?: return
+    if (binder.exoPlayer.currentTimeline.windowCount == 0) return
 
     val appearanceSettingsManager = LocalAppearanceSettingsManager.current
     val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
@@ -169,10 +164,10 @@ fun TvUnifiedPlayer(
     }
 
     var nullableMediaItem by remember {
-        mutableStateOf(binder.player.currentMediaItem, mediaItemPolicy)
+        mutableStateOf(binder.exoPlayer.currentMediaItem, mediaItemPolicy)
     }
     var mediaItems by remember {
-        mutableStateOf(binder.player.currentTimeline.mediaItems)
+        mutableStateOf(binder.exoPlayer.currentTimeline.mediaItems)
     }
     val queueLoopType = appSettings.queueLoopType
     var isShowingLyrics by rememberSaveable { mutableStateOf(false) }
@@ -196,7 +191,7 @@ fun TvUnifiedPlayer(
 
     val coroutineScope = rememberCoroutineScope ()
 
-    binder.player.DisposableListener {
+    binder.exoPlayer.DisposableListener {
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 nullableMediaItem = mediaItem
@@ -317,15 +312,15 @@ fun TvUnifiedPlayer(
                 if (keyEvent.type == KeyEventType.KeyDown) {
                     when (keyEvent.key) {
                         Key.MediaPlayPause, Key.DirectionCenter -> {
-                            if (playerState.isPlaying) binder.player.pause() else binder.player.play()
+                            if (playerState.isPlaying) binder.exoPlayer.pause() else binder.exoPlayer.play()
                             true
                         }
                         Key.MediaFastForward -> {
-                            binder.player.seekTo(binder.player.currentPosition + 10000)
+                            binder.exoPlayer.seekTo(binder.exoPlayer.currentPosition + 10000)
                             true
                         }
                         Key.MediaRewind -> {
-                            binder.player.seekTo((binder.player.currentPosition - 10000).coerceAtLeast(0))
+                            binder.exoPlayer.seekTo((binder.exoPlayer.currentPosition - 10000).coerceAtLeast(0))
                             true
                         }
                         else -> false
@@ -414,8 +409,8 @@ fun TvUnifiedPlayer(
                     position = currentPosition.toFloat(),
                     duration = duration.toFloat(),
                     onSeek = { pos ->
-                        if (binder.player.currentMediaItem?.isLocal == true)
-                            binder.player.seekTo(pos.toLong())
+                        if (binder.exoPlayer.currentMediaItem?.isLocal == true)
+                            binder.exoPlayer.seekTo(pos.toLong())
                         else
                             binder.onlinePlayer?.seekTo(pos.div(1000))
                     },
@@ -838,14 +833,14 @@ private fun MainControlsRow(
             contentDescription = "Previous",
             onClick = {
                 if (jumpPrevious == "") return@TvPlayerButton
-                if (!binder.player.hasPreviousMediaItem() ||
+                if (!binder.exoPlayer.hasPreviousMediaItem() ||
                     (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())
                 ) {
-                    if (binder.player.currentMediaItem?.isLocal == true)
-                        binder.player.seekTo(0)
+                    if (binder.exoPlayer.currentMediaItem?.isLocal == true)
+                        binder.exoPlayer.seekTo(0)
                     else binder.onlinePlayer?.seekTo(0f)
                 } else {
-                    binder.player.playPrevious()
+                    binder.exoPlayer.playPrevious()
                 }
             }
         )
@@ -855,8 +850,8 @@ private fun MainControlsRow(
             icon = R.drawable.chevron_back,
             contentDescription = "Rewind",
             onClick = {
-                val newPos = (binder.player.currentPosition - 10000).coerceAtLeast(0)
-                binder.player.seekTo(newPos)
+                val newPos = (binder.exoPlayer.currentPosition - 10000).coerceAtLeast(0)
+                binder.exoPlayer.seekTo(newPos)
             }
         )
 
@@ -867,12 +862,12 @@ private fun MainControlsRow(
             onClick = {
                 if (!GlobalSharedData.riTuneCastActive) {
                     if (playerState.isPlaying) {
-                        if (binder.player.currentMediaItem?.isLocal == true)
-                            binder.player.pause()
+                        if (binder.exoPlayer.currentMediaItem?.isLocal == true)
+                            binder.exoPlayer.pause()
                         else binder.onlinePlayer?.pause()
                     } else {
-                        if (binder.player.currentMediaItem?.isLocal == true)
-                            binder.player.play()
+                        if (binder.exoPlayer.currentMediaItem?.isLocal == true)
+                            binder.exoPlayer.play()
                         else binder.onlinePlayer?.play()
                     }
                 } else {
@@ -895,9 +890,9 @@ private fun MainControlsRow(
             icon = R.drawable.chevron_forward,
             contentDescription = "Forward",
             onClick = {
-                val newPos = (binder.player.currentPosition + 10000)
-                    .coerceAtMost(binder.player.duration)
-                binder.player.seekTo(newPos)
+                val newPos = (binder.exoPlayer.currentPosition + 10000)
+                    .coerceAtMost(binder.exoPlayer.duration)
+                binder.exoPlayer.seekTo(newPos)
             }
         )
 
@@ -905,7 +900,7 @@ private fun MainControlsRow(
         TvPlayerButton(
             icon = R.drawable.play_skip_forward,
             contentDescription = "Next",
-            onClick = { binder.player.playNext() }
+            onClick = { binder.exoPlayer.playNext() }
         )
     }
 }
@@ -956,7 +951,7 @@ private fun SecondaryActionsRow(
             contentDescription = "Shuffle",
             tint = color.accent,
             onClick = {
-                binder?.player?.shuffleQueue()
+                binder?.exoPlayer?.shuffleQueue()
             },
         )
 

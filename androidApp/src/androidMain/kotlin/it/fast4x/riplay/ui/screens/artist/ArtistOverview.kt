@@ -482,7 +482,7 @@ fun ArtistOverview(
                                             .let {
                                                 if (it != null)
                                                     withContext(Dispatchers.Main) {
-                                                        binder?.player?.forcePlayFromBeginning(it)
+                                                        binder?.exoPlayer?.forcePlayFromBeginning(it)
                                                     }
                                             }
                                 }
@@ -507,7 +507,7 @@ fun ArtistOverview(
                                             .let {
                                                 if (it != null)
                                                     withContext(Dispatchers.Main) {
-                                                        binder?.player?.forcePlayFromBeginning(it.shuffled())
+                                                        binder?.exoPlayer?.forcePlayFromBeginning(it.shuffled())
                                                     }
                                             }
                                 }
@@ -852,13 +852,13 @@ fun ArtistOverview(
                                     SwipeablePlaylistItem(
                                         mediaItem = item.asMediaItem,
                                         onPlayNext = {
-                                            binder?.player?.addNext(
+                                            binder?.exoPlayer?.addNext(
                                                 item.asMediaItem,
                                                 queue = selectedQueue ?: defaultQueue()
                                             )
                                         },
                                         onEnqueue = {
-                                            binder?.player?.enqueue(item.asMediaItem, queue = it)
+                                            binder?.exoPlayer?.enqueue(item.asMediaItem, queue = it)
                                         }
                                     ) {
                                         SongItem(
@@ -922,12 +922,12 @@ fun ArtistOverview(
 
                                                                     //if (artistSongs?.contains(item.asMediaItem) == false){
                                                                     withContext(Dispatchers.Main) {
-                                                                        binder?.player?.forcePlay(
+                                                                        binder?.exoPlayer?.forcePlay(
                                                                             item.asMediaItem
                                                                         )
                                                                         //fastPlay(item.asMediaItem, binder)
                                                                         if (filteredArtistSongs != null) {
-                                                                            binder?.player?.addMediaItems(
+                                                                            binder?.exoPlayer?.addMediaItems(
                                                                                 filteredArtistSongs.filterNot { it.mediaId == item.key })
                                                                         }
                                                                     }

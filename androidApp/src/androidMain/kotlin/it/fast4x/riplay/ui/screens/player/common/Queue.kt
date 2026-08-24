@@ -239,8 +239,8 @@ fun Queue(
     val queueType = appearanceSettings.queueType
     val disableScrollingText = appearanceSettings.disableScrollingText
     val binder = LocalPlayerServiceBinder.current
-    binder?.player ?: return
-    val binderPlayer = binder.player
+    binder?.exoPlayer ?: return
+    val binderPlayer = binder.exoPlayer
 
     val queueLoopType = appSettings.queueLoopType
     val excludeSongsIfAreVideos = appSettings.excludeIfIsVideo
@@ -257,22 +257,22 @@ fun Queue(
 
     var windows by remember { mutableStateOf(binderPlayer.currentTimeline.windows) }
     var windowsFiltered by remember { mutableStateOf(windows) }
-    var shouldBePlaying by remember { mutableStateOf(binder.player.shouldBePlaying) }
+    var shouldBePlaying by remember { mutableStateOf(binder.exoPlayer.shouldBePlaying) }
 
     binderPlayer.DisposableListener {
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                mediaItemIndex = if (binder.player.mediaItemCount == 0) -1 else binder.player.currentMediaItemIndex
+                mediaItemIndex = if (binder.exoPlayer.mediaItemCount == 0) -1 else binder.exoPlayer.currentMediaItemIndex
             }
             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
                 windows = timeline.windows
-                mediaItemIndex = if (binder.player.mediaItemCount == 0) -1 else binder.player.currentMediaItemIndex
+                mediaItemIndex = if (binder.exoPlayer.mediaItemCount == 0) -1 else binder.exoPlayer.currentMediaItemIndex
             }
             override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-                shouldBePlaying = binder.player.shouldBePlaying
+                shouldBePlaying = binder.exoPlayer.shouldBePlaying
             }
             override fun onPlaybackStateChanged(playbackState: Int) {
-                shouldBePlaying = binder.player.shouldBePlaying
+                shouldBePlaying = binder.exoPlayer.shouldBePlaying
             }
         }
     }
@@ -415,7 +415,7 @@ fun Queue(
         var dragInfo by remember { mutableStateOf<Pair<Int, Int>?>(null) }
         val lazyListState = rememberLazyListState()
         val reorderableLazyListState = rememberReorderableLazyListState(lazyListState = lazyListState) { from, to ->
-            if (to.key != binder.player.currentWindow?.uid.toString()) {
+            if (to.key != binder.exoPlayer.currentWindow?.uid.toString()) {
                 windowsInQueue = windowsInQueue.toMutableList().apply {
                     val fromIndex = indexOfFirst { it.uid.toString() == from.key }
                     val toIndex = indexOfFirst { it.uid.toString() == to.key }
@@ -780,11 +780,11 @@ fun Queue(
                         SwipeableQueueItem(
                             mediaItem = window.mediaItem,
                             onPlayNext = {
-                                binder.player.addNext(window.mediaItem, context, selectedQueue ?: defaultQueue())
+                                binder.exoPlayer.addNext(window.mediaItem, context, selectedQueue ?: defaultQueue())
                                 updateWindowsList = !updateWindowsList
                             },
                             onRemoveFromQueue = {
-                                binder.player.removeMediaItem(currentItem.firstPeriodIndex)
+                                binder.exoPlayer.removeMediaItem(currentItem.firstPeriodIndex)
                                 SmartMessage(
                                     "${context.resources.getString(R.string.deleted)} ${currentItem.mediaItem.mediaMetadata.title}",
                                     type = PopupType.Warning, context = context
@@ -792,7 +792,7 @@ fun Queue(
                                 updateWindowsList = !updateWindowsList
                             },
                             onEnqueue = {
-                                binder.player.enqueue(window.mediaItem, context, it)
+                                binder.exoPlayer.enqueue(window.mediaItem, context, it)
                                 updateWindowsList = !updateWindowsList
                             }
                         ) {
@@ -812,7 +812,7 @@ fun Queue(
                                                 .background(Color.Black.copy(alpha = 0.25f), shape = thumbnailShape())
                                                 .size(Dimensions.thumbnails.song)
                                         ) {
-                                            NowPlayingSongIndicator(window.mediaItem.mediaId, binder.player)
+                                            NowPlayingSongIndicator(window.mediaItem.mediaId, binder.exoPlayer)
                                         }
                                     }
                                 },
@@ -1066,7 +1066,7 @@ fun Queue(
                                                 val mediacount = listMediaItemsIndex.size - 1
                                                 listMediaItemsIndex.sort()
                                                 for (i in mediacount.downTo(0)) {
-                                                    binder.player.removeMediaItem(listMediaItemsIndex[i])
+                                                    binder.exoPlayer.removeMediaItem(listMediaItemsIndex[i])
                                                 }
                                                 listMediaItemsIndex.clear()
                                                 listMediaItems.clear()

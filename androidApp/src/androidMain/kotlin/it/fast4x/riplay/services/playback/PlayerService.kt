@@ -1400,7 +1400,7 @@ class PlayerService : MediaLibraryService(),
                 customUiController.showFullscreenButton(false)
                 onlinePlayerView.setCustomPlayerUi(customUiController.rootView)
 
-                Timber.d("PlayerService onlinePlayer onReady localmediaItem ${localMediaItem?.mediaId} queue index ${binder.player?.currentMediaItemIndex}")
+                Timber.d("PlayerService onlinePlayer onReady localmediaItem ${localMediaItem?.mediaId} queue index ${binder.exoPlayer?.currentMediaItemIndex}")
                 Timber.d("PlayerService onlinePlayer onReady isPersistentQueueEnabled $isPersistentQueueEnabled isResumePlaybackOnStart $isResumePlaybackOnStart")
 
                 youTubePlayer.setVolume(getSystemMediaVolume())
@@ -1653,7 +1653,7 @@ class PlayerService : MediaLibraryService(),
                 lastError = error
 
                 if (!isSkipMediaOnErrorEnabled()) return
-                val prev = binder.player?.currentMediaItem ?: return
+                val prev = binder.exoPlayer?.currentMediaItem ?: return
 
                 // Ferma ExoPlayer se sta andando
                 if (player.isPlaying) {
@@ -1826,8 +1826,8 @@ class PlayerService : MediaLibraryService(),
                         val useVolumeKeysToChangeSong = appSettings.useVolumeKeysToChangeSong
                         // Up = 1, Down = -1, Release = 0
                         if (direction == VOLUME_UP) {
-                            if (binder.player?.isPlaying == true && useVolumeKeysToChangeSong) {
-                                binder.player?.forceSeekToNext()
+                            if (binder.exoPlayer?.isPlaying == true && useVolumeKeysToChangeSong) {
+                                binder.exoPlayer?.forceSeekToNext()
                             } else {
                                 audioManager.adjustStreamVolume(
                                     STREAM_TYPE,
@@ -1836,8 +1836,8 @@ class PlayerService : MediaLibraryService(),
                                 setCurrentVolume(audioManager.getStreamVolume(STREAM_TYPE))
                             }
                         } else if (direction == VOLUME_DOWN) {
-                            if (binder.player?.isPlaying == true && useVolumeKeysToChangeSong) {
-                                binder.player?.forceSeekToPrevious()
+                            if (binder.exoPlayer?.isPlaying == true && useVolumeKeysToChangeSong) {
+                                binder.exoPlayer?.forceSeekToPrevious()
                             } else {
                                 audioManager.adjustStreamVolume(
                                     STREAM_TYPE,
@@ -2873,7 +2873,7 @@ private fun updateOnlineNearEndTicks() {
         @FlowPreview
         override fun onReceive(context: Context, intent: Intent) {
             Timber.d("MainActivity onReceive intent.action: ${intent.action}")
-            val currentMediaItem = binder.player?.currentMediaItem
+            val currentMediaItem = binder.exoPlayer?.currentMediaItem
 
             binder.let {
                 when (intent.action) {
@@ -2893,7 +2893,7 @@ private fun updateOnlineNearEndTicks() {
                     }
                     Action.play.value -> {
                         if (player.currentMediaItem?.isLocal == true)
-                            it.player?.play()
+                            it.exoPlayer?.play()
                         else {
                             if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
                                 _internalOnlinePlayer.value?.play()
@@ -2922,7 +2922,7 @@ private fun updateOnlineNearEndTicks() {
                     Action.playradio.value -> {
                         if (currentMediaItem != null) {
                             it.stopRadio()
-                            it.player?.seamlessQueue(currentMediaItem)
+                            it.exoPlayer?.seamlessQueue(currentMediaItem)
 
                             if(!GlobalSharedData.riTuneCastActive)
                                 _internalOnlinePlayer.value?.play()
@@ -3228,7 +3228,7 @@ private fun updateOnlineNearEndTicks() {
     @ExperimentalCoroutinesApi
     fun notification(): Notification {
 
-        val currentMediaItem = binder.player?.currentMediaItem
+        val currentMediaItem = binder.exoPlayer?.currentMediaItem
 
         createNotificationChannels()
 
@@ -3639,14 +3639,14 @@ private fun updateOnlineNearEndTicks() {
                             _internalOnlinePlayer.value?.seekTo(0f)
                         }
                         QueueLoopType.Default -> {
-                            if (binder.player?.hasNextMediaItem() == true) {
-                                lastProcessedIndex = binder.player?.currentMediaItemIndex
+                            if (binder.exoPlayer?.hasNextMediaItem() == true) {
+                                lastProcessedIndex = binder.exoPlayer?.currentMediaItemIndex
                                 handlePlayNext()
                             }
                         }
                         QueueLoopType.RepeatAll -> {
-                            if (binder.player?.hasNextMediaItem() == false) {
-                                binder.player?.playAtIndex(0)
+                            if (binder.exoPlayer?.hasNextMediaItem() == false) {
+                                binder.exoPlayer?.playAtIndex(0)
                             } else {
                                 lastProcessedIndex = player.currentMediaItemIndex
                                 handlePlayNext()
@@ -3964,7 +3964,7 @@ private fun updateOnlineNearEndTicks() {
         val coroutineScope: CoroutineScope
             get() = this@PlayerService.serviceScope
 
-        val player: ExoPlayer
+        val exoPlayer: ExoPlayer
             get() = this@PlayerService.player
 
         val playerState: StateFlow<PlayerState>
@@ -4118,9 +4118,9 @@ private fun updateOnlineNearEndTicks() {
                     }
 
                     if (justAdd) {
-                        player?.addMediaItems( songs.drop(1))
+                        exoPlayer?.addMediaItems( songs.drop(1))
                     } else {
-                        player?.forcePlayFromBeginning(songs)
+                        exoPlayer?.forcePlayFromBeginning(songs)
                     }
                     radio = it
                     isLoadingRadio = false
@@ -4166,7 +4166,7 @@ private fun updateOnlineNearEndTicks() {
 
         @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
         fun toggleShuffle() {
-            player?.shuffleModeEnabled?.let { player?.shuffleModeEnabled = !it }
+            exoPlayer?.shuffleModeEnabled?.let { exoPlayer?.shuffleModeEnabled = !it }
 
         }
 
@@ -4245,7 +4245,7 @@ private fun updateOnlineNearEndTicks() {
     @ExperimentalCoroutinesApi
     fun initializeUnifiedSessionCallback() {
         Timber.d("PlayerService InitializeUnifiedSessionCallback")
-        val currentMediaItem = binder.player?.currentMediaItem
+        val currentMediaItem = binder.exoPlayer?.currentMediaItem
 
         binder.let {
             unifiedMediaSession.setCallback(
@@ -4263,7 +4263,7 @@ private fun updateOnlineNearEndTicks() {
                         }
 
                         if (player.currentMediaItem?.isLocal == true)
-                            it.player?.play()
+                            it.exoPlayer?.play()
                         else {
                             if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
                                 _internalOnlinePlayer.value?.play()
@@ -4290,7 +4290,7 @@ private fun updateOnlineNearEndTicks() {
                             return@LegacyMediaSessionCallback
                         }
 
-                        it.player?.pause()
+                        it.exoPlayer?.pause()
                         if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                             _internalOnlinePlayer.value?.pause()
                         } else {
@@ -4350,7 +4350,7 @@ private fun updateOnlineNearEndTicks() {
                             NotificationButtons.Radio.action -> {
                                 if (currentMediaItem != null) {
                                     it.stopRadio()
-                                    it.player?.seamlessQueue(currentMediaItem)
+                                    it.exoPlayer?.seamlessQueue(currentMediaItem)
 
                                     if(!GlobalSharedData.riTuneCastActive)
                                         _internalOnlinePlayer.value?.play()

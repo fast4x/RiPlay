@@ -79,7 +79,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.github.doyaaaaaken.kotlincsv.client.KotlinCsvExperimental
-import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
@@ -151,7 +150,6 @@ import it.fast4x.riplay.commonutils.MONTHLY_PREFIX
 import it.fast4x.riplay.commonutils.PINNED_PREFIX
 import it.fast4x.riplay.commonutils.PIPED_PREFIX
 import it.fast4x.riplay.commonutils.YTP_PREFIX
-import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.PlaylistSongsTypeFilter
@@ -418,7 +416,7 @@ fun LocalPlaylistSongs(
         lazyListState = lazyListState,
         //scrollThresholdPadding = WindowInsets.systemBars.asPaddingValues(),
     ) { from, to ->
-        if (to.key != binder?.player?.currentMediaItem?.mediaId) {
+        if (to.key != binder?.exoPlayer?.currentMediaItem?.mediaId) {
             playlistSongs = playlistSongs.toMutableList().apply {
                 // can't use .index because there are other items in the list (headers, footers, etc)
                 val fromIndex = indexOfFirst { it.song.id == from.key }
@@ -1071,7 +1069,7 @@ fun LocalPlaylistSongs(
                                                             if (songs.size > maxSongsInQueue.number) songs
                                                                 .take(maxSongsInQueue.number.toInt()) else songs
                                                         binder?.stopRadio()
-                                                        binder?.player?.forcePlayFromBeginning(
+                                                        binder?.exoPlayer?.forcePlayFromBeginning(
                                                             itemsLimited
                                                                 .map(SongEntity::asMediaItem)
                                                         )
@@ -1096,7 +1094,7 @@ fun LocalPlaylistSongs(
                                                             if (songs.size > maxSongsInQueue.number) songs.shuffled()
                                                                 .take(maxSongsInQueue.number.toInt()) else songs
                                                         binder?.stopRadio()
-                                                        binder?.player?.forcePlayFromBeginning(
+                                                        binder?.exoPlayer?.forcePlayFromBeginning(
                                                             itemsLimited.shuffled()
                                                                 .map(SongEntity::asMediaItem)
                                                         )
@@ -1324,7 +1322,7 @@ fun LocalPlaylistSongs(
                                                 onEnqueue = {
                                                     if (listMediaItems.isEmpty()) {
                                                         if (playlistSongs.any { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }) {
-                                                            binder?.player?.enqueue(playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
+                                                            binder?.exoPlayer?.enqueue(playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
                                                                 .map(SongEntity::asMediaItem),
                                                                 context)
                                                         } else {
@@ -1335,7 +1333,7 @@ fun LocalPlaylistSongs(
                                                             )
                                                         }
                                                     } else {
-                                                        binder?.player?.enqueue(
+                                                        binder?.exoPlayer?.enqueue(
                                                             listMediaItems,
                                                             context
                                                         )
@@ -1346,7 +1344,7 @@ fun LocalPlaylistSongs(
                                                 onPlayNext = {
                                                     if (listMediaItems.isEmpty()) {
                                                         if (playlistSongs.any { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }) {
-                                                            binder?.player?.addNext(playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
+                                                            binder?.exoPlayer?.addNext(playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
                                                                 .map(SongEntity::asMediaItem),
                                                                 context,
                                                                 selectedQueue ?: defaultQueue()
@@ -1359,7 +1357,7 @@ fun LocalPlaylistSongs(
                                                             )
                                                         }
                                                     } else {
-                                                        binder?.player?.addNext(
+                                                        binder?.exoPlayer?.addNext(
                                                             listMediaItems,
                                                             context,
                                                             selectedQueue ?: defaultQueue()
@@ -1595,7 +1593,7 @@ fun LocalPlaylistSongs(
                                                 },
                                                 showonListenToYT = !playlistPreview.playlist.browseId.isNullOrBlank(),
                                                 onListenToYT = {
-                                                    binder?.player?.pause()
+                                                    binder?.exoPlayer?.pause()
                                                     uriHandler.openUri(
                                                         "https://youtube.com/playlist?list=${
                                                             playlistPreview.playlist.browseId?.let {
@@ -1944,7 +1942,7 @@ fun LocalPlaylistSongs(
                                         scrollToNowPlaying = false
                                         playlistSongs
                                             .forEachIndexed { index, song ->
-                                                if (song.asMediaItem.mediaId == binder?.player?.currentMediaItem?.mediaId)
+                                                if (song.asMediaItem.mediaId == binder?.exoPlayer?.currentMediaItem?.mediaId)
                                                     nowPlayingItem = index
                                             }
 
@@ -2096,7 +2094,7 @@ fun LocalPlaylistSongs(
                                         modifier = Modifier
                                             .clickable {
                                                 binder?.stopRadio()
-                                                binder?.player?.forcePlay(it)
+                                                binder?.exoPlayer?.forcePlay(it)
                                                 //fastPlay(it, binder)
                                             },
                                         //disableScrollingText = disableScrollingText,
@@ -2203,7 +2201,7 @@ fun LocalPlaylistSongs(
                                         }
                                     },
                                     onPlayNext = {
-                                        binder?.player?.addNext(
+                                        binder?.exoPlayer?.addNext(
                                             song.asMediaItem,
                                             queue = selectedQueue ?: defaultQueue()
                                         )
@@ -2308,7 +2306,7 @@ fun LocalPlaylistSongs(
                                             if (nowPlayingItem > -1)
                                                 NowPlayingSongIndicator(
                                                     song.asMediaItem.mediaId,
-                                                    binder?.player
+                                                    binder?.exoPlayer
                                                 )
                                         },
                                         modifier = Modifier
@@ -2367,7 +2365,7 @@ fun LocalPlaylistSongs(
                                                                 .map(SongEntity::asMediaItem)
                                                                 .let { mediaItems ->
                                                                     binder?.stopRadio()
-                                                                    binder?.player?.forcePlayAtIndex(
+                                                                    binder?.exoPlayer?.forcePlayAtIndex(
                                                                         mediaItems,
                                                                         mediaItems.indexOf(song.asMediaItem)
                                                                     )
@@ -2417,7 +2415,7 @@ fun LocalPlaylistSongs(
                                 .let { songs ->
                                     if (songs.isNotEmpty()) {
                                         binder?.stopRadio()
-                                        binder?.player?.forcePlayFromBeginning(
+                                        binder?.exoPlayer?.forcePlayFromBeginning(
                                             songs.shuffled().map(SongEntity::asMediaItem)
                                         )
                                     }

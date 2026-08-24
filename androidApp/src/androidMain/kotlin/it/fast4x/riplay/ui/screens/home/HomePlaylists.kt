@@ -789,7 +789,7 @@ fun HomePlaylists(
                                                                                 withContext(
                                                                                     Dispatchers.Main
                                                                                 ) {
-                                                                                    binder?.player?.addNext(
+                                                                                    binder?.exoPlayer?.addNext(
                                                                                         it
                                                                                             ?: emptyList(),
                                                                                         appContext(),
@@ -897,7 +897,7 @@ fun HomePlaylists(
                                                                             ).first().map { it.asMediaItem }
 
                                                                             withContext(Dispatchers.Main) {
-                                                                                binder?.player?.addNext(
+                                                                                binder?.exoPlayer?.addNext(
                                                                                     mediaItems,
                                                                                     appContext(),
                                                                                     selectedQueue
@@ -915,7 +915,7 @@ fun HomePlaylists(
                                                                             ).first().map { it.asMediaItem }
 
                                                                         withContext(Dispatchers.Main) {
-                                                                            binder?.player?.forcePlayFromBeginning(mediaItems)
+                                                                            binder?.exoPlayer?.forcePlayFromBeginning(mediaItems)
                                                                         }
 
                                                                     }
@@ -930,7 +930,7 @@ fun HomePlaylists(
                                                                             ).first().map { it.asMediaItem }.shuffled()
 
                                                                             withContext(Dispatchers.Main) {
-                                                                                binder?.player?.forcePlayFromBeginning(
+                                                                                binder?.exoPlayer?.forcePlayFromBeginning(
                                                                                     mediaItems
                                                                                 )
                                                                             }
@@ -1036,7 +1036,7 @@ fun HomePlaylists(
                                                                                 withContext(
                                                                                     Dispatchers.Main
                                                                                 ) {
-                                                                                    binder?.player?.addNext(
+                                                                                    binder?.exoPlayer?.addNext(
                                                                                         it
                                                                                             ?: emptyList(),
                                                                                         appContext(),
@@ -1059,7 +1059,7 @@ fun HomePlaylists(
                                                                             .map { it?.map(Song::asMediaItem) }
                                                                             .onEach {
                                                                                 if (it != null)
-                                                                                    binder?.player?.forcePlayFromBeginning(
+                                                                                    binder?.exoPlayer?.forcePlayFromBeginning(
                                                                                         it
                                                                                     )
                                                                             }
@@ -1080,7 +1080,7 @@ fun HomePlaylists(
                                                                                     Dispatchers.Main
                                                                                 ) {
                                                                                     if (it != null)
-                                                                                        binder?.player?.forcePlayFromBeginning(
+                                                                                        binder?.exoPlayer?.forcePlayFromBeginning(
                                                                                             it.shuffled()
                                                                                         )
                                                                                 }
@@ -1187,7 +1187,7 @@ fun HomePlaylists(
                                                                                 withContext(
                                                                                     Dispatchers.Main
                                                                                 ) {
-                                                                                    binder?.player?.addNext(
+                                                                                    binder?.exoPlayer?.addNext(
                                                                                         it
                                                                                             ?: emptyList(),
                                                                                         appContext(),
@@ -1210,7 +1210,7 @@ fun HomePlaylists(
                                                                             .map { it?.map(Song::asMediaItem) }
                                                                             .onEach {
                                                                                 if (it != null)
-                                                                                    binder?.player?.forcePlayFromBeginning(
+                                                                                    binder?.exoPlayer?.forcePlayFromBeginning(
                                                                                         it
                                                                                     )
                                                                             }
@@ -1231,7 +1231,7 @@ fun HomePlaylists(
                                                                                     Dispatchers.Main
                                                                                 ) {
                                                                                     if (it != null)
-                                                                                        binder?.player?.forcePlayFromBeginning(
+                                                                                        binder?.exoPlayer?.forcePlayFromBeginning(
                                                                                             it.shuffled()
                                                                                         )
                                                                                 }

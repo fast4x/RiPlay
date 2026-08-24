@@ -34,7 +34,6 @@ import androidx.core.net.toUri
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.environment.Environment
-import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.requests.playlistPage
 import it.fast4x.environment.requests.song
@@ -63,7 +62,6 @@ import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.forcePlay
 import kotlinx.serialization.ExperimentalSerializationApi
-import java.net.URLEncoder
 
 @ExperimentalSerializationApi
 @ExperimentalTextApi
@@ -199,7 +197,7 @@ fun GoToLink(
                                             val binder =
                                                 snapshotFlow { binder }.filterNotNull().first()
                                             withContext(Dispatchers.Main) {
-                                                binder.player.forcePlay(song.asMediaItem)
+                                                binder.exoPlayer.forcePlay(song.asMediaItem)
                                             }
                                         }
                                     }

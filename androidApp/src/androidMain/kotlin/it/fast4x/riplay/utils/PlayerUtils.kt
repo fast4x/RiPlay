@@ -448,7 +448,7 @@ inline fun Player.DisposableListener(crossinline listenerProvider: () -> Player.
 @OptIn(UnstableApi::class)
 @Composable
 fun rememberPlayerPositionAndDuration(binder: PlayerService.Binder?): Pair<Long, Long> {
-    val player = binder?.player
+    val player = binder?.exoPlayer
     val default = 0L to 0L
 
     if (player == null) return default

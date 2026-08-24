@@ -42,6 +42,7 @@ import coil.compose.AsyncImage
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.responses.CachedAccountProfile
 import it.fast4x.environment.utils.parseCookieString
+import it.fast4x.riplay.Dependencies
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.LocalAudioTagger
@@ -658,6 +659,26 @@ fun AccountsSettings() {
                         SecondaryTextButton(
                             text = stringResource(R.string.webdav_sync_now),
                             onClick = { webDavSync = true },
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 24.dp)
+                        )
+                    }
+                }
+
+                AnimatedVisibility(visible = webDavUrl.isNotEmpty() && webDavUsername.isNotEmpty() && webDavPassword.isNotEmpty()) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        SettingsDescription(
+                            text = "WebDAV Database Sync", //stringResource(R.string.webdav_sync),
+                            important = true,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        SecondaryTextButton(
+                            text = stringResource(R.string.webdav_sync_now),
+                            onClick = {
+                                webdavViewModel.databaseBackupSync(Dependencies.application)
+                            },
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(end = 24.dp)

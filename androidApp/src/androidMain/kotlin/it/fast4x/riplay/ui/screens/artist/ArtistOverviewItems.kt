@@ -265,7 +265,7 @@ fun ArtistOverviewItems(
                                                                 .take(maxSongsInQueue.number.toInt()) else songs
                                                         withContext(Dispatchers.Main) {
                                                             binder?.stopRadio()
-                                                            itemsLimited.let { binder?.player?.forcePlayFromBeginning( it.shuffled())}
+                                                            itemsLimited.let { binder?.exoPlayer?.forcePlayFromBeginning( it.shuffled())}
                                                         }
                                                     }
                                                 }
@@ -295,7 +295,7 @@ fun ArtistOverviewItems(
                                             val filteredArtistSongs =
                                                 artistSongs.filter { Database.getLikedAt(it.mediaId) != -1L }
                                             withContext(Dispatchers.Main) {
-                                                binder?.player?.enqueue(
+                                                binder?.exoPlayer?.enqueue(
                                                     filteredArtistSongs,
                                                     context
                                                 )
@@ -326,7 +326,7 @@ fun ArtistOverviewItems(
                                             val filteredArtistSongs =
                                                 artistSongs.filter { Database.getLikedAt(it.mediaId) != -1L }
                                             withContext(Dispatchers.Main) {
-                                                binder?.player?.addNext(
+                                                binder?.exoPlayer?.addNext(
                                                     filteredArtistSongs, context,
                                                     selectedQueue ?: defaultQueue()
                                                 )
@@ -422,19 +422,19 @@ fun ArtistOverviewItems(
                         SwipeablePlaylistItem(
                             mediaItem = item,
                             onPlayNext = {
-                                binder?.player?.addNext(
+                                binder?.exoPlayer?.addNext(
                                     item,
                                     queue = selectedQueue ?: defaultQueue()
                                 )
                             },
                             onEnqueue = {
-                                binder?.player?.enqueue(item, queue = it)
+                                binder?.exoPlayer?.enqueue(item, queue = it)
                             }
                         ) {
                             SongItem(
                                 song = item,
                                 onThumbnailContent = {
-                                    NowPlayingSongIndicator(item.mediaId, binder?.player)
+                                    NowPlayingSongIndicator(item.mediaId, binder?.exoPlayer)
                                 },
                                 thumbnailSizeDp = songThumbnailSizeDp,
                                 thumbnailSizePx = songThumbnailSizePx,
@@ -465,7 +465,7 @@ fun ArtistOverviewItems(
                                                     artistSongs?.filter { Database.getLikedAt(it.mediaId) != -1L } ?: emptyList()
                                                 if (item in filteredArtistSongs) {
                                                     withContext(Dispatchers.Main) {
-                                                        binder?.player?.forcePlayAtIndex(
+                                                        binder?.exoPlayer?.forcePlayAtIndex(
                                                             filteredArtistSongs,
                                                             filteredArtistSongs.indexOf(item)
                                                         )
@@ -657,7 +657,7 @@ fun ArtistOverviewItems(
 //                                    if (isVideoEnabled())
 //                                        binder?.player?.playOnline(item.asMediaItem)
 //                                    else
-                                        binder?.player?.forcePlay(item.asMediaItem)
+                                        binder?.exoPlayer?.forcePlay(item.asMediaItem)
                                         //fastPlay(item.asMediaItem, binder)
                                     })
                                         .animateItem()

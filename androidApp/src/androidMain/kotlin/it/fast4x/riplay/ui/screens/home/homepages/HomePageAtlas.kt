@@ -107,7 +107,6 @@ import it.fast4x.riplay.ui.components.themed.Menu
 import it.fast4x.riplay.ui.components.themed.MenuEntry
 import it.fast4x.riplay.ui.components.themed.MoodItemColored
 import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenu
-import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.components.themed.Title
 import it.fast4x.riplay.ui.components.themed.Title2Actions
 import it.fast4x.riplay.ui.components.themed.TitleMiniSection
@@ -120,7 +119,6 @@ import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.HomeDataCache
-import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.asVideoMediaItem
@@ -450,7 +448,7 @@ fun HomePageAtlas(
                             when {
                                 // Brano riproducibile diretto
                                 item.song != null -> {
-                                    binder?.player?.forcePlay(item.song.asMediaItem)
+                                    binder?.exoPlayer?.forcePlay(item.song.asMediaItem)
                                     Log.d("REC_DEBUG", "Marking consumed: strategy=${item.strategyId}, itemId=$itemId")
                                     recommendationService.markConsumed(item.strategyId, item.song.id)
                                 }
@@ -517,8 +515,8 @@ fun HomePageAtlas(
                         onClick2 = {
                             //trending?.let { fastPlay(it.asMediaItem, binder, relatedInit?.songs?.map { it.asMediaItem }) }
                             binder?.stopRadio()
-                            trending?.let { binder?.player?.forcePlay(it.asMediaItem) }
-                            binder?.player?.addMediaItems(relatedPage?.songs?.map { it.asMediaItem }
+                            trending?.let { binder?.exoPlayer?.forcePlay(it.asMediaItem) }
+                            binder?.exoPlayer?.addMediaItems(relatedPage?.songs?.map { it.asMediaItem }
                                 ?: emptyList())
                         }
 
@@ -606,7 +604,7 @@ fun HomePageAtlas(
                                                     song.asVideoMediaItem
 
                                                 binder?.stopRadio()
-                                                binder?.player?.forcePlay(mediaItem)
+                                                binder?.exoPlayer?.forcePlay(mediaItem)
                                                 //binder?.player?.playOnline(mediaItem)
                                                 //fastPlay(mediaItem, binder)
                                                 binder?.setupRadio(
@@ -675,7 +673,7 @@ fun HomePageAtlas(
 
                                                 binder?.stopRadio()
                                                 withContext(Dispatchers.Main) {
-                                                    binder?.player?.forcePlay(mediaItem)
+                                                    binder?.exoPlayer?.forcePlay(mediaItem)
                                                 }
                                                 binder?.setupRadio(
                                                     NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
@@ -808,7 +806,7 @@ fun HomePageAtlas(
                                             //disableScrollingText = disableScrollingText,
                                             //isNowPlaying = false,
                                             modifier = Modifier.clickable(onClick = {
-                                                binder?.player?.forcePlay(item.asMediaItem)
+                                                binder?.exoPlayer?.forcePlay(item.asMediaItem)
                                                 //fastPlay(item.asMediaItem, binder)
                                             })
                                         )
@@ -868,7 +866,7 @@ fun HomePageAtlas(
 //                                                if (isVideoEnabled())
 //                                                    binder?.player?.playOnline(item.asMediaItem)
 //                                                else
-                                                binder?.player?.forcePlay(item.asMediaItem)
+                                                binder?.exoPlayer?.forcePlay(item.asMediaItem)
                                                 //fastPlay(item.asMediaItem, binder)
                                             })
                                         )

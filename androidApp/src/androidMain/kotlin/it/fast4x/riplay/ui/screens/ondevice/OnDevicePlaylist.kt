@@ -36,7 +36,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Checkbox
 import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,7 +60,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
@@ -572,7 +570,7 @@ fun OnDevicePlaylist(
                                                             if (songs.size > maxSongsInQueue.number) songs
                                                                 .take(maxSongsInQueue.number.toInt()) else songs
                                                         binder?.stopRadio()
-                                                        binder?.player?.forcePlayFromBeginning(
+                                                        binder?.exoPlayer?.forcePlayFromBeginning(
                                                             itemsLimited
                                                                 .map(SongEntity::asMediaItem)
                                                         )
@@ -597,7 +595,7 @@ fun OnDevicePlaylist(
                                                             if (songs.size > maxSongsInQueue.number) songs.shuffled()
                                                                 .take(maxSongsInQueue.number.toInt()) else songs
                                                         binder?.stopRadio()
-                                                        binder?.player?.forcePlayFromBeginning(
+                                                        binder?.exoPlayer?.forcePlayFromBeginning(
                                                             itemsLimited.shuffled()
                                                                 .map(SongEntity::asMediaItem)
                                                         )
@@ -663,7 +661,7 @@ fun OnDevicePlaylist(
                                                 onEnqueue = {
                                                     if (listMediaItems.isEmpty()) {
                                                         if (playlistSongs.any { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }) {
-                                                            binder?.player?.enqueue(playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
+                                                            binder?.exoPlayer?.enqueue(playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
                                                                 .map(SongEntity::asMediaItem),
                                                                 context)
                                                         } else {
@@ -674,7 +672,7 @@ fun OnDevicePlaylist(
                                                             )
                                                         }
                                                     } else {
-                                                        binder?.player?.enqueue(
+                                                        binder?.exoPlayer?.enqueue(
                                                             listMediaItems,
                                                             context
                                                         )
@@ -685,7 +683,7 @@ fun OnDevicePlaylist(
                                                 onPlayNext = {
                                                     if (listMediaItems.isEmpty()) {
                                                         if (playlistSongs.any { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }) {
-                                                            binder?.player?.addNext(playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
+                                                            binder?.exoPlayer?.addNext(playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
                                                                 .map(SongEntity::asMediaItem),
                                                                 context,
                                                                 selectedQueue ?: defaultQueue()
@@ -698,7 +696,7 @@ fun OnDevicePlaylist(
                                                             )
                                                         }
                                                     } else {
-                                                        binder?.player?.addNext(
+                                                        binder?.exoPlayer?.addNext(
                                                             listMediaItems,
                                                             context,
                                                             selectedQueue ?: defaultQueue()
@@ -992,7 +990,7 @@ fun OnDevicePlaylist(
                                         scrollToNowPlaying = false
                                         playlistSongs
                                             .forEachIndexed { index, song ->
-                                                if (song.asMediaItem.mediaId == binder?.player?.currentMediaItem?.mediaId)
+                                                if (song.asMediaItem.mediaId == binder?.exoPlayer?.currentMediaItem?.mediaId)
                                                     nowPlayingItem = index
                                             }
 
@@ -1113,7 +1111,7 @@ fun OnDevicePlaylist(
                                 SwipeableQueueItem(
                                     mediaItem = song.asMediaItem,
                                     onPlayNext = {
-                                        binder?.player?.addNext(
+                                        binder?.exoPlayer?.addNext(
                                             song.asMediaItem,
                                             queue = selectedQueue ?: defaultQueue()
                                         )
@@ -1147,7 +1145,7 @@ fun OnDevicePlaylist(
                                             if (nowPlayingItem > -1)
                                                 NowPlayingSongIndicator(
                                                     song.asMediaItem.mediaId,
-                                                    binder?.player
+                                                    binder?.exoPlayer
                                                 )
                                         },
                                         modifier = Modifier
@@ -1180,7 +1178,7 @@ fun OnDevicePlaylist(
                                                                 .map(SongEntity::asMediaItem)
                                                                 .let { mediaItems ->
                                                                     binder?.stopRadio()
-                                                                    binder?.player?.forcePlayAtIndex(
+                                                                    binder?.exoPlayer?.forcePlayAtIndex(
                                                                         mediaItems,
                                                                         mediaItems.indexOf(song.asMediaItem)
                                                                     )
@@ -1227,7 +1225,7 @@ fun OnDevicePlaylist(
                                 .let { songs ->
                                     if (songs.isNotEmpty()) {
                                         binder?.stopRadio()
-                                        binder?.player?.forcePlayFromBeginning(
+                                        binder?.exoPlayer?.forcePlayFromBeginning(
                                             songs.shuffled().map(SongEntity::asMediaItem)
                                         )
                                     }

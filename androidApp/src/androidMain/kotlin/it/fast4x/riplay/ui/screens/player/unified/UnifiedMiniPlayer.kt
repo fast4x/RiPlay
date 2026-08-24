@@ -32,7 +32,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -54,7 +53,6 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -123,8 +121,8 @@ fun UnifiedMiniPlayer(
 
     val hapticFeedback = LocalHapticFeedback.current
 
-    binder?.player ?: return
-    if (binder.player.currentTimeline.windowCount == 0) return
+    binder?.exoPlayer ?: return
+    if (binder.exoPlayer.currentTimeline.windowCount == 0) return
 
     val appearanceSettingsManager = LocalAppearanceSettingsManager.current
     val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
@@ -210,12 +208,12 @@ fun UnifiedMiniPlayer(
                         updateLike = true
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                     } else {
-                        binder.player.seekToPrevious()
+                        binder.exoPlayer.seekToPrevious()
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                     }
                 }
                 SwipeToDismissBoxValue.EndToStart -> {
-                    binder.player.seekToNext()
+                    binder.exoPlayer.seekToNext()
                     hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
 
                 }
@@ -309,7 +307,7 @@ fun UnifiedMiniPlayer(
                                                 )
                                             )
                                         }
-                                    binder.player.clearMediaItems()
+                                    binder.exoPlayer.clearMediaItems()
                                     hidePlayer()
                                     runCatching {
                                         context.stopService(context.intent<PlayerService>())
@@ -358,7 +356,7 @@ fun UnifiedMiniPlayer(
                         .clip(thumbnailShape())
                         .size(48.dp)
                 )
-                NowPlayingSongIndicator(mediaItem.mediaId, binder.player)
+                NowPlayingSongIndicator(mediaItem.mediaId, binder.exoPlayer)
             }
 
             Column(
@@ -416,7 +414,7 @@ fun UnifiedMiniPlayer(
                         icon = R.drawable.play_skip_back,
                         color = colorPalette().iconButtonPlayer,
                         onClick = {
-                            binder.player.playPrevious()
+                            binder.exoPlayer.playPrevious()
                         },
                         modifier = Modifier
                             .rotate(rotationAngle)
@@ -431,7 +429,7 @@ fun UnifiedMiniPlayer(
                             .clickable {
                                 if (shouldBePlaying) {
                                     if (mediaItem.isLocal) {
-                                        binder.player.pause()
+                                        binder.exoPlayer.pause()
                                     } else {
                                         if (!GlobalSharedData.riTuneCastActive)
                                             binder.onlinePlayer?.pause()
@@ -446,7 +444,7 @@ fun UnifiedMiniPlayer(
                                     }
                                 } else {
                                     if (mediaItem.isLocal) {
-                                        binder.player.play()
+                                        binder.exoPlayer.play()
                                     } else {
                                         if (!GlobalSharedData.riTuneCastActive)
                                             binder.onlinePlayer?.play()
@@ -482,7 +480,7 @@ fun UnifiedMiniPlayer(
                         icon = R.drawable.play_skip_forward,
                         color = colorPalette().iconButtonPlayer,
                         onClick = {
-                            binder.player.playNext()
+                            binder.exoPlayer.playNext()
                         },
                         modifier = Modifier
                             .rotate(rotationAngle)

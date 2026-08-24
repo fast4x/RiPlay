@@ -323,7 +323,7 @@ fun HistoryItemRow(
         thumbnailSizeDp = thumbnailSizeDp,
         thumbnailSizePx = thumbnailSizePx,
         onThumbnailContent = {
-            NowPlayingSongIndicator(mediaItem.mediaId, binder?.player)
+            NowPlayingSongIndicator(mediaItem.mediaId, binder?.exoPlayer)
         },
         trailingContent = {
             if (isSelectionMode) {
@@ -356,7 +356,7 @@ fun HistoryItemRow(
                     if (isSelectionMode) {
                         onSelectionToggle(!isSelected)
                     } else {
-                        binder?.player?.forcePlay(mediaItem)
+                        binder?.exoPlayer?.forcePlay(mediaItem)
                     }
                 }
             )
