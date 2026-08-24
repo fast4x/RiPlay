@@ -1394,4 +1394,7 @@ Mach dich bereit, deine unvergesslichsten musikalischen Momente noch einmal zu e
     <string name="crossfade_duration_3_seconds">3 seconds</string>
     <string name="crossfade_duration_5_seconds">5 seconds</string>
     <string name="effect_subtitle_crossfade_fade_between_tracks_in_queue">Fade between tracks in queue</string>
+    <string name="crossfade_duration_7_seconds">7 seconds</string>
+    <string name="crossfade_duration_9_seconds">9 seconds</string>
+    <string name="crossfade_duration_12_seconds">12 seconds</string>
 </resources>
