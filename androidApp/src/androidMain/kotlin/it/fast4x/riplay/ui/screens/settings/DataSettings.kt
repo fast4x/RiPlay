@@ -20,6 +20,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -57,7 +59,9 @@ import it.fast4x.riplay.extensions.databasebackup.BackupUiState
 import it.fast4x.riplay.ui.components.themed.DefaultDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.typography
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -242,8 +246,18 @@ fun DataSettings() {
         SettingsDescription(text = stringResource(R.string.cache_cleared))
 
         Coil.imageLoader(context).diskCache?.let { diskCache ->
-            val diskCacheSize = remember(diskCache.size, cleanCacheImages) {
-                diskCache.size
+            var diskCacheSize by remember { mutableLongStateOf(0L) }
+            LaunchedEffect(key1 = diskCache, key2 = cleanCacheImages, coilDiskCacheMaxSize) {
+                withContext(Dispatchers.IO) {
+                    try {
+                        diskCache.size
+                    } catch (e: Exception) {
+                        Timber.e("Errore durante il calcolo della cache immagini: $e")
+                        0L
+                    }
+                }.let { size ->
+                    diskCacheSize = size
+                }
             }
 
             SettingsGroupSpacer()
@@ -297,12 +311,24 @@ fun DataSettings() {
             )
             RestartPlayerService(restartService, onRestart = { restartService = false } )
 
-            CacheSpaceIndicator(cacheType = CacheType.Images, horizontalPadding = 20.dp)
+            key(coilDiskCacheMaxSize) {
+                CacheSpaceIndicator(cacheType = CacheType.Images, horizontalPadding = 20.dp)
+            }
         }
 
         binder?.cache?.let { cache ->
-            val diskCacheSize = remember(cache.cacheSpace, cleanCacheOfflineSongs) {
-                cache.cacheSpace
+            var diskCacheSize by remember { mutableLongStateOf(0L) }
+            LaunchedEffect(key1 = cache, key2 = cleanCacheOfflineSongs, exoPlayerDiskCacheMaxSize) {
+                withContext(Dispatchers.IO) {
+                    try {
+                        cache.cacheSpace
+                    } catch (e: Exception) {
+                        Timber.e("Errore durante il calcolo dello spazio cache: $e")
+                        0L
+                    }
+                }.let { size ->
+                    diskCacheSize = size
+                }
             }
 
             //SettingsGroup {
@@ -361,7 +387,9 @@ fun DataSettings() {
             )
             RestartPlayerService(restartService, onRestart = { restartService = false } )
 
-            CacheSpaceIndicator(cacheType = CacheType.CachedSongs, horizontalPadding = 20.dp)
+            key(exoPlayerDiskCacheMaxSize) {
+                CacheSpaceIndicator(cacheType = CacheType.CachedSongs, horizontalPadding = 20.dp)
+            }
             //}
         }
 
