@@ -71,7 +71,7 @@ fun playShuffledSongs( mediaItems: List<MediaItem>, context: Context, binder: Pl
         val songsInQueue = songs.shuffled().take( maxSongsInQueue )
         CoroutineScope( Dispatchers.Main ).launch {
             binder.stopRadio()
-            binder.exoPlayer.forcePlayFromBeginning( songsInQueue )
+            binder.exoPlayer?.forcePlayFromBeginning( songsInQueue )
         }
     }
 }

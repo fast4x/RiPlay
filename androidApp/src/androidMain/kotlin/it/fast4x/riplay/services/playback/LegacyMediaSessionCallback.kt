@@ -51,7 +51,7 @@ class LegacyMediaSessionCallback (
 
     override fun onRewind() {
         Timber.d("MediaSessionCallback onRewind()")
-        binder.exoPlayer.seekToDefaultPosition()
+        binder.exoPlayer?.seekToDefaultPosition()
     }
     override fun onSkipToQueueItem(id: Long) {
         Timber.d("MediaSessionCallback onSkipToQueueItem() $id")
@@ -234,7 +234,7 @@ class LegacyMediaSessionCallback (
                     val keyEvent = it.extras?.getParcelable<KeyEvent>(Intent.EXTRA_KEY_EVENT)
                     when(keyEvent?.keyCode) {
                         KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
-                            if (binder.exoPlayer.isPlaying || binder.onlinePlayerPlayingState)
+                            if (binder.exoPlayer?.isPlaying == true || binder.youtubePlayerPlayingState)
                                 onPause()
                             else onPlay()
 

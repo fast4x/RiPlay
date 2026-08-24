@@ -105,8 +105,8 @@ fun MedleyMode(binder: PlayerService.Binder?, seconds: Int) {
                 while (isActive) {
                     delay(1.seconds * seconds)
                     withContext(Dispatchers.Main) {
-                        if (binder.exoPlayer.isPlaying)
-                            binder.exoPlayer.playNext()
+                        if (binder.exoPlayer?.isPlaying == true)
+                            binder.exoPlayer?.playNext()
                     }
                 }
             }

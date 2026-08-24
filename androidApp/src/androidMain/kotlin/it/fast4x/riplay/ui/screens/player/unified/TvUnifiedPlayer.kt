@@ -144,7 +144,7 @@ fun TvUnifiedPlayer(
 ) {
     val binder = LocalPlayerServiceBinder.current
     binder?.exoPlayer ?: return
-    if (binder.exoPlayer.currentTimeline.windowCount == 0) return
+    if (binder.exoPlayer?.currentTimeline?.windowCount == 0) return
 
     val appearanceSettingsManager = LocalAppearanceSettingsManager.current
     val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
@@ -164,10 +164,10 @@ fun TvUnifiedPlayer(
     }
 
     var nullableMediaItem by remember {
-        mutableStateOf(binder.exoPlayer.currentMediaItem, mediaItemPolicy)
+        mutableStateOf(binder.exoPlayer?.currentMediaItem, mediaItemPolicy)
     }
     var mediaItems by remember {
-        mutableStateOf(binder.exoPlayer.currentTimeline.mediaItems)
+        mutableStateOf(binder.exoPlayer?.currentTimeline?.mediaItems)
     }
     val queueLoopType = appSettings.queueLoopType
     var isShowingLyrics by rememberSaveable { mutableStateOf(false) }
@@ -191,7 +191,7 @@ fun TvUnifiedPlayer(
 
     val coroutineScope = rememberCoroutineScope ()
 
-    binder.exoPlayer.DisposableListener {
+    binder.exoPlayer?.DisposableListener {
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 nullableMediaItem = mediaItem
@@ -312,15 +312,15 @@ fun TvUnifiedPlayer(
                 if (keyEvent.type == KeyEventType.KeyDown) {
                     when (keyEvent.key) {
                         Key.MediaPlayPause, Key.DirectionCenter -> {
-                            if (playerState.isPlaying) binder.exoPlayer.pause() else binder.exoPlayer.play()
+                            if (playerState.isPlaying) binder.exoPlayer?.pause() else binder.exoPlayer?.play()
                             true
                         }
                         Key.MediaFastForward -> {
-                            binder.exoPlayer.seekTo(binder.exoPlayer.currentPosition + 10000)
+                            binder.exoPlayer?.seekTo((binder.exoPlayer?.currentPosition ?: 0) + 10000)
                             true
                         }
                         Key.MediaRewind -> {
-                            binder.exoPlayer.seekTo((binder.exoPlayer.currentPosition - 10000).coerceAtLeast(0))
+                            binder.exoPlayer?.seekTo(((binder.exoPlayer?.currentPosition ?: 0) - 10000).coerceAtLeast(0))
                             true
                         }
                         else -> false
@@ -409,10 +409,10 @@ fun TvUnifiedPlayer(
                     position = currentPosition.toFloat(),
                     duration = duration.toFloat(),
                     onSeek = { pos ->
-                        if (binder.exoPlayer.currentMediaItem?.isLocal == true)
-                            binder.exoPlayer.seekTo(pos.toLong())
+                        if (binder.exoPlayer?.currentMediaItem?.isLocal == true)
+                            binder.exoPlayer?.seekTo(pos.toLong())
                         else
-                            binder.onlinePlayer?.seekTo(pos.div(1000))
+                            binder.youtubePlayer?.seekTo(pos.div(1000))
                     },
                     focusRequester = seekBarFocusRequester,
                     modifier = Modifier
@@ -833,14 +833,14 @@ private fun MainControlsRow(
             contentDescription = "Previous",
             onClick = {
                 if (jumpPrevious == "") return@TvPlayerButton
-                if (!binder.exoPlayer.hasPreviousMediaItem() ||
+                if (binder.exoPlayer?.hasPreviousMediaItem() == false ||
                     (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())
                 ) {
-                    if (binder.exoPlayer.currentMediaItem?.isLocal == true)
-                        binder.exoPlayer.seekTo(0)
-                    else binder.onlinePlayer?.seekTo(0f)
+                    if (binder.exoPlayer?.currentMediaItem?.isLocal == true)
+                        binder.exoPlayer?.seekTo(0)
+                    else binder.youtubePlayer?.seekTo(0f)
                 } else {
-                    binder.exoPlayer.playPrevious()
+                    binder.exoPlayer?.playPrevious()
                 }
             }
         )
@@ -850,8 +850,8 @@ private fun MainControlsRow(
             icon = R.drawable.chevron_back,
             contentDescription = "Rewind",
             onClick = {
-                val newPos = (binder.exoPlayer.currentPosition - 10000).coerceAtLeast(0)
-                binder.exoPlayer.seekTo(newPos)
+                val newPos = ((binder.exoPlayer?.currentPosition ?: 0) - 10000).coerceAtLeast(0)
+                binder.exoPlayer?.seekTo(newPos)
             }
         )
 
@@ -862,13 +862,13 @@ private fun MainControlsRow(
             onClick = {
                 if (!GlobalSharedData.riTuneCastActive) {
                     if (playerState.isPlaying) {
-                        if (binder.exoPlayer.currentMediaItem?.isLocal == true)
-                            binder.exoPlayer.pause()
-                        else binder.onlinePlayer?.pause()
+                        if (binder.exoPlayer?.currentMediaItem?.isLocal == true)
+                            binder.exoPlayer?.pause()
+                        else binder.youtubePlayer?.pause()
                     } else {
-                        if (binder.exoPlayer.currentMediaItem?.isLocal == true)
-                            binder.exoPlayer.play()
-                        else binder.onlinePlayer?.play()
+                        if (binder.exoPlayer?.currentMediaItem?.isLocal == true)
+                            binder.exoPlayer?.play()
+                        else binder.youtubePlayer?.play()
                     }
                 } else {
                     scope.launch {
@@ -890,9 +890,9 @@ private fun MainControlsRow(
             icon = R.drawable.chevron_forward,
             contentDescription = "Forward",
             onClick = {
-                val newPos = (binder.exoPlayer.currentPosition + 10000)
-                    .coerceAtMost(binder.exoPlayer.duration)
-                binder.exoPlayer.seekTo(newPos)
+                val newPos = ((binder.exoPlayer?.currentPosition ?: 0) + 10000)
+                    .coerceAtMost(binder.exoPlayer?.duration ?: 0)
+                binder.exoPlayer?.seekTo(newPos)
             }
         )
 
@@ -900,7 +900,7 @@ private fun MainControlsRow(
         TvPlayerButton(
             icon = R.drawable.play_skip_forward,
             contentDescription = "Next",
-            onClick = { binder.exoPlayer.playNext() }
+            onClick = { binder.exoPlayer?.playNext() }
         )
     }
 }

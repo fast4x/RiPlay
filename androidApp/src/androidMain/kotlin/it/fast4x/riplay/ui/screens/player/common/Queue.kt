@@ -249,30 +249,30 @@ fun Queue(
     val thumbnailSizePx = thumbnailSizeDp.px
 
     var mediaItemIndex by remember {
-        mutableIntStateOf(if (binderPlayer.mediaItemCount == 0) -1 else binderPlayer.currentMediaItemIndex)
+        mutableIntStateOf((if (binderPlayer?.mediaItemCount == 0) -1 else binderPlayer?.currentMediaItemIndex) ?: 0)
     }
     val blacklisted = remember {
         Database.blacklisted(listOf(BlacklistType.Song.name, BlacklistType.Video.name))
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
-    var windows by remember { mutableStateOf(binderPlayer.currentTimeline.windows) }
+    var windows by remember { mutableStateOf(binderPlayer?.currentTimeline?.windows) }
     var windowsFiltered by remember { mutableStateOf(windows) }
-    var shouldBePlaying by remember { mutableStateOf(binder.exoPlayer.shouldBePlaying) }
+    var shouldBePlaying by remember { mutableStateOf(binder.exoPlayer?.shouldBePlaying) }
 
-    binderPlayer.DisposableListener {
+    binderPlayer?.DisposableListener {
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                mediaItemIndex = if (binder.exoPlayer.mediaItemCount == 0) -1 else binder.exoPlayer.currentMediaItemIndex
+                mediaItemIndex = (if (binder.exoPlayer?.mediaItemCount == 0) -1 else binder.exoPlayer?.currentMediaItemIndex) ?: 0
             }
             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
                 windows = timeline.windows
-                mediaItemIndex = if (binder.exoPlayer.mediaItemCount == 0) -1 else binder.exoPlayer.currentMediaItemIndex
+                mediaItemIndex = (if (binder.exoPlayer?.mediaItemCount == 0) -1 else binder.exoPlayer?.currentMediaItemIndex) ?: 0
             }
             override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-                shouldBePlaying = binder.exoPlayer.shouldBePlaying
+                shouldBePlaying = binder.exoPlayer?.shouldBePlaying
             }
             override fun onPlaybackStateChanged(playbackState: Int) {
-                shouldBePlaying = binder.exoPlayer.shouldBePlaying
+                shouldBePlaying = binder.exoPlayer?.shouldBePlaying
             }
         }
     }
@@ -298,7 +298,7 @@ fun Queue(
                 showConfirmDeleteAllDialog = false
                 CoroutineScope(Dispatchers.IO).launch {
                     Database.asyncTransaction { clearQueuedMediaItems() }
-                    withContext(Dispatchers.Main) { binderPlayer.clearMediaItems() }
+                    withContext(Dispatchers.Main) { binderPlayer?.clearMediaItems() }
                 }
                 listMediaItems.clear()
                 listMediaItemsIndex.clear()
@@ -314,11 +314,12 @@ fun Queue(
             if (uri == null) return@rememberLauncherForActivityResult
 
             coroutineScope.launch (Dispatchers.IO){
+                val songs = if(listMediaItems.isEmpty()) windows?.map { it.mediaItem.asSong } else listMediaItems.map { it.asSong }
                 Exporter.exportTo(
                     ExportType.CSV,
                     context,
                     uri,
-                    if(listMediaItems.isEmpty()) windows.map { it.mediaItem.asSong } else listMediaItems.map { it.asSong },
+                    songs ?: return@launch,
                     "",
                     plistName
                 )
@@ -389,20 +390,20 @@ fun Queue(
     LaunchedEffect(Unit, selectedQueue, updateWindowsList, filter) {
         val filterCharSequence = filter.toString()
         if (!filter.isNullOrBlank())
-            windowsFiltered = windows.filter {
+            windowsFiltered = windows?.filter {
                 it.mediaItem.mediaMetadata.title?.contains(filterCharSequence, true) ?: false
                         || it.mediaItem.mediaMetadata.artist?.contains(filterCharSequence, true) ?: false
             }
         val win = if (searching) windowsFiltered else windows
-        windowsInQueue = if (selectedQueue == defaultQueue()) win else win.filter {
+        windowsInQueue = if (selectedQueue == defaultQueue()) win else win?.filter {
             it.mediaItem.mediaMetadata.extras?.getLong("idQueue", defaultQueueId()) == selectedQueue?.id
         }
     }
 
-    val filteredItemsCount = windowsInQueue.filter { item ->
+    val filteredItemsCount = windowsInQueue?.filter { item ->
         blacklisted.value?.map { it.path }?.contains(item.mediaItem.mediaId) == false
                 || item.mediaItem.isVideo == !excludeSongsIfAreVideos
-    }.size
+    }?.size
 
 
     // ─── Root container ─────────────────────────────────────────────────────
@@ -415,8 +416,8 @@ fun Queue(
         var dragInfo by remember { mutableStateOf<Pair<Int, Int>?>(null) }
         val lazyListState = rememberLazyListState()
         val reorderableLazyListState = rememberReorderableLazyListState(lazyListState = lazyListState) { from, to ->
-            if (to.key != binder.exoPlayer.currentWindow?.uid.toString()) {
-                windowsInQueue = windowsInQueue.toMutableList().apply {
+            if (to.key != binder.exoPlayer?.currentWindow?.uid.toString()) {
+                windowsInQueue = windowsInQueue?.toMutableList()?.apply {
                     val fromIndex = indexOfFirst { it.uid.toString() == from.key }
                     val toIndex = indexOfFirst { it.uid.toString() == to.key }
                     val currentDragInfo = dragInfo
@@ -428,7 +429,7 @@ fun Queue(
         LaunchedEffect(reorderableLazyListState.isAnyItemDragging) {
             if (!reorderableLazyListState.isAnyItemDragging) {
                 dragInfo?.let { (from, to) ->
-                    binderPlayer.moveMediaItem(from, to)
+                    binderPlayer?.moveMediaItem(from, to)
                     dragInfo = null
                 }
             }
@@ -694,10 +695,10 @@ fun Queue(
 
             // ─── Song items ─────────────────────────────────────────────────
             items(
-                items = windowsInQueue.filter { item ->
+                items = windowsInQueue?.filter { item ->
                     blacklisted.value?.map { it.path }?.contains(item.mediaItem.mediaId) == false
                             || item.mediaItem.isVideo == !excludeSongsIfAreVideos
-                },
+                } ?: emptyList(),
                 key = { window -> window.uid.toString() }
             ) { window ->
                 ReorderableItem(reorderableLazyListState, key = window.uid.toString()) { isDragging ->
@@ -780,11 +781,11 @@ fun Queue(
                         SwipeableQueueItem(
                             mediaItem = window.mediaItem,
                             onPlayNext = {
-                                binder.exoPlayer.addNext(window.mediaItem, context, selectedQueue ?: defaultQueue())
+                                binder.exoPlayer?.addNext(window.mediaItem, context, selectedQueue ?: defaultQueue())
                                 updateWindowsList = !updateWindowsList
                             },
                             onRemoveFromQueue = {
-                                binder.exoPlayer.removeMediaItem(currentItem.firstPeriodIndex)
+                                binder.exoPlayer?.removeMediaItem(currentItem.firstPeriodIndex)
                                 SmartMessage(
                                     "${context.resources.getString(R.string.deleted)} ${currentItem.mediaItem.mediaMetadata.title}",
                                     type = PopupType.Warning, context = context
@@ -792,7 +793,7 @@ fun Queue(
                                 updateWindowsList = !updateWindowsList
                             },
                             onEnqueue = {
-                                binder.exoPlayer.enqueue(window.mediaItem, context, it)
+                                binder.exoPlayer?.enqueue(window.mediaItem, context, it)
                                 updateWindowsList = !updateWindowsList
                             }
                         ) {
@@ -860,11 +861,11 @@ fun Queue(
                                         onClick = {
                                             if (!selectQueueItems) {
                                                 if (isPlayingThisMediaItem) {
-                                                    if (shouldBePlaying) binderPlayer.pause() else binderPlayer.play()
+                                                    if (shouldBePlaying == true) binderPlayer?.pause() else binderPlayer?.play()
                                                 } else {
-                                                    binderPlayer.seekToDefaultPosition(window.firstPeriodIndex)
-                                                    binderPlayer.prepare()
-                                                    binderPlayer.playWhenReady = true
+                                                    binderPlayer?.seekToDefaultPosition(window.firstPeriodIndex)
+                                                    binderPlayer?.prepare()
+                                                    binderPlayer?.playWhenReady = true
                                                 }
                                             } else checkedState.value = !checkedState.value
                                         }
@@ -906,7 +907,10 @@ fun Queue(
 
         LaunchedEffect(Unit) {
             if (!lazyListState.isScrollInProgress)
-                lazyListState.animateScrollToItem(windows.indexOf(binderPlayer.currentWindow), -300)
+                windows?.indexOf(binderPlayer?.currentWindow)?.let {
+                    lazyListState.animateScrollToItem(it, -300)
+                }
+
         }
 
 
@@ -1040,7 +1044,7 @@ fun Queue(
                             coroutineScope.launch {
                                 lazyListState.smoothScrollToTop()
                             }.invokeOnCompletion {
-                                binderPlayer.shuffleQueue()
+                                binderPlayer?.shuffleQueue()
                                 updateWindowsList = !updateWindowsList
                             }
                         }
@@ -1052,7 +1056,7 @@ fun Queue(
                         modifier = Modifier
                             .size(34.dp)
                             .clip(CircleShape)
-                            .clickable(enabled = windows.isNotEmpty()) {
+                            .clickable(enabled = windows?.isNotEmpty() == true) {
                                 menuState.display {
                                     PlaylistsItemMenu(
                                         navController = navController,
@@ -1066,7 +1070,7 @@ fun Queue(
                                                 val mediacount = listMediaItemsIndex.size - 1
                                                 listMediaItemsIndex.sort()
                                                 for (i in mediacount.downTo(0)) {
-                                                    binder.exoPlayer.removeMediaItem(listMediaItemsIndex[i])
+                                                    binder.exoPlayer?.removeMediaItem(listMediaItemsIndex[i])
                                                 }
                                                 listMediaItemsIndex.clear()
                                                 listMediaItems.clear()
@@ -1080,7 +1084,7 @@ fun Queue(
                                             if (position > 0) position++ else position = 0
                                             if (listMediaItems.isEmpty()) {
                                                 if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
-                                                    windows.forEachIndexed { index, song ->
+                                                    windows?.forEachIndexed { index, song ->
                                                         Database.asyncTransaction {
                                                             insert(song.mediaItem)
                                                             insert(SongPlaylistMap(
@@ -1096,7 +1100,7 @@ fun Queue(
                                                             addToYtPlaylist(
                                                                 playlistPreview.playlist.id, position,
                                                                 cleanPrefix(id ?: ""),
-                                                                windows.filterNot { it.mediaItem.mediaId.startsWith(LOCAL_KEY_PREFIX) }.map { it.mediaItem }
+                                                                windows?.filterNot { it.mediaItem.mediaId.startsWith(LOCAL_KEY_PREFIX) }?.map { it.mediaItem } ?: emptyList()
                                                             )
                                                         }
                                                     }
@@ -1142,11 +1146,11 @@ fun Queue(
                             painter = painterResource(R.drawable.ellipsis_horizontal),
                             contentDescription = null,
                             colorFilter = ColorFilter.tint(
-                                if (windows.isNotEmpty()) colorPalette().text else colorPalette().textDisabled
+                                if (windows?.isNotEmpty() == true) colorPalette().text else colorPalette().textDisabled
                             ),
                             modifier = Modifier
                                 .size(22.dp)
-                                .alpha(if (windows.isNotEmpty()) 1f else 0.4f)
+                                .alpha(if (windows?.isNotEmpty() == true) 1f else 0.4f)
                         )
                     }
 

@@ -680,9 +680,8 @@ fun PlaylistSongList(
                                                 binder.playRadio(
                                                     NavigationEndpoint.Endpoint.Watch(
                                                         videoId =
-                                                            if (binder.exoPlayer.currentMediaItem?.mediaId != null)
-                                                                binder.exoPlayer.currentMediaItem?.mediaId
-                                                            else playlistPage?.songs?.first { it.asMediaItem.mediaId !in dislikedSongs }?.asMediaItem?.mediaId
+                                                            binder.exoPlayer?.currentMediaItem?.mediaId
+                                                                ?: playlistPage?.songs?.first { it.asMediaItem.mediaId !in dislikedSongs }?.asMediaItem?.mediaId
                                                     )
                                                 )
                                             } else {

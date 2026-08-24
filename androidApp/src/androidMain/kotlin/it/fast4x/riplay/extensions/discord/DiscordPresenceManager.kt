@@ -493,7 +493,7 @@ fun updateDiscordPresenceWithOfflinePlayer(
     discordPresenceManager: DiscordPresenceManager?,
     binder: PlayerService.Binder
 ) {
-    if (binder.exoPlayer.currentMediaItem?.isLocal == false) return
+    if (binder.exoPlayer?.currentMediaItem?.isLocal == false) return
 
     val appSettingsManager = (appContext() as MainApplication).appSettingsManager
 
@@ -508,9 +508,9 @@ fun updateDiscordPresenceWithOfflinePlayer(
 //    )
 
     runCatching {
-        if (!discordPersonalAccessToken.isNullOrEmpty()) {
-            Timber.d("UpdateDiscordPresence with OfflinePlayer called, currentPosition = ${player.currentPosition} currentDuration = ${player.duration}")
-            player.currentMediaItem?.let {
+        if (discordPersonalAccessToken.isNotEmpty()) {
+            Timber.d("UpdateDiscordPresence with OfflinePlayer called, currentPosition = ${player?.currentPosition} currentDuration = ${player?.duration}")
+            player?.currentMediaItem?.let {
                 discordPresenceManager?.onPlayingStateChanged(
                     it,
                     player.isPlaying,

@@ -122,7 +122,7 @@ fun UnifiedMiniPlayer(
     val hapticFeedback = LocalHapticFeedback.current
 
     binder?.exoPlayer ?: return
-    if (binder.exoPlayer.currentTimeline.windowCount == 0) return
+    if (binder.exoPlayer?.currentTimeline?.windowCount == 0) return
 
     val appearanceSettingsManager = LocalAppearanceSettingsManager.current
     val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
@@ -208,12 +208,12 @@ fun UnifiedMiniPlayer(
                         updateLike = true
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                     } else {
-                        binder.exoPlayer.seekToPrevious()
+                        binder.exoPlayer?.seekToPrevious()
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                     }
                 }
                 SwipeToDismissBoxValue.EndToStart -> {
-                    binder.exoPlayer.seekToNext()
+                    binder.exoPlayer?.seekToNext()
                     hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
 
                 }
@@ -298,7 +298,7 @@ fun UnifiedMiniPlayer(
                             else if (dragAmount > 20) {
                                 if (!disableClosingPlayerSwipingDown) {
                                     if (!GlobalSharedData.riTuneCastActive)
-                                        binder.onlinePlayer?.pause()
+                                        binder.youtubePlayer?.pause()
                                     else
                                         CoroutineScope(Dispatchers.IO).launch {
                                             binder.riTuneCastClient.sendCommand(
@@ -307,7 +307,7 @@ fun UnifiedMiniPlayer(
                                                 )
                                             )
                                         }
-                                    binder.exoPlayer.clearMediaItems()
+                                    binder.exoPlayer?.clearMediaItems()
                                     hidePlayer()
                                     runCatching {
                                         context.stopService(context.intent<PlayerService>())
@@ -414,7 +414,7 @@ fun UnifiedMiniPlayer(
                         icon = R.drawable.play_skip_back,
                         color = colorPalette().iconButtonPlayer,
                         onClick = {
-                            binder.exoPlayer.playPrevious()
+                            binder.exoPlayer?.playPrevious()
                         },
                         modifier = Modifier
                             .rotate(rotationAngle)
@@ -429,10 +429,10 @@ fun UnifiedMiniPlayer(
                             .clickable {
                                 if (shouldBePlaying) {
                                     if (mediaItem.isLocal) {
-                                        binder.exoPlayer.pause()
+                                        binder.exoPlayer?.pause()
                                     } else {
                                         if (!GlobalSharedData.riTuneCastActive)
-                                            binder.onlinePlayer?.pause()
+                                            binder.youtubePlayer?.pause()
                                         else
                                             CoroutineScope(Dispatchers.IO).launch {
                                                 binder.riTuneCastClient.sendCommand(
@@ -444,10 +444,10 @@ fun UnifiedMiniPlayer(
                                     }
                                 } else {
                                     if (mediaItem.isLocal) {
-                                        binder.exoPlayer.play()
+                                        binder.exoPlayer?.play()
                                     } else {
                                         if (!GlobalSharedData.riTuneCastActive)
-                                            binder.onlinePlayer?.play()
+                                            binder.youtubePlayer?.play()
                                         else
                                             CoroutineScope(Dispatchers.IO).launch {
                                                 binder.riTuneCastClient.sendCommand(
@@ -480,7 +480,7 @@ fun UnifiedMiniPlayer(
                         icon = R.drawable.play_skip_forward,
                         color = colorPalette().iconButtonPlayer,
                         onClick = {
-                            binder.exoPlayer.playNext()
+                            binder.exoPlayer?.playNext()
                         },
                         modifier = Modifier
                             .rotate(rotationAngle)

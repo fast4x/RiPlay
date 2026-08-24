@@ -325,19 +325,19 @@ class PlayerService : MediaLibraryService(),
             .inflate(R.layout.youtube_player, null, false)
                 as YouTubePlayerView
     )
-    val internalOnlinePlayerView: StateFlow<YouTubePlayerView?> = _internalOnlinePlayerView
+    val internalYoutubePlayerView: StateFlow<YouTubePlayerView?> = _internalOnlinePlayerView
 
     private val _internalOnlinePlayer = MutableStateFlow<YouTubePlayer?>(null)
-    val internalOnlinePlayer: StateFlow<YouTubePlayer?> = _internalOnlinePlayer
+    val internalYoutubePlayer: StateFlow<YouTubePlayer?> = _internalOnlinePlayer
 
     private val _internalBufferedFraction = MutableStateFlow(0f)
-    val internalBufferedFraction: StateFlow<Float> = _internalBufferedFraction
+    val internalYoutubeBufferedFraction: StateFlow<Float> = _internalBufferedFraction
 
     var _currentSecond = MutableStateFlow(0f)
-    var currentSecond: StateFlow<Float> = _currentSecond
+    var youtubeCurrentSecond: StateFlow<Float> = _currentSecond
 
     var _currentDuration = MutableStateFlow(0f)
-    var currentDuration: StateFlow<Float> = _currentDuration
+    var youtubeCurrentDuration: StateFlow<Float> = _currentDuration
 
     var load = true
     var playFromSecond by mutableFloatStateOf(0f)
@@ -703,6 +703,7 @@ class PlayerService : MediaLibraryService(),
             }
             //Timber.d("PlayerService handleForeground - Sgancio foreground")
         }
+        _internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
     }
 
     private fun detachForegroundSafely() {
@@ -1073,7 +1074,7 @@ class PlayerService : MediaLibraryService(),
         if (appSettings.isDiscordPresenceEnabled) {
             val token = appSettings.discordPersonalAccessToken
             //Timber.d("PlayerService initializeDiscordPresence token $token")
-            if (token?.isNotEmpty() == true) {
+            if (token.isNotEmpty()) {
                 discordPresenceManager = DiscordPresenceManager(
                     context = this,
                     getToken = { token },
@@ -1513,7 +1514,7 @@ class PlayerService : MediaLibraryService(),
                         if (!firstTimeStarted) {
                             if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                                 youTubePlayer.unMute()
-                                //youTubePlayer.setVolume(getSystemMediaVolume())
+                                youTubePlayer.setVolume(getSystemMediaVolume())
                                 youTubePlayer.play()
                             }
 //                                else
@@ -3748,7 +3749,7 @@ private fun updateOnlineNearEndTicks() {
             mediaItemPosition = if (player.currentMediaItem?.isLocal == true) {
                 player.currentPosition
             } else {
-                (currentSecond.value * 1000).toLong()
+                (youtubeCurrentSecond.value * 1000).toLong()
             }
         }
 
@@ -3970,29 +3971,29 @@ private fun updateOnlineNearEndTicks() {
         val coroutineScope: CoroutineScope
             get() = this@PlayerService.serviceScope
 
-        val exoPlayer: ExoPlayer
-            get() = this@PlayerService.player
+        val exoPlayer: ExoPlayer?
+            get() = if (::player.isInitialized) this@PlayerService.player else null
 
         val playerState: StateFlow<PlayerState>
             get() = this@PlayerService.playerState
 
-        val onlinePlayer: YouTubePlayer?
-            get() = this@PlayerService._internalOnlinePlayer.value // todo controlla se è ok
+        val youtubePlayer: YouTubePlayer?
+            get() = this@PlayerService.internalYoutubePlayer.value
 
-        val onlinePlayerPlayingState: Boolean
+        val youtubePlayerPlayingState: Boolean
             get() = this@PlayerService.playerState.value.isPlaying
 
-        val onlinePlayerBufferedFraction: StateFlow<Float>
-            get() = this@PlayerService.internalBufferedFraction
+        val youtubePlayerBufferedFraction: StateFlow<Float>
+            get() = this@PlayerService.internalYoutubeBufferedFraction
 
-        val onlinePlayerCurrentDuration: StateFlow<Float>
-            get() = this@PlayerService.currentDuration
+        val youtubePlayerCurrentDuration: StateFlow<Float>
+            get() = this@PlayerService.youtubeCurrentDuration
 
-        val onlinePlayerCurrentSecond: StateFlow<Float>
-            get() = this@PlayerService.currentSecond
+        val youtubePlayerCurrentSecond: StateFlow<Float>
+            get() = this@PlayerService.youtubeCurrentSecond
 
-        val onlinePlayerView: StateFlow<YouTubePlayerView?>
-            get() = this@PlayerService.internalOnlinePlayerView
+        val youtubePlayerView: StateFlow<YouTubePlayerView?>
+            get() = this@PlayerService.internalYoutubePlayerView
 
         val cache: Cache
             get() = this@PlayerService.cache

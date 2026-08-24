@@ -197,7 +197,7 @@ fun GoToLink(
                                             val binder =
                                                 snapshotFlow { binder }.filterNotNull().first()
                                             withContext(Dispatchers.Main) {
-                                                binder.exoPlayer.forcePlay(song.asMediaItem)
+                                                binder.exoPlayer?.forcePlay(song.asMediaItem)
                                             }
                                         }
                                     }

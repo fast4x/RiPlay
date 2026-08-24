@@ -484,9 +484,8 @@ fun Podcast(
                                             binder.playRadio(
                                                 NavigationEndpoint.Endpoint.Watch(
                                                     videoId =
-                                                        if (binder.exoPlayer.currentMediaItem?.mediaId != null)
-                                                            binder.exoPlayer.currentMediaItem?.mediaId
-                                                        else podcastPage?.listEpisode?.first()?.asMediaItem?.mediaId
+                                                        binder.exoPlayer?.currentMediaItem?.mediaId
+                                                            ?: podcastPage?.listEpisode?.first()?.asMediaItem?.mediaId
                                                 )
                                             )
                                         }

@@ -42,7 +42,7 @@ suspend fun qrCodeToAction(content: String, binder: PlayerService.Binder, navCon
                     mediaItem?.let { media ->
                         withContext(Dispatchers.Main) {
                             if (!media.isExplicit && !appSettingsManager.activeSettings.value.parentalControlEnabled)
-                                binder.exoPlayer.forcePlay(media)
+                                binder.exoPlayer?.forcePlay(media)
                             else
                                 SmartMessage(
                                     "Parental control is enabled",

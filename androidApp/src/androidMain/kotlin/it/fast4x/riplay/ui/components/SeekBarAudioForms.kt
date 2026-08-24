@@ -85,7 +85,7 @@ fun SeekBarAudioForms(
 
     val binder = LocalPlayerServiceBinder.current
     val mediaItem = binder?.exoPlayer?.currentMediaItem
-    val buffered = binder?.onlinePlayerBufferedFraction?.collectAsState()
+    val buffered = binder?.youtubePlayerBufferedFraction?.collectAsState()
 
     val timeText = remember(draggingValue) { formatMillis(draggingValue) }
     val colorPalette = colorPalette()

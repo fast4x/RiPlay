@@ -353,7 +353,7 @@ fun getVisualizers(): List<Painter> {
                     try {
                         bitmapCover = getBitmapFromUrl(
                             context,
-                            binder.exoPlayer.currentWindow?.mediaItem?.mediaMetadata?.artworkUri.toString()
+                            binder.exoPlayer?.currentWindow?.mediaItem?.mediaMetadata?.artworkUri.toString()
                                 .toThumbnail(1200).toString()
                         )
                     } catch (e: Exception) {

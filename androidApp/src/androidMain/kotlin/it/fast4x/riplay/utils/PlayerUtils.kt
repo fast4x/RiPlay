@@ -458,8 +458,8 @@ fun rememberPlayerPositionAndDuration(binder: PlayerService.Binder?): Pair<Long,
             value = if (player.currentMediaItem?.isLocal == true) {
                 player.currentPosition to player.duration
             } else {
-                val onlineCurrentSecond = binder.onlinePlayerCurrentSecond.value
-                val onlineCurrentDuration = binder.onlinePlayerCurrentDuration.value
+                val onlineCurrentSecond = binder.youtubePlayerCurrentSecond.value
+                val onlineCurrentDuration = binder.youtubePlayerCurrentDuration.value
                 (onlineCurrentSecond.toLong() * 1000L) to (onlineCurrentDuration.toLong() * 1000L)
             }
             delay(200.milliseconds) // Aggiorna l'UI 5 volte al secondo, fluido e non pesante

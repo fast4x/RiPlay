@@ -2197,7 +2197,7 @@ fun seekToLyric(binder: PlayerService.Binder?, sentence: LRCLyricLine) {
     } else {
         val positionSeconds = positionMs / 1000f
         Timber.d("Seeking online player to $positionSeconds s")
-        binder?.onlinePlayer?.seekTo(positionSeconds)
+        binder?.youtubePlayer?.seekTo(positionSeconds)
     }
 }
 

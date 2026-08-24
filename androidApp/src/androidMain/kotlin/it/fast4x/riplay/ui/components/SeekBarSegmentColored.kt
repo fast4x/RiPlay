@@ -91,7 +91,7 @@ fun SeekBarSegmentColored(
 
     val binder = LocalPlayerServiceBinder.current
     var localMediaItem by remember { mutableStateOf<MediaItem?>(null) }
-    val buffered = binder?.onlinePlayerBufferedFraction?.collectAsState()
+    val buffered = binder?.youtubePlayerBufferedFraction?.collectAsState()
     val colorPalette = colorPalette()
 
     val baseColors = listOf(colorPalette.collapsedPlayerProgressBar, colorPalette.textSecondary, colorPalette.textDisabled,colorPalette.text)

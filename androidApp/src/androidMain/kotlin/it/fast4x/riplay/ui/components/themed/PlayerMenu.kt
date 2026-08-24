@@ -103,7 +103,7 @@ fun PlayerMenu(
                         resetTotalPlayTimeMs(mediaItem.mediaId)
                     }
 
-                binder.exoPlayer.seekTo(0L)
+                binder.exoPlayer?.seekTo(0L)
             }
         )
     }
@@ -117,7 +117,7 @@ fun PlayerMenu(
             onGoToEqualizer = launchEqualizer,
             onStartRadio = {
                 binder.stopRadio()
-                binder.exoPlayer.seamlessPlay(mediaItem)
+                binder.exoPlayer?.seamlessPlay(mediaItem)
                 binder.setupRadio(NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId))
             },
             /*
@@ -149,7 +149,7 @@ fun PlayerMenu(
             onShowSleepTimer = {},
             onStartRadio = {
                 binder.stopRadio()
-                binder.exoPlayer.seamlessPlay(mediaItem)
+                binder.exoPlayer?.seamlessPlay(mediaItem)
                 binder.setupRadio(NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId))
             },
             onHideFromDatabase = { isHiding = true },

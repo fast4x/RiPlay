@@ -1073,7 +1073,7 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     val isPlaying = playerState.isPlaying
-                    val playerView = binder?.onlinePlayerView?.collectAsState()
+                    val playerView = binder?.youtubePlayerView?.collectAsState()
                     onlinePlayerView = playerView?.value
 
                     val castSheetState = rememberBottomSheetState(
@@ -1510,7 +1510,7 @@ class MainActivity : AppCompatActivity() {
                                     val binder = snapshotFlow { binder }.filterNotNull().first()
                                     withContext(Dispatchers.Main) {
                                         if (!song.explicit && !appSettings.parentalControlEnabled)
-                                            binder.exoPlayer.forcePlay(song.asMediaItem)
+                                            binder.exoPlayer?.forcePlay(song.asMediaItem)
                                         else
                                             SmartMessage(
                                                 "Parental control is enabled",
@@ -1613,7 +1613,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        binder?.onlinePlayer?.setVolume(100) // maybe is needed when webview lost audiofocus
+        binder?.youtubePlayer?.setVolume(100) // maybe is needed when webview lost audiofocus
 
         //preferences.edit(commit = true) { putBoolean(APP_IS_RUNNING.key, true) }
 

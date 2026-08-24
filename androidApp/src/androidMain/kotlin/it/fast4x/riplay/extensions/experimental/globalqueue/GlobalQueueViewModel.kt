@@ -328,9 +328,9 @@ class GlobalQueueViewModel() : ViewModel(), ViewModelProvider.Factory {
         if (queue.isNotEmpty()) {
             val currentMediaItem = queue[_currentIndex.value]
             if (currentMediaItem.isLocal)
-                controller.exoPlayer.forcePlay(currentMediaItem)
+                controller.exoPlayer?.forcePlay(currentMediaItem)
             else
-                controller.onlinePlayer?.loadVideo(currentMediaItem.mediaId, 0f)
+                controller.youtubePlayer?.loadVideo(currentMediaItem.mediaId, 0f)
         }
     }
 
