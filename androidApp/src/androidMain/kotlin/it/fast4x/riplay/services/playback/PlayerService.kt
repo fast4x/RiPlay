@@ -227,7 +227,6 @@ import kotlin.time.Duration.Companion.seconds
 import android.os.Binder as AndroidBinder
 import it.fast4x.riplay.extensions.appsettings.AppSettingsManager
 import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavConfig
-import it.fast4x.riplay.services.playback.common.MediaInfo
 import it.fast4x.riplay.services.playback.common.PlaybackContext
 import it.fast4x.riplay.services.playback.common.PlaybackState
 import it.fast4x.riplay.services.playback.common.PlayerState
@@ -558,8 +557,9 @@ class PlayerService : MediaLibraryService(),
         }
 
         serviceScope.launch {
-            currentSong.collect(serviceScope) { song ->
+            currentSong.collect { song ->
                 if (song == null) return@collect
+                if (currentMediaItemState.value?.mediaId != song.id) return@collect
 
                 Timber.d("PlayerService onCreate update currentSong $song mediaItemState ${currentMediaItemState.value}")
 
@@ -615,13 +615,11 @@ class PlayerService : MediaLibraryService(),
 
                 withContext(Dispatchers.Main) {
                     _playerState.update { currentState ->
-                        currentState.copy(
-                            mediaInfo = MediaInfo(
-                                mediaItem = song.asMediaItem,
-                                queueIndex = player.currentMediaItemIndex,
-                                queueSize = player.mediaItems.size
-                            ),
-                            errorMessage = null,
+                        currentState.withDatabaseMediaItemIfCurrent(
+                            currentMediaId = currentMediaItemState.value?.mediaId,
+                            databaseMediaItem = song.asMediaItem,
+                            queueIndex = player.currentMediaItemIndex,
+                            queueSize = player.mediaItemCount,
                         )
                     }
                 }
@@ -2183,8 +2181,6 @@ private fun updateOnlineNearEndTicks() {
             recordListeningEvent(mediaItem.mediaId)
         }
 
-        currentMediaItemState.value = mediaItem
-        localMediaItem = mediaItem
         _internalOnlinePlayer.value?.pause() // stop online player latency
 
         _currentSecond.value = 0F
@@ -2222,6 +2218,16 @@ private fun updateOnlineNearEndTicks() {
             SmartMessage(getString(R.string.warning_skipped_blacklisted_song), context = this@PlayerService)
             return
         }
+
+        currentMediaItemState.value = mediaItem
+        _playerState.update { state ->
+            state.withMediaTransition(
+                mediaItem = mediaItem,
+                queueIndex = player.currentMediaItemIndex,
+                queueSize = player.mediaItemCount,
+            )
+        }
+        localMediaItem = mediaItem
 
         mediaItem.let {
 

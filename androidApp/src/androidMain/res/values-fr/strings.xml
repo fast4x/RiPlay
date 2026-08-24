@@ -79,7 +79,7 @@
     <string name="reset_quick_picks">Réinitialiser la Sélection Rapide</string>
     <string name="quick_picks_are_cleared">La Sélection Rapide a été effacée</string>
     <string name="backup">SAUVEGARDE</string>
-    <string name="personal_preference">Backup includes all settings.</string>
+    <string name="personal_preference">La sauvegarde inclut tous les paramètres.</string>
     <string name="backup_1">Sauvegarde</string>
     <string name="export_the_database">Exporter la base de données vers le stockage externe</string>
     <string name="restore">RESTAURATION</string>
