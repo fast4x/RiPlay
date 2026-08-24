@@ -11,7 +11,7 @@ import it.fast4x.riplay.ui.styling.ColorPalette
 import it.fast4x.riplay.ui.styling.DefaultLightColorPalette
 import kotlinx.coroutines.launch
 
-val LocalMonetCompat = staticCompositionLocalOf { MonetCompat.getInstance() }
+//val LocalMonetCompat = staticCompositionLocalOf { MonetCompat.getInstance() }
 
 
 inline fun MonetCompat.invokeOnReady(

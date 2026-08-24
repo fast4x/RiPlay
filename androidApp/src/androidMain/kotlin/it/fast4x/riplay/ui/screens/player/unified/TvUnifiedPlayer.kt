@@ -13,6 +13,8 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,6 +60,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -123,10 +126,12 @@ import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.utils.shuffleQueue
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlin.time.Duration.Companion.milliseconds
 
 @ExperimentalSerializationApi
 @ExperimentalPermissionsApi
@@ -277,11 +282,12 @@ fun TvUnifiedPlayer(
 
     // ── Gestione Focus Iniziale Sicura ───────────────────────────
     LaunchedEffect(Unit) {
-        // Evita il fallimento silenzioso del focus attendendo il frame di layout
-        android.view.Choreographer.getInstance().postFrameCallback {
-            playPauseFocusRequester.requestFocus()
-        }
+        // 1. Aspetta un piccolissimo delay per dare tempo all'activity e alla UI di stabilizzarsi
+        delay(150.milliseconds)
+        // 2. Richiedi il focus in modo prioritario sul thread principale
+        playPauseFocusRequester.requestFocus()
     }
+
 
     // ── TV Focus indicator modifier ──────────────────────────────
     val tvFocusModifier: Modifier = Modifier.tvFocusIndicator()
@@ -308,21 +314,31 @@ fun TvUnifiedPlayer(
         modifier = Modifier
             .fillMaxSize()
             .background(color.background1)
-            .onKeyEvent { keyEvent ->
+            .onPreviewKeyEvent { keyEvent ->
+                // Usiamo onPreviewKeyEvent per intercettare i tasti hard-coded del telecomando
+                // PRIMA che tocchino i componenti figli, ma solo per i tasti multimediali dedicati!
                 if (keyEvent.type == KeyEventType.KeyDown) {
                     when (keyEvent.key) {
-                        Key.MediaPlayPause, Key.DirectionCenter -> {
+                        Key.MediaPlay, Key.MediaPause, Key.MediaPlayPause -> {
                             if (playerState.isPlaying) binder.exoPlayer?.pause() else binder.exoPlayer?.play()
-                            true
+                            true // Consumato, non passa ai figli
                         }
+
                         Key.MediaFastForward -> {
-                            binder.exoPlayer?.seekTo((binder.exoPlayer?.currentPosition ?: 0) + 10000)
+                            binder.exoPlayer?.seekTo(
+                                (binder.exoPlayer?.currentPosition ?: 0) + 10000
+                            )
                             true
                         }
+
                         Key.MediaRewind -> {
-                            binder.exoPlayer?.seekTo(((binder.exoPlayer?.currentPosition ?: 0) - 10000).coerceAtLeast(0))
+                            binder.exoPlayer?.seekTo(
+                                ((binder.exoPlayer?.currentPosition ?: 0) - 10000).coerceAtLeast(0)
+                            )
                             true
                         }
+                        // IMPORTANTE: Non intercettare Key.DirectionCenter (il tasto OK) o le frecce direzionali qui!
+                        // Altrimenti i bottoni sotto non riceveranno mai il click del telecomando.
                         else -> false
                     }
                 } else false
@@ -752,6 +768,7 @@ private fun TvSeekBar(
                             onSeek((position - stepMs).coerceAtLeast(0f))
                             true // Consuma l'evento: il focus resta inchiodato sulla seekbar
                         }
+
                         Key.DirectionRight -> {
                             onSeek((position + stepMs).coerceAtMost(duration))
                             true // Consuma l'evento: il focus resta inchiodato sulla seekbar
@@ -850,8 +867,18 @@ private fun MainControlsRow(
             icon = R.drawable.chevron_back,
             contentDescription = "Rewind",
             onClick = {
-                val newPos = ((binder.exoPlayer?.currentPosition ?: 0) - 10000).coerceAtLeast(0)
-                binder.exoPlayer?.seekTo(newPos)
+                val isLocal = binder.exoPlayer?.currentMediaItem?.isLocal == true
+                when (isLocal){
+                    true -> {
+                        val newPos =
+                            ((binder.exoPlayer?.currentPosition ?: 0) - 10000).coerceAtLeast(0)
+                        binder.exoPlayer?.seekTo(newPos)
+                    }
+                    false -> {
+                        val newPos = binder.youtubePlayerCurrentSecond.value.minus(10)
+                        binder.youtubePlayer?.seekTo(newPos)
+                    }
+                }
             }
         )
 
@@ -890,9 +917,18 @@ private fun MainControlsRow(
             icon = R.drawable.chevron_forward,
             contentDescription = "Forward",
             onClick = {
-                val newPos = ((binder.exoPlayer?.currentPosition ?: 0) + 10000)
-                    .coerceAtMost(binder.exoPlayer?.duration ?: 0)
-                binder.exoPlayer?.seekTo(newPos)
+                val isLocal = binder.exoPlayer?.currentMediaItem?.isLocal == true
+                when (isLocal){
+                    true -> {
+                        val newPos =
+                            ((binder.exoPlayer?.currentPosition ?: 0) + 10000).coerceAtLeast(0)
+                        binder.exoPlayer?.seekTo(newPos)
+                    }
+                    false -> {
+                        val newPos = binder.youtubePlayerCurrentSecond.value.plus(10)
+                        binder.youtubePlayer?.seekTo(newPos)
+                    }
+                }
             }
         )
 
@@ -1003,7 +1039,6 @@ private fun SecondaryActionsRow(
 // ═══════════════════════════════════════════════════════════════════
 // Reusable TV button with focus indicator
 // ═══════════════════════════════════════════════════════════════════
-
 @Composable
 fun TvPlayerButton(
     @DrawableRes icon: Int,
@@ -1015,49 +1050,66 @@ fun TvPlayerButton(
     isPrimary: Boolean = false,
 ) {
     val color = colorPalette()
-    var isFocused by remember { mutableStateOf(false) }
+    val interactionSource = remember { MutableInteractionSource() }
+    val isFocused by interactionSource.collectIsFocusedAsState()
 
-    // Animazione fluida per il telecomando TV
     val scale by animateFloatAsState(
-        targetValue = if (isFocused) 1.15f else 1f,
-        animationSpec = tween(150),
+        targetValue = if (isFocused) 1.22f else 1f,
+        animationSpec = tween(120),
         label = "scale"
     )
 
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            // 1. ORDINE FONDAMENTALE: Prima dichiariamo che il Box può essere focalizzato
-            .focusable()
-            // 2. Applichiamo il requester SOLO se viene passato dall'esterno (es. al Play/Pause)
-            .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
-            // 3. Ascoltiamo il cambio di stato del focus per attivare l'animazione grafica
-            .onFocusChanged { isFocused = it.isFocused }
-            // 4. Gestiamo il click del tasto centrale del telecomando D-pad
-            .clickable(onClick = onClick)
-            // 5. Dimensioni e design (la scala grafica viene applicata dopo il focus per non rompere i calcoli geometrici della TV)
-            .size(if (isPrimary) 72.dp else 52.dp)
+            .size(if (isPrimary) 74.dp else 54.dp)
             .scale(scale)
+            .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
+            .onFocusChanged { /* Lo stato è già gestito da interactionSource */ }
+            // 1. Rendiamo il componente focalizzabile in modo nativo
+            .focusable(interactionSource = interactionSource)
+            // 2. SOSTITUIAMO .clickable CON UN COMFORTAVOLE KEY EVENT HANDLER PER IL CLICK IMMEDIATO
+            .onKeyEvent { keyEvent ->
+                if (keyEvent.type == KeyEventType.KeyDown &&
+                    (keyEvent.key == Key.DirectionCenter || keyEvent.key == Key.Enter || keyEvent.key == Key.NumPadEnter)
+                ) {
+                    onClick() // Esegue l'azione IMMEDIATAMENTE al primo colpo
+                    true // Consuma l'evento in modo che non risalga al Box principale
+                } else {
+                    false
+                }
+            }
+            // 3. Stile visivo identico a prima
             .clip(CircleShape)
             .background(
-                if (isPrimary) color.accent
-                else if (isFocused) color.background2.copy(alpha = 0.6f)
-                else Color.Transparent
+                when {
+                    isFocused -> color.accent
+                    isPrimary -> color.accent.copy(alpha = 0.3f)
+                    else -> Color.Transparent
+                }
             )
             .then(
-                if (isFocused && !isPrimary)
-                    Modifier.border(2.dp, color.accent, CircleShape)
-                else Modifier
+                if (isFocused) {
+                    Modifier.border(3.dp, Color.White, CircleShape)
+                } else Modifier
             )
     ) {
         Icon(
             painter = painterResource(icon),
             contentDescription = contentDescription,
-            tint = if (isPrimary) color.onAccent else tint,
-            modifier = Modifier.size(if (isPrimary) 32.dp else 22.dp)
+            tint = when {
+                isFocused -> color.onAccent
+                isPrimary -> color.accent
+                else -> tint
+            },
+            modifier = Modifier.size(if (isPrimary) 34.dp else 24.dp)
         )
     }
 }
+
+
+
+
 
 
 /**
@@ -1084,7 +1136,10 @@ private fun TvLyricsOverlay(
 ) {
     Box(
         modifier = modifier
-            .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp))
+            .background(
+                Color.Black.copy(alpha = 0.6f),
+                RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp)
+            )
             .padding(24.dp)
     ) {
         Lyrics(

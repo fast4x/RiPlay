@@ -139,7 +139,6 @@ import it.fast4x.riplay.ui.styling.colorPaletteOf
 import it.fast4x.riplay.ui.styling.customColorPalette
 import it.fast4x.riplay.ui.styling.dynamicColorPaletteOf
 import it.fast4x.riplay.ui.styling.typographyOf
-import it.fast4x.riplay.utils.LocalMonetCompat
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.getDnsOverHttpsType
@@ -236,7 +235,7 @@ class MainActivity : AppCompatActivity() {
     private var shakeCounter = 0
 
     private var _monet: MonetCompat? = null
-    private val localMonet: MonetCompat get() = _monet ?: MonetCompat.getInstance()
+    private val localMonet: MonetCompat? get() = _monet
 
     private val pipState: MutableState<Boolean> = mutableStateOf(false)
 
@@ -391,10 +390,10 @@ class MainActivity : AppCompatActivity() {
                             MonetCompat.enablePaletteCompat()
                             MonetCompat.setup(this@MainActivity)
                             _monet = MonetCompat.getInstance()
-                            localMonet.setDefaultPalette()
+                            localMonet?.setDefaultPalette()
 
                             // Inizializzazione del listener nativo di MonetCompat
-                            localMonet.addMonetColorsChangedListener(
+                            localMonet?.addMonetColorsChangedListener(
                                 listener = object : MonetColorsChangedListener {
                                     override fun onMonetColorsChanged(
                                         monet: MonetCompat,
@@ -409,11 +408,11 @@ class MainActivity : AppCompatActivity() {
                             )
 
 
-                            localMonet.updateMonetColors()
+                            localMonet?.updateMonetColors()
 
                             Timber.d("MainActivity.onCreate Before localMonet.invokeOnReady")
 
-                            localMonet.invokeOnReady(this@MainActivity) {
+                            localMonet?.invokeOnReady(this@MainActivity) {
                                 Timber.d("MainActivity.onCreate Inside localMonet.invokeOnReady")
                                 cleanTempAudioCache(this@MainActivity)
                                 startApp()
@@ -837,10 +836,13 @@ class MainActivity : AppCompatActivity() {
                         val fontType = appSettings.fontType
 
                         if (colorPaletteName == ColorPaletteName.MaterialYou) {
-                            colorPalette = dynamicColorPaletteOf(
-                                Color(localMonet.getAccentColor(this@MainActivity)),
+                            localMonet?.let {
+                                colorPalette = dynamicColorPaletteOf(
+                                    Color(it.getAccentColor(this@MainActivity)),
                                 !lightTheme
-                            )
+                                )
+                            }
+
                         }
                         if (colorPaletteName == ColorPaletteName.CustomColor) {
                             Timber.d("MainActivity.startApp SetContent with(preferences) customColor PRE colorPalette: $colorPalette")
@@ -1134,7 +1136,7 @@ class MainActivity : AppCompatActivity() {
                                 LocalPlayerAwareWindowInsets provides playerAwareWindowInsets,
                                 LocalLayoutDirection provides LayoutDirection.Ltr,
                                 LocalPlayerSheetState provides localPlayerSheetState,
-                                LocalMonetCompat provides localMonet,
+                                //LocalMonetCompat provides localMonet,
                                 LocalSelectedQueue provides selectedQueue.value,
                                 LocalAudioTagger provides audioTaggerViewModel,
                                 LocalBackupManager provides backupManagerViewModel,
