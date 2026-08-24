@@ -230,6 +230,7 @@ import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavConfi
 import it.fast4x.riplay.services.playback.common.PlaybackContext
 import it.fast4x.riplay.services.playback.common.PlaybackState
 import it.fast4x.riplay.services.playback.common.PlayerState
+import it.fast4x.riplay.services.playback.common.restorePlayerVolume
 import it.fast4x.riplay.utils.BitmapLoader
 import it.fast4x.riplay.utils.CryptoManager
 import it.fast4x.riplay.utils.forcePlayAtIndex
@@ -4000,6 +4001,17 @@ private fun updateOnlineNearEndTicks() {
 
         val currentMediaItemAsSong: Song?
             get() = this@PlayerService.player.currentMediaItem?.asSong
+
+        fun restoreUserVolume() {
+            if (!_isServiceReady.value || !this@PlayerService::hybridPlayer.isInitialized) return
+            val currentSettings = appSettingsManager.activeSettings.value
+            restorePlayerVolume(
+                userVolume = currentSettings.userVolume,
+                isFading = isFading,
+                isServiceReady = true,
+                setVolume = hybridPlayer::setVolume,
+            )
+        }
 
         val riTuneCastClient: RiTuneCastClient
             @Synchronized

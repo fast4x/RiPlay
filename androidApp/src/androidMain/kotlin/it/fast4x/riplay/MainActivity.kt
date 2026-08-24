@@ -216,6 +216,9 @@ class MainActivity : AppCompatActivity() {
             if (service is PlayerService.Binder) {
                 this@MainActivity.binder = service
                 service.cancelTimer() // cancel sleep timer when service is connected, before app was closed
+                if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                    service.restoreUserVolume()
+                }
             }
 
         }
@@ -1613,7 +1616,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        binder?.onlinePlayer?.setVolume(100) // maybe is needed when webview lost audiofocus
+        binder?.restoreUserVolume()
 
         //preferences.edit(commit = true) { putBoolean(APP_IS_RUNNING.key, true) }
 
@@ -1664,6 +1667,7 @@ class MainActivity : AppCompatActivity() {
         }.onFailure {
             Timber.e("MainActivity.onStop unbindService ${it.stackTraceToString()}")
         }
+        binder = null
 
     }
 
