@@ -50,6 +50,9 @@ import it.fast4x.riplay.data.models.Song
 import kotlinx.coroutines.flow.first
 import kotlin.math.abs
 
+
+
+/* todo maybe in the future?
 @Composable
 fun PlayerArtistAlbumSections(
     artistsInfo: List<Info>?,
@@ -417,3 +420,5 @@ private fun SectionLabel(text: String) {
         letterSpacing = 0.08.em
     )
 }
+
+ */
