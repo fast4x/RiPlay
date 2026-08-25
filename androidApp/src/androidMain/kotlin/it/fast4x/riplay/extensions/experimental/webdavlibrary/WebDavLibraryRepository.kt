@@ -30,6 +30,8 @@ import timber.log.Timber
 import java.io.File
 import java.io.InputStream
 import java.net.URLDecoder
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class WebDavLibraryRepository() {
     val client = CustomHttpClient.okHttpClient
@@ -136,85 +138,13 @@ class WebDavLibraryRepository() {
         withContext(Dispatchers.IO) {
             client.newCall(request).execute().use { response ->
                 // 201 = Creata, 405 = Già esiste (Method Not Allowed).
-                if (response.code != 201 && response.code != 405) {
+                if (response.code != 200 && response.code != 201 && response.code != 405) {
                     throw IOException("Impossibile creare la cartella remota: ${response.code}")
                 }
             }
         }
     }
 
-    /**
-     * Esegue il backup di un file locale in modo atomico (Upload .tmp -> MOVE).
-     */
-    suspend fun uploadFileAtomically(config: WebDavConfig, remoteFolder: String, localFile: File) {
-        // 1. Assicurati che la cartella di backup esista
-        ensureRemoteFolderExists(config, remoteFolder)
-
-        val finalUrl = resolveUrl(config.baseUrl, "$remoteFolder/${localFile.name}")
-        val tempUrl = resolveUrl(config.baseUrl, "$remoteFolder/${localFile.name}.tmp")
-
-        // 2. Upload del file come .tmp
-        val requestBody = localFile.asRequestBody("application/octet-stream".toMediaType())
-        val putRequest = Request.Builder()
-            .url(tempUrl)
-            .put(requestBody)
-            .header("Authorization", Credentials.basic(config.username, config.password))
-            .build()
-
-        withContext(Dispatchers.IO) {
-            client.newCall(putRequest).execute().use { response ->
-                if (!response.isSuccessful) {
-                    throw IOException("Upload fallito: ${response.code}")
-                }
-            }
-
-            // 3. MOVE atomica da .tmp al nome finale
-            val moveRequest = Request.Builder()
-                .url(tempUrl)
-                .method("MOVE", "".toRequestBody("application/xml".toMediaType()))
-                .header("Destination", finalUrl.toString())
-                .header("Overwrite", "T") // T = True, sovrascrivi il vecchio backup
-                .header("Authorization", Credentials.basic(config.username, config.password))
-                .build()
-
-            client.newCall(moveRequest).execute().use { response ->
-                // 204 No Content è il successo standard per MOVE
-                if (!response.isSuccessful && response.code != 204) {
-                    throw IOException("Impossibile finalizzare il backup (MOVE fallito): ${response.code}")
-                }
-            }
-        }
-    }
-
-    /**
-     * Scarica il database remoto.
-     */
-    suspend fun downloadBackupFile(config: WebDavConfig, remoteFolder: String, localFile: File) {
-        val targetUrl = resolveUrl(config.baseUrl, "$remoteFolder/${localFile.name}")
-        val request = Request.Builder()
-            .url(targetUrl)
-            .get()
-            .header("Authorization", Credentials.basic(config.username, config.password))
-            .build()
-
-        withContext(Dispatchers.IO) {
-            client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) throw IOException("Download fallito: ${response.code}")
-
-                response.body?.byteStream()?.use { input ->
-                    localFile.outputStream().use { output ->
-                        input.copyTo(output)
-                    }
-                } ?: throw IOException("Body vuoto nel download")
-            }
-        }
-    }
-
-    // Helper per risolvere gli URL (semplificato, OkHttp è rigoroso sugli slash)
-    private fun resolveUrl(base: String, path: String): okhttp3.HttpUrl {
-        val fullUrl = base.trimEnd('/') + "/" + path.trimStart('/')
-        return fullUrl.toHttpUrl()
-    }
 
     suspend fun fetchMetadataFromRemoteFile(webDavConfig: WebDavConfig, remoteUrl: String): WebDavSongMetadata? {
         return withContext(Dispatchers.IO) {
@@ -262,6 +192,139 @@ class WebDavLibraryRepository() {
             }
         }
     }
+
+    /**
+     * Esegue il backup di un file locale in modo atomico (Upload .tmp -> MOVE).
+     */
+    suspend fun uploadFileAtomically(config: WebDavConfig, remoteFolder: String, localFile: File) {
+        // 1. Assicurati che la cartella di backup esista (qui usiamo resolveUrl che aggiunge lo slash, ed è giusto così)
+        ensureRemoteFolderExists(config, remoteFolder)
+
+        // 2. Costruiamo gli URL dei FILE manualmente, SENZA lo slash finale!
+        val baseUrl = config.baseUrl.trimEnd('/')
+        val folderPath = remoteFolder.trim('/')
+        // URL pulito: https://mioserver.com/path/RiPlayBackup/riplay_sync.db
+        val finalUrlStr = "$baseUrl/$folderPath/${localFile.name}"
+        val tempUrlStr = "$baseUrl/$folderPath/${localFile.name}.tmp"
+
+        val finalUrl = finalUrlStr.toHttpUrl()
+        val tempUrl = tempUrlStr.toHttpUrl()
+
+        // 3. Upload del file come .tmp
+        val requestBody = localFile.asRequestBody("application/octet-stream".toMediaType())
+        val putRequest = Request.Builder()
+            .url(tempUrl)
+            .put(requestBody)
+            .header("Authorization", Credentials.basic(config.username, config.password))
+            .build()
+
+        withContext(Dispatchers.IO) {
+            client.newCall(putRequest).execute().use { response ->
+                if (!response.isSuccessful) {
+                    throw IOException("WebDavLibraryRepository Upload fallito: ${response.code}")
+                }
+            }
+
+            // 4. MOVE atomica da .tmp al nome finale
+            val moveRequest = Request.Builder()
+                .url(tempUrl)
+                .method("MOVE", "".toRequestBody("application/xml".toMediaType()))
+                // Il destination vuole l'URL assoluto come stringa
+                .header("Destination", finalUrl.toString())
+                .header("Overwrite", "T") // T = True, sovrascrivi il vecchio backup
+                .header("Authorization", Credentials.basic(config.username, config.password))
+                .build()
+
+            client.newCall(moveRequest).execute().use { response ->
+                // Alcuni server rispondono 201 (Created) se il file non esisteva,
+                // altri 204 (No Content) se l'hanno sovrascritto. Accettiamo entrambi.
+                if (!response.isSuccessful && response.code != 204 && response.code != 201) {
+                    throw IOException("WebDavLibraryRepository Impossibile finalizzare il backup (MOVE fallito): ${response.code}")
+                }
+            }
+        }
+    }
+
+    /**
+     * Recupera la data di ultima modifica del file remoto.
+     * Ritorna un Long (millisecondi epoca) o 0 se il file non esiste.
+     */
+    suspend fun getRemoteFileLastModified(config: WebDavConfig, remoteFilePath: String): Long {
+        val targetUrl = resolveUrl(config.baseUrl, remoteFilePath)
+
+        val propfindBody = """
+        <?xml version="1.0" encoding="utf-8" ?>
+        <D:propfind xmlns:D="DAV:">
+            <D:prop>
+                <D:getlastmodified/>
+            </D:prop>
+        </D:propfind>
+    """.trimIndent()
+
+        val request = Request.Builder()
+            .url(targetUrl)
+            .method("PROPFIND", propfindBody.toRequestBody("application/xml; charset=utf-8".toMediaType()))
+            .header("Depth", "0") // Fondamentale: interroga solo il file, non lista la cartella
+            .header("Authorization", Credentials.basic(config.username, config.password))
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (response.code == 404) return@withContext 0L // File non esiste ancora
+                if (!response.isSuccessful) throw IOException("PROPFIND fallito: ${response.code}")
+
+                val xml = response.body?.string() ?: return@withContext 0L
+
+                // Estrai la data dal tag <D:getlastmodified>...</D:getlastmodified>
+                val regex = "<[^>]*getlastmodified[^>]*>(.*?)<".toRegex(RegexOption.IGNORE_CASE)
+                val match = regex.find(xml)
+
+                if (match != null) {
+                    try {
+                        val format = SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US)
+                        val date = format.parse(match.groupValues[1])
+                        date?.time ?: 0L
+                    } catch (e: Exception) {
+                        0L
+                    }
+                } else {
+                    0L
+                }
+            }
+        }
+    }
+
+    /**
+     * Scarica un file remoto in un file locale.
+     */
+    suspend fun downloadFile(config: WebDavConfig, remoteFilePath: String, localTempFile: File) {
+        val targetUrl = resolveUrl(config.baseUrl, remoteFilePath)
+
+        val request = Request.Builder()
+            .url(targetUrl)
+            .get()
+            .header("Authorization", Credentials.basic(config.username, config.password))
+            .build()
+
+        withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("Download fallito: ${response.code}")
+
+                response.body?.byteStream()?.use { input ->
+                    localTempFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                } ?: throw IOException("Body vuoto nel download")
+            }
+        }
+    }
+
+    // Helper per risolvere gli URL (semplificato, OkHttp è rigoroso sugli slash)
+    private fun resolveUrl(base: String, path: String): okhttp3.HttpUrl {
+        val fullUrl = base.trimEnd('/') + "/" + path.trimStart('/')
+        return fullUrl.toHttpUrl()
+    }
+
 
 }
 

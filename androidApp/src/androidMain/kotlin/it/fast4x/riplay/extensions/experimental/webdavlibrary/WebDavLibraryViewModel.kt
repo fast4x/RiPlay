@@ -1,9 +1,12 @@
 package it.fast4x.riplay.extensions.experimental.webdavlibrary
 
 import android.content.Context
+import android.content.Intent
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.util.UnstableApi
 import androidx.work.Constraints
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
@@ -13,14 +16,19 @@ import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Format
 import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.enums.RestoreMode
+import it.fast4x.riplay.extensions.databasebackup.BackupUiState
+import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
 import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavBrowserState
 import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavConfig
 import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavSongMetadata
 import it.fast4x.riplay.extensions.players.getOnlineMetadata
+import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.utils.WEBDAV_KEY_PREFIX
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.formatAsDuration
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,6 +39,9 @@ import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
+import java.io.File
+import java.io.IOException
+import kotlin.time.Duration.Companion.milliseconds
 
 class WebDavLibraryViewModel () : ViewModel(), ViewModelProvider.Factory {
 
@@ -209,7 +220,7 @@ class WebDavLibraryViewModel () : ViewModel(), ViewModelProvider.Factory {
         }
     }
 
-    fun databaseBackupSync(context: Context) {
+    fun syncDatabaseToWebDav(context: Context) {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.UNMETERED) // Solo Wi-Fi (risparmio dati)
             .setRequiresBatteryNotLow(true) // Non farlo se la batteria è al 5%
@@ -221,5 +232,62 @@ class WebDavLibraryViewModel () : ViewModel(), ViewModelProvider.Factory {
 
         WorkManager.getInstance(context)
             .enqueue(backupRequest)
+    }
+
+    /**
+     * Controlla se il backup remoto è più recente. Se sì, lo scarica, chiude il DB
+     * e chiede di riavviare l'app.
+     */
+    @androidx.annotation.OptIn(UnstableApi::class)
+    suspend fun syncDatabaseFromWebDav(context: Context, config: WebDavConfig) {
+        val repository = WebDavLibraryRepository()
+        val remoteDbPath = "RiPlaySync/riplay_sync.db"
+        val backupManager = DatabaseBackupManager(context, Database)
+
+        // 1. Recupera la data remota
+        val remoteLastModified = repository.getRemoteFileLastModified(config, remoteDbPath)
+        if (remoteLastModified == 0L) {
+            Timber.d("WebDavLibraryViewModel Nessun backup remoto trovato.")
+            return
+        }
+
+        // 2. Recupera la data locale
+        val localDbFile = context.getDatabasePath(Database.getDatabaseName)
+        val localLastModified = if (localDbFile.exists()) localDbFile.lastModified() else 0L
+        Timber.d("WebDavLibraryViewModel databaseName = ${Database.getDatabaseName} Data locale = $localLastModified Data remota = $remoteLastModified")
+
+
+        // 3. Confronto
+        if (remoteLastModified > localLastModified) {
+            Timber.d("WebDavLibraryViewModel Il backup remoto è più recente. Procedo al download.")
+
+            // File temporaneo in cache
+            val tempFile = File(context.cacheDir, "restore_tmp.db")
+
+            // 4. Download
+            repository.downloadFile(config, remoteDbPath, tempFile)
+
+            // 5. CHIUSURA CRITICA DEL DB e del servizio
+            context.stopService(Intent(context, PlayerService::class.java))
+
+            try {
+                backupManager.smartRestoredatabase(tempFile.toUri(), RestoreMode.REPLACE)
+                delay(1500.milliseconds)
+                val packageManager = context.packageManager
+                val launchIntent = packageManager.getLaunchIntentForPackage(context.packageName)
+                val restartIntent = Intent.makeRestartActivityTask(launchIntent?.component)
+                context.startActivity(restartIntent)
+                Runtime.getRuntime().exit(0)
+            } catch (e: IOException) {
+                Timber.e("WebDavLibraryViewModel Restore error: ${e.message}")
+            } catch (e: Exception) {
+                Timber.e("WebDavLibraryViewModel Unknown restore error: ${e.message}")
+            }
+
+            Timber.d("WebDavLibraryViewModel Database ripristinato con successo!")
+
+        } else {
+            Timber.d("WebDavLibraryViewModel Il database locale è aggiornato o più recente del cloud. Nessun download necessario.")
+        }
     }
 }

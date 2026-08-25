@@ -49,7 +49,6 @@ import it.fast4x.riplay.LocalAudioTagger
 import it.fast4x.riplay.LocalWebDavLibrary
 import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.R
-import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.MusicIdentifierProvider
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.colorPalette
@@ -666,10 +665,11 @@ fun AccountsSettings() {
                     }
                 }
 
+                /*
                 AnimatedVisibility(visible = webDavUrl.isNotEmpty() && webDavUsername.isNotEmpty() && webDavPassword.isNotEmpty()) {
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         SettingsDescription(
-                            text = "WebDAV Database Sync", //stringResource(R.string.webdav_sync),
+                            text = "Database Sync To WebDAV", //stringResource(R.string.webdav_sync),
                             important = true,
                             modifier = Modifier.weight(1f)
                         )
@@ -677,7 +677,7 @@ fun AccountsSettings() {
                         SecondaryTextButton(
                             text = stringResource(R.string.webdav_sync_now),
                             onClick = {
-                                webdavViewModel.databaseBackupSync(Dependencies.application)
+                                webdavViewModel.syncDatabaseToWebDav(Dependencies.application)
                             },
                             modifier = Modifier
                                 .weight(1f)
@@ -685,6 +685,38 @@ fun AccountsSettings() {
                         )
                     }
                 }
+
+                AnimatedVisibility(visible = webDavUrl.isNotEmpty() && webDavUsername.isNotEmpty() && webDavPassword.isNotEmpty()) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        SettingsDescription(
+                            text = "Database Sync from WebDAV", //stringResource(R.string.webdav_sync),
+                            important = true,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        SecondaryTextButton(
+                            text = stringResource(R.string.webdav_sync_now),
+                            onClick = {
+                                val appScope = Dependencies.application.appScopeIO
+                                appScope.launch {
+                                    webdavViewModel.syncDatabaseFromWebDav(
+                                        Dependencies.application,
+                                        WebDavConfig(
+                                            baseUrl = webDavUrl,
+                                            username = webDavUsername,
+                                            password = webDavPassword
+                                        )
+                                    )
+                                }
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 24.dp)
+                        )
+                    }
+                }
+
+                 */
             }
         }
 

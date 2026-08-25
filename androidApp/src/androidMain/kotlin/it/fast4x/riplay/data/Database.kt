@@ -119,8 +119,12 @@ interface Database {
     val getInstance: RoomDatabase
         get() = _internal
 
+    val getDatabaseName: String?
+        get() = getInstance.openHelper.databaseName
+
     // Proxy
     companion object : Database by DatabaseInitializer.createProxy() {
+
         // Lista Dao esposti
         fun songArtistCrossRefDao(): SongArtistCrossRefDao {
             return (DatabaseInitializer.Instance).songArtistCrossRefDao()
@@ -3687,6 +3691,7 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
     companion object {
 
         lateinit var Instance: DatabaseInitializer
+        const val DB_NAME = "data.db"
 
         fun createProxy(): Database = java.lang.reflect.Proxy.newProxyInstance(
             Database::class.java.classLoader,
@@ -3696,7 +3701,7 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
         } as Database
 
         private fun getDatabase() = Room
-            .databaseBuilder(appContext(), DatabaseInitializer::class.java, "data.db")
+            .databaseBuilder(appContext(), DatabaseInitializer::class.java, DB_NAME)
             .addMigrations(
                 From8To9Migration(),
                 From10To11Migration(),
