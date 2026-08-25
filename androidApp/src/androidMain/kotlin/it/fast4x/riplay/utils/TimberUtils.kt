@@ -12,10 +12,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class FileLoggingTree(private val logFile: File) : Timber.DebugTree() {
+class FileLoggingTree(private val logFile: File) : Timber.Tree() {
 
     private val maxLogSize = 5 * 1024 * 1024 // 5 MB
-
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS", Locale.getDefault())
 
     private fun getPriorityString(priority: Int): String {
@@ -32,22 +31,38 @@ class FileLoggingTree(private val logFile: File) : Timber.DebugTree() {
 
     override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
         if (priority >= Log.DEBUG) {
-            val log = generateLog(priority, tag, message)
-            if (!logFile.exists()) {
-                logFile.createNewFile()
+            // Try-catch per evitare crash silenziosi di Timber
+            try {
+                val log = generateLog(priority, tag, message, t)
+
+                // Sincronizzzione per evitare che thread multipli scrivano contemporaneamente
+                synchronized(this) {
+                    if (!logFile.exists()) {
+                        logFile.createNewFile() // Può lanciare IOException se la cartella non esiste
+                    }
+                    writeLog(logFile, log)
+                    ensureLogSize(logFile)
+                }
+            } catch (e: Exception) {
+                // Se la scrittura fallisce, lo stampiamo in Logcat per saperlo perchè timber non sarebbe inizializzato
+                Log.e("FileLoggingTree", "Errore scrittura log su file", e)
             }
-            writeLog(logFile, log)
-            ensureLogSize(logFile)
         }
     }
 
-    private fun generateLog(priority: Int, tag: String?, message: String): String {
+    private fun generateLog(priority: Int, tag: String?, message: String, t: Throwable?): String {
         val logTimeStamp = dateFormat.format(Date())
-
-        return StringBuilder().append(logTimeStamp).append(" ")
+        val sb = StringBuilder().append(logTimeStamp).append(" ")
             .append(getPriorityString(priority)).append(": ")
             .append(tag).append(" - ")
-            .append(message).append('\n').toString()
+            .append(message).append('\n')
+
+        // Se c'è un'eccezione, aggiungiamo lo stack trace al file!
+        if (t != null) {
+            sb.append(android.util.Log.getStackTraceString(t)).append('\n')
+        }
+
+        return sb.toString()
     }
 
     private fun writeLog(logFile: File, log: String) {
@@ -61,7 +76,6 @@ class FileLoggingTree(private val logFile: File) : Timber.DebugTree() {
     private fun ensureLogSize(logFile: File) {
         if (logFile.length() < maxLogSize) return
 
-        // We remove first 25% part of logs
         val startIndex = logFile.length() / 4
 
         val randomAccessFile = RandomAccessFile(logFile, "r")

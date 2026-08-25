@@ -27,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.BuildConfig
+import it.fast4x.riplay.Dependencies
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavigationBarPosition
@@ -246,6 +247,8 @@ fun MiscSettings() {
                     text = stringResource(R.string.if_enabled_create_a_log_file_to_highlight_errors),
                     isChecked = logDebugEnabled,
                     onCheckedChange = {
+                        Dependencies.application.initializeLog(it)
+
                         coroutineScope.launch {
                             val new = appSettingsManager.activeSettings.value.copy(logDebugEnabled = it)
                             appSettingsManager.updateSettings(new)
@@ -262,11 +265,12 @@ fun MiscSettings() {
                                 filec.delete()
 
 
-                        } else
+                        } else {
                             SmartMessage(
-                                context.resources.getString(R.string.restarting_riplay_is_required),
+                                context.resources.getString(R.string.done),
                                 type = PopupType.Info, context = context
                             )
+                        }
                     }
                 )
                 ImportantSettingsDescription(text = stringResource(R.string.restarting_riplay_is_required))

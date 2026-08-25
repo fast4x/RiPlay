@@ -33,8 +33,6 @@ import it.fast4x.riplay.extensions.musicbrainz.workers.WorkScheduler
 import it.fast4x.riplay.extensions.musicbrainz.workers.WorkerDependencies
 import it.fast4x.riplay.musicvault.initializeMusicVault
 import it.fast4x.riplay.services.playback.PlayerService
-import it.fast4x.riplay.utils.CryptoManager
-import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.InitializeEnvironment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,7 +42,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
 
@@ -52,11 +49,9 @@ class MainApplication : Application(), ImageLoaderFactory {
 
     // Stato condiviso accessibile ovunque, anche dai Service
     val networkConnectivity: StateFlow<NetworkConnectivity>
-        get() = _networkConnectivity
-
-    private val _networkConnectivity = MutableStateFlow<NetworkConnectivity>(
-        NetworkConnectivity.Disconnected
-    )
+        field = MutableStateFlow<NetworkConnectivity>(
+            NetworkConnectivity.Disconnected
+        )
 
     private val appScopeMain = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     val appScopeIO = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -89,7 +84,7 @@ class MainApplication : Application(), ImageLoaderFactory {
 
         appScopeMain.launch {
             observeNetworkType(this@MainApplication).collect {
-                _networkConnectivity.value = it
+                networkConnectivity.value = it
             }
         }
 
@@ -105,38 +100,22 @@ class MainApplication : Application(), ImageLoaderFactory {
         Dependencies.init(this)
 
         // Inizializza le impostazioni di app ed aspetto
-        appScopeIO.launch {
+        //appScopeIO.launch {
+        runBlocking {
             appSettingsManager.initialize()
             appearanceSettingsManager.initialize()
         }
 
         /***** CRASH LOG ALWAYS ENABLED *****/
-        val dir = filesDir.resolve("logs").also {
-            if (it.exists()) return@also
-            it.mkdir()
-        }
-        Thread.setDefaultUncaughtExceptionHandler(CrashReporter(dir.absolutePath))
-        /***** CRASH LOG ALWAYS ENABLED *****/
+        val logDir = getLogDir()
+        Thread.setDefaultUncaughtExceptionHandler(CrashReporter(logDir.absolutePath))
 
         /**** LOG *********/
-        val logEnabled = appSettingsManager.activeSettings.value.logDebugEnabled //preferences.getBoolean(LOG_DEBUG_ENABLED.key, false)
-        println("Log enabled: $logEnabled")
-        if (logEnabled) {
-            Timber.plant(FileLoggingTree(File(dir, "RiPlay_log.txt")))
-            Timber.d("Log enabled at ${dir.absolutePath}")
-        } else {
-            Timber.uprootAll()
-            Timber.plant(Timber.DebugTree())
-        }
-        /**** LOG *********/
+        val logEnabled = appSettingsManager.activeSettings.value.logDebugEnabled
+        initializeLog(logEnabled)
 
         if (BuildConfig.FLAVOR == "full") {
             initializeMusicVault(appScopeIO, this@MainApplication)
-//            appScopeIO.launch(Dispatchers.IO) {
-//                if (!Python.isStarted()) {
-//                    Python.start(AndroidPlatform(this@MainApplication))
-//                }
-//            }
         }
 
 
@@ -497,6 +476,30 @@ class MainApplication : Application(), ImageLoaderFactory {
                 }
             }
             .build()
+    }
+
+    private fun getLogDir(): File {
+        val logDir = filesDir.resolve("logs")
+        if (!logDir.exists()) {
+            logDir.mkdirs()
+        }
+
+        return logDir
+    }
+
+    fun initializeLog(logEnabled: Boolean) {
+        android.util.Log.d("MainApplication", "Log enabled setting: $logEnabled")
+        if (logEnabled) {
+            val logDir = getLogDir()
+            val logFile = File(logDir, "RiPlay_log.txt")
+            // Pianta l'albero personalizzato
+            Timber.plant(FileLoggingTree(logFile))
+            Timber.d("MainApplication Log enabled at ${logDir.absolutePath}")
+        } else {
+            // Rimuove tutti gli alberi precedenti e pianta solo quello di debug (Logcat)
+            Timber.uprootAll()
+            Timber.plant(Timber.DebugTree())
+        }
     }
 
 }
