@@ -443,7 +443,7 @@ class HybridPlayer (
             val finalVolume = if (!excludeLoudnessDb || ytLoudnessDb != 0f) minOf(1.0f, userVolume * normalizationFactor) else userVolume
 
             youtubeControl.setVolume(finalVolume)
-            Timber.d("HybridPlayer applyYtVolumeNormalization YT Normalization: userVol=$userVolume, loudness=$ytLoudnessDb, finalVol=$finalVolume")
+            //Timber.d("HybridPlayer applyVolumeNormalization YT Normalization: userVol=$userVolume, loudness=$ytLoudnessDb, finalVol=$finalVolume")
         } else {
             // Se è attivo ExoPlayer, il volume è gestito dal LoudnessEnhancer nativo,
             // quindi resettiamo il volume di ExoPlayer al puro volume utente.
