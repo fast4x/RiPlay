@@ -468,31 +468,32 @@ class PlayerService : MediaLibraryService(),
 
         super.onCreate()
 
-        // Inizializza app settings prima di tutto
+        // Carico le impostazioni prima di tutto
+        loadInitialSettingsFromDatabase()
+
+        // Lancio in sequenza le inizializzazioni necessarie anche per android auto sul thread principale
+        initializeBitmapProvider()
+        initializeHybridPlayerAndSession()
+
+        initializeVariables()
+        replaceOnlinePlayerView()
+        initializeOnlinePlayer()
+        initializeUnifiedMediaSession()
+
+        // Aggiorna subito il mediasession per allineare lo stato delle azioni
+        if (!_playerState.value.isPlaying && _internalOnlinePlayer.value == null) {
+            _playerState.update { it.copy(playbackState = PlaybackState.PAUSED) }
+            updateUnifiedMediasession()
+        }
+
+
+        // Lancio tutto il resto in uno scope diverso
         serviceScope.launch(Dispatchers.Main) {
 
-            // Esegui il setup dei settings in background sul dispatcher IO per non bloccare
+            // Avvio l'osservazione delle impostazioni
             withContext(Dispatchers.IO) {
                 startObservingSettings()
             }
-
-            initializeBitmapProvider()
-            initializeHybridPlayerAndSession()
-
-            initializeVariables()
-            replaceOnlinePlayerView()
-            initializeOnlinePlayer()
-
-
-            initializeUnifiedMediaSession()
-            // Aggiorna subito il mediasession per allineare lo stato delle azioni
-            if (!_playerState.value.isPlaying && _internalOnlinePlayer.value == null) {
-                _playerState.update { it.copy(playbackState = PlaybackState.PAUSED) }
-                updateUnifiedMediasession()
-            }
-
-
-            startForeground()
 
             checkAndRestoreTimer()
 
@@ -515,6 +516,8 @@ class PlayerService : MediaLibraryService(),
             initializeDiscordPresence()
 
             setupPersistentQueueAndObservers()
+
+            startForeground()
 
             _isServiceReady.value = true
         }
@@ -726,11 +729,14 @@ class PlayerService : MediaLibraryService(),
         }
     }
 
-    private fun startObservingSettings() {
+    fun loadInitialSettingsFromDatabase(){
         // Devo essere sicuro che le impostazioni siano pronte
         appSettings = runBlocking(Dispatchers.IO) {
             appSettingsManager.waitForInitialization()
         }
+    }
+
+    private fun startObservingSettings() {
         settingsObserverJob = serviceScope.launch {
             appSettingsManager.activeSettings      
                 .collect { settings -> 
@@ -1365,7 +1371,7 @@ class PlayerService : MediaLibraryService(),
         }
     }
     @ExperimentalCoroutinesApi
-    suspend private fun initializeOnlinePlayer(skipAutoload: Boolean = false) {
+    private fun initializeOnlinePlayer(skipAutoload: Boolean = false) {
 
         val onlinePlayerView = _internalOnlinePlayerView.value
 
