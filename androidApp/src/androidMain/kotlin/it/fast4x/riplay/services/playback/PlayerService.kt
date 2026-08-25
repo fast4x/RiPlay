@@ -4018,8 +4018,8 @@ private fun updateOnlineNearEndTicks() {
             @Synchronized
             get() = this@PlayerService.riTuneCastClient
 
-        val equalizer: EqualizerHelper
-            get() = this@PlayerService.equalizerHelper
+        val equalizer: EqualizerHelper?
+            get() = if (this@PlayerService::equalizerHelper.isInitialized) this@PlayerService.equalizerHelper else null
 
         val sleepTimerMillisLeft: StateFlow<Long?>?
             get() = timerJob?.millisLeft
