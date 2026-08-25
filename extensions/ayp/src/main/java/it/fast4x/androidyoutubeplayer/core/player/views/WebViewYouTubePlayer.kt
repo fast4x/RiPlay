@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
@@ -171,7 +172,7 @@ internal class WebViewYouTubePlayer constructor(
 
       // Rileva quando la WebView richiede il playback multimediale (HTML5 Video)
       override fun getDefaultVideoPoster(): Bitmap? {
-        requestAudioFocusEarly()
+        //requestAudioFocusEarly()
         return super.getDefaultVideoPoster()
       }
 
@@ -186,7 +187,7 @@ internal class WebViewYouTubePlayer constructor(
             .setAudioAttributes(playbackAttributes)
             .setAcceptsDelayedFocusGain(false)
             .setWillPauseWhenDucked(false) // Impedisce l'attenuazione automatica
-            .setOnAudioFocusChangeListener { /* Gestisci variazioni se necessario */ }
+            .setOnAudioFocusChangeListener(audioFocusChangeListener)
             .build()
 
           focusRequest?.let { audioManager.requestAudioFocus(it) }
@@ -202,7 +203,32 @@ internal class WebViewYouTubePlayer constructor(
 
     }
 
+  }
 
+  // Cerca il listener dell'audio focus dentro initWebView
+  val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
+    when (focusChange) {
+      AudioManager.AUDIOFOCUS_LOSS, -1 -> {
+        // Invece di subire la perdita di focus che silenzia la WebView,
+        // forziamo un micro-timer per rimettere il volume dell'IFrame a 100
+        Log.e("YOUTUBE_FIX", "Intercettato -1 dal sistema. Forzo lo sblocco del volume.")
+
+        // Richiama il codice JS che hai già ottimizzato
+        val triggerScript = """
+                (function() {
+                    if (typeof player !== 'undefined' && player && typeof player.setVolume === 'function') {
+                        player.unMute();
+                        player.setVolume(100);
+                    }
+                })();
+            """.trimIndent()
+
+        // Esegui sulla webview
+        this.postDelayed({
+          this.evaluateJavascript(triggerScript, null)
+        }, 100)
+      }
+    }
   }
 
   override fun onWindowVisibilityChanged(visibility: Int) {
@@ -212,6 +238,52 @@ internal class WebViewYouTubePlayer constructor(
     }
     super.onWindowVisibilityChanged(newVisibility)
   }
+
+  override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
+    super.onWindowFocusChanged(hasWindowFocus)
+    Log.e("YOUTUBE_FORK_DEBUG", "Focus hardware ricevuto con successo!")
+    // Scatta SEMPRE quando l'app torna visibile e interattiva per l'utente
+    if (hasWindowFocus) {
+      Log.e("YOUTUBE_FORK_DEBUG", "Focus hardware ricevuto con successo!")
+      triggerVolumeRestoreOnResume()
+    }
+  }
+
+  private fun triggerVolumeRestoreOnResume() {
+    val triggerScript = """
+        (function() {
+            if (typeof window.player !== 'undefined' || typeof player !== 'undefined') {
+                var activePlayer = typeof window.player !== 'undefined' ? window.player : player;
+                if (activePlayer && typeof activePlayer.getPlayerState === 'function') {
+                    var currentState = activePlayer.getPlayerState();
+                    console.log("YOUTUBE_JS_LOG: Stato del player al focus = " + currentState);
+                    
+                    // Applica il fix se il video sta andando (1) o sta caricando i buffer (3)
+                    if (currentState === 1 || currentState === 3) {
+                        var resumeChecks = 0;
+                        var resumeInterval = setInterval(function() {
+                            if (activePlayer && typeof activePlayer.unMute === 'function') {
+                                activePlayer.unMute();
+                                activePlayer.setVolume(100);
+                            }
+                            resumeChecks++;
+                            if (resumeChecks >= 5) {
+                                clearInterval(resumeInterval);
+                            }
+                        }, 150);
+                    }
+                }
+            }
+        })();
+    """.trimIndent()
+
+    // Attendiamo 300ms per dare tempo al mixer audio di Android di ricollegarsi
+    this.postDelayed({
+      this.evaluateJavascript(triggerScript, null)
+    }, 300)
+  }
+
+
 }
 
 @VisibleForTesting
