@@ -4010,7 +4010,7 @@ private fun updateOnlineNearEndTicks() {
                 userVolume = currentSettings.userVolume,
                 isFading = isFading,
                 isServiceReady = true,
-                setVolume = hybridPlayer::setVolume,
+                setVolume = { hybridPlayer.applyVolumeNormalization(true) },
             )
         }
 

@@ -1620,8 +1620,6 @@ class MainActivity : AppCompatActivity() {
 
         binder?.restoreUserVolume()
 
-        //preferences.edit(commit = true) { putBoolean(APP_IS_RUNNING.key, true) }
-
         runCatching {
             sensorManager?.registerListener(
                 sensorListener, sensorManager!!.getDefaultSensor(
