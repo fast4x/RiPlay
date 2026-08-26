@@ -74,24 +74,27 @@ class BackupViewModel(
         viewModelScope.launch {
             _uiState.value = BackupUiState.Restoring
             context.stopService(Intent(context, PlayerService::class.java))
-            delay(1500)
+            delay(1500.milliseconds)
             try {
                 backupManager.smartRestoredatabase(restoreUri, mode)
                 _uiState.value = BackupUiState.Success("Database restored, wait app will restart...")
-                delay(1500)
-                val packageManager = context.packageManager
-                val launchIntent = packageManager.getLaunchIntentForPackage(context.packageName)
-                val restartIntent = Intent.makeRestartActivityTask(launchIntent?.component)
-                context.startActivity(restartIntent)
-                Runtime.getRuntime().exit(0)
+                delay(1500.milliseconds)
             } catch (e: IOException) {
                 _uiState.value = BackupUiState.Error("Restore error: ${e.message}")
             } catch (e: Exception) {
                 _uiState.value = BackupUiState.Error("Unknown restore error: ${e.message}")
             }
+            restartApp()
         }
     }
 
+    fun restartApp() {
+        val packageManager = context.packageManager
+        val launchIntent = packageManager.getLaunchIntentForPackage(context.packageName)
+        val restartIntent = Intent.makeRestartActivityTask(launchIntent?.component)
+        context.startActivity(restartIntent)
+        Runtime.getRuntime().exit(0)
+    }
     fun clearState() {
         _uiState.value = BackupUiState.Idle
     }
