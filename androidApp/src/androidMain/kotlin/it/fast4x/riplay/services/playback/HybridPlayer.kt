@@ -447,7 +447,7 @@ class HybridPlayer (
                     0f // Se l'utente ha messo muto, resta a 0
                 }
             } else {
-                // Se excludeLoudnessDb è true O ytLoudnessDb è zero, usiamo il puro volume utente
+                // Se la normalizzazione è disabilitata e ytLoudnessDb è zero, usiamo il puro volume utente
                 userVolume
             }
 
