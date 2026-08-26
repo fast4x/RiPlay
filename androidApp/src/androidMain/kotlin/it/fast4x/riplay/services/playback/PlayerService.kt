@@ -3406,11 +3406,15 @@ private fun updateOnlineNearEndTicks() {
     )
 
     fun createCacheDataSource(): CacheDataSource.Factory {
+        val webDavPwdDecrypted = CryptoManager.decrypt(appSettings.webDavPassword)
+        if (webDavPwdDecrypted.isEmpty()) {
+            SmartMessage(getString(R.string.warning_you_must_re_enter_your_webdav_password), type = PopupType.Warning, context = this@PlayerService)
+        }
 
         val webDavConfig = WebDavConfig(
             baseUrl = appSettings.webDavUrl,
             username = appSettings.webDavUsername,
-            password = CryptoManager.decrypt(appSettings.webDavPassword)
+            password = webDavPwdDecrypted
         )
 
         // 1. Configura il client OkHttp con le credenziali WebDAV (se presenti)

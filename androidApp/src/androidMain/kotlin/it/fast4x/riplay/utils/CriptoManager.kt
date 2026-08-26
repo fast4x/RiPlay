@@ -1,74 +1,93 @@
 package it.fast4x.riplay.utils
 
-import android.security.keystore.KeyGenParameterSpec
-import android.security.keystore.KeyProperties
 import android.util.Base64
-import java.security.KeyStore
+import timber.log.Timber
+import java.security.MessageDigest
 import javax.crypto.Cipher
-import javax.crypto.KeyGenerator
-import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
+import javax.crypto.spec.SecretKeySpec
 
 object CryptoManager {
 
-    private const val KEY_ALIAS = "riplay_master_key"
     private const val IV_SIZE = 12
+    private const val TAG_BIT_LENGTH = 128
 
-    // Inizializzazione del KeyStore
-    private val keyStore: KeyStore = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
+    // Salt fisso dell'applicazione per irrobustire la generazione della chiave software.
+    private val SALT = byteArrayOf(
+        0x6a, 0x42, 0x74, 0x39, 0x2f, 0x6d, 0x4e, 0x51,
+        0x7a, 0x31, 0x6c, 0x57, 0x4b, 0x3d, 0x6f, 0x50
+    )
 
-    private fun createKeyIfNeeded() {
-        if (!keyStore.containsAlias(KEY_ALIAS)) {
-            val keyGenerator = KeyGenerator.getInstance(
-                KeyProperties.KEY_ALGORITHM_AES,
-                "AndroidKeyStore"
-            )
-            val spec = KeyGenParameterSpec.Builder(
-                KEY_ALIAS,
-                KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
-            )
-                .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                .setKeySize(256)
-                .build()
-            keyGenerator.init(spec)
-            keyGenerator.generateKey()
+    /**
+     * Genera una chiave AES a 256-bit deterministica e portabile.
+     * Sarà identica su qualsiasi dispositivo su cui gira RiPlay.
+     */
+    private fun getSecretKey(): SecretKeySpec {
+        return try {
+            val digest = MessageDigest.getInstance("SHA-256")
+            // Usiamo il package id fisso dell'app unito al nostro SALT
+            digest.update("it.fast4x.riplay".toByteArray(Charsets.UTF_8))
+            digest.update(SALT)
+            val keyBytes = digest.digest() // Genera esattamente 32 byte (256 bit)
+            SecretKeySpec(keyBytes, "AES")
+        } catch (e: Exception) {
+            // Fallback estremo in caso di anomalie algoritmiche
+            val fallbackBytes = ByteArray(32) { i -> (i * 3).toByte() }
+            SecretKeySpec(fallbackBytes, "AES")
         }
     }
 
-    private fun getSecretKey(): SecretKey =
-        (keyStore.getEntry(KEY_ALIAS, null) as KeyStore.SecretKeyEntry).secretKey
-
+    /**
+     * Cifra una stringa in modalità AES-GCM software.
+     */
     fun encrypt(plainText: String): String {
-        if (plainText.isEmpty()) return "" // Gestione stringa vuota
+        if (plainText.isEmpty()) return ""
 
-        createKeyIfNeeded()
-        val cipher = Cipher.getInstance("${KeyProperties.KEY_ALGORITHM_AES}/${KeyProperties.BLOCK_MODE_GCM}/${KeyProperties.ENCRYPTION_PADDING_NONE}")
-        cipher.init(Cipher.ENCRYPT_MODE, getSecretKey())
+        return try {
+            val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+            cipher.init(Cipher.ENCRYPT_MODE, getSecretKey())
 
-        val encryptedBytes = cipher.doFinal(plainText.toByteArray(Charsets.UTF_8))
-        val iv = cipher.iv
+            // Genera automaticamente un IV (Initialization Vector) casuale e sicuro per questa sessione
+            val iv = cipher.iv
+            val encryptedBytes = cipher.doFinal(plainText.toByteArray(Charsets.UTF_8))
 
-        val combined = ByteArray(iv.size + encryptedBytes.size)
-        System.arraycopy(iv, 0, combined, 0, iv.size)
-        System.arraycopy(encryptedBytes, 0, combined, iv.size, encryptedBytes.size)
+            // Uniamo l'IV e il testo cifrato in un unico array
+            val combined = ByteArray(iv.size + encryptedBytes.size)
+            System.arraycopy(iv, 0, combined, 0, iv.size)
+            System.arraycopy(encryptedBytes, 0, combined, iv.size, encryptedBytes.size)
 
-        return Base64.encodeToString(combined, Base64.NO_WRAP)
+            Base64.encodeToString(combined, Base64.NO_WRAP)
+        } catch (e: Exception) {
+            Timber.e("CryptoManager Errore durante l'encryption: ${e.message}")
+            ""
+        }
     }
 
+    /**
+     * Decifra una stringa cifrata con AES-GCM software.
+     * Fallisce silenziosamente invece di andare in crash se la decryptazione non va a buon fine a causa di una chiave errata.
+     */
     fun decrypt(encryptedText: String): String {
         if (encryptedText.isEmpty()) return ""
 
-        val combined = Base64.decode(encryptedText, Base64.NO_WRAP)
+        return try {
+            val combined = Base64.decode(encryptedText, Base64.NO_WRAP)
+            if (combined.size <= IV_SIZE) return ""
 
-        val iv = combined.copyOfRange(0, IV_SIZE)
-        val encryptedBytes = combined.copyOfRange(IV_SIZE, combined.size)
+            // Estraiamo l'IV dai primi 12 byte e il payload cifrato dal resto
+            val iv = combined.copyOfRange(0, IV_SIZE)
+            val encryptedBytes = combined.copyOfRange(IV_SIZE, combined.size)
 
-        val cipher = Cipher.getInstance("${KeyProperties.KEY_ALGORITHM_AES}/${KeyProperties.BLOCK_MODE_GCM}/${KeyProperties.ENCRYPTION_PADDING_NONE}")
-        val spec = GCMParameterSpec(128, iv)
-        cipher.init(Cipher.DECRYPT_MODE, getSecretKey(), spec)
+            val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+            val spec = GCMParameterSpec(TAG_BIT_LENGTH, iv)
+            cipher.init(Cipher.DECRYPT_MODE, getSecretKey(), spec)
 
-        val decryptedBytes = cipher.doFinal(encryptedBytes)
-        return String(decryptedBytes, Charsets.UTF_8)
+            val decryptedBytes = cipher.doFinal(encryptedBytes)
+            String(decryptedBytes, Charsets.UTF_8)
+        } catch (e: Exception) {
+            // Se fallisce  restituisce una stringa vuota ed evita il crash dell'app.
+            Timber.e("CryptoManager Decrittografia fallita (Dati obsoleti o corrotti): ${e.message}")
+            ""
+        }
     }
 }

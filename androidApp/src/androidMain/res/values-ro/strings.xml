@@ -1401,4 +1401,5 @@
     <string name="loading_msg_4">Tracks on the way…</string>
     <string name="loading_msg_5">Loading playlists…</string>
     <string name="loading_msg_6">All set. Happy listening!</string>
+    <string name="warning_you_must_re_enter_your_webdav_password">You must re-enter your WebDAV password</string>
 </resources>
