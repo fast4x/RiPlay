@@ -88,25 +88,15 @@ private class YouTubePlayerImpl(
   }
 }
 
-/*
-internal object FakeWebViewYouTubeListener : FullscreenListener {
-  override fun onEnterFullscreen(fullscreenView: View, exitFullscreen: () -> Unit) {}
-  override fun onExitFullscreen() {}
-}
- */
 
 /**
  * WebView implementation of [YouTubePlayer]. The player runs inside the WebView, using the IFrame Player API.
  */
-internal class WebViewYouTubePlayer constructor(
+internal class WebViewYouTubePlayer (
   context: Context,
-  //private val listener: FullscreenListener,
   attrs: AttributeSet? = null,
   defStyleAttr: Int = 0
 ) : WebView(context, attrs, defStyleAttr), YouTubePlayerBridge.YouTubePlayerBridgeCallbacks {
-
-  /** Constructor used by tools */
-  //constructor(context: Context) : this(context, FakeWebViewYouTubeListener)
 
   private val youTubePlayerCallbacks = YouTubePlayerCallbacks()
   private val _youTubePlayer = YouTubePlayerImpl(this, youTubePlayerCallbacks)
@@ -137,100 +127,45 @@ internal class WebViewYouTubePlayer constructor(
   @SuppressLint("SetJavaScriptEnabled")
   private fun initWebView(playerOptions: IFramePlayerOptions, videoId: String?) {
 
-    // Forza il rendering Hardware esplicito per questa WebView
+    // Configurazione hardware e reattività della View Android
     setLayerType(LAYER_TYPE_HARDWARE, null)
-
-    // Impedisce alla WebView di generare eventi sonori di click o focus nativi
     isSoundEffectsEnabled = false
     isHapticFeedbackEnabled = false
 
+    // Configurazione del motore Chromium (WebSettings)
     settings.apply {
       javaScriptEnabled = true
       domStorageEnabled = true
       mediaPlaybackRequiresUserGesture = false
+      cacheMode = WebSettings.LOAD_DEFAULT // Ottimizzazione aggressiva della cache
 
-      //cacheMode = WebSettings.LOAD_NO_CACHE
-
-      // Ottimizzazione aggressiva della Cache
-      cacheMode = WebSettings.LOAD_DEFAULT // Usa la cache se valida, altrimenti scarica
+      val userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
+      userAgentString = userAgent
 
     }
 
+    // Registrazione dei Bridge (Prima del caricamento della pagina!)
     addJavascriptInterface(youTubePlayerBridge, "YouTubePlayerBridge")
     addJavascriptInterface(youTubePlayerCallbacks, "YouTubePlayerCallbacks")
 
+    // 4. Configurazione snella del client grafico (Previene bug di rendering video in HTML5)
+    webChromeClient = object : WebChromeClient() {
+      override fun getDefaultVideoPoster(): Bitmap? {
+        return super.getDefaultVideoPoster()
+      }
+    }
+
+    // Generazione e Iniezione dell'HTML
     val htmlPage = readHTMLFromUTF8File(resources.openRawResource(R.raw.ayp_youtube_player))
       .replace("<<injectedVideoId>>", if (videoId != null) { "'$videoId'" } else { "undefined" })
       .replace("<<injectedPlayerVars>>", playerOptions.toString())
 
-    loadDataWithBaseURL(playerOptions.getOrigin(), htmlPage, "text/html", "utf-8", null)
-
-    webChromeClient = object : WebChromeClient() {
-
-      private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-      private var focusRequest: AudioFocusRequest? = null
-
-      // Rileva quando la WebView richiede il playback multimediale (HTML5 Video)
-      override fun getDefaultVideoPoster(): Bitmap? {
-        //requestAudioFocusEarly() // not needed
-        return super.getDefaultVideoPoster()
-      }
-
-      private fun requestAudioFocusEarly() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-          val playbackAttributes = AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_MEDIA)
-            .setContentType(AudioAttributes.CONTENT_TYPE_MOVIE)
-            .build()
-
-          focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-            .setAudioAttributes(playbackAttributes)
-            .setAcceptsDelayedFocusGain(false)
-            .setWillPauseWhenDucked(false) // Impedisce l'attenuazione automatica
-            .setOnAudioFocusChangeListener(audioFocusChangeListener)
-            .build()
-
-          focusRequest?.let { audioManager.requestAudioFocus(it) }
-        } else {
-          @Suppress("DEPRECATION")
-          audioManager.requestAudioFocus(
-            { },
-            AudioManager.STREAM_MUSIC,
-            AudioManager.AUDIOFOCUS_GAIN
-          )
-        }
-      }
-
-    }
-
+    // Caricamento definitivo impostando l'Origin corretto per bypassare le restrizioni CORS sui codec audio
+    val baseUrl = playerOptions.getOrigin()
+    loadDataWithBaseURL(baseUrl, htmlPage, "text/html", "utf-8", null)
   }
 
-  // Cerca il listener dell'audio focus dentro initWebView
-  val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
-    when (focusChange) {
-      AudioManager.AUDIOFOCUS_LOSS, -1 -> {
-        // Invece di subire la perdita di focus che silenzia la WebView,
-        // forziamo un micro-timer per rimettere il volume dell'IFrame a 100
-        Log.e("YOUTUBE_FIX", "Intercettato -1 dal sistema. Forzo lo sblocco del volume.")
-
-        // Richiama il codice JS che hai già ottimizzato
-        val triggerScript = """
-                (function() {
-                    if (typeof player !== 'undefined' && player && typeof player.setVolume === 'function') {
-                        player.unMute();
-                        player.setVolume(100);
-                    }
-                })();
-            """.trimIndent()
-
-        // Esegui sulla webview
-        this.postDelayed({
-          this.evaluateJavascript(triggerScript, null)
-        }, 100)
-      }
-    }
-  }
-
+  // Spostato il controllo della visibilità hardware: gestisce in autonomia il resume grafico dell'app
   override fun onWindowVisibilityChanged(visibility: Int) {
     var newVisibility = visibility
     if (isBackgroundPlaybackEnabled && (visibility == View.GONE || visibility == View.INVISIBLE)) {
@@ -239,16 +174,21 @@ internal class WebViewYouTubePlayer constructor(
     super.onWindowVisibilityChanged(newVisibility)
   }
 
+  // Gestione dell'hardware focus nativo
   override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
     super.onWindowFocusChanged(hasWindowFocus)
-    Log.e("YOUTUBE_FORK_DEBUG", "Focus hardware ricevuto con successo!")
-    // Scatta SEMPRE quando l'app torna visibile e interattiva per l'utente
+
+    // Scatta quando l'utente rimette l'applicazione in primo piano sul display
     if (hasWindowFocus) {
-      Log.e("YOUTUBE_FORK_DEBUG", "Focus hardware ricevuto con successo!")
+      //Log.e("YOUTUBE_FORK_DEBUG", "Focus hardware Window recuperato. Forzo sblocco volume.")
       triggerVolumeRestoreOnResume()
     }
   }
 
+  /**
+   * Forza il riallineamento del volume dell'IFrame di YouTube quando l'app torna dal background.
+   * Evita che il framework multimediale di Android mantenga l'audio attenuato (ducking).
+   */
   private fun triggerVolumeRestoreOnResume() {
     val triggerScript = """
         (function() {
@@ -258,7 +198,7 @@ internal class WebViewYouTubePlayer constructor(
                     var currentState = activePlayer.getPlayerState();
                     console.log("YOUTUBE_JS_LOG: Stato del player al focus = " + currentState);
                     
-                    // Applica il fix se il video sta andando (1) o sta caricando i buffer (3)
+                    // Il fix si attiva se il video è in PLAYING (1) o in BUFFERING (3)
                     if (currentState === 1 || currentState === 3) {
                         var resumeChecks = 0;
                         var resumeInterval = setInterval(function() {
@@ -277,14 +217,13 @@ internal class WebViewYouTubePlayer constructor(
         })();
     """.trimIndent()
 
-    // Attendiamo 300ms per dare tempo al mixer audio di Android di ricollegarsi
+    // Attendiamo 300ms per dare tempo al sistema operativo di ricollegare i canali audio hardware
     this.postDelayed({
       this.evaluateJavascript(triggerScript, null)
     }, 300)
   }
-
-
 }
+
 
 @VisibleForTesting
 internal fun readHTMLFromUTF8File(inputStream: InputStream): String {

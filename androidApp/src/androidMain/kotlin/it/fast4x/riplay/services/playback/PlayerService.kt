@@ -1199,7 +1199,7 @@ class PlayerService : MediaLibraryService(),
     @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     fun recreateOnlinePlayerView() {
         replaceOnlinePlayerView()
-        serviceScope.launch { initializeOnlinePlayer(skipAutoload = true) }
+        initializeOnlinePlayer(skipAutoload = true)
     }
 
     @kotlin.OptIn(ExperimentalCoroutinesApi::class)
@@ -1728,11 +1728,12 @@ class PlayerService : MediaLibraryService(),
             keepScreenOn = isKeepScreenOnEnabled()
 
             val iFramePlayerOptions = IFramePlayerOptions.Builder(appContext())
-                .controls(0)
                 .listType("playlist")
-                .origin(resources.getString(R.string.env_fqqhBZd0cf))
-                .autoplay(1)
-                .mute(1)
+                // PREDEFINED VALUES NOT SET HERE
+                //.controls(0)
+                //.origin(resources.getString(R.string.env_fqqhBZd0cf))
+                //.autoplay(1)
+                //.mute(1)
                 .build()
 
 
