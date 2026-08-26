@@ -431,24 +431,32 @@ class HybridPlayer (
     /**
      * Applica l'attenuazione se siamo su YouTube ma su richiesta se main activity viene da un resume.
      */
-    fun applyVolumeNormalization(excludeLoudnessDb: Boolean = false) {
+    fun applyVolumeNormalization() {
         if (activeEngine == ActiveEngine.YOUTUBE) {
-            // Formula: fattore = 10^(-loudnessDb / 20)
-            // Se loudnessDb è +5 (brano forte), il fattore sarà ~0.56 (attenua)
-            // Se loudnessDb è -5 (brano debole), il fattore sarebbe ~1.77, ma minOf lo blocca a 1.0
-            val normalizationFactor = 10.0.pow((-ytLoudnessDb / 20.0)).toFloat()
+            val volumeNormalizationEnabled = playerService.appSettings.volumeNormalizationEnabled
 
-            // Il volume finale non può mai superare 1.0 (limite fisico della WebView)
-            // Usiamo loudneddDb solo se diverso da 0
-            val finalVolume = if (!excludeLoudnessDb || ytLoudnessDb != 0f) minOf(1.0f, userVolume * normalizationFactor) else userVolume
+            // 1. Calcoliamo il fattore solo se NON dobbiamo escludere il loudness E se il loudness non è zero
+            val finalVolume = if (volumeNormalizationEnabled && ytLoudnessDb != 0f) {
+                val normalizationFactor = 10.0.pow((-ytLoudnessDb / 20.0)).toFloat()
+
+                // Applichiamo la normalizzazione ma imponiamo un limite inferiore (es. 0.01f)
+                // per evitare che brani con loudness anomalo azzerino l'audio se l'utente ha il volume alto.
+                if (userVolume > 0f) {
+                    maxOf(0.01f, minOf(1.0f, userVolume * normalizationFactor))
+                } else {
+                    0f // Se l'utente ha messo muto, resta a 0
+                }
+            } else {
+                // Se excludeLoudnessDb è true O ytLoudnessDb è zero, usiamo il puro volume utente
+                userVolume
+            }
 
             youtubeControl.setVolume(finalVolume)
-            //Timber.d("HybridPlayer applyVolumeNormalization YT Normalization: userVol=$userVolume, loudness=$ytLoudnessDb, finalVol=$finalVolume")
+            //Timber.d("HybridPlayer applyVolumeNormalization YT: finalVol=$finalVolume")
         } else {
-            // Se è attivo ExoPlayer, il volume è gestito dal LoudnessEnhancer nativo,
-            // quindi resettiamo il volume di ExoPlayer al puro volume utente.
             exoPlayer.volume = userVolume
         }
     }
+
 
 }
