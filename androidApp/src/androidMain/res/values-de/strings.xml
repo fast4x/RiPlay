@@ -1397,4 +1397,11 @@ Mach dich bereit, deine unvergesslichsten musikalischen Momente noch einmal zu e
     <string name="crossfade_duration_7_seconds">7 seconds</string>
     <string name="crossfade_duration_9_seconds">9 seconds</string>
     <string name="crossfade_duration_12_seconds">12 seconds</string>
+    <string name="restart_is_not_required">Restart isn\'t required</string>
+    <string name="loading_msg_1">Finding the right rhythm…</string>
+    <string name="loading_msg_2">Turning up the volume…</string>
+    <string name="loading_msg_3">Tuning frequencies…</string>
+    <string name="loading_msg_4">Tracks on the way…</string>
+    <string name="loading_msg_5">Loading playlists…</string>
+    <string name="loading_msg_6">All set. Happy listening!</string>
 </resources>

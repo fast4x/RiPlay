@@ -1394,4 +1394,12 @@
     <string name="crossfade_duration_7_seconds">7 seconds</string>
     <string name="crossfade_duration_9_seconds">9 seconds</string>
     <string name="crossfade_duration_12_seconds">12 seconds</string>
+    <string name="restart_is_not_required">Non è richiesto il riavvio</string>
+    <string name="loading_msg_1">Cercando il ritmo giusto…</string>
+    <string name="loading_msg_2">Sto alzando il volume…</string>
+    <string name="loading_msg_3">Sintonizzando le frequenze…</string>
+    <string name="loading_msg_4">Tracce in arrivo…</string>
+    <string name="loading_msg_5">Caricamento delle playlist…</string>
+    <string name="loading_msg_6">Tutto pronto. Buon ascolto!</string>
+
 </resources>

@@ -60,6 +60,8 @@ chaquopy = "17.0.0"
 runtime = "1.11.3"
 camerax = "1.6.1"
 zxing = "3.5.4"
+splashscreen = "1.2.0"
+runtimeVersion = "1.12.0"
 
 
 [libraries]
@@ -152,6 +154,9 @@ camerax-core = { module = "androidx.camera:camera-core", version.ref = "camerax"
 camerax-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camerax" }
 camerax-camera-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
 zxing-core = { module = "com.google.zxing:core", version.ref = "zxing"}
+splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "splashscreen"}
+androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtimeVersion" }
+
 
 #androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
 #geckoView = { group = "org.mozilla.geckoview", name = "geckoview", version.ref = "geckoview" }

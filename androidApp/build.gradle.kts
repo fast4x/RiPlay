@@ -121,6 +121,7 @@ kotlin {
         implementation(libs.camerax.camera2)
         implementation(libs.camerax.camera.view)
         implementation(libs.zxing.core)
+        implementation(libs.splashscreen)
 
     }
 

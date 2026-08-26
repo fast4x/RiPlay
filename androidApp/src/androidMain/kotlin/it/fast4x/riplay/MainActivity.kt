@@ -46,10 +46,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.RippleConfiguration
 import androidx.compose.material3.Surface
 import androidx.compose.material3.ripple
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -186,6 +188,7 @@ import java.util.Objects
 import kotlin.math.sqrt
 import androidx.compose.ui.platform.LocalLocale
 import androidx.core.content.ContextCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
@@ -202,9 +205,12 @@ import it.fast4x.riplay.extensions.musicbrainz.viewmodels.AlbumInsightsViewModel
 import it.fast4x.riplay.extensions.musicbrainz.viewmodels.ArtistInsightsViewModel
 import it.fast4x.riplay.extensions.nsd.NsdDiscoveryManager
 import it.fast4x.riplay.extensions.preferences.cleanUpUnusedPreferences
+import it.fast4x.riplay.ui.components.themed.RiPlayScreenLoader
 import it.fast4x.riplay.ui.screens.player.unified.TvUnifiedPlayer
 import it.fast4x.riplay.utils.isTVDevice
 import it.fast4x.riplay.utils.isTvMode
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.seconds
 
 
 @UnstableApi
@@ -333,13 +339,17 @@ class MainActivity : AppCompatActivity() {
 
 
     @ExperimentalSerializationApi
-    @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
+    @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class,
+        ExperimentalMaterial3ExpressiveApi::class
+    )
     @ExperimentalMaterialApi
     @ExperimentalTextApi
     @UnstableApi
     @ExperimentalComposeUiApi
     @ExperimentalPermissionsApi
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
+        splashScreen.setKeepOnScreenCondition { false }
         super.onCreate(savedInstanceState)
 
 //        if (BuildConfig.DEBUG) {
@@ -374,28 +384,48 @@ class MainActivity : AppCompatActivity() {
 
         enableFullscreenMode()
 
+        // Refactoring dell'avvio dell'app in modo da usare una schermata iniziale personalizzata
+        // 1. Stati della UI
+        var isLoading by mutableStateOf(true)
+        var playerServiceIsReady by mutableStateOf(false)
+        val delayToStart = 4.seconds
+
+        // 2. setContent viene chiamato UNA VOLTA e osserva lo stato
+        setContent {
+            if (isLoading) {
+                // Mostra il loader finché isLoading è true
+                RiPlayScreenLoader()
+            } else {
+                // Quando isLoading diventa false, mostra l'app
+                StartApp()
+            }
+        }
+
+        // 3. La logica di monitoraggio della creazione e disponibilità del service
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 PlayerService.isServiceReady.collect { isReady ->
-                    if (isReady) {
+                    if (isReady && !playerServiceIsReady) {
+                        playerServiceIsReady = true // Evita che venga rieseguito ad ogni emissione
                         Timber.d("MainActivity - PlayerService pronto! Sblocco la UI.")
 
                         val isTv = isTVDevice()
                         if (isTv) {
-                            // Nella tv non c'è wallpaper manager quindi ignoriamo monet
                             Timber.d("MainActivity.onCreate - Rilevata Android TV: Skip MonetCompat")
                             cleanTempAudioCache(this@MainActivity)
-                            startApp()
+
+                            // Spostiamo il delay qui, prima di nascondere il loader
+                            delay(delayToStart)
+                            isLoading = false
+
                         } else {
                             // Flusso originale per smartphone/tablet
                             Timber.d("MainActivity.onCreate - Dispositivo standard: Inizializzazione MonetCompat")
-
                             MonetCompat.enablePaletteCompat()
                             MonetCompat.setup(this@MainActivity)
                             _monet = MonetCompat.getInstance()
                             localMonet?.setDefaultPalette()
 
-                            // Inizializzazione del listener nativo di MonetCompat
                             localMonet?.addMonetColorsChangedListener(
                                 listener = object : MonetColorsChangedListener {
                                     override fun onMonetColorsChanged(
@@ -405,26 +435,27 @@ class MainActivity : AppCompatActivity() {
                                     ) {
                                         Timber.d("MainActivity.onCreate MonetColorsChangedListener colors changed")
                                     }
-
                                 },
                                 notifySelf = false
                             )
 
-
                             localMonet?.updateMonetColors()
-
                             Timber.d("MainActivity.onCreate Before localMonet.invokeOnReady")
 
                             localMonet?.invokeOnReady(this@MainActivity) {
                                 Timber.d("MainActivity.onCreate Inside localMonet.invokeOnReady")
                                 cleanTempAudioCache(this@MainActivity)
-                                startApp()
+
+                                // invokeOnReady usa una callback, quindi dobbiamo lanciare
+                                // una coroutine al suo interno per usare il delay
+                                lifecycleScope.launch {
+                                    delay(delayToStart)
+                                    isLoading = false // Ora Compose nasconderà il loader e mostrerà l'app!
+                                }
                             }
                         }
-
-                    } else {
+                    } else if (!isReady) {
                         Timber.d("MainActivity - In attesa del PlayerService...")
-                        // todo visualizzare loader?
                     }
                 }
             }
@@ -531,6 +562,7 @@ class MainActivity : AppCompatActivity() {
         ) maybeEnterPip()
     }
 
+    @Composable
     @SuppressLint("UnusedBoxWithConstraintsScope")
     @OptIn(
         ExperimentalTextApi::class,
@@ -539,7 +571,7 @@ class MainActivity : AppCompatActivity() {
     )
     @ExperimentalSerializationApi
     @ExperimentalPermissionsApi
-    fun startApp() {
+    fun StartApp() {
         val launchedFromNotification: Boolean =
             intent?.extras?.let {
                 it.getBoolean("expandPlayerBottomSheet") || it.getBoolean("fromWidget")
@@ -549,145 +581,143 @@ class MainActivity : AppCompatActivity() {
 
         intentUriData = intent.data ?: intent.getStringExtra(Intent.EXTRA_TEXT)?.toUri()
 
-        setContent {
+        AppViewModelProvider {
 
-            AppViewModelProvider {
-
-                StorageWarningChecker()
+            StorageWarningChecker()
 
 
-                val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
-                val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+            val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+            val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
-                Timber.d("MainActivity onCreate appSettings: $appSettings")
+            Timber.d("MainActivity onCreate appSettings: $appSettings")
 
-                if (appSettings.keepScreenEnabled) {
-                    window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            if (appSettings.keepScreenEnabled) {
+                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+
+            if (appSettings.proxyEnabled ) {
+                val hostName = appSettings.proxyHostname
+                val proxyPort = appSettings.proxyPort
+                val proxyMode = appSettings.proxyMode
+                if (isValidIP(hostName)) {
+                    if (hostName.isNotBlank() && proxyPort != 0)
+                        ProxyPreferences.preference =
+                            ProxyPreferenceItem(hostName, proxyPort, proxyMode)
+                } else {
+                    SmartMessage(
+                        "Your Proxy Hostname is invalid, please check it",
+                        PopupType.Warning,
+                        context = this@MainActivity
+                    )
                 }
+            }
 
-                if (appSettings.proxyEnabled ) {
-                    val hostName = appSettings.proxyHostname
-                    val proxyPort = appSettings.proxyPort
-                    val proxyMode = appSettings.proxyMode
-                    if (isValidIP(hostName)) {
-                        if (hostName.isNotBlank() && proxyPort != 0)
-                            ProxyPreferences.preference =
-                                ProxyPreferenceItem(hostName, proxyPort, proxyMode)
-                    } else {
-                        SmartMessage(
-                            "Your Proxy Hostname is invalid, please check it",
-                            PopupType.Warning,
-                            context = this@MainActivity
-                        )
-                    }
+            // Istanzia il manager NSD
+            val nsdDiscoveryManager = remember { NsdDiscoveryManager(this) }
+            val scope = rememberCoroutineScope()
+
+            // Costante per il permesso di Android 17 (Usa la stringa esplicita per retrocompatibilità)
+            val localNetworkPermission = "android.permission.ACCESS_LOCAL_NETWORK"
+
+            // Funzione helper isolata che avvia la raccolta dati dal Flow
+            fun startNsdCollection() {
+                scope.launch {
+                    nsdDiscoveryManager.discoverServices("_RiPlayLinkApp._tcp.")
+                        .collect { devicesList ->
+                            GlobalSharedData.riTuneDevices.value = devicesList
+                                .map { device -> device.toRiTuneDevice() }
+                                .toMutableStateList()
+                        }
                 }
+            }
 
-                // Istanzia il manager NSD
-                val nsdDiscoveryManager = remember { NsdDiscoveryManager(this) }
-                val scope = rememberCoroutineScope()
-
-                // Costante per il permesso di Android 17 (Usa la stringa esplicita per retrocompatibilità)
-                val localNetworkPermission = "android.permission.ACCESS_LOCAL_NETWORK"
-
-                // Funzione helper isolata che avvia la raccolta dati dal Flow
-                fun startNsdCollection() {
-                    scope.launch {
-                        nsdDiscoveryManager.discoverServices("_RiPlayLinkApp._tcp.")
-                            .collect { devicesList ->
-                                GlobalSharedData.riTuneDevices.value = devicesList
-                                    .map { device -> device.toRiTuneDevice() }
-                                    .toMutableStateList()
-                            }
-                    }
+            // Launcher per la richiesta del permesso di runtime (Android 17+)
+            val permissionLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.RequestPermission()
+            ) { isGranted ->
+                if (isGranted) {
+                    // Permesso concesso, avvia il discovery
+                    startNsdCollection()
+                } else {
+                    // Permesso negato, resetta lo stato della UI per evitare loop o disattiva il cast
+                    GlobalSharedData.riTuneDevices.value = mutableListOf()
+                    // Opzionale: rimetti appSettings.castType a CastType.NONE o mostra un avviso
                 }
+            }
 
-                // Launcher per la richiesta del permesso di runtime (Android 17+)
-                val permissionLauncher = rememberLauncherForActivityResult(
-                    contract = ActivityResultContracts.RequestPermission()
-                ) { isGranted ->
-                    if (isGranted) {
-                        // Permesso concesso, avvia il discovery
-                        startNsdCollection()
-                    } else {
-                        // Permesso negato, resetta lo stato della UI per evitare loop o disattiva il cast
-                        GlobalSharedData.riTuneDevices.value = mutableListOf()
-                        // Opzionale: rimetti appSettings.castType a CastType.NONE o mostra un avviso
-                    }
-                }
+            // Gestione del ciclo di vita reattivo condizionale
+            LaunchedEffect(appSettings.castType) {
+                if (appSettings.castType == CastType.RITUNECAST) {
+                    // Verifica se siamo su Android 17+ (API 37) o versioni successive
+                    if (Build.VERSION.SDK_INT >= 37) {
+                        val isGranted = ContextCompat.checkSelfPermission(
+                            this@MainActivity,
+                            localNetworkPermission
+                        ) == PackageManager.PERMISSION_GRANTED
 
-                // Gestione del ciclo di vita reattivo condizionale
-                LaunchedEffect(appSettings.castType) {
-                    if (appSettings.castType == CastType.RITUNECAST) {
-                        // Verifica se siamo su Android 17+ (API 37) o versioni successive
-                        if (Build.VERSION.SDK_INT >= 37) {
-                            val isGranted = ContextCompat.checkSelfPermission(
-                                this@MainActivity,
-                                localNetworkPermission
-                            ) == PackageManager.PERMISSION_GRANTED
-
-                            if (isGranted) {
-                                // Abbiamo già il permesso, partiamo direttamente in silenzio
-                                startNsdCollection()
-                            } else {
-                                // Primo avvio o permesso revocato: chiedi il consenso all'utente
-                                permissionLauncher.launch(localNetworkPermission)
-                            }
-                        } else {
-                            // Versioni precedenti ad Android 17: mDNS è libero, partiamo subito senza prompt!
+                        if (isGranted) {
+                            // Abbiamo già il permesso, partiamo direttamente in silenzio
                             startNsdCollection()
+                        } else {
+                            // Primo avvio o permesso revocato: chiedi il consenso all'utente
+                            permissionLauncher.launch(localNetworkPermission)
                         }
                     } else {
-                        // Se l'utente cambia tipo di cast, svuota la lista in modo pulito
-                        GlobalSharedData.riTuneDevices.value = mutableListOf()
+                        // Versioni precedenti ad Android 17: mDNS è libero, partiamo subito senza prompt!
+                        startNsdCollection()
                     }
+                } else {
+                    // Se l'utente cambia tipo di cast, svuota la lista in modo pulito
+                    GlobalSharedData.riTuneDevices.value = mutableListOf()
                 }
+            }
 
-                if (appSettings.shakeEventEnabled) {
-                    sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
-                    Objects.requireNonNull(sensorManager)
-                        ?.registerListener(
-                            sensorListener,
-                            sensorManager
-                                ?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-                            SensorManager.SENSOR_DELAY_NORMAL
-                        )
-                }
-
-
-                isclosebackgroundPlayerEnabled = appSettings.closeBackgroundPlayerAfterMinutes != DurationInMinutes.Disabled
-
-                showAutostartPermissionDialog = appSettings.showAutostartPermissionDialog
+            if (appSettings.shakeEventEnabled) {
+                sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+                Objects.requireNonNull(sensorManager)
+                    ?.registerListener(
+                        sensorListener,
+                        sensorManager
+                            ?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+                        SensorManager.SENSOR_DELAY_NORMAL
+                    )
+            }
 
 
+            isclosebackgroundPlayerEnabled = appSettings.closeBackgroundPlayerAfterMinutes != DurationInMinutes.Disabled
 
-                val state = binder?.playerState?.collectAsState()
-                playerState = state?.value ?: PlayerState()
-                Timber.d("MainActivity onCreate playerState: $playerState")
+            showAutostartPermissionDialog = appSettings.showAutostartPermissionDialog
 
-                //Check if webview component exists
-                var webViewInfo by remember { mutableStateOf<WebViewInfo>(WebViewInfo()) }
-                LaunchedEffect(Unit) {
-                    webViewInfo = getWebViewInfo(this@MainActivity)
-                    if (!webViewInfo.isWebViewAvailable)
-                        SmartMessage(
-                            "Android WebView not available, please install or update system",
-                            PopupType.Error,
-                            durationLong = true,
-                            context = this@MainActivity
-                        )
-                }
 
-                val backupLauncher = rememberLauncherForActivityResult(
-                    contract = ActivityResultContracts.CreateDocument("application/octet-stream")
-                ) { uri ->
-                    backupManagerViewModel.performBackup(uri)
-                }
 
-                val restoreLauncher = rememberLauncherForActivityResult(
-                    contract = ActivityResultContracts.OpenDocument()
-                ) { uri ->
-                    backupManagerViewModel.performRestore(uri)
-                }
+            val state = binder?.playerState?.collectAsState()
+            playerState = state?.value ?: PlayerState()
+            Timber.d("MainActivity onCreate playerState: $playerState")
+
+            //Check if webview component exists
+            var webViewInfo by remember { mutableStateOf<WebViewInfo>(WebViewInfo()) }
+            LaunchedEffect(Unit) {
+                webViewInfo = getWebViewInfo(this@MainActivity)
+                if (!webViewInfo.isWebViewAvailable)
+                    SmartMessage(
+                        "Android WebView not available, please install or update system",
+                        PopupType.Error,
+                        durationLong = true,
+                        context = this@MainActivity
+                    )
+            }
+
+            val backupLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.CreateDocument("application/octet-stream")
+            ) { uri ->
+                backupManagerViewModel.performBackup(uri)
+            }
+
+            val restoreLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.OpenDocument()
+            ) { uri ->
+                backupManagerViewModel.performRestore(uri)
+            }
 
 //            try {
 //                internetConnectivityObserver.unregister()
@@ -697,577 +727,577 @@ class MainActivity : AppCompatActivity() {
 //            internetConnectivityObserver = InternetConnectivityObserver(this@MainActivity)
 //            val isInternetAvailable by internetConnectivityObserver.internetNetworkStatus.collectAsState(true)
 
-                // Observe preference so theme mode updates immediately when changed from Settings
+            // Observe preference so theme mode updates immediately when changed from Settings
 //                val colorPaletteMode by rememberPreference(
 //                    COLOR_PALETTE_MODE.key,
 //                    ColorPaletteMode.Dark
 //                )
-                val colorPaletteMode = appearanceSettings.colorPaletteMode
+            val colorPaletteMode = appearanceSettings.colorPaletteMode
 
-                val coroutineScope = rememberCoroutineScope()
-                val isSystemInDarkTheme = isSystemInDarkTheme()
-                var navController: NavController? = null
+            val coroutineScope = rememberCoroutineScope()
+            val isSystemInDarkTheme = isSystemInDarkTheme()
+            var navController: NavController? = null
 
-                val customColor = appearanceSettings.customColor
-                val lightTheme =
-                    colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
+            val customColor = appearanceSettings.customColor
+            val lightTheme =
+                colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
 
-                val locale = LocalLocale.current.platformLocale
-                val languageTag = locale.toLanguageTag().replace("-Hant", "")
-                val languageApp = appSettings.languageApp
-                LocalePreferences.preference =
-                    LocalePreferenceItem(
-                        hl = languageApp.code.takeIf { it != Languages.System.code }
-                            ?: locale.language.takeIf { it != Languages.System.code }
-                            ?: languageTag.takeIf { it != Languages.System.code }
-                            ?: "en",
-                        gl = locale.country
-                            ?: "US"
-                    )
-                Environment.locale = EnvironmentLocale(
-                    hl = LocalePreferences.preference?.hl,
-                    gl = LocalePreferences.preference?.gl
+            val locale = LocalLocale.current.platformLocale
+            val languageTag = locale.toLanguageTag().replace("-Hant", "")
+            val languageApp = appSettings.languageApp
+            LocalePreferences.preference =
+                LocalePreferenceItem(
+                    hl = languageApp.code.takeIf { it != Languages.System.code }
+                        ?: locale.language.takeIf { it != Languages.System.code }
+                        ?: languageTag.takeIf { it != Languages.System.code }
+                        ?: "en",
+                    gl = locale.country
+                        ?: "US"
+                )
+            Environment.locale = EnvironmentLocale(
+                hl = LocalePreferences.preference?.hl,
+                gl = LocalePreferences.preference?.gl
+            )
+
+            LaunchedEffect(Unit, languageApp) {
+                val systemLangCode =
+                    AppCompatDelegate.getApplicationLocales().get(0).toString()
+
+                val sysLocale: LocaleListCompat =
+                    LocaleListCompat.forLanguageTags(systemLangCode)
+                val appLocale: LocaleListCompat =
+                    LocaleListCompat.forLanguageTags(languageApp.code)
+                AppCompatDelegate.setApplicationLocales(if (languageApp.code == "") sysLocale else appLocale)
+            }
+
+            cookie.value = appSettings.ytCookie
+            visitorData.value = appSettings.ytVisitorData
+
+
+
+            // If visitorData is empty, get it from the server with or without login
+            if (visitorData.value.isEmpty() || visitorData.value == "null" || visitorData.value == "")
+                runCatching {
+                    Timber.d("MainActivity.setContent visitorData.isEmpty() getInitialVisitorData visitorData ${visitorData.value}")
+                    visitorData.value = runBlocking {
+                        Environment.getInitialVisitorData().getOrNull()
+                    }.takeIf { it != "null" } ?: ""
+                    // Save visitorData in SharedPreferences
+                    //preferences.edit { putString(YT_VISITOR_DATA.key, visitorData.value) }
+
+                }.onFailure {
+                    Timber.e("MainActivity.setContent visitorData.isEmpty() getInitialVisitorData ${it.stackTraceToString()}")
+                    visitorData.value = "" //Environment._uMYwa66ycM
+                }
+
+            LaunchedEffect(Unit, visitorData.value) {
+                if (visitorData.value.isEmpty()
+                    || visitorData.value == "null"
+                    || visitorData.value == "") return@LaunchedEffect
+
+                val settings = withContext(Dispatchers.IO) {
+                    appSettingsManager.waitForInitialization()
+                }
+                val new = settings.copy(ytVisitorData = visitorData.value)
+                appSettingsManager.updateSettings(new)
+            }
+
+
+            Environment.visitorData = visitorData.value
+            Timber.d("MainActivity.setContent visitorData in use: ${visitorData.value}")
+
+            cookie.let {
+                if (isYtLoggedIn())
+                    Environment.cookie = it.value
+                else {
+                    Environment.cookie = ""
+                    cookie.value = ""
+                }
+            }
+
+            //val dataSyncId = preferences.getString(YT_DATA_SYNC_ID.key, "").toString()
+            val dataSyncId = appSettings.ytDataSyncId
+            Environment.dataSyncId = dataSyncId.let {
+                it.takeIf { !it.contains("||") }
+                    ?: it.takeIf { it.endsWith("||") }?.substringBefore("||")
+                    ?: it.substringAfter("||")
+            }
+
+            Timber.d("MainActivity.setContent Environment variables cookie: ${Environment.cookie} visitorData: ${Environment.visitorData} dataSyncId: ${Environment.dataSyncId}")
+            val customDnsOverHttpsServer =
+                appSettings.customDnsOverHttpsServer
+                //preferences.getString(CUSTOM_DNS_OVER_HTTPS_SERVER.key, "")
+
+            val customDnsIsOk = customDnsOverHttpsServer?.let { isValidHttpUrl(it) }
+            if (customDnsIsOk == false && getDnsOverHttpsType() == DnsOverHttpsType.Custom)
+                SmartMessage(
+                    stringResource(R.string.custom_dns_is_invalid),
+                    PopupType.Error,
+                    context = this@MainActivity
                 )
 
-                LaunchedEffect(Unit, languageApp) {
-                    val systemLangCode =
-                        AppCompatDelegate.getApplicationLocales().get(0).toString()
+            val customDnsUrl = if (customDnsIsOk == true) customDnsOverHttpsServer else null
+            Environment.customDnsToUse = customDnsUrl
+            Environment.dnsToUse = getDnsOverHttpsType().type
 
-                    val sysLocale: LocaleListCompat =
-                        LocaleListCompat.forLanguageTags(systemLangCode)
-                    val appLocale: LocaleListCompat =
-                        LocaleListCompat.forLanguageTags(languageApp.code)
-                    AppCompatDelegate.setApplicationLocales(if (languageApp.code == "") sysLocale else appLocale)
-                }
+            //val pageId = preferences.getString(PreferenceKey.YT_PAGEID.key, "")
+            val pageId = appSettings.ytPageId
+            //val authUser = preferences.getString(PreferenceKey.YT_AUTHUSER.key, "")
+            val authUser = appSettings.ytAuthUser
+            Environment.pageId = pageId
+            Environment.authUser = authUser
 
-                cookie.value = appSettings.ytCookie
-                visitorData.value = appSettings.ytVisitorData
-
-
-
-                // If visitorData is empty, get it from the server with or without login
-                if (visitorData.value.isEmpty() || visitorData.value == "null" || visitorData.value == "")
-                    runCatching {
-                        Timber.d("MainActivity.setContent visitorData.isEmpty() getInitialVisitorData visitorData ${visitorData.value}")
-                        visitorData.value = runBlocking {
-                            Environment.getInitialVisitorData().getOrNull()
-                        }.takeIf { it != "null" } ?: ""
-                        // Save visitorData in SharedPreferences
-                        //preferences.edit { putString(YT_VISITOR_DATA.key, visitorData.value) }
-
-                    }.onFailure {
-                        Timber.e("MainActivity.setContent visitorData.isEmpty() getInitialVisitorData ${it.stackTraceToString()}")
-                        visitorData.value = "" //Environment._uMYwa66ycM
-                    }
-
-                LaunchedEffect(Unit, visitorData.value) {
-                    if (visitorData.value.isEmpty()
-                        || visitorData.value == "null"
-                        || visitorData.value == "") return@LaunchedEffect
-
-                    val settings = withContext(Dispatchers.IO) {
-                        appSettingsManager.waitForInitialization()
-                    }
-                    val new = settings.copy(ytVisitorData = visitorData.value)
-                    appSettingsManager.updateSettings(new)
-                }
-
-
-                Environment.visitorData = visitorData.value
-                Timber.d("MainActivity.setContent visitorData in use: ${visitorData.value}")
-
-                cookie.let {
-                    if (isYtLoggedIn())
-                        Environment.cookie = it.value
-                    else {
-                        Environment.cookie = ""
-                        cookie.value = ""
-                    }
-                }
-
-                //val dataSyncId = preferences.getString(YT_DATA_SYNC_ID.key, "").toString()
-                val dataSyncId = appSettings.ytDataSyncId
-                Environment.dataSyncId = dataSyncId.let {
-                    it.takeIf { !it.contains("||") }
-                        ?: it.takeIf { it.endsWith("||") }?.substringBefore("||")
-                        ?: it.substringAfter("||")
-                }
-
-                Timber.d("MainActivity.setContent Environment variables cookie: ${Environment.cookie} visitorData: ${Environment.visitorData} dataSyncId: ${Environment.dataSyncId}")
-                val customDnsOverHttpsServer =
-                    appSettings.customDnsOverHttpsServer
-                    //preferences.getString(CUSTOM_DNS_OVER_HTTPS_SERVER.key, "")
-
-                val customDnsIsOk = customDnsOverHttpsServer?.let { isValidHttpUrl(it) }
-                if (customDnsIsOk == false && getDnsOverHttpsType() == DnsOverHttpsType.Custom)
-                    SmartMessage(
-                        stringResource(R.string.custom_dns_is_invalid),
-                        PopupType.Error,
-                        context = this@MainActivity
-                    )
-
-                val customDnsUrl = if (customDnsIsOk == true) customDnsOverHttpsServer else null
-                Environment.customDnsToUse = customDnsUrl
-                Environment.dnsToUse = getDnsOverHttpsType().type
-
-                //val pageId = preferences.getString(PreferenceKey.YT_PAGEID.key, "")
-                val pageId = appSettings.ytPageId
-                //val authUser = preferences.getString(PreferenceKey.YT_AUTHUSER.key, "")
-                val authUser = appSettings.ytAuthUser
-                Environment.pageId = pageId
-                Environment.authUser = authUser
-
-                // Recreate appearance whenever theme mode or light/dark flag changes
-                var appearance by rememberSaveable(
-                    colorPaletteMode,
-                    !lightTheme, appSettings, appearanceSettings,
-                    stateSaver = Appearance
-                ) {
-                    //with(preferences) {
-                        val colorPaletteName =
-                            appearanceSettings.colorPaletteName
-                            //getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
-                        val thumbnailRoundness =
-                            appearanceSettings.thumbnailRoundness
-                            //getEnum(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
-                        val useSystemFont = appSettings.useSystemFont
-                        val applyFontPadding = appSettings.applyFontPadding
-
-                        var colorPalette =
-                            colorPaletteOf(colorPaletteName, colorPaletteMode, !lightTheme)
-
-                        val fontType = appSettings.fontType
-
-                        if (colorPaletteName == ColorPaletteName.MaterialYou) {
-                            localMonet?.let {
-                                colorPalette = dynamicColorPaletteOf(
-                                    Color(it.getAccentColor(this@MainActivity)),
-                                !lightTheme
-                                )
-                            }
-
-                        }
-                        if (colorPaletteName == ColorPaletteName.CustomColor) {
-                            Timber.d("MainActivity.startApp SetContent with(preferences) customColor PRE colorPalette: $colorPalette")
-                            colorPalette = dynamicColorPaletteOf(
-                                Color(customColor),
-                                !lightTheme
-                            )
-                            Timber.d("MainActivity.startApp SetContent with(preferences) customColor POST colorPalette: $colorPalette")
-                        }
-                        if (colorPaletteName == ColorPaletteName.Customized) {
-                            colorPalette = customColorPalette(
-                                colorPalette,
-                                this@MainActivity,
-                                isSystemInDarkTheme,
-                                appearanceSettings.colorPaletteMode
-                            )
-                        }
-
-                        setSystemBarAppearance(colorPalette.isDark)
-
-                        mutableStateOf(
-                            Appearance(
-                                colorPalette = colorPalette,
-                                typography = typographyOf(
-                                    colorPalette.text,
-                                    useSystemFont,
-                                    applyFontPadding,
-                                    fontType
-                                ),
-                                thumbnailShape = thumbnailRoundness.shape()
-                            )
-                        )
-                    //}
-
-
-                }
-
-                fun setDynamicPalette(url: String) {
-
+            // Recreate appearance whenever theme mode or light/dark flag changes
+            var appearance by rememberSaveable(
+                colorPaletteMode,
+                !lightTheme, appSettings, appearanceSettings,
+                stateSaver = Appearance
+            ) {
+                //with(preferences) {
                     val colorPaletteName =
                         appearanceSettings.colorPaletteName
-                        //preferences.getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
-                    val isDynamicPalette = colorPaletteName == ColorPaletteName.Dynamic
-
-                    if (!isDynamicPalette) return
-
-
-                    coroutineScope.launch(Dispatchers.IO) {
-                        val result = imageLoader.execute(
-                            ImageRequest.Builder(this@MainActivity)
-                                .data(url)
-                                // Required to get work getPixels
-                                //.bitmapConfig(if (isAtLeastAndroid8) Bitmap.Config.RGBA_F16 else Bitmap.Config.ARGB_8888)
-                                .bitmapConfig(Bitmap.Config.ARGB_8888)
-                                .allowHardware(false)
-                                .build()
-                        )
-                        val isPicthBlack = colorPaletteMode == ColorPaletteMode.PitchBlack
-                        val isDark =
-                            colorPaletteMode == ColorPaletteMode.Dark || isPicthBlack || (colorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme)
-
-                        val bitmap = (result.drawable as? BitmapDrawable)?.bitmap
-                        if (bitmap != null) {
-                            dynamicColorPaletteOf(bitmap, isDark)?.let {
-                                withContext(Dispatchers.Main) {
-                                    setSystemBarAppearance(it.isDark)
-                                }
-                                appearance = appearance.copy(
-                                    colorPalette = if (!isPicthBlack) it else it.copy(
-                                        background0 = Color.Black,
-                                        background1 = Color.Black,
-                                        background2 = Color.Black,
-                                        background3 = Color.Black,
-                                        background4 = Color.Black,
-                                        // text = Color.White
-                                    ),
-                                    typography = appearance.typography.copy(color = it.text)
-                                )
-                            }
-
-                        }
-                    }
-                }
-
-                val rippleConfiguration =
-                    remember(appearance.colorPalette.text, appearance.colorPalette.isDark) {
-                        RippleConfiguration(color = appearance.colorPalette.text)
-                    }
-
-                val shimmerTheme = remember {
-                    defaultShimmerTheme.copy(
-                        animationSpec = infiniteRepeatable(
-                            animation = tween(
-                                durationMillis = 800,
-                                easing = LinearEasing,
-                                delayMillis = 250,
-                            ),
-                            repeatMode = RepeatMode.Restart
-                        ),
-                        shaderColors = listOf(
-                            Color.Unspecified.copy(alpha = 0.25f),
-                            Color.White.copy(alpha = 0.50f),
-                            Color.Unspecified.copy(alpha = 0.25f),
-                        ),
-                    )
-                }
-
-                LaunchedEffect(Unit, appSettings) {
-                    if (appSettings.isEnabledFullScreen) enableFullscreenMode()
-
-
-                }
-
-                // Imposta tema, colore, font e shape della thumbnail
-                LaunchedEffect(Unit, appearanceSettings, appSettings, lightTheme) {
-                    // Imposta thumbnail shape
-                    appearance = appearance.copy(
-                        thumbnailShape = appearanceSettings.thumbnailRoundness.shape()
-                    )
-                    // Imposta appearance in base al tema selezionato
-                    val colorPaletteName =
-                        appearanceSettings.colorPaletteName
-
-                    if (colorPaletteName == ColorPaletteName.Customized) {
-                        appearance = appearance.copy(
-                            colorPalette = customColorPalette(
-                                appearance.colorPalette,
-                                this@MainActivity,
-                                isSystemInDarkTheme,
-                                appearanceSettings.colorPaletteMode
-                            )
-                        )
-                    }
-                    if (colorPaletteName == ColorPaletteName.Dynamic) {
-                        setDynamicPalette(
-                            (binder?.exoPlayer?.currentMediaItem?.mediaMetadata?.artworkUri.toString()
-                                .toThumbnail(
-                                    1200
-                                )
-                                ?: "")
-                        )
-                    }
-                    if (colorPaletteMode == ColorPaletteMode.PitchBlack)
-                        appearance = appearance.copy(
-                            colorPalette = appearance.colorPalette.applyPitchBlack,
-                            typography = appearance.typography.copy(color = appearance.colorPalette.text)
-                        )
-
-
+                        //getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
+                    val thumbnailRoundness =
+                        appearanceSettings.thumbnailRoundness
+                        //getEnum(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
                     val useSystemFont = appSettings.useSystemFont
                     val applyFontPadding = appSettings.applyFontPadding
+
+                    var colorPalette =
+                        colorPaletteOf(colorPaletteName, colorPaletteMode, !lightTheme)
+
                     val fontType = appSettings.fontType
 
-                    appearance = appearance.copy(
-                        typography = typographyOf(
-                            appearance.colorPalette.text,
-                            useSystemFont,
-                            applyFontPadding,
-                            fontType
+                    if (colorPaletteName == ColorPaletteName.MaterialYou) {
+                        localMonet?.let {
+                            colorPalette = dynamicColorPaletteOf(
+                                Color(it.getAccentColor(this@MainActivity)),
+                            !lightTheme
+                            )
+                        }
+
+                    }
+                    if (colorPaletteName == ColorPaletteName.CustomColor) {
+                        Timber.d("MainActivity.startApp SetContent with(preferences) customColor PRE colorPalette: $colorPalette")
+                        colorPalette = dynamicColorPaletteOf(
+                            Color(customColor),
+                            !lightTheme
+                        )
+                        Timber.d("MainActivity.startApp SetContent with(preferences) customColor POST colorPalette: $colorPalette")
+                    }
+                    if (colorPaletteName == ColorPaletteName.Customized) {
+                        colorPalette = customColorPalette(
+                            colorPalette,
+                            this@MainActivity,
+                            isSystemInDarkTheme,
+                            appearanceSettings.colorPaletteMode
+                        )
+                    }
+
+                    setSystemBarAppearance(colorPalette.isDark)
+
+                    mutableStateOf(
+                        Appearance(
+                            colorPalette = colorPalette,
+                            typography = typographyOf(
+                                colorPalette.text,
+                                useSystemFont,
+                                applyFontPadding,
+                                fontType
+                            ),
+                            thumbnailShape = thumbnailRoundness.shape()
+                        )
+                    )
+                //}
+
+
+            }
+
+            fun setDynamicPalette(url: String) {
+
+                val colorPaletteName =
+                    appearanceSettings.colorPaletteName
+                    //preferences.getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
+                val isDynamicPalette = colorPaletteName == ColorPaletteName.Dynamic
+
+                if (!isDynamicPalette) return
+
+
+                coroutineScope.launch(Dispatchers.IO) {
+                    val result = imageLoader.execute(
+                        ImageRequest.Builder(this@MainActivity)
+                            .data(url)
+                            // Required to get work getPixels
+                            //.bitmapConfig(if (isAtLeastAndroid8) Bitmap.Config.RGBA_F16 else Bitmap.Config.ARGB_8888)
+                            .bitmapConfig(Bitmap.Config.ARGB_8888)
+                            .allowHardware(false)
+                            .build()
+                    )
+                    val isPicthBlack = colorPaletteMode == ColorPaletteMode.PitchBlack
+                    val isDark =
+                        colorPaletteMode == ColorPaletteMode.Dark || isPicthBlack || (colorPaletteMode == ColorPaletteMode.System && isSystemInDarkTheme)
+
+                    val bitmap = (result.drawable as? BitmapDrawable)?.bitmap
+                    if (bitmap != null) {
+                        dynamicColorPaletteOf(bitmap, isDark)?.let {
+                            withContext(Dispatchers.Main) {
+                                setSystemBarAppearance(it.isDark)
+                            }
+                            appearance = appearance.copy(
+                                colorPalette = if (!isPicthBlack) it else it.copy(
+                                    background0 = Color.Black,
+                                    background1 = Color.Black,
+                                    background2 = Color.Black,
+                                    background3 = Color.Black,
+                                    background4 = Color.Black,
+                                    // text = Color.White
+                                ),
+                                typography = appearance.typography.copy(color = it.text)
+                            )
+                        }
+
+                    }
+                }
+            }
+
+            val rippleConfiguration =
+                remember(appearance.colorPalette.text, appearance.colorPalette.isDark) {
+                    RippleConfiguration(color = appearance.colorPalette.text)
+                }
+
+            val shimmerTheme = remember {
+                defaultShimmerTheme.copy(
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(
+                            durationMillis = 800,
+                            easing = LinearEasing,
+                            delayMillis = 250,
                         ),
+                        repeatMode = RepeatMode.Restart
+                    ),
+                    shaderColors = listOf(
+                        Color.Unspecified.copy(alpha = 0.25f),
+                        Color.White.copy(alpha = 0.50f),
+                        Color.Unspecified.copy(alpha = 0.25f),
+                    ),
+                )
+            }
+
+            LaunchedEffect(Unit, appSettings) {
+                if (appSettings.isEnabledFullScreen) enableFullscreenMode()
+
+
+            }
+
+            // Imposta tema, colore, font e shape della thumbnail
+            LaunchedEffect(Unit, appearanceSettings, appSettings, lightTheme) {
+                // Imposta thumbnail shape
+                appearance = appearance.copy(
+                    thumbnailShape = appearanceSettings.thumbnailRoundness.shape()
+                )
+                // Imposta appearance in base al tema selezionato
+                val colorPaletteName =
+                    appearanceSettings.colorPaletteName
+
+                if (colorPaletteName == ColorPaletteName.Customized) {
+                    appearance = appearance.copy(
+                        colorPalette = customColorPalette(
+                            appearance.colorPalette,
+                            this@MainActivity,
+                            isSystemInDarkTheme,
+                            appearanceSettings.colorPaletteMode
+                        )
+                    )
+                }
+                if (colorPaletteName == ColorPaletteName.Dynamic) {
+                    setDynamicPalette(
+                        (binder?.exoPlayer?.currentMediaItem?.mediaMetadata?.artworkUri.toString()
+                            .toThumbnail(
+                                1200
+                            )
+                            ?: "")
+                    )
+                }
+                if (colorPaletteMode == ColorPaletteMode.PitchBlack)
+                    appearance = appearance.copy(
+                        colorPalette = appearance.colorPalette.applyPitchBlack,
+                        typography = appearance.typography.copy(color = appearance.colorPalette.text)
                     )
 
 
+                val useSystemFont = appSettings.useSystemFont
+                val applyFontPadding = appSettings.applyFontPadding
+                val fontType = appSettings.fontType
+
+                appearance = appearance.copy(
+                    typography = typographyOf(
+                        appearance.colorPalette.text,
+                        useSystemFont,
+                        applyFontPadding,
+                        fontType
+                    ),
+                )
+
+
+            }
+
+
+
+
+            BoxWithConstraints(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(appearance.colorPalette.background0)
+            ) {
+
+
+                val density = LocalDensity.current
+                val windowsInsets = WindowInsets.systemBars
+                val bottomDp = with(density) { windowsInsets.getBottom(density).toDp() }
+
+                val localPlayerSheetState = rememberBottomSheetState(
+                    dismissedBound = 0.dp,
+                    collapsedBound = 5.dp, //Dimensions.collapsedPlayer,
+                    expandedBound = maxHeight
+                )
+
+                // TODO remove in the future
+                val playerSheetState = rememberPlayerSheetState(
+                    dismissedBound = 0.dp,
+                    collapsedBound = Dimensions.collapsedPlayer + bottomDp,
+                    expandedBound = maxHeight,
+                )
+
+
+                val playerAwareWindowInsets by remember(
+                    bottomDp,
+                    playerSheetState.value
+                ) {
+                    derivedStateOf {
+                        val bottom = playerSheetState.value.coerceIn(
+                            bottomDp,
+                            playerSheetState.collapsedBound
+                        )
+
+                        windowsInsets
+                            .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
+                            .add(WindowInsets(bottom = bottom))
+                    }
                 }
 
 
-
-
-                BoxWithConstraints(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(appearance.colorPalette.background0)
+                var openTabFromShortcut = remember { -1 }
+                if (intent.action in arrayOf(
+                        action_songs,
+                        action_albums,
+                        action_library,
+                        action_search,
+                        action_musicidentifier
+                    )
                 ) {
-
-
-                    val density = LocalDensity.current
-                    val windowsInsets = WindowInsets.systemBars
-                    val bottomDp = with(density) { windowsInsets.getBottom(density).toDp() }
-
-                    val localPlayerSheetState = rememberBottomSheetState(
-                        dismissedBound = 0.dp,
-                        collapsedBound = 5.dp, //Dimensions.collapsedPlayer,
-                        expandedBound = maxHeight
-                    )
-
-                    // TODO remove in the future
-                    val playerSheetState = rememberPlayerSheetState(
-                        dismissedBound = 0.dp,
-                        collapsedBound = Dimensions.collapsedPlayer + bottomDp,
-                        expandedBound = maxHeight,
-                    )
-
-
-                    val playerAwareWindowInsets by remember(
-                        bottomDp,
-                        playerSheetState.value
-                    ) {
-                        derivedStateOf {
-                            val bottom = playerSheetState.value.coerceIn(
-                                bottomDp,
-                                playerSheetState.collapsedBound
-                            )
-
-                            windowsInsets
-                                .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
-                                .add(WindowInsets(bottom = bottom))
+                    openTabFromShortcut =
+                        when (intent?.action) {
+                            action_songs -> HomeScreenTabs.Songs.index
+                            action_albums -> HomeScreenTabs.Albums.index
+                            action_library -> HomeScreenTabs.Playlists.index
+                            action_search -> -2
+                            action_musicidentifier -> -3
+                            else -> -1
                         }
+                    intent.action = null
+                }
+
+                val isPlaying = playerState.isPlaying
+                val playerView = binder?.youtubePlayerView?.collectAsState()
+                onlinePlayerView = playerView?.value
+
+                val castSheetState = rememberBottomSheetState(
+                    dismissedBound = 0.dp,
+                    collapsedBound = 5.dp,
+                    expandedBound = maxHeight
+                )
+
+                val pip = isInPip(
+                    onChange = {
+                        if (!it || !isPlaying)
+                            return@isInPip
+
+                        localPlayerSheetState.expandSoft()
                     }
+                )
 
-
-                    var openTabFromShortcut = remember { -1 }
-                    if (intent.action in arrayOf(
-                            action_songs,
-                            action_albums,
-                            action_library,
-                            action_search,
-                            action_musicidentifier
-                        )
-                    ) {
-                        openTabFromShortcut =
-                            when (intent?.action) {
-                                action_songs -> HomeScreenTabs.Songs.index
-                                action_albums -> HomeScreenTabs.Albums.index
-                                action_library -> HomeScreenTabs.Playlists.index
-                                action_search -> -2
-                                action_musicidentifier -> -3
-                                else -> -1
-                            }
-                        intent.action = null
-                    }
-
-                    val isPlaying = playerState.isPlaying
-                    val playerView = binder?.youtubePlayerView?.collectAsState()
-                    onlinePlayerView = playerView?.value
-
-                    val castSheetState = rememberBottomSheetState(
-                        dismissedBound = 0.dp,
-                        collapsedBound = 5.dp,
-                        expandedBound = maxHeight
-                    )
-
-                    val pip = isInPip(
-                        onChange = {
-                            if (!it || !isPlaying)
-                                return@isInPip
-
-                            localPlayerSheetState.expandSoft()
-                        }
-                    )
-
-                    CrossfadeContainer(
-                        state = pip
-                    ) { isCurrentInPip ->
-                        //Timber.d("MainActivity pipState ${pipState.value} CrossfadeContainer isCurrentInPip $isCurrentInPip ")
-                        //val pipModule by rememberPreference(PIP_MODULE.key, PipModule.Cover)
-                        val pipModule = appSettings.pipModule
-                        if (isCurrentInPip) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(Color.Transparent)
-                            ) {
-                                when (pipModule) {
-                                    PipModule.Cover -> {
-                                        PipModuleContainer {
-                                            // Implement pip mode with video
-                                            //if (mediaItemIsLocal.value) {
-                                            PipModuleCover(
-                                                url = binder?.exoPlayer?.currentMediaItem?.mediaMetadata?.artworkUri.toString()
-                                                    .toThumbnail(1200).toString()
-                                            )
+                CrossfadeContainer(
+                    state = pip
+                ) { isCurrentInPip ->
+                    //Timber.d("MainActivity pipState ${pipState.value} CrossfadeContainer isCurrentInPip $isCurrentInPip ")
+                    //val pipModule by rememberPreference(PIP_MODULE.key, PipModule.Cover)
+                    val pipModule = appSettings.pipModule
+                    if (isCurrentInPip) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Transparent)
+                        ) {
+                            when (pipModule) {
+                                PipModule.Cover -> {
+                                    PipModuleContainer {
+                                        // Implement pip mode with video
+                                        //if (mediaItemIsLocal.value) {
+                                        PipModuleCover(
+                                            url = binder?.exoPlayer?.currentMediaItem?.mediaMetadata?.artworkUri.toString()
+                                                .toThumbnail(1200).toString()
+                                        )
 //                                        } else {
 //                                            PipModuleCore(
 //                                                onlineCore = onlineCore
 //                                            )
 //                                        }
-                                        }
                                     }
                                 }
-
                             }
 
-                        } else
-                            CompositionLocalProvider(
-                                LocalAppearance provides appearance,
-                                LocalIndication provides ripple(bounded = true),
-                                LocalRippleConfiguration provides rippleConfiguration,
-                                LocalShimmerTheme provides shimmerTheme,
-                                LocalPlayerServiceBinder provides binder,
-                                LocalPlayerServiceState provides playerState,
-                                LocalPlayerAwareWindowInsets provides playerAwareWindowInsets,
-                                LocalLayoutDirection provides LayoutDirection.Ltr,
-                                LocalPlayerSheetState provides localPlayerSheetState,
-                                //LocalMonetCompat provides localMonet,
-                                LocalSelectedQueue provides selectedQueue.value,
-                                LocalAudioTagger provides audioTaggerViewModel,
-                                LocalBackupManager provides backupManagerViewModel,
-                                LocalOnDeviceViewModel provides onDeviceViewModel,
-                                //LocalCastSheetState provides castSheetState,
-                                LocalRiTuneSheetState provides castSheetState,
-                                LocalArtistInsights provides artistInsightsViewModel,
-                                LocalAlbumInsights provides albumInsightsViewModel,
-                                LocalWebDavLibrary provides webDavLibraryViewModel,
-                                LocalAppearanceSettingsManager provides appearanceSettingsManager,
-                                LocalAppSettingsManager provides appSettingsManager,
-                                //LocalOnlinePlayerPlayingState provides onlinePlayerPlayingState,
-                                //LocalGlobalQueue provides globalQueueViewModel,
-                                //LocalInternetAvailable provides isInternetAvailable
-                            ) {
+                        }
 
-                                if (intent.action == action_rescuecenter) {
-                                    RescueScreen(
-                                        onBackup = {
-                                            @SuppressLint("SimpleDateFormat")
-                                            val dateFormat = SimpleDateFormat("yyyyMMddHHmmss")
-                                            backupLauncher.launch("riplay_${dateFormat.format(Date())}.db")
-                                        },
-                                        onRestore = {
-                                            restoreLauncher.launch(arrayOf("application/octet-stream"))
-                                        }
-                                    )
-                                } else {
-                                    AppNavigation(
-                                        onNavControllerInit = { navController = it },
-                                        //navController = navController,
-                                        miniPlayer = {
+                    } else
+                        CompositionLocalProvider(
+                            LocalAppearance provides appearance,
+                            LocalIndication provides ripple(bounded = true),
+                            LocalRippleConfiguration provides rippleConfiguration,
+                            LocalShimmerTheme provides shimmerTheme,
+                            LocalPlayerServiceBinder provides binder,
+                            LocalPlayerServiceState provides playerState,
+                            LocalPlayerAwareWindowInsets provides playerAwareWindowInsets,
+                            LocalLayoutDirection provides LayoutDirection.Ltr,
+                            LocalPlayerSheetState provides localPlayerSheetState,
+                            //LocalMonetCompat provides localMonet,
+                            LocalSelectedQueue provides selectedQueue.value,
+                            LocalAudioTagger provides audioTaggerViewModel,
+                            LocalBackupManager provides backupManagerViewModel,
+                            LocalOnDeviceViewModel provides onDeviceViewModel,
+                            //LocalCastSheetState provides castSheetState,
+                            LocalRiTuneSheetState provides castSheetState,
+                            LocalArtistInsights provides artistInsightsViewModel,
+                            LocalAlbumInsights provides albumInsightsViewModel,
+                            LocalWebDavLibrary provides webDavLibraryViewModel,
+                            LocalAppearanceSettingsManager provides appearanceSettingsManager,
+                            LocalAppSettingsManager provides appSettingsManager,
+                            //LocalOnlinePlayerPlayingState provides onlinePlayerPlayingState,
+                            //LocalGlobalQueue provides globalQueueViewModel,
+                            //LocalInternetAvailable provides isInternetAvailable
+                        ) {
 
-                                            UnifiedMiniPlayer(
-                                                showPlayer = { localPlayerSheetState.expandSoft() },
-                                                hidePlayer = { localPlayerSheetState.collapseSoft() },
-                                                navController = navController,
-                                            )
+                            if (intent.action == action_rescuecenter) {
+                                RescueScreen(
+                                    onBackup = {
+                                        @SuppressLint("SimpleDateFormat")
+                                        val dateFormat = SimpleDateFormat("yyyyMMddHHmmss")
+                                        backupLauncher.launch("riplay_${dateFormat.format(Date())}.db")
+                                    },
+                                    onRestore = {
+                                        restoreLauncher.launch(arrayOf("application/octet-stream"))
+                                    }
+                                )
+                            } else {
+                                AppNavigation(
+                                    onNavControllerInit = { navController = it },
+                                    //navController = navController,
+                                    miniPlayer = {
 
-                                            /*
-                                        if (binder?.currentMediaItemAsSong?.isLocal == true)
-                                            LocalMiniPlayer(
-                                                showPlayer = { localPlayerSheetState.expandSoft() },
-                                                hidePlayer = { localPlayerSheetState.collapseSoft() },
-                                                navController = navController,
-                                            )
-                                        else {
-                                            OnlineMiniPlayer(
-                                                showPlayer = { localPlayerSheetState.expandSoft() },
-                                                hidePlayer = { localPlayerSheetState.collapseSoft() },
-                                                navController = navController,
-                                            )
-                                        }
-                                         */
+                                        UnifiedMiniPlayer(
+                                            showPlayer = { localPlayerSheetState.expandSoft() },
+                                            hidePlayer = { localPlayerSheetState.collapseSoft() },
+                                            navController = navController,
+                                        )
 
-                                        },
-                                        openTabFromShortcut = openTabFromShortcut
-                                    )
+                                        /*
+                                    if (binder?.currentMediaItemAsSong?.isLocal == true)
+                                        LocalMiniPlayer(
+                                            showPlayer = { localPlayerSheetState.expandSoft() },
+                                            hidePlayer = { localPlayerSheetState.collapseSoft() },
+                                            navController = navController,
+                                        )
+                                    else {
+                                        OnlineMiniPlayer(
+                                            showPlayer = { localPlayerSheetState.expandSoft() },
+                                            hidePlayer = { localPlayerSheetState.collapseSoft() },
+                                            navController = navController,
+                                        )
+                                    }
+                                     */
+
+                                    },
+                                    openTabFromShortcut = openTabFromShortcut
+                                )
 
 //                                    val isSnowEffectEnabled by rememberPreference(
 //                                        SHOW_SNOWFALL_EFFECT.key,
 //                                        false
 //                                    )
-                                    val isSnowEffectEnabled = appSettings.isSnowEffectEnabled
-                                    if (isSnowEffectEnabled)
-                                        Box(modifier = Modifier.fillMaxSize()) {
-                                            Snowfall()
-                                        }
+                                val isSnowEffectEnabled = appSettings.isSnowEffectEnabled
+                                if (isSnowEffectEnabled)
+                                    Box(modifier = Modifier.fillMaxSize()) {
+                                        Snowfall()
+                                    }
 
-                                    checkIfAppIsRunningInBackground()
-                                    if (appRunningInBackground) localPlayerSheetState.collapseSoft()
+                                checkIfAppIsRunningInBackground()
+                                if (appRunningInBackground) localPlayerSheetState.collapseSoft()
 
 //                                    val thumbnailRoundness by rememberPreference(
 //                                        THUMBNAIL_ROUNDNESS.key,
 //                                        ThumbnailRoundness.Light
 //                                    )
-                                    val thumbnailRoundness = appearanceSettings.thumbnailRoundness
+                                val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
-                                    val useTvInterface = isTvMode()
+                                val useTvInterface = isTvMode()
 
-                                    //val isAndroidAutoConnected by GlobalSharedData.androidAutoConnected
+                                //val isAndroidAutoConnected by GlobalSharedData.androidAutoConnected
 
-                                    //if (!isAndroidAutoConnected)
-                                        BottomSheet(
-                                            state = localPlayerSheetState,
-                                            collapsedContent = {
-                                                Box(modifier = Modifier.fillMaxSize()) {
-                                                    //Text(text = "BottomSheet", modifier = Modifier.align(Alignment.Center))
-                                                }
-                                            },
-                                            contentAlwaysAvailable = true
-                                        ) {
-                                            navController?.let {
-                                                if (useTvInterface) {
-                                                    TvUnifiedPlayer(
-                                                        navController = it,
-                                                        onlineCore = {
-                                                            binder?.exoPlayer?.currentMediaItem?.let {
-                                                                UnifiedPlayerView(
-                                                                    onlinePlayerView = onlinePlayerView,
-                                                                    mediaItem = it,
-                                                                )
-                                                            }
-                                                        },
-                                                        onDismiss = {
-                                                            localPlayerSheetState.collapseSoft()
-                                                        },
-                                                    )
-                                                } else {
-                                                    UnifiedPlayer(
-                                                        navController = it,
-                                                        onlineCore = {
-                                                            binder?.exoPlayer?.currentMediaItem?.let {
-                                                                UnifiedPlayerView(
-                                                                    onlinePlayerView = onlinePlayerView,
-                                                                    mediaItem = it,
-                                                                )
-                                                            }
-                                                        },
-                                                        playerSheetState = localPlayerSheetState,
-                                                        onDismiss = {
-                                                            localPlayerSheetState.collapseSoft()
-                                                        },
-                                                    )
-                                                }
+                                //if (!isAndroidAutoConnected)
+                                    BottomSheet(
+                                        state = localPlayerSheetState,
+                                        collapsedContent = {
+                                            Box(modifier = Modifier.fillMaxSize()) {
+                                                //Text(text = "BottomSheet", modifier = Modifier.align(Alignment.Center))
                                             }
-
+                                        },
+                                        contentAlwaysAvailable = true
+                                    ) {
+                                        navController?.let {
+                                            if (useTvInterface) {
+                                                TvUnifiedPlayer(
+                                                    navController = it,
+                                                    onlineCore = {
+                                                        binder?.exoPlayer?.currentMediaItem?.let {
+                                                            UnifiedPlayerView(
+                                                                onlinePlayerView = onlinePlayerView,
+                                                                mediaItem = it,
+                                                            )
+                                                        }
+                                                    },
+                                                    onDismiss = {
+                                                        localPlayerSheetState.collapseSoft()
+                                                    },
+                                                )
+                                            } else {
+                                                UnifiedPlayer(
+                                                    navController = it,
+                                                    onlineCore = {
+                                                        binder?.exoPlayer?.currentMediaItem?.let {
+                                                            UnifiedPlayerView(
+                                                                onlinePlayerView = onlinePlayerView,
+                                                                mediaItem = it,
+                                                            )
+                                                        }
+                                                    },
+                                                    playerSheetState = localPlayerSheetState,
+                                                    onDismiss = {
+                                                        localPlayerSheetState.collapseSoft()
+                                                    },
+                                                )
+                                            }
                                         }
+
+                                    }
 //                                    else {
 //                                        SmartMessage(
 //                                            "Android Auto is connected",
@@ -1276,262 +1306,262 @@ class MainActivity : AppCompatActivity() {
 //
 //                                    }
 
-                                    val menuState = LocalGlobalSheetState.current
-                                    CustomModalBottomSheet(
-                                        showSheet = menuState.isDisplayed,
-                                        onDismissRequest = menuState::hide,
-                                        containerColor = colorPalette().background1,
-                                        dragHandle = {
-                                            Surface(
-                                                modifier = Modifier.padding(vertical = 0.dp),
-                                                color = colorPalette().background1,
-                                                //shape = thumbnailShape
-                                            ) {}
-                                        },
-                                        shape = thumbnailRoundness.shape(),
-                                    ) {
-                                        menuState.content()
-                                    }
-
-                                    /* todo work in progress with cast
-                                BottomSheet(
-                                    state = castSheetState,
-                                    collapsedContent = {
-                                        Box(modifier = Modifier.fillMaxSize()) {
-                                            //Text(text = "BottomSheet", modifier = Modifier.align(Alignment.Center))
-                                        }
+                                val menuState = LocalGlobalSheetState.current
+                                CustomModalBottomSheet(
+                                    showSheet = menuState.isDisplayed,
+                                    onDismissRequest = menuState::hide,
+                                    containerColor = colorPalette().background1,
+                                    dragHandle = {
+                                        Surface(
+                                            modifier = Modifier.padding(vertical = 0.dp),
+                                            color = colorPalette().background1,
+                                            //shape = thumbnailShape
+                                        ) {}
                                     },
-                                    contentAlwaysAvailable = true
+                                    shape = thumbnailRoundness.shape(),
                                 ) {
-                                    CastScreen(
-                                        onCastVideo = {
-                                            currentCastContent.value = CastContent.Video(
-                                                "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4"
-                                            )
-                                            updatePresentation()
-                                        },
-                                        onCastYouTube = { videoId ->
-                                            currentCastContent.value = CastContent.GenericView(
-                                                viewFactory = { context -> onlinePlayerView as View }
-                                            )
-                                            updatePresentation()
-                                        },
-                                        onDisconnect = {
-                                            currentCastContent.value = null
-                                            presentation?.dismiss()
-                                            presentation = null
-                                        }
-                                    )
+                                    menuState.content()
                                 }
-                                 */
 
-                                    CustomModalBottomSheet(
-                                        showSheet = castSheetState.isExpanded,
-                                        onDismissRequest = castSheetState::collapseSoft,
-                                        containerColor = Color.Transparent,
-                                        dragHandle = {
-                                            Surface(
-                                                modifier = Modifier.padding(vertical = 0.dp),
-                                                color = Color.Transparent,
-                                                //shape = thumbnailShape
-                                            ) {}
-                                        },
-                                        shape = thumbnailRoundness.shape()
-                                    ) {
-                                        RiTuneCastSelector() {
-                                            //castSheetState.collapseSoft()
-                                        }
+                                /* todo work in progress with cast
+                            BottomSheet(
+                                state = castSheetState,
+                                collapsedContent = {
+                                    Box(modifier = Modifier.fillMaxSize()) {
+                                        //Text(text = "BottomSheet", modifier = Modifier.align(Alignment.Center))
                                     }
-
-                                }
-                            }
-
-                    }
-                    DisposableEffect(binder?.exoPlayer) {
-                        val player = binder?.exoPlayer ?: return@DisposableEffect onDispose { }
-
-                        //Timber.d("MainActivity DisposableEffecty mediaItemAsSong ${binder!!.currentMediaItemAsSong}")
-
-                        if (player.currentMediaItem == null) {
-                            if (localPlayerSheetState.isExpanded) {
-                                localPlayerSheetState.collapseSoft()
-                            }
-                        } else {
-                            if (launchedFromNotification) {
-                                intent.replaceExtras(Bundle())
-                                if (getKeepPlayerMinimized())
-                                    localPlayerSheetState.collapseSoft()
-                                else localPlayerSheetState.expandSoft()
-                            } else {
-                                localPlayerSheetState.collapseSoft()
-                            }
-
-                        }
-
-                        val listener = object : Player.Listener {
-
-                            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                                Timber.d("MainActivity Player.Listener onMediaItemTransition mediaItem ${mediaItem?.mediaId} reason $reason foreground $appRunningInBackground")
-
-                                if (mediaItem == null) {
-                                    maybeExitPip()
-                                    localPlayerSheetState.collapseSoft()
-                                    return
-                                }
-
-                                mediaItem.let {
-                                    //currentSecond.value = 0F
-
-                                    if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
-                                        if (it.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
-                                            if (getKeepPlayerMinimized())
-                                                localPlayerSheetState.collapseSoft()
-                                            else localPlayerSheetState.expandSoft()
-                                        } else {
-                                            localPlayerSheetState.collapseSoft()
-                                        }
+                                },
+                                contentAlwaysAvailable = true
+                            ) {
+                                CastScreen(
+                                    onCastVideo = {
+                                        currentCastContent.value = CastContent.Video(
+                                            "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4"
+                                        )
+                                        updatePresentation()
+                                    },
+                                    onCastYouTube = { videoId ->
+                                        currentCastContent.value = CastContent.GenericView(
+                                            viewFactory = { context -> onlinePlayerView as View }
+                                        )
+                                        updatePresentation()
+                                    },
+                                    onDisconnect = {
+                                        currentCastContent.value = null
+                                        presentation?.dismiss()
+                                        presentation = null
                                     }
+                                )
+                            }
+                             */
 
-                                    setDynamicPalette(
-                                        it.mediaMetadata.artworkUri.toString().toThumbnail(
-                                            1200
-                                        ).toString()
-                                    )
-
+                                CustomModalBottomSheet(
+                                    showSheet = castSheetState.isExpanded,
+                                    onDismissRequest = castSheetState::collapseSoft,
+                                    containerColor = Color.Transparent,
+                                    dragHandle = {
+                                        Surface(
+                                            modifier = Modifier.padding(vertical = 0.dp),
+                                            color = Color.Transparent,
+                                            //shape = thumbnailShape
+                                        ) {}
+                                    },
+                                    shape = thumbnailRoundness.shape()
+                                ) {
+                                    RiTuneCastSelector() {
+                                        //castSheetState.collapseSoft()
+                                    }
                                 }
 
                             }
-
                         }
-
-                        player.addListener(listener)
-
-                        onDispose { player.removeListener(listener) }
-                    }
-
 
                 }
+                DisposableEffect(binder?.exoPlayer) {
+                    val player = binder?.exoPlayer ?: return@DisposableEffect onDispose { }
 
-                LaunchedEffect(intentUriData) {
-                    var uri = intentUriData ?: return@LaunchedEffect
+                    //Timber.d("MainActivity DisposableEffecty mediaItemAsSong ${binder!!.currentMediaItemAsSong}")
 
-                    Timber.d("MainActivity LaunchedEffect intentUriData uri $uri")
-
-                    if (uri.scheme == "riplay") {
-                        val binder = snapshotFlow { binder }.filterNotNull().first()
-                        navController?.let {
-                            qrCodeToAction(uri.toString(), binder, it)
+                    if (player.currentMediaItem == null) {
+                        if (localPlayerSheetState.isExpanded) {
+                            localPlayerSheetState.collapseSoft()
+                        }
+                    } else {
+                        if (launchedFromNotification) {
+                            intent.replaceExtras(Bundle())
+                            if (getKeepPlayerMinimized())
+                                localPlayerSheetState.collapseSoft()
+                            else localPlayerSheetState.expandSoft()
+                        } else {
+                            localPlayerSheetState.collapseSoft()
                         }
 
-                        return@LaunchedEffect
                     }
 
-                    Timber.d("MainActivity LaunchedEffect intentUriData $uri path ${uri.pathSegments.firstOrNull()} host ${uri.host}")
+                    val listener = object : Player.Listener {
 
-                    SmartMessage(
-                        message = "${"RiPlay "}${getString(R.string.opening_url)}",
-                        durationLong = true,
-                        context = this@MainActivity
-                    )
+                        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                            Timber.d("MainActivity Player.Listener onMediaItemTransition mediaItem ${mediaItem?.mediaId} reason $reason foreground $appRunningInBackground")
+
+                            if (mediaItem == null) {
+                                maybeExitPip()
+                                localPlayerSheetState.collapseSoft()
+                                return
+                            }
+
+                            mediaItem.let {
+                                //currentSecond.value = 0F
+
+                                if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
+                                    if (it.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
+                                        if (getKeepPlayerMinimized())
+                                            localPlayerSheetState.collapseSoft()
+                                        else localPlayerSheetState.expandSoft()
+                                    } else {
+                                        localPlayerSheetState.collapseSoft()
+                                    }
+                                }
+
+                                setDynamicPalette(
+                                    it.mediaMetadata.artworkUri.toString().toThumbnail(
+                                        1200
+                                    ).toString()
+                                )
+
+                            }
+
+                        }
+
+                    }
+
+                    player.addListener(listener)
+
+                    onDispose { player.removeListener(listener) }
+                }
 
 
-                    lifecycleScope.launch(Dispatchers.Main) {
-                        when (val path = uri.pathSegments.firstOrNull()) {
-                            "playlist" -> uri.getQueryParameter("list")?.let { playlistId ->
-                                val browseId = "VL$playlistId"
+            }
 
-                                if (playlistId.startsWith("OLAK5uy_")) {
-                                    Environment.playlistPage(BrowseBody(browseId = browseId))
-                                        ?.getOrNull()?.let {
-                                            it.songsPage?.items?.firstOrNull()?.album?.endpoint?.browseId?.let { browseId ->
-                                                navController?.navigate(route = "${NavRoutes.album.name}/$browseId")
+            LaunchedEffect(intentUriData) {
+                var uri = intentUriData ?: return@LaunchedEffect
 
-                                            }
+                Timber.d("MainActivity LaunchedEffect intentUriData uri $uri")
+
+                if (uri.scheme == "riplay") {
+                    val binder = snapshotFlow { binder }.filterNotNull().first()
+                    navController?.let {
+                        qrCodeToAction(uri.toString(), binder, it)
+                    }
+
+                    return@LaunchedEffect
+                }
+
+                Timber.d("MainActivity LaunchedEffect intentUriData $uri path ${uri.pathSegments.firstOrNull()} host ${uri.host}")
+
+                SmartMessage(
+                    message = "${"RiPlay "}${getString(R.string.opening_url)}",
+                    durationLong = true,
+                    context = this@MainActivity
+                )
+
+
+                lifecycleScope.launch(Dispatchers.Main) {
+                    when (val path = uri.pathSegments.firstOrNull()) {
+                        "playlist" -> uri.getQueryParameter("list")?.let { playlistId ->
+                            val browseId = "VL$playlistId"
+
+                            if (playlistId.startsWith("OLAK5uy_")) {
+                                Environment.playlistPage(BrowseBody(browseId = browseId))
+                                    ?.getOrNull()?.let {
+                                        it.songsPage?.items?.firstOrNull()?.album?.endpoint?.browseId?.let { browseId ->
+                                            navController?.navigate(route = "${NavRoutes.album.name}/$browseId")
+
                                         }
-                                } else {
-                                    navController?.navigate(route = "${NavRoutes.playlist.name}/$browseId")
-                                }
+                                    }
+                            } else {
+                                navController?.navigate(route = "${NavRoutes.playlist.name}/$browseId")
                             }
+                        }
 
-                            "channel", "c" -> uri.lastPathSegment?.let { channelId ->
-                                Timber.d("MainActivity LaunchedEffect intentUriData channelId $channelId")
-                                try {
-                                    navController?.navigate(route = "${NavRoutes.artist.name}/$channelId")
-                                } catch (e: Exception) {
-                                    Timber.e("MainActivity.setContent intentUriData ${e.stackTraceToString()}")
-                                }
+                        "channel", "c" -> uri.lastPathSegment?.let { channelId ->
+                            Timber.d("MainActivity LaunchedEffect intentUriData channelId $channelId")
+                            try {
+                                navController?.navigate(route = "${NavRoutes.artist.name}/$channelId")
+                            } catch (e: Exception) {
+                                Timber.e("MainActivity.setContent intentUriData ${e.stackTraceToString()}")
                             }
+                        }
 
-                            "search" -> uri.getQueryParameter("q")?.let { query ->
-                                //val encodedQuery = URLEncoder.encode(query, "UTF-8")
-                                navController?.navigate(route = "${NavRoutes.search.name}?text=$query")
-                            }
+                        "search" -> uri.getQueryParameter("q")?.let { query ->
+                            //val encodedQuery = URLEncoder.encode(query, "UTF-8")
+                            navController?.navigate(route = "${NavRoutes.search.name}?text=$query")
+                        }
 
-                            else -> when {
-                                path?.startsWith("@") == true -> {
-                                    SmartMessage("Channel is work in progress, wait new version please.", context = this@MainActivity)
-                                    //EnvironmentExt.getUserChannelProfilePage(path)
-                                    /*
-                                    val cleanProfile = path.substringAfter("@").substringBefore("?")
-                                    val cleanUrl = "https://www.youtube.com/@$cleanProfile"
-                                    Timber.d("MainActivity LaunchedEffect intentUriData profile $cleanUrl")
-                                    val userInfo = Environment.rawResolveUrl(cleanUrl).getOrNull()?.endpoint?.browseEndpoint ?: return@launch
-                                    Timber.d("MainActivity LaunchedEffect intentUriData profile $cleanUrl browseId = ${userInfo.browseId}")
-                                    val userPage = Environment.rawBrowse(userInfo.browseId, params="EghmZWF0dXJlZPIGBAoCMgA%3D")
-                                    saveFileToInternalStorage(appContext(),"userPage.json", userPage.toString() )
-                                    */
+                        else -> when {
+                            path?.startsWith("@") == true -> {
+                                SmartMessage("Channel is work in progress, wait new version please.", context = this@MainActivity)
+                                //EnvironmentExt.getUserChannelProfilePage(path)
+                                /*
+                                val cleanProfile = path.substringAfter("@").substringBefore("?")
+                                val cleanUrl = "https://www.youtube.com/@$cleanProfile"
+                                Timber.d("MainActivity LaunchedEffect intentUriData profile $cleanUrl")
+                                val userInfo = Environment.rawResolveUrl(cleanUrl).getOrNull()?.endpoint?.browseEndpoint ?: return@launch
+                                Timber.d("MainActivity LaunchedEffect intentUriData profile $cleanUrl browseId = ${userInfo.browseId}")
+                                val userPage = Environment.rawBrowse(userInfo.browseId, params="EghmZWF0dXJlZPIGBAoCMgA%3D")
+                                saveFileToInternalStorage(appContext(),"userPage.json", userPage.toString() )
+                                */
 //                                    try {
 //                                        navController?.navigate(route = "${NavRoutes.artist.name}/${userInfo.browseId}")
 //                                    } catch (e: Exception) {
 //                                        Timber.e("MainActivity.setContent intentUriData ${e.stackTraceToString()}")
 //                                    }
-                                    return@launch
+                                return@launch
+                            }
+                            path == "watch" -> uri.getQueryParameter("v")
+                            uri.host == "youtu.be" -> path
+                            path != "watch" && uri.host == null -> {
+                                path?.let { query ->
+                                    //val encodedQuery = URLEncoder.encode(query, "UTF-8")
+                                    navController?.navigate(route = "${NavRoutes.search.name}?text=$query")
                                 }
-                                path == "watch" -> uri.getQueryParameter("v")
-                                uri.host == "youtu.be" -> path
-                                path != "watch" && uri.host == null -> {
-                                    path?.let { query ->
-                                        //val encodedQuery = URLEncoder.encode(query, "UTF-8")
+                                null
+                            }
+
+                            uri.host == "www.shazam.com" && (path == "track" || path == "song") -> {
+                                Timber.d("MainActivity LaunchedEffect intentUriData uri.host shazam uri $uri")
+                                handleShazamShare(uri.toString()) { artist, title, error ->
+                                    Timber.d("MainActivity handleShazamShare result artist $artist title $title error $error")
+                                    if (title.isNotEmpty() || artist.isNotEmpty()) {
+                                        val query = "$title $artist"
                                         navController?.navigate(route = "${NavRoutes.search.name}?text=$query")
                                     }
-                                    null
                                 }
+                                null
+                            }
 
-                                uri.host == "www.shazam.com" && (path == "track" || path == "song") -> {
-                                    Timber.d("MainActivity LaunchedEffect intentUriData uri.host shazam uri $uri")
-                                    handleShazamShare(uri.toString()) { artist, title, error ->
-                                        Timber.d("MainActivity handleShazamShare result artist $artist title $title error $error")
-                                        if (title.isNotEmpty() || artist.isNotEmpty()) {
-                                            val query = "$title $artist"
-                                            navController?.navigate(route = "${NavRoutes.search.name}?text=$query")
-                                        }
-                                    }
-                                    null
-                                }
-
-                                else -> null
-                            }?.let { videoId ->
-                                Environment.song(videoId)?.getOrNull()?.let { song ->
-                                    val binder = snapshotFlow { binder }.filterNotNull().first()
-                                    withContext(Dispatchers.Main) {
-                                        if (!song.explicit && !appSettings.parentalControlEnabled)
-                                            binder.exoPlayer?.forcePlay(song.asMediaItem)
-                                        else
-                                            SmartMessage(
-                                                "Parental control is enabled",
-                                                PopupType.Warning,
-                                                context = this@MainActivity
-                                            )
-                                    }
+                            else -> null
+                        }?.let { videoId ->
+                            Environment.song(videoId)?.getOrNull()?.let { song ->
+                                val binder = snapshotFlow { binder }.filterNotNull().first()
+                                withContext(Dispatchers.Main) {
+                                    if (!song.explicit && !appSettings.parentalControlEnabled)
+                                        binder.exoPlayer?.forcePlay(song.asMediaItem)
+                                    else
+                                        SmartMessage(
+                                            "Parental control is enabled",
+                                            PopupType.Warning,
+                                            context = this@MainActivity
+                                        )
                                 }
                             }
                         }
                     }
-                    intentUriData = null
                 }
-
+                intentUriData = null
             }
+
         }
+
 
 
     }

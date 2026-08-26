@@ -172,7 +172,7 @@ internal class WebViewYouTubePlayer constructor(
 
       // Rileva quando la WebView richiede il playback multimediale (HTML5 Video)
       override fun getDefaultVideoPoster(): Bitmap? {
-        //requestAudioFocusEarly()
+        //requestAudioFocusEarly() // not needed
         return super.getDefaultVideoPoster()
       }
 

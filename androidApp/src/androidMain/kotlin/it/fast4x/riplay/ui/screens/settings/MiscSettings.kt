@@ -273,7 +273,7 @@ fun MiscSettings() {
                         }
                     }
                 )
-                ImportantSettingsDescription(text = stringResource(R.string.restarting_riplay_is_required))
+                ImportantSettingsDescription(text = stringResource(R.string.restart_is_not_required))
                 ButtonBarSettingEntry(
                     isEnabled = logDebugEnabled,
                     title = stringResource(R.string.export_log),

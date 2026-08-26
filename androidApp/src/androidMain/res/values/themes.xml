@@ -11,4 +11,16 @@
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowBackground">@color/ic_launcher_background_dark</item>
     </style>
+
+    <!-- Tema per la Splash Screen per rimuovere l'icona dell'app mostrata di default, sarà visualizzato un loader diverso -->
+    <style name="Theme.RiPlay.SplashScreen" parent="Theme.SplashScreen">
+        <!-- Colore di sfondo (nero per fondersi con il loader) -->
+        <item name="windowSplashScreenBackground">@android:color/black</item>
+
+        <!-- L'icona trasparente -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_transparent</item>
+
+        <!-- Dopo la splash, torna al tema normale dell'app -->
+        <item name="postSplashScreenTheme">@style/Theme.RiPlay</item>
+    </style>
 </resources>
