@@ -429,7 +429,7 @@ class HybridPlayer (
     }
 
     /**
-     * Applica l'attenuazione se siamo su YouTube ma su richiesta se main activity viene da un resume.
+     * Applica l'attenuazione se siamo su YouTube e la normalizzazione audio è attiva
      */
     fun applyVolumeNormalization() {
         if (activeEngine == ActiveEngine.YOUTUBE) {
