@@ -1396,9 +1396,9 @@ Volume BAS : titre précédent</string>
     <string name="crossfade_duration_9_seconds">9 secondes</string>
     <string name="crossfade_duration_12_seconds">12 secondes</string>
     <string name="restart_is_not_required">Le redémarrage n\'est pas nécessaire</string>
-    <string name="loading_msg_1">Finding the right rhythm…</string>
-    <string name="loading_msg_2">Turning up the volume…</string>
-    <string name="loading_msg_3">Tuning frequencies…</string>
+    <string name="loading_msg_1">Trouver le bon rythme…</string>
+    <string name="loading_msg_2">On monte le son…</string>
+    <string name="loading_msg_3">Réglage des fréquences…</string>
     <string name="loading_msg_4">Des titres à venir…</string>
     <string name="loading_msg_5">Chargement des playlists…</string>
     <string name="loading_msg_6">All set. Happy listening!</string>
