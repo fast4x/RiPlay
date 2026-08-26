@@ -2863,7 +2863,7 @@ private fun updateOnlineNearEndTicks() {
         override fun setVolume(volume: Float) {
             // ATTENZIONE CRITICA: L'API di YouTube IFrame vuole il volume da 0 a 100!
             // Media3 manda un float da 0.0 a 1.0, quindi moltiplichiamo per 100.
-            _internalOnlinePlayer.value?.setVolume((volume * 100F).toInt())
+            _internalOnlinePlayer.value?.setVolume((volume * 100F).toInt().coerceIn(0, 100))
         }
 
         override fun setPlaybackRate(rate: Float) {
