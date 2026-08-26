@@ -105,7 +105,7 @@
               YouTubePlayerBridge.sendReady();
           }
 
-          // WORKAROUND DEFINITIVO VOLUME (Mute/Unmute/SetVolume)
+          // WORKAROUND DEFINITIVO VOLUME non è detto che funzioni (Mute/Unmute/SetVolume)
           // 6 controlli distanziati ogni 300ms coprono circa 1.8 secondi (la finestra critica)
           var checks = 0;
           var audioInterval = setInterval(function() {

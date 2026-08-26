@@ -55,9 +55,9 @@ class IFramePlayerOptions private constructor(private val playerOptions: JSONObj
     private val builderOptions = JSONObject()
 
     init {
-      // VALORI CORE HARD-LOCKED: Essenziali per il workaround dell'attenuazione audio
+      // Impostazioni di default
       addInt(AUTO_PLAY, 1) // Forza l'avvio immediato per stabilizzare i buffer
-      addInt(MUTE, 1)      // Avvia mutato a livello hardware per saltare il soft-start di Android
+      addInt(MUTE, 0)      // Se abilitato avvia con volume zero a livello hardware per saltare il soft-start di Android
       addString(ORIGIN, fallbackUrl) // Dominio fiduciario per permessi codec massimi
 
       // Impostazioni standard modificabili
