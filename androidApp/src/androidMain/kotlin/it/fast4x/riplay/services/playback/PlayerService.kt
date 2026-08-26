@@ -3406,8 +3406,11 @@ private fun updateOnlineNearEndTicks() {
     )
 
     fun createCacheDataSource(): CacheDataSource.Factory {
-        val webDavPwdDecrypted = CryptoManager.decrypt(appSettings.webDavPassword)
-        if (webDavPwdDecrypted.isEmpty()) {
+        val webDavPwdDecrypted = if (appSettings.isWebDavEnabled)
+            CryptoManager.decrypt(appSettings.webDavPassword)
+        else ""
+
+        if (webDavPwdDecrypted.isEmpty() && appSettings.isWebDavEnabled) {
             SmartMessage(getString(R.string.warning_you_must_re_enter_your_webdav_password), type = PopupType.Warning, context = this@PlayerService)
         }
 
@@ -3421,15 +3424,16 @@ private fun updateOnlineNearEndTicks() {
         val okHttpClient = OkHttpClient.Builder()
             .proxy(Environment.proxy)
             .apply {
-                addInterceptor { chain ->
-                    val request = chain.request().newBuilder()
-                        .header(
-                            "Authorization",
-                            okhttp3.Credentials.basic(webDavConfig.username, webDavConfig.password)
-                        )
-                        .build()
-                    chain.proceed(request)
-                }
+                if (appSettings.isWebDavEnabled)
+                    addInterceptor { chain ->
+                        val request = chain.request().newBuilder()
+                            .header(
+                                "Authorization",
+                                okhttp3.Credentials.basic(webDavConfig.username, webDavConfig.password)
+                            )
+                            .build()
+                        chain.proceed(request)
+                    }
             }
             .build()
 
