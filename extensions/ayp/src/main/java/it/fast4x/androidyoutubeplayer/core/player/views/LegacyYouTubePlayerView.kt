@@ -1,7 +1,9 @@
 package it.fast4x.androidyoutubeplayer.core.player.views
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.LayoutRes
@@ -209,4 +211,14 @@ internal class LegacyYouTubePlayerView(
   fun enableBackgroundPlayback(enable: Boolean) {
     webViewYouTubePlayer.isBackgroundPlaybackEnabled = enable
   }
+
+  /**
+   * Imposta un'immagine di anteprima pre-elaborata (Bitmap) per la WebView.
+   * Il caricamento e la decodifica dell'immagine sono delegati all'applicazione.
+   */
+  fun setCustomVideoPoster(bitmap: Bitmap?) {
+    Log.d("LegacyYouTubePlayerView", "setCustomVideoPoster called with bitmap: $bitmap")
+    webViewYouTubePlayer.setCustomVideoPoster(bitmap)
+  }
+
 }

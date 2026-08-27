@@ -8,6 +8,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.applyCanvas
 import androidx.media3.common.util.BitmapLoader
 import androidx.media3.common.util.UnstableApi
@@ -22,11 +23,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.guava.future
 import timber.log.Timber
-import java.util.concurrent.ExecutionException
 import kotlin.toString
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.toBitmap
 import coil.transform.Transformation
+import android.graphics.Color
+import android.graphics.RectF
 
 suspend fun getBitmapFromUrl(context: Context, url: String): Bitmap {
     val loading = context.imageLoader
@@ -230,92 +232,47 @@ class LandscapeToSquareTransformation(private val targetSize: Int) : Transformat
     override fun hashCode(): Int = targetSize.hashCode()
 }
 
-/*
-class BitmapProvider(
-    private val bitmapSize: Int,
-    private val colorProvider: (isSystemInDarkMode: Boolean) -> Int
-) {
-    var lastUri: Uri? = null
-        private set
-
-    var lastBitmap: Bitmap? = null
-    private var lastIsSystemInDarkMode = false
-
-    private var lastEnqueued: Disposable? = null
-
-    private lateinit var defaultBitmap: Bitmap
-
-    val bitmap: Bitmap
-        get() = lastBitmap ?: defaultBitmap
-
-    var listener: ((Bitmap?) -> Unit)? = null
-        set(value) {
-            field = value
-            value?.invoke(lastBitmap)
-        }
-
-    init {
-        setDefaultBitmap()
-    }
-
-    fun setDefaultBitmap(): Boolean {
-        val isSystemInDarkMode = appContext().resources.configuration.uiMode and
-                Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
-
-        if (::defaultBitmap.isInitialized && isSystemInDarkMode == lastIsSystemInDarkMode) return false
-
-        lastIsSystemInDarkMode = isSystemInDarkMode
-
-        runCatching {
-            defaultBitmap =
-                createBitmap(bitmapSize, bitmapSize).applyCanvas {
-                    drawColor(colorProvider(isSystemInDarkMode))
-                }
-        }.onFailure {
-            Timber.e("Failed set default bitmap in BitmapProvider ${it.stackTraceToString()}")
-        }
-
-        return lastBitmap == null
-    }
-
-    fun load(uri: Uri?, onDone: (Bitmap) -> Unit) {
-        Timber.d("BitmapProvider load method being called")
-        if (lastUri == uri || uri == null) {
-            listener?.invoke(lastBitmap)
-            return
-        }
-
-        lastEnqueued?.dispose()
-        lastUri = uri
-
-        val url = uri.toString().thumbnail(bitmapSize)
-        runCatching {
-            lastEnqueued = appContext().imageLoader.enqueue(
-                ImageRequest.Builder(appContext())
-                    //.networkCachePolicy(CachePolicy.ENABLED)
-                    .data(url)
-                    .allowHardware(false)
-                    .diskCacheKey(url.toString())
-                    .memoryCacheKey(url.toString())
-                    .listener(
-                        onError = { _, result ->
-                            Timber.Forest.e("Failed to load bitmap ${result.throwable.stackTraceToString()}")
-                            lastBitmap = null
-                            onDone(bitmap)
-                            //listener?.invoke(lastBitmap)
-                        },
-                        onSuccess = { _, result ->
-                            lastBitmap = (result.drawable as BitmapDrawable).bitmap
-                            onDone(bitmap)
-                            //listener?.invoke(lastBitmap)
-                        }
-                    )
-
-                    .build()
-            )
-        }.onFailure {
-            Timber.Forest.e("Failed enqueue in BitmapProvider ${it.stackTraceToString()}")
-        }
-    }
+// Funzione di utilità opzionale lato App per convertire Vettori XML in Bitmap
+fun vectorToBitmap(context: Context, drawableId: Int): Bitmap? {
+    val drawable = ContextCompat.getDrawable(context, drawableId) ?: return null
+    val bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
+    val canvas = Canvas(bitmap)
+    drawable.setBounds(0, 0, canvas.width, canvas.height)
+    drawable.draw(canvas)
+    return bitmap
 }
+
+/**
+ * Adatta il logo centrandolo in una tela nera proporzionata sullo schermo corrente.
+ * Ridimensiona il logo in base all'altezza o alla larghezza disponibile per impedire
+ * che strabordi o si schiacci quando si ruota il dispositivo in Landscape.
  */
+fun Bitmap.toFitWindowWithBlackBackground(context: Context): Bitmap {
+    val displayMetrics = context.resources.displayMetrics
+    val screenWidth = displayMetrics.widthPixels
+    val screenHeight = displayMetrics.heightPixels
+
+    // 1. Creiamo la tela nera delle dimensioni esatte della finestra corrente
+    val outputBitmap = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(outputBitmap)
+    canvas.drawColor(Color.BLACK)
+
+    // 2. Calcoliamo la scala ideale per il logo affinché non riempia mai tutto lo schermo,
+    // lasciando un margine di sicurezza (es. il logo occuperà al massimo il 40% del lato minore)
+    val maxLogoSize = (Math.min(screenWidth, screenHeight) * 0.40f)
+    val scale = Math.min(maxLogoSize / this.width, maxLogoSize / this.height)
+
+    val scaledWidth = this.width * scale
+    val scaledHeight = this.height * scale
+
+    // 3. Centriamo le coordinate della bounding box del logo sulla tela
+    val left = (screenWidth - scaledWidth) / 2f
+    val top = (screenHeight - scaledHeight) / 2f
+    val destRect = RectF(left, top, left + scaledWidth, top + scaledHeight)
+
+    // 4. Disegniamo il logo scalato in alta qualità
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
+    canvas.drawBitmap(this, null, destRect, paint)
+
+    return outputBitmap
+}

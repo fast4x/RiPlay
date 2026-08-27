@@ -17,15 +17,68 @@
         padding: 0;
         background-color: #000000;
         overflow: hidden;
+        position: relative;
     }
 
-    /* Ottimizzazione esplicita GPU: azzera i micro-scatti all'avvio */
+    /* Il wrapper fa da ghigliottina fissa sullo schermo del telefono */
+    .iframe-cropper-wrapper {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        position: relative;
+    }
+
+    /* Configurazione base dell'IFrame agganciata alla GPU */
     #youTubePlayerDOM {
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
         height: 100%;
         will-change: transform;
-        transform: translateZ(0);
+        /* Mantiene il centro perfetto per la trasformazione geometrica */
+        transform-origin: center center;
+        transition: transform 0.2s ease;
     }
+
+    /* ========================================================================= */
+    /* CONFIGURAZIONE PORTRAIT (SCHERMO VERTICALE)                               */
+    /* ========================================================================= */
+    @media (orientation: portrait) {
+        #youTubePlayerDOM {
+            /* Ingrandiamo l'IFrame dell'8% (1.08) o del 10% (1.10) a seconda del telefono. */
+            /* Questo spinge i 5 pixel alti e bassi FUORI dallo schermo in modo simmetrico! */
+            transform: scale(1.10) translateZ(0);
+        }
+    }
+
+    /* ========================================================================= */
+    /* CONFIGURAZIONE LANDSCAPE (SCHERMO ORIZZONTALE)                            */
+    /* ========================================================================= */
+    @media (orientation: landscape) {
+        #youTubePlayerDOM {
+            /* Visto che in Landscape i tuoi parametri erano già perfetti, */
+            /* usiamo la traslazione classica che avevi validato con successo */
+            transform: scale(1.0) translateZ(0); /* Resetta lo scale */
+            top: -42px;
+            height: calc(100% + 90px);
+        }
+    }
+
+    #customPoster {
+          position: absolute;
+          top: 0; left: 0; width: 100%; height: 100%;
+          background-color: #000000;
+          background-repeat: no-repeat;
+          background-position: center;
+          /* FONDAMENTALE: mantiene le proporzioni sferiche in Portrait e Landscape! */
+          background-size: contain;
+          z-index: 10;
+          pointer-events: none; /* Non blocca i tocchi utente */
+          transition: opacity 0.3s ease; /* Scomparsa fluida all'avvio */
+          opacity: 1;
+      }
+
   </style>
 
   <!-- 'defer' impedisce race condition durante il parsing dell'API ufficiale -->
@@ -33,7 +86,12 @@
 </head>
 
 <body>
-<div id="youTubePlayerDOM"></div>
+<!-- Il poster sta sopra al player di YouTube -->
+<div id="customPoster"></div>
+<!-- Incapsuliamo l'IFrame nel wrapper di ritaglio -->
+<div class="iframe-cropper-wrapper">
+  <div id="youTubePlayerDOM"></div>
+</div>
 </body>
 
 <script>
@@ -135,6 +193,8 @@
 
     if (!YouTubePlayerBridge) return;
 
+    var poster = document.getElementById('customPoster');
+
     switch (playerState) {
       case YT.PlayerState.UNSTARTED:
         YouTubePlayerBridge.sendStateChange(UNSTARTED);
@@ -144,6 +204,12 @@
         YouTubePlayerBridge.sendStateChange(ENDED);
         return;
       case YT.PlayerState.PLAYING:
+        // Il poster custom svanisce subito all'avvio dell'audio
+        if (poster) {
+            poster.style.opacity = '0';
+            setTimeout(function() { poster.style.display = 'none'; }, 400);
+        }
+
         YouTubePlayerBridge.sendStateChange(PLAYING);
         startSendCurrentTimeInterval();
         sendVideoData(player);

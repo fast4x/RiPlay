@@ -1,7 +1,9 @@
 package it.fast4x.androidyoutubeplayer.core.player.views
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
@@ -250,4 +252,14 @@ class YouTubePlayerView(
       height = targetHeight
     }
   }
+
+  /**
+   * Imposta un'immagine di anteprima pre-elaborata (Bitmap) per la WebView.
+   * Il caricamento e la decodifica dell'immagine sono delegati all'applicazione.
+   */
+  fun setCustomVideoPoster(bitmap: Bitmap?) {
+    Log.d("YouTubePlayerView", "setCustomVideoPoster called with bitmap: $bitmap")
+    legacyTubePlayerView.setCustomVideoPoster(bitmap)
+  }
+
 }

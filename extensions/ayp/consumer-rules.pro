@@ -18,3 +18,9 @@
 
 # 5. Impedisce a R8 di ottimizzare i tipi di ritorno nei bridge con la WebView
 -keepattributes Signature, EnclosingMethod, InnerClasses, AnnotationDefault
+
+# Impedisce a R8 Full Mode di ottimizzare o spezzare le stringhe letterali
+# passate a evaluateJavascript all'interno della WebView custom
+-keepclassmembers class it.fast4x.androidyoutubeplayer.** {
+    void evaluateJavascript(java.lang.String, android.webkit.ValueCallback);
+}

@@ -61,7 +61,6 @@ fun isPersistentQueueEnabled() = getAppSettings().persistentQueue
 fun isPipModeAutoEnabled() = getAppSettings().enablePictureInPictureAuto
 fun isEnabledFullscreen() = getAppSettings().isEnabledFullScreen
 fun isSkipMediaOnErrorEnabled() = getAppSettings().skipMediaOnError
-fun isKeepScreenOnEnabled() = getAppSettings().keepScreenEnabled
 fun isEnabledLastFm() = getAppSettings().isEnabledLastFM && getlastFmSessionKey().isNotEmpty()
 
 

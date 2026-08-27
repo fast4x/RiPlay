@@ -137,7 +137,6 @@ import it.fast4x.riplay.utils.collect
 import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.isHandleAudioFocusEnabled
-import it.fast4x.riplay.utils.isKeepScreenOnEnabled
 import it.fast4x.riplay.utils.isOfficialContent
 import it.fast4x.riplay.utils.isSkipMediaOnErrorEnabled
 import it.fast4x.riplay.utils.isUserGeneratedContent
@@ -236,6 +235,7 @@ import it.fast4x.riplay.utils.CryptoManager
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.isWebDav
+import it.fast4x.riplay.utils.vectorToBitmap
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.debounce
@@ -1725,7 +1725,18 @@ class PlayerService : MediaLibraryService(),
 
             enableBackgroundPlayback(true)
 
-            keepScreenOn = isKeepScreenOnEnabled()
+            keepScreenOn = appSettings.keepScreenEnabled
+
+            // Per impostare la cover personalizzata della webview
+            /*
+            setCustomVideoPoster(
+                // Se drawable è una immagine
+                //BitmapFactory.decodeResource(context.resources, R.drawable.app_icon)
+                // Se drawable è un'immagine xml
+                vectorToBitmap(this@PlayerService, R.drawable.app_icon)
+            )
+             */
+
 
             val iFramePlayerOptions = IFramePlayerOptions.Builder(appContext())
                 .listType("playlist")

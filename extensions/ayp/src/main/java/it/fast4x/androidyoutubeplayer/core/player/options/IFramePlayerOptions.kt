@@ -13,8 +13,8 @@ class IFramePlayerOptions private constructor(private val playerOptions: JSONObj
   companion object {
     private val fallbackUrl = "https://youtube.com"
 
-    // Imposto controls = 1 per scongiurare  problemi di rendering dovuti alle possibili restrizioni di sicurezza
-    fun getDefault(context: Context) = Builder(context).controls(1).build()
+    // Se necessario impostare controls = 1 per scongiurare  problemi di rendering dovuti alle possibili restrizioni di sicurezza
+    fun getDefault(context: Context) = Builder(context).controls(0).build()
   }
 
   override fun toString(): String {

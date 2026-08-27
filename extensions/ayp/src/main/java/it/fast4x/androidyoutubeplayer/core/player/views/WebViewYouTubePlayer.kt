@@ -108,6 +108,9 @@ internal class WebViewYouTubePlayer (
 
   private val youTubePlayerBridge = YouTubePlayerBridge(this)
 
+  internal var customVideoPoster: Bitmap? = null
+  private var base64Logo: String? = null
+
   internal fun initialize(initListener: (YouTubePlayer) -> Unit, playerOptions: IFramePlayerOptions?, videoId: String?) {
     youTubePlayerInitListener = initListener
     initWebView(playerOptions ?: IFramePlayerOptions.getDefault(context), videoId)
@@ -115,7 +118,12 @@ internal class WebViewYouTubePlayer (
 
   override val listeners: Collection<YouTubePlayerListener> get() = _youTubePlayer.getListeners()
   override fun getInstance(): YouTubePlayer = _youTubePlayer
-  override fun onYouTubeIFrameAPIReady() = youTubePlayerInitListener(_youTubePlayer)
+  override fun onYouTubeIFrameAPIReady() {
+    // Dice alla webview di iniettare la stringa Base64 del logo nel div CSS
+    injectLogoIntoWebDOM()
+
+    youTubePlayerInitListener(_youTubePlayer)
+  }
   fun addListener(listener: YouTubePlayerListener) = _youTubePlayer.addListener(listener)
   fun removeListener(listener: YouTubePlayerListener) = _youTubePlayer.removeListener(listener)
 
@@ -148,10 +156,15 @@ internal class WebViewYouTubePlayer (
     addJavascriptInterface(youTubePlayerBridge, "YouTubePlayerBridge")
     addJavascriptInterface(youTubePlayerCallbacks, "YouTubePlayerCallbacks")
 
-    // 4. Configurazione snella del client grafico (Previene bug di rendering video in HTML5)
+    // Configurazione snella del client grafico
     webChromeClient = object : WebChromeClient() {
       override fun getDefaultVideoPoster(): Bitmap? {
-        return super.getDefaultVideoPoster()
+        // Restituisce SEMPRE un pixel trasparente. La cover vera la gestisce il DOM HTML
+        return try {
+            createBitmap(1, 1).apply {
+            eraseColor(android.graphics.Color.TRANSPARENT)
+          }
+        } catch (e: Exception) { super.getDefaultVideoPoster() }
       }
     }
 
@@ -168,11 +181,16 @@ internal class WebViewYouTubePlayer (
   // Spostato il controllo della visibilità hardware: gestisce in autonomia il resume grafico dell'app
   override fun onWindowVisibilityChanged(visibility: Int) {
     var newVisibility = visibility
+
     if (isBackgroundPlaybackEnabled && (visibility == View.GONE || visibility == View.INVISIBLE)) {
+      // Mantiene l'inganno visivo stabile. Chromium ridurrà i consumi dei frame
+      // in autonomia poiché la finestra non è focalizzata, ma senza andare in pausa.
       newVisibility = View.VISIBLE
     }
+
     super.onWindowVisibilityChanged(newVisibility)
   }
+
 
   // Gestione dell'hardware focus nativo
   override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
@@ -196,32 +214,71 @@ internal class WebViewYouTubePlayer (
                 var activePlayer = typeof window.player !== 'undefined' ? window.player : player;
                 if (activePlayer && typeof activePlayer.getPlayerState === 'function') {
                     var currentState = activePlayer.getPlayerState();
-                    console.log("YOUTUBE_JS_LOG: Stato del player al focus = " + currentState);
+                    console.log("YOUTUBE_JS_LOG: Sblocco per transizione Chromium. Stato = " + currentState);
                     
-                    // Il fix si attiva se il video è in PLAYING (1) o in BUFFERING (3)
                     if (currentState === 1 || currentState === 3) {
                         var resumeChecks = 0;
+                        // Controlli a 8 ripetizioni e lo spazio a 200ms 
+                        // Questo copre 1.6 secondi complessivi, neutralizzando il fade-in ritardato di Chromium
                         var resumeInterval = setInterval(function() {
                             if (activePlayer && typeof activePlayer.unMute === 'function') {
                                 activePlayer.unMute();
                                 activePlayer.setVolume(100);
                             }
                             resumeChecks++;
-                            if (resumeChecks >= 5) {
+                            if (resumeChecks >= 8) { 
                                 clearInterval(resumeInterval);
                             }
-                        }, 150);
+                        }, 200);
                     }
                 }
             }
         })();
     """.trimIndent()
 
-    // Attendiamo 300ms per dare tempo al sistema operativo di ricollegare i canali audio hardware
+    // Delay iniziale a 200ms (più reattivo) e lasciamo che sia il setInterval
+    // a martellare il volume a 100 durante tutta la finestra di risveglio di Chromium
     this.postDelayed({
       this.evaluateJavascript(triggerScript, null)
-    }, 300)
+    }, 200)
   }
+
+  /**
+   * Riceve una Bitmap pre-renderizzata dall'applicazione e la imposta
+   * come poster grafico durante il caricamento iniziale della WebView.
+   */
+  fun setCustomVideoPoster(bitmap: Bitmap?) {
+    Log.d("WebViewYouTubePlayer", "setCustomVideoPoster called with bitmap: $bitmap")
+    //this.customVideoPoster = bitmap
+    setRawLogoBitmap(bitmap)
+  }
+
+  /**
+   * Riceve il logo originale grezzo dall'app, lo converte in stringa Base64
+   * e lo inietta nell'HTML. Non serve ricalcolarlo alla rotazione!
+   */
+  fun setRawLogoBitmap(bitmap: Bitmap?) {
+    if (bitmap == null) return
+    try {
+      val outputStream = java.io.ByteArrayOutputStream()
+      bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+      val byteArray = outputStream.toByteArray()
+      base64Logo = android.util.Base64.encodeToString(byteArray, android.util.Base64.NO_WRAP)
+    } catch (e: Exception) {
+      Log.e("WebViewYouTubePlayer", "Errore conversione Base64", e)
+    }
+  }
+
+  // Invocato quando l'HTML notifica che le API sono pronte (sendYouTubeIFrameAPIReady o sendReady)
+  fun injectLogoIntoWebDOM() {
+    base64Logo?.let { base64 ->
+      val jsCommand = "document.getElementById('customPoster').style.backgroundImage = 'url(data:image/png;base64,$base64)';"
+      this.post {
+        this.evaluateJavascript(jsCommand, null)
+      }
+    }
+  }
+
 }
 
 

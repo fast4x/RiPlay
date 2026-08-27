@@ -452,7 +452,7 @@ class HybridPlayer (
             }
 
             youtubeControl.setVolume(finalVolume)
-            //Timber.d("HybridPlayer applyVolumeNormalization YT: finalVol=$finalVolume")
+            Timber.d("HybridPlayer applyVolumeNormalization YT: finalVol=$finalVolume")
         } else {
             exoPlayer.volume = userVolume
         }
