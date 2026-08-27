@@ -1401,5 +1401,5 @@ Volume BAS : titre précédent</string>
     <string name="loading_msg_3">Réglage des fréquences…</string>
     <string name="loading_msg_4">Des titres à venir…</string>
     <string name="loading_msg_5">Chargement des playlists…</string>
-    <string name="loading_msg_6">All set. Happy listening!</string>
+    <string name="loading_msg_6">C\'est parti. Bonne écoute !</string>
 </resources>
