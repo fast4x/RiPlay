@@ -1392,15 +1392,15 @@ Volume BAS : titre précédent</string>
     <string name="crossfade_duration_3_seconds">3 secondes</string>
     <string name="crossfade_duration_5_seconds">5 secondes</string>
     <string name="effect_subtitle_crossfade_fade_between_tracks_in_queue">Fondu entre les morceaux de la file d\'attente</string>
-    <string name="crossfade_duration_7_seconds">7 seconds</string>
-    <string name="crossfade_duration_9_seconds">9 seconds</string>
-    <string name="crossfade_duration_12_seconds">12 seconds</string>
-    <string name="restart_is_not_required">Restart isn\'t required</string>
-    <string name="loading_msg_1">Finding the right rhythm…</string>
-    <string name="loading_msg_2">Turning up the volume…</string>
-    <string name="loading_msg_3">Tuning frequencies…</string>
-    <string name="loading_msg_4">Tracks on the way…</string>
-    <string name="loading_msg_5">Loading playlists…</string>
-    <string name="loading_msg_6">All set. Happy listening!</string>
+    <string name="crossfade_duration_7_seconds">7 secondes</string>
+    <string name="crossfade_duration_9_seconds">9 secondes</string>
+    <string name="crossfade_duration_12_seconds">12 secondes</string>
+    <string name="restart_is_not_required">Le redémarrage n\'est pas nécessaire</string>
+    <string name="loading_msg_1">Trouver le bon rythme…</string>
+    <string name="loading_msg_2">On monte le son…</string>
+    <string name="loading_msg_3">Réglage des fréquences…</string>
+    <string name="loading_msg_4">Des titres à venir…</string>
+    <string name="loading_msg_5">Chargement des playlists…</string>
+    <string name="loading_msg_6">C\'est parti. Bonne écoute !</string>
     <string name="warning_you_must_re_enter_your_webdav_password">You must re-enter your WebDAV password</string>
 </resources>
