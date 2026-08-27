@@ -23,6 +23,7 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.musicvault.MusicVaultState
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.themed.SmartMessage
+import it.fast4x.riplay.utils.isVideo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -265,6 +266,28 @@ fun Player.enqueue(
 
     addMediaItems(mediaItemCount, filteredMediaItems)
     SmartMessage(globalContext().resources.getString(R.string.done), context = globalContext())
+}
+
+/**
+ * Rimuove in modo sicuro tutti i video dalla coda
+ */
+fun Player.removeVideoMediaItems() {
+    var modificationsMade = false
+
+    // Iterazione inversa per evitare problemi di indice
+    for (i in this.mediaItemCount - 1 downTo 0) {
+        val item = this.getMediaItemAt(i)
+
+        if (item.isVideo) {
+            this.removeMediaItem(i)
+            modificationsMade = true
+        }
+    }
+
+    // Se la playlist diventa vuota, metto in pausa che il player sia in pausa
+//    if (modificationsMade && this.mediaItemCount == 0) {
+//        this.pause()
+//    }
 }
 
 fun Player.canAddedToQueue(mediaItem: MediaItem, queue: Queues): Boolean {

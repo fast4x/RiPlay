@@ -122,6 +122,7 @@ kotlin {
         implementation(libs.camerax.camera.view)
         implementation(libs.zxing.core)
         implementation(libs.splashscreen)
+        implementation(libs.lifecycle.process)
 
     }
 

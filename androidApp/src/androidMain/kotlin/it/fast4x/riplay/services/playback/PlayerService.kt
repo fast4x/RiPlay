@@ -48,6 +48,9 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.media.VolumeProviderCompat
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.AuxEffectInfo
@@ -235,6 +238,7 @@ import it.fast4x.riplay.utils.CryptoManager
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.isWebDav
+import it.fast4x.riplay.utils.removeVideoMediaItems
 import it.fast4x.riplay.utils.vectorToBitmap
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.conflate
@@ -451,6 +455,16 @@ class PlayerService : MediaLibraryService(),
     private var fadeInJob: Job? = null
     private val FADE_IN_DURATION_MS = 2000L // Durata di default del fade in
 
+    // Observer per il ciclo di vita dell'intero processo (app in background)
+    private val processLifecycleObserver = object : DefaultLifecycleObserver {
+        override fun onStop(owner: LifecycleOwner) {
+            Timber.d("PlayerService: ProcessLifecycleOwner.onStop() schermo spento, rimuovo video")
+            // Chiamato quando l'app va in background o lo schermo si spegne
+            // Elimino i video perchè in background non sono più visibili ma creano problemi di avanzamento al successivo mediaitem
+            player.removeVideoMediaItems()
+        }
+    }
+
 
     override fun onBind(intent: Intent?) = super.onBind(intent) ?: binder
 
@@ -518,6 +532,9 @@ class PlayerService : MediaLibraryService(),
             setupPersistentQueueAndObservers()
 
             startForeground()
+
+            // Registra l'observer sul ciclo di vita del processo
+            ProcessLifecycleOwner.get().lifecycle.addObserver(processLifecycleObserver)
 
             _isServiceReady.value = true
         }
@@ -788,7 +805,7 @@ class PlayerService : MediaLibraryService(),
         // 1. Controlla che la sessione non sia null (usando il ?. safe call)
         mediaLibrarySession?.let { session ->
 
-            val params = MediaLibraryService.LibraryParams.Builder()
+            val params = LibraryParams.Builder()
                 .setExtras(Bundle().apply {
                     // Diciamo esplicitamente al sistema dell'auto che il contenuto di questo specifico nodo è cambiato
                     putBoolean("android.media.browse.extra.DOWNLOAD_PROGRESS", true) // Sveglia il sistema di caricamento visivo
@@ -1897,6 +1914,9 @@ class PlayerService : MediaLibraryService(),
         _isServiceReady.value = false
 
         sendCloseExternalEqualizerIntent()
+
+        // Rimuovi l'observer per evitare memory leak
+        ProcessLifecycleOwner.get().lifecycle.removeObserver(processLifecycleObserver)
 
         serviceScope.launch { saveQueue() }
 
