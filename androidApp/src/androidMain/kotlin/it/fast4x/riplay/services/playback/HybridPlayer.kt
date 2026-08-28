@@ -377,8 +377,10 @@ class HybridPlayer (
     }
 
     override fun seekTo(positionMs: Long) {
-        if (activeEngine == ActiveEngine.YOUTUBE) youtubeControl.seekTo(positionMs) else exoPlayer.seekTo(positionMs)
-        if (activeEngine == ActiveEngine.YOUTUBE) invalidateYouTubePositionOnly()
+        if (activeEngine == ActiveEngine.YOUTUBE) {
+            youtubeControl.seekTo(positionMs)
+            invalidateYouTubePositionOnly()
+        } else exoPlayer.seekTo(positionMs)
     }
 
     override fun getVolume(): Float {

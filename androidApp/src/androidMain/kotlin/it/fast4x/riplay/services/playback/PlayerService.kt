@@ -2634,6 +2634,7 @@ class PlayerService : MediaLibraryService(),
             // ATTENZIONE: L'API di YouTube IFrame usa i SECONDI (Float), non i millisecondi!
             val seconds = positionMs.toFloat() / 1000f
             _internalYouTubePlayer.value?.seekTo(seconds)
+            _currentSecond.value = seconds
         }
 
         override fun getCurrentPositionMs(): Long {

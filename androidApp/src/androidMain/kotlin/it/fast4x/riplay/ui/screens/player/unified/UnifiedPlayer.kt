@@ -2543,7 +2543,7 @@ fun UnifiedPlayer(
                                     },
                                     onSeekTo = {
                                         if (!GlobalSharedData.riTuneCastActive) {
-                                            binder.hybridPlayer.seekTo(it.div(1000).toLong())
+                                            binder.hybridPlayer.seekTo(it.toLong())
                                         } else
                                             CoroutineScope(Dispatchers.IO).launch {
                                                 riTuneClient.sendCommand(
@@ -2883,7 +2883,7 @@ fun UnifiedPlayer(
                                             },
                                             onSeekTo = {
                                                 if (!GlobalSharedData.riTuneCastActive) {
-                                                    binder.hybridPlayer.seekTo(it.div(1000).toLong())
+                                                    binder.hybridPlayer.seekTo(it.toLong())
                                                 } else
                                                     CoroutineScope(Dispatchers.IO).launch {
                                                         riTuneClient.sendCommand(
@@ -3799,7 +3799,7 @@ fun UnifiedPlayer(
                                     },
                                     onSeekTo = {
                                         if (!GlobalSharedData.riTuneCastActive) {
-                                            binder.hybridPlayer.seekTo(it.div(1000).toLong())
+                                            binder.hybridPlayer.seekTo(it.toLong())
                                         } else
                                             CoroutineScope(Dispatchers.IO).launch {
                                                 riTuneClient.sendCommand(
