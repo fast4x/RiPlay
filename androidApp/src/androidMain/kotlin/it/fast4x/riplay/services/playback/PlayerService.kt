@@ -326,14 +326,14 @@ class PlayerService : MediaLibraryService(),
      * Online configuration
      */
 
-    private val _internalOnlinePlayerView = MutableStateFlow<YouTubePlayerView>(
+    private val _internalYouTubePlayerView = MutableStateFlow<YouTubePlayerView>(
         LayoutInflater.from(appContext())
             .inflate(R.layout.youtube_player, null, false)
                 as YouTubePlayerView
     )
-    val internalYoutubePlayerView: StateFlow<YouTubePlayerView?> = _internalOnlinePlayerView
+    val internalYoutubePlayerView: StateFlow<YouTubePlayerView?> = _internalYouTubePlayerView
 
-    private val _internalOnlinePlayer = MutableStateFlow<YouTubePlayer?>(null)
+    private val _internalYouTubePlayer = MutableStateFlow<YouTubePlayer?>(null)
     //val internalYoutubePlayer: StateFlow<YouTubePlayer?> = _internalOnlinePlayer
 
     private val _internalBufferedFraction = MutableStateFlow(0f)
@@ -490,7 +490,7 @@ class PlayerService : MediaLibraryService(),
         initializeLegacyMediaSession()
 
         // Aggiorna subito il mediasession per allineare lo stato delle azioni
-        if (!_playerState.value.isPlaying && _internalOnlinePlayer.value == null) {
+        if (!_playerState.value.isPlaying && _internalYouTubePlayer.value == null) {
             _playerState.update { it.copy(playbackState = PlaybackState.PAUSED) }
             updateLegacyMediasession()
         }
@@ -718,7 +718,7 @@ class PlayerService : MediaLibraryService(),
             }
             //Timber.d("PlayerService handleForeground - Sgancio foreground")
         }
-        _internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
+        _internalYouTubePlayer.value?.setVolume(getSystemMediaVolume())
     }
 
     private fun detachForegroundSafely() {
@@ -834,8 +834,8 @@ class PlayerService : MediaLibraryService(),
 
         Timber.d("PlayerService onStartCommand intent action ${intent?.action}")
         when (intent?.action) {
-            Action.play.value -> { if (currentSong.value?.isLocal == true) player.play() else _internalOnlinePlayer.value?.play() }
-            Action.pause.value -> { if (currentSong.value?.isLocal == true) player.pause() else _internalOnlinePlayer.value?.pause() }
+            Action.play.value -> { if (currentSong.value?.isLocal == true) player.play() else _internalYouTubePlayer.value?.play() }
+            Action.pause.value -> { if (currentSong.value?.isLocal == true) player.pause() else _internalYouTubePlayer.value?.pause() }
             Action.next.value -> handlePlayNext()
             Action.previous.value -> player.playPrevious()
         }
@@ -906,10 +906,10 @@ class PlayerService : MediaLibraryService(),
     }
 
     private fun replaceOnlinePlayerView() {
-        _internalOnlinePlayer.value?.pause()
-        _internalOnlinePlayer.value = null
-        _internalOnlinePlayerView.value.release()
-        _internalOnlinePlayerView.value = LayoutInflater.from(appContext())
+        _internalYouTubePlayer.value?.pause()
+        _internalYouTubePlayer.value = null
+        _internalYouTubePlayerView.value.release()
+        _internalYouTubePlayerView.value = LayoutInflater.from(appContext())
             .inflate(R.layout.youtube_player, null, false) as YouTubePlayerView
     }
 
@@ -934,7 +934,7 @@ class PlayerService : MediaLibraryService(),
                 else -> PlayerConstants.PlaybackRate.RATE_1
             }
 
-            _internalOnlinePlayer.value?.setPlaybackRate(onlineRate)
+            _internalYouTubePlayer.value?.setPlaybackRate(onlineRate)
         } else {
             // ExoPlayer gestisce speed e pitch in modo continuo e perfetto
             hybridPlayer.playbackParameters = PlaybackParameters(speed, pitch)
@@ -1024,8 +1024,7 @@ class PlayerService : MediaLibraryService(),
                     if (connectionStatus == RiTuneConnectionStatus.Connected) {
                         riTuneCastClient.disconnect()
                         withContext(Dispatchers.Main) {
-                            player.pause()
-                            _internalOnlinePlayer.value?.pause()
+                            hybridPlayer.pause()
                         }
                         updatePlayerState(PlayerConstants.PlayerState.PAUSED)
                         Timber.d("PlayerService initializeRiTune CAST NOT ACTIVE - Disconnected")
@@ -1037,8 +1036,7 @@ class PlayerService : MediaLibraryService(),
                         if (isConnecting) {
                             isConnecting = false
                             withContext(Dispatchers.Main) {
-                                player.pause()
-                                _internalOnlinePlayer.value?.pause()
+                                hybridPlayer.pause()
                             }
 
                             Timber.d("PlayerService initializeRiTune Connection established successfully")
@@ -1292,24 +1290,24 @@ class PlayerService : MediaLibraryService(),
     @ExperimentalCoroutinesApi
     private fun initializeOnlinePlayer(skipAutoload: Boolean = false) {
 
-        val onlinePlayerView = _internalOnlinePlayerView.value
+        val youTubePlayerView = _internalYouTubePlayerView.value
 
         val listener = object : AbstractYouTubePlayerListener() {
 
             override fun onReady(youTubePlayer: YouTubePlayer) {
                 super.onReady(youTubePlayer)
 
-                if (onlinePlayerView !== _internalOnlinePlayerView.value) {
+                if (youTubePlayerView !== _internalYouTubePlayerView.value) {
                     youTubePlayer.pause()
                     return
                 }
 
-                _internalOnlinePlayer.value = youTubePlayer
+                _internalYouTubePlayer.value = youTubePlayer
 
                 val customUiController =
                     CustomDefaultPlayerUiController(
                         this@PlayerService,
-                        onlinePlayerView,
+                        youTubePlayerView,
                         youTubePlayer,
                         onTap = {}
                     )
@@ -1323,7 +1321,7 @@ class PlayerService : MediaLibraryService(),
                 customUiController.showBufferingProgress(false)
                 customUiController.showYouTubeButton(false)
                 customUiController.showFullscreenButton(false)
-                onlinePlayerView.setCustomPlayerUi(customUiController.rootView)
+                youTubePlayerView.setCustomPlayerUi(customUiController.rootView)
 
                 Timber.d("PlayerService onlinePlayer onReady localmediaItem ${currentSong.value?.id} queue index ${hybridPlayer.currentMediaItemIndex}")
                 Timber.d("PlayerService onlinePlayer onReady isPersistentQueueEnabled $isPersistentQueueEnabled isResumePlaybackOnStart $isResumePlaybackOnStart")
@@ -1409,7 +1407,7 @@ class PlayerService : MediaLibraryService(),
                                     Timber.e("PlayerService onlinePlayerView: Persistent UNSTARTED state. Probably webView killed. Force to re-initialize for mediaId=$expectedMediaId")
 
                                     recreateOnlinePlayerView()
-                                    val currentPlayer = this@PlayerService._internalOnlinePlayer.first { it != null }!!
+                                    val currentPlayer = this@PlayerService._internalYouTubePlayer.first { it != null }!!
 
                                     currentSong.value?.let { item ->
                                         if(item.isLocal) return@let
@@ -1420,7 +1418,7 @@ class PlayerService : MediaLibraryService(),
                                             player.stop()
                                         }
                                         currentPlayer.pause()
-                                        _internalOnlinePlayer.value?.pause() // Pause also primary instance
+                                        _internalYouTubePlayer.value?.pause() // Pause also primary instance
                                         currentPlayer.cueVideo(expectedMediaId, playFromSecond)
                                     }
 
@@ -1432,7 +1430,7 @@ class PlayerService : MediaLibraryService(),
                     PlayerConstants.PlayerState.VIDEO_CUED -> {
                         Timber.d("PlayerService onlinePlayerView: onStateChange VIDEO_CUED regular play()")
                         playFromSecond = 0f
-                        _internalOnlinePlayer.value?.pause()
+                        _internalYouTubePlayer.value?.pause()
                         youTubePlayer.pause()
                         if (!firstTimeStarted) {
                             if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
@@ -1537,7 +1535,7 @@ class PlayerService : MediaLibraryService(),
                             }
 
                             if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
-                                _internalOnlinePlayer.value?.pause()
+                                _internalYouTubePlayer.value?.pause()
                                 youTubePlayer.pause()
                                 youTubePlayer.cueVideo(it, playFromSecond)
                             }
@@ -1599,7 +1597,7 @@ class PlayerService : MediaLibraryService(),
                         GlobalSharedData.chromecastConnected.value = it.connected.value
                         if (!it.connected.value) {
                             withContext(Dispatchers.Main) {
-                                _internalOnlinePlayer.value?.pause()
+                                _internalYouTubePlayer.value?.pause()
                             }
                             val currentState = _playerState.value
                             _playerState.value = currentState.copy(
@@ -1607,7 +1605,7 @@ class PlayerService : MediaLibraryService(),
                             )
                             return@let
                         }
-                        _internalOnlinePlayer.value = it.internalCastOnlinePlayer.value
+                        _internalYouTubePlayer.value = it.internalCastOnlinePlayer.value
                         //Timber.d("PlayerService: CastHelper connected ${it.connected.value}")
                         _internalBufferedFraction.value = it.internalBufferedFraction.value
                         _currentSecond.value = it.currentSecond.value
@@ -1620,7 +1618,7 @@ class PlayerService : MediaLibraryService(),
         }
 
         //This initialize the online player view if chromcast isn't connected
-        onlinePlayerView.apply {
+        youTubePlayerView.apply {
             enableAutomaticInitialization = false
 
             enableBackgroundPlayback(true)
@@ -1829,9 +1827,9 @@ class PlayerService : MediaLibraryService(),
 
         try {
 
-            _internalOnlinePlayer.value = null
+            _internalYouTubePlayer.value = null
 
-            _internalOnlinePlayerView.value.release()
+            _internalYouTubePlayerView.value.release()
         } catch (e: Exception) {
             Timber.e("PlayerService Error in online player release: ${e.message}")
         }
@@ -1881,18 +1879,10 @@ class PlayerService : MediaLibraryService(),
     override fun onAudioVolumeChanged(currentVolume: Int, maxVolume: Int) {
         if (appSettings.isPauseOnVolumeZeroEnabled) {
             if ((player.isPlaying || _playerState.value.isPlaying) && currentVolume < 1) {
-                if (currentSong.value?.isLocal == true) {
-                    player.pause()
-                } else {
-                    _internalOnlinePlayer.value?.pause()
-                }
+                hybridPlayer.pause()
                 pausedByZeroVolume = true
             } else if (pausedByZeroVolume && currentVolume >= 1) {
-                if (currentSong.value?.isLocal == true) {
-                    player.play()
-                } else {
-                    _internalOnlinePlayer.value?.play()
-                }
+                hybridPlayer.play()
                 pausedByZeroVolume = false
             }
         }
@@ -2038,7 +2028,7 @@ class PlayerService : MediaLibraryService(),
             recordListeningEvent(mediaItem.mediaId)
         }
 
-        _internalOnlinePlayer.value?.pause() // stop online player latency
+        hybridPlayer.pause()
 
         _currentSecond.value = 0F
 
@@ -2089,16 +2079,13 @@ class PlayerService : MediaLibraryService(),
         mediaItem.let {
 
             if (!it.isLocal){
+                // Ferma ExoPlayer prima di avviare il player online
+                hybridPlayer.pause()
                 hybridPlayer.switchToYoutube()
                 Timber.d("PlayerService onMediaItemTransition mediaItem not local, before")
-                // Ferma ExoPlayer prima di avviare il player online
-                if (player.isPlaying) {
-                    player.pause()
-                }
-                _internalOnlinePlayer.value?.pause()
 
                 if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
-                    _internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
+                    _internalYouTubePlayer.value?.cueVideo(it.mediaId, playFromSecond)
                     // Avvia il fade in per il nuovo brano appena parte il play
                     startFadeIn(appSettings.userVolume)
                     Timber.d("PlayerService onMediaItemTransition mediaItem not local, inside")
@@ -2114,7 +2101,8 @@ class PlayerService : MediaLibraryService(),
                         )
                     }
 
-                //_internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
+                // Forza il volume al massimo
+                _internalYouTubePlayer.value?.setVolume(getSystemMediaVolume())
 
                 // Recupera genere
                 val mbclient = MusicBrainz()
@@ -2124,13 +2112,11 @@ class PlayerService : MediaLibraryService(),
                 }
 
             } else {
-                // Stop prima di lanciare il prossimo brano e stop a exo per sicurezza
-                _internalOnlinePlayer.value?.pause()
-                player.pause()
+                // Canzone locale o MusicVault — ferma il player online e lascia andare ExoPlayer
+                hybridPlayer.pause()
 
                 hybridPlayer.switchToExo()
-                // Canzone locale o MusicVault — ferma il player online e lascia andare ExoPlayer
-                _internalOnlinePlayer.value?.pause()
+
                 Timber.d("PlayerService onMediaItemTransition resume playback before firstTimeStarted $firstTimeStarted isResumePlaybackOnStart $isResumePlaybackOnStart")
                 if (firstTimeStarted && isResumePlaybackOnStart) {
                     resumePlaybackOnStart()
@@ -2461,7 +2447,7 @@ class PlayerService : MediaLibraryService(),
 
                     if (!hasRemainingBt && !hasRemainingWired) {
                         player.pause()
-                        _internalOnlinePlayer.value?.pause()
+                        _internalYouTubePlayer.value?.pause()
                         SmartMessage(getString(R.string.music_paused_headphones_disconnected), context = this@PlayerService)
                     }
                 }
@@ -2480,12 +2466,12 @@ class PlayerService : MediaLibraryService(),
     @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     private suspend fun ensureOnlinePlayerInitialized(): YouTubePlayer {
         // Se il player esiste già, lo prendo
-        _internalOnlinePlayer.value?.let { return it }
+        _internalYouTubePlayer.value?.let { return it }
 
         // Altrimenti si inizializza.
         initializeOnlinePlayer()
         // Attendo che sia stato inizializzato prima di andare avanti
-        return _internalOnlinePlayer.first { it != null }!!
+        return _internalYouTubePlayer.first { it != null }!!
     }
 
     @UnstableApi
@@ -2626,17 +2612,17 @@ class PlayerService : MediaLibraryService(),
     private inner class YouTubeControlImpl : YouTubeControl {
 
         override fun play() {
-            _internalOnlinePlayer.value?.play()
+            _internalYouTubePlayer.value?.play()
         }
 
         override fun pause() {
-            _internalOnlinePlayer.value?.pause()
+            _internalYouTubePlayer.value?.pause()
         }
 
         override fun seekTo(positionMs: Long) {
             // ATTENZIONE: L'API di YouTube IFrame usa i SECONDI (Float), non i millisecondi!
             val seconds = positionMs.toFloat() / 1000f
-            _internalOnlinePlayer.value?.seekTo(seconds)
+            _internalYouTubePlayer.value?.seekTo(seconds)
         }
 
         override fun getCurrentPositionMs(): Long {
@@ -2660,7 +2646,7 @@ class PlayerService : MediaLibraryService(),
         override fun setVolume(volume: Float) {
             // ATTENZIONE CRITICA: L'API di YouTube IFrame vuole il volume da 0 a 100!
             // Media3 manda un float da 0.0 a 1.0, quindi moltiplichiamo per 100.
-            _internalOnlinePlayer.value?.setVolume((volume * 100F).toInt().coerceIn(0, 100))
+            _internalYouTubePlayer.value?.setVolume((volume * 100F).toInt().coerceIn(0, 100))
         }
 
         override fun setPlaybackRate(rate: Float) {
@@ -2675,7 +2661,7 @@ class PlayerService : MediaLibraryService(),
                 rate <= 1.75f -> PlayerConstants.PlaybackRate.RATE_1_75
                 else -> PlayerConstants.PlaybackRate.RATE_2
             }
-            _internalOnlinePlayer.value?.setPlaybackRate(ytRate)
+            _internalYouTubePlayer.value?.setPlaybackRate(ytRate)
         }
     }
 
@@ -2692,7 +2678,7 @@ class PlayerService : MediaLibraryService(),
                     Action.pause.value -> {
                         player.pause()
                         if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
-                            _internalOnlinePlayer.value?.pause()
+                            _internalYouTubePlayer.value?.pause()
                         else
                             serviceScope.launch {
                                 riTuneCastClient.sendCommand(
@@ -2735,7 +2721,7 @@ class PlayerService : MediaLibraryService(),
                             hybridPlayer.seamlessQueue(currentMediaItem)
 
                             if(!GlobalSharedData.riTuneCastActive)
-                                _internalOnlinePlayer.value?.play()
+                                _internalYouTubePlayer.value?.play()
                             else
                                 serviceScope.launch {
                                     riTuneCastClient.sendCommand(
@@ -3362,7 +3348,7 @@ class PlayerService : MediaLibraryService(),
 
                     when (queueLoopType) {
                         QueueLoopType.RepeatOne -> {
-                            _internalOnlinePlayer.value?.seekTo(0f)
+                            _internalYouTubePlayer.value?.seekTo(0f)
                         }
                         QueueLoopType.Default -> {
                             if (hybridPlayer.hasNextMediaItem()) {
@@ -3552,7 +3538,7 @@ class PlayerService : MediaLibraryService(),
                     playFromSecond = position.toFloat()
                     _currentSecond.value = playFromSecond
                     _currentDuration.value = if (queuedSong.mediaId == mId) duration else 0f
-                    _internalOnlinePlayer.value?.pause()
+                    _internalYouTubePlayer.value?.pause()
                 }
 
             }
@@ -3909,7 +3895,7 @@ class PlayerService : MediaLibraryService(),
                         Timber.d("PlayerService InitializeLegacySessionCallback onPlayClick")
 
                         if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
-                            //_internalOnlinePlayer.value?.play()
+
                             hybridPlayer.play()
                         else
                             serviceScope.launch {
@@ -3987,7 +3973,6 @@ class PlayerService : MediaLibraryService(),
                                     hybridPlayer.seamlessQueue(currentMediaItem)
 
                                     if(!GlobalSharedData.riTuneCastActive)
-                                        //_internalOnlinePlayer.value?.play()
                                         hybridPlayer.play()
                                     else
                                         serviceScope.launch {
@@ -4016,15 +4001,11 @@ class PlayerService : MediaLibraryService(),
     }
 
     fun handlePlayNext() {
-        _internalOnlinePlayer.value?.pause()
+        hybridPlayer.pause()
         val now = System.currentTimeMillis()
         if (now - lastPlayNextTime < debounceDelayMs) {
-            Timber.d("PlayerService handlePlayNext ignored (too fast) play current")
-            if (currentSong.value?.isLocal == true)
-                player.play()
-            else
-                _internalOnlinePlayer.value?.play()
-
+           Timber.d("PlayerService handlePlayNext ignored (too fast) play current")
+           hybridPlayer.play()
             return
         }
         lastPlayNextTime = now
@@ -4034,7 +4015,7 @@ class PlayerService : MediaLibraryService(),
 
         serviceScope.launch {
             withContext(Dispatchers.Main) {
-                player.playNext()
+                hybridPlayer.playNext()
             }
         }
     }
