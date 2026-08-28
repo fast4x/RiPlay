@@ -163,19 +163,26 @@
               YouTubePlayerBridge.sendReady();
           }
 
-          // WORKAROUND DEFINITIVO VOLUME non è detto che funzioni (Mute/Unmute/SetVolume)
-          // 6 controlli distanziati ogni 300ms coprono circa 1.8 secondi (la finestra critica)
+          // WORKAROUND INIZIALE CON CONTROLLO SU GETVOLUME
           var checks = 0;
           var audioInterval = setInterval(function() {
-              if (player && typeof player.unMute === 'function') {
+              if (player && typeof player.unMute === 'function' && typeof player.setVolume === 'function') {
                   player.unMute();
                   player.setVolume(100);
+
+                  // Se getVolume restituisce 100, l'audio è sbloccato. Fermiamo il timer!
+                  if (typeof player.getVolume === 'function' && player.getVolume() === 100) {
+                      clearInterval(audioInterval);
+                      return;
+                  }
               }
               checks++;
               if (checks >= 6) {
                   clearInterval(audioInterval);
               }
           }, 300);
+          // WORKAROUND INIZIALE CON CONTROLLO SU GETVOLUME
+
         },
         onStateChange: function(event) { sendPlayerStateChange(event.data) },
         onPlaybackQualityChange: function(event) { if(YouTubePlayerBridge) YouTubePlayerBridge.sendPlaybackQualityChange(event.data) },

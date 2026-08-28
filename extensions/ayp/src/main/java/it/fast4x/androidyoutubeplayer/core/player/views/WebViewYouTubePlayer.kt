@@ -3,10 +3,6 @@ package it.fast4x.androidyoutubeplayer.core.player.views
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
-import android.media.AudioAttributes
-import android.media.AudioFocusRequest
-import android.media.AudioManager
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
@@ -15,23 +11,21 @@ import android.view.View
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.annotation.GuardedBy
 import androidx.annotation.VisibleForTesting
+import androidx.core.graphics.createBitmap
 import it.fast4x.androidyoutubeplayer.R
 import it.fast4x.androidyoutubeplayer.core.player.BooleanProvider
 import it.fast4x.androidyoutubeplayer.core.player.PlayerConstants
 import it.fast4x.androidyoutubeplayer.core.player.YouTubePlayer
 import it.fast4x.androidyoutubeplayer.core.player.YouTubePlayerBridge
 import it.fast4x.androidyoutubeplayer.core.player.YouTubePlayerCallbacks
-import it.fast4x.androidyoutubeplayer.core.player.listeners.FullscreenListener
 import it.fast4x.androidyoutubeplayer.core.player.listeners.YouTubePlayerListener
 import it.fast4x.androidyoutubeplayer.core.player.options.IFramePlayerOptions
 import it.fast4x.androidyoutubeplayer.core.player.toFloat
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
-import androidx.core.graphics.createBitmap
 
 
 private class YouTubePlayerImpl(
@@ -191,57 +185,6 @@ internal class WebViewYouTubePlayer (
     super.onWindowVisibilityChanged(newVisibility)
   }
 
-
-  // Gestione dell'hardware focus nativo
-  override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
-    super.onWindowFocusChanged(hasWindowFocus)
-
-    // Scatta quando l'utente rimette l'applicazione in primo piano sul display
-    if (hasWindowFocus) {
-      //Log.e("YOUTUBE_FORK_DEBUG", "Focus hardware Window recuperato. Forzo sblocco volume.")
-      triggerVolumeRestoreOnResume()
-    }
-  }
-
-  /**
-   * Forza il riallineamento del volume dell'IFrame di YouTube quando l'app torna dal background.
-   * Evita che il framework multimediale di Android mantenga l'audio attenuato (ducking).
-   */
-  private fun triggerVolumeRestoreOnResume() {
-    val triggerScript = """
-        (function() {
-            if (typeof window.player !== 'undefined' || typeof player !== 'undefined') {
-                var activePlayer = typeof window.player !== 'undefined' ? window.player : player;
-                if (activePlayer && typeof activePlayer.getPlayerState === 'function') {
-                    var currentState = activePlayer.getPlayerState();
-                    console.log("YOUTUBE_JS_LOG: Sblocco per transizione Chromium. Stato = " + currentState);
-                    
-                    if (currentState === 1 || currentState === 3) {
-                        var resumeChecks = 0;
-                        // Controlli a 8 ripetizioni e lo spazio a 200ms 
-                        // Questo copre 1.6 secondi complessivi, neutralizzando il fade-in ritardato di Chromium
-                        var resumeInterval = setInterval(function() {
-                            if (activePlayer && typeof activePlayer.unMute === 'function') {
-                                activePlayer.unMute();
-                                activePlayer.setVolume(100);
-                            }
-                            resumeChecks++;
-                            if (resumeChecks >= 8) { 
-                                clearInterval(resumeInterval);
-                            }
-                        }, 200);
-                    }
-                }
-            }
-        })();
-    """.trimIndent()
-
-    // Delay iniziale a 200ms (più reattivo) e lasciamo che sia il setInterval
-    // a martellare il volume a 100 durante tutta la finestra di risveglio di Chromium
-    this.postDelayed({
-      this.evaluateJavascript(triggerScript, null)
-    }, 200)
-  }
 
   /**
    * Riceve una Bitmap pre-renderizzata dall'applicazione e la imposta
