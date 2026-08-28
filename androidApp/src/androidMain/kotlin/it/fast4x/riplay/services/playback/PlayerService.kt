@@ -236,6 +236,7 @@ import it.fast4x.riplay.services.playback.common.restorePlayerVolume
 import it.fast4x.riplay.utils.BitmapLoader
 import it.fast4x.riplay.utils.CryptoManager
 import it.fast4x.riplay.utils.formatAsDuration
+import it.fast4x.riplay.utils.getDeviceVolume
 import it.fast4x.riplay.utils.isWebDav
 import it.fast4x.riplay.utils.removeVideoMediaItems
 import it.fast4x.riplay.utils.setQueueLoopState
@@ -1251,6 +1252,14 @@ class PlayerService : MediaLibraryService(),
         // Crea l'Hybrid Player
         hybridPlayer = HybridPlayer(this,player, ytControlWrapper)
 
+        // Imposto il volume dell'Hybrid Player
+        hybridPlayer.volume = getDeviceVolume(this)
+        // Lo salvo nelle impostazioni
+        serviceScope.launch {
+            appSettingsManager.updateSettings(appSettings.copy(userVolume = hybridPlayer.volume))
+        }
+        Timber.d("PlayerService initializeHybridPlayerAndSession initial hybridPlayer volume = ${hybridPlayer.volume}")
+
         // Listener specifico per hybridPlayer e refreshare il layout di AA
         hybridPlayer.onRefreshCustomLayoutListener = {
             val activeSession = mediaLibrarySession
@@ -1878,7 +1887,7 @@ class PlayerService : MediaLibraryService(),
     private var pausedByZeroVolume = false
     override fun onAudioVolumeChanged(currentVolume: Int, maxVolume: Int) {
         if (appSettings.isPauseOnVolumeZeroEnabled) {
-            if ((player.isPlaying || _playerState.value.isPlaying) && currentVolume < 1) {
+            if ((_playerState.value.isPlaying) && currentVolume < 1) {
                 hybridPlayer.pause()
                 pausedByZeroVolume = true
             } else if (pausedByZeroVolume && currentVolume >= 1) {
@@ -1902,6 +1911,8 @@ class PlayerService : MediaLibraryService(),
         serviceScope.launch(Dispatchers.IO) {
             appSettingsManager.updateSettings(appSettings.copy(userVolume = newPlayerVolume))
         }
+
+        Timber.d("PlayerService onAudioVolumeChanged currentVolume=$currentVolume maxVolume=$maxVolume newPlayerVolume=$newPlayerVolume as userVolume")
 
         // Ora, impostiamo il volume su HybridPlayer per mantenerlo sincronizzato
         // QUESTO farà scattare l'onVolumeChanged di ExoPlayer se serve,
