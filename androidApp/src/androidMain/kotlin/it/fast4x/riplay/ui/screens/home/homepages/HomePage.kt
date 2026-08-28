@@ -533,8 +533,8 @@ fun HomePage(
                         onClick2 = {
                             //trending?.let { fastPlay(it.asMediaItem, binder, relatedInit?.songs?.map { it.asMediaItem }) }
                             binder?.stopRadio()
-                            trending?.let { binder?.exoPlayer?.forcePlay(it.asMediaItem) }
-                            binder?.exoPlayer?.addMediaItems(relatedPage?.songs?.map { it.asMediaItem }
+                            trending?.let { binder?.hybridPlayer?.forcePlay(it.asMediaItem) }
+                            binder?.hybridPlayer?.addMediaItems(relatedPage?.songs?.map { it.asMediaItem }
                                 ?: emptyList())
                         }
 
@@ -622,7 +622,7 @@ fun HomePage(
                                                     song.asVideoMediaItem
 
                                                 binder?.stopRadio()
-                                                binder?.exoPlayer?.forcePlay(mediaItem)
+                                                binder?.hybridPlayer?.forcePlay(mediaItem)
                                                 //binder?.player?.playOnline(mediaItem)
                                                 //fastPlay(mediaItem, binder)
                                                 binder?.setupRadio(
@@ -691,7 +691,7 @@ fun HomePage(
 
                                                 binder?.stopRadio()
                                                 withContext(Dispatchers.Main) {
-                                                    binder?.exoPlayer?.forcePlay(mediaItem)
+                                                    binder?.hybridPlayer?.forcePlay(mediaItem)
                                                 }
                                                 binder?.setupRadio(
                                                     NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
@@ -824,7 +824,7 @@ fun HomePage(
                                             //disableScrollingText = disableScrollingText,
                                             //isNowPlaying = false,
                                             modifier = Modifier.clickable(onClick = {
-                                                binder?.exoPlayer?.forcePlay(item.asMediaItem)
+                                                binder?.hybridPlayer?.forcePlay(item.asMediaItem)
                                                 //fastPlay(item.asMediaItem, binder)
                                             })
                                         )
@@ -881,11 +881,7 @@ fun HomePage(
                                             disableScrollingText = disableScrollingText,
                                             modifier = Modifier.clickable(onClick = {
                                                 binder?.stopRadio()
-//                                                if (isVideoEnabled())
-//                                                    binder?.player?.playOnline(item.asMediaItem)
-//                                                else
-                                                binder?.exoPlayer?.forcePlay(item.asMediaItem)
-                                                //fastPlay(item.asMediaItem, binder)
+                                                binder?.hybridPlayer?.forcePlay(item.asMediaItem)
                                             })
                                         )
                                     }

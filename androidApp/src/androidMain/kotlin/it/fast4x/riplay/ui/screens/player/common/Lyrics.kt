@@ -531,7 +531,7 @@ fun Lyrics(
                     val synchronizedLyrics = remember(isShowingSynchronizedLyrics, isShowingSynchronizedWordByWordLyrics, lyricsText) {
                         val sentences = if (!isShowingSynchronizedWordByWordLyrics) LrcLib.Lyrics(lyricsText).sentences.toLyricLine()
                         else LRCLyricsKaraokeParser
-                            .parse(currentLyrics?.lrcSynced ?: "", isOnline = binder?.exoPlayer?.currentMediaItem?.isLocal == true)
+                            .parse(currentLyrics?.lrcSynced ?: "", isOnline = binder?.hybridPlayer?.currentMediaItem?.isLocal == true)
                         invalidLrc = false
                         SynchronizedLyricsLines(sentences, positionProvider)
                     }
@@ -1846,7 +1846,7 @@ fun Lyrics(
                                             onClick = {
                                                 menuState.hide()
                                                 val mediaMetadata =
-                                                    binder?.exoPlayer?.currentMediaItem?.mediaMetadata
+                                                    binder?.hybridPlayer?.currentMediaItem?.mediaMetadata
                                                         ?: return@MenuEntry
 
                                                 try {
@@ -2191,14 +2191,7 @@ fun getAlignment(lyricsAlignment: LyricsAlignment): Alignment {
 @androidx.annotation.OptIn(UnstableApi::class)
 fun seekToLyric(binder: PlayerService.Binder?, sentence: LRCLyricLine) {
     val positionMs = sentence.timeMs
-    if (binder?.exoPlayer?.currentMediaItem?.isLocal == true) {
-        Timber.d("Seeking local player to $positionMs ms")
-        binder?.exoPlayer?.seekTo(positionMs)
-    } else {
-        val positionSeconds = positionMs / 1000f
-        Timber.d("Seeking online player to $positionSeconds s")
-        binder?.youtubePlayer?.seekTo(positionSeconds)
-    }
+    binder?.hybridPlayer?.seekTo(positionMs)
 }
 
 

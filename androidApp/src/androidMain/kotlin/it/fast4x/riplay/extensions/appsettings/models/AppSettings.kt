@@ -88,7 +88,6 @@ data class AppSettings(
     val keepPlayerMinimized: Boolean = false,
     val disableIconButtonOnTop: Boolean = false,
     val disablePlayerHorizontalSwipe: Boolean = false,
-    val indexNavigationTab: HomeScreenTabs = HomeScreenTabs.Default,
     val fontType: FontType = FontType.Rubik,
     val useSystemFont: Boolean = false,
     val applyFontPadding: Boolean = false,
@@ -283,5 +282,10 @@ data class AppSettings(
     val isWebDavScanSubfoldersEnabled: Boolean = false,
     val userVolume: Float = 1.0f,
     val crossfadeDuration: CrossfadeDuration = CrossfadeDuration.Off,
-    )
+
+    // L'ID dell'account WebDAV usato PER IL BACKUP/SYNC del DB
+    val backupWebDavAccountId: Long? = null,
+
+    val showMiniPlayerInSettings: Boolean = false
+)
 

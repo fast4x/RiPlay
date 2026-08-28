@@ -171,8 +171,7 @@ fun ChipList(
                                                 //disableScrollingText = disableScrollingText,
                                                 //isNowPlaying = false,
                                                 modifier = Modifier.clickable(onClick = {
-                                                    binder?.exoPlayer?.forcePlay(item.asMediaItem)
-                                                    //fastPlay(item.asMediaItem, binder)
+                                                    binder?.hybridPlayer?.forcePlay(item.asMediaItem)
                                                 })
                                             )
                                         }
@@ -228,11 +227,8 @@ fun ChipList(
                                                 disableScrollingText = disableScrollingText,
                                                 modifier = Modifier.clickable(onClick = {
                                                     binder?.stopRadio()
-//                                                if (isVideoEnabled())
-//                                                    binder?.player?.playOnline(item.asMediaItem)
 //                                                else
-                                                    binder?.exoPlayer?.forcePlay(item.asMediaItem)
-                                                    //fastPlay(item.asMediaItem, binder)
+                                                    binder?.hybridPlayer?.forcePlay(item.asMediaItem)
                                                 })
                                             )
                                         }

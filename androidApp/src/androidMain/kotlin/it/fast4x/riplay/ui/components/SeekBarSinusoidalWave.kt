@@ -86,7 +86,7 @@ fun SeekBarSinusoidalWave(
     }
 
     val binder = LocalPlayerServiceBinder.current
-    val mediaItem = binder?.exoPlayer?.currentMediaItem
+    val mediaItem = binder?.hybridPlayer?.currentMediaItem
     val buffered = binder?.youtubePlayerBufferedFraction?.collectAsState()
 
     val timeText = remember(draggingValue) { formatMillis(draggingValue) }

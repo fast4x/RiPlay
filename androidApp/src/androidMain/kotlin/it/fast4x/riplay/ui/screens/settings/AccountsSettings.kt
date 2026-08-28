@@ -540,14 +540,14 @@ fun AccountsSettings() {
 
         LaunchedEffect(webDavSync) {
             if (webDavSync) {
-                webdavViewModel.loadFolder(
-                    WebDavConfig(
-                        baseUrl = appSettings.webDavUrl,
-                        username = appSettings.webDavUsername,
-                        password = CryptoManager.decrypt(appSettings.webDavPassword),
-                    ),
-                    appSettings.webDavFolder
-                )
+//                webdavViewModel.loadFolder(
+//                    WebDavConfig(
+//                        baseUrl = appSettings.webDavUrl,
+//                        username = appSettings.webDavUsername,
+//                        password = CryptoManager.decrypt(appSettings.webDavPassword),
+//                    ),
+//                    appSettings.webDavFolder
+//                )
                 webDavSync = false
             }
         }

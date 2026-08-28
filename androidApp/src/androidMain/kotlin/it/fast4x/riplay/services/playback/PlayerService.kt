@@ -100,7 +100,6 @@ import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.data.models.Event
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.forceSeekToNext
 import it.fast4x.riplay.utils.forceSeekToPrevious
 import it.fast4x.riplay.utils.intent
@@ -228,6 +227,7 @@ import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.seconds
 import android.os.Binder as AndroidBinder
 import it.fast4x.riplay.extensions.appsettings.AppSettingsManager
+import it.fast4x.riplay.extensions.experimental.webdavlibrary.DynamicWebDavAuthInterceptor
 import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavConfig
 import it.fast4x.riplay.services.playback.common.PlaybackContext
 import it.fast4x.riplay.services.playback.common.PlaybackState
@@ -235,19 +235,19 @@ import it.fast4x.riplay.services.playback.common.PlayerState
 import it.fast4x.riplay.services.playback.common.restorePlayerVolume
 import it.fast4x.riplay.utils.BitmapLoader
 import it.fast4x.riplay.utils.CryptoManager
-import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.isWebDav
 import it.fast4x.riplay.utils.removeVideoMediaItems
-import it.fast4x.riplay.utils.vectorToBitmap
+import it.fast4x.riplay.utils.setQueueLoopState
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import okhttp3.OkHttpClient
 import java.io.ByteArrayOutputStream
 import kotlin.time.Duration.Companion.milliseconds
-
-const val SILENT_AUDIO_DATA_URI = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA="
 
 @UnstableApi
 @Suppress("DEPRECATION")
@@ -257,7 +257,7 @@ class PlayerService : MediaLibraryService(),
     OnAudioVolumeChangedListener
 {
     val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private lateinit var unifiedMediaSession: MediaSessionCompat
+    private lateinit var legacyMediaSession: MediaSessionCompat
     private var mediaLibrarySession: MediaLibrarySession? = null
     private lateinit var mediaLibrarySessionCallback: MediaLibraryServiceCallback
     lateinit var hybridPlayer: HybridPlayer
@@ -267,7 +267,6 @@ class PlayerService : MediaLibraryService(),
     }
     lateinit var player: ExoPlayer
     private lateinit var audioVolumeObserver: AudioVolumeObserver
-    //private lateinit var connectivityManager: ConnectivityManager
 
     private val _playerState = MutableStateFlow<PlayerState>(PlayerState())
     val playerState: StateFlow<PlayerState> = _playerState
@@ -287,11 +286,7 @@ class PlayerService : MediaLibraryService(),
 
     private var isPersistentQueueEnabled = false
     private var isResumePlaybackOnStart = false
-
-    //private var isclosebackgroundPlayerEnabled = false
     private var closeServiceAfterMinutes by mutableStateOf(DurationInMinutes.Disabled)
-    //private var closeServiceWhenPlayerPausedAfterMinutes by mutableStateOf(DurationInMinutes.Disabled)
-
     private var isShowingThumbnailInLockscreen = true
     private var medleyDuration by mutableFloatStateOf(0f)
 
@@ -306,18 +301,24 @@ class PlayerService : MediaLibraryService(),
     private val playerVerticalWidget = PlayerVerticalWidget()
     private val playerHorizontalWidget = PlayerHorizontalWidget()
 
-    var currentMediaItemState = MutableStateFlow<MediaItem?>(null)
+    private val currentMediaItemState = MutableStateFlow<MediaItem?>(null)
 
     @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     val currentSong = currentMediaItemState
-        .flatMapLatest { mediaItem ->
-            Database.song(mediaItem?.mediaId)
-                .catch { e ->
-                    Timber.e("PlayerService CurrentSong Errore nel recupero della canzone $e")
-                    emit(null)
-                }
+        .map { it?.mediaId }
+        .distinctUntilChanged()
+        .flatMapLatest { mediaId ->
+            if (mediaId == null) {
+                flowOf(null)
+            } else {
+                Database.song(mediaId)
+                    .catch { e ->
+                        Timber.e("PlayerService CurrentSong Errore nel recupero della canzone $e")
+                        // Non emette nulla mantenendo l'ultimo flow
+                    }
+            }
         }
-        .stateIn(serviceScope, SharingStarted.Lazily, null)
+        .stateIn(serviceScope, SharingStarted.WhileSubscribed(5000), null)
 
     lateinit var sleepTimerListener: SleepTimerListener
 
@@ -333,7 +334,7 @@ class PlayerService : MediaLibraryService(),
     val internalYoutubePlayerView: StateFlow<YouTubePlayerView?> = _internalOnlinePlayerView
 
     private val _internalOnlinePlayer = MutableStateFlow<YouTubePlayer?>(null)
-    val internalYoutubePlayer: StateFlow<YouTubePlayer?> = _internalOnlinePlayer
+    //val internalYoutubePlayer: StateFlow<YouTubePlayer?> = _internalOnlinePlayer
 
     private val _internalBufferedFraction = MutableStateFlow(0f)
     val internalYoutubeBufferedFraction: StateFlow<Float> = _internalBufferedFraction
@@ -347,14 +348,9 @@ class PlayerService : MediaLibraryService(),
     var load = true
     var playFromSecond by mutableFloatStateOf(0f)
     var lastError: PlayerConstants.PlayerError? = null
-    var isPlayingNow by mutableStateOf(false)
-    var localMediaItem: MediaItem? = null
-    var closingTimerStarted: Boolean? = false
 
     private var onlineListenedDurationMs = 0L
     private var lastOnlineMediaId: String? = null
-    private var whatchDogVolume = 0L
-
     private var lastPlayNextTime = 0L
     private var debounceDelayMs = 2000L
     private var onlineEndHandledMediaId: String? = null
@@ -389,7 +385,6 @@ class PlayerService : MediaLibraryService(),
 
     private val riTuneCastClient: RiTuneCastClient = RiTuneCastClient()
     private var riTuneObserverJob: Job? = null
-    //private var riTunePlayerState: RiTunePlayerState? = null
 
     private lateinit var equalizerHelper: EqualizerHelper
 
@@ -492,12 +487,12 @@ class PlayerService : MediaLibraryService(),
         initializeVariables()
         replaceOnlinePlayerView()
         initializeOnlinePlayer()
-        initializeUnifiedMediaSession()
+        initializeLegacyMediaSession()
 
         // Aggiorna subito il mediasession per allineare lo stato delle azioni
         if (!_playerState.value.isPlaying && _internalOnlinePlayer.value == null) {
             _playerState.update { it.copy(playbackState = PlaybackState.PAUSED) }
-            updateUnifiedMediasession()
+            updateLegacyMediasession()
         }
 
 
@@ -582,11 +577,11 @@ class PlayerService : MediaLibraryService(),
                 if (song == null) return@collect
                 if (currentMediaItemState.value?.mediaId != song.id) return@collect
 
-                Timber.d("PlayerService onCreate update currentSong $song mediaItemState ${currentMediaItemState.value}")
+                Timber.d("PlayerService onCreate update currentSong $song")
 
                 withContext(Dispatchers.Main) {
-                    updateUnifiedMediasession()
-                    updateUnifiedNotification()
+                    updateLegacyMediasession()
+                    updateLegacyNotification()
                 }
 
 
@@ -637,7 +632,7 @@ class PlayerService : MediaLibraryService(),
                 withContext(Dispatchers.Main) {
                     _playerState.update { currentState ->
                         currentState.withDatabaseMediaItemIfCurrent(
-                            currentMediaId = currentMediaItemState.value?.mediaId,
+                            currentMediaId = song.mediaId,
                             databaseMediaItem = song.asMediaItem,
                             queueIndex = player.currentMediaItemIndex,
                             queueSize = player.mediaItemCount,
@@ -649,7 +644,7 @@ class PlayerService : MediaLibraryService(),
 
         serviceScope.launch(Dispatchers.IO) {
             while (isActive) {
-                if (localMediaItem?.isLocal == false) {
+                if (currentSong.value?.isLocal == false) {
                     if (_playerState.value.isPlaying) {
                         onlineListenedDurationMs += 1000
                         if (onlineListenedDurationMs >= 20000) {
@@ -664,8 +659,7 @@ class PlayerService : MediaLibraryService(),
                             onlineListenedDurationMs = 0L
                         }
                     }
-                    //fallback if online player not fire state ended
-                    //updateOnlineNearEndTicks() Experimental aternative whatchdog for end time
+
                     if (_currentDuration.value > 0
                         && appSettings.queueLoopType == QueueLoopType.Default
                     ) {
@@ -840,8 +834,8 @@ class PlayerService : MediaLibraryService(),
 
         Timber.d("PlayerService onStartCommand intent action ${intent?.action}")
         when (intent?.action) {
-            Action.play.value -> { if (localMediaItem?.isLocal == true) player.play() else _internalOnlinePlayer.value?.play() }
-            Action.pause.value -> { if (localMediaItem?.isLocal == true) player.pause() else _internalOnlinePlayer.value?.pause() }
+            Action.play.value -> { if (currentSong.value?.isLocal == true) player.play() else _internalOnlinePlayer.value?.play() }
+            Action.pause.value -> { if (currentSong.value?.isLocal == true) player.pause() else _internalOnlinePlayer.value?.pause() }
             Action.next.value -> handlePlayNext()
             Action.previous.value -> player.playPrevious()
         }
@@ -909,9 +903,6 @@ class PlayerService : MediaLibraryService(),
 
         closeServiceAfterMinutes = appSettings.closeBackgroundPlayerAfterMinutes
 
-//        closeServiceWhenPlayerPausedAfterMinutes = preferences.getEnum(
-//            closePlayerServiceWhenPausedAfterMinutesKey.key, DurationInMinutes.Disabled
-//        )
     }
 
     private fun replaceOnlinePlayerView() {
@@ -926,7 +917,7 @@ class PlayerService : MediaLibraryService(),
         val speed = appSettings.playbackSpeed
         val pitch = appSettings.playbackPitch
 
-        if (localMediaItem?.isLocal == false) {
+        if (currentSong.value?.isLocal == false) {
             // Mappatura matematica al valore discreto di YouTube più vicino
             val ytValidRates = floatArrayOf(0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f)
             val closestYtRate = ytValidRates.minByOrNull { kotlin.math.abs(it - speed) } ?: 1.0f
@@ -956,7 +947,7 @@ class PlayerService : MediaLibraryService(),
                 withContext(Dispatchers.Main) {
                     Timber.d("PlayerService initializeMedleyMode medleyDuration $medleyDuration player.isPlaying ${player.isPlaying} internalOnlinePlayerState ${_playerState.value.isPlaying}")
                     val seconds =
-                        if (localMediaItem?.isLocal == true) player.currentPosition.div(1000)
+                        if (currentSong.value?.isLocal == true) player.currentPosition.div(1000)
                             .toInt() else _currentSecond.value.toInt()
                     if (medleyDuration.toInt() <= seconds) {
                         handlePlayNext()
@@ -972,8 +963,6 @@ class PlayerService : MediaLibraryService(),
 
         val isRiTuneEnabled = appSettings.castType == CastType.RITUNECAST
         if (!isRiTuneEnabled) return
-        //if (!isRiTuneEnabled || riTuneClient.connectionStatus.value != RiTuneConnectionStatus.Connected) return
-        //Timber.d("PlayerService initializeRiTune isRituneEnabled $isRiTuneEnabled")
 
         var isConnecting = false
 
@@ -1146,7 +1135,6 @@ class PlayerService : MediaLibraryService(),
                     //Toast.makeText(applicationContext, "Shaked $shakeCounter times", Toast.LENGTH_SHORT).show()
                     shakeCounter = 0
                     handlePlayNext()
-                    //player.playNext()
                 }
 
             }
@@ -1159,7 +1147,7 @@ class PlayerService : MediaLibraryService(),
     private fun resumePlaybackOnStart() {
         if (!isPersistentQueueEnabled && !isResumePlaybackOnStart) return
 
-        when (player.currentMediaItem?.isLocal) {
+        when (currentSong.value?.isLocal) {
             true -> {
                 if (!player.isPlaying) player.play()
             }
@@ -1174,7 +1162,7 @@ class PlayerService : MediaLibraryService(),
         val currentState = _playerState.value
         val settings = currentState.settings
         _playerState.value = currentState.copy(settings = settings.copy(repeatMode = QueueLoopType.from(repeatMode)))
-        updateUnifiedNotification()
+        updateLegacyNotification()
     }
 
     private fun initializeBitmapProvider() {
@@ -1191,25 +1179,25 @@ class PlayerService : MediaLibraryService(),
     }
 
     @kotlin.OptIn(ExperimentalCoroutinesApi::class)
-    private fun initializeUnifiedMediaSession() {
+    private fun initializeLegacyMediaSession() {
 
-        unifiedMediaSession = MediaSessionCompat(this, "PlayerService")
+        legacyMediaSession = MediaSessionCompat(this, "PlayerService")
 
         val repeatMode = appSettings.queueLoopType.type
 
-        unifiedMediaSession.setFlags(
+        legacyMediaSession.setFlags(
             MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
                     MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
         )
-        unifiedMediaSession.setRepeatMode(repeatMode)
+        legacyMediaSession.setRepeatMode(repeatMode)
 
         if (appSettings.useVolumeKeysToChangeSong)
-            unifiedMediaSession.setPlaybackToRemote(getVolumeProvider())
+            legacyMediaSession.setPlaybackToRemote(getVolumeProvider())
 
-        initializeUnifiedSessionCallback()
+        initializeLegacySessionCallback()
 
-        unifiedMediaSession.isActive = true
-        unifiedMediaSession.setMediaButtonReceiver(null)
+        legacyMediaSession.isActive = true
+        legacyMediaSession.setMediaButtonReceiver(null)
 
     }
 
@@ -1296,97 +1284,11 @@ class PlayerService : MediaLibraryService(),
                     Intent(this, MainActivity::class.java),
                     PendingIntent.FLAG_IMMUTABLE,
                 ),
-            ).setBitmapLoader(
-                customBitmapLoader
-//                BitmapLoader(
-//                    this,
-//                    serviceScope,
-//                    (512 * resources.displayMetrics.density).roundToInt()
-//                )
-            )
+            ).setBitmapLoader( customBitmapLoader )
             .build()
 
     }
 
-    @kotlin.OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-    fun handleMediaItemsRequest(items: MutableList<MediaItem>, startIndex: Int, startPositionMs: Long) {
-        val itemToPlay = items[startIndex]
-        val mediaId = itemToPlay.mediaId.substringAfter("/")
-        val isLocal = mediaId.isLocal
-        Timber.d("PlayerService handleMediaItemsRequest itemToPlay ${itemToPlay.mediaId} cleaned = $mediaId isLocal = $isLocal")
-
-        // Aggiorniamo lo stato per la notifica
-        currentMediaItemState.value = itemToPlay
-        localMediaItem = itemToPlay
-
-        val safeItems = items.map { item ->
-            // 1. Puliamo SOLO il suffisso di navigazione di Auto (es. "songs/")
-            // ATTENZIONE: NON puliamo "local:" perché il tuo DataSource lo vuole!
-            val id = item.mediaId.substringAfter("/")
-
-            // Esempio: se Auto manda "songs/local:10002998201",
-            // "id" diventerà "local:10002998201" (perfetto per il tuo DataSource)
-            val isLocal = id.isLocal
-
-            if (!isLocal) {
-                // --- YOUTUBE ---
-                // Non ha un URI. Usiamo il file silenzioso per far stare zitto ExoPlayer.
-                if (item.localConfiguration == null) {
-                    item.buildUpon().setUri(SILENT_AUDIO_DATA_URI).build()
-                } else {
-                    item
-                }
-            } else {
-                // --- FILE LOCALE ---
-                // Manca il localConfiguration (nessun URI).
-                // Passiamo DIRETTAMENTE l'ID (che contiene già "local:10002998201")
-                // Questo farà felici sia ExoPlayer (non crasha) che il tuo DataSource!
-                if (item.localConfiguration == null) {
-                    item.buildUpon().setUri(id).build()
-                } else {
-                    item
-                }
-            }
-        }
-
-        val cleanItems = safeItems.map { item ->
-            val realId = item.mediaId.substringAfter("/")
-            item.buildUpon().setMediaId(realId).setUri(realId).build()
-        }.toMutableList()
-
-        // 3. Passiamo la lista PULITA ad ExoPlayer
-        //player.setMediaItems(cleanItems, startIndex, startPositionMs)
-        //player.prepare()
-
-        // 3. GESTIONE DEL PLAY: Controlliamo se la Timeline è stata popolata
-        if (startIndex < hybridPlayer.currentTimeline.windowCount) {
-            Timber.d("PlayerService handleMediaItemsRequest play seekToDefaultPosition $startIndex")
-
-            if (!isLocal) {
-                // LOGICA YOUTUBE: Diciamo all'HybridPlayer di prepararsi alla WebView
-                hybridPlayer.switchToYoutube()
-            } else {
-                // LOGICA LOCALE: Diciamo all'HybridPlayer di prepararsi per ExoPlayer
-                hybridPlayer.switchToExo()
-            }
-
-            // Questo comando è sincrono e farà SCATTARE immediatamente il tuo onMediaItemTransition!
-            //hybridPlayer.seekToDefaultPosition(startIndex)
-            hybridPlayer.forcePlayAtIndex(cleanItems, startIndex)
-
-        } else {
-            Timber.e("PlayerService handleMediaItemsRequest ERRORE: Timeline vuota o fuori range. WindowCount: ${hybridPlayer.currentTimeline.windowCount}, Index: $startIndex")
-
-            // FALLBACK: Se la timeline è vuota (probabilmente perché i file locali non avevano l'URI
-            // e ExoPlayer li ha ignorati), forziamo il play diretto senza passare dalla coda.
-            if (!isLocal) {
-                hybridPlayer.switchToYoutube()
-                val startFrom = when { startPositionMs > 0 -> startPositionMs.toFloat() / 1000f else -> 0f }
-                _internalOnlinePlayer.value?.cueVideo(mediaId, startFrom)
-                updateUnifiedNotification() // Aggiorniamo la notifica manualmente qui
-            }
-        }
-    }
     @ExperimentalCoroutinesApi
     private fun initializeOnlinePlayer(skipAutoload: Boolean = false) {
 
@@ -1423,18 +1325,18 @@ class PlayerService : MediaLibraryService(),
                 customUiController.showFullscreenButton(false)
                 onlinePlayerView.setCustomPlayerUi(customUiController.rootView)
 
-                Timber.d("PlayerService onlinePlayer onReady localmediaItem ${localMediaItem?.mediaId} queue index ${binder.exoPlayer?.currentMediaItemIndex}")
+                Timber.d("PlayerService onlinePlayer onReady localmediaItem ${currentSong.value?.id} queue index ${hybridPlayer.currentMediaItemIndex}")
                 Timber.d("PlayerService onlinePlayer onReady isPersistentQueueEnabled $isPersistentQueueEnabled isResumePlaybackOnStart $isResumePlaybackOnStart")
 
                 youTubePlayer.setVolume(getSystemMediaVolume())
 
-                if (localMediaItem?.isLocal == true) return
+                if (currentSong.value?.isLocal == true) return
 
-                localMediaItem?.let{
+                currentSong.value?.id?.let{
                     if (isPersistentQueueEnabled && isResumePlaybackOnStart && firstTimeStarted && !skipAutoload) {
-                        youTubePlayer.loadVideo(it.mediaId, playFromSecond)
+                        youTubePlayer.loadVideo(it, playFromSecond)
                         playFromSecond = 0f
-                        Timber.d("PlayerService onlinePlayer onReady loadVideo ${it.mediaId}")
+                        Timber.d("PlayerService onlinePlayer onReady loadVideo ${it}")
                     }
                 }
 
@@ -1463,18 +1365,7 @@ class PlayerService : MediaLibraryService(),
 
                 _currentDuration.value = duration
 
-                /*
-                val new = appSettings.copy(
-                    stateDuration = duration,
-                    stateMediaId = localMediaItem?.mediaId ?: ""
-                )
-                serviceScope.launch {
-                    AppSettingsManager().updateSettings(new)
-                }
-
-                 */
-
-                updateUnifiedNotification()
+                updateLegacyNotification()
                 updateDiscordPresence()
 
                 if (duration > 0f && hybridPlayer.activeEngine == ActiveEngine.YOUTUBE) {
@@ -1492,7 +1383,7 @@ class PlayerService : MediaLibraryService(),
                 youTubePlayer: YouTubePlayer,
                 state: PlayerConstants.PlayerState
             ) {
-                if (localMediaItem?.isLocal == true) return
+                if (currentSong.value?.isLocal == true) return
                 Timber.d("PlayerService onlinePlayerView: onStateChange $state")
 
                 unstartedWatchdogJob?.cancel()
@@ -1502,17 +1393,25 @@ class PlayerService : MediaLibraryService(),
                 when(state) {
                     PlayerConstants.PlayerState.UNSTARTED -> {
                         if (!firstTimeStarted) {
-                            unstartedWatchdogJob = serviceScope.launch(Dispatchers.Main) {
-                                Timber.d("PlayerService onlinePlayerView: onStateChange UNSTARTED watchdog")
-                                delay(1000)
 
-                                if (_playerState.value.playbackState == PlaybackState.UNSTARTED) {
-                                    Timber.e("PlayerService onlinePlayerView: Persistent UNSTARTED state. Probably webView killed. Force to re-initialize.")
+                            val expectedMediaId = currentSong.value?.id
+
+                            unstartedWatchdogJob = serviceScope.launch(Dispatchers.Main) {
+                                Timber.d("PlayerService onlinePlayerView: onStateChange UNSTARTED watchdog scheduled for mediaId=$expectedMediaId")
+                                delay(5000.milliseconds)
+                                val stillUnstarted =
+                                    _playerState.value.playbackState == PlaybackState.UNSTARTED
+
+                                val sameMedia =
+                                    currentSong.value?.id == expectedMediaId
+
+                                if (stillUnstarted && sameMedia && expectedMediaId != null) {
+                                    Timber.e("PlayerService onlinePlayerView: Persistent UNSTARTED state. Probably webView killed. Force to re-initialize for mediaId=$expectedMediaId")
 
                                     recreateOnlinePlayerView()
                                     val currentPlayer = this@PlayerService._internalOnlinePlayer.first { it != null }!!
 
-                                    localMediaItem?.let { item ->
+                                    currentSong.value?.let { item ->
                                         if(item.isLocal) return@let
                                         Timber.d("PlayerService onlinePlayerView: Try reload song/video")
                                         // Assicura che ExoPlayer sia fermo prima del recovery
@@ -1522,7 +1421,7 @@ class PlayerService : MediaLibraryService(),
                                         }
                                         currentPlayer.pause()
                                         _internalOnlinePlayer.value?.pause() // Pause also primary instance
-                                        currentPlayer.cueVideo(item.mediaId, playFromSecond)
+                                        currentPlayer.cueVideo(expectedMediaId, playFromSecond)
                                     }
 
                                 }
@@ -1541,18 +1440,7 @@ class PlayerService : MediaLibraryService(),
                                 youTubePlayer.setVolume(getSystemMediaVolume())
                                 youTubePlayer.play()
                             }
-//                                else
-//                                    coroutineScope.launch {
-//                                        localMediaItem?.let { item ->
-//                                            riTuneClient.sendCommand(
-//                                                RiTuneRemoteCommand(
-//                                                    "load",
-//                                                    mediaId = item.mediaId,
-//                                                    position = playFromSecond
-//                                                )
-//                                            )
-//                                        }
-//                                    }
+
                         }
 
                     }
@@ -1583,9 +1471,8 @@ class PlayerService : MediaLibraryService(),
                     else -> {}
                 }
 
-                isPlayingNow = state == PlayerConstants.PlayerState.PLAYING
 
-                updateUnifiedNotification()
+                updateLegacyNotification()
                 updateDiscordPresence()
 
             }
@@ -1600,7 +1487,7 @@ class PlayerService : MediaLibraryService(),
                     playbackState = PlaybackState.ERROR
                 )
 
-                if (localMediaItem == null || localMediaItem?.isLocal == true) return
+                if (currentSong.value == null || currentSong.value?.isLocal == true) return
 
                 if (isPersistentQueueEnabled)
                     serviceScope.launch { saveQueue() }
@@ -1640,12 +1527,8 @@ class PlayerService : MediaLibraryService(),
                             context = this@PlayerService
                         )
 
-                    //handlePlayNext()
-
-                    //}
-
                     if (error == PlayerConstants.PlayerError.INVALID_PARAMETER_IN_REQUEST)
-                        localMediaItem?.let {
+                        currentSong.value?.id?.let {
                             if(it.isLocal) return@let
                             // Assicura che ExoPlayer sia fermo
                             if (player.isPlaying) {
@@ -1656,13 +1539,13 @@ class PlayerService : MediaLibraryService(),
                             if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                                 _internalOnlinePlayer.value?.pause()
                                 youTubePlayer.pause()
-                                youTubePlayer.cueVideo(it.mediaId, playFromSecond)
+                                youTubePlayer.cueVideo(it, playFromSecond)
                             }
                             else serviceScope.launch {
                                 riTuneCastClient.sendCommand(
                                     RiTuneRemoteCommand(
                                         "load",
-                                        mediaId = it.mediaId,
+                                        mediaId = it,
                                         position = playFromSecond
                                     )
                                 )
@@ -1676,7 +1559,7 @@ class PlayerService : MediaLibraryService(),
                 lastError = error
 
                 if (!isSkipMediaOnErrorEnabled()) return
-                val prev = binder.exoPlayer?.currentMediaItem ?: return
+                val prev = hybridPlayer.currentMediaItem ?: return
 
                 // Ferma ExoPlayer se sta andando
                 if (player.isPlaying) {
@@ -1757,14 +1640,7 @@ class PlayerService : MediaLibraryService(),
 
             val iFramePlayerOptions = IFramePlayerOptions.Builder(appContext())
                 .listType("playlist")
-                // PREDEFINED VALUES NOT SET HERE
-                //.controls(0)
-                //.origin(resources.getString(R.string.env_fqqhBZd0cf))
-                //.autoplay(1)
-                //.mute(1)
                 .build()
-
-
 
             initialize(listener, iFramePlayerOptions)
 
@@ -1861,8 +1737,8 @@ class PlayerService : MediaLibraryService(),
                         val useVolumeKeysToChangeSong = appSettings.useVolumeKeysToChangeSong
                         // Up = 1, Down = -1, Release = 0
                         if (direction == VOLUME_UP) {
-                            if (binder.exoPlayer?.isPlaying == true && useVolumeKeysToChangeSong) {
-                                binder.exoPlayer?.forceSeekToNext()
+                            if (hybridPlayer.isPlaying == true && useVolumeKeysToChangeSong) {
+                                hybridPlayer.forceSeekToNext()
                             } else {
                                 audioManager.adjustStreamVolume(
                                     STREAM_TYPE,
@@ -1871,8 +1747,8 @@ class PlayerService : MediaLibraryService(),
                                 setCurrentVolume(audioManager.getStreamVolume(STREAM_TYPE))
                             }
                         } else if (direction == VOLUME_DOWN) {
-                            if (binder.exoPlayer?.isPlaying == true && useVolumeKeysToChangeSong) {
-                                binder.exoPlayer?.forceSeekToPrevious()
+                            if (hybridPlayer.isPlaying == true && useVolumeKeysToChangeSong) {
+                                hybridPlayer.forceSeekToPrevious()
                             } else {
                                 audioManager.adjustStreamVolume(
                                     STREAM_TYPE,
@@ -1895,7 +1771,7 @@ class PlayerService : MediaLibraryService(),
             shuffledIndices[0] = player.currentMediaItemIndex
             player.shuffleOrder = DefaultShuffleOrder(shuffledIndices, System.currentTimeMillis())
         }
-        updateUnifiedNotification()
+        updateLegacyNotification()
 
         serviceScope.launch { saveQueue() }
     }
@@ -1927,9 +1803,9 @@ class PlayerService : MediaLibraryService(),
             Timber.e("PlayerService onDestroy unregisterReceiver ${e.message}")
         }
 
-        if (::unifiedMediaSession.isInitialized) {
-            unifiedMediaSession.isActive = false
-            unifiedMediaSession.release()
+        if (::legacyMediaSession.isInitialized) {
+            legacyMediaSession.isActive = false
+            legacyMediaSession.release()
         }
 
         if(::equalizerHelper.isInitialized) {
@@ -1964,8 +1840,6 @@ class PlayerService : MediaLibraryService(),
 
         runCatching {
 
-            //preferences.unregisterOnSharedPreferenceChangeListener(this)
-
             mediaLibrarySession?.release()
             cache.release()
             loudnessEnhancer?.release()
@@ -1988,7 +1862,7 @@ class PlayerService : MediaLibraryService(),
             AudioDRCHelper.restoreDRC()
 
             notificationManager?.cancelAll()
-            //coroutineScope.launch { delay(500) }
+
             unregisterAudioDeviceCallback()
 
 
@@ -2003,70 +1877,18 @@ class PlayerService : MediaLibraryService(),
         super.onDestroy()
     }
 
-    private fun tryHandleOnlineTrackEnd(source: String) {
-    val mediaId = localMediaItem?.mediaId ?: return
-    val now = System.currentTimeMillis()
-    if (onlineEndHandledMediaId == mediaId && (now - lastPlayNextTime) < debounceDelayMs) {
-        Timber.d("PlayerService tryHandleOnlineTrackEnd ignored duplicate for $mediaId from $source")
-        return
-    }
-    onlineEndHandledMediaId = mediaId
-    lastPlayNextTime = now
-    onlineNearEndTicks = 0
-    Timber.d("PlayerService tryHandleOnlineTrackEnd accepted for $mediaId from $source")
-    handlePlayNext()
-}
-
-private fun resetOnlineEndGuardIfTrackChanged() {
-    //Timber.d("PlayerService Watchdog: resetOnlineEndGuardIfTrackChanged onlineNearEndTicks $onlineNearEndTicks")
-    val mediaId = localMediaItem?.mediaId
-    if (mediaId == null) {
-        onlineEndHandledMediaId = null
-        onlineNearEndTicks = 0
-        return
-    }
-    if (onlineEndHandledMediaId != null && onlineEndHandledMediaId != mediaId) {
-        onlineEndHandledMediaId = null
-        onlineNearEndTicks = 0
-        Timber.d("PlayerService Watchdog: resetOnlineEndGuardIfTrackChanged reset onlineNearEndTicks")
-    }
-}
-
-private fun updateOnlineNearEndTicks() {
-    resetOnlineEndGuardIfTrackChanged()
-
-    val shouldTrackNearEnd =
-        localMediaItem?.isLocal == false &&
-                appSettings.queueLoopType == QueueLoopType.Default &&
-        _playerState.value.isPlaying &&
-        _currentDuration.value > 0f &&
-        _currentSecond.value >= (_currentDuration.value - 0.5f)
-
-    //Timber.d("PlayerService Watchdog: updateOnlineNearEndTicks shouldTrackNearEnd $shouldTrackNearEnd")
-
-    if (shouldTrackNearEnd) {
-        onlineNearEndTicks += 1
-        if (onlineNearEndTicks >= 2) {
-            Timber.d("PlayerService Watchdog: End of online track detected by time, trying guarded playNext()")
-            tryHandleOnlineTrackEnd("watchdog_near_end")
-        }
-    } else {
-        onlineNearEndTicks = 0
-    }
-}
-
     private var pausedByZeroVolume = false
     override fun onAudioVolumeChanged(currentVolume: Int, maxVolume: Int) {
         if (appSettings.isPauseOnVolumeZeroEnabled) {
             if ((player.isPlaying || _playerState.value.isPlaying) && currentVolume < 1) {
-                if (player.currentMediaItem?.isLocal == true) {
+                if (currentSong.value?.isLocal == true) {
                     player.pause()
                 } else {
                     _internalOnlinePlayer.value?.pause()
                 }
                 pausedByZeroVolume = true
             } else if (pausedByZeroVolume && currentVolume >= 1) {
-                if (player.currentMediaItem?.isLocal == true) {
+                if (currentSong.value?.isLocal == true) {
                     player.play()
                 } else {
                     _internalOnlinePlayer.value?.play()
@@ -2096,11 +1918,6 @@ private fun updateOnlineNearEndTicks() {
         // o aggiornerà la WebView se è attiva.
         hybridPlayer.setVolume(newPlayerVolume)
 
-//        if (localMediaItem?.isLocal == false) {
-//            val onlineVolume = getSystemMediaVolume()
-//            Timber.d("PlayerService onAudioVolumeChanged currentVolume $currentVolume onlineVolume $onlineVolume")
-//            _internalOnlinePlayer.value?.setVolume(onlineVolume)
-//        }
     }
 
     override fun onAudioVolumeDirectionChanged(direction: Int) {
@@ -2259,6 +2076,7 @@ private fun updateOnlineNearEndTicks() {
             return
         }
 
+        // Aggiorno stato del mediaitem in modo da recuperare la canzone dal database con currentSong
         currentMediaItemState.value = mediaItem
         _playerState.update { state ->
             state.withMediaTransition(
@@ -2267,7 +2085,6 @@ private fun updateOnlineNearEndTicks() {
                 queueSize = player.mediaItemCount,
             )
         }
-        localMediaItem = mediaItem
 
         mediaItem.let {
 
@@ -2349,12 +2166,10 @@ private fun updateOnlineNearEndTicks() {
 
         updateWidgetState()
 
-        // maybe not needed
-        //maybeRecoverPlaybackError()
         initializeNormalizeVolume()
         maybeProcessRadio(reason)
 
-        updateUnifiedNotification()
+        updateLegacyNotification()
 
         updateDiscordPresence()
 
@@ -2423,12 +2238,12 @@ private fun updateOnlineNearEndTicks() {
     }
 
     @ExperimentalCoroutinesApi
-    fun updateUnifiedNotification() {
+    fun updateLegacyNotification() {
 //        Timber.d("PlayerService notify called from: ${Thread.currentThread().stackTrace.joinToString("\n")}")
         serviceScope.launch {
             withContext(Dispatchers.Main){
                 // Aggiorna sempre la sessione per riflettere lo stato reale, anche se vuoto
-                updateUnifiedMediasession()
+                updateLegacyMediasession()
 
                 if (player.mediaItemCount <= 0 && _playerState.value.playbackState == PlaybackState.IDLE) {
                     // Nasconde notifica se completamente idle e vuoto, attenzione il sistema potrebbe killare il servizio
@@ -2437,14 +2252,6 @@ private fun updateOnlineNearEndTicks() {
                 }
 
                 startForeground()
-
-//                val notifyInstance = notification()
-//                notifyInstance.let {
-//                    @Suppress("MissingPermission")
-//                    NotificationManagerCompat
-//                        .from(this@PlayerService)
-//                        .notify(NOTIFICATION_ID, it)
-//                }
             }
         }
     }
@@ -2465,49 +2272,9 @@ private fun updateOnlineNearEndTicks() {
             queueItems.add(MediaSessionCompat.QueueItem(description, i.toLong()))
         }
 
-        unifiedMediaSession.setQueue(queueItems)
+        legacyMediaSession.setQueue(queueItems)
 
-        unifiedMediaSession.setQueueTitle(resources.getString(R.string.now_playing_title))
-    }
-
-    private fun maybeRecoverPlaybackError() {
-        try {
-            if (localMediaItem?.isLocal == true) {
-                if (player.playerError != null) {
-                    Timber.w("PlayerService maybeRecoverPlaybackError: try to recover player error")
-                    player.prepare()
-
-                    if (player.isPlaying) {
-                        player.play()
-                    }
-                }
-            } else {
-                if (lastError != null) {
-                    Timber.w("PlayerService maybeRecoverPlaybackError: try to recover player error")
-                    localMediaItem?.let {
-                        if(it.isLocal) return@let
-
-                        _internalOnlinePlayer.value?.pause()
-                        if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
-                            _internalOnlinePlayer.value?.cueVideo(it.mediaId, playFromSecond)
-                            //_internalOnlinePlayer.value?.setVolume(getSystemMediaVolume())
-                        } else {
-                            serviceScope.launch {
-                                riTuneCastClient.sendCommand(
-                                    RiTuneRemoteCommand(
-                                        "load",
-                                        mediaId = it.mediaId,
-                                        position = playFromSecond
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            Timber.e("PlayerService maybeRecoverPlaybackError: recovery error ${e.stackTraceToString()}")
-        }
+        legacyMediaSession.setQueueTitle(resources.getString(R.string.now_playing_title))
     }
 
     private fun maybeProcessRadio(reason: Int) {
@@ -2521,7 +2288,7 @@ private fun updateOnlineNearEndTicks() {
             if (radio == null) {
                 binder.setupRadio(
                     NavigationEndpoint.Endpoint.Watch(
-                        videoId = player.currentMediaItem?.mediaId
+                        videoId = currentSong.value?.id
                     )
                 )
             } else {
@@ -2572,8 +2339,6 @@ private fun updateOnlineNearEndTicks() {
 
         val baseGain = appSettings.loudnessBaseGain
         val boostLevel = appSettings.volumeBoostLevel
-
-        //if (currentSong.value?.isLocal == true && currentSong.value?.mediaId?.isEmpty() == true) return
 
         volumeNormalizationJob?.cancel()
         volumeNormalizationJob = serviceScope.launch(Dispatchers.Main) {
@@ -2634,7 +2399,7 @@ private fun updateOnlineNearEndTicks() {
             )
         }
 
-        unifiedMediaSession.setMetadata(metadataBuilder.build())
+        legacyMediaSession.setMetadata(metadataBuilder.build())
     }
 
     private fun initializeAudioManager() {
@@ -2728,7 +2493,7 @@ private fun updateOnlineNearEndTicks() {
         sendBroadcast(
             Intent(AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION).apply {
                 putExtra(AudioEffect.EXTRA_AUDIO_SESSION,
-                    if (localMediaItem?.isLocal == true) player.audioSessionId
+                    if (currentSong.value?.isLocal == true) player.audioSessionId
                     else 0
                 )
                 putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
@@ -2743,7 +2508,7 @@ private fun updateOnlineNearEndTicks() {
         sendBroadcast(
             Intent(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION).apply {
                 putExtra(AudioEffect.EXTRA_AUDIO_SESSION,
-                    if (localMediaItem?.isLocal == true) player.audioSessionId
+                    if (currentSong.value?.isLocal == true) player.audioSessionId
                     else 0
                 )
                 putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
@@ -2752,13 +2517,13 @@ private fun updateOnlineNearEndTicks() {
     }
 
     @ExperimentalCoroutinesApi
-    private fun updateUnifiedMediasession() {
+    private fun updateLegacyMediasession() {
 
-        val currentMediaItem = player.currentMediaItem
+        val currentMediaItem = currentSong.value?.asMediaItem
         val currentMediaItemDuration = if (currentMediaItem?.isLocal == false) (_currentDuration.value * 1000).toLong() else player.duration
-        val currentMediaItemPosition = if(player.currentMediaItem?.isLocal == false) (_currentSecond.value * 1000).toLong() else player.currentPosition
+        val currentMediaItemPosition = if(currentMediaItem?.isLocal == false) (_currentSecond.value * 1000).toLong() else player.currentPosition
 
-        unifiedMediaSession.setMetadata(
+        legacyMediaSession.setMetadata(
             MediaMetadataCompat.Builder()
                 .putString(
                     MediaMetadataCompat.METADATA_KEY_MEDIA_ID,
@@ -2829,7 +2594,7 @@ private fun updateOnlineNearEndTicks() {
             }.first()
 
 
-        unifiedMediaSession.setPlaybackState(
+        legacyMediaSession.setPlaybackState(
             PlaybackStateCompat.Builder().setActions(actions.let {
                 if (isAtLeastAndroid12) it or PlaybackStateCompat.ACTION_SET_PLAYBACK_SPEED else it
             })
@@ -2849,7 +2614,7 @@ private fun updateOnlineNearEndTicks() {
                 .build()
         )
 
-        Timber.d("PlayerService updateUnifiedMediasessionData onlineplayer playing ${_playerState.value.isPlaying} currentSecond ${_currentSecond.value} localplayer playing ${player.isPlaying}")
+        Timber.d("PlayerService updateLegacyMediasessionData onlineplayer playing ${_playerState.value.isPlaying} currentSecond ${_currentSecond.value} localplayer playing ${player.isPlaying}")
     }
 
 
@@ -2886,7 +2651,8 @@ private fun updateOnlineNearEndTicks() {
 
         override fun isPlaying(): Boolean {
             // Legge direttamente dalla variabile di stato Compose
-            return isPlayingNow || player.isPlaying
+            //return isPlayingNow || player.isPlaying
+            return _playerState.value.isPlaying
         }
 
         override fun getVolume(): Float = 1f
@@ -2919,7 +2685,7 @@ private fun updateOnlineNearEndTicks() {
         @FlowPreview
         override fun onReceive(context: Context, intent: Intent) {
             Timber.d("MainActivity onReceive intent.action: ${intent.action}")
-            val currentMediaItem = binder.exoPlayer?.currentMediaItem
+            val currentMediaItem = hybridPlayer.currentMediaItem
 
             binder.let {
                 when (intent.action) {
@@ -2938,21 +2704,19 @@ private fun updateOnlineNearEndTicks() {
                             }
                     }
                     Action.play.value -> {
-                        if (player.currentMediaItem?.isLocal == true)
-                            it.exoPlayer?.play()
-                        else {
-                            if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
-                                _internalOnlinePlayer.value?.play()
-                            else
-                                serviceScope.launch {
-                                    riTuneCastClient.sendCommand(
-                                        RiTuneRemoteCommand(
-                                            "play",
-                                            position = playFromSecond
-                                        )
+
+                        if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
+                            hybridPlayer.play()
+                        else
+                            serviceScope.launch {
+                                riTuneCastClient.sendCommand(
+                                    RiTuneRemoteCommand(
+                                        "play",
+                                        position = playFromSecond
                                     )
-                                }
-                        }
+                                )
+                            }
+
                     }
                     Action.next.value -> handlePlayNext()
                     Action.previous.value -> player.playPrevious()
@@ -2968,7 +2732,7 @@ private fun updateOnlineNearEndTicks() {
                     Action.playradio.value -> {
                         if (currentMediaItem != null) {
                             it.stopRadio()
-                            it.exoPlayer?.seamlessQueue(currentMediaItem)
+                            hybridPlayer.seamlessQueue(currentMediaItem)
 
                             if(!GlobalSharedData.riTuneCastActive)
                                 _internalOnlinePlayer.value?.play()
@@ -2993,77 +2757,10 @@ private fun updateOnlineNearEndTicks() {
 
                 }
             }
-            updateUnifiedNotification()
+            updateLegacyNotification()
         }
 
     }
-
-    /*
-    @ExperimentalCoroutinesApi
-    @FlowPreview
-    @Suppress("DEPRECATION")
-    override fun onEvents(player: Player, events: Player.Events) {
-        if (!events.containsAny(
-                Player.EVENT_PLAYBACK_STATE_CHANGED,
-                Player.EVENT_PLAY_WHEN_READY_CHANGED,
-                Player.EVENT_IS_PLAYING_CHANGED,
-                Player.EVENT_POSITION_DISCONTINUITY,
-                Player.EVENT_IS_LOADING_CHANGED,
-                Player.EVENT_MEDIA_METADATA_CHANGED
-                //Player.EVENT_PLAYBACK_SUPPRESSION_REASON_CHANGED
-            )
-        ) return
-
-        val notification = notification()
-
-        isNotificationStarted = false
-
-        runCatching {
-            stopForeground(false)
-        }.onFailure {
-            Timber.e("PlayerService Failed stopForeground onEvents ${it.stackTraceToString()}")
-        }
-        sendCloseEqualizerIntent()
-        //notificationManager?.cancel(NOTIFICATION_ID)
-            //return
-        //}
-
-        if ((player.isPlaying || isPlayingNow) && !isNotificationStarted) {
-            isNotificationStarted = true
-            runCatching {
-                if (isAtLeastAndroid8)
-                    startForegroundService(intent<PlayerService>())
-                else
-                    startService(intent<PlayerService>())
-
-                startForeground()
-            }.onFailure {
-                Timber.e("PlayerServiceFailed startForegroundService onEvents ${it.stackTraceToString()}")
-            }
-
-            sendOpenEqualizerIntent()
-        } else {
-            if (player.isPlaying || isPlayingNow) {
-                isNotificationStarted = false
-                runCatching {
-                    stopForeground(false)
-                }.onFailure {
-                    Timber.e("PlayerService Failed stopForeground onEvents ${it.stackTraceToString()}")
-                }
-
-                sendCloseEqualizerIntent()
-            }
-            runCatching {
-                notificationManager?.notify(NOTIFICATION_ID, notification)
-            }.onFailure {
-                Timber.e("PlayerServiceFailed onEvents notificationManager.notify ${it.stackTraceToString()}")
-            }
-        }
-
-    }
-
-     */
-
 
     @ExperimentalCoroutinesApi
     @UnstableApi
@@ -3072,22 +2769,19 @@ private fun updateOnlineNearEndTicks() {
 
         handleForeground(isPlaying)
 
-        val currentState = _playerState.value
         if (isPlaying) {
             startEndedObserver()
             startCrossfadeMonitor()
-            _playerState.value = currentState.copy(playbackState = PlaybackState.PLAYING)
+            updatePlayerState(PlayerConstants.PlayerState.PLAYING)
         }
         else {
             stopEndedObserver()
             stopCrossFadeMonitor()
-            _playerState.value = currentState.copy(playbackState = PlaybackState.PAUSED)
+            updatePlayerState(PlayerConstants.PlayerState.PAUSED)
         }
 
-        isPlayingNow = isPlaying
-
         updateWidgetState()
-        updateUnifiedNotification()
+        updateLegacyNotification()
 
         //notify external equalizer
         if (!isPlaying) sendCloseExternalEqualizerIntent()
@@ -3274,7 +2968,7 @@ private fun updateOnlineNearEndTicks() {
     @ExperimentalCoroutinesApi
     fun notification(): Notification {
 
-        val currentMediaItem = binder.exoPlayer?.currentMediaItem
+        val currentMediaItem = hybridPlayer.currentMediaItem
 
         createNotificationChannels()
 
@@ -3285,9 +2979,9 @@ private fun updateOnlineNearEndTicks() {
         ).build()
 
         val playPauseAction = NotificationCompat.Action.Builder(
-            if (isPlayingNow || player.isPlaying) R.drawable.pause else R.drawable.play,
-            if (isPlayingNow || player.isPlaying) "pause" else "play",
-            if (isPlayingNow || player.isPlaying) Action.pause.pendingIntent
+            if (_playerState.value.isPlaying) R.drawable.pause else R.drawable.play,
+            if (_playerState.value.isPlaying || player.isPlaying) "pause" else "play",
+            if (_playerState.value.isPlaying) Action.pause.pendingIntent
             else Action.play.pendingIntent,
         ).build()
 
@@ -3355,7 +3049,7 @@ private fun updateOnlineNearEndTicks() {
             .setStyle(
                 androidx.media.app.NotificationCompat.MediaStyle()
                     .setShowActionsInCompactView(1, 2, 3)
-                    .setMediaSession(unifiedMediaSession.sessionToken)
+                    .setMediaSession(legacyMediaSession.sessionToken)
 
             )
             .setContentIntent(
@@ -3456,6 +3150,8 @@ private fun updateOnlineNearEndTicks() {
             .proxy(Environment.proxy)
             .apply {
                 if (appSettings.isWebDavEnabled)
+                    addInterceptor(DynamicWebDavAuthInterceptor())
+                    /*
                     addInterceptor { chain ->
                         val request = chain.request().newBuilder()
                             .header(
@@ -3465,6 +3161,7 @@ private fun updateOnlineNearEndTicks() {
                             .build()
                         chain.proceed(request)
                     }
+                     */
             }
             .build()
 
@@ -3489,31 +3186,6 @@ private fun updateOnlineNearEndTicks() {
             .setUpstreamDataSourceFactory(upstreamDataSourceFactory)
     }
 
-    /*
-    fun createCacheDataSource(): CacheDataSource.Factory =
-        CacheDataSource
-            .Factory()
-            .setCache(cache)
-            .setCacheWriteDataSinkFactory(null) // Disabilita scrittura in cache — evita corruzione file locali e MusicVault
-            // Remove upstream cause issue with local files
-            .setUpstreamDataSourceFactory(
-                DefaultDataSource.Factory(this) // okHttp is not needed for local files
-            )
-            /*
-            .setUpstreamDataSourceFactory(
-                DefaultDataSource.Factory(
-                    this,
-                    OkHttpDataSource.Factory(
-                        OkHttpClient
-                            .Builder()
-                            .proxy(Environment.proxy)
-                            .build(),
-                    ),
-                ),
-            )
-             */
-
-     */
     private fun createRendersFactory() = object : DefaultRenderersFactory(this) {
         override fun buildAudioSink(
             context: Context,
@@ -3674,7 +3346,7 @@ private fun updateOnlineNearEndTicks() {
 
             while (isActive) {
 
-                val isLocal = player.currentMediaItem?.isLocal == true
+                val isLocal = currentSong.value?.isLocal == true
                 val playbackState = player.playbackState
 
                 if (isLocal)
@@ -3693,14 +3365,14 @@ private fun updateOnlineNearEndTicks() {
                             _internalOnlinePlayer.value?.seekTo(0f)
                         }
                         QueueLoopType.Default -> {
-                            if (binder.exoPlayer?.hasNextMediaItem() == true) {
-                                lastProcessedIndex = binder.exoPlayer?.currentMediaItemIndex
+                            if (hybridPlayer.hasNextMediaItem()) {
+                                lastProcessedIndex = hybridPlayer.currentMediaItemIndex
                                 handlePlayNext()
                             }
                         }
                         QueueLoopType.RepeatAll -> {
-                            if (binder.exoPlayer?.hasNextMediaItem() == false) {
-                                binder.exoPlayer?.playAtIndex(0)
+                            if (!hybridPlayer.hasNextMediaItem()) {
+                                hybridPlayer.playAtIndex(0)
                             } else {
                                 lastProcessedIndex = player.currentMediaItemIndex
                                 handlePlayNext()
@@ -3719,14 +3391,7 @@ private fun updateOnlineNearEndTicks() {
         endedObserverJob = null
     }
 
-    private fun getSystemMediaVolume(): Int {
-        return 100 // set to max
-//        val maxMediaVolume = audioManager?.getStreamMaxVolume(AudioManager.STREAM_MUSIC) ?: 15
-//        val minVolume = maxMediaVolume.div(3)
-//        val volumeOnlinePlayer =  (((audioManager?.getStreamVolume(AudioManager.STREAM_MUSIC) ?: minVolume) * 100) / maxMediaVolume)
-//            .coerceIn(0, 100)
-//        return volumeOnlinePlayer
-    }
+    private fun getSystemMediaVolume() = 100
 
     suspend fun setWallpaper(context: Context, bitmap: Bitmap) {
         if (!isAtLeastAndroid7) return
@@ -3793,7 +3458,7 @@ private fun updateOnlineNearEndTicks() {
         withContext(Dispatchers.Main) {
             mediaItems = player.currentTimeline.mediaItems
             mediaItemIndex = player.currentMediaItemIndex
-            mediaItemPosition = if (player.currentMediaItem?.isLocal == true) {
+            mediaItemPosition = if (currentSong.value?.isLocal == true) {
                 player.currentPosition
             } else {
                 (youtubeCurrentSecond.value * 1000).toLong()
@@ -3825,51 +3490,6 @@ private fun updateOnlineNearEndTicks() {
             }
         }
     }
-
-    /*
-    suspend fun saveQueue() {
-        if (!isPersistentQueueEnabled()) return
-
-        serviceScope.launch(Dispatchers.Main) {
-            val mediaItems = player.currentTimeline.mediaItems
-            val mediaItemIndex = player.currentMediaItemIndex
-            val mediaItemPosition = if (player.currentMediaItem?.isLocal == true) player.currentPosition else (currentSecond.value * 1000).toLong()
-
-            //Timber.d("SaveQueue savePersistentQueue mediaItems ${mediaItems.size} mediaItemIndex $mediaItemIndex mediaItemPosition $mediaItemPosition")
-
-            if (mediaItems.isEmpty()) return@launch
-
-            withContext(Dispatchers.IO) {
-
-                mediaItems.mapIndexed { index, mediaItem ->
-                    QueuedMediaItem(
-                        mediaItem = mediaItem,
-                        mediaId = mediaItem.mediaId,
-                        position = if (index == mediaItemIndex) mediaItemPosition else -1,
-                        idQueue = mediaItem.mediaMetadata.extras?.getLong("idQueue", defaultQueueId())
-                    )
-                }.let { queuedMediaItems ->
-                    if (queuedMediaItems.isEmpty()) return@let
-
-
-                        Database.asyncTransaction {
-                            try {
-                                clearQueuedMediaItems()
-                                queuedMediaItems.forEach {
-                                    insert(it)
-                                }
-                            } catch (e: Exception) {
-                                Timber.e("SaveQueue QueuePersistentEnabled Error: ${e.message}")
-                            }
-                        }
-
-
-                }
-            }
-        }
-    }
-
-     */
 
     @OptIn(UnstableApi::class)
     fun loadQueue() {
@@ -3950,10 +3570,9 @@ private fun updateOnlineNearEndTicks() {
                 for (i in 0 until itemCount) {
                     val mediaItem = player.getMediaItemAt(i)
                     val itemId = mediaItem.mediaId
-                    val currentMediaItem = player.currentMediaItem
 
                     // Aggiorno il mediaitem in coda ma solo se non è in riproduzione
-                    if (itemId == songId && currentMediaItem?.mediaId != songId ) {
+                    if (itemId == songId && currentSong.value?.mediaId != songId ) {
                         if (fileName.isNotEmpty()) {
                             // Costruzione URI corretto
                             val uri = if (fileName.startsWith("content://")) {
@@ -4018,14 +3637,18 @@ private fun updateOnlineNearEndTicks() {
         val coroutineScope: CoroutineScope
             get() = this@PlayerService.serviceScope
 
-        val exoPlayer: ExoPlayer?
-            get() = if (::player.isInitialized) this@PlayerService.player else null
+        // Migrated to hybridPlayer
+//        val exoPlayer: ExoPlayer?
+//            get() = if (::player.isInitialized) this@PlayerService.player else null
+
+//        val youtubePlayer: YouTubePlayer?
+//            get() = this@PlayerService.internalYoutubePlayer.value
+
+        val hybridPlayer: HybridPlayer
+            get() = this@PlayerService.hybridPlayer
 
         val playerState: StateFlow<PlayerState>
             get() = this@PlayerService.playerState
-
-        val youtubePlayer: YouTubePlayer?
-            get() = this@PlayerService.internalYoutubePlayer.value
 
         val youtubePlayerPlayingState: Boolean
             get() = this@PlayerService.playerState.value.isPlaying
@@ -4047,7 +3670,7 @@ private fun updateOnlineNearEndTicks() {
 
 
         val currentMediaItemAsSong: Song?
-            get() = this@PlayerService.player.currentMediaItem?.asSong
+            get() = this@PlayerService.currentSong.value
 
         fun restoreUserVolume() {
             if (!_isServiceReady.value || !this@PlayerService::hybridPlayer.isInitialized) return
@@ -4085,13 +3708,6 @@ private fun updateOnlineNearEndTicks() {
             timerJob?.cancel()
 
             val endTime = System.currentTimeMillis() + delayMillis
-            /*
-            val new = appSettings.copy(timerEndTime = endTime)
-            serviceScope.launch {
-                AppSettingsManager().updateSettings(new)
-            }
-
-             */
 
             Timber.d("PlayerService startSleepTimer delayMillis $delayMillis, scheduled for $endTime")
 
@@ -4102,13 +3718,6 @@ private fun updateOnlineNearEndTicks() {
         }
 
         fun executeStopServiceLogic() {
-            /*
-            val new = appSettings.copy(timerEndTime = 0)
-            serviceScope.launch {
-                AppSettingsManager().updateSettings(new)
-            }
-
-             */
 
             serviceScope.launch { saveQueue() }
 
@@ -4183,9 +3792,9 @@ private fun updateOnlineNearEndTicks() {
                     }
 
                     if (justAdd) {
-                        exoPlayer?.addMediaItems( songs.drop(1))
+                        hybridPlayer.addMediaItems( songs.drop(1))
                     } else {
-                        exoPlayer?.forcePlayFromBeginning(songs)
+                        hybridPlayer.forcePlayFromBeginning(songs)
                     }
                     radio = it
                     isLoadingRadio = false
@@ -4223,7 +3832,7 @@ private fun updateOnlineNearEndTicks() {
                         setLikeState(it.likedAt)
                     )
                 }.also {
-                    currentSong.debounce(1000).conflate().collect(serviceScope) { updateUnifiedNotification() }
+                    currentSong.debounce(1000).conflate().collect(serviceScope) { updateLegacyNotification() }
                 }
             }
 
@@ -4231,37 +3840,17 @@ private fun updateOnlineNearEndTicks() {
 
         @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
         fun toggleShuffle() {
-            exoPlayer?.shuffleModeEnabled?.let { exoPlayer?.shuffleModeEnabled = !it }
+            hybridPlayer.shuffleModeEnabled.let { hybridPlayer.shuffleModeEnabled = !it }
 
         }
 
         fun toggleRepeat() {
             val queueLoopType = appSettings.queueLoopType
-            /*
             val new = appSettings.copy(queueLoopType = setQueueLoopState(queueLoopType))
             serviceScope.launch {
                 AppSettingsManager().updateSettings(new)
             }
-
-             */
         }
-
-//        fun callPause(onPause: () -> Unit) {
-//            val fadeDisabled = appSettings.playbackFadeAudioDuration == DurationInMilliseconds.Disabled
-//            val duration = appSettings.playbackFadeAudioDuration.milliSeconds
-//            if (player.isPlaying) {
-//                if (fadeDisabled) {
-//                    player.pause()
-//                    onPause()
-//                } else {
-//                    //fadeOut
-//                    startFadeAnimator(player, duration, false) {
-//                        player.pause()
-//                        onPause()
-//                    }
-//                }
-//            }
-//        }
 
         fun actionSearch() {
             startActivity(Intent(applicationContext, MainActivity::class.java)
@@ -4308,56 +3897,37 @@ private fun updateOnlineNearEndTicks() {
 
     @kotlin.OptIn(FlowPreview::class)
     @ExperimentalCoroutinesApi
-    fun initializeUnifiedSessionCallback() {
-        Timber.d("PlayerService InitializeUnifiedSessionCallback")
-        val currentMediaItem = binder.exoPlayer?.currentMediaItem
+    fun initializeLegacySessionCallback() {
+        Timber.d("PlayerService InitializeLegacySessionCallback")
+        val currentMediaItem = currentSong.value?.asMediaItem
 
         binder.let {
-            unifiedMediaSession.setCallback(
+            legacyMediaSession.setCallback(
                 LegacyMediaSessionCallback(
                     binder = it,
                     onPlayClick = {
-                        Timber.d("PlayerService InitializeUnifiedSessionCallback onPlayClick")
+                        Timber.d("PlayerService InitializeLegacySessionCallback onPlayClick")
 
-                        // FIX: Se currentMediaItem è nullo, il service sta caricando.
-                        // Non fare nulla o prova a forzare il caricamento, ma non buttarti sull'online player a caso.
-                        if (player.currentMediaItem == null) {
-                            Timber.w("PlayerService PlayClick ignored: No media item loaded yet")
-                            // Opzionale: puoi tentare di ripristinare la coda qui se necessario
-                            return@LegacyMediaSessionCallback
-                        }
-
-                        if (player.currentMediaItem?.isLocal == true)
-                            it.exoPlayer?.play()
-                        else {
-                            if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
-                                _internalOnlinePlayer.value?.play()
-                            else
-                                serviceScope.launch {
-                                    riTuneCastClient.sendCommand(
-                                        RiTuneRemoteCommand(
-                                            "play",
-                                            position = playFromSecond
-                                        )
+                        if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
+                            //_internalOnlinePlayer.value?.play()
+                            hybridPlayer.play()
+                        else
+                            serviceScope.launch {
+                                riTuneCastClient.sendCommand(
+                                    RiTuneRemoteCommand(
+                                        "play",
+                                        position = playFromSecond
                                     )
-                                }
-                        }
-                        updateUnifiedNotification()
+                                )
+                            }
+
+                        updateLegacyNotification()
                     },
                     onPauseClick = {
-                        Timber.d("PlayerService InitializeUnifiedSessionCallback onPauseClick")
+                        Timber.d("PlayerService InitializeLegacySessionCallback onPauseClick")
 
-                        // FIX: Se currentMediaItem è nullo, il service sta caricando.
-                        // Non fare nulla o prova a forzare il caricamento, ma non buttarti sull'online player a caso.
-                        if (player.currentMediaItem == null) {
-                            Timber.w("PlayerService PlayClick ignored: No media item loaded yet")
-                            // Opzionale: puoi tentare di ripristinare la coda qui se necessario
-                            return@LegacyMediaSessionCallback
-                        }
-
-                        it.exoPlayer?.pause()
                         if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
-                            _internalOnlinePlayer.value?.pause()
+                            hybridPlayer.pause()
                         } else {
                             serviceScope.launch {
                                 riTuneCastClient.sendCommand(
@@ -4367,26 +3937,25 @@ private fun updateOnlineNearEndTicks() {
                                 )
                             }
                         }
-                        updateUnifiedNotification()
+                        updateLegacyNotification()
                     },
-                    onSeekToPos = { second ->
-                        val newPosition = (second / 1000).toFloat()
-                        Timber.d("PlayerService InitializeUnifiedSessionCallback onSeekPosTo ${newPosition}")
+                    onSeekToPos = { newPosition ->
+                        Timber.d("PlayerService InitializeLegacySessionCallback onSeekPosTo ${newPosition}")
                         if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
-                            _internalOnlinePlayer.value?.seekTo(newPosition)
+                            hybridPlayer.seekTo(newPosition)
                         else
                             serviceScope.launch {
                                 riTuneCastClient.sendCommand(
                                     RiTuneRemoteCommand(
                                         "seek",
-                                        position = newPosition
+                                        position = newPosition.div(1000) .toFloat()
                                     )
                                 )
                             }
 
-                        _currentSecond.value = second.toFloat()
+                        _currentSecond.value = newPosition.div(1000).toFloat()
 
-                        updateUnifiedNotification()
+                        updateLegacyNotification()
                     },
                     onPlayNext = {
                         handlePlayNext()
@@ -4397,11 +3966,11 @@ private fun updateOnlineNearEndTicks() {
                     onPlayQueueItem = { queueId ->
                         val timelineIndex = queueId.toInt()
                         if (timelineIndex >= 0 && timelineIndex < player.currentTimeline.windowCount) {
-                            player.seekToDefaultPosition(timelineIndex)
+                            hybridPlayer.seekToDefaultPosition(timelineIndex)
                         }
                     },
                     onCustomClick = { customAction ->
-                        Timber.d("PlayerService InitializeUnifiedSessionCallback onCustomClick $customAction")
+                        Timber.d("PlayerService InitializeLegacySessionCallback onCustomClick $customAction")
                         when (customAction) {
                             NotificationButtons.Favorites.action -> {
                                 it.toggleLike()
@@ -4415,10 +3984,11 @@ private fun updateOnlineNearEndTicks() {
                             NotificationButtons.Radio.action -> {
                                 if (currentMediaItem != null) {
                                     it.stopRadio()
-                                    it.exoPlayer?.seamlessQueue(currentMediaItem)
+                                    hybridPlayer.seamlessQueue(currentMediaItem)
 
                                     if(!GlobalSharedData.riTuneCastActive)
-                                        _internalOnlinePlayer.value?.play()
+                                        //_internalOnlinePlayer.value?.play()
+                                        hybridPlayer.play()
                                     else
                                         serviceScope.launch {
                                             riTuneCastClient.sendCommand(
@@ -4450,7 +4020,7 @@ private fun updateOnlineNearEndTicks() {
         val now = System.currentTimeMillis()
         if (now - lastPlayNextTime < debounceDelayMs) {
             Timber.d("PlayerService handlePlayNext ignored (too fast) play current")
-            if (localMediaItem?.isLocal == true)
+            if (currentSong.value?.isLocal == true)
                 player.play()
             else
                 _internalOnlinePlayer.value?.play()

@@ -200,8 +200,8 @@ fun HomePageExtendedSections(
                 icon2 = R.drawable.play_now,
                 onClick2 = {
                     binder?.stopRadio()
-                    trending?.let { binder?.exoPlayer?.forcePlay(it.asMediaItem) }
-                    binder?.exoPlayer?.addMediaItems(relatedInit?.songs?.map { it.asMediaItem }
+                    trending?.let { binder?.hybridPlayer?.forcePlay(it.asMediaItem) }
+                    binder?.hybridPlayer?.addMediaItems(relatedInit?.songs?.map { it.asMediaItem }
                         ?: emptyList())
                 }
 
@@ -286,7 +286,7 @@ fun HomePageExtendedSections(
                                             song.asVideoMediaItem
 
                                         binder?.stopRadio()
-                                        binder?.exoPlayer?.forcePlay(mediaItem)
+                                        binder?.hybridPlayer?.forcePlay(mediaItem)
                                         binder?.setupRadio(
                                             NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
                                         )
@@ -350,7 +350,7 @@ fun HomePageExtendedSections(
                                             song.asVideoMediaItem
 
                                         binder?.stopRadio()
-                                        binder?.exoPlayer?.forcePlay(mediaItem)
+                                        binder?.hybridPlayer?.forcePlay(mediaItem)
                                         binder?.setupRadio(
                                             NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
                                         )
@@ -816,9 +816,8 @@ fun MoodAndGenresPart(
                                             .clickable(onClick = {
                                                 val mediaItem = song.asMediaItem
                                                 binder?.stopRadio()
-                                                binder?.exoPlayer?.forcePlay(mediaItem)
-                                                //fastPlay(mediaItem, binder)
-                                                binder?.exoPlayer?.addMediaItems(songs.map { it.asMediaItem })
+                                                binder?.hybridPlayer?.forcePlay(mediaItem)
+                                                binder?.hybridPlayer?.addMediaItems(songs.map { it.asMediaItem })
                                             })
                                             .width(itemWidth),
                                         //disableScrollingText = disableScrollingText,
@@ -937,8 +936,7 @@ fun ForYouPart(
                                     //disableScrollingText = disableScrollingText,
                                     //isNowPlaying = false,
                                     modifier = Modifier.clickable(onClick = {
-                                        binder?.exoPlayer?.forcePlay(item.asMediaItem)
-                                        //fastPlay(item.asMediaItem, binder)
+                                        binder?.hybridPlayer?.forcePlay(item.asMediaItem)
                                     })
                                 )
                             }
@@ -997,8 +995,7 @@ fun ForYouPart(
 //                                                if (isVideoEnabled())
 //                                                    binder?.player?.playOnline(item.asMediaItem)
 //                                                else
-                                        binder?.exoPlayer?.forcePlay(item.asMediaItem)
-                                        //fastPlay(item.asMediaItem, binder)
+                                        binder?.hybridPlayer?.forcePlay(item.asMediaItem)
                                     })
                                 )
                             }

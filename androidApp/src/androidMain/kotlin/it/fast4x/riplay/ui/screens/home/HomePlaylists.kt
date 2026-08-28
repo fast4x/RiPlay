@@ -789,7 +789,7 @@ fun HomePlaylists(
                                                                                 withContext(
                                                                                     Dispatchers.Main
                                                                                 ) {
-                                                                                    binder?.exoPlayer?.addNext(
+                                                                                    binder?.hybridPlayer?.addNext(
                                                                                         it
                                                                                             ?: emptyList(),
                                                                                         appContext(),
@@ -897,7 +897,7 @@ fun HomePlaylists(
                                                                             ).first().map { it.asMediaItem }
 
                                                                             withContext(Dispatchers.Main) {
-                                                                                binder?.exoPlayer?.addNext(
+                                                                                binder?.hybridPlayer?.addNext(
                                                                                     mediaItems,
                                                                                     appContext(),
                                                                                     selectedQueue
@@ -915,7 +915,7 @@ fun HomePlaylists(
                                                                             ).first().map { it.asMediaItem }
 
                                                                         withContext(Dispatchers.Main) {
-                                                                            binder?.exoPlayer?.forcePlayFromBeginning(mediaItems)
+                                                                            binder?.hybridPlayer?.forcePlayFromBeginning(mediaItems)
                                                                         }
 
                                                                     }
@@ -930,7 +930,7 @@ fun HomePlaylists(
                                                                             ).first().map { it.asMediaItem }.shuffled()
 
                                                                             withContext(Dispatchers.Main) {
-                                                                                binder?.exoPlayer?.forcePlayFromBeginning(
+                                                                                binder?.hybridPlayer?.forcePlayFromBeginning(
                                                                                     mediaItems
                                                                                 )
                                                                             }
@@ -1036,7 +1036,7 @@ fun HomePlaylists(
                                                                                 withContext(
                                                                                     Dispatchers.Main
                                                                                 ) {
-                                                                                    binder?.exoPlayer?.addNext(
+                                                                                    binder?.hybridPlayer?.addNext(
                                                                                         it
                                                                                             ?: emptyList(),
                                                                                         appContext(),
@@ -1059,7 +1059,7 @@ fun HomePlaylists(
                                                                             .map { it?.map(Song::asMediaItem) }
                                                                             .onEach {
                                                                                 if (it != null)
-                                                                                    binder?.exoPlayer?.forcePlayFromBeginning(
+                                                                                    binder?.hybridPlayer?.forcePlayFromBeginning(
                                                                                         it
                                                                                     )
                                                                             }
@@ -1080,7 +1080,7 @@ fun HomePlaylists(
                                                                                     Dispatchers.Main
                                                                                 ) {
                                                                                     if (it != null)
-                                                                                        binder?.exoPlayer?.forcePlayFromBeginning(
+                                                                                        binder?.hybridPlayer?.forcePlayFromBeginning(
                                                                                             it.shuffled()
                                                                                         )
                                                                                 }
@@ -1187,7 +1187,7 @@ fun HomePlaylists(
                                                                                 withContext(
                                                                                     Dispatchers.Main
                                                                                 ) {
-                                                                                    binder?.exoPlayer?.addNext(
+                                                                                    binder?.hybridPlayer?.addNext(
                                                                                         it
                                                                                             ?: emptyList(),
                                                                                         appContext(),
@@ -1210,7 +1210,7 @@ fun HomePlaylists(
                                                                             .map { it?.map(Song::asMediaItem) }
                                                                             .onEach {
                                                                                 if (it != null)
-                                                                                    binder?.exoPlayer?.forcePlayFromBeginning(
+                                                                                    binder?.hybridPlayer?.forcePlayFromBeginning(
                                                                                         it
                                                                                     )
                                                                             }
@@ -1231,7 +1231,7 @@ fun HomePlaylists(
                                                                                     Dispatchers.Main
                                                                                 ) {
                                                                                     if (it != null)
-                                                                                        binder?.exoPlayer?.forcePlayFromBeginning(
+                                                                                        binder?.hybridPlayer?.forcePlayFromBeginning(
                                                                                             it.shuffled()
                                                                                         )
                                                                                 }

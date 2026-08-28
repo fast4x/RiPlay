@@ -124,8 +124,7 @@ fun NonQueuedMediaItemGridMenu(
         modifier = modifier,
         onStartRadio = {
             binder?.stopRadio()
-            binder?.exoPlayer?.forcePlay(mediaItem)
-            //fastPlay(mediaItem, binder)
+            binder?.hybridPlayer?.forcePlay(mediaItem)
             binder?.setupRadio(
                 NavigationEndpoint.Endpoint.Watch(
                     videoId = mediaItem.mediaId,
@@ -133,8 +132,8 @@ fun NonQueuedMediaItemGridMenu(
                 )
             )
         },
-        onPlayNext = { binder?.exoPlayer?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
-        onEnqueue = { binder?.exoPlayer?.enqueue(mediaItem, context, it) },
+        onPlayNext = { binder?.hybridPlayer?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
+        onEnqueue = { binder?.hybridPlayer?.enqueue(mediaItem, context, it) },
         onRemoveFromPlaylist = onRemoveFromPlaylist,
         onHideFromDatabase = onHideFromDatabase,
         onRemoveFromQuickPicks = onRemoveFromQuickPicks,
@@ -410,7 +409,7 @@ fun MediaItemGridMenu (
                 )
             ),
             onValueSelected = {
-                binder?.exoPlayer?.pause()
+                binder?.hybridPlayer?.pause()
                 showSelectDialogListenOn = false
                 uriHandler.openUri(it)
             }

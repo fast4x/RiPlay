@@ -181,7 +181,7 @@ class HybridPlayer (
         }
     }
 
-    // --- OVERRIDE CRITICI PER INGANNARE MEDIA3 E GOOGLE ASSISTANT ---
+    // --- OVERRIDE CRITICI PER NEL DIALOGO CON MEDIA3 E GOOGLE ASSISTANT ---
 
     override fun isPlaying(): Boolean {
         //Timber.d("HybridPlayer isPlaying() called: activeEngine = $activeEngine isPlaying = ${super.isPlaying} youtubeControl.isPlaying() = ${youtubeControl.isPlaying()}")

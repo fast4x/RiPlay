@@ -16,6 +16,7 @@ import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Format
 import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.data.models.WebDavAccount
 import it.fast4x.riplay.enums.RestoreMode
 import it.fast4x.riplay.extensions.databasebackup.BackupUiState
 import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
@@ -24,6 +25,7 @@ import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavConfi
 import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavSongMetadata
 import it.fast4x.riplay.extensions.players.getOnlineMetadata
 import it.fast4x.riplay.services.playback.PlayerService
+import it.fast4x.riplay.utils.CryptoManager
 import it.fast4x.riplay.utils.WEBDAV_KEY_PREFIX
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.formatAsDuration
@@ -68,17 +70,17 @@ class WebDavLibraryViewModel () : ViewModel(), ViewModelProvider.Factory {
     private val _uiState = MutableStateFlow<WebDavBrowserState>(WebDavBrowserState.Idle)
     val uiState: StateFlow<WebDavBrowserState> = _uiState.asStateFlow()
 
-    fun loadFolder(config: WebDavConfig, folderPath: String) {
+    fun loadFolder(account: WebDavAccount, folderPath: String) {
         viewModelScope.launch {
             _uiState.value = WebDavBrowserState.Loading
             try {
                 val rawItems =
-                    if (appSettings.isWebDavScanSubfoldersEnabled) webDavLibraryRepository.listDirectoryRecursive(config, folderPath)
-                    else webDavLibraryRepository.listDirectory(config, folderPath)
+                    if (appSettings.isWebDavScanSubfoldersEnabled) webDavLibraryRepository.listDirectoryRecursive(account, folderPath)
+                    else webDavLibraryRepository.listDirectory(account, folderPath)
                 // Rimuove il primo elemento se è la cartella stessa che stiamo navigando
                 val folderItems = rawItems.drop(1)
 
-                val songs = folderItems.toSongs(config.baseUrl).distinctBy { it.id }
+                val songs = folderItems.toSongs(account.baseUrl).distinctBy { it.id }
                 val folders = folderItems.filter { it.isDirectory }.distinctBy { it.href }
 
                 withContext(Dispatchers.IO) {
@@ -117,6 +119,11 @@ class WebDavLibraryViewModel () : ViewModel(), ViewModelProvider.Factory {
                             // Lancio una coroutine per ogni brano da recuperare
                             // Il Semaphore dentro fetchMetadataIfNeeded eviterà il ban IP permettendo solo 3 richieste contemporanee
                             launch {
+                                val config = WebDavConfig(
+                                    baseUrl = account.baseUrl,
+                                    username = account.username,
+                                    password = CryptoManager.decrypt(account.encryptedPassword),
+                                )
                                 fetchMetadataIfNeeded(config, songToFetch)
                             }
                         }

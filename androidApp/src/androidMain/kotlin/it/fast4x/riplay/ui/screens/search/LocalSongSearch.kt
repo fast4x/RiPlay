@@ -170,8 +170,7 @@ fun LocalSongSearch(
                                 onClick = {
                                     val mediaItem = song.asMediaItem
                                     binder?.stopRadio()
-                                    binder?.exoPlayer?.forcePlay(mediaItem)
-                                    //fastPlay(mediaItem, binder)
+                                    binder?.hybridPlayer?.forcePlay(mediaItem)
                                     binder?.setupRadio(
                                         NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
                                     )

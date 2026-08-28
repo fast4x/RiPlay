@@ -121,8 +121,8 @@ fun UnifiedMiniPlayer(
 
     val hapticFeedback = LocalHapticFeedback.current
 
-    binder?.exoPlayer ?: return
-    if (binder.exoPlayer?.currentTimeline?.windowCount == 0) return
+    binder?.hybridPlayer ?: return
+    if (binder.hybridPlayer.currentTimeline.windowCount == 0) return
 
     val appearanceSettingsManager = LocalAppearanceSettingsManager.current
     val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
@@ -208,12 +208,12 @@ fun UnifiedMiniPlayer(
                         updateLike = true
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                     } else {
-                        binder.exoPlayer?.seekToPrevious()
+                        binder.hybridPlayer.seekToPrevious()
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                     }
                 }
                 SwipeToDismissBoxValue.EndToStart -> {
-                    binder.exoPlayer?.seekToNext()
+                    binder.hybridPlayer.seekToNext()
                     hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
 
                 }
@@ -298,7 +298,7 @@ fun UnifiedMiniPlayer(
                             else if (dragAmount > 20) {
                                 if (!disableClosingPlayerSwipingDown) {
                                     if (!GlobalSharedData.riTuneCastActive)
-                                        binder.youtubePlayer?.pause()
+                                        binder.hybridPlayer.pause()
                                     else
                                         CoroutineScope(Dispatchers.IO).launch {
                                             binder.riTuneCastClient.sendCommand(
@@ -307,7 +307,7 @@ fun UnifiedMiniPlayer(
                                                 )
                                             )
                                         }
-                                    binder.exoPlayer?.clearMediaItems()
+                                    binder.hybridPlayer.clearMediaItems()
                                     hidePlayer()
                                     runCatching {
                                         context.stopService(context.intent<PlayerService>())
@@ -356,7 +356,7 @@ fun UnifiedMiniPlayer(
                         .clip(thumbnailShape())
                         .size(48.dp)
                 )
-                NowPlayingSongIndicator(mediaItem.mediaId, binder.exoPlayer)
+                NowPlayingSongIndicator(mediaItem.mediaId, binder.hybridPlayer)
             }
 
             Column(
@@ -414,7 +414,7 @@ fun UnifiedMiniPlayer(
                         icon = R.drawable.play_skip_back,
                         color = colorPalette().iconButtonPlayer,
                         onClick = {
-                            binder.exoPlayer?.playPrevious()
+                            binder.hybridPlayer.playPrevious()
                         },
                         modifier = Modifier
                             .rotate(rotationAngle)
@@ -428,11 +428,11 @@ fun UnifiedMiniPlayer(
                             .clip(RoundedCornerShape(playPauseRoundness))
                             .clickable {
                                 if (shouldBePlaying) {
-                                    if (mediaItem.isLocal) {
-                                        binder.exoPlayer?.pause()
-                                    } else {
+//                                    if (mediaItem.isLocal) {
+//                                        binder.hybridPlayer.pause()
+//                                    } else {
                                         if (!GlobalSharedData.riTuneCastActive)
-                                            binder.youtubePlayer?.pause()
+                                            binder.hybridPlayer.pause()
                                         else
                                             CoroutineScope(Dispatchers.IO).launch {
                                                 binder.riTuneCastClient.sendCommand(
@@ -441,13 +441,13 @@ fun UnifiedMiniPlayer(
                                                     )
                                                 )
                                             }
-                                    }
+                                    //}
                                 } else {
-                                    if (mediaItem.isLocal) {
-                                        binder.exoPlayer?.play()
-                                    } else {
+//                                    if (mediaItem.isLocal) {
+//                                        binder.hybridPlayer?.play()
+//                                    } else {
                                         if (!GlobalSharedData.riTuneCastActive)
-                                            binder.youtubePlayer?.play()
+                                            binder.hybridPlayer.play()
                                         else
                                             CoroutineScope(Dispatchers.IO).launch {
                                                 binder.riTuneCastClient.sendCommand(
@@ -456,7 +456,7 @@ fun UnifiedMiniPlayer(
                                                     )
                                                 )
                                             }
-                                    }
+                                    //}
                                 }
                             }
                             .background(colorPalette().background2)
@@ -480,7 +480,7 @@ fun UnifiedMiniPlayer(
                         icon = R.drawable.play_skip_forward,
                         color = colorPalette().iconButtonPlayer,
                         onClick = {
-                            binder.exoPlayer?.playNext()
+                            binder.hybridPlayer.playNext()
                         },
                         modifier = Modifier
                             .rotate(rotationAngle)

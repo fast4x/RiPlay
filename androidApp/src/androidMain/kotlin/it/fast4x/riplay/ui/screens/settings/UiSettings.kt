@@ -91,7 +91,6 @@ fun UiSettings(
     val lastPlayerPlayButtonType = appearanceSettings.lastPlayerPlayButtonType
     val colorPaletteName = appearanceSettings.colorPaletteName
     val colorPaletteMode = appearanceSettings.colorPaletteMode
-    val indexNavigationTab = appSettings.indexNavigationTab
     val fontType = appSettings.fontType
     val useSystemFont = appSettings.useSystemFont
     val applyFontPadding = appSettings.applyFontPadding
@@ -149,6 +148,7 @@ fun UiSettings(
     val isEnabledFullscreen = appSettings.isEnabledFullScreen
     val isSnowEffectEnabled = appSettings.isSnowEffectEnabled
     val showListenerLevels = appSettings.showListenerLevels
+    val showMiniPlayerInSettings = appSettings.showMiniPlayerInSettings
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -815,6 +815,23 @@ fun UiSettings(
                         )
                 }
 
+                if (search.input.isBlank() || stringResource(R.string.show_miniplayer_in_settings).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.show_miniplayer_in_settings),
+                        text = "",
+                        isChecked = showMiniPlayerInSettings,
+                        onCheckedChange = {
+                            coroutineScope.launch {
+                                val new = appSettingsManager.activeSettings.value.copy(showMiniPlayerInSettings = it)
+                                appSettingsManager.updateSettings(new)
+                            }
+                        }
+                    )
+
                 if (search.input.isBlank() || stringResource(R.string.menu_style).contains(
                         search.input,
                         true
@@ -858,37 +875,6 @@ fun UiSettings(
                             }
                         }
                     )
-
-                /*
-                if (search.input.isBlank() || stringResource(R.string.default_page).contains(
-                        search.input,
-                        true
-                    )
-                )
-                    EnumValueSelectorSettingsEntry(
-                        title = stringResource(R.string.default_page),
-                        selectedValue = indexNavigationTab,
-                        onValueSelected = {
-                            coroutineScope.launch {
-                                val new = appSettingsManager.activeSettings.value.copy(indexNavigationTab = it)
-                                appSettingsManager.updateSettings(new)
-                            }
-                        },
-                        valueText = {
-                            when (it) {
-                                HomeScreenTabs.Default -> stringResource(R.string._default)
-                                HomeScreenTabs.Home -> stringResource(R.string.home)
-                                //HomeScreenTabs.LocalSongs -> stringResource(R.string.on_device)
-                                HomeScreenTabs.Songs -> stringResource(R.string.songs)
-                                HomeScreenTabs.Albums -> stringResource(R.string.albums)
-                                HomeScreenTabs.Artists -> stringResource(R.string.artists)
-                                HomeScreenTabs.Playlists -> stringResource(R.string.playlists)
-                                HomeScreenTabs.Search -> stringResource(R.string.search)
-                            }
-                        }
-                    )
-
-                 */
 
                 if (search.input.isBlank() || stringResource(R.string.transition_effect).contains(
                         search.input,

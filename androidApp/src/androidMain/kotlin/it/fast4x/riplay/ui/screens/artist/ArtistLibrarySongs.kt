@@ -280,7 +280,7 @@ fun ArtistLibrarySongs(
                                         },
                                         onClick = {
                                             binder?.stopRadio()
-                                            binder?.exoPlayer?.forcePlayAtIndex(
+                                            binder?.hybridPlayer?.forcePlayAtIndex(
                                                 songs.map(SongEntity::asMediaItem),
                                                 index
                                             )

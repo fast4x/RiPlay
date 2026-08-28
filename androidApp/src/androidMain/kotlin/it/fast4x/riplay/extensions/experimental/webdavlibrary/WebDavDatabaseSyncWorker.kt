@@ -25,11 +25,18 @@ class WebDavDatabaseSyncBackupWorker(
             val appSettingsManager = (appContext() as MainApplication).appSettingsManager
             val appSettings = appSettingsManager.activeSettings.value
 
-            // 1. Recupera le credenziali WebDAV (decriptandole dal DB)
+            // 1. Quale account fa da backup?
+            val backupAccountId = appSettings.backupWebDavAccountId ?: return Result.success()
+
+            // 2. Recupera l'account dal DB
+            val backupAccount = Database.webDavAccountDao().getById(backupAccountId)
+                ?: return Result.failure() // L'utente ha cancellato l'account ma non cambiato le impostazioni
+
+            // 3. Decripta e crea l'oggetto di config al volo
             val webDavConfig = WebDavConfig(
-                baseUrl = appSettings.webDavUrl,
-                username = appSettings.webDavUsername,
-                password = CryptoManager.decrypt(appSettings.webDavPassword),
+                baseUrl = backupAccount.baseUrl,
+                username = backupAccount.username,
+                password = CryptoManager.decrypt(backupAccount.encryptedPassword)
             )
             if (webDavConfig.baseUrl.isEmpty()) {
                 return Result.success() // Nessun config salvato, niente da fare

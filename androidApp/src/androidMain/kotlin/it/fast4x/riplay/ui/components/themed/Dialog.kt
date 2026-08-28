@@ -2270,7 +2270,7 @@ fun PlaybackParamsDialog(
                 IconButton(
                     onClick = {
                         playbackSpeed = defaultSpeed
-                        binder?.exoPlayer?.playbackParameters =
+                        binder?.hybridPlayer?.playbackParameters =
                             PlaybackParameters(playbackSpeed, playbackPitch)
                     },
                     icon = R.drawable.slow_motion,
@@ -2283,7 +2283,7 @@ fun PlaybackParamsDialog(
                     state = playbackSpeed,
                     onSlide = {
                         playbackSpeed = it
-                        binder?.exoPlayer?.playbackParameters =
+                        binder?.hybridPlayer?.playbackParameters =
                             PlaybackParameters(playbackSpeed, playbackPitch)
                     },
                     onSlideComplete = {},
@@ -2370,7 +2370,7 @@ fun PlaybackParamsDialog(
                 IconButton(
                     onClick = {
                         playbackPitch = defaultPitch
-                        binder?.exoPlayer?.playbackParameters =
+                        binder?.hybridPlayer?.playbackParameters =
                             PlaybackParameters(playbackSpeed, playbackPitch)
                     },
                     icon = R.drawable.equalizer,
@@ -2383,7 +2383,7 @@ fun PlaybackParamsDialog(
                     state = playbackPitch,
                     onSlide = {
                         playbackPitch = it
-                        binder?.exoPlayer?.playbackParameters =
+                        binder?.hybridPlayer?.playbackParameters =
                             PlaybackParameters(playbackSpeed, playbackPitch)
                     },
                     onSlideComplete = {},
@@ -2471,8 +2471,7 @@ fun PlaybackParamsDialog(
                 IconButton(
                     onClick = {
                         playbackVolume = 0.5f
-                        binder?.exoPlayer?.volume = playbackVolume
-                        //binder?.player?.setGlobalVolume(playbackVolume)
+                        binder?.hybridPlayer?.volume = playbackVolume
                     },
                     icon = R.drawable.volume_up,
                     color = colorPalette().favoritesIcon,
@@ -2484,8 +2483,7 @@ fun PlaybackParamsDialog(
                     state = playbackVolume,
                     onSlide = {
                         playbackVolume = it
-                        binder?.exoPlayer?.volume = playbackVolume
-                        //binder?.player?.setGlobalVolume(playbackVolume)
+                        binder?.hybridPlayer?.volume = playbackVolume
                     },
                     onSlideComplete = {},
                     toDisplay = { "%.1f".format(playbackVolume) },

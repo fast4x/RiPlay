@@ -178,7 +178,7 @@ fun OnlineSearch(
                                     thumbnailSizePx = songThumbnailSizePx,
                                     thumbnailSizeDp = songThumbnailSizeDp,
                                     onThumbnailContent = {
-                                        NowPlayingSongIndicator(mediaItem.mediaId, binder?.exoPlayer)
+                                        NowPlayingSongIndicator(mediaItem.mediaId, binder?.hybridPlayer)
                                     },
                                     modifier = Modifier
                                         .combinedClickable(
@@ -196,7 +196,7 @@ fun OnlineSearch(
                                                 )
                                             },
                                             onClick = {
-                                                binder?.exoPlayer?.forcePlay(mediaItem)
+                                                binder?.hybridPlayer?.forcePlay(mediaItem)
                                             }
                                         ),
                                 )

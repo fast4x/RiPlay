@@ -416,7 +416,7 @@ fun LocalPlaylistSongs(
         lazyListState = lazyListState,
         //scrollThresholdPadding = WindowInsets.systemBars.asPaddingValues(),
     ) { from, to ->
-        if (to.key != binder?.exoPlayer?.currentMediaItem?.mediaId) {
+        if (to.key != binder?.hybridPlayer?.currentMediaItem?.mediaId) {
             playlistSongs = playlistSongs.toMutableList().apply {
                 // can't use .index because there are other items in the list (headers, footers, etc)
                 val fromIndex = indexOfFirst { it.song.id == from.key }
@@ -1069,11 +1069,11 @@ fun LocalPlaylistSongs(
                                                             if (songs.size > maxSongsInQueue.number) songs
                                                                 .take(maxSongsInQueue.number.toInt()) else songs
                                                         binder?.stopRadio()
-                                                        binder?.exoPlayer?.forcePlayFromBeginning(
+                                                        binder?.hybridPlayer?.forcePlayFromBeginning(
                                                             itemsLimited
                                                                 .map(SongEntity::asMediaItem)
                                                         )
-                                                        //fastPlay(binder = binder, mediaItems = itemsLimited.map(SongEntity::asMediaItem), withShuffle = true)
+
                                                     }
                                                 }
                                         } else {
@@ -1094,7 +1094,7 @@ fun LocalPlaylistSongs(
                                                             if (songs.size > maxSongsInQueue.number) songs.shuffled()
                                                                 .take(maxSongsInQueue.number.toInt()) else songs
                                                         binder?.stopRadio()
-                                                        binder?.exoPlayer?.forcePlayFromBeginning(
+                                                        binder?.hybridPlayer?.forcePlayFromBeginning(
                                                             itemsLimited.shuffled()
                                                                 .map(SongEntity::asMediaItem)
                                                         )
@@ -1322,7 +1322,7 @@ fun LocalPlaylistSongs(
                                                 onEnqueue = {
                                                     if (listMediaItems.isEmpty()) {
                                                         if (playlistSongs.any { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }) {
-                                                            binder?.exoPlayer?.enqueue(playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
+                                                            binder?.hybridPlayer?.enqueue(playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
                                                                 .map(SongEntity::asMediaItem),
                                                                 context)
                                                         } else {
@@ -1333,7 +1333,7 @@ fun LocalPlaylistSongs(
                                                             )
                                                         }
                                                     } else {
-                                                        binder?.exoPlayer?.enqueue(
+                                                        binder?.hybridPlayer?.enqueue(
                                                             listMediaItems,
                                                             context
                                                         )
@@ -1344,7 +1344,7 @@ fun LocalPlaylistSongs(
                                                 onPlayNext = {
                                                     if (listMediaItems.isEmpty()) {
                                                         if (playlistSongs.any { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }) {
-                                                            binder?.exoPlayer?.addNext(playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
+                                                            binder?.hybridPlayer?.addNext(playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
                                                                 .map(SongEntity::asMediaItem),
                                                                 context,
                                                                 selectedQueue ?: defaultQueue()
@@ -1357,7 +1357,7 @@ fun LocalPlaylistSongs(
                                                             )
                                                         }
                                                     } else {
-                                                        binder?.exoPlayer?.addNext(
+                                                        binder?.hybridPlayer?.addNext(
                                                             listMediaItems,
                                                             context,
                                                             selectedQueue ?: defaultQueue()
@@ -1593,7 +1593,7 @@ fun LocalPlaylistSongs(
                                                 },
                                                 showonListenToYT = !playlistPreview.playlist.browseId.isNullOrBlank(),
                                                 onListenToYT = {
-                                                    binder?.exoPlayer?.pause()
+                                                    binder?.hybridPlayer?.pause()
                                                     uriHandler.openUri(
                                                         "https://youtube.com/playlist?list=${
                                                             playlistPreview.playlist.browseId?.let {
@@ -1942,7 +1942,7 @@ fun LocalPlaylistSongs(
                                         scrollToNowPlaying = false
                                         playlistSongs
                                             .forEachIndexed { index, song ->
-                                                if (song.asMediaItem.mediaId == binder?.exoPlayer?.currentMediaItem?.mediaId)
+                                                if (song.asMediaItem.mediaId == binder?.hybridPlayer?.currentMediaItem?.mediaId)
                                                     nowPlayingItem = index
                                             }
 
@@ -2094,11 +2094,8 @@ fun LocalPlaylistSongs(
                                         modifier = Modifier
                                             .clickable {
                                                 binder?.stopRadio()
-                                                binder?.exoPlayer?.forcePlay(it)
-                                                //fastPlay(it, binder)
+                                                binder?.hybridPlayer?.forcePlay(it)
                                             },
-                                        //disableScrollingText = disableScrollingText,
-                                        //isNowPlaying = binder?.player?.isNowPlaying(it.mediaId) ?: false
 
                                     )
                                 }
@@ -2201,7 +2198,7 @@ fun LocalPlaylistSongs(
                                         }
                                     },
                                     onPlayNext = {
-                                        binder?.exoPlayer?.addNext(
+                                        binder?.hybridPlayer?.addNext(
                                             song.asMediaItem,
                                             queue = selectedQueue ?: defaultQueue()
                                         )
@@ -2306,7 +2303,7 @@ fun LocalPlaylistSongs(
                                             if (nowPlayingItem > -1)
                                                 NowPlayingSongIndicator(
                                                     song.asMediaItem.mediaId,
-                                                    binder?.exoPlayer
+                                                    binder?.hybridPlayer
                                                 )
                                         },
                                         modifier = Modifier
@@ -2365,7 +2362,7 @@ fun LocalPlaylistSongs(
                                                                 .map(SongEntity::asMediaItem)
                                                                 .let { mediaItems ->
                                                                     binder?.stopRadio()
-                                                                    binder?.exoPlayer?.forcePlayAtIndex(
+                                                                    binder?.hybridPlayer?.forcePlayAtIndex(
                                                                         mediaItems,
                                                                         mediaItems.indexOf(song.asMediaItem)
                                                                     )
@@ -2415,7 +2412,7 @@ fun LocalPlaylistSongs(
                                 .let { songs ->
                                     if (songs.isNotEmpty()) {
                                         binder?.stopRadio()
-                                        binder?.exoPlayer?.forcePlayFromBeginning(
+                                        binder?.hybridPlayer?.forcePlayFromBeginning(
                                             songs.shuffled().map(SongEntity::asMediaItem)
                                         )
                                     }

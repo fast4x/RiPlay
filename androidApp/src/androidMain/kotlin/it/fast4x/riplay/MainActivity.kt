@@ -558,7 +558,7 @@ class MainActivity : AppCompatActivity() {
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
         if (
-            isPipModeAutoEnabled() && binder?.exoPlayer?.isPlaying == true
+            isPipModeAutoEnabled() && binder?.hybridPlayer?.isPlaying == true
         ) maybeEnterPip()
     }
 
@@ -1011,7 +1011,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 if (colorPaletteName == ColorPaletteName.Dynamic) {
                     setDynamicPalette(
-                        (binder?.exoPlayer?.currentMediaItem?.mediaMetadata?.artworkUri.toString()
+                        (binder?.hybridPlayer?.currentMediaItem?.mediaMetadata?.artworkUri.toString()
                             .toThumbnail(
                                 1200
                             )
@@ -1144,7 +1144,7 @@ class MainActivity : AppCompatActivity() {
                                         // Implement pip mode with video
                                         //if (mediaItemIsLocal.value) {
                                         PipModuleCover(
-                                            url = binder?.exoPlayer?.currentMediaItem?.mediaMetadata?.artworkUri.toString()
+                                            url = binder?.hybridPlayer?.currentMediaItem?.mediaMetadata?.artworkUri.toString()
                                                 .toThumbnail(1200).toString()
                                         )
 //                                        } else {
@@ -1267,7 +1267,7 @@ class MainActivity : AppCompatActivity() {
                                                 TvUnifiedPlayer(
                                                     navController = it,
                                                     onlineCore = {
-                                                        binder?.exoPlayer?.currentMediaItem?.let {
+                                                        binder?.hybridPlayer?.currentMediaItem?.let {
                                                             UnifiedPlayerView(
                                                                 onlinePlayerView = onlinePlayerView,
                                                                 mediaItem = it,
@@ -1282,7 +1282,7 @@ class MainActivity : AppCompatActivity() {
                                                 UnifiedPlayer(
                                                     navController = it,
                                                     onlineCore = {
-                                                        binder?.exoPlayer?.currentMediaItem?.let {
+                                                        binder?.hybridPlayer?.currentMediaItem?.let {
                                                             UnifiedPlayerView(
                                                                 onlinePlayerView = onlinePlayerView,
                                                                 mediaItem = it,
@@ -1377,8 +1377,8 @@ class MainActivity : AppCompatActivity() {
                         }
 
                 }
-                DisposableEffect(binder?.exoPlayer) {
-                    val player = binder?.exoPlayer ?: return@DisposableEffect onDispose { }
+                DisposableEffect(binder?.hybridPlayer) {
+                    val player = binder?.hybridPlayer ?: return@DisposableEffect onDispose { }
 
                     //Timber.d("MainActivity DisposableEffecty mediaItemAsSong ${binder!!.currentMediaItemAsSong}")
 
@@ -1545,7 +1545,7 @@ class MainActivity : AppCompatActivity() {
                                 val binder = snapshotFlow { binder }.filterNotNull().first()
                                 withContext(Dispatchers.Main) {
                                     if (!song.explicit && !appSettings.parentalControlEnabled)
-                                        binder.exoPlayer?.forcePlay(song.asMediaItem)
+                                        binder.hybridPlayer.forcePlay(song.asMediaItem)
                                     else
                                         SmartMessage(
                                             "Parental control is enabled",
@@ -1638,7 +1638,7 @@ class MainActivity : AppCompatActivity() {
             if (shakeCounter >= 1) {
                 //Toast.makeText(applicationContext, "Shaked $shakeCounter times", Toast.LENGTH_SHORT).show()
                 shakeCounter = 0
-                binder?.exoPlayer?.playNext()
+                binder?.hybridPlayer?.playNext()
             }
         }
 

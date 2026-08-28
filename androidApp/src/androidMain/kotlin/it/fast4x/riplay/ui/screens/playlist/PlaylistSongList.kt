@@ -547,14 +547,14 @@ fun PlaylistSongList(
                                         .padding(bottom = 70.dp),
                                     onPlayNowClick = {
                                         binder?.stopRadio()
-                                        binder?.exoPlayer?.forcePlayFromBeginning(
+                                        binder?.hybridPlayer?.forcePlayFromBeginning(
                                             playlistSongs
                                                 .map{ it.asMediaItem }
                                         )
                                     },
                                     onShufflePlayClick = {
                                         binder?.stopRadio()
-                                        binder?.exoPlayer?.forcePlayFromBeginning(
+                                        binder?.hybridPlayer?.forcePlayFromBeginning(
                                             playlistSongs
                                                 .shuffled()
                                                 .map{ it.asMediaItem }
@@ -617,7 +617,7 @@ fun PlaylistSongList(
                                             playlistPage?.songs?.filter { it.asMediaItem.mediaId !in dislikedSongs }
                                                 ?.map(Environment.SongItem::asMediaItem)
                                                 ?.let { mediaItems ->
-                                                    binder?.exoPlayer?.enqueue(
+                                                    binder?.hybridPlayer?.enqueue(
                                                         mediaItems,
                                                         context
                                                     )
@@ -649,7 +649,7 @@ fun PlaylistSongList(
                                                 ?.shuffled()
                                                 ?.map(Environment.SongItem::asMediaItem)
                                                 ?.let {
-                                                    binder?.exoPlayer?.forcePlayFromBeginning(
+                                                    binder?.hybridPlayer?.forcePlayFromBeginning(
                                                         it
                                                     )
                                                 }
@@ -680,7 +680,7 @@ fun PlaylistSongList(
                                                 binder.playRadio(
                                                     NavigationEndpoint.Endpoint.Watch(
                                                         videoId =
-                                                            binder.exoPlayer?.currentMediaItem?.mediaId
+                                                            binder.hybridPlayer.currentMediaItem?.mediaId
                                                                 ?: playlistPage?.songs?.first { it.asMediaItem.mediaId !in dislikedSongs }?.asMediaItem?.mediaId
                                                     )
                                                 )
@@ -1160,13 +1160,13 @@ fun PlaylistSongList(
                         SwipeablePlaylistItem(
                             mediaItem = song.asMediaItem,
                             onPlayNext = {
-                                binder?.exoPlayer?.addNext(
+                                binder?.hybridPlayer?.addNext(
                                     song.asMediaItem,
                                     queue = selectedQueue ?: defaultQueue()
                                 )
                             },
                             onEnqueue = {
-                                binder?.exoPlayer?.enqueue(song.asMediaItem, queue = it)
+                                binder?.hybridPlayer?.enqueue(song.asMediaItem, queue = it)
                             }
                         ) {
                             //var forceRecompose by remember { mutableStateOf(false) }
@@ -1201,7 +1201,7 @@ fun PlaylistSongList(
                                                     ?.map(Environment.SongItem::asMediaItem)
                                                     ?.let { mediaItems ->
                                                         binder?.stopRadio()
-                                                        binder?.exoPlayer?.forcePlayAtIndex(
+                                                        binder?.hybridPlayer?.forcePlayAtIndex(
                                                             mediaItems,
                                                             mediaItems.indexOf(song.asMediaItem)
                                                         )
@@ -1255,7 +1255,7 @@ fun PlaylistSongList(
                         binder?.stopRadio()
                         playlistPage?.songs?.filter{ it.asMediaItem.mediaId !in dislikedSongs }?.shuffled()?.map(Environment.SongItem::asMediaItem)
                             ?.let {
-                                binder?.exoPlayer?.forcePlayFromBeginning(
+                                binder?.hybridPlayer?.forcePlayFromBeginning(
                                     it
                                 )
                             }

@@ -3,9 +3,11 @@ package it.fast4x.riplay.extensions.experimental.webdavlibrary
 import android.media.MediaMetadataRetriever
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.data.models.WebDavAccount
 import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavConfig
 import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavItem
 import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavSongMetadata
+import it.fast4x.riplay.utils.CryptoManager
 import it.fast4x.riplay.utils.CustomHttpClient
 import it.fast4x.riplay.utils.WEBDAV_KEY_PREFIX
 import it.fast4x.riplay.utils.appContext
@@ -49,31 +51,18 @@ class WebDavLibraryRepository() {
         </D:propfind>
     """.trimIndent()
 
-    suspend fun listDirectory(config: WebDavConfig, folderPath: String): List<WebDavItem> {
-        val cleanBaseUrl = config.baseUrl.trimEnd('/') + "/"
-        val baseHttpUrl = cleanBaseUrl.toHttpUrl()
+    suspend fun listDirectory(account: WebDavAccount, folderPath: String): List<WebDavItem> {
+        // Usiamo l'account.baseUrl e decriptiamo la password al volo per la singola richiesta PROPFIND
+        val rawPassword = CryptoManager.decrypt(account.encryptedPassword)
+        val authHeader = Credentials.basic(account.username, rawPassword)
 
-        val cleanFolderPath = folderPath.trim()
-
-        val targetUrl = when {
-            cleanFolderPath.isEmpty() -> baseHttpUrl // Listiamo la root
-            cleanFolderPath.startsWith("/") -> {
-                val absolutePathWithSlash = if (cleanFolderPath.endsWith("/")) cleanFolderPath else "$cleanFolderPath/"
-                baseHttpUrl.resolve(absolutePathWithSlash)
-            }
-            else -> {
-                val relativePathWithSlash = if (cleanFolderPath.endsWith("/")) cleanFolderPath else "$cleanFolderPath/"
-                baseHttpUrl.resolve(relativePathWithSlash)
-            }
-        } ?: throw IllegalArgumentException("WebDavLibraryRepository listDirectory URL non valido: $folderPath")
-
-        Timber.d("WebDavLibraryRepository listDirectory targetUrl: $targetUrl")
+        val targetUrl = resolveUrl(account.baseUrl, folderPath)
 
         val request = Request.Builder()
             .url(targetUrl)
             .method("PROPFIND", propfindBody.toRequestBody("application/xml; charset=utf-8".toMediaType()))
             .header("Depth", "1")
-            .header("Authorization", Credentials.basic(config.username, config.password))
+            .header("Authorization", authHeader)
             .build()
 
         return withContext(Dispatchers.IO) {
@@ -90,7 +79,7 @@ class WebDavLibraryRepository() {
     }
 
     // Se l'utente vuole scansionare in modo ricorsivo (utile per indicizzare tutta la musica)
-    suspend fun listDirectoryRecursive(config: WebDavConfig, folderPath: String): List<WebDavItem> {
+    suspend fun listDirectoryRecursive(account: WebDavAccount, folderPath: String): List<WebDavItem> {
         val allItems = mutableListOf<WebDavItem>()
 
         val queue = ArrayDeque<String>()
@@ -101,7 +90,7 @@ class WebDavLibraryRepository() {
             Timber.d("WebDavLibraryRepository listDirectoryRecursive > listDirectory called with folderPath: $currentPath")
 
             val items = try {
-                listDirectory(config, currentPath)
+                listDirectory(account, currentPath)
             } catch (e: Exception) {
                 Timber.e(e, "WebDavLibraryRepository listDirectoryRecursive Errore listando la cartella: $currentPath")
                 emptyList() // Se fallisce, passiamo alla prossima

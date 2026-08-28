@@ -94,11 +94,13 @@ fun SettingsScreen(
 
     val transitionEffect = appSettings.transitionEffect
 
+    val showMiniPlayerInSettings = appSettings.showMiniPlayerInSettings
+
     ScreenContainer(
         navController,
         tabIndex,
         onTabChanged,
-        miniPlayer,
+        if (showMiniPlayerInSettings) miniPlayer else null,
         transitionEffect = transitionEffect,
         navBarContent = { item ->
             item(0, stringResource(R.string.tab_general), R.drawable.app_icon, true)

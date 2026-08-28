@@ -302,7 +302,7 @@ fun StatisticsPage(
                     SwipeablePlaylistItem(
                         mediaItem = song.asMediaItem,
                         onPlayNext = {
-                            binder?.exoPlayer?.addNext(song.asMediaItem, queue = localSelectedQueue ?: defaultQueue())
+                            binder?.hybridPlayer?.addNext(song.asMediaItem, queue = localSelectedQueue ?: defaultQueue())
                         }
                     ) {
 
@@ -342,7 +342,7 @@ fun StatisticsPage(
                                     },
                                     onClick = {
                                         binder?.stopRadio()
-                                        binder?.exoPlayer?.forcePlayAtIndex(
+                                        binder?.hybridPlayer?.forcePlayAtIndex(
                                             songs.map(Song::asMediaItem),
                                             songs.indexOf(song)
                                         )

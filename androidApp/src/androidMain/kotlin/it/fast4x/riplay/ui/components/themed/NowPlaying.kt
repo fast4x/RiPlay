@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import it.fast4x.riplay.services.playback.HybridPlayer
 import it.fast4x.riplay.ui.components.MusicAnimation
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.onOverlay
@@ -19,7 +20,7 @@ import it.fast4x.riplay.utils.colorPalette
 @Composable
 fun NowPlayingSongIndicator (
     mediaId: String,
-    player: ExoPlayer?,
+    player: HybridPlayer?,
     containerSize: Dp = Dimensions.thumbnails.song
 ) {
 

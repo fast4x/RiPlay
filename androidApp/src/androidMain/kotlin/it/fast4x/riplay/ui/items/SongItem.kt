@@ -160,7 +160,7 @@ fun SongItem(
     mediaItem: MediaItem,
 ) {
     val binder = LocalPlayerServiceBinder.current
-    val player = remember(binder) { binder?.exoPlayer }
+    val player = remember(binder) { binder?.hybridPlayer }
     val context = LocalContext.current
 
     val shape = thumbnailShape()
@@ -275,7 +275,7 @@ fun SongItem(
         remember { mutableIntStateOf(0) }
 
     val binder = LocalPlayerServiceBinder.current
-    val isNowPlaying = binder?.exoPlayer?.isNowPlaying(mediaItem.mediaId)
+    val isNowPlaying = binder?.hybridPlayer?.isNowPlaying(mediaItem.mediaId)
     val disableScrollingText = appearanceSettings.disableScrollingText
 
     val context = LocalContext.current

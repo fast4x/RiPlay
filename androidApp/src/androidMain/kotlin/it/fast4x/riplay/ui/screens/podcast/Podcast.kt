@@ -439,7 +439,7 @@ fun Podcast(
                                     onClick = {
                                         podcastPage?.listEpisode?.map(Environment.Podcast.EpisodeItem::asMediaItem)
                                             ?.let { mediaItems ->
-                                                binder?.exoPlayer?.enqueue(mediaItems, context)
+                                                binder?.hybridPlayer?.enqueue(mediaItems, context)
                                             }
                                     },
                                     onLongClick = {
@@ -460,7 +460,7 @@ fun Podcast(
                                             podcastPage?.listEpisode?.shuffled()
                                                 ?.map(Environment.Podcast.EpisodeItem::asMediaItem)
                                                 ?.let {
-                                                    binder?.exoPlayer?.forcePlayFromBeginning(
+                                                    binder?.hybridPlayer?.forcePlayFromBeginning(
                                                         it
                                                     )
                                                 }
@@ -484,7 +484,7 @@ fun Podcast(
                                             binder.playRadio(
                                                 NavigationEndpoint.Endpoint.Watch(
                                                     videoId =
-                                                        binder.exoPlayer?.currentMediaItem?.mediaId
+                                                        binder.hybridPlayer.currentMediaItem?.mediaId
                                                             ?: podcastPage?.listEpisode?.first()?.asMediaItem?.mediaId
                                                 )
                                             )
@@ -709,13 +709,13 @@ fun Podcast(
                         SwipeablePlaylistItem(
                             mediaItem = song.asMediaItem,
                             onPlayNext = {
-                                binder?.exoPlayer?.addNext(
+                                binder?.hybridPlayer?.addNext(
                                     song.asMediaItem,
                                     queue = selectedQueue ?: defaultQueue()
                                 )
                             },
                             onEnqueue = {
-                                binder?.exoPlayer?.enqueue(song.asMediaItem, queue = it)
+                                binder?.hybridPlayer?.enqueue(song.asMediaItem, queue = it)
                             }
                         ) {
                             SongItem(
@@ -747,7 +747,7 @@ fun Podcast(
                                             podcastPage?.listEpisode?.map(Environment.Podcast.EpisodeItem::asMediaItem)
                                                 ?.let { mediaItems ->
                                                     binder?.stopRadio()
-                                                    binder?.exoPlayer?.forcePlayAtIndex(
+                                                    binder?.hybridPlayer?.forcePlayAtIndex(
                                                         mediaItems,
                                                         index
                                                     )
@@ -793,7 +793,7 @@ fun Podcast(
                     podcastPage?.listEpisode?.let { songs ->
                         if (songs.isNotEmpty()) {
                             binder?.stopRadio()
-                            binder?.exoPlayer?.forcePlayFromBeginning(
+                            binder?.hybridPlayer?.forcePlayFromBeginning(
                                 songs.shuffled().map(Environment.Podcast.EpisodeItem::asMediaItem)
                             )
                         }

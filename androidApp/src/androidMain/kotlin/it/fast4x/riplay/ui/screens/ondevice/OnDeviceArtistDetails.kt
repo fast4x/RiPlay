@@ -274,7 +274,7 @@ fun OnDeviceArtistDetails(
                             onClick = {
                                 if (topSongs.any { it.likedAt != -1L }) {
                                     binder?.stopRadio()
-                                    binder?.exoPlayer?.forcePlayFromBeginning(
+                                    binder?.hybridPlayer?.forcePlayFromBeginning(
                                         topSongs.filter { it.likedAt != -1L }
                                             .shuffled()
                                             .map(Song::asMediaItem)
@@ -302,7 +302,7 @@ fun OnDeviceArtistDetails(
                             onClick = {
                                 if (topSongs.any { it.likedAt != -1L }) {
                                     binder?.stopRadio()
-                                    binder?.exoPlayer?.forcePlayFromBeginning(topSongs.filter { it.likedAt != -1L }
+                                    binder?.hybridPlayer?.forcePlayFromBeginning(topSongs.filter { it.likedAt != -1L }
                                         .map(Song::asMediaItem))
                                     binder?.setupRadio(
                                         NavigationEndpoint.Endpoint.Watch(
@@ -334,7 +334,7 @@ fun OnDeviceArtistDetails(
                                 scrollToNowPlaying = false
                                 topSongs
                                     .forEachIndexed { index, song ->
-                                        if (song.asMediaItem.mediaId == binder?.exoPlayer?.currentMediaItem?.mediaId)
+                                        if (song.asMediaItem.mediaId == binder?.hybridPlayer?.currentMediaItem?.mediaId)
                                             nowPlayingItem = index
                                     }
 
@@ -368,7 +368,7 @@ fun OnDeviceArtistDetails(
                                     Random(System.currentTimeMillis()).nextInt(0, topSongs.size - 1)
                                 else 0
                             )
-                            binder?.exoPlayer?.forcePlay(item.asMediaItem)
+                            binder?.hybridPlayer?.forcePlay(item.asMediaItem)
                             //fastPlay(item.asMediaItem, binder)
                         }
                     )
@@ -381,13 +381,13 @@ fun OnDeviceArtistDetails(
                     SwipeablePlaylistItem(
                         mediaItem = item.asMediaItem,
                         onPlayNext = {
-                            binder?.exoPlayer?.addNext(
+                            binder?.hybridPlayer?.addNext(
                                 item.asMediaItem,
                                 queue = selectedQueue ?: defaultQueue()
                             )
                         },
                         onEnqueue = {
-                            binder?.exoPlayer?.enqueue(item.asMediaItem, queue = it)
+                            binder?.hybridPlayer?.enqueue(item.asMediaItem, queue = it)
                         }
                     ) {
                         SongItem(
@@ -417,7 +417,7 @@ fun OnDeviceArtistDetails(
                                     },
                                     onClick = {
                                         binder?.stopRadio()
-                                        binder?.exoPlayer?.forcePlay(item.asMediaItem)
+                                        binder?.hybridPlayer?.forcePlay(item.asMediaItem)
                                         //fastPlay(item.asMediaItem, binder)
                                     }
                                 )

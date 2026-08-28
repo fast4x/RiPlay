@@ -98,7 +98,7 @@ fun Thumbnail(
 
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
-    val player = binder?.exoPlayer ?: return
+    val player = binder?.hybridPlayer ?: return
 
     println("Thumbnail call after return")
 

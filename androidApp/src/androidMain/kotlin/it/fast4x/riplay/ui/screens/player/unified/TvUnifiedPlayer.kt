@@ -148,8 +148,8 @@ fun TvUnifiedPlayer(
     onDismiss: () -> Unit,
 ) {
     val binder = LocalPlayerServiceBinder.current
-    binder?.exoPlayer ?: return
-    if (binder.exoPlayer?.currentTimeline?.windowCount == 0) return
+    binder?.hybridPlayer ?: return
+    if (binder.hybridPlayer.currentTimeline.windowCount == 0) return
 
     val appearanceSettingsManager = LocalAppearanceSettingsManager.current
     val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
@@ -169,10 +169,10 @@ fun TvUnifiedPlayer(
     }
 
     var nullableMediaItem by remember {
-        mutableStateOf(binder.exoPlayer?.currentMediaItem, mediaItemPolicy)
+        mutableStateOf(binder.hybridPlayer.currentMediaItem, mediaItemPolicy)
     }
     var mediaItems by remember {
-        mutableStateOf(binder.exoPlayer?.currentTimeline?.mediaItems)
+        mutableStateOf(binder.hybridPlayer.currentTimeline.mediaItems)
     }
     val queueLoopType = appSettings.queueLoopType
     var isShowingLyrics by rememberSaveable { mutableStateOf(false) }
@@ -196,7 +196,7 @@ fun TvUnifiedPlayer(
 
     val coroutineScope = rememberCoroutineScope ()
 
-    binder.exoPlayer?.DisposableListener {
+    binder.hybridPlayer.DisposableListener {
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 nullableMediaItem = mediaItem
@@ -320,20 +320,20 @@ fun TvUnifiedPlayer(
                 if (keyEvent.type == KeyEventType.KeyDown) {
                     when (keyEvent.key) {
                         Key.MediaPlay, Key.MediaPause, Key.MediaPlayPause -> {
-                            if (playerState.isPlaying) binder.exoPlayer?.pause() else binder.exoPlayer?.play()
+                            if (playerState.isPlaying) binder.hybridPlayer?.pause() else binder.hybridPlayer?.play()
                             true // Consumato, non passa ai figli
                         }
 
                         Key.MediaFastForward -> {
-                            binder.exoPlayer?.seekTo(
-                                (binder.exoPlayer?.currentPosition ?: 0) + 10000
+                            binder.hybridPlayer?.seekTo(
+                                (binder.hybridPlayer?.currentPosition ?: 0) + 10000
                             )
                             true
                         }
 
                         Key.MediaRewind -> {
-                            binder.exoPlayer?.seekTo(
-                                ((binder.exoPlayer?.currentPosition ?: 0) - 10000).coerceAtLeast(0)
+                            binder.hybridPlayer?.seekTo(
+                                ((binder.hybridPlayer?.currentPosition ?: 0) - 10000).coerceAtLeast(0)
                             )
                             true
                         }
@@ -425,10 +425,7 @@ fun TvUnifiedPlayer(
                     position = currentPosition.toFloat(),
                     duration = duration.toFloat(),
                     onSeek = { pos ->
-                        if (binder.exoPlayer?.currentMediaItem?.isLocal == true)
-                            binder.exoPlayer?.seekTo(pos.toLong())
-                        else
-                            binder.youtubePlayer?.seekTo(pos.div(1000))
+                        binder.hybridPlayer.seekTo(pos.toLong())
                     },
                     focusRequester = seekBarFocusRequester,
                     modifier = Modifier
@@ -850,14 +847,11 @@ private fun MainControlsRow(
             contentDescription = "Previous",
             onClick = {
                 if (jumpPrevious == "") return@TvPlayerButton
-                if (binder.exoPlayer?.hasPreviousMediaItem() == false ||
-                    (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())
+                if (!binder.hybridPlayer.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())
                 ) {
-                    if (binder.exoPlayer?.currentMediaItem?.isLocal == true)
-                        binder.exoPlayer?.seekTo(0)
-                    else binder.youtubePlayer?.seekTo(0f)
+                    binder.hybridPlayer.seekTo(0)
                 } else {
-                    binder.exoPlayer?.playPrevious()
+                    binder.hybridPlayer.playPrevious()
                 }
             }
         )
@@ -867,16 +861,16 @@ private fun MainControlsRow(
             icon = R.drawable.chevron_back,
             contentDescription = "Rewind",
             onClick = {
-                val isLocal = binder.exoPlayer?.currentMediaItem?.isLocal == true
+                val isLocal = binder.hybridPlayer?.currentMediaItem?.isLocal == true
                 when (isLocal){
                     true -> {
                         val newPos =
-                            ((binder.exoPlayer?.currentPosition ?: 0) - 10000).coerceAtLeast(0)
-                        binder.exoPlayer?.seekTo(newPos)
+                            ((binder.hybridPlayer.currentPosition ?: 0) - 10000).coerceAtLeast(0)
+                        binder.hybridPlayer.seekTo(newPos)
                     }
                     false -> {
-                        val newPos = binder.youtubePlayerCurrentSecond.value.minus(10)
-                        binder.youtubePlayer?.seekTo(newPos)
+                        val newPos = binder.youtubePlayerCurrentSecond.value.minus(10) * 1000
+                        binder.hybridPlayer.seekTo(newPos.toLong())
                     }
                 }
             }
@@ -889,13 +883,9 @@ private fun MainControlsRow(
             onClick = {
                 if (!GlobalSharedData.riTuneCastActive) {
                     if (playerState.isPlaying) {
-                        if (binder.exoPlayer?.currentMediaItem?.isLocal == true)
-                            binder.exoPlayer?.pause()
-                        else binder.youtubePlayer?.pause()
+                        binder.hybridPlayer.pause()
                     } else {
-                        if (binder.exoPlayer?.currentMediaItem?.isLocal == true)
-                            binder.exoPlayer?.play()
-                        else binder.youtubePlayer?.play()
+                        binder.hybridPlayer.play()
                     }
                 } else {
                     scope.launch {
@@ -917,16 +907,16 @@ private fun MainControlsRow(
             icon = R.drawable.chevron_forward,
             contentDescription = "Forward",
             onClick = {
-                val isLocal = binder.exoPlayer?.currentMediaItem?.isLocal == true
+                val isLocal = binder.hybridPlayer?.currentMediaItem?.isLocal == true
                 when (isLocal){
                     true -> {
                         val newPos =
-                            ((binder.exoPlayer?.currentPosition ?: 0) + 10000).coerceAtLeast(0)
-                        binder.exoPlayer?.seekTo(newPos)
+                            ((binder.hybridPlayer?.currentPosition ?: 0) + 10000).coerceAtLeast(0)
+                        binder.hybridPlayer?.seekTo(newPos)
                     }
                     false -> {
-                        val newPos = binder.youtubePlayerCurrentSecond.value.plus(10)
-                        binder.youtubePlayer?.seekTo(newPos)
+                        val newPos = binder.youtubePlayerCurrentSecond.value.plus(10) * 1000
+                        binder.hybridPlayer.seekTo(newPos.toLong())
                     }
                 }
             }
@@ -936,7 +926,7 @@ private fun MainControlsRow(
         TvPlayerButton(
             icon = R.drawable.play_skip_forward,
             contentDescription = "Next",
-            onClick = { binder.exoPlayer?.playNext() }
+            onClick = { binder.hybridPlayer?.playNext() }
         )
     }
 }
@@ -987,7 +977,7 @@ private fun SecondaryActionsRow(
             contentDescription = "Shuffle",
             tint = color.accent,
             onClick = {
-                binder?.exoPlayer?.shuffleQueue()
+                binder?.hybridPlayer?.shuffleQueue()
             },
         )
 

@@ -212,7 +212,7 @@ fun OnDeviceArtistItems(
                                                                 .take(maxSongsInQueue.number.toInt()) else songs
                                                         withContext(Dispatchers.Main) {
                                                             binder?.stopRadio()
-                                                            binder?.exoPlayer?.forcePlayFromBeginning(
+                                                            binder?.hybridPlayer?.forcePlayFromBeginning(
                                                                 itemsLimited.shuffled()
                                                             )
                                                         }
@@ -248,7 +248,7 @@ fun OnDeviceArtistItems(
                                                 .mapNotNull { it?.asMediaItem }
                                                 .filter { Database.getLikedAt(it.mediaId) != -1L }
                                             withContext(Dispatchers.Main) {
-                                                binder?.exoPlayer?.enqueue(
+                                                binder?.hybridPlayer?.enqueue(
                                                     filteredArtistSongs,
                                                     context
                                                 )
@@ -282,7 +282,7 @@ fun OnDeviceArtistItems(
                                                 .mapNotNull { it?.asMediaItem }
                                                 .filter { Database.getLikedAt(it.mediaId) != -1L }
                                             withContext(Dispatchers.Main) {
-                                                binder?.exoPlayer?.addNext(
+                                                binder?.hybridPlayer?.addNext(
                                                     filteredArtistSongs, context,
                                                     selectedQueue ?: defaultQueue()
                                                 )
@@ -340,19 +340,19 @@ fun OnDeviceArtistItems(
                         SwipeablePlaylistItem(
                             mediaItem = item,
                             onPlayNext = {
-                                binder?.exoPlayer?.addNext(
+                                binder?.hybridPlayer?.addNext(
                                     item,
                                     queue = selectedQueue ?: defaultQueue()
                                 )
                             },
                             onEnqueue = {
-                                binder?.exoPlayer?.enqueue(item, queue = it)
+                                binder?.hybridPlayer?.enqueue(item, queue = it)
                             }
                         ) {
                             SongItem(
                                 song = item,
                                 onThumbnailContent = {
-                                    NowPlayingSongIndicator(item.mediaId, binder?.exoPlayer)
+                                    NowPlayingSongIndicator(item.mediaId, binder?.hybridPlayer)
                                 },
                                 thumbnailSizeDp = songThumbnailSizeDp,
                                 thumbnailSizePx = songThumbnailSizePx,
@@ -384,7 +384,7 @@ fun OnDeviceArtistItems(
                                                     .filter { Database.getLikedAt(it.mediaId) != -1L }
                                                 if (item in filteredArtistSongs) {
                                                     withContext(Dispatchers.Main) {
-                                                        binder?.exoPlayer?.forcePlayAtIndex(
+                                                        binder?.hybridPlayer?.forcePlayAtIndex(
                                                             filteredArtistSongs,
                                                             filteredArtistSongs.indexOf(item)
                                                         )

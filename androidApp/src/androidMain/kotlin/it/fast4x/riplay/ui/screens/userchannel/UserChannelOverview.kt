@@ -484,7 +484,7 @@ fun UserChannelOverview(
                                             .let {
                                                 if (it != null)
                                                     withContext(Dispatchers.Main) {
-                                                        binder?.exoPlayer?.forcePlayFromBeginning(it)
+                                                        binder?.hybridPlayer?.forcePlayFromBeginning(it)
                                                     }
                                             }
                                 }
@@ -509,7 +509,7 @@ fun UserChannelOverview(
                                             .let {
                                                 if (it != null)
                                                     withContext(Dispatchers.Main) {
-                                                        binder?.exoPlayer?.forcePlayFromBeginning(it.shuffled())
+                                                        binder?.hybridPlayer?.forcePlayFromBeginning(it.shuffled())
                                                     }
                                             }
                                 }
@@ -854,13 +854,13 @@ fun UserChannelOverview(
                                     SwipeablePlaylistItem(
                                         mediaItem = item.asMediaItem,
                                         onPlayNext = {
-                                            binder?.exoPlayer?.addNext(
+                                            binder?.hybridPlayer?.addNext(
                                                 item.asMediaItem,
                                                 queue = selectedQueue ?: defaultQueue()
                                             )
                                         },
                                         onEnqueue = {
-                                            binder?.exoPlayer?.enqueue(item.asMediaItem, queue = it)
+                                            binder?.hybridPlayer?.enqueue(item.asMediaItem, queue = it)
                                         }
                                     ) {
                                         SongItem(
@@ -924,12 +924,12 @@ fun UserChannelOverview(
 
                                                                     //if (artistSongs?.contains(item.asMediaItem) == false){
                                                                     withContext(Dispatchers.Main) {
-                                                                        binder?.exoPlayer?.forcePlay(
+                                                                        binder?.hybridPlayer?.forcePlay(
                                                                             item.asMediaItem
                                                                         )
                                                                         //fastPlay(item.asMediaItem, binder)
                                                                         if (filteredArtistSongs != null) {
-                                                                            binder?.exoPlayer?.addMediaItems(
+                                                                            binder?.hybridPlayer?.addMediaItems(
                                                                                 filteredArtistSongs.filterNot { it.mediaId == item.key })
                                                                         }
                                                                     }

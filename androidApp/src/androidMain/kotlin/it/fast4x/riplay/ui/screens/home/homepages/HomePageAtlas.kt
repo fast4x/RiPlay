@@ -448,7 +448,7 @@ fun HomePageAtlas(
                             when {
                                 // Brano riproducibile diretto
                                 item.song != null -> {
-                                    binder?.exoPlayer?.forcePlay(item.song.asMediaItem)
+                                    binder?.hybridPlayer?.forcePlay(item.song.asMediaItem)
                                     Log.d("REC_DEBUG", "Marking consumed: strategy=${item.strategyId}, itemId=$itemId")
                                     recommendationService.markConsumed(item.strategyId, item.song.id)
                                 }
@@ -515,8 +515,8 @@ fun HomePageAtlas(
                         onClick2 = {
                             //trending?.let { fastPlay(it.asMediaItem, binder, relatedInit?.songs?.map { it.asMediaItem }) }
                             binder?.stopRadio()
-                            trending?.let { binder?.exoPlayer?.forcePlay(it.asMediaItem) }
-                            binder?.exoPlayer?.addMediaItems(relatedPage?.songs?.map { it.asMediaItem }
+                            trending?.let { binder?.hybridPlayer?.forcePlay(it.asMediaItem) }
+                            binder?.hybridPlayer?.addMediaItems(relatedPage?.songs?.map { it.asMediaItem }
                                 ?: emptyList())
                         }
 
@@ -604,7 +604,7 @@ fun HomePageAtlas(
                                                     song.asVideoMediaItem
 
                                                 binder?.stopRadio()
-                                                binder?.exoPlayer?.forcePlay(mediaItem)
+                                                binder?.hybridPlayer?.forcePlay(mediaItem)
                                                 //binder?.player?.playOnline(mediaItem)
                                                 //fastPlay(mediaItem, binder)
                                                 binder?.setupRadio(
@@ -673,7 +673,7 @@ fun HomePageAtlas(
 
                                                 binder?.stopRadio()
                                                 withContext(Dispatchers.Main) {
-                                                    binder?.exoPlayer?.forcePlay(mediaItem)
+                                                    binder?.hybridPlayer?.forcePlay(mediaItem)
                                                 }
                                                 binder?.setupRadio(
                                                     NavigationEndpoint.Endpoint.Watch(videoId = mediaItem.mediaId)
@@ -803,11 +803,8 @@ fun HomePageAtlas(
                                             song = item,
                                             thumbnailSizePx = albumThumbnailSizePx,
                                             thumbnailSizeDp = albumThumbnailSizeDp,
-                                            //disableScrollingText = disableScrollingText,
-                                            //isNowPlaying = false,
                                             modifier = Modifier.clickable(onClick = {
-                                                binder?.exoPlayer?.forcePlay(item.asMediaItem)
-                                                //fastPlay(item.asMediaItem, binder)
+                                                binder?.hybridPlayer?.forcePlay(item.asMediaItem)
                                             })
                                         )
                                     }
@@ -863,11 +860,7 @@ fun HomePageAtlas(
                                             disableScrollingText = disableScrollingText,
                                             modifier = Modifier.clickable(onClick = {
                                                 binder?.stopRadio()
-//                                                if (isVideoEnabled())
-//                                                    binder?.player?.playOnline(item.asMediaItem)
-//                                                else
-                                                binder?.exoPlayer?.forcePlay(item.asMediaItem)
-                                                //fastPlay(item.asMediaItem, binder)
+                                                binder?.hybridPlayer?.forcePlay(item.asMediaItem)
                                             })
                                         )
                                     }

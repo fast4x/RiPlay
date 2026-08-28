@@ -286,7 +286,7 @@ fun OnDeviceAlbumDetails(
     if (isViewingQueues) {
         QueuesDialog(
             onSelect = {
-                binder?.exoPlayer?.enqueue(songs.map(Song::asMediaItem))
+                binder?.hybridPlayer?.enqueue(songs.map(Song::asMediaItem))
             },
             onDismiss = { isViewingQueues = false }
         )
@@ -472,7 +472,7 @@ fun OnDeviceAlbumDetails(
                                     onClick = {
                                         if (songs.any { it.likedAt != -1L }) {
                                             binder?.stopRadio()
-                                            binder?.exoPlayer?.forcePlayFromBeginning(
+                                            binder?.hybridPlayer?.forcePlayFromBeginning(
                                                 songs.filter { it.likedAt != -1L }
                                                     .shuffled()
                                                     .map(Song::asMediaItem)
@@ -500,7 +500,7 @@ fun OnDeviceAlbumDetails(
                                     onClick = {
                                         if (songs.any { it.likedAt != -1L }) {
                                             binder?.stopRadio()
-                                            binder?.exoPlayer?.forcePlayFromBeginning(songs.filter { it.likedAt != -1L }
+                                            binder?.hybridPlayer?.forcePlayFromBeginning(songs.filter { it.likedAt != -1L }
                                                 .map(Song::asMediaItem))
                                             binder?.setupRadio(
                                                 NavigationEndpoint.Endpoint.Watch(
@@ -532,7 +532,7 @@ fun OnDeviceAlbumDetails(
                                         scrollToNowPlaying = false
                                         songs
                                             .forEachIndexed { index, song ->
-                                                if (song.asMediaItem.mediaId == binder?.exoPlayer?.currentMediaItem?.mediaId)
+                                                if (song.asMediaItem.mediaId == binder?.hybridPlayer?.currentMediaItem?.mediaId)
                                                     nowPlayingItem = index
                                             }
 
@@ -586,7 +586,7 @@ fun OnDeviceAlbumDetails(
                                                     onPlayNext = {
                                                         if (listMediaItems.isEmpty()) {
                                                             if (songs.any { it.likedAt != -1L }) {
-                                                                binder?.exoPlayer?.addNext(
+                                                                binder?.hybridPlayer?.addNext(
                                                                     songs.filter { it.likedAt != -1L }
                                                                         .map(Song::asMediaItem),
                                                                     context,
@@ -602,7 +602,7 @@ fun OnDeviceAlbumDetails(
                                                                 )
                                                             }
                                                         } else {
-                                                            binder?.exoPlayer?.addNext(
+                                                            binder?.hybridPlayer?.addNext(
                                                                 listMediaItems,
                                                                 context,
                                                                 selectedQueue ?: defaultQueue()
@@ -614,7 +614,7 @@ fun OnDeviceAlbumDetails(
                                                     onEnqueue = {
                                                         if (listMediaItems.isEmpty()) {
                                                             if (songs.any { it.likedAt != -1L }) {
-                                                                binder?.exoPlayer?.enqueue(
+                                                                binder?.hybridPlayer?.enqueue(
                                                                     songs.filter { it.likedAt != -1L }
                                                                         .map(Song::asMediaItem),
                                                                     context
@@ -629,7 +629,7 @@ fun OnDeviceAlbumDetails(
                                                                 )
                                                             }
                                                         } else {
-                                                            binder?.exoPlayer?.enqueue(
+                                                            binder?.hybridPlayer?.enqueue(
                                                                 listMediaItems,
                                                                 context
                                                             )
@@ -734,13 +734,13 @@ fun OnDeviceAlbumDetails(
                             SwipeablePlaylistItem(
                                 mediaItem = song.asMediaItem,
                                 onPlayNext = {
-                                    binder?.exoPlayer?.addNext(
+                                    binder?.hybridPlayer?.addNext(
                                         song.asMediaItem,
                                         queue = selectedQueue ?: defaultQueue()
                                     )
                                 },
                                 onEnqueue = {
-                                    binder?.exoPlayer?.enqueue(song.asMediaItem, queue = it)
+                                    binder?.hybridPlayer?.enqueue(song.asMediaItem, queue = it)
                                 }
                             ) {
                                 val checkedState = rememberSaveable { mutableStateOf(false) }
@@ -763,7 +763,7 @@ fun OnDeviceAlbumDetails(
 
                                         NowPlayingSongIndicator(
                                             song.asMediaItem.mediaId,
-                                            binder?.exoPlayer
+                                            binder?.hybridPlayer
                                         )
                                     },
                                     modifier = Modifier
@@ -791,7 +791,7 @@ fun OnDeviceAlbumDetails(
                                                 if (!selectItems) {
                                                     if (song.likedAt != -1L) {
                                                         binder?.stopRadio()
-                                                        binder?.exoPlayer?.forcePlayAtIndex(
+                                                        binder?.hybridPlayer?.forcePlayAtIndex(
                                                             songs.filter { it.likedAt != -1L }
                                                                 .map(Song::asMediaItem),
                                                             songs.filter { it.likedAt != -1L }
@@ -866,7 +866,7 @@ fun OnDeviceAlbumDetails(
                         onClick = {
                             if (songs.any { it.likedAt != -1L }) {
                                 binder?.stopRadio()
-                                binder?.exoPlayer?.forcePlayFromBeginning(
+                                binder?.hybridPlayer?.forcePlayFromBeginning(
                                     songs.filter { it.likedAt != -1L }
                                         .shuffled()
                                         .map(Song::asMediaItem)

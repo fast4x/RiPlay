@@ -47,6 +47,7 @@ import it.fast4x.riplay.data.dao.RecommendationDao
 import it.fast4x.riplay.data.dao.RelationDao
 import it.fast4x.riplay.data.dao.SongArtistCrossRefDao
 import it.fast4x.riplay.data.dao.SongDao
+import it.fast4x.riplay.data.dao.WebDavAccountDao
 import it.fast4x.riplay.enums.AlbumSortBy
 import it.fast4x.riplay.enums.ArtistSortBy
 import it.fast4x.riplay.enums.BuiltInPlaylist
@@ -87,9 +88,9 @@ import it.fast4x.riplay.data.models.SortedSongPlaylistMap
 import it.fast4x.riplay.data.models.UserArtistAffinity
 import it.fast4x.riplay.data.models.UserEraAffinity
 import it.fast4x.riplay.data.models.UserKeywordAffinity
+import it.fast4x.riplay.data.models.WebDavAccount
 import it.fast4x.riplay.enums.AlbumNature
 import it.fast4x.riplay.enums.ArtistNature
-import it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings
 import it.fast4x.riplay.extensions.musicbrainz.models.ExternalLink
 import it.fast4x.riplay.musicvault.MusicVaultState
 import it.fast4x.riplay.extensions.rewind.data.AlbumMostListened
@@ -155,6 +156,9 @@ interface Database {
         }
         fun appSettingsDao(): AppSettingsDao {
             return (DatabaseInitializer.Instance).appSettingsDao()
+        }
+        fun webDavAccountDao(): WebDavAccountDao {
+            return (DatabaseInitializer.Instance).webDavAccountDao()
         }
     }
 
@@ -3630,12 +3634,13 @@ interface Database {
         MBAlbum::class,
         SongArtistCrossRef::class,
         AppearancePresetEntity::class,
-        AppSettingsEntity::class
+        AppSettingsEntity::class,
+        WebDavAccount::class
     ],
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 63,
+    version = 64,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -3725,6 +3730,7 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
                 From60To61Migration(),
                 From61To62Migration(),
                 From62To63Migration(),
+                From63To64Migration()
             )
             //.fallbackToDestructiveMigration(false)
             .addCallback(object : Callback() {
@@ -3766,6 +3772,7 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
     abstract fun eventDao(): EventDao
     abstract fun appearancePresetDao(): AppearancePresetDao
     abstract fun appSettingsDao(): AppSettingsDao
+    abstract fun webDavAccountDao(): WebDavAccountDao
 
 
     // Crud da migrare in dao
@@ -4337,6 +4344,36 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
                 db.execSQL("ALTER TABLE app_settings ADD COLUMN activeAppearanceJson TEXT NOT NULL DEFAULT '{}'")
             } catch (e: Exception) {
                 println("Database From62To63Migration error ${e.stackTraceToString()}")
+            }
+        }
+    }
+
+    class From63To64Migration : Migration(63, 64) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            try {
+                // 1. Creazione della tabella con i tipi esatti richiesti da Room
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `webdav_account` (
+                        `id` INTEGER NOT NULL,
+                        `name` TEXT NOT NULL,
+                        `baseUrl` TEXT NOT NULL,
+                        `username` TEXT NOT NULL,
+                        `encryptedPassword` TEXT NOT NULL,
+                        `isMusicSource` INTEGER NOT NULL DEFAULT 1,
+                        `musicFolder` TEXT NOT NULL DEFAULT '/',
+                        PRIMARY KEY(`id`)
+                    )
+                """.trimIndent()
+                )
+
+                // 2. Creazione dell'indice univoco (fondamentale per combaciare con l'Entity)
+                db.execSQL("""
+                    CREATE UNIQUE INDEX IF NOT EXISTS `index_webdav_account_baseUrl_username` 
+                    ON `webdav_account` (`baseUrl`, `username`)
+                    """.trimIndent()
+                )
+            } catch (e: Exception) {
+                println("Database From63To64Migration error ${e.stackTraceToString()}")
             }
         }
     }

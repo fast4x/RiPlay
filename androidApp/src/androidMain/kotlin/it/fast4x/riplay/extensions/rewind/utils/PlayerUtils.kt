@@ -12,10 +12,8 @@ import it.fast4x.riplay.utils.forcePlay
 fun rewindPlayMedia(song: Song?, binder: PlayerService.Binder?) {
     if (binder == null || song == null) return
 
-    if (song.isLocal)
-        binder.exoPlayer?.forcePlay(song.asMediaItem)
-    else
-        binder.youtubePlayer?.loadVideo(song.id, 0f)
+    binder.hybridPlayer.forcePlay(song.asMediaItem)
+
 
 }
 
@@ -23,6 +21,5 @@ fun rewindPlayMedia(song: Song?, binder: PlayerService.Binder?) {
 fun rewindPauseMedia(binder: PlayerService.Binder?) {
     if (binder == null) return
 
-    binder.exoPlayer?.pause()
-    binder.youtubePlayer?.pause()
+    binder.hybridPlayer.pause()
 }

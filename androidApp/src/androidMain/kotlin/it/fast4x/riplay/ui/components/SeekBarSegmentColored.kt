@@ -104,7 +104,7 @@ fun SeekBarSegmentColored(
         )
     }
 
-    binder?.exoPlayer?.DisposableListener {
+    binder?.hybridPlayer?.DisposableListener {
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                localMediaItem = mediaItem

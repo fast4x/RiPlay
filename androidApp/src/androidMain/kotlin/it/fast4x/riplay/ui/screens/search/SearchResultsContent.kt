@@ -190,16 +190,16 @@ fun SearchResultsContent(
                     SwipeablePlaylistItem(
                         mediaItem = song.asMediaItem,
                         onPlayNext = {
-                            localBinder?.exoPlayer?.addNext(song.asMediaItem, queue = selectedQueue ?: defaultQueue())
+                            localBinder?.hybridPlayer?.addNext(song.asMediaItem, queue = selectedQueue ?: defaultQueue())
                         },
                         onEnqueue = {
-                            localBinder?.exoPlayer?.enqueue(song.asMediaItem, queue = it)
+                            localBinder?.hybridPlayer?.enqueue(song.asMediaItem, queue = it)
                         }
                     ) {
                         SongItem(
                             song = song,
                             thumbnailContent = {
-                                NowPlayingSongIndicator(song.asMediaItem.mediaId, binder?.exoPlayer)
+                                NowPlayingSongIndicator(song.asMediaItem.mediaId, binder?.hybridPlayer)
                             },
                             thumbnailSizePx = thumbnailSizePx,
                             thumbnailSizeDp = thumbnailSizeDp,
@@ -226,21 +226,15 @@ fun SearchResultsContent(
                                     },
                                     onClick = {
                                         localBinder?.stopRadio()
-                                        localBinder?.exoPlayer?.forcePlay(song.asMediaItem)
-                                        //fastPlay(song.asMediaItem, localBinder)
-                                        //forceRecompose = true
+                                        localBinder?.hybridPlayer?.forcePlay(song.asMediaItem)
                                         localBinder?.setupRadio(song.info?.endpoint)
                                     }
                                 ),
-                            //disableScrollingText = disableScrollingText,
-                            //isNowPlaying = binder?.player?.isNowPlaying(song.key) ?: false,
-                            //forceRecompose = forceRecompose
                         )
                     }
                 },
                 itemPlaceholderContent = {
                     Loader()
-                    //SongItemPlaceholder(thumbnailSizeDp = thumbnailSizeDp)
                 },
                 filterContentType = filterContentType
             )
@@ -301,7 +295,7 @@ fun SearchResultsContent(
                                                             )
                                                             ?.let { it1 ->
                                                                 withContext(Dispatchers.Main) {
-                                                                    binder?.exoPlayer?.addNext(
+                                                                    binder?.hybridPlayer?.addNext(
                                                                         it1,
                                                                         context,
                                                                         selectedQueue ?: defaultQueue()
@@ -352,7 +346,7 @@ fun SearchResultsContent(
                                                             )
                                                             ?.let { it1 ->
                                                                 withContext(Dispatchers.Main) {
-                                                                    binder?.exoPlayer?.enqueue(
+                                                                    binder?.hybridPlayer?.enqueue(
                                                                         it1,
                                                                         context
                                                                     )
@@ -552,10 +546,10 @@ fun SearchResultsContent(
                     SwipeablePlaylistItem(
                         mediaItem = video.asMediaItem,
                         onPlayNext = {
-                            localBinder?.exoPlayer?.addNext(video.asMediaItem, queue = selectedQueue ?: defaultQueue())
+                            localBinder?.hybridPlayer?.addNext(video.asMediaItem, queue = selectedQueue ?: defaultQueue())
                         },
                         onEnqueue = {
-                            localBinder?.exoPlayer?.enqueue(video.asMediaItem, queue = it)
+                            localBinder?.hybridPlayer?.enqueue(video.asMediaItem, queue = it)
                         }
                     ) {
                         VideoItem(
@@ -585,9 +579,7 @@ fun SearchResultsContent(
 //                                                        if (isVideoEnabled)
 //                                                            localBinder?.player?.playOnline(video.asMediaItem)
 //                                                        else
-                                        localBinder?.exoPlayer?.forcePlay(video.asMediaItem)
-                                        //binder?.setupRadio(video.info?.endpoint)
-                                        //fastPlay(video.asMediaItem, localBinder)
+                                        localBinder?.hybridPlayer?.forcePlay(video.asMediaItem)
                                         localBinder?.setupRadio(video.info?.endpoint)
                                     }
                                 ),

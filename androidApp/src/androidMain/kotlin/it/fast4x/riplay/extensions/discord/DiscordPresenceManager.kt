@@ -493,14 +493,14 @@ fun updateDiscordPresenceWithOfflinePlayer(
     discordPresenceManager: DiscordPresenceManager?,
     binder: PlayerService.Binder
 ) {
-    if (binder.exoPlayer?.currentMediaItem?.isLocal == false) return
+    if (binder.hybridPlayer.currentMediaItem?.isLocal == false) return
 
     val appSettingsManager = (appContext() as MainApplication).appSettingsManager
 
     val isDiscordPresenceEnabled = appSettingsManager.activeSettings.value.isDiscordPresenceEnabled //globalContext().preferences.getBoolean(IS_DISCORD_PRESENCE_ENABLED.key, false)
     if (!isDiscordPresenceEnabled || !isAtLeastAndroid8) return
 
-    val player = binder.exoPlayer
+    val player = binder.hybridPlayer
 
     val discordPersonalAccessToken = appSettingsManager.activeSettings.value.discordPersonalAccessToken
 //        globalContext().encryptedPreferences.getString(

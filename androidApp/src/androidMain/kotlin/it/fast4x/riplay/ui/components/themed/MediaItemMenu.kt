@@ -349,8 +349,7 @@ fun NonQueuedMediaItemMenuLibrary(
             modifier = modifier,
             onStartRadio = {
                 binder?.stopRadio()
-                binder?.exoPlayer?.forcePlay(mediaItem)
-                //fastPlay(mediaItem, binder)
+                binder?.hybridPlayer?.forcePlay(mediaItem)
                 binder?.setupRadio(
                     NavigationEndpoint.Endpoint.Watch(
                         videoId = mediaItem.mediaId,
@@ -358,8 +357,8 @@ fun NonQueuedMediaItemMenuLibrary(
                     )
                 )
             },
-            onPlayNext = { binder?.exoPlayer?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
-            onEnqueue = { binder?.exoPlayer?.enqueue(mediaItem, context, it) },
+            onPlayNext = { binder?.hybridPlayer?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
+            onEnqueue = { binder?.hybridPlayer?.enqueue(mediaItem, context, it) },
             onRemoveFromPlaylist = onRemoveFromPlaylist,
             onHideFromDatabase = { isHiding = true },
             onRemoveFromQuickPicks = onRemoveFromQuickPicks,
@@ -391,8 +390,7 @@ fun NonQueuedMediaItemMenuLibrary(
             modifier = modifier,
             onStartRadio = {
                 binder?.stopRadio()
-                binder?.exoPlayer?.forcePlay(mediaItem)
-                //fastPlay(mediaItem, binder)
+                binder?.hybridPlayer?.forcePlay(mediaItem)
                 binder?.setupRadio(
                     NavigationEndpoint.Endpoint.Watch(
                         videoId = mediaItem.mediaId,
@@ -400,8 +398,8 @@ fun NonQueuedMediaItemMenuLibrary(
                     )
                 )
             },
-            onPlayNext = { binder?.exoPlayer?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
-            onEnqueue = { binder?.exoPlayer?.enqueue(mediaItem, context, it)},
+            onPlayNext = { binder?.hybridPlayer?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
+            onEnqueue = { binder?.hybridPlayer?.enqueue(mediaItem, context, it)},
             onRemoveFromPlaylist = onRemoveFromPlaylist,
             onHideFromDatabase = { isHiding = true },
             onRemoveFromQuickPicks = onRemoveFromQuickPicks,
@@ -470,8 +468,7 @@ fun NonQueuedMediaItemMenu(
             onDismiss = onDismiss,
             onStartRadio = {
                 binder?.stopRadio()
-                binder?.exoPlayer?.forcePlay(mediaItem)
-                //fastPlay(mediaItem, binder)
+                binder?.hybridPlayer?.forcePlay(mediaItem)
                 binder?.setupRadio(
                     NavigationEndpoint.Endpoint.Watch(
                         videoId = mediaItem.mediaId,
@@ -479,8 +476,8 @@ fun NonQueuedMediaItemMenu(
                     )
                 )
             },
-            onPlayNext = { binder?.exoPlayer?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
-            onEnqueue = { binder?.exoPlayer?.enqueue(mediaItem, context, it) },
+            onPlayNext = { binder?.hybridPlayer?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
+            onEnqueue = { binder?.hybridPlayer?.enqueue(mediaItem, context, it) },
             onRemoveFromPlaylist = onRemoveFromPlaylist,
             onHideFromDatabase = onHideFromDatabase,
             onDeleteFromDatabase = onDeleteFromDatabase,
@@ -501,8 +498,7 @@ fun NonQueuedMediaItemMenu(
             onDismiss = onDismiss,
             onStartRadio = {
                 binder?.stopRadio()
-                binder?.exoPlayer?.forcePlay(mediaItem)
-                //fastPlay(mediaItem, binder)
+                binder?.hybridPlayer?.forcePlay(mediaItem)
                 binder?.setupRadio(
                     NavigationEndpoint.Endpoint.Watch(
                         videoId = mediaItem.mediaId,
@@ -510,8 +506,8 @@ fun NonQueuedMediaItemMenu(
                     )
                 )
             },
-            onPlayNext = { binder?.exoPlayer?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
-            onEnqueue = { binder?.exoPlayer?.enqueue(mediaItem, context, it) },
+            onPlayNext = { binder?.hybridPlayer?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
+            onEnqueue = { binder?.hybridPlayer?.enqueue(mediaItem, context, it) },
             onRemoveFromPlaylist = onRemoveFromPlaylist,
             onHideFromDatabase = onHideFromDatabase,
             onDeleteFromDatabase = onDeleteFromDatabase,
@@ -560,7 +556,7 @@ fun QueuedMediaItemMenu(
             modifier = modifier,
             onStartRadio = {
                 binder?.stopRadio()
-                binder?.exoPlayer?.forcePlay(mediaItem)
+                binder?.hybridPlayer?.forcePlay(mediaItem)
                 //fastPlay(mediaItem, binder)
                 binder?.setupRadio(
                     NavigationEndpoint.Endpoint.Watch(
@@ -569,10 +565,10 @@ fun QueuedMediaItemMenu(
                     )
                 )
             },
-            onPlayNext = { binder?.exoPlayer?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
-            onEnqueue = { binder?.exoPlayer?.enqueue(mediaItem, queue = it) },
+            onPlayNext = { binder?.hybridPlayer?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
+            onEnqueue = { binder?.hybridPlayer?.enqueue(mediaItem, queue = it) },
             onRemoveFromQueue = if (indexInQueue != null) ({
-                binder?.exoPlayer?.removeMediaItem(indexInQueue)
+                binder?.hybridPlayer?.removeMediaItem(indexInQueue)
             }) else null,
             onGoToPlaylist = {
                 navController.navigate(route = "${NavRoutes.localPlaylist.name}/$it")
@@ -604,8 +600,7 @@ fun QueuedMediaItemMenu(
             modifier = modifier,
             onStartRadio = {
                 binder?.stopRadio()
-                binder?.exoPlayer?.forcePlay(mediaItem)
-                //fastPlay(mediaItem, binder)
+                binder?.hybridPlayer?.forcePlay(mediaItem)
                 binder?.setupRadio(
                     NavigationEndpoint.Endpoint.Watch(
                         videoId = mediaItem.mediaId,
@@ -613,10 +608,10 @@ fun QueuedMediaItemMenu(
                     )
                 )
             },
-            onPlayNext = { binder?.exoPlayer?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
-            onEnqueue = { binder?.exoPlayer?.enqueue(mediaItem, queue = it) },
+            onPlayNext = { binder?.hybridPlayer?.addNext(mediaItem, context, selectedQueue ?: defaultQueue()) },
+            onEnqueue = { binder?.hybridPlayer?.enqueue(mediaItem, queue = it) },
             onRemoveFromQueue = if (indexInQueue != null) ({
-                binder?.exoPlayer?.removeMediaItem(indexInQueue)
+                binder?.hybridPlayer?.removeMediaItem(indexInQueue)
             }) else null,
             onGoToPlaylist = {
                 navController.navigate(route = "${NavRoutes.playlist.name}/$it")
@@ -2029,7 +2024,7 @@ fun MediaItemMenu(
                             )
                         ),
                         onValueSelected = {
-                            binder?.exoPlayer?.pause()
+                            binder?.hybridPlayer?.pause()
                             showSelectDialogListenOn = false
                             uriHandler.openUri(it)
                         }
