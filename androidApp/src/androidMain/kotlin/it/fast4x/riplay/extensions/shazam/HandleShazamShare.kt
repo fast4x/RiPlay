@@ -66,7 +66,16 @@ fun shazamSongInfo(url: String, callback: (String, String, String?) -> Unit) {
             //saveFileToInternalStorage(appContext(), "shazam.html", html.orEmpty())
 
             if (html != null) {
-                val doc = Jsoup.parse(html)
+                val doc = try {
+                    Jsoup.parse(html)
+                } catch (e: Exception) {
+                    Timber.e("shazamSongInfo Exception: ${e.message}")
+                    withContext(Dispatchers.Main) {
+                        callback("", "", "ShazamSongInfo Errore: ${e.message}")
+                    }
+                    return@launch
+                }
+
                 var title = ""
                 var artist = ""
 
