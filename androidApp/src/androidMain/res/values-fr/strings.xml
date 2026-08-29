@@ -1402,5 +1402,5 @@ Volume BAS : titre précédent</string>
     <string name="loading_msg_4">Des titres à venir…</string>
     <string name="loading_msg_5">Chargement des playlists…</string>
     <string name="loading_msg_6">C\'est parti. Bonne écoute !</string>
-    <string name="warning_you_must_re_enter_your_webdav_password">You must re-enter your WebDAV password</string>
+    <string name="warning_you_must_re_enter_your_webdav_password">Vous devez saisir à nouveau votre mot de passe WebDAV</string>
 </resources>
