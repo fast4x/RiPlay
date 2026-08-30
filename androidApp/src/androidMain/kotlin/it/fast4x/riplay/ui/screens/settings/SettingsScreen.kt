@@ -210,7 +210,7 @@ fun <T> ValueSelectorSettingsEntry(
     onValueSelected: (T) -> Unit,
     modifier: Modifier = Modifier,
     isEnabled: Boolean = true,
-    valueText: @Composable (T) -> String = { it.toString() },
+    valueText: @Composable (T) -> String = { it?.toString() ?: "---" },
     trailingContent: (@Composable () -> Unit) = {},
 ) {
     var isShowingDialog by remember {
