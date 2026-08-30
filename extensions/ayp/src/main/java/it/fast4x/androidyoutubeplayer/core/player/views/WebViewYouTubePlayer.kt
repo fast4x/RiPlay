@@ -102,7 +102,6 @@ internal class WebViewYouTubePlayer (
 
   private val youTubePlayerBridge = YouTubePlayerBridge(this)
 
-  internal var customVideoPoster: Bitmap? = null
   private var base64Logo: String? = null
 
   internal fun initialize(initListener: (YouTubePlayer) -> Unit, playerOptions: IFramePlayerOptions?, videoId: String?) {
@@ -172,13 +171,10 @@ internal class WebViewYouTubePlayer (
     loadDataWithBaseURL(baseUrl, htmlPage, "text/html", "utf-8", null)
   }
 
-  // Spostato il controllo della visibilità hardware: gestisce in autonomia il resume grafico dell'app
   override fun onWindowVisibilityChanged(visibility: Int) {
     var newVisibility = visibility
 
     if (isBackgroundPlaybackEnabled && (visibility == View.GONE || visibility == View.INVISIBLE)) {
-      // Mantiene l'inganno visivo stabile. Chromium ridurrà i consumi dei frame
-      // in autonomia poiché la finestra non è focalizzata, ma senza andare in pausa.
       newVisibility = View.VISIBLE
     }
 
