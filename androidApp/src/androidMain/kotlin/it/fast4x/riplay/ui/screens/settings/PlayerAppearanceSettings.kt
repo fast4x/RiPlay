@@ -1020,14 +1020,18 @@ fun PlayerAppearanceSettings(
                 }
 
                 settingsItem {
-                    if (!isLandscape) {
-                        ButtonBarSettingEntry(
-                            title = stringResource(R.string.appearancepresets),
-                            text = "",
-                            icon = R.drawable.color_palette,
-                            iconColor = colorPalette().text,
-                            onClick = { appearanceChooser = true },
-                        )
+                    //if (!isLandscape) {
+                    ButtonBarSettingEntry(
+                        title = stringResource(R.string.settings_themes_manager), //stringResource(R.string.appearancepresets),
+                        text = stringResource(R.string.settings_themes_manager_title_swithes_between_themes),
+                        icon = R.drawable.color_palette,
+                        iconColor = colorPalette().text,
+                        onClick = { appearanceChooser = true },
+                    )
+
+                }
+
+                settingsItem {
 
                         if (search.input.isBlank() || stringResource(R.string.show_player_top_actions_bar).contains(
                                 search.input,
@@ -1064,7 +1068,7 @@ fun PlayerAppearanceSettings(
                                     }
                                 )
                         }
-                    }
+                    //}
 
                     if (search.input.isBlank() || stringResource(R.string.playertype).contains(
                             search.input,
