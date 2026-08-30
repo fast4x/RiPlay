@@ -1403,4 +1403,6 @@
     <string name="loading_msg_6">Tutto pronto. Buon ascolto!</string>
     <string name="warning_you_must_re_enter_your_webdav_password">You must re-enter your WebDAV password</string>
     <string name="show_miniplayer_in_settings">Show miniplayer in settings</string>
+    <string name="settings_themes_manager">Themes manager</string>
+    <string name="settings_themes_manager_title_swithes_between_themes">Swithes between themes</string>
 </resources>
