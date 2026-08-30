@@ -60,9 +60,11 @@ import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.getTitleMonthlyPlaylist
 import it.fast4x.riplay.utils.seamlessQueue
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.guava.future
 import kotlinx.coroutines.launch
@@ -70,6 +72,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.time.Duration.Companion.milliseconds
 
 
 private const val MEDIA_SEARCH_SUPPORTED = "android.media.browse.SEARCH_SUPPORTED"
@@ -125,17 +128,18 @@ class MediaLibraryServiceCallback(
         val customLayout =
             NotificationButtons.entries
                 .map {
+                    // Recuperiamo l'ID risorsa drawable corretto (es. R.drawable.my_icon)
+                    val iconResId = it.getStateIcon(
+                        it,
+                        session.player.currentMediaItem?.asSong?.likedAt,
+                        session.player.repeatMode,
+                        session.player.shuffleModeEnabled
+                    )
                     CommandButton.Builder(CommandButton.ICON_UNDEFINED)
-                        .setDisplayName(it.name)
-                        .setCustomIconResId(
-                            it.getStateIcon(
-                                it,
-                                session.player.currentMediaItem?.asSong?.likedAt,
-                                session.player.repeatMode,
-                                session.player.shuffleModeEnabled
-                            )
-                        )
                         .setSessionCommand(it.sessionCommand)
+                        .setDisplayName(it.name)
+                        .setCustomIconResId(iconResId)
+                        .setEnabled(true)
                         .build()
                 }
 
@@ -879,12 +883,15 @@ class MediaLibraryServiceCallback(
             MediaSessionConstants.CommandToggleLike.customAction -> {
                 playerService.serviceScope.launch {
                     binder.toggleLike()
-                    withContext(Dispatchers.Main) {
-                        Handler(Looper.getMainLooper()).postDelayed({
-                            playerService.hybridPlayer.onRefreshCustomLayoutListener?.invoke()
-                        }, 100)
-                        updateCustomLayout(session)
-                    }
+                    // Aspetta che il DB si aggiorni (il tempo di mutare lo stato)
+                    regenerateCustomActions(session)
+//                    delay(100.milliseconds)
+//                    withContext(Dispatchers.Main) {
+//                        Handler(Looper.getMainLooper()).postDelayed({
+//                            playerService.hybridPlayer.onRefreshCustomLayoutListener?.invoke()
+//                        }, 100)
+//                        updateCustomLayout(session)
+//                    }
                 }
             }
             MediaSessionConstants.CommandStartRadio.customAction -> {
@@ -897,8 +904,18 @@ class MediaLibraryServiceCallback(
                     )
                 }
             }
-            MediaSessionConstants.CommandToggleShuffle.customAction -> { binder.toggleShuffle() }
-            MediaSessionConstants.CommandToggleRepeatMode.customAction -> { binder.toggleRepeat()}
+            MediaSessionConstants.CommandToggleShuffle.customAction -> {
+                playerService.serviceScope.launch {
+                    binder.toggleShuffle()
+                    regenerateCustomActions(session)
+                }
+            }
+            MediaSessionConstants.CommandToggleRepeatMode.customAction -> {
+                playerService.serviceScope.launch {
+                    binder.toggleRepeat()
+                    regenerateCustomActions(session)
+                }
+            }
         }
         return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
     }
@@ -1371,6 +1388,16 @@ class MediaLibraryServiceCallback(
                 )
                 .build()
         }
+
+    suspend fun regenerateCustomActions(session: MediaSession) =
+        withContext(Dispatchers.Main) {
+            delay(100.milliseconds)
+            Handler(Looper.getMainLooper()).postDelayed({
+                playerService.hybridPlayer.onRefreshCustomLayoutListener?.invoke()
+            }, 100)
+            updateCustomLayout(session)
+        }
+
 
     fun updateCustomLayout(session: MediaSession) {
         // Rigenero la lista dei 5 bottoni leggendo gli stati aggiornati del player/canzone

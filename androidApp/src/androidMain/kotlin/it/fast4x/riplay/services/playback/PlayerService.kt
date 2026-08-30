@@ -9,6 +9,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.WallpaperManager
 import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -31,6 +32,7 @@ import android.media.audiofx.LoudnessEnhancer
 import android.media.audiofx.PresetReverb
 import android.os.Bundle
 import android.os.Handler
+import android.os.IBinder
 import android.os.Looper
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
@@ -83,8 +85,13 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.session.CacheBitmapLoader
+import androidx.media3.session.DefaultMediaNotificationProvider
+import androidx.media3.session.MediaController
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
+import androidx.media3.session.SessionToken
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.MoreExecutors
 import it.fast4x.androidyoutubeplayer.core.player.PlayerConstants
 import it.fast4x.androidyoutubeplayer.core.player.YouTubePlayer
 import it.fast4x.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
@@ -258,7 +265,7 @@ class PlayerService : MediaLibraryService(),
     OnAudioVolumeChangedListener
 {
     val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private lateinit var legacyMediaSession: MediaSessionCompat
+    //private lateinit var legacyMediaSession: MediaSessionCompat
     private var mediaLibrarySession: MediaLibrarySession? = null
     private lateinit var mediaLibrarySessionCallback: MediaLibraryServiceCallback
     lateinit var hybridPlayer: HybridPlayer
@@ -451,18 +458,21 @@ class PlayerService : MediaLibraryService(),
     private var fadeInJob: Job? = null
     private val FADE_IN_DURATION_MS = 2000L // Durata di default del fade in
 
+    private var controllerFuture: ListenableFuture<MediaController>? = null
+
     // Observer per il ciclo di vita dell'intero processo (app in background)
-    private val processLifecycleObserver = object : DefaultLifecycleObserver {
-        override fun onStop(owner: LifecycleOwner) {
-            Timber.d("PlayerService: ProcessLifecycleOwner.onStop() schermo spento, rimuovo video")
-            // Chiamato quando l'app va in background o lo schermo si spegne
-            // Elimino i video perchè in background non sono più visibili ma creano problemi di avanzamento al successivo mediaitem
-            player.removeVideoMediaItems()
-        }
+//    private val processLifecycleObserver = object : DefaultLifecycleObserver {
+//        override fun onStop(owner: LifecycleOwner) {
+//            Timber.d("PlayerService: ProcessLifecycleOwner.onStop() schermo spento, rimuovo video")
+//            // Chiamato quando l'app va in background o lo schermo si spegne
+//            // Elimino i video perchè in background non sono più visibili ma creano problemi di avanzamento al successivo mediaitem
+//            player.removeVideoMediaItems()
+//        }
+//    }
+
+    override fun onBind(intent: Intent?): IBinder {
+        return super.onBind(intent) ?: binder
     }
-
-
-    override fun onBind(intent: Intent?) = super.onBind(intent) ?: binder
 
     @ExperimentalSerializationApi
     @ExperimentalCoroutinesApi
@@ -470,13 +480,19 @@ class PlayerService : MediaLibraryService(),
     @SuppressLint("Range")
     @UnstableApi
     override fun onCreate() {
-
         _isServiceReady.value = false
 
         createNotificationChannels()
-        startForeground(loading = true)
+        val mediaNotificationProvider = DefaultMediaNotificationProvider.Builder(this)
+            .setChannelId(NOTIFICATION_CHANNEL_ID)
+            .setChannelName(R.string.player_notification_channel_id)
+            .build()
+        // Impostiamo il provider sulla sessione
+        setMediaNotificationProvider(mediaNotificationProvider)
 
-        super.onCreate()
+        //startForeground(loading = true)
+
+        //super.onCreate()
 
         // Carico le impostazioni prima di tutto
         loadInitialSettingsFromDatabase()
@@ -488,13 +504,15 @@ class PlayerService : MediaLibraryService(),
         initializeVariables()
         replaceOnlinePlayerView()
         initializeOnlinePlayer()
-        initializeLegacyMediaSession()
+        //initializeLegacyMediaSession()
 
         // Aggiorna subito il mediasession per allineare lo stato delle azioni
-        if (!_playerState.value.isPlaying && _internalYouTubePlayer.value == null) {
-            _playerState.update { it.copy(playbackState = PlaybackState.PAUSED) }
-            updateLegacyMediasession()
-        }
+//        if (!_playerState.value.isPlaying && _internalYouTubePlayer.value == null) {
+//            _playerState.update { it.copy(playbackState = PlaybackState.PAUSED) }
+//            updateLegacyMediasession()
+//        }
+
+        super.onCreate()
 
 
         // Lancio tutto il resto in uno scope diverso
@@ -510,7 +528,7 @@ class PlayerService : MediaLibraryService(),
             initializeAudioManager()
             initializeAudioVolumeObserver()
             initializeAudioEqualizer()
-            initializeLegacyNotificationActionReceiver()
+            //initializeLegacyNotificationActionReceiver()
 
             initializeAudioDeviceCallback()
             initializeNormalizeVolume()
@@ -527,14 +545,23 @@ class PlayerService : MediaLibraryService(),
 
             setupPersistentQueueAndObservers()
 
-            startForeground()
+            //startForeground()
 
             // Registra l'observer sul ciclo di vita del processo
-            ProcessLifecycleOwner.get().lifecycle.addObserver(processLifecycleObserver)
+            //ProcessLifecycleOwner.get().lifecycle.addObserver(processLifecycleObserver)
 
             _isServiceReady.value = true
         }
     }
+
+    @UnstableApi
+    override fun onUpdateNotification(session: MediaSession, startInForegroundRequired: Boolean) {
+        // Forziamo startInForegroundRequired a true quando il player è effettivamente in riproduzione
+        // Questo risolve i bug legati alle notifiche invisibili o "congelate" nel system_server
+        val forceForeground = hybridPlayer.isPlaying || startInForegroundRequired
+        super.onUpdateNotification(session, forceForeground)
+    }
+
 
     @kotlin.OptIn(ExperimentalSerializationApi::class, ExperimentalCoroutinesApi::class)
     private fun setupPersistentQueueAndObservers() {
@@ -580,10 +607,10 @@ class PlayerService : MediaLibraryService(),
 
                 Timber.d("PlayerService onCreate update currentSong $song")
 
-                withContext(Dispatchers.Main) {
-                    updateLegacyMediasession()
-                    updateLegacyNotification()
-                }
+//                withContext(Dispatchers.Main) {
+//                    updateLegacyMediasession()
+//                    updateLegacyNotification()
+//                }
 
 
                 val currentMediaId = if (!song.isLocal) song.id else song.mediaId.toString()
@@ -702,6 +729,7 @@ class PlayerService : MediaLibraryService(),
         updateWidgetState()
     }
 
+    /*
     @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     private fun handleForeground(isPlaying: Boolean) {
         if (isPlaying) {
@@ -740,6 +768,8 @@ class PlayerService : MediaLibraryService(),
             }
         }
     }
+
+     */
 
     fun loadInitialSettingsFromDatabase(){
         // Devo essere sicuro che le impostazioni siano pronte
@@ -827,9 +857,9 @@ class PlayerService : MediaLibraryService(),
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         // Se per qualche motivo il servizio è stato avviato ma non è ancora in foreground, proteggiti
-        if (!isServiceInForeground) {
-            startForeground(loading = true)
-        }
+//        if (!isServiceInForeground) {
+//            startForeground(loading = true)
+//        }
 
         super.onStartCommand(intent, flags, startId)
 
@@ -845,6 +875,7 @@ class PlayerService : MediaLibraryService(),
         return START_STICKY
     }
 
+    /*
     @ExperimentalCoroutinesApi
     private fun startForeground(loading: Boolean = false) {
 
@@ -889,6 +920,8 @@ class PlayerService : MediaLibraryService(),
         }
 
     }
+
+     */
 
     private fun initializeVariables() {
 
@@ -1161,7 +1194,7 @@ class PlayerService : MediaLibraryService(),
         val currentState = _playerState.value
         val settings = currentState.settings
         _playerState.value = currentState.copy(settings = settings.copy(repeatMode = QueueLoopType.from(repeatMode)))
-        updateLegacyNotification()
+        //updateLegacyNotification()
     }
 
     private fun initializeBitmapProvider() {
@@ -1177,6 +1210,7 @@ class PlayerService : MediaLibraryService(),
         }
     }
 
+    /*
     @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     private fun initializeLegacyMediaSession() {
 
@@ -1199,6 +1233,8 @@ class PlayerService : MediaLibraryService(),
         legacyMediaSession.setMediaButtonReceiver(null)
 
     }
+
+     */
 
     @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     fun recreateOnlinePlayerView() {
@@ -1238,7 +1274,7 @@ class PlayerService : MediaLibraryService(),
 //            )
             .build()
             .apply {
-                addListener(this@PlayerService)
+                //addListener(this@PlayerService) // listener è registrato su hybridPlayer
                 sleepTimerListener = SleepTimerListener(serviceScope, this)
                 addListener(sleepTimerListener)
                 addAnalyticsListener(PlaybackStatsListener(false, this@PlayerService))
@@ -1251,6 +1287,9 @@ class PlayerService : MediaLibraryService(),
 
         // Crea l'Hybrid Player
         hybridPlayer = HybridPlayer(this,player, ytControlWrapper)
+        // REGISTRA IL SERVIZIO SULL'HYBRID PLAYER
+        // In questo modo onIsPlayingChanged riceverà gli eventi di ENTRAMBI i motori
+        hybridPlayer.addListener(this@PlayerService)
 
         // Imposto il volume dell'Hybrid Player
         hybridPlayer.volume = getDeviceVolume(this)
@@ -1293,6 +1332,19 @@ class PlayerService : MediaLibraryService(),
                 ),
             ).setBitmapLoader( customBitmapLoader )
             .build()
+
+        // Keep a connected controller so maybe that notification works
+        val sessionToken = SessionToken(this, ComponentName(this, PlayerService::class.java))
+        controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
+        controllerFuture?.addListener({
+            try {
+                controllerFuture?.get()
+            } catch (e: Exception) {
+                Timber.tag("PlayerService").e(e, "Failed to initialize MediaController")
+                controllerFuture = null
+                stopSelf()
+            }
+        }, MoreExecutors.directExecutor())
 
     }
 
@@ -1372,7 +1424,7 @@ class PlayerService : MediaLibraryService(),
 
                 _currentDuration.value = duration
 
-                updateLegacyNotification()
+                //updateLegacyNotification()
                 updateDiscordPresence()
 
                 if (duration > 0f && hybridPlayer.activeEngine == ActiveEngine.YOUTUBE) {
@@ -1445,6 +1497,10 @@ class PlayerService : MediaLibraryService(),
                             if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                                 youTubePlayer.unMute()
                                 youTubePlayer.setVolume(getSystemMediaVolume())
+
+                                // Prepara hybridPlayer per la riproduzione
+                                hybridPlayer.playWhenReady = true
+
                                 youTubePlayer.play()
                             }
 
@@ -1452,7 +1508,7 @@ class PlayerService : MediaLibraryService(),
 
                     }
                     PlayerConstants.PlayerState.PLAYING -> {
-                        handleForeground(true)
+                        //handleForeground(true)
                         lastError = null  // reset errore dopo riproduzione riuscita
                         onlineNearEndTicks = 0
                         startEndedObserver()
@@ -1464,7 +1520,7 @@ class PlayerService : MediaLibraryService(),
                         }
                     }
                     PlayerConstants.PlayerState.PAUSED -> {
-                        handleForeground(false)
+                        //handleForeground(false)
                         onlineNearEndTicks = 0
                         stopEndedObserver()
                         stopCrossFadeMonitor()
@@ -1479,7 +1535,7 @@ class PlayerService : MediaLibraryService(),
                 }
 
 
-                updateLegacyNotification()
+                //updateLegacyNotification()
                 updateDiscordPresence()
 
             }
@@ -1778,7 +1834,7 @@ class PlayerService : MediaLibraryService(),
             shuffledIndices[0] = player.currentMediaItemIndex
             player.shuffleOrder = DefaultShuffleOrder(shuffledIndices, System.currentTimeMillis())
         }
-        updateLegacyNotification()
+        //updateLegacyNotification()
 
         serviceScope.launch { saveQueue() }
     }
@@ -1799,7 +1855,7 @@ class PlayerService : MediaLibraryService(),
         sendCloseExternalEqualizerIntent()
 
         // Rimuovi l'observer per evitare memory leak
-        ProcessLifecycleOwner.get().lifecycle.removeObserver(processLifecycleObserver)
+        //ProcessLifecycleOwner.get().lifecycle.removeObserver(processLifecycleObserver)
 
         serviceScope.launch { saveQueue() }
 
@@ -1810,10 +1866,10 @@ class PlayerService : MediaLibraryService(),
             Timber.e("PlayerService onDestroy unregisterReceiver ${e.message}")
         }
 
-        if (::legacyMediaSession.isInitialized) {
-            legacyMediaSession.isActive = false
-            legacyMediaSession.release()
-        }
+//        if (::legacyMediaSession.isInitialized) {
+//            legacyMediaSession.isActive = false
+//            legacyMediaSession.release()
+//        }
 
         if(::equalizerHelper.isInitialized) {
             equalizerHelper.release()
@@ -1846,7 +1902,8 @@ class PlayerService : MediaLibraryService(),
         serviceScope.cancel()
 
         runCatching {
-
+            controllerFuture?.let { MediaController.releaseFuture(it) }
+            controllerFuture = null
             mediaLibrarySession?.release()
             cache.release()
             loudnessEnhancer?.release()
@@ -1888,8 +1945,15 @@ class PlayerService : MediaLibraryService(),
     override fun onAudioVolumeChanged(currentVolume: Int, maxVolume: Int) {
         if (appSettings.isPauseOnVolumeZeroEnabled) {
             if ((_playerState.value.isPlaying) && currentVolume < 1) {
-                hybridPlayer.pause()
-                pausedByZeroVolume = true
+                // Mettiamo in pausa solo se l'utente è fermo a zero da un po',
+                // non per i micro-abbassamenti del sistema (ducking nei sistemi Xiaomi).
+                serviceScope.launch {
+                    delay(300.milliseconds) // Aspetta 300ms
+                    if (audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) < 1) {
+                        hybridPlayer.pause()
+                        pausedByZeroVolume = true
+                    }
+                }
             } else if (pausedByZeroVolume && currentVolume >= 1) {
                 hybridPlayer.play()
                 pausedByZeroVolume = false
@@ -2091,7 +2155,7 @@ class PlayerService : MediaLibraryService(),
 
             if (!it.isLocal){
                 // Ferma ExoPlayer prima di avviare il player online
-                hybridPlayer.pause()
+                //hybridPlayer.pause()
                 hybridPlayer.switchToYoutube()
                 Timber.d("PlayerService onMediaItemTransition mediaItem not local, before")
 
@@ -2166,7 +2230,7 @@ class PlayerService : MediaLibraryService(),
         initializeNormalizeVolume()
         maybeProcessRadio(reason)
 
-        updateLegacyNotification()
+        //updateLegacyNotification()
 
         updateDiscordPresence()
 
@@ -2234,24 +2298,27 @@ class PlayerService : MediaLibraryService(),
         }
     }
 
+    /*
     @ExperimentalCoroutinesApi
     fun updateLegacyNotification() {
-//        Timber.d("PlayerService notify called from: ${Thread.currentThread().stackTrace.joinToString("\n")}")
+//      Timber.d("PlayerService notify called from: ${Thread.currentThread().stackTrace.joinToString("\n")}")
         serviceScope.launch {
             withContext(Dispatchers.Main){
                 // Aggiorna sempre la sessione per riflettere lo stato reale, anche se vuoto
                 updateLegacyMediasession()
 
-                if (player.mediaItemCount <= 0 && _playerState.value.playbackState == PlaybackState.IDLE) {
-                    // Nasconde notifica se completamente idle e vuoto, attenzione il sistema potrebbe killare il servizio
-                    // stopForeground(STOP_FOREGROUND_REMOVE)
-                    return@withContext
-                }
+//                if (player.mediaItemCount <= 0 && _playerState.value.playbackState == PlaybackState.IDLE) {
+//                    // Nasconde notifica se completamente idle e vuoto, attenzione il sistema potrebbe killare il servizio
+//                    // stopForeground(STOP_FOREGROUND_REMOVE)
+//                    return@withContext
+//                }
 
                 startForeground()
             }
         }
     }
+
+     */
 
     private fun updateMediaSessionQueue(timeline: Timeline, activeIndex: Int) {
         val queueItems = mutableListOf<MediaSessionCompat.QueueItem>()
@@ -2269,9 +2336,9 @@ class PlayerService : MediaLibraryService(),
             queueItems.add(MediaSessionCompat.QueueItem(description, i.toLong()))
         }
 
-        legacyMediaSession.setQueue(queueItems)
-
-        legacyMediaSession.setQueueTitle(resources.getString(R.string.now_playing_title))
+//        legacyMediaSession.setQueue(queueItems)
+//
+//        legacyMediaSession.setQueueTitle(resources.getString(R.string.now_playing_title))
     }
 
     private fun maybeProcessRadio(reason: Int) {
@@ -2396,7 +2463,7 @@ class PlayerService : MediaLibraryService(),
             )
         }
 
-        legacyMediaSession.setMetadata(metadataBuilder.build())
+        //legacyMediaSession.setMetadata(metadataBuilder.build())
     }
 
     private fun initializeAudioManager() {
@@ -2513,6 +2580,7 @@ class PlayerService : MediaLibraryService(),
         )
     }
 
+    /*
     @ExperimentalCoroutinesApi
     private fun updateLegacyMediasession() {
 
@@ -2613,6 +2681,8 @@ class PlayerService : MediaLibraryService(),
 
         Timber.d("PlayerService updateLegacyMediasessionData onlineplayer playing ${_playerState.value.isPlaying} currentSecond ${_currentSecond.value} localplayer playing ${player.isPlaying}")
     }
+
+     */
 
 
     // ===================================================================
@@ -2755,7 +2825,7 @@ class PlayerService : MediaLibraryService(),
 
                 }
             }
-            updateLegacyNotification()
+            //updateLegacyNotification()
         }
 
     }
@@ -2763,32 +2833,36 @@ class PlayerService : MediaLibraryService(),
     @ExperimentalCoroutinesApi
     @UnstableApi
     override fun onIsPlayingChanged(isPlaying: Boolean) {
-        Timber.d("Playerservice onIsPlayingChanged $isPlaying called")
-
-        handleForeground(isPlaying)
+        // Passo l'evento a super così Media3 esegue le sue operazioni interne sulla sessione
+        super.onIsPlayingChanged(isPlaying)
+        Timber.d("PlayerService onIsPlayingChanged intercettato: isPlaying=$isPlaying ")
 
         if (isPlaying) {
             startEndedObserver()
             startCrossfadeMonitor()
             updatePlayerState(PlayerConstants.PlayerState.PLAYING)
-        }
-        else {
+        } else {
             stopEndedObserver()
             stopCrossFadeMonitor()
             updatePlayerState(PlayerConstants.PlayerState.PAUSED)
+
+            // Rimuove lo stato di foreground aggressivo quando l'app va in pausa
+            if (isAtLeastAndroid7) {
+                stopForeground(STOP_FOREGROUND_DETACH)
+            } else {
+                @Suppress("DEPRECATION")
+                stopForeground(false)
+            }
         }
 
         updateWidgetState()
-        updateLegacyNotification()
-
-        //notify external equalizer
         if (!isPlaying) sendCloseExternalEqualizerIntent()
         else sendOpenExternalEqualizerIntent()
 
         updateDiscordPresence()
 
-        super.onIsPlayingChanged(isPlaying)
     }
+
 
     @ExperimentalCoroutinesApi
     private fun initializeBassBoost() {
@@ -2855,6 +2929,11 @@ class PlayerService : MediaLibraryService(),
     override fun onAudioSessionIdChanged(audioSessionId: Int) {
         super.onAudioSessionIdChanged(audioSessionId)
         Timber.d("PlayerService ExoPlayer Audio Session ID changed to: $audioSessionId")
+
+        if (currentSong.value?.isLocal == false) {
+            Timber.d("PlayerService onAudioSessionIdChanged la canzone non è locale, non c'è necessità di ricreare l'audio session perchè potrebbe creare un mute dell'audio")
+            return
+        }
 
         // Quando la sessione cambia, vanno ricreati gli effetti e collegati alla nuova sessione
         runCatching {
@@ -2963,6 +3042,7 @@ class PlayerService : MediaLibraryService(),
         }
     }
 
+    /*
     @ExperimentalCoroutinesApi
     fun notification(): Notification {
 
@@ -3068,6 +3148,8 @@ class PlayerService : MediaLibraryService(),
 
     }
 
+     */
+
     private fun createNotificationChannels() {
         if (!isAtLeastAndroid8) return
 
@@ -3122,6 +3204,8 @@ class PlayerService : MediaLibraryService(),
             }
         }
     }
+
+
 
     private fun createMediaSourceFactory() = DefaultMediaSourceFactory(
         createLocalDataSourceFactory(),
@@ -3345,14 +3429,14 @@ class PlayerService : MediaLibraryService(),
             while (isActive) {
 
                 val isLocal = currentSong.value?.isLocal == true
-                val playbackState = player.playbackState
+                //val playbackState = player.playbackState
 
                 if (isLocal)
                     _internalBufferedFraction.value = player.bufferedPosition.toFloat()
 
                 player.pauseAtEndOfMediaItems = !isLocal
 
-                if (!isLocal && (playbackState == Player.STATE_ENDED || _playerState.value.playbackState == PlaybackState.ENDED)
+                if (!isLocal && _playerState.value.playbackState == PlaybackState.ENDED
                     && lastProcessedIndex != player.currentMediaItemIndex
                 ) {
 
@@ -3829,24 +3913,37 @@ class PlayerService : MediaLibraryService(),
                         it.id,
                         setLikeState(it.likedAt)
                     )
-                }.also {
-                    currentSong.debounce(1000).conflate().collect(serviceScope) { updateLegacyNotification() }
                 }
+//                    .also {
+//                    currentSong.debounce(1000).conflate().collect(serviceScope) { updateLegacyNotification() }
+//                }
             }
 
         }
 
         @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
         fun toggleShuffle() {
-            hybridPlayer.shuffleModeEnabled.let { hybridPlayer.shuffleModeEnabled = !it }
+            serviceScope.launch {
+                withContext(Dispatchers.Main) {
+                    hybridPlayer.shuffleModeEnabled.let { hybridPlayer.shuffleModeEnabled = !it }
+                }
+            }
 
         }
 
         fun toggleRepeat() {
             val queueLoopType = appSettings.queueLoopType
-            val new = appSettings.copy(queueLoopType = setQueueLoopState(queueLoopType))
+            val newQueueLoopType = setQueueLoopState(queueLoopType)
+            val repeatMode = newQueueLoopType.type
             serviceScope.launch {
-                AppSettingsManager().updateSettings(new)
+                withContext(Dispatchers.Main) {
+                    hybridPlayer.repeatMode = repeatMode
+                }
+                val new = appSettings.copy(
+                    queueLoopType = newQueueLoopType
+                )
+                appSettingsManager.updateSettings(new)
+
             }
         }
 
@@ -3892,7 +3989,7 @@ class PlayerService : MediaLibraryService(),
         }
     }
 
-
+/*
     @kotlin.OptIn(FlowPreview::class)
     @ExperimentalCoroutinesApi
     fun initializeLegacySessionCallback() {
@@ -4011,6 +4108,8 @@ class PlayerService : MediaLibraryService(),
             )
         }
     }
+
+ */
 
     fun handlePlayNext() {
         hybridPlayer.pause()

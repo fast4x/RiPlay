@@ -321,11 +321,12 @@ class MainActivity : AppCompatActivity() {
         if (!PlayerService.isServiceReady.value) {
             try {
                 Timber.d("MainActivity.onStart - Servizio non pronto, avvio in foreground")
-                if (isAtLeastAndroid8) {
-                    startForegroundService(intent)
-                } else {
-                    startService(intent)
-                }
+                startService(intent)
+//                if (isAtLeastAndroid8) {
+//                    startForegroundService(intent)
+//                } else {
+//                    startService(intent)
+//                }
             } catch (e: Exception) {
                 Timber.e("MainActivity.onStart startService PlayerService Exception: $e")
             }
@@ -1401,7 +1402,7 @@ class MainActivity : AppCompatActivity() {
                     val listener = object : Player.Listener {
 
                         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                            Timber.d("MainActivity Player.Listener onMediaItemTransition mediaItem ${mediaItem?.mediaId} reason $reason foreground $appRunningInBackground")
+                            //Timber.d("MainActivity Player.Listener onMediaItemTransition mediaItem ${mediaItem?.mediaId} reason $reason foreground $appRunningInBackground")
 
                             if (mediaItem == null) {
                                 maybeExitPip()
