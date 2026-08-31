@@ -1411,7 +1411,6 @@ class MainActivity : AppCompatActivity() {
                             }
 
                             mediaItem.let {
-                                //currentSecond.value = 0F
 
                                 if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
                                     if (it.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {

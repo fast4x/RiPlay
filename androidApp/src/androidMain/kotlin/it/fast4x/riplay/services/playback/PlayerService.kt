@@ -460,6 +460,8 @@ class PlayerService : MediaLibraryService(),
 
     private var controllerFuture: ListenableFuture<MediaController>? = null
 
+    var lastProcessedIndex: Int? = null
+
     // Observer per il ciclo di vita dell'intero processo (app in background)
 //    private val processLifecycleObserver = object : DefaultLifecycleObserver {
 //        override fun onStop(owner: LifecycleOwner) {
@@ -474,6 +476,221 @@ class PlayerService : MediaLibraryService(),
         return super.onBind(intent) ?: binder
     }
 
+    @ExperimentalSerializationApi
+    @ExperimentalCoroutinesApi
+    @FlowPreview
+    @SuppressLint("Range")
+    @UnstableApi
+    override fun onCreate() {
+        _isServiceReady.value = false
+
+        createNotificationChannels()
+        val mediaNotificationProvider = DefaultMediaNotificationProvider.Builder(this)
+            .setChannelId(NOTIFICATION_CHANNEL_ID)
+            .setChannelName(R.string.player_notification_channel_id)
+            .build()
+        setMediaNotificationProvider(mediaNotificationProvider)
+
+        // 1. Carico le impostazioni prima di tutto
+        loadInitialSettingsFromDatabase()
+
+        // 2. Inizializzo l'hardware audio e la sessione Media3
+        initializeBitmapProvider()
+        initializeHybridPlayerAndSession()
+        initializeVariables()
+
+        // 3. SECONDO FIX RIGIDO: Inizializzo la WebView PRIMA di calcolare i volumi
+        replaceOnlinePlayerView()
+        initializeOnlinePlayer()
+
+        super.onCreate()
+
+        // Lancio tutto il resto delle configurazioni in background senza bloccare l'avvio nativo
+        serviceScope.launch(Dispatchers.Main) {
+
+            withContext(Dispatchers.IO) {
+                startObservingSettings()
+            }
+
+            checkAndRestoreTimer()
+
+            initializeAudioManager()
+            initializeAudioVolumeObserver()
+            initializeAudioEqualizer()
+
+            initializeAudioDeviceCallback()
+
+            // Ora che la webview e l'hybrid player sono stabili, calcolo il volume di normalizzazione
+            initializeNormalizeVolume()
+            initializeBassBoost()
+            initializeReverb()
+
+            initializeSensorListener()
+            initializeSongCoverInLockScreen()
+            initializeMedleyMode()
+            applyPlaybackParameters()
+            initializeAudioDRCHelper()
+
+            initializeRiTune()
+            initializeDiscordPresence()
+
+            setupPersistentQueueAndObservers()
+
+            _isServiceReady.value = true
+        }
+    }
+
+    @kotlin.OptIn(ExperimentalSerializationApi::class, ExperimentalCoroutinesApi::class)
+    private fun setupPersistentQueueAndObservers() {
+        if (isPersistentQueueEnabled) {
+            serviceScope.launch {
+                // Caricamento iniziale obbligatorio sul Main thread per ExoPlayer
+                withContext(Dispatchers.Main) {
+                    loadQueue()
+                    resumePlaybackOnStart()
+                }
+
+                // PRIMO FIX RIGIDO: Rimosso il ciclo while(isActive) con delay(10.seconds)
+                // Usiamo il flusso reattivo dello stato del player per salvare la coda SOLO quando cambia lo stato
+                // Questo evita di bloccare il thread Main ogni 10 secondi eliminando i picchettii audio (buffer underrun)
+                _playerState
+                    .map { it.isPlaying }
+                    .distinctUntilChanged()
+                    .collectLatest { isPlaying ->
+                        // Salva la coda non appena l'app cambia stato (es. passa da Play a Pausa o viceversa)
+                        saveQueue()
+                        Timber.d("PlayerService saveQueue ottimizzato eseguito per cambio stato riproduzione: isPlaying=$isPlaying")
+                    }
+            }
+
+            // Ciclo leggero isolato solo per l'avanzamento della cronologia online (senza toccare la timeline di ExoPlayer)
+            serviceScope.launch(Dispatchers.IO) {
+                while (isActive) {
+                    delay(10.seconds)
+                    if (_playerState.value.isPlaying && youtubeCurrentSecond.value >= minTimeForEvent.seconds && lastMediaIdInHistory != currentSong.value?.id) {
+                        currentSong.value?.let {
+                            updateOnlineHistory(it.asMediaItem)
+                            lastMediaIdInHistory = it.id
+                        }
+                    }
+                }
+            }
+        }
+
+        serviceScope.launch {
+            currentSong.collect { song ->
+                if (song == null) return@collect
+                if (currentMediaItemState.value?.mediaId != song.id) return@collect
+
+                Timber.d("PlayerService onCreate update currentSong $song")
+
+                val currentMediaId = if (!song.isLocal) song.id else song.mediaId.toString()
+
+                if (lastOnlineMediaId != currentMediaId && onlineListenedDurationMs > 0) {
+                    Timber.d("PlayerService incrementOnlineListenedPlaytimeMs update currentSong onlineListenedDurationMs = $onlineListenedDurationMs onlineMediaId = $currentMediaId currentMediaId = $currentMediaId")
+                    incrementOnlineListenedPlaytimeMs()
+                    delay(200.milliseconds)
+                    onlineListenedDurationMs = 0L
+                    lastOnlineMediaId = currentMediaId
+                }
+
+                val format = Database.format(currentMediaId).first()
+                if (format == null && (!song.isLocal || song.isWebDav)) {
+                    getOnlineMetadata(currentMediaId)
+                        ?.let {
+                            val duratiomMs = it.videoDetails?.lengthSeconds?.toLong()
+                            try {
+                                Database.insert(
+                                    Format(
+                                        songId = currentMediaId,
+                                        contentLength = duratiomMs,
+                                        loudnessDb = it.playerConfig?.audioConfig?.loudnessDb
+                                            ?: it.playerConfig?.audioConfig?.perceptualLoudnessDb?.toFloat(),
+                                        playbackUrl = it.playbackTracking?.videostatsPlaybackUrl?.baseUrl
+                                    )
+                                )
+                            } catch (e: Exception) {
+                                Timber.e("PlayerService onCreate update currentSong exception ${e.stackTraceToString()}")
+                            }
+
+                            if (currentSong.value?.durationText == "0:00" && duratiomMs != null) {
+                                Database.updateDurationText(song.id, formatAsDuration(duratiomMs))
+                            }
+                        }
+                }
+
+                withContext(Dispatchers.Main) {
+                    _playerState.update { currentState ->
+                        currentState.withDatabaseMediaItemIfCurrent(
+                            currentMediaId = song.mediaId,
+                            databaseMediaItem = song.asMediaItem,
+                            queueIndex = player.currentMediaItemIndex,
+                            queueSize = player.mediaItemCount,
+                        )
+                    }
+                }
+            }
+        }
+
+        // Monitora la fine del brano nella webview
+        serviceScope.launch(Dispatchers.IO) {
+            while (isActive) {
+                if (currentSong.value?.isLocal == false) {
+                    if (_playerState.value.isPlaying) {
+                        onlineListenedDurationMs += 1000
+                        if (onlineListenedDurationMs >= 20000) {
+                            incrementOnlineListenedPlaytimeMs()
+                            delay(200.milliseconds)
+                            onlineListenedDurationMs = 0L
+                        }
+                    } else {
+                        if (onlineListenedDurationMs > 0) {
+                            incrementOnlineListenedPlaytimeMs()
+                            delay(200.milliseconds)
+                            onlineListenedDurationMs = 0L
+                        }
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        if (_currentDuration.value > 0 && _playerState.value.isPlaying) {
+                            if (_currentSecond.value >= _currentDuration.value - 1f) {
+                                Timber.d("PlayerService Watchdog: End of online track detected by time, calling handleWebViewTransition()")
+                                handleWebViewTransition()
+                            }
+                        }
+                    }
+                }
+                delay(500.milliseconds)
+            }
+        }
+
+        serviceScope.launch {
+            MusicVaultEvents.events.collect { event ->
+                when (event) {
+                    is MusicVaultEvent.DownloadCompleted -> {
+                        updateMusicVaultMediaItem(
+                            songId = event.songId,
+                            fileName = event.fileName,
+                            thumbnailFileName = event.thumbnailFileName
+                        )
+                    }
+
+                    is MusicVaultEvent.DownloadRemoved -> {
+                        updateMusicVaultMediaItem(
+                            songId = event.songId,
+                            fileName = "",
+                            thumbnailFileName = ""
+                        )
+                    }
+                }
+            }
+        }
+
+        updateWidgetState()
+    }
+
+
+    /*
     @ExperimentalSerializationApi
     @ExperimentalCoroutinesApi
     @FlowPreview
@@ -553,6 +770,7 @@ class PlayerService : MediaLibraryService(),
             _isServiceReady.value = true
         }
     }
+    */
 
     @UnstableApi
     override fun onUpdateNotification(session: MediaSession, startInForegroundRequired: Boolean) {
@@ -563,6 +781,7 @@ class PlayerService : MediaLibraryService(),
     }
 
 
+    /*
     @kotlin.OptIn(ExperimentalSerializationApi::class, ExperimentalCoroutinesApi::class)
     private fun setupPersistentQueueAndObservers() {
         if (isPersistentQueueEnabled) {
@@ -670,6 +889,7 @@ class PlayerService : MediaLibraryService(),
             }
         }
 
+        // Monitora la fine del brano nella webview
         serviceScope.launch(Dispatchers.IO) {
             while (isActive) {
                 if (currentSong.value?.isLocal == false) {
@@ -688,19 +908,25 @@ class PlayerService : MediaLibraryService(),
                         }
                     }
 
-                    if (_currentDuration.value > 0
-                        && appSettings.queueLoopType == QueueLoopType.Default
-                    ) {
-                        if (_currentSecond.value >= _currentDuration.value - 0.5f) {
-                            if (_playerState.value.isPlaying) {
-                                Timber.d("PlayerService Watchdog: End of online track detected by time, forcing playNext()")
-                                handlePlayNext()
+                    withContext(Dispatchers.Main) {
+                        if (_currentDuration.value > 0 && _playerState.value.isPlaying
+                        //&& appSettings.queueLoopType == QueueLoopType.Default
+                        ) {
+                            //Timber.d("PlayerService Watchdog: _currentSecond.value = ${_currentSecond.value} _currentDuration.value = ${_currentDuration.value} - lastProcessedIndex = $lastProcessedIndex currentMediaItemIndex = ${player.currentMediaItemIndex}")
+                            if (_currentSecond.value >= _currentDuration.value - 1f) {
+                                //if (_playerState.value.isPlaying) {
+                                Timber.d("PlayerService Watchdog: End of online track detected by time, calling handleWebViewTransition()")
+
+                                handleWebViewTransition()
+
+                                //handlePlayNext()
+                                //}
                             }
                         }
                     }
 
                 }
-                delay(1000.milliseconds)
+                delay(500.milliseconds)
             }
         }
 
@@ -728,6 +954,8 @@ class PlayerService : MediaLibraryService(),
 
         updateWidgetState()
     }
+
+     */
 
     /*
     @kotlin.OptIn(ExperimentalCoroutinesApi::class)
@@ -1028,11 +1256,11 @@ class PlayerService : MediaLibraryService(),
                     withContext(Dispatchers.Main) {
                         when (playerState) {
                             PlayerConstants.PlayerState.PLAYING -> {
-                                startEndedObserver()
+                                //startEndedObserver()
                                 startCrossfadeMonitor()
                             }
                             else -> {
-                                stopEndedObserver()
+                                //stopEndedObserver()
                                 stopCrossFadeMonitor()
                             }
                         }
@@ -1511,9 +1739,9 @@ class PlayerService : MediaLibraryService(),
                         //handleForeground(true)
                         lastError = null  // reset errore dopo riproduzione riuscita
                         onlineNearEndTicks = 0
-                        startEndedObserver()
+                        //startEndedObserver()
                         startCrossfadeMonitor()
-                        sendOpenExternalEqualizerIntent()
+                        //sendOpenExternalEqualizerIntent()
 
                         if (::hybridPlayer.isInitialized) {
                             hybridPlayer.invalidateYouTubePlayPause()
@@ -1522,9 +1750,9 @@ class PlayerService : MediaLibraryService(),
                     PlayerConstants.PlayerState.PAUSED -> {
                         //handleForeground(false)
                         onlineNearEndTicks = 0
-                        stopEndedObserver()
+                        //stopEndedObserver()
                         stopCrossFadeMonitor()
-                        sendCloseExternalEqualizerIntent()
+                        //sendCloseExternalEqualizerIntent()
 
                         if (::hybridPlayer.isInitialized) {
                             hybridPlayer.invalidateYouTubePlayPause()
@@ -1852,7 +2080,7 @@ class PlayerService : MediaLibraryService(),
 
         _isServiceReady.value = false
 
-        sendCloseExternalEqualizerIntent()
+        //sendCloseExternalEqualizerIntent()
 
         // Rimuovi l'observer per evitare memory leak
         //ProcessLifecycleOwner.get().lifecycle.removeObserver(processLifecycleObserver)
@@ -2164,8 +2392,7 @@ class PlayerService : MediaLibraryService(),
                     // Avvia il fade in per il nuovo brano appena parte il play
                     startFadeIn(appSettings.userVolume)
                     Timber.d("PlayerService onMediaItemTransition mediaItem not local, inside")
-                }
-                else
+                } else
                     serviceScope.launch {
                         riTuneCastClient.sendCommand(
                             RiTuneRemoteCommand(
@@ -2838,11 +3065,11 @@ class PlayerService : MediaLibraryService(),
         Timber.d("PlayerService onIsPlayingChanged intercettato: isPlaying=$isPlaying ")
 
         if (isPlaying) {
-            startEndedObserver()
+            //startEndedObserver()
             startCrossfadeMonitor()
             updatePlayerState(PlayerConstants.PlayerState.PLAYING)
         } else {
-            stopEndedObserver()
+            //stopEndedObserver()
             stopCrossFadeMonitor()
             updatePlayerState(PlayerConstants.PlayerState.PAUSED)
 
@@ -2856,8 +3083,8 @@ class PlayerService : MediaLibraryService(),
         }
 
         updateWidgetState()
-        if (!isPlaying) sendCloseExternalEqualizerIntent()
-        else sendOpenExternalEqualizerIntent()
+//        if (!isPlaying) sendCloseExternalEqualizerIntent()
+//        else sendOpenExternalEqualizerIntent()
 
         updateDiscordPresence()
 
@@ -3418,7 +3645,44 @@ class PlayerService : MediaLibraryService(),
 
     }
 
+    private fun handleWebViewTransition() {
+//        val isLocal = currentSong.value?.isLocal == true
+//
+//        if (isLocal)
+//            _internalBufferedFraction.value = player.bufferedPosition.toFloat()
+//
+//        player.pauseAtEndOfMediaItems = !isLocal
 
+        // Interviene solo se il brano è terminato
+        if (//_playerState.value.playbackState == PlaybackState.ENDED &&
+            lastProcessedIndex != player.currentMediaItemIndex
+        ) {
+
+            val queueLoopType = appSettings.queueLoopType
+
+            when (queueLoopType) {
+                QueueLoopType.RepeatOne -> {
+                    hybridPlayer.seekTo(0)
+                }
+                QueueLoopType.Default -> {
+                    if (hybridPlayer.hasNextMediaItem()) {
+                        lastProcessedIndex = hybridPlayer.currentMediaItemIndex
+                        handlePlayNext()
+                    }
+                }
+                QueueLoopType.RepeatAll -> {
+                    if (!hybridPlayer.hasNextMediaItem()) {
+                        hybridPlayer.playAtIndex(0)
+                    } else {
+                        lastProcessedIndex = player.currentMediaItemIndex
+                        handlePlayNext()
+                    }
+                }
+            }
+        }
+    }
+
+    /*
     private fun startEndedObserver() {
         endedObserverJob?.cancel()
 
@@ -3436,6 +3700,7 @@ class PlayerService : MediaLibraryService(),
 
                 player.pauseAtEndOfMediaItems = !isLocal
 
+                // Interviene solo se il brano è terminato
                 if (!isLocal && _playerState.value.playbackState == PlaybackState.ENDED
                     && lastProcessedIndex != player.currentMediaItemIndex
                 ) {
@@ -3472,6 +3737,8 @@ class PlayerService : MediaLibraryService(),
         endedObserverJob?.cancel()
         endedObserverJob = null
     }
+
+     */
 
     private fun getSystemMediaVolume() = 100
 
