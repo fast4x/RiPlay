@@ -422,7 +422,7 @@ class HybridPlayer (
 
     // Questo intercetta chiunque chiami player.seekToNextMediaItem() (es. Android Auto o notifiche)
     override fun seekToNextMediaItem() {
-        playerService.handlePlayNext()
+        playerService.handlePlayNext("HybridPlayer.seekToNextMediaItem")
     }
 
     // Questo intercetta chiunque chiami player.seekToPreviousMediaItem()
@@ -432,7 +432,7 @@ class HybridPlayer (
 
     // Per sicurezza intercettiamo anche i vecchi metodi generici di Media3
     override fun seekToNext() {
-        playerService.handlePlayNext()
+        playerService.handlePlayNext("HybridPlayer.seekToNext")
     }
 
     override fun seekToPrevious() {

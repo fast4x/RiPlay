@@ -310,7 +310,6 @@ class PlayerService : MediaLibraryService(),
     val internalYoutubePlayerView: StateFlow<YouTubePlayerView?> = _internalYouTubePlayerView
 
     private val _internalYouTubePlayer = MutableStateFlow<YouTubePlayer?>(null)
-    //val internalYoutubePlayer: StateFlow<YouTubePlayer?> = _internalOnlinePlayer
 
     private val _internalBufferedFraction = MutableStateFlow(0f)
     val internalYoutubeBufferedFraction: StateFlow<Float> = _internalBufferedFraction
@@ -370,8 +369,6 @@ class PlayerService : MediaLibraryService(),
 
     private var unstartedWatchdogJob: Job? = null
 
-    //lateinit var audioQualityFormat: AudioQualityFormat
-
     private var audioDeviceCallback: AudioDeviceCallback? = null
     private val handler = Handler(Looper.getMainLooper())
     private val bluetoothDeviceTypes = buildSet {
@@ -406,7 +403,6 @@ class PlayerService : MediaLibraryService(),
     // Istanza unica da passare all'HybridPlayer
     private val ytControlWrapper = YouTubeControlImpl()
 
-    //**********
     var playlistSongsSortBy: PlaylistSongSortBy = PlaylistSongSortBy.DateAdded
     var songsSortBy: SongSortBy = SongSortBy.DateAdded
     var playlistSortBy: PlaylistSortBy = PlaylistSortBy.DateAdded
@@ -417,12 +413,11 @@ class PlayerService : MediaLibraryService(),
     var songSortOrder: SortOrder = SortOrder.Descending
     var artistSortOrder: SortOrder = SortOrder.Descending
     var albumSortOrder: SortOrder = SortOrder.Descending
-    //**********
 
     private var isServiceInForeground = false
 
     private var isFading = false // Flag per ignorare il fade del crossfade
-    private var crossfadeJob: Job? = null
+    private var playbackWathcDogJob: Job? = null
     private var fadeInJob: Job? = null
     private val FADE_IN_DURATION_MS = 2000L // Durata di default del fade in
 
@@ -659,7 +654,7 @@ class PlayerService : MediaLibraryService(),
             }
         }
 
-        // Monitora la fine del brano nella webview
+        // Monitora il tempo di ascolto della canzone riprodotta dalla webview
         serviceScope.launch(Dispatchers.IO) {
             while (isActive) {
                 if (currentSong.value?.isLocal == false) {
@@ -678,22 +673,6 @@ class PlayerService : MediaLibraryService(),
                         }
                     }
 
-                    withContext(Dispatchers.Main) {
-                        if (_currentDuration.value > 0 && _playerState.value.isPlaying) {
-                            // Se mancano meno di 1.5 secondi alla fine E NON stiamo già facendo il fade,
-                            // attiviamo la transizione di sicurezza.
-                            val timeLeft = _currentDuration.value - _currentSecond.value
-                            if (timeLeft <= 1.5f && !isFading) {
-                                Timber.d("PlayerService Watchdog: Emergency trigger at $timeLeft secondi dalla fine")
-
-                                if (appSettings.crossfadeDuration == CrossfadeDuration.Off) {
-                                    handlePlayNext()
-                                } else {
-                                    startWebViewFadeOut()
-                                }
-                            }
-                        }
-                    }
                 }
                 delay(500.milliseconds)
             }
@@ -725,87 +704,6 @@ class PlayerService : MediaLibraryService(),
     }
 
 
-    /*
-    @ExperimentalSerializationApi
-    @ExperimentalCoroutinesApi
-    @FlowPreview
-    @SuppressLint("Range")
-    @UnstableApi
-    override fun onCreate() {
-        _isServiceReady.value = false
-
-        createNotificationChannels()
-        val mediaNotificationProvider = DefaultMediaNotificationProvider.Builder(this)
-            .setChannelId(NOTIFICATION_CHANNEL_ID)
-            .setChannelName(R.string.player_notification_channel_id)
-            .build()
-        // Impostiamo il provider sulla sessione
-        setMediaNotificationProvider(mediaNotificationProvider)
-
-        //startForeground(loading = true)
-
-        //super.onCreate()
-
-        // Carico le impostazioni prima di tutto
-        loadInitialSettingsFromDatabase()
-
-        // Lancio in sequenza le inizializzazioni necessarie anche per android auto sul thread principale
-        initializeBitmapProvider()
-        initializeHybridPlayerAndSession()
-
-        initializeVariables()
-        replaceOnlinePlayerView()
-        initializeOnlinePlayer()
-        //initializeLegacyMediaSession()
-
-        // Aggiorna subito il mediasession per allineare lo stato delle azioni
-//        if (!_playerState.value.isPlaying && _internalYouTubePlayer.value == null) {
-//            _playerState.update { it.copy(playbackState = PlaybackState.PAUSED) }
-//            updateLegacyMediasession()
-//        }
-
-        super.onCreate()
-
-
-        // Lancio tutto il resto in uno scope diverso
-        serviceScope.launch(Dispatchers.Main) {
-
-            // Avvio l'osservazione delle impostazioni
-            withContext(Dispatchers.IO) {
-                startObservingSettings()
-            }
-
-            checkAndRestoreTimer()
-
-            initializeAudioManager()
-            initializeAudioVolumeObserver()
-            initializeAudioEqualizer()
-            //initializeLegacyNotificationActionReceiver()
-
-            initializeAudioDeviceCallback()
-            initializeNormalizeVolume()
-            initializeBassBoost()
-            initializeReverb()
-            initializeSensorListener()
-            initializeSongCoverInLockScreen()
-            initializeMedleyMode()
-            applyPlaybackParameters()
-            initializeAudioDRCHelper()
-
-            initializeRiTune()
-            initializeDiscordPresence()
-
-            setupPersistentQueueAndObservers()
-
-            //startForeground()
-
-            // Registra l'observer sul ciclo di vita del processo
-            //ProcessLifecycleOwner.get().lifecycle.addObserver(processLifecycleObserver)
-
-            _isServiceReady.value = true
-        }
-    }
-    */
 
     @UnstableApi
     override fun onUpdateNotification(session: MediaSession, startInForegroundRequired: Boolean) {
@@ -815,224 +713,6 @@ class PlayerService : MediaLibraryService(),
         super.onUpdateNotification(session, forceForeground)
     }
 
-
-    /*
-    @kotlin.OptIn(ExperimentalSerializationApi::class, ExperimentalCoroutinesApi::class)
-    private fun setupPersistentQueueAndObservers() {
-        if (isPersistentQueueEnabled) {
-            serviceScope.launch {
-                // Caricamento iniziale obbligatorio sul Main thread per ExoPlayer
-                withContext(Dispatchers.Main) {
-                    loadQueue()
-                    resumePlaybackOnStart()
-                }
-
-                var secondsWhilePaused = 0
-                while (isActive) {
-                    delay(10.seconds)
-                    val isPlaying = _playerState.value.isPlaying
-                    if (isPlaying) {
-                        secondsWhilePaused = 0
-                        saveQueue()
-                        Timber.d("PlayerService saveQueue when playing")
-                    } else {
-                        secondsWhilePaused += 10
-                        if (secondsWhilePaused >= 60) {
-                            secondsWhilePaused = 0
-                            saveQueue()
-                            Timber.d("PlayerService saveQueue periodic when not playing")
-                        }
-                    }
-
-                    if (_currentSecond.value >= minTimeForEvent.seconds && lastMediaIdInHistory != currentSong.value?.id) {
-                        currentSong.value?.let {
-                            updateOnlineHistory(it.asMediaItem)
-                            lastMediaIdInHistory = it.id
-                        }
-                    }
-                }
-            }
-        }
-
-        serviceScope.launch {
-            currentSong.collect { song ->
-                if (song == null) return@collect
-                if (currentMediaItemState.value?.mediaId != song.id) return@collect
-
-                Timber.d("PlayerService onCreate update currentSong $song")
-
-//                withContext(Dispatchers.Main) {
-//                    updateLegacyMediasession()
-//                    updateLegacyNotification()
-//                }
-
-
-                val currentMediaId = if (!song.isLocal) song.id else song.mediaId.toString()
-
-                if (lastOnlineMediaId != currentMediaId && onlineListenedDurationMs > 0) {
-                    Timber.d(
-                        "PlayerService incrementOnlineListenedPlaytimeMs update currentSong onlineListenedDurationMs = $onlineListenedDurationMs" +
-                                " onlineMediaId = $currentMediaId currentMediaId = $currentMediaId"
-                    )
-                    incrementOnlineListenedPlaytimeMs()
-                    delay(200.milliseconds)
-                    onlineListenedDurationMs = 0L
-                    lastOnlineMediaId = currentMediaId
-                }
-
-
-                val format = Database.format(currentMediaId).first()
-                if (format == null && (!song.isLocal || song.isWebDav)) {
-                    getOnlineMetadata(currentMediaId)
-                        ?.let {
-                            //Timber.d("PlayerService onCreate update currentSong onlinemetadata it $it")
-                            val duratiomMs = it.videoDetails?.lengthSeconds?.toLong()
-                            try {
-                                Database.insert(
-                                    Format(
-                                        songId = currentMediaId,
-                                        contentLength = duratiomMs,
-                                        loudnessDb = it.playerConfig?.audioConfig?.loudnessDb
-                                            ?: it.playerConfig?.audioConfig?.perceptualLoudnessDb?.toFloat(),
-                                        playbackUrl = it.playbackTracking?.videostatsPlaybackUrl?.baseUrl
-                                    )
-                                )
-                            } catch (e: Exception) {
-                                Timber.e("PlayerService onCreate update currentSong exception ${e.stackTraceToString()}")
-                            }
-
-
-                            // Aggiorno la durata se è nulla nel db
-                            if (currentSong.value?.durationText == "0:00" && duratiomMs != null) {
-                                Database.updateDurationText(song.id, formatAsDuration(duratiomMs))
-                            }
-
-
-                        }
-                }
-
-                withContext(Dispatchers.Main) {
-                    _playerState.update { currentState ->
-                        currentState.withDatabaseMediaItemIfCurrent(
-                            currentMediaId = song.mediaId,
-                            databaseMediaItem = song.asMediaItem,
-                            queueIndex = player.currentMediaItemIndex,
-                            queueSize = player.mediaItemCount,
-                        )
-                    }
-                }
-            }
-        }
-
-        // Monitora la fine del brano nella webview
-        serviceScope.launch(Dispatchers.IO) {
-            while (isActive) {
-                if (currentSong.value?.isLocal == false) {
-                    if (_playerState.value.isPlaying) {
-                        onlineListenedDurationMs += 1000
-                        if (onlineListenedDurationMs >= 20000) {
-                            incrementOnlineListenedPlaytimeMs()
-                            delay(200.milliseconds)
-                            onlineListenedDurationMs = 0L
-                        }
-                    } else {
-                        if (onlineListenedDurationMs > 0) {
-                            incrementOnlineListenedPlaytimeMs()
-                            delay(200.milliseconds)
-                            onlineListenedDurationMs = 0L
-                        }
-                    }
-
-                    withContext(Dispatchers.Main) {
-                        if (_currentDuration.value > 0 && _playerState.value.isPlaying
-                        //&& appSettings.queueLoopType == QueueLoopType.Default
-                        ) {
-                            //Timber.d("PlayerService Watchdog: _currentSecond.value = ${_currentSecond.value} _currentDuration.value = ${_currentDuration.value} - lastProcessedIndex = $lastProcessedIndex currentMediaItemIndex = ${player.currentMediaItemIndex}")
-                            if (_currentSecond.value >= _currentDuration.value - 1f) {
-                                //if (_playerState.value.isPlaying) {
-                                Timber.d("PlayerService Watchdog: End of online track detected by time, calling handleWebViewTransition()")
-
-                                handleWebViewTransition()
-
-                                //handlePlayNext()
-                                //}
-                            }
-                        }
-                    }
-
-                }
-                delay(500.milliseconds)
-            }
-        }
-
-        serviceScope.launch {
-            MusicVaultEvents.events.collect { event ->
-                when (event) {
-                    is MusicVaultEvent.DownloadCompleted -> {
-                        updateMusicVaultMediaItem(
-                            songId = event.songId,
-                            fileName = event.fileName,
-                            thumbnailFileName = event.thumbnailFileName
-                        )
-                    }
-
-                    is MusicVaultEvent.DownloadRemoved -> {
-                        updateMusicVaultMediaItem(
-                            songId = event.songId,
-                            fileName = "",
-                            thumbnailFileName = ""
-                        )
-                    }
-                }
-            }
-        }
-
-        updateWidgetState()
-    }
-
-     */
-
-    /*
-    @kotlin.OptIn(ExperimentalCoroutinesApi::class)
-    private fun handleForeground(isPlaying: Boolean) {
-        if (isPlaying) {
-            // Se riproduce qualcosa dopo aver impostato un timer, viene cancellato
-            binder.cancelTimer()
-            // Qualsiasi sia il player attivo (Exo o l'altro), se sta suonando rimettiamo il foreground
-            startForeground(loading = false)
-            //Timber.d("PlayerService handleForeground - Lancio foreground")
-        } else {
-            // Se va in pausa, stop o buffering, sganciamo il foreground in sicurezza
-            detachForegroundSafely()
-            // Se va in pausa, ci rimane per almeno 15 minuti e non è attiva l'opzione di chiusura automatica, chiudiamo il servizio per liberare memoria
-            if (closeServiceAfterMinutes == DurationInMinutes.Disabled) {
-                binder.startSleepTimer(DurationInMinutes.`15`.milliSeconds)
-            }
-            //Timber.d("PlayerService handleForeground - Sgancio foreground")
-        }
-        _internalYouTubePlayer.value?.setVolume(getSystemMediaVolume())
-    }
-
-    private fun detachForegroundSafely() {
-        if (isServiceInForeground) {
-            try {
-                if (isAtLeastAndroid7) {
-                    // STOP_FOREGROUND_DETACH mantiene la notifica visibile nel pannello media
-                    // ma rimuove lo stato di servizio in primo piano aggressivo
-                    stopForeground(STOP_FOREGROUND_DETACH)
-                } else {
-                    @Suppress("DEPRECATION")
-                    stopForeground(false) // Comportamento legacy per versioni vecchie
-                }
-                isServiceInForeground = false
-                Timber.d("PlayerService detachForegroundSafely - Sganciato il foreground in modo sicuro (In Pausa)")
-            } catch (e: Exception) {
-                Timber.e("PlayerService detachForegroundSafely - Errore durante il stopForeground detach: $e")
-            }
-        }
-    }
-
-     */
 
     fun loadInitialSettingsFromDatabase(){
         // Devo essere sicuro che le impostazioni siano pronte
@@ -1119,72 +799,19 @@ class PlayerService : MediaLibraryService(),
     @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
-        // Se per qualche motivo il servizio è stato avviato ma non è ancora in foreground, proteggiti
-//        if (!isServiceInForeground) {
-//            startForeground(loading = true)
-//        }
-
         super.onStartCommand(intent, flags, startId)
 
         Timber.d("PlayerService onStartCommand intent action ${intent?.action}")
         when (intent?.action) {
             Action.play.value -> { if (currentSong.value?.isLocal == true) exoPlayer.play() else _internalYouTubePlayer.value?.play() }
             Action.pause.value -> { if (currentSong.value?.isLocal == true) exoPlayer.pause() else _internalYouTubePlayer.value?.pause() }
-            Action.next.value -> handlePlayNext()
+            Action.next.value -> handlePlayNext("PlayerService.onStartCommand")
             Action.previous.value -> handlePlayPrevious()
         }
         updateWidgetState()
 
         return START_STICKY
     }
-
-    /*
-    @ExperimentalCoroutinesApi
-    private fun startForeground(loading: Boolean = false) {
-
-        // Se siamo già in foreground e non è un caricamento, usiamo il NotificationManager per aggiornare
-        if (isServiceInForeground && !loading) {
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.notify(NOTIFICATION_ID, notification())
-            return
-        }
-
-        //Timber.d("PlayerService startForeground called from: ${Thread.currentThread().stackTrace.joinToString("\n")}")
-        val notification = if (loading) {
-            NotificationCompat
-                .Builder(this@PlayerService, NOTIFICATION_CHANNEL_ID)
-                .setContentTitle(resources.getString(R.string.loading_please_wait))
-                .setPriority(NotificationCompat.PRIORITY_LOW)
-                .setAutoCancel(false)
-                .setOnlyAlertOnce(true)
-                .setShowWhen(false)
-                .setSmallIcon(R.drawable.app_icon)
-                .setSilent(true)
-                .build()
-        } else {
-            notification()
-        }
-
-        try {
-            ServiceCompat.startForeground(
-                this,
-                NOTIFICATION_ID,
-                notification,
-                if (isAtLeastAndroid11) ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK else 0
-            )
-            isServiceInForeground = true
-        } catch (e: Exception) {
-            if (isAtLeastAndroid12 && e is ForegroundServiceStartNotAllowedException) {
-                // Fallback per i produttori OEM aggressivi
-                Timber.e("PlayerService Impossibile portare il servizio in foreground da background.")
-            } else {
-                throw e
-            }
-        }
-
-    }
-
-     */
 
     private fun initializeMediaItemState() {
         currentMediaItemState.value = exoPlayer.currentMediaItem
@@ -1247,7 +874,7 @@ class PlayerService : MediaLibraryService(),
                         if (currentSong.value?.isLocal == true) exoPlayer.currentPosition.div(1000)
                             .toInt() else _currentSecond.value.toInt()
                     if (appSettings.playbackDuration.toInt() <= seconds) {
-                        handlePlayNext()
+                        handlePlayNext("PlayerService.initializeMedleyMode")
                     }
                 }
             }
@@ -1291,11 +918,9 @@ class PlayerService : MediaLibraryService(),
                     withContext(Dispatchers.Main) {
                         when (playerState) {
                             PlayerConstants.PlayerState.PLAYING -> {
-                                //startEndedObserver()
                                 startPlaybackWatchdog()
                             }
                             else -> {
-                                //stopEndedObserver()
                                 stopPlaybackWatchdog()
                             }
                         }
@@ -1370,7 +995,7 @@ class PlayerService : MediaLibraryService(),
                     }
                 }
                 //Timber.d("PlayerService initializeRiTune Loop Tick - Active: $isActive")
-                delay(1000)
+                delay(1000.milliseconds)
             }
             Timber.d("PlayerService initializeRiTune: JOB TERMINATO (end of loop)")
         }
@@ -1429,7 +1054,7 @@ class PlayerService : MediaLibraryService(),
                 if (shakeCounter >= 1) {
                     //Toast.makeText(applicationContext, "Shaked $shakeCounter times", Toast.LENGTH_SHORT).show()
                     shakeCounter = 0
-                    handlePlayNext()
+                    handlePlayNext("PlayerService.onSensorChanged")
                 }
 
             }
@@ -1457,7 +1082,6 @@ class PlayerService : MediaLibraryService(),
         val currentState = _playerState.value
         val settings = currentState.settings
         _playerState.value = currentState.copy(settings = settings.copy(repeatMode = QueueLoopType.from(repeatMode)))
-        //updateLegacyNotification()
     }
 
     private fun initializeBitmapProvider() {
@@ -1472,32 +1096,6 @@ class PlayerService : MediaLibraryService(),
             Timber.e("PlayerService Failed init bitmap provider in MainActivity ${it.stackTraceToString()}")
         }
     }
-
-    /*
-    @kotlin.OptIn(ExperimentalCoroutinesApi::class)
-    private fun initializeLegacyMediaSession() {
-
-        legacyMediaSession = MediaSessionCompat(this, "PlayerService")
-
-        val repeatMode = appSettings.queueLoopType.type
-
-        legacyMediaSession.setFlags(
-            MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
-                    MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
-        )
-        legacyMediaSession.setRepeatMode(repeatMode)
-
-        if (appSettings.useVolumeKeysToChangeSong)
-            legacyMediaSession.setPlaybackToRemote(getVolumeProvider())
-
-        initializeLegacySessionCallback()
-
-        legacyMediaSession.isActive = true
-        legacyMediaSession.setMediaButtonReceiver(null)
-
-    }
-
-     */
 
     @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     fun recreateOnlinePlayerView() {
@@ -1695,7 +1293,6 @@ class PlayerService : MediaLibraryService(),
 
                 _currentDuration.value = duration
 
-                //updateLegacyNotification()
                 updateDiscordPresence()
 
                 if (duration > 0f && hybridPlayer.activeEngine == ActiveEngine.YOUTUBE) {
@@ -1799,8 +1396,6 @@ class PlayerService : MediaLibraryService(),
                     else -> {}
                 }
 
-
-                //updateLegacyNotification()
                 updateDiscordPresence()
 
             }
@@ -1880,7 +1475,6 @@ class PlayerService : MediaLibraryService(),
                             }
                         }
 
-                    //youTubePlayer.setVolume(getSystemMediaVolume())
                     return
                 }
 
@@ -1895,7 +1489,7 @@ class PlayerService : MediaLibraryService(),
                     exoPlayer.stop()
                 }
 
-                handlePlayNext()
+                handlePlayNext("PlayerService.initializeOnlinePlayer.onError")
 
                 SmartMessage(
                     message = this@PlayerService.getString(
@@ -2066,7 +1660,7 @@ class PlayerService : MediaLibraryService(),
                         // Up = 1, Down = -1, Release = 0
                         if (direction == VOLUME_UP) {
                             if (hybridPlayer.isPlaying && useVolumeKeysToChangeSong) {
-                                handlePlayNext()
+                                handlePlayNext("PlayerService.getVolumeProvider.onAdjustVolume")
                             } else {
                                 audioManager.adjustStreamVolume(
                                     STREAM_TYPE,
@@ -2099,7 +1693,6 @@ class PlayerService : MediaLibraryService(),
             shuffledIndices[0] = exoPlayer.currentMediaItemIndex
             exoPlayer.shuffleOrder = DefaultShuffleOrder(shuffledIndices, System.currentTimeMillis())
         }
-        //updateLegacyNotification()
 
         serviceScope.launch { saveQueue() }
     }
@@ -2215,7 +1808,7 @@ class PlayerService : MediaLibraryService(),
         // interrompiamo giustamente il fade per dare il controllo all'utente.
         if (isFading) {
             fadeInJob?.cancel()
-            crossfadeJob?.cancel()
+            playbackWathcDogJob?.cancel()
             isFading = false
         }
 
@@ -2256,7 +1849,7 @@ class PlayerService : MediaLibraryService(),
         if (playbackState == Player.STATE_ENDED && hybridPlayer.activeEngine == ActiveEngine.EXOPLAYER) {
             if (appSettings.crossfadeDuration == CrossfadeDuration.Off) {
                 Timber.d("PlayerService onPlaybackStateChanged: Fine naturale del file Exo (Crossfade OFF). Forzo handlePlayNext()")
-                handlePlayNext()
+                handlePlayNext("PlayerService.onPlaybackStateChanged")
             }
         }
 
@@ -2292,7 +1885,7 @@ class PlayerService : MediaLibraryService(),
                 // Se dovesse saltare un brano di troppo, uso il workaround diretto
                 //exoPlayer.seekToPreviousMediaItem()
 
-                handlePlayNext()
+                handlePlayNext("PlayerService.onPositionDiscontinuity")
             } else {
                 // SE IL CROSSFADE È ATTIVO:
                 // (Ci ha già pensato il monitor del crossfade a sfumare, quindi qui resettiamo solo il volume)
@@ -2403,7 +1996,7 @@ class PlayerService : MediaLibraryService(),
 
         if (lastOnlineMediaId == newMediaId) {
             Timber.d("PlayerService: onMediaItemTransition Transition ignored, same MediaID ($newMediaId) skipped")
-            handlePlayNext()
+            handlePlayNext("PlayerService.onMediaTransition Transition ignored same id")
             return
         }
 
@@ -2412,13 +2005,13 @@ class PlayerService : MediaLibraryService(),
         currentQueuePosition = exoPlayer.currentMediaItemIndex
 
         if (parentalControlEnabled && mediaItem.isExplicit) {
-            handlePlayNext()
+            handlePlayNext("PlayerService.onMediaItemTransition parental control enabled")
             SmartMessage(resources.getString(androidx.media3.session.R.string.error_message_parental_control_restricted), context = this@PlayerService)
             return
         }
 
         if (excludeIfIsVideoEnabled && mediaItem.isVideo) {
-            handlePlayNext()
+            handlePlayNext("PlayerService.onMediaItemTransition excludeIfIsVideoEnabled")
             SmartMessage(getString(R.string.warning_skipped_video), context = this@PlayerService)
             return
         }
@@ -2428,7 +2021,7 @@ class PlayerService : MediaLibraryService(),
             blacklisted = Database.blacklisted(mediaItem.mediaId) > 0
         }
         if (blacklisted) {
-            handlePlayNext()
+            handlePlayNext("PlayerService.onMediaItemTransition blacklisted")
             SmartMessage(getString(R.string.warning_skipped_blacklisted_song), context = this@PlayerService)
             return
         }
@@ -2525,8 +2118,6 @@ class PlayerService : MediaLibraryService(),
         initializeNormalizeVolume()
         maybeProcessRadio(reason)
 
-        //updateLegacyNotification()
-
         updateDiscordPresence()
 
         serviceScope.launch { saveQueue() }
@@ -2593,28 +2184,6 @@ class PlayerService : MediaLibraryService(),
         }
     }
 
-    /*
-    @ExperimentalCoroutinesApi
-    fun updateLegacyNotification() {
-//      Timber.d("PlayerService notify called from: ${Thread.currentThread().stackTrace.joinToString("\n")}")
-        serviceScope.launch {
-            withContext(Dispatchers.Main){
-                // Aggiorna sempre la sessione per riflettere lo stato reale, anche se vuoto
-                updateLegacyMediasession()
-
-//                if (player.mediaItemCount <= 0 && _playerState.value.playbackState == PlaybackState.IDLE) {
-//                    // Nasconde notifica se completamente idle e vuoto, attenzione il sistema potrebbe killare il servizio
-//                    // stopForeground(STOP_FOREGROUND_REMOVE)
-//                    return@withContext
-//                }
-
-                startForeground()
-            }
-        }
-    }
-
-     */
-
     private fun updateMediaSessionQueue(timeline: Timeline, activeIndex: Int) {
         val queueItems = mutableListOf<MediaSessionCompat.QueueItem>()
         val window = Timeline.Window()
@@ -2631,9 +2200,6 @@ class PlayerService : MediaLibraryService(),
             queueItems.add(MediaSessionCompat.QueueItem(description, i.toLong()))
         }
 
-//        legacyMediaSession.setQueue(queueItems)
-//
-//        legacyMediaSession.setQueueTitle(resources.getString(R.string.now_playing_title))
     }
 
     private fun maybeProcessRadio(reason: Int) {
@@ -2763,7 +2329,6 @@ class PlayerService : MediaLibraryService(),
             )
         }
 
-        //legacyMediaSession.setMetadata(metadataBuilder.build())
     }
 
     private fun initializeAudioManager() {
@@ -2898,111 +2463,6 @@ class PlayerService : MediaLibraryService(),
         }
     }
 
-    /*
-    @ExperimentalCoroutinesApi
-    private fun updateLegacyMediasession() {
-
-        val currentMediaItem = currentSong.value?.asMediaItem
-        val currentMediaItemDuration = if (currentMediaItem?.isLocal == false) (_currentDuration.value * 1000).toLong() else player.duration
-        val currentMediaItemPosition = if(currentMediaItem?.isLocal == false) (_currentSecond.value * 1000).toLong() else player.currentPosition
-
-        legacyMediaSession.setMetadata(
-            MediaMetadataCompat.Builder()
-                .putString(
-                    MediaMetadataCompat.METADATA_KEY_MEDIA_ID,
-                    currentMediaItem?.mediaId
-                )
-                .putBitmap(
-                    MediaMetadataCompat.METADATA_KEY_ALBUM_ART,
-                    bitmapProvider?.bitmap
-                )
-                .putString(
-                    MediaMetadataCompat.METADATA_KEY_TITLE,
-                    cleanPrefix(currentMediaItem?.mediaMetadata?.title.toString())
-                )
-                .putString(
-                    MediaMetadataCompat.METADATA_KEY_ARTIST,
-                    currentMediaItem?.mediaMetadata?.artist.toString()
-                )
-                .putString(
-                    MediaMetadataCompat.METADATA_KEY_ALBUM,
-                    currentMediaItem?.mediaMetadata?.albumTitle.toString()
-                )
-                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, currentMediaItemDuration)
-                .build()
-        )
-
-        val actions =
-            PlaybackStateCompat.ACTION_PLAY or
-                    PlaybackStateCompat.ACTION_PAUSE or
-                    PlaybackStateCompat.ACTION_PLAY_PAUSE or
-                    PlaybackStateCompat.ACTION_STOP or
-                    PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
-                    PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
-                    PlaybackStateCompat.ACTION_SEEK_TO or
-                    PlaybackStateCompat.ACTION_SKIP_TO_QUEUE_ITEM
-
-        val notificationPlayerFirstIcon = appSettings.notificationPlayerFirstIcon
-        val notificationPlayerSecondIcon = appSettings.notificationPlayerSecondIcon
-
-        val firstCustomAction = NotificationButtons.entries
-            .filter { it == notificationPlayerFirstIcon }
-            .map {
-                PlaybackStateCompat.CustomAction.Builder(
-                    it.action,
-                    it.name,
-                    it.getStateIcon(
-                        it,
-                        currentSong.value?.likedAt,
-                        player.repeatMode,
-                        player.shuffleModeEnabled
-                    ),
-                ).build()
-            }.first()
-
-
-        val secondCustomAction = NotificationButtons.entries
-            .filter { it == notificationPlayerSecondIcon }
-            .map {
-                PlaybackStateCompat.CustomAction.Builder(
-                    it.action,
-                    it.name,
-                    it.getStateIcon(
-                        it,
-                        currentSong.value?.likedAt,
-                        player.repeatMode,
-                        player.shuffleModeEnabled
-                    ),
-                ).build()
-            }.first()
-
-
-        legacyMediaSession.setPlaybackState(
-            PlaybackStateCompat.Builder().setActions(actions.let {
-                if (isAtLeastAndroid12) it or PlaybackStateCompat.ACTION_SET_PLAYBACK_SPEED else it
-            })
-                .apply {
-                    addCustomAction(firstCustomAction)
-                    addCustomAction(secondCustomAction)
-                    setActiveQueueItemId(
-                        player.currentMediaItemIndex.toLong()
-                    )
-                    setState(
-                        if (_playerState.value.isPlaying)
-                            PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED,
-                        currentMediaItemPosition,
-                        1f
-                    )
-                }
-                .build()
-        )
-
-        Timber.d("PlayerService updateLegacyMediasessionData onlineplayer playing ${_playerState.value.isPlaying} currentSecond ${_currentSecond.value} localplayer playing ${player.isPlaying}")
-    }
-
-     */
-
-
     // ===================================================================
     // WRAPPER PER YOUTUBE CONTROL
     // Traduce i comandi di Media3 (millisecondi, 0f-1f)
@@ -3104,7 +2564,7 @@ class PlayerService : MediaLibraryService(),
                             }
 
                     }
-                    Action.next.value -> handlePlayNext()
+                    Action.next.value -> handlePlayNext("LegacyActionReceiver.onReceive")
                     Action.previous.value -> handlePlayPrevious()
                     Action.like.value -> {
                         it.toggleLike()
@@ -3143,7 +2603,7 @@ class PlayerService : MediaLibraryService(),
 
                 }
             }
-            //updateLegacyNotification()
+
         }
 
     }
@@ -3267,14 +2727,15 @@ class PlayerService : MediaLibraryService(),
     }
 
     private fun startPlaybackWatchdog() {
-        crossfadeJob?.cancel()
-        crossfadeJob = serviceScope.launch(Dispatchers.Main) {
+        playbackWathcDogJob?.cancel()
+        isFading = false // <-- Sicurezza: iniziamo sempre sbloccati sul nuovo brano
+
+        playbackWathcDogJob = serviceScope.launch(Dispatchers.Main) {
             while (isActive) {
                 delay(200.milliseconds)
                 val duration = hybridPlayer.duration
                 val position = hybridPlayer.currentPosition
 
-                // Controlliamo la durata per QUALSIASI motore attivo (Exo o YouTube)!
                 if (duration > 0) {
                     val timeLeft = duration - position
                     val crossfadeDurationMs = appSettings.crossfadeDuration.milliseconds
@@ -3282,8 +2743,9 @@ class PlayerService : MediaLibraryService(),
                     // SE IL CROSSFADE È ATTIVO
                     if (appSettings.crossfadeDuration != CrossfadeDuration.Off) {
 
-                        // Entriamo nella finestra dei secondi dalla fine impostati
-                        if (timeLeft in 0..crossfadeDurationMs && !isFading) {
+                        // Usiamo 'timeLeft <= crossfadeDurationMs' invece del range 'in 0..'
+                        // per proteggerci nel caso in cui la timeline faccia un salto improvviso (es. a -50ms)
+                        if (timeLeft <= crossfadeDurationMs && timeLeft > -2000 && !isFading) {
                             isFading = true
 
                             val nextMediaItem = hybridPlayer.getMediaItemAt(hybridPlayer.nextMediaItemIndex)
@@ -3291,7 +2753,6 @@ class PlayerService : MediaLibraryService(),
 
                             Timber.d("PlayerService PlaybackWatchdog: Attivazione Fade Out (timeLeft=$timeLeft ms). Prossimo brano locale=$isNextLocal")
 
-                            // Lanciano il rispettivo fade-out in base al tipo del prossimo brano
                             if (isNextLocal) {
                                 startExoToExoCrossfade()
                             } else {
@@ -3301,11 +2762,11 @@ class PlayerService : MediaLibraryService(),
                     }
                     // SE IL CROSSFADE È DISATTIVATO (Off)
                     else {
-                        // Facciamo da Watchdog d'emergenza a 1.5 secondi dalla fine per evitare stalli nativi
-                        if (timeLeft <= 1500 && !isFading) {
+                        // Watchdog per cambio brano a 1 secondo dalla fine per evitare stalli nativi
+                        if (timeLeft <= 1000 && timeLeft > -2000 && !isFading) {
                             isFading = true
-                            Timber.d("PlayerService PlaybackWatchdog: Emergency trigger (Crossfade OFF) a $timeLeft ms dalla fine")
-                            handlePlayNext()
+                            Timber.d("PlayerService PlaybackWatchdog: Vado al brano successivo (Crossfade OFF) a $timeLeft ms dalla fine")
+                            handlePlayNext("PlaybackWatchdog with crossfade disabled")
                         }
                     }
                 }
@@ -3315,10 +2776,12 @@ class PlayerService : MediaLibraryService(),
 
 
 
+
     private fun stopPlaybackWatchdog() {
-        crossfadeJob?.cancel()
-        crossfadeJob = null
-        Timber.d("PlayerService PlaybackWatchdog: Cancello crossfadeJob")
+        playbackWathcDogJob?.cancel()
+        playbackWathcDogJob = null
+        isFading = false // Sblocchiamo il fading
+        //Timber.d("PlayerService PlaybackWatchdog: Cancello crossfadeJob")
     }
 
     private fun startFadeIn() {
@@ -3376,7 +2839,7 @@ class PlayerService : MediaLibraryService(),
             hybridPlayer.setFadeVolume(0f)
 
             Timber.d("PlayerService: Fade Out Exo completato, lancio handlePlayNext()")
-            handlePlayNext()
+            handlePlayNext("PlayerService.startExoToExoCrossfade")
         }
     }
 
@@ -3399,119 +2862,9 @@ class PlayerService : MediaLibraryService(),
             hybridPlayer.setFadeVolume(0f)
 
             Timber.d("PlayerService: Fade Out WebView completato, lancio handlePlayNext()")
-            handlePlayNext()
+            handlePlayNext("PlayerService.startWebViewFadeOut")
         }
     }
-
-
-
-    /*
-    @ExperimentalCoroutinesApi
-    fun notification(): Notification {
-
-        val currentMediaItem = hybridPlayer.currentMediaItem
-
-        createNotificationChannels()
-
-        val forwardAction = NotificationCompat.Action.Builder(
-            R.drawable.play_skip_forward,
-            "next",
-            Action.next.pendingIntent
-        ).build()
-
-        val playPauseAction = NotificationCompat.Action.Builder(
-            if (_playerState.value.isPlaying) R.drawable.pause else R.drawable.play,
-            if (_playerState.value.isPlaying || player.isPlaying) "pause" else "play",
-            if (_playerState.value.isPlaying) Action.pause.pendingIntent
-            else Action.play.pendingIntent,
-        ).build()
-
-        val previousAction = NotificationCompat.Action.Builder(
-            R.drawable.play_skip_back,
-            "prev",
-            Action.previous.pendingIntent
-        ).build()
-
-
-        val notificationPlayerFirstIcon = appSettings.notificationPlayerFirstIcon
-        val notificationPlayerSecondIcon = appSettings.notificationPlayerSecondIcon
-
-        val firstCustomAction = NotificationButtons.entries
-            .filter { it == notificationPlayerFirstIcon }
-            .map {
-                NotificationCompat.Action.Builder(
-                    it.getStateIcon(
-                        it,
-                        currentSong.value?.likedAt,
-                        player.repeatMode,
-                        player.shuffleModeEnabled
-                    ),
-                    it.name,
-                    it.pendingIntent,
-                ).build()
-            }.first()
-
-
-        val secondCustomAction = NotificationButtons.entries
-            .filter { it == notificationPlayerSecondIcon }
-            .map {
-                NotificationCompat.Action.Builder(
-                    it.getStateIcon(
-                        it,
-                        currentSong.value?.likedAt,
-                        player.repeatMode,
-                        player.shuffleModeEnabled
-                    ),
-                    it.name,
-                    it.pendingIntent,
-                ).build()
-            }.first()
-
-
-        val notification = if (isAtLeastAndroid8) {
-            NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-        } else {
-            NotificationCompat.Builder(this)
-        }
-            .setContentTitle(cleanPrefix(currentMediaItem?.mediaMetadata?.title.toString()))
-            .setContentText(currentMediaItem?.mediaMetadata?.artist)
-            .setContentInfo(currentMediaItem?.mediaMetadata?.albumTitle)
-            .setSmallIcon(R.drawable.app_icon)
-            .setLargeIcon(bitmapProvider?.bitmap)
-            .setShowWhen(false)
-            .setSilent(true)
-            .setAutoCancel(false)
-            .setOngoing(true)
-            .addAction(firstCustomAction)
-            .addAction(previousAction)
-            .addAction(playPauseAction)
-            .addAction(forwardAction)
-            .addAction(secondCustomAction)
-            .setStyle(
-                androidx.media.app.NotificationCompat.MediaStyle()
-                    .setShowActionsInCompactView(1, 2, 3)
-                    .setMediaSession(legacyMediaSession.sessionToken)
-
-            )
-            .setContentIntent(
-                PendingIntent.getActivity(
-                    this,
-                    0,
-                    Intent(this, MainActivity::class.java)
-                        .putExtra("expandPlayerBottomSheet", true),
-                    PendingIntent.FLAG_IMMUTABLE
-                )
-            )
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .build()
-
-        return notification
-
-    }
-
-     */
 
     private fun createNotificationChannels() {
         if (!isAtLeastAndroid8) return
@@ -3781,101 +3134,6 @@ class PlayerService : MediaLibraryService(),
 
     }
 
-    private fun handleWebViewTransition() {
-//        val isLocal = currentSong.value?.isLocal == true
-//
-//        if (isLocal)
-//            _internalBufferedFraction.value = player.bufferedPosition.toFloat()
-//
-//        player.pauseAtEndOfMediaItems = !isLocal
-
-        // Interviene solo se il brano è terminato
-        if (//_playerState.value.playbackState == PlaybackState.ENDED &&
-            lastProcessedIndex != exoPlayer.currentMediaItemIndex
-        ) {
-
-            val queueLoopType = appSettings.queueLoopType
-
-            when (queueLoopType) {
-                QueueLoopType.RepeatOne -> {
-                    hybridPlayer.seekTo(0)
-                }
-                QueueLoopType.Default -> {
-                    if (hybridPlayer.hasNextMediaItem()) {
-                        lastProcessedIndex = hybridPlayer.currentMediaItemIndex
-                        handlePlayNext()
-                    }
-                }
-                QueueLoopType.RepeatAll -> {
-                    if (!hybridPlayer.hasNextMediaItem()) {
-                        hybridPlayer.playAtIndex(0)
-                    } else {
-                        lastProcessedIndex = exoPlayer.currentMediaItemIndex
-                        handlePlayNext()
-                    }
-                }
-            }
-        }
-    }
-
-    /*
-    private fun startEndedObserver() {
-        endedObserverJob?.cancel()
-
-        endedObserverJob = serviceScope.launch(Dispatchers.Main) {
-
-            var lastProcessedIndex: Int? = null
-
-            while (isActive) {
-
-                val isLocal = currentSong.value?.isLocal == true
-                //val playbackState = player.playbackState
-
-                if (isLocal)
-                    _internalBufferedFraction.value = player.bufferedPosition.toFloat()
-
-                player.pauseAtEndOfMediaItems = !isLocal
-
-                // Interviene solo se il brano è terminato
-                if (!isLocal && _playerState.value.playbackState == PlaybackState.ENDED
-                    && lastProcessedIndex != player.currentMediaItemIndex
-                ) {
-
-                    val queueLoopType = appSettings.queueLoopType
-
-                    when (queueLoopType) {
-                        QueueLoopType.RepeatOne -> {
-                            _internalYouTubePlayer.value?.seekTo(0f)
-                        }
-                        QueueLoopType.Default -> {
-                            if (hybridPlayer.hasNextMediaItem()) {
-                                lastProcessedIndex = hybridPlayer.currentMediaItemIndex
-                                handlePlayNext()
-                            }
-                        }
-                        QueueLoopType.RepeatAll -> {
-                            if (!hybridPlayer.hasNextMediaItem()) {
-                                hybridPlayer.playAtIndex(0)
-                            } else {
-                                lastProcessedIndex = player.currentMediaItemIndex
-                                handlePlayNext()
-                            }
-                        }
-                    }
-                }
-
-                delay(200.milliseconds)
-            }
-        }
-    }
-
-    private fun stopEndedObserver() {
-        endedObserverJob?.cancel()
-        endedObserverJob = null
-    }
-
-     */
-
     private fun getSystemMediaVolume() = 100
 
     suspend fun setWallpaper(context: Context, bitmap: Bitmap) {
@@ -4124,13 +3382,6 @@ class PlayerService : MediaLibraryService(),
         val coroutineScope: CoroutineScope
             get() = this@PlayerService.serviceScope
 
-        // Migrated to hybridPlayer
-//        val exoPlayer: ExoPlayer?
-//            get() = if (::player.isInitialized) this@PlayerService.player else null
-
-//        val youtubePlayer: YouTubePlayer?
-//            get() = this@PlayerService.internalYoutubePlayer.value
-
         val hybridPlayer: HybridPlayer
             get() = this@PlayerService.hybridPlayer
 
@@ -4374,9 +3625,7 @@ class PlayerService : MediaLibraryService(),
                         setLikeState(it.likedAt)
                     )
                 }
-//                    .also {
-//                    currentSong.debounce(1000).conflate().collect(serviceScope) { updateLegacyNotification() }
-//                }
+
             }
 
         }
@@ -4449,129 +3698,8 @@ class PlayerService : MediaLibraryService(),
         }
     }
 
-/*
-    @kotlin.OptIn(FlowPreview::class)
-    @ExperimentalCoroutinesApi
-    fun initializeLegacySessionCallback() {
-        Timber.d("PlayerService InitializeLegacySessionCallback")
-        val currentMediaItem = currentSong.value?.asMediaItem
-
-        binder.let {
-            legacyMediaSession.setCallback(
-                LegacyMediaSessionCallback(
-                    binder = it,
-                    onPlayClick = {
-                        Timber.d("PlayerService InitializeLegacySessionCallback onPlayClick")
-
-                        if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
-
-                            hybridPlayer.play()
-                        else
-                            serviceScope.launch {
-                                riTuneCastClient.sendCommand(
-                                    RiTuneRemoteCommand(
-                                        "play",
-                                        position = playFromSecond
-                                    )
-                                )
-                            }
-
-                        updateLegacyNotification()
-                    },
-                    onPauseClick = {
-                        Timber.d("PlayerService InitializeLegacySessionCallback onPauseClick")
-
-                        if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
-                            hybridPlayer.pause()
-                        } else {
-                            serviceScope.launch {
-                                riTuneCastClient.sendCommand(
-                                    RiTuneRemoteCommand(
-                                        "pause",
-                                    )
-                                )
-                            }
-                        }
-                        updateLegacyNotification()
-                    },
-                    onSeekToPos = { newPosition ->
-                        Timber.d("PlayerService InitializeLegacySessionCallback onSeekPosTo ${newPosition}")
-                        if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
-                            hybridPlayer.seekTo(newPosition)
-                        else
-                            serviceScope.launch {
-                                riTuneCastClient.sendCommand(
-                                    RiTuneRemoteCommand(
-                                        "seek",
-                                        position = newPosition.div(1000) .toFloat()
-                                    )
-                                )
-                            }
-
-                        _currentSecond.value = newPosition.div(1000).toFloat()
-
-                        updateLegacyNotification()
-                    },
-                    onPlayNext = {
-                        handlePlayNext()
-                    },
-                    onPlayPrevious = {
-                        player.playPrevious()
-                    },
-                    onPlayQueueItem = { queueId ->
-                        val timelineIndex = queueId.toInt()
-                        if (timelineIndex >= 0 && timelineIndex < player.currentTimeline.windowCount) {
-                            hybridPlayer.seekToDefaultPosition(timelineIndex)
-                        }
-                    },
-                    onCustomClick = { customAction ->
-                        Timber.d("PlayerService InitializeLegacySessionCallback onCustomClick $customAction")
-                        when (customAction) {
-                            NotificationButtons.Favorites.action -> {
-                                it.toggleLike()
-                            }
-                            NotificationButtons.Repeat.action -> {
-                                it.toggleRepeat()
-                            }
-                            NotificationButtons.Shuffle.action -> {
-                                it.toggleShuffle()
-                            }
-                            NotificationButtons.Radio.action -> {
-                                if (currentMediaItem != null) {
-                                    it.stopRadio()
-                                    hybridPlayer.seamlessQueue(currentMediaItem)
-
-                                    if(!GlobalSharedData.riTuneCastActive)
-                                        hybridPlayer.play()
-                                    else
-                                        serviceScope.launch {
-                                            riTuneCastClient.sendCommand(
-                                                RiTuneRemoteCommand(
-                                                    "play",
-                                                    position = playFromSecond
-                                                )
-                                            )
-                                        }
-
-                                    it.setupRadio(
-                                        NavigationEndpoint.Endpoint.Watch(videoId = currentMediaItem.mediaId)
-                                    )
-                                }
-                            }
-                            NotificationButtons.Search.action -> {
-                                it.actionSearch()
-                            }
-                        }
-
-                    }
-                )
-            )
-        }
-    }
-
- */
-
-    fun handlePlayNext() {
+    fun handlePlayNext(origine: String? = null) {
+        Timber.d("PlayerService PlaybackWatchdog: handlePlayNext cambio brano richiesto da $origine")
         // Cancelliamo subito il watchdog prima di muovere la timeline,
         // così la transizione avviene senza disturbi
         stopPlaybackWatchdog()
