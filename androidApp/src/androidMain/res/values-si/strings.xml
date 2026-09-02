@@ -1406,4 +1406,6 @@ CC-BY-SA 3.0</string>
     <string name="show_miniplayer_in_settings">Show miniplayer in settings</string>
     <string name="settings_themes_manager">Themes manager</string>
     <string name="settings_themes_manager_title_swithes_between_themes">Swithes between themes</string>
+    <string name="notify_title_auto_close_timer_finished">Auto-close timer finished</string>
+    <string name="notify_message_the_app_has_been_closed_automatically">The app has been closed automatically.</string>
 </resources>

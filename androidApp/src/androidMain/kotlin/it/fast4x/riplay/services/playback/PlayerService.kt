@@ -4227,8 +4227,11 @@ class PlayerService : MediaLibraryService(),
                 }
 
                 // COSTRUZIONE NOTIFICA DI CORTESIA
-                val titleStr = if (wasPlaying) "Auto-close timer finished" else "App closed to save battery"
-                val textStr = if (wasPlaying) "The app has been closed automatically." else "The background service was stopped because playback was paused."
+                // In futuro potrò gestire una notifica diversa in base allo stato del player
+                val titleStr = getString(R.string.notify_title_auto_close_timer_finished)
+                val textStr = getString(R.string.notify_message_the_app_has_been_closed_automatically)
+//                val titleStr = if (wasPlaying) getString(R.string.notify_title_auto_close_timer_finished)  else "App closed to save battery"
+//                val textStr = if (wasPlaying) getString(R.string.notify_message_the_app_has_been_closed_automatically) else "The background service was stopped because playback was paused."
 
                 val courtesyNotification = NotificationCompat
                     .Builder(this@PlayerService, SLEEPTIMER_NOTIFICATION_CHANNEL_ID)
