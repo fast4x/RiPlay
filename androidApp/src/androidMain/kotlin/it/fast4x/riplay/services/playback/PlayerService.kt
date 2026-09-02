@@ -1779,23 +1779,17 @@ class PlayerService : MediaLibraryService(),
 
                     }
                     PlayerConstants.PlayerState.PLAYING -> {
-                        //handleForeground(true)
                         lastError = null  // reset errore dopo riproduzione riuscita
                         onlineNearEndTicks = 0
-                        //startEndedObserver()
                         startPlaybackWatchdog()
-                        //sendOpenExternalEqualizerIntent()
 
                         if (::hybridPlayer.isInitialized) {
                             hybridPlayer.invalidateYouTubePlayPause()
                         }
                     }
                     PlayerConstants.PlayerState.PAUSED -> {
-                        //handleForeground(false)
                         onlineNearEndTicks = 0
-                        //stopEndedObserver()
                         stopPlaybackWatchdog()
-                        //sendCloseExternalEqualizerIntent()
 
                         if (::hybridPlayer.isInitialized) {
                             hybridPlayer.invalidateYouTubePlayPause()
@@ -2126,6 +2120,8 @@ class PlayerService : MediaLibraryService(),
         Timber.d("PlayerService: onDestroy AVVIATO")
 
         _isServiceReady.value = false
+
+        sendCloseExternalEqualizerIntent()
 
         // RIMOZIONE SICURA DEI RECEIVER
         try {
@@ -2857,31 +2853,49 @@ class PlayerService : MediaLibraryService(),
     }
 
     @UnstableApi
-    private fun sendOpenExternalEqualizerIntent() {
-        sendBroadcast(
-            Intent(AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION).apply {
-                putExtra(AudioEffect.EXTRA_AUDIO_SESSION,
-                    if (currentSong.value?.isLocal == true) exoPlayer.audioSessionId
-                    else 0
-                )
-                putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
-                putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
-            }
-        )
+    fun sendOpenExternalEqualizerIntent() {
+        // Estraiamo l'ID in modo dinamico: se l'engine attivo è ExoPlayer usiamo il suo id nativo,
+        // altrimenti per YouTube forziamo la scansione globale del processo dell'app
+        val sessionId = if (hybridPlayer.activeEngine == ActiveEngine.EXOPLAYER) {
+            try { exoPlayer.audioSessionId } catch (e: Exception) { 0 }
+        } else {
+            AudioManager.AUDIO_SESSION_ID_GENERATE
+        }
+
+        if (sessionId == AudioEffect.ERROR_BAD_VALUE || sessionId == 0) return
+
+        try {
+            Timber.d("PlayerService External Equalizer: Invio OPEN Intent centralizzato per engine: ${hybridPlayer.activeEngine}, session: $sessionId")
+            sendBroadcast(
+                Intent(AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION).apply {
+                    putExtra(AudioEffect.EXTRA_AUDIO_SESSION, sessionId)
+                    putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
+                    putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
+                }
+            )
+        } catch (e: Exception) {
+            Timber.e("PlayerService External Equalizer: Errore OPEN Intent centralizzato: ${e.message}")
+        }
     }
+
 
 
     @UnstableApi
     private fun sendCloseExternalEqualizerIntent() {
-        sendBroadcast(
-            Intent(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION).apply {
-                putExtra(AudioEffect.EXTRA_AUDIO_SESSION,
-                    if (currentSong.value?.isLocal == true) exoPlayer.audioSessionId
-                    else 0
-                )
-                putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
-            }
-        )
+        val sessionId = try { exoPlayer.audioSessionId } catch (e: Exception) { 0 }
+        if (sessionId <= 0) return
+
+        try {
+            Timber.d("PlayerService External Equalizer: Invio intent di CHIUSURA sessione audio: $sessionId")
+            sendBroadcast(
+                Intent(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION).apply {
+                    putExtra(AudioEffect.EXTRA_AUDIO_SESSION, sessionId)
+                    putExtra(AudioEffect.EXTRA_PACKAGE_NAME, packageName)
+                }
+            )
+        } catch (e: Exception) {
+            Timber.e("PlayerService External Equalizer: Errore durante l'invio dell'intent CLOSE: ${e.message}")
+        }
     }
 
     /*
@@ -3142,11 +3156,10 @@ class PlayerService : MediaLibraryService(),
         Timber.d("PlayerService onIsPlayingChanged intercettato: isPlaying=$isPlaying ")
 
         if (isPlaying) {
-            //startEndedObserver()
+            sendOpenExternalEqualizerIntent()
             startPlaybackWatchdog()
             updatePlayerState(PlayerConstants.PlayerState.PLAYING)
         } else {
-            //stopEndedObserver()
             stopPlaybackWatchdog()
             updatePlayerState(PlayerConstants.PlayerState.PAUSED)
 
@@ -3160,8 +3173,6 @@ class PlayerService : MediaLibraryService(),
         }
 
         updateWidgetState()
-//        if (!isPlaying) sendCloseExternalEqualizerIntent()
-//        else sendOpenExternalEqualizerIntent()
 
         updateDiscordPresence()
 
