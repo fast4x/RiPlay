@@ -537,7 +537,7 @@ fun MediaItemGridMenu (
                 confirmText = stringResource(R.string.stop),
                 onDismiss = { isShowingSleepTimerDialog = false },
                 onConfirm = {
-                    binder?.cancelTimer()
+                    binder?.cancelAutoCloseTimer()
                     onDismiss()
                 }
             )
@@ -635,7 +635,7 @@ fun MediaItemGridMenu (
                                 + formatAsDuration(timeRemaining.toLong())
                                 + " " + stringResource(R.string.end_of_song),
                         onClick = {
-                            binder?.startSleepTimer(timeRemaining.toLong())
+                            binder?.startAutoCloseTimer(timeRemaining.toLong())
                             isShowingSleepTimerDialog = false
                         }
                     )
@@ -660,7 +660,7 @@ fun MediaItemGridMenu (
                     IconButton(
                         enabled = amount > 0,
                         onClick = {
-                            binder?.startSleepTimer(amount * 5 * 60 * 1000L)
+                            binder?.startAutoCloseTimer(amount * 5 * 60 * 1000L)
                             isShowingSleepTimerDialog = false
                         },
                         icon = R.drawable.checkmark,

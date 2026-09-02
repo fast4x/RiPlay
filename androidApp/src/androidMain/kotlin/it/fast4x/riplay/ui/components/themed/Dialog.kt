@@ -2050,8 +2050,8 @@ fun PlaybackParamsDialog(
     val defaultBassboost = 0.5f
     var playbackSpeed = appSettings.playbackSpeed
     var playbackPitch = appSettings.playbackPitch
-    var playbackVolume = appSettings.playbackVolume
-    var playbackDeviceVolume = appSettings.playbackDeviceVolume
+//    var playbackVolume = appSettings.playbackVolume
+//    var playbackDeviceVolume = appSettings.playbackDeviceVolume
     var playbackDuration = appSettings.playbackDuration
     val blurStrength = appearanceSettings.blurStrength
     var bassBoost = appSettings.bassBoostLevel
@@ -2454,6 +2454,7 @@ fun PlaybackParamsDialog(
                  */
             }
 
+        /*
         Row(
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically,
@@ -2470,7 +2471,7 @@ fun PlaybackParamsDialog(
             ) {
                 IconButton(
                     onClick = {
-                        playbackVolume = 0.5f
+                        //playbackVolume = 0.5f
                         binder?.hybridPlayer?.volume = playbackVolume
                     },
                     icon = R.drawable.volume_up,
@@ -2588,6 +2589,7 @@ fun PlaybackParamsDialog(
                 )
 
             }
+        */
 
         Row(
             horizontalArrangement = Arrangement.Start,

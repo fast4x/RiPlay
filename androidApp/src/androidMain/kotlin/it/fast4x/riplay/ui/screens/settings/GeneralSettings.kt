@@ -75,6 +75,7 @@ import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.EqualizerType
+import it.fast4x.riplay.enums.RewindThresholdDuration
 import it.fast4x.riplay.extensions.updater.UpdateDialog
 import it.fast4x.riplay.services.helpers.AudioDRCHelper
 import it.fast4x.riplay.services.playback.MediaLibraryServiceCallback
@@ -178,7 +179,7 @@ fun GeneralSettings(
     val enablePictureInPicture = appSettings.enablePictureInPicture
     val enablePictureInPictureAuto = appSettings.enablePictureInPictureAuto
     val pipModule = appSettings.pipModule
-    val jumpPrevious = appearanceSettings.jumpPrevious
+    val rewindThresholdDuration = appSettings.rewindThresholdDuration
 
     val isProxyEnabled = appSettings.proxyEnabled
     val proxyHost = appSettings.proxyHostname
@@ -771,32 +772,37 @@ fun GeneralSettings(
                             true
                         )
                     ) {
-                        SettingsEntryGroup() {
-                            BasicText(
-                                text = stringResource(R.string.jump_previous),
-                                style = typography().xs.semiBold.copy(color = colorPalette().text),
-                            )
-                            BasicText(
-                                text = stringResource(R.string.jump_previous_blank),
-                                style = typography().xxs.semiBold.copy(color = colorPalette().textDisabled),
-                            )
-                            TextField(
-                                value = jumpPrevious,
-                                onValueChange = {
-                                    if (it.isDigitsOnly())
-                                        coroutineScope.launch {
-                                            val new = appearanceSettingsManager.activeSettings.value.copy(jumpPrevious = it)
-                                            appearanceSettingsManager.updatePreset(new)
-                                        }
-                                },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                singleLine = true,
-                                colors = TextFieldDefaults.textFieldColors(
-                                    textColor = colorPalette().text,
-                                    unfocusedIndicatorColor = colorPalette().text
-                                ),
-                            )
-                        }
+
+                        EnumValueSelectorSettingsEntry(
+                            title = stringResource(R.string.jump_previous),
+                            selectedValue = rewindThresholdDuration,
+                            onValueSelected = {
+                                coroutineScope.launch {
+                                    val new =
+                                        appSettingsManager.activeSettings.value.copy(rewindThresholdDuration = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
+                            },
+                            valueText = {
+                                when (it) {
+                                    RewindThresholdDuration.Disabled -> stringResource(R.string.vt_disabled)
+                                    RewindThresholdDuration.`3` -> "3s"
+                                    RewindThresholdDuration.`4` -> "4s"
+                                    RewindThresholdDuration.`5` -> "5s"
+                                    RewindThresholdDuration.`6` -> "6s"
+                                    RewindThresholdDuration.`7` -> "7s"
+                                    RewindThresholdDuration.`8` -> "8s"
+                                    RewindThresholdDuration.`9` -> "9s"
+                                    RewindThresholdDuration.`10` -> "10s"
+                                    RewindThresholdDuration.`11` -> "11s"
+                                    RewindThresholdDuration.`12` -> "12s"
+
+
+
+                                }
+                            }
+                        )
+
                     }
 
                     if (search.input.isBlank() || stringResource(R.string.min_listening_time).contains(
@@ -1101,10 +1107,9 @@ fun GeneralSettings(
                                 coroutineScope.launch {
                                     val new = appSettingsManager.activeSettings.value.copy(persistentQueue = it)
                                     appSettingsManager.updateSettings(new)
-                                }
 
-                                if(it) binder?.loadQueue() // try to load last known queue now
-                                //restartService = true
+                                    if(it) binder?.loadQueue() // try to load last known queue now
+                                }
                             }
                         )
                         RestartPlayerService(restartService, onRestart = { restartService = false })

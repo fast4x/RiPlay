@@ -667,7 +667,7 @@ fun UnifiedPlayer(
     val screenWidth = configuration.screenWidthDp.dp
     val screenHeight = configuration.screenHeightDp.dp
 
-    val jumpPrevious = appearanceSettings.jumpPrevious
+    //val jumpPrevious = appearanceSettings.jumpPrevious
 
     if (isShowingSleepTimerDialog) {
         if (sleepTimerMillisLeft != null) {
@@ -677,7 +677,7 @@ fun UnifiedPlayer(
                 confirmText = stringResource(R.string.stop),
                 onDismiss = { isShowingSleepTimerDialog = false },
                 onConfirm = {
-                    binder.cancelTimer()
+                    binder.cancelAutoCloseTimer()
                     delayedSleepTimer = false
                     //onDismiss()
                 }
@@ -776,7 +776,7 @@ fun UnifiedPlayer(
                                 + formatAsDuration(timeRemaining.toLong())
                                 + " " + stringResource(R.string.end_of_song),
                         onClick = {
-                            binder.startSleepTimer(timeRemaining.toLong())
+                            binder.startAutoCloseTimer(timeRemaining.toLong())
                             isShowingSleepTimerDialog = false
                         }
                     )
@@ -801,7 +801,7 @@ fun UnifiedPlayer(
                     IconButton(
                         enabled = amount > 0,
                         onClick = {
-                            binder.startSleepTimer(amount * 5 * 60 * 1000L)
+                            binder.startAutoCloseTimer(amount * 5 * 60 * 1000L)
                             isShowingSleepTimerDialog = false
                         },
                         icon = R.drawable.checkmark,
@@ -1343,18 +1343,8 @@ fun UnifiedPlayer(
                         )
                     }
             },
-            onNext = { binder.hybridPlayer?.playNext() },
-            onPrevious = {
-                if (jumpPrevious == "") {
-                    coroutineScope.launch {
-                        val new = appearanceSettingsManager.activeSettings.value.copy(jumpPrevious = "0")
-                        appearanceSettingsManager.updatePreset(new)
-                    }
-                }
-                if (binder.hybridPlayer.hasPreviousMediaItem() == false || (jumpPrevious != "0" && currentPosition > jumpPrevious.toFloat())) {
-                    binder.hybridPlayer.seekTo(0)
-                } else binder.hybridPlayer.playPrevious()
-            },
+            onNext = { binder.hybridPlayer.playNext() },
+            onPrevious = { binder.hybridPlayer.playPrevious() },
             playerState = playerState,
         )
     }
@@ -2554,19 +2544,8 @@ fun UnifiedPlayer(
                                                 )
                                             }
                                     },
-                                    onNext = { binder.hybridPlayer?.playNext() },
-                                    onPrevious = {
-                                        if (jumpPrevious == "") {
-                                            coroutineScope.launch {
-                                                val new =
-                                                    appearanceSettingsManager.activeSettings.value.copy(jumpPrevious = "0")
-                                                appearanceSettingsManager.updatePreset(new)
-                                            }
-                                        }
-                                        if (binder.hybridPlayer.hasPreviousMediaItem() == false || (jumpPrevious != "0" && currentPosition > jumpPrevious.toFloat())) {
-                                            binder.hybridPlayer.seekTo(0)
-                                        } else binder.hybridPlayer.playPrevious()
-                                    },
+                                    onNext = { binder.hybridPlayer.playNext() },
+                                    onPrevious = { binder.hybridPlayer.playPrevious() },
                                     playerState = playerState,
                                 )
 
@@ -2894,19 +2873,8 @@ fun UnifiedPlayer(
                                                         )
                                                     }
                                             },
-                                            onNext = { binder.hybridPlayer?.playNext() },
-                                            onPrevious = {
-                                                if (jumpPrevious == "") {
-                                                    coroutineScope.launch {
-                                                        val new =
-                                                            appearanceSettingsManager.activeSettings.value.copy(jumpPrevious = "0")
-                                                        appearanceSettingsManager.updatePreset(new)
-                                                    }
-                                                }
-                                                if (binder.hybridPlayer.hasPreviousMediaItem() || (jumpPrevious != "0" && currentPosition > jumpPrevious.toFloat())) {
-                                                    binder.hybridPlayer.seekTo(0)
-                                                } else binder.hybridPlayer.playPrevious()
-                                            },
+                                            onNext = { binder.hybridPlayer.playNext() },
+                                            onPrevious = { binder.hybridPlayer.playPrevious() },
                                             playerState = playerState,
                                         )
                                     }
@@ -3810,19 +3778,8 @@ fun UnifiedPlayer(
                                                 )
                                             }
                                     },
-                                    onNext = { binder.hybridPlayer?.playNext() },
-                                    onPrevious = {
-                                        if (jumpPrevious == "") {
-                                            coroutineScope.launch {
-                                                val new =
-                                                    appearanceSettingsManager.activeSettings.value.copy(jumpPrevious = "0")
-                                                appearanceSettingsManager.updatePreset(new)
-                                            }
-                                        }
-                                        if (binder.hybridPlayer.hasPreviousMediaItem() || (jumpPrevious != "0" && currentPosition > jumpPrevious.toFloat())) {
-                                            binder.hybridPlayer.seekTo(0)
-                                        } else binder.hybridPlayer.playPrevious()
-                                    },
+                                    onNext = { binder.hybridPlayer.playNext() },
+                                    onPrevious = { binder.hybridPlayer.playPrevious() },
                                     playerState = playerState,
                                 )
 

@@ -178,7 +178,6 @@ fun TvUnifiedPlayer(
     var isShowingLyrics by rememberSaveable { mutableStateOf(false) }
     var isShowingVisualizer by rememberSaveable { mutableStateOf(false) }
     var showQueue by rememberSaveable { mutableStateOf(false) }
-    val jumpPrevious = appearanceSettings.jumpPrevious
     val disableScrollingText = appearanceSettings.disableScrollingText
     val colorPaletteMode = appearanceSettings.colorPaletteMode
     val textoutline = appearanceSettings.textoutline
@@ -439,7 +438,7 @@ fun TvUnifiedPlayer(
                     playerState = playerState,
                     mediaItem = mediaItem,
                     positionAndDuration = Pair(currentPosition, duration),
-                    jumpPrevious = jumpPrevious,
+                    //jumpPrevious = jumpPrevious,
                     playPauseFocusRequester = playPauseFocusRequester,
                     modifier = Modifier.padding(bottom = 24.dp)
                 )
@@ -829,7 +828,6 @@ private fun MainControlsRow(
     playerState: PlayerState,
     mediaItem: MediaItem,
     positionAndDuration: Pair<Long, Long>,
-    jumpPrevious: String,
     playPauseFocusRequester: FocusRequester, // Teniamo solo questo per il focus iniziale all'avvio
     modifier: Modifier = Modifier,
 ) {
@@ -845,15 +843,7 @@ private fun MainControlsRow(
         TvPlayerButton(
             icon = R.drawable.play_skip_back,
             contentDescription = "Previous",
-            onClick = {
-                if (jumpPrevious == "") return@TvPlayerButton
-                if (!binder.hybridPlayer.hasPreviousMediaItem() || (jumpPrevious != "0" && positionAndDuration.first > jumpPrevious.toFloat())
-                ) {
-                    binder.hybridPlayer.seekTo(0)
-                } else {
-                    binder.hybridPlayer.playPrevious()
-                }
-            }
+            onClick = { binder.hybridPlayer.playPrevious() }
         )
 
         // Rewind 10s

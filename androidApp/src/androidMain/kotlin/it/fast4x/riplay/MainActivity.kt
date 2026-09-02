@@ -220,10 +220,11 @@ class MainActivity : AppCompatActivity() {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             if (service is PlayerService.Binder) {
                 this@MainActivity.binder = service
-                service.cancelTimer() // cancel sleep timer when service is connected, before app was closed
-                if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
-                    service.restoreUserVolume()
-                }
+                service.cancelAutoCloseTimer() // cancel timer when service is connected, before app was closed
+                // lo fa già onResume
+//                if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+//                    service.restoreUserVolume()
+//                }
             }
 
         }
@@ -1648,7 +1649,8 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        binder?.restoreUserVolume()
+        // In teoria non serve, lasciamo la gestione al sistema operativo
+        //binder?.restoreDefaultVolume()
 
         runCatching {
             sensorManager?.registerListener(

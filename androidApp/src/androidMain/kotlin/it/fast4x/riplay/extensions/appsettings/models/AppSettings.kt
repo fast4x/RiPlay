@@ -54,6 +54,7 @@ import it.fast4x.riplay.enums.PresetsReverb
 import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.enums.QueueSwipeAction
 import it.fast4x.riplay.enums.RecommendationsNumber
+import it.fast4x.riplay.enums.RewindThresholdDuration
 import it.fast4x.riplay.enums.SongSortBy
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.enums.StatisticsCategory
@@ -232,8 +233,8 @@ data class AppSettings(
     val exoPlayerDiskCacheMaxSize: ExoPlayerDiskCacheMaxSize = ExoPlayerDiskCacheMaxSize.`2GB`,
     val exoPlayerCustomCache: Int = 32,
     val exoPlayerCacheLocation: ExoPlayerCacheLocation = ExoPlayerCacheLocation.System,
-    val playbackVolume: Float = 0.5f,
-    val playbackDeviceVolume: Float = getDeviceVolume(appContext()),
+    val playbackVolume: Float = 1f,
+    val playbackDeviceVolume: Float = 1f,
     val historyType: HistoryType = HistoryType.History,
     val albumType: AlbumsType = AlbumsType.Favorites,
     val artistType: ArtistsType = ArtistsType.Favorites,
@@ -280,12 +281,12 @@ data class AppSettings(
     val webDavPassword: String = "",
     val webDavFolder: String = "",
     val isWebDavScanSubfoldersEnabled: Boolean = false,
-    val userVolume: Float = 1.0f,
     val crossfadeDuration: CrossfadeDuration = CrossfadeDuration.Off,
 
     // L'ID dell'account WebDAV usato PER IL BACKUP/SYNC del DB
     val backupWebDavAccountId: Long? = null,
 
-    val showMiniPlayerInSettings: Boolean = false
+    val showMiniPlayerInSettings: Boolean = false,
+    val rewindThresholdDuration: RewindThresholdDuration = RewindThresholdDuration.`3`,
 )
 

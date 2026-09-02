@@ -186,24 +186,15 @@ fun Player.forcePlayFromBeginning(mediaItems: List<MediaItem>) =
         forcePlayAtIndex(mediaItems, 0)
     }
 
-fun Player.forceSeekToPrevious() {
-    val prevIndex = previousMediaItemIndex
-    if (prevIndex != C.INDEX_UNSET) {
-        seekToDefaultPosition(prevIndex)
-    }
-
-}
-
-fun Player.forceSeekToNext() {
-    seekToNext()
-}
-
 fun Player.playNext() {
-    forceSeekToNext()
+    // Essendo un ForwardingPlayer, questo 'seekToNextMediaItem'
+    // farà scattare l'override che rimanda a playerService.handlePlayNext()
+    seekToNextMediaItem()
 }
 
 fun Player.playPrevious() {
-    forceSeekToPrevious()
+    // Uguale ragionamento per playNext
+    seekToPreviousMediaItem()
 }
 
 @UnstableApi

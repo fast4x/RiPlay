@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -26,6 +27,8 @@ import it.fast4x.riplay.ui.styling.LocalAppearance
 import it.fast4x.riplay.ui.styling.favoritesOverlay
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.ui.styling.semiBold
+import it.fast4x.riplay.utils.capitalized
+import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.getRoundnessShape
 
 @Composable
@@ -71,14 +74,14 @@ fun QueueItem(
             )
     ) {
         ItemInfoContainer {
-            BasicText(
-                text = title,
+            Text(
+                text = title.capitalized(),
                 style = typography().xs.semiBold,
+                color = colorPalette().text,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
-                    .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                    .weight(1f)
+                   .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
             )
 
             Row(

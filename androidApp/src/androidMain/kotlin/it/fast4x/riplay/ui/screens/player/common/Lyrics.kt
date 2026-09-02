@@ -310,10 +310,6 @@ fun Lyrics(
 
     val lightTheme = colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
     val landscapeControls = appearanceSettings.landscapeControls
-    val jumpPrevious = appearanceSettings.jumpPrevious
-    var isRotated by rememberSaveable { mutableStateOf(false) }
-    val rotationAngle by animateFloatAsState(targetValue = if (isRotated) 360F else 0f, animationSpec = tween(200), label = "")
-    val colorPaletteName = appearanceSettings.colorPaletteName
 
     if (showLyricsSizeDialog) {
         LyricsSizeDialog(onDismiss = { showLyricsSizeDialog = false },

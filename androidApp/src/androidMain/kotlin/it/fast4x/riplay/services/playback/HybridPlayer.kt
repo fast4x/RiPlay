@@ -13,7 +13,6 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import kotlin.math.pow
 
-// Interfaccia che il tuo wrapper YouTube DEVE implementare per parlarti
 interface YouTubeControl {
     fun play()
     fun pause()
@@ -38,6 +37,8 @@ class HybridPlayer (
     // Variabili per la normalizzazione YouTube
     private var userVolume: Float = 1.0f
     private var ytLoudnessDb: Float = 0f
+    // Variabile per gestire il fade separatamente
+    private var fadeMultiplier: Float = 1.0f
 
     var onRefreshCustomLayoutListener: (() -> Unit)? = null
 
@@ -107,7 +108,6 @@ class HybridPlayer (
         activeEngine = ActiveEngine.EXOPLAYER
         //mainHandler.removeCallbacks(positionUpdater)
 
-        // Impostiamo il volume scelto dall'utente per ExoPlayer
         exoPlayer.volume = userVolume
 
         hybridListeners.forEach { listener ->
@@ -410,18 +410,40 @@ class HybridPlayer (
     }
 
     override fun getVolume(): Float {
-        return if (activeEngine == ActiveEngine.YOUTUBE) youtubeControl.getVolume() else userVolume
+        return if (activeEngine == ActiveEngine.YOUTUBE) youtubeControl.getVolume() else exoPlayer.volume
     }
 
+    // Il setVolume standard (chiamato dall'utente o dal sistema) DEVE resettare il fade
     override fun setVolume(volume: Float) {
-        // Salviamo sempre il volume scelto dall'utente
         userVolume = volume
-        // Applichiamo la logica
-        if (activeEngine == ActiveEngine.YOUTUBE) {
-            applyVolumeNormalization()
-        } else {
-            exoPlayer.volume = userVolume
-        }
+        fadeMultiplier = 1.0f // Se l'utente tocca il volume, annulliamo eventuali fade residui
+        applyCurrentVolume()
+    }
+
+    // Questo intercetta chiunque chiami player.seekToNextMediaItem() (es. Android Auto o notifiche)
+    override fun seekToNextMediaItem() {
+        playerService.handlePlayNext()
+    }
+
+    // Questo intercetta chiunque chiami player.seekToPreviousMediaItem()
+    override fun seekToPreviousMediaItem() {
+        playerService.handlePlayPrevious()
+    }
+
+    // Per sicurezza intercettiamo anche i vecchi metodi generici di Media3
+    override fun seekToNext() {
+        playerService.handlePlayNext()
+    }
+
+    override fun seekToPrevious() {
+        playerService.handlePlayPrevious()
+    }
+
+
+    // Questa la uso nel Service per fare il Crossfade o il fade!
+    fun setFadeVolume(fadeStep: Float) {
+        fadeMultiplier = fadeStep
+        applyCurrentVolume()
     }
 
     fun updateCurrentMediaItemDuration(durationMs: Long) {
@@ -451,40 +473,50 @@ class HybridPlayer (
      */
     fun setYtLoudnessDb(loudnessDb: Float) {
         ytLoudnessDb = loudnessDb
+
+        // Applico la normalizzazione software basata sul Loudness DB
+        // SOLO se l'engine attivo è YouTube!
+        // ExoPlayer è già gestito internamente dal LoudnessEnhancer hardware del Service.
         if (activeEngine == ActiveEngine.YOUTUBE) {
-            applyVolumeNormalization()
+            applyCurrentVolume()
+        } else {
+            Timber.d("HybridPlayer: ignorato setYtLoudnessDb su ExoPlayer per proteggere il Fade In")
         }
     }
 
     /**
-     * Applica l'attenuazione se siamo su YouTube e la normalizzazione audio è attiva
+     * Centralizziamo l'applicazione del volume unendo userVolume e fadeMultiplier
      */
-    fun applyVolumeNormalization() {
+    fun applyCurrentVolume() {
+        // Il volume software si basa unicamente sul moltiplicatore del fade (da 0.0 a 1.0)
+        val calculatedVolume = fadeMultiplier
+
         if (activeEngine == ActiveEngine.YOUTUBE) {
             val volumeNormalizationEnabled = playerService.appSettings.volumeNormalizationEnabled
 
-            // 1. Calcoliamo il fattore solo se NON dobbiamo escludere il loudness E se il loudness non è zero
             val finalVolume = if (volumeNormalizationEnabled && ytLoudnessDb != 0f) {
+                // Calcolo pulito del fattore di normalizzazione acustica
                 val normalizationFactor = 10.0.pow((-ytLoudnessDb / 20.0)).toFloat()
 
-                // Applichiamo la normalizzazione ma imponiamo un limite inferiore (es. 0.01f)
-                // per evitare che brani con loudness anomalo azzerino l'audio se l'utente ha il volume alto.
-                if (userVolume > 0f) {
-                    maxOf(0.01f, minOf(1.0f, userVolume * normalizationFactor))
+                if (calculatedVolume > 0f) {
+                    // Proteggiamo l'output restando nel range nativo 0.0 - 1.0
+                    maxOf(0.01f, minOf(1.0f, calculatedVolume * normalizationFactor))
                 } else {
-                    0f // Se l'utente ha messo muto, resta a 0
+                    0f
                 }
             } else {
-                // Se la normalizzazione è disabilitata e ytLoudnessDb è zero, usiamo il puro volume utente
-                userVolume
+                calculatedVolume
             }
 
             youtubeControl.setVolume(finalVolume)
-            Timber.d("HybridPlayer applyVolumeNormalization YT: finalVol=$finalVolume")
+            Timber.d("HybridPlayer Fade/Normalizzazione YT: finalVol=$finalVolume (Fade:$fadeMultiplier)")
         } else {
-            exoPlayer.volume = userVolume
+            // ExoPlayer riceve direttamente il moltiplicatore lineare del fade (0.0 a 1.0)
+            exoPlayer.volume = calculatedVolume
+            Timber.d("HybridPlayer Fade ExoPlayer: volume=$calculatedVolume (Fade:$fadeMultiplier)")
         }
     }
+
 
 
 }

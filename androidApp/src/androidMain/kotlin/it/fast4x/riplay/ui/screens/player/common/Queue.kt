@@ -167,6 +167,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
+import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -259,7 +260,7 @@ fun Queue(
     var windowsFiltered by remember { mutableStateOf(windows) }
     var shouldBePlaying by remember { mutableStateOf(binder.hybridPlayer.shouldBePlaying) }
 
-    binderPlayer?.DisposableListener {
+    binderPlayer.DisposableListener {
         object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 mediaItemIndex = (if (binder.hybridPlayer.mediaItemCount == 0) -1 else binder.hybridPlayer.currentMediaItemIndex) ?: 0
@@ -277,7 +278,7 @@ fun Queue(
         }
     }
 
-    val queueslist by Database.queues().collectAsState(emptyList())
+    val queueslist by Database.queues().collectAsState(initial = emptyList())
     val selectedQueue = Database.selectedQueueFlow().collectAsState(defaultQueue()).let {
         if (it.value == null) defaultQueue() else it.value
     }
@@ -289,6 +290,7 @@ fun Queue(
     var selectQueueItems by remember { mutableStateOf(false) }
     var position by remember { mutableIntStateOf(0) }
     var showConfirmDeleteAllDialog by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     if (showConfirmDeleteAllDialog) {
         ConfirmationDialog(
@@ -296,18 +298,26 @@ fun Queue(
             onDismiss = { showConfirmDeleteAllDialog = false },
             onConfirm = {
                 showConfirmDeleteAllDialog = false
-                CoroutineScope(Dispatchers.IO).launch {
-                    Database.asyncTransaction { clearQueuedMediaItems() }
-                    withContext(Dispatchers.Main) { binderPlayer?.clearMediaItems() }
+
+                coroutineScope.launch {
+                    withContext(Dispatchers.IO) {
+                        try {
+                            Database.clearQueuedMediaItems()
+                        } catch (e: Exception) {
+                            Timber.e("Queue UI: Errore durante la pulizia del DB: ${e.message}")
+                        }
+                    }
+                    // Torniamo sul thread principale per svuotare il player multimediale
+                    binderPlayer.clearMediaItems()
+                    listMediaItems.clear()
+                    listMediaItemsIndex.clear()
                 }
-                listMediaItems.clear()
-                listMediaItemsIndex.clear()
             }
         )
     }
 
+
     var plistName by remember { mutableStateOf("") }
-    val coroutineScope = rememberCoroutineScope()
 
     val exportLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(ExportType.CSV.mimeExport)) { uri ->
@@ -387,23 +397,46 @@ fun Queue(
 
     var windowsInQueue by remember { mutableStateOf(windows) }
     var updateWindowsList by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit, selectedQueue, updateWindowsList, filter) {
+
+    var finalFilteredWindows by remember { mutableStateOf<List<Timeline.Window>>(emptyList()) }
+
+
+    // Aggiungiamo 'windows' tra le chiavi del LaunchedEffect, così ogni volta che ExoPlayer cambia brano,
+    // riordina la coda o aggiunge una canzone, l'elenco visivo si aggiorna all'istante!
+    LaunchedEffect(Unit, selectedQueue, updateWindowsList, filter, windows, blacklisted.value, excludeSongsIfAreVideos) {
         val filterCharSequence = filter.toString()
-        if (!filter.isNullOrBlank())
+
+        // 1. GESTIONE FILTRO RICERCA (Con ramo else di riallineamento!)
+        if (!filter.isNullOrBlank()) {
             windowsFiltered = windows.filter {
                 it.mediaItem.mediaMetadata.title?.contains(filterCharSequence, true) ?: false
                         || it.mediaItem.mediaMetadata.artist?.contains(filterCharSequence, true) ?: false
             }
+        } else {
+            windowsFiltered = windows // Se non cerco nulla, la lista filtrata coincide con la timeline reale!
+        }
+
         val win = if (searching) windowsFiltered else windows
-        windowsInQueue = if (selectedQueue == defaultQueue()) win else win.filter {
+
+        // 2. GESTIONE FILTRO CODE PERSONALIZZATE
+        val queueFiltered = if (selectedQueue == defaultQueue()) win else win.filter {
             it.mediaItem.mediaMetadata.extras?.getLong("idQueue", defaultQueueId()) == selectedQueue?.id
+        }
+
+        // 3. CALCOLO STRUTTURALE DELLA BLACKLIST A MONTE (Scrolling fluido garantito)
+        finalFilteredWindows = queueFiltered.filter { item ->
+            val isNotBlacklisted = blacklisted.value?.map { it.path }?.contains(item.mediaItem.mediaId) == false
+            val isVideoMatch = item.mediaItem.isVideo == !excludeSongsIfAreVideos
+            isNotBlacklisted || isVideoMatch
         }
     }
 
-    val filteredItemsCount = windowsInQueue.filter { item ->
-        blacklisted.value?.map { it.path }?.contains(item.mediaItem.mediaId) == false
-                || item.mediaItem.isVideo == !excludeSongsIfAreVideos
-    }.size
+
+    val filteredItemsCount = finalFilteredWindows.size
+//    val filteredItemsCount = windowsInQueue.filter { item ->
+//        blacklisted.value?.map { it.path }?.contains(item.mediaItem.mediaId) == false
+//                || item.mediaItem.isVideo == !excludeSongsIfAreVideos
+//    }.size
 
 
     // ─── Root container ─────────────────────────────────────────────────────
@@ -448,11 +481,18 @@ fun Queue(
                         onDismiss = { editQueue = false; addQueue = false; queueToEdit = null },
                         queue = queueToEdit,
                         setValue = { queue ->
-                            CoroutineScope(Dispatchers.IO).launch {
-                                Database.asyncTransaction { if (editQueue) update(queue) else insert(queue) }
+                            coroutineScope.launch {
+                                withContext(Dispatchers.IO) {
+                                    try {
+                                        if (editQueue) Database.update(queue) else Database.insert(queue)
+                                    } catch (e: Exception) {
+                                        Timber.e("Queue UI: Errore salvataggio coda custom: ${e.message}")
+                                    }
+                                }
+                                editQueue = false; addQueue = false; queueToEdit = null
                             }
-                            editQueue = false; addQueue = false; queueToEdit = null
-                        },
+                        }
+                        ,
                         modifier = Modifier,
                         setValueRequireNotNull = true,
                     )
@@ -573,7 +613,7 @@ fun Queue(
                                     acceptVideo = it.acceptVideo,
                                     acceptPodcast = it.acceptPodcast,
                                     onClick = {
-                                        CoroutineScope(Dispatchers.IO).launch { Database.toggleSelectQueue(it) }
+                                        coroutineScope.launch(Dispatchers.IO) { Database.toggleSelectQueue(it) }
                                     },
                                     onLongClick = {
                                         menuState.display {
@@ -582,10 +622,17 @@ fun Queue(
                                                 onDismiss = { menuState.hide() },
                                                 onEdit = { queueToEdit = it; editQueue = true; addQueue = false },
                                                 onRemove = {
-                                                    CoroutineScope(Dispatchers.IO).launch {
-                                                        Database.asyncTransaction { deleteQueue(it.id) }
+                                                    coroutineScope.launch {
+                                                        withContext(Dispatchers.IO) {
+                                                            try {
+                                                                Database.deleteQueue(it.id)
+                                                            } catch (e: Exception) {
+                                                                Timber.e("Queue UI: Errore rimozione coda custom: ${e.message}")
+                                                            }
+                                                        }
                                                     }
                                                 }
+
                                             )
                                         }
                                     }
@@ -695,10 +742,11 @@ fun Queue(
 
             // ─── Song items ─────────────────────────────────────────────────
             items(
-                items = windowsInQueue?.filter { item ->
-                    blacklisted.value?.map { it.path }?.contains(item.mediaItem.mediaId) == false
-                            || item.mediaItem.isVideo == !excludeSongsIfAreVideos
-                } ?: emptyList(),
+                finalFilteredWindows,
+//                items = windowsInQueue?.filter { item ->
+//                    blacklisted.value?.map { it.path }?.contains(item.mediaItem.mediaId) == false
+//                            || item.mediaItem.isVideo == !excludeSongsIfAreVideos
+//                } ?: emptyList(),
                 key = { window -> window.uid.toString() }
             ) { window ->
                 ReorderableItem(reorderableLazyListState, key = window.uid.toString()) { isDragging ->
@@ -706,7 +754,8 @@ fun Queue(
                     val interactionSource = remember { MutableInteractionSource() }
                     val currentItem by rememberUpdatedState(window)
                     val checkedState = rememberSaveable { mutableStateOf(false) }
-                    val isPlayingThisMediaItem = mediaItemIndex == window.firstPeriodIndex
+                    val isPlayingThisMediaItem = binderPlayer.currentMediaItemIndex == window.firstPeriodIndex
+
 
                     // Spring-based scale when dragging
                     val itemScale by animateFloatAsState(
