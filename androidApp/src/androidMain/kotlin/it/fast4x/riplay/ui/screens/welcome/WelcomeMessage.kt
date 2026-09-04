@@ -7,15 +7,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
 import it.fast4x.riplay.ui.components.themed.TitleMiniSection
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
-import it.fast4x.riplay.utils.ytAccountName
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
 @Composable
 fun WelcomeMessage(){
+
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
     val hour =
         remember {
             val date = Calendar.getInstance().time
@@ -41,7 +46,7 @@ fun WelcomeMessage(){
             stringResource(R.string.good_night)
         }
     }.let {
-        if (isYtLoggedIn()) "$it, ${ytAccountName()}"
+        if (isYtLoggedIn()) "$it, ${appSettings.ytAccountName}"
         else it
     }
 

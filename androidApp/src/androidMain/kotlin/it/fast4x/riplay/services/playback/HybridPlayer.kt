@@ -339,67 +339,50 @@ class HybridPlayer (
 
     // --- OVERRIDE DEI COMANDI ---
 
+    // ── INTERCETTATORI PUBBLICI (Chiamati da UI, Cuffie, Android Auto) ───────
     override fun play() {
-        if (activeEngine == ActiveEngine.YOUTUBE) {
-            youtubeControl.play()
-            // Aggiorniamo lo stato locale immediatamente
-            youtubePlayWhenReady = true
-
-            // Riavvia il polling più velocemente (200ms invece di 500ms)
-//            mainHandler.removeCallbacks(positionUpdater)
-//            mainHandler.postDelayed(positionUpdater, 200)
-
-            // Notifichiamo subito la sessione
-            invalidateYouTubePlayPause()
-
-            // Aggiorniamo il custom layout (ritardato come avevi tu)
-            mainHandler.postDelayed({
-                onRefreshCustomLayoutListener?.invoke()
-            }, 50)
-
-
-            // Facciamo partire ExoPlayer in background a volume zero per garantire il player su aa
-//            super.play()
-//            mainHandler.removeCallbacks(positionUpdater)
-//            mainHandler.post(positionUpdater)
-//            // Notifichiamo la MediaSession del cambio di stato (da pausa a play)
-//            invalidateYouTubePlayPause()
-        }
-        else super.play()
+        // Invece di far esplodere l'audio, deleghiamo al Service per la risalita morbida
+        playerService.requestSmoothPlay()
     }
 
     override fun pause() {
+        // Invece di tagliare l'audio di colpo, deleghiamo al Service per la discesa morbida
+        playerService.requestSmoothPause()
+    }
+
+    // ── L'ESECUZIONE REALE DEL COMANDO IN ARRIVO DA PLAYERSERVICE EVITA IL LOOP  ────────
+    fun executeActualPlay() {
         if (activeEngine == ActiveEngine.YOUTUBE) {
-            youtubeControl.pause()
+            youtubeControl.play()
+            youtubePlayWhenReady = true
 
-            // Aggiorniamo lo stato locale immediatamente
-            youtubePlayWhenReady = false
-
-            // Fermiamo il polling della posizione
-            //mainHandler.removeCallbacks(positionUpdater)
-
-            // Notifichiamo subito la sessione
             invalidateYouTubePlayPause()
 
-            // Aggiorniamo il custom layout (ritardato come avevi tu)
             mainHandler.postDelayed({
                 onRefreshCustomLayoutListener?.invoke()
             }, 50)
-
-//            super.pause()
-//            mainHandler.removeCallbacks(positionUpdater)
-//            // Notifichiamo la MediaSession del cambio di stato (da play a pausa)
-//            invalidateYouTubePlayPause()
-//
-//            // Ritardiamo di 50ms per dare tempo a Media3 di metabolizzare la pausa
-//            mainHandler.postDelayed({
-//                // Aggiorniamo il custom layout
-//                onRefreshCustomLayoutListener?.invoke()
-//            }, 50)
+        } else {
+            // super.play() originale per ExoPlayer
+            super.play()
         }
-        else super.pause()
-
     }
+
+    fun executeActualPause() {
+        if (activeEngine == ActiveEngine.YOUTUBE) {
+            youtubeControl.pause()
+            youtubePlayWhenReady = false
+
+            invalidateYouTubePlayPause()
+
+            mainHandler.postDelayed({
+                onRefreshCustomLayoutListener?.invoke()
+            }, 50)
+        } else {
+            // super.pause() originale per ExoPlayer
+            super.pause() // Chiama il metodo nativo di ForwardingPlayer/ExoPlayer
+        }
+    }
+
 
     override fun seekTo(positionMs: Long) {
         Timber.d("HybridPlayer seekTo() called: positionMs = $positionMs")
@@ -422,21 +405,21 @@ class HybridPlayer (
 
     // Questo intercetta chiunque chiami player.seekToNextMediaItem() (es. Android Auto o notifiche)
     override fun seekToNextMediaItem() {
-        playerService.handlePlayNext("HybridPlayer.seekToNextMediaItem")
+        playerService.handlePlayNextRequestedByUser("HybridPlayer.seekToNextMediaItem")
     }
 
     // Questo intercetta chiunque chiami player.seekToPreviousMediaItem()
     override fun seekToPreviousMediaItem() {
-        playerService.handlePlayPrevious()
+        playerService.handlePlayPreviousRequestedByUser("HybridPlayer.seekToPreviousMediaItem")
     }
 
     // Per sicurezza intercettiamo anche i vecchi metodi generici di Media3
     override fun seekToNext() {
-        playerService.handlePlayNext("HybridPlayer.seekToNext")
+        playerService.handlePlayNextRequestedByUser("HybridPlayer.seekToNext")
     }
 
     override fun seekToPrevious() {
-        playerService.handlePlayPrevious()
+        playerService.handlePlayPreviousRequestedByUser("HybridPlayer.seekToPrevious")
     }
 
 

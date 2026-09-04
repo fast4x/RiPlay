@@ -53,14 +53,9 @@ fun getRoundnessShape(): Shape {
     val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
     return appearanceSettings.thumbnailRoundness.shape()
 }
-fun ytAccountName() = getAppSettings().ytAccountName
-fun isHandleAudioFocusEnabled() = getAppSettings().handleAudioFocusEnabled
-fun isBassBoostEnabled() = getAppSettings().bassBoostEnabled
-fun isParentalControlEnabled() = getAppSettings().parentalControlEnabled
+
 fun isPersistentQueueEnabled() = getAppSettings().persistentQueue
 fun isPipModeAutoEnabled() = getAppSettings().enablePictureInPictureAuto
-fun isEnabledFullscreen() = getAppSettings().isEnabledFullScreen
-fun isSkipMediaOnErrorEnabled() = getAppSettings().skipMediaOnError
 fun isEnabledLastFm() = getAppSettings().isEnabledLastFM && getlastFmSessionKey().isNotEmpty()
 
 

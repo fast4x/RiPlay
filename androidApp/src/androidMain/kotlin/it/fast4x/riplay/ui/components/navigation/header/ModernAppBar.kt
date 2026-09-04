@@ -17,9 +17,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.utils.isEnabledFullscreen
 
 @Composable
 fun ModernTopAppBar(
@@ -28,6 +29,8 @@ fun ModernTopAppBar(
     backButton: @Composable () -> Unit = {},
     context: Context,
 ) {
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     var isVisible by remember { mutableStateOf(false) }
 
@@ -50,7 +53,7 @@ fun ModernTopAppBar(
         isVisible = true
     }
 
-    val insetsPadding = if (isEnabledFullscreen()) TopAppBarDefaults.windowInsets
+    val insetsPadding = if (appSettings.isEnabledFullScreen) TopAppBarDefaults.windowInsets
         .only(WindowInsetsSides.Horizontal).asPaddingValues()
     else TopAppBarDefaults.windowInsets.asPaddingValues()
 

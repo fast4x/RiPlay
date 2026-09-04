@@ -28,6 +28,7 @@ import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategie
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategies.MBGraphWalkStrategy
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategies.NewReleasesStrategy
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategies.QualityCuratorStrategy
+import it.fast4x.riplay.extensions.experimental.webdavlibrary.WebDavCredentialsProvider
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.musicbrainz.workers.WorkScheduler
 import it.fast4x.riplay.extensions.musicbrainz.workers.WorkerDependencies
@@ -100,7 +101,6 @@ class MainApplication : Application(), ImageLoaderFactory {
         Dependencies.init(this)
 
         // Inizializza le impostazioni di app ed aspetto
-        //appScopeIO.launch {
         runBlocking {
             appSettingsManager.initialize()
             appearanceSettingsManager.initialize()
@@ -118,6 +118,12 @@ class MainApplication : Application(), ImageLoaderFactory {
             initializeMusicVault(appScopeIO, this@MainApplication)
         }
 
+        // Carica gli accounts webdav se è abilitato
+        appScopeIO.launch {
+            if (!appSettingsManager.activeSettings.value.isWebDavEnabled) return@launch
+            val accounts = Database.webDavAccountDao().getAll()
+            WebDavCredentialsProvider.updateCredentials(accounts)
+        }
 
         // Strategie, viene chiamato dopo l'inizializzazione  del database
         val strategies = listOf(

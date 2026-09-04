@@ -31,7 +31,6 @@ import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.components.themed.Button
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.utils.isParentalControlEnabled
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.isAtLeastAndroid7
 
@@ -166,7 +165,7 @@ fun AppTitle(
              */
         }
 
-        if(isParentalControlEnabled())
+        if(appSettings.parentalControlEnabled)
             Button(
                 iconId = R.drawable.shield_checkmark,
                 color = AppBar.contentColor(),

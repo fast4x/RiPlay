@@ -39,9 +39,11 @@ import it.fast4x.riplay.utils.isAtLeastAndroid7
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.isPipModeAutoEnabled
+import timber.log.Timber
 
 
-private fun logError(throwable: Throwable) = Log.e("PipHandler", "An error occurred", throwable)
+private fun logError(throwable: Throwable) =
+    Timber.tag("PipHandler").e(throwable, "An error occurred")
 
 val isPipSupported = if (isAtLeastAndroid8)
     appContext().packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)

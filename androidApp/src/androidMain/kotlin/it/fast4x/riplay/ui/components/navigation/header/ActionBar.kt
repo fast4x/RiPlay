@@ -523,7 +523,6 @@ fun ActionBar(
 
     if(enabledQrCodeActions) {
         val scope = rememberCoroutineScope()
-        val context = LocalContext.current
         val binder = LocalPlayerServiceBinder.current
 
         HeaderIcon(R.drawable.qr_code_reader, tint = colorPalette().accent) {
@@ -543,7 +542,7 @@ fun ActionBar(
         }
     }
 
-    var castType = appSettings.castType
+    val castType = appSettings.castType
     if (castType == CastType.RITUNECAST) {
         val showCastScreen = LocalRiTuneSheetState.current
         HeaderIcon(

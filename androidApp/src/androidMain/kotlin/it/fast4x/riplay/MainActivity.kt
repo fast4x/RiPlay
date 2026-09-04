@@ -148,8 +148,6 @@ import it.fast4x.riplay.utils.getKeepPlayerMinimized
 import it.fast4x.riplay.utils.invokeOnReady
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isAtLeastAndroid8
-import it.fast4x.riplay.utils.isEnabledFullscreen
-import it.fast4x.riplay.utils.isPipModeAutoEnabled
 import it.fast4x.riplay.utils.isValidHttpUrl
 import it.fast4x.riplay.utils.isValidIP
 import it.fast4x.riplay.utils.playNext
@@ -489,7 +487,7 @@ class MainActivity : AppCompatActivity() {
         // New method to hide system bars
         val windowInsetsController =
             WindowCompat.getInsetsController(window, window.decorView)
-        if (isEnabledFullscreen()) {
+        if (appSettingsManager.activeSettings.value.isEnabledFullScreen) {
             // Configure the behavior of the hidden system bars.
             windowInsetsController.systemBarsBehavior =
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
@@ -560,7 +558,7 @@ class MainActivity : AppCompatActivity() {
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
         if (
-            isPipModeAutoEnabled() && binder?.hybridPlayer?.isPlaying == true
+            appSettingsManager.activeSettings.value.enablePictureInPictureAuto && binder?.hybridPlayer?.isPlaying == true
         ) maybeEnterPip()
     }
 

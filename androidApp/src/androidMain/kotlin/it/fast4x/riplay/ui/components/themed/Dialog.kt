@@ -116,14 +116,11 @@ import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.utils.drawCircle
-import it.fast4x.riplay.utils.getDeviceVolume
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isValidIP
 import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.utils.setDeviceVolume
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.utils.isBassBoostEnabled
 import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.Queues
@@ -131,6 +128,7 @@ import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.data.models.SongPlaylistMap
+import it.fast4x.riplay.data.models.WebDavAccount
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.riplay.utils.typography
@@ -353,6 +351,101 @@ fun <T> ValueSelectorDialog(
                         .padding(end = 24.dp, top = 12.dp)
                 ) {
                     TextButton (onClick = onDismiss) {
+                        Text(stringResource(R.string.cancel), color = colorPalette().text)
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun SelectorWebDavAccountDialog(
+    onDismiss: () -> Unit,
+    title: String,
+    values: List<WebDavAccount>,
+    onValueSelected: (WebDavAccount) -> Unit,
+    modifier: Modifier = Modifier,
+    onNewAccount: () -> Unit,
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            modifier = modifier,
+            shape = RoundedCornerShape(8.dp),
+            tonalElevation = 6.dp,
+            color = colorPalette().background1
+        ) {
+            Column(
+                modifier = Modifier.padding(vertical = 24.dp)
+            ) {
+                // Title
+                Text(
+                    text = title,
+                    style =  typography().s.semiBold,
+                    modifier = Modifier.padding(horizontal = 24.dp)
+                )
+
+                // Divider
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 12.dp),
+                    color = colorPalette().accent
+                )
+
+                // List
+                Column(
+                    modifier = Modifier
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    values.distinct().forEach { account ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    onValueSelected(account)
+                                    onDismiss()
+                                }
+                                .padding(horizontal = 24.dp, vertical = 12.dp)
+                        ) {
+
+                            Icon(
+                                painter = painterResource(id = account.icon),
+                                contentDescription = null,
+                                tint = colorPalette().text,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(Modifier.width(12.dp))
+
+                            Text(
+                                text = account.name,
+                                style = typography().xs.medium,
+                                maxLines = 3,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                }
+
+                // Footer
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.Start)
+                        .padding(start = 24.dp, top = 8.dp)
+                ) {
+                    TextButton(onClick = onNewAccount) {
+                        Text(
+                            "Add new account",
+                            //stringResource(R.string.add),
+                            color = colorPalette().text)
+                    }
+                }
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .padding(end = 24.dp, top = 8.dp)
+                ) {
+                    TextButton(onClick = onDismiss) {
                         Text(stringResource(R.string.cancel), color = colorPalette().text)
                     }
                 }
@@ -2616,7 +2709,7 @@ fun PlaybackParamsDialog(
             )
 
             SliderControl(
-                isEnabled = isBassBoostEnabled(),
+                isEnabled = appSettings.bassBoostEnabled,
                 state = bassBoost,
                 onSlide = {
                     bassBoost = it

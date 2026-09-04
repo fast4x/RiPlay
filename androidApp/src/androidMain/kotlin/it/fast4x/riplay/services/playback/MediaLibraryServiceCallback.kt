@@ -166,7 +166,7 @@ class MediaLibraryServiceCallback(
 
 
     override fun onGetLibraryRoot(
-        session: MediaLibraryService.MediaLibrarySession,
+        session: MediaLibrarySession,
         browser: MediaSession.ControllerInfo,
         params: MediaLibraryService.LibraryParams?
     ): ListenableFuture<LibraryResult<MediaItem>> {

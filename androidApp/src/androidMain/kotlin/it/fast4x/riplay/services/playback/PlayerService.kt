@@ -134,9 +134,7 @@ import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.clearWebViewData
 import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.utils.forcePlayFromBeginning
-import it.fast4x.riplay.utils.isHandleAudioFocusEnabled
 import it.fast4x.riplay.utils.isOfficialContent
-import it.fast4x.riplay.utils.isSkipMediaOnErrorEnabled
 import it.fast4x.riplay.utils.isUserGeneratedContent
 import it.fast4x.riplay.utils.PrincipalCache
 import it.fast4x.riplay.utils.seamlessQueue
@@ -182,10 +180,8 @@ import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.isAtLeastAndroid7
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isLocal
-import it.fast4x.riplay.utils.isPersistentQueueEnabled
 import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.mediaItems
-import it.fast4x.riplay.utils.playAtIndex
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -420,7 +416,7 @@ class PlayerService : MediaLibraryService(),
     private var playbackWathcDogJob: Job? = null
     private var fadeInJob: Job? = null
     private val FADE_IN_DURATION_MS = 2000L // Durata di default del fade in
-
+    private var lastWatchdogPosition = -1L
     private var controllerFuture: ListenableFuture<MediaController>? = null
 
     var lastProcessedIndex: Int? = null
@@ -1119,7 +1115,7 @@ class PlayerService : MediaLibraryService(),
                     .setUsage(C.USAGE_MEDIA)
                     .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
                     .build(),
-                isHandleAudioFocusEnabled()
+                appSettings.handleAudioFocusEnabled
             )
             //.setUsePlatformDiagnostics(false)
             .setSeekBackIncrementMs(5000)
@@ -1480,14 +1476,14 @@ class PlayerService : MediaLibraryService(),
 
                 lastError = error
 
-                if (!isSkipMediaOnErrorEnabled()) return
+                if (!appSettings.skipMediaOnError) return
                 val prev = hybridPlayer.currentMediaItem ?: return
 
                 // Ferma ExoPlayer se sta andando
-                if (exoPlayer.isPlaying) {
-                    exoPlayer.pause()
-                    exoPlayer.stop()
-                }
+//                if (exoPlayer.isPlaying) {
+//                    exoPlayer.pause()
+//                    exoPlayer.stop()
+//                }
 
                 handlePlayNext("PlayerService.initializeOnlinePlayer.onError")
 
@@ -2157,7 +2153,27 @@ class PlayerService : MediaLibraryService(),
     }
 
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-        Timber.d("PlayerService onPlayWhenReadyChanged playWhenReady $playWhenReady reason $reason")
+        super.onPlayWhenReadyChanged(playWhenReady, reason)
+
+        Timber.d("PlayerService FocusWatchdog: onPlayWhenReadyChanged playWhenReady=$playWhenReady, reason=$reason")
+
+        // INTERCETTIAMO LA PERDITA DI FOCUS (Arriva una notifica o una chiamata)
+        if (reason == Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS) {
+            if (!playWhenReady) {
+                Timber.w("PlayerService FocusWatchdog: PERSO AUDIO FOCUS di sistema! Avvio pausa morbida.")
+                requestSmoothPause()
+            }
+        }
+
+        // INTERCETTIAMO LA RICONQUISTA DEL FOCUS
+        if (playWhenReady && !_playerState.value.isPlaying) {
+            if (reason == Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST ||
+                reason == Player.PLAY_WHEN_READY_CHANGE_REASON_REMOTE) {
+
+                Timber.d("PlayerService FocusWatchdog: RICONQUISTATO AUDIO FOCUS! Riprendo la riproduzione morbida.")
+                requestSmoothPlay()
+            }
+        }
     }
 
     override fun onTrimMemory(level: Int) {
@@ -2632,6 +2648,9 @@ class PlayerService : MediaLibraryService(),
             }
         }
 
+        // Forziamo il ridisegno dei pulsanti nella notifica, utile per android auto e lettori bluetooth in auto
+        hybridPlayer.onRefreshCustomLayoutListener?.invoke()
+
         updateWidgetState()
 
         updateDiscordPresence()
@@ -2729,6 +2748,7 @@ class PlayerService : MediaLibraryService(),
     private fun startPlaybackWatchdog() {
         playbackWathcDogJob?.cancel()
         isFading = false // <-- Sicurezza: iniziamo sempre sbloccati sul nuovo brano
+        lastWatchdogPosition = -1L // Resettiamo il tracciamento dello stallo ad ogni avvio
 
         playbackWathcDogJob = serviceScope.launch(Dispatchers.Main) {
             while (isActive) {
@@ -2740,16 +2760,20 @@ class PlayerService : MediaLibraryService(),
                     val timeLeft = duration - position
                     val crossfadeDurationMs = appSettings.crossfadeDuration.milliseconds
 
+                    Timber.d("PlayerService PlaybackWatchdog: timeleft $timeLeft duration=$duration ms, position=$position ms")
+
                     // SE IL CROSSFADE È ATTIVO
                     if (appSettings.crossfadeDuration != CrossfadeDuration.Off) {
 
-                        // Usiamo 'timeLeft <= crossfadeDurationMs' invece del range 'in 0..'
-                        // per proteggerci nel caso in cui la timeline faccia un salto improvviso (es. a -50ms)
-                        if (timeLeft <= crossfadeDurationMs && timeLeft > -2000 && !isFading) {
+                        // Usiamo una Soglia aperta!
+                        // Entriamo se il tempo rimasto è inferiore o uguale ai secondi di crossfade impostati (es. 7000ms).
+                        // Il controllo 'timeLeft > -10000' serve solo come paracadute estremo per evitare falsi positivi a inizio brano
+                        // se i metadati caricano valori sballati, ma lascia le porte totalmente aperte ai salti temporali a fine traccia.
+                        if (timeLeft <= crossfadeDurationMs && timeLeft > -10000 && !isFading) {
                             isFading = true
 
                             val nextMediaItem = hybridPlayer.getMediaItemAt(hybridPlayer.nextMediaItemIndex)
-                            val isNextLocal = nextMediaItem?.isLocal == true
+                            val isNextLocal = nextMediaItem.isLocal
 
                             Timber.d("PlayerService PlaybackWatchdog: Attivazione Fade Out (timeLeft=$timeLeft ms). Prossimo brano locale=$isNextLocal")
 
@@ -2760,15 +2784,34 @@ class PlayerService : MediaLibraryService(),
                             }
                         }
                     }
-                    // SE IL CROSSFADE È DISATTIVATO (Off)
+                    // SE IL CROSSFADE È DISATTIVATO
                     else {
-                        // Watchdog per cambio brano a 1 secondo dalla fine per evitare stalli nativi
-                        if (timeLeft <= 1000 && timeLeft > -2000 && !isFading) {
+                        // VERIFICA STALLO D'EMERGENZA:
+                        // Se mancano meno di 3.5 secondi alla fine (finestra critica di fine brano)
+                        // e la canzone è in stato di PLAY ma la posizione non si è mossa dall'ultimo controllo (200ms fa),
+                        // significa che il player si è piantato a fine traccia!
+                        val isPlayerStalled = timeLeft <= 3500 &&
+                                position == lastWatchdogPosition &&
+                                _playerState.value.isPlaying
+
+                        // USIAMO UNA SOGLIA APERTA 1,2 secondi potrebbe bastare
+                        val isNaturalEnd = timeLeft <= 1200
+
+                        if ((isNaturalEnd || isPlayerStalled) && !isFading) {
                             isFading = true
-                            Timber.d("PlayerService PlaybackWatchdog: Vado al brano successivo (Crossfade OFF) a $timeLeft ms dalla fine")
+
+                            if (isPlayerStalled) {
+                                Timber.w("PlayerService PlaybackWatchdog: RILEVATO STALLO HARDWARE a $timeLeft ms dalla fine. Forzo il cambio traccia!")
+                            } else {
+                                Timber.d("PlayerService PlaybackWatchdog: Fine brano naturale (Crossfade OFF) a $timeLeft ms dalla fine")
+                            }
+
                             handlePlayNext("PlaybackWatchdog with crossfade disabled")
                         }
                     }
+
+                    // Aggiorniamo la posizione storica per il prossimo ciclo di controllo stallo
+                    lastWatchdogPosition = position
                 }
             }
         }
@@ -3191,7 +3234,7 @@ class PlayerService : MediaLibraryService(),
     }
 
     suspend fun saveQueue() {
-        if (!isPersistentQueueEnabled()) return
+        if (!appSettings.persistentQueue) return
 
         val mediaItems: List<MediaItem>
         val mediaItemIndex: Int
@@ -3236,7 +3279,7 @@ class PlayerService : MediaLibraryService(),
     @OptIn(UnstableApi::class)
     suspend fun loadQueue() {
         Timber.d("PlayerService LoadQueue: Avvio caricamento coda persistente asincrona")
-        if (!isPersistentQueueEnabled()) return
+        if (!appSettings.persistentQueue) return
 
         // 1. Eseguiamo la query pesante nel thread IO
         val queuedSongs = withContext(Dispatchers.IO) {
@@ -3702,9 +3745,9 @@ class PlayerService : MediaLibraryService(),
         Timber.d("PlayerService PlaybackWatchdog: handlePlayNext cambio brano richiesto da $origine")
         // Cancelliamo subito il watchdog prima di muovere la timeline,
         // così la transizione avviene senza disturbi
+
         stopPlaybackWatchdog()
 
-        hybridPlayer.pause()
         val now = System.currentTimeMillis()
         if (now - lastPlayNextTime < debounceDelayMs) {
             Timber.d("PlayerService handlePlayNext ignored (too fast) play current")
@@ -3775,6 +3818,133 @@ class PlayerService : MediaLibraryService(),
         }
     }
 
+    fun handlePlayNextRequestedByUser(source: String) {
+        // 1. Spegniamo subito il Watchdog supremo per evitare conflitti asincroni
+        stopPlaybackWatchdog()
+
+        // 2. Se l'app non sta suonando o è in pausa, cambiamo subito senza aspettare
+        if (!_playerState.value.isPlaying || isFading) {
+            handlePlayNext(source)
+            return
+        }
+
+        // 3. Avviamo la dissolvenza lampo sul Thread Principale
+        serviceScope.launch(Dispatchers.Main) {
+            isFading = true
+            val steps = 6
+            val quickFadeDurationMs = 250 // 250ms di dissolvenza lampo
+            val stepDelay = quickFadeDurationMs / steps
+
+            Timber.d("PlayerService: Quick Fade-Out UTENTE (Avanti) avviato da $source")
+
+            for (i in 1..steps) {
+                val progress = 1f - (i.toFloat() / steps)
+                // Curva quadratica per una sfumatura acustica morbida
+                hybridPlayer.setFadeVolume(progress * progress)
+                delay(stepDelay.milliseconds)
+            }
+
+            // Garantiamo il silenzio assoluto prima dello switch hardware
+            hybridPlayer.setFadeVolume(0f)
+            isFading = false
+
+            // 4. Lanciamo finalmente il cambio canzone reale
+            handlePlayNext(source)
+        }
+    }
+
+    fun handlePlayPreviousRequestedByUser(source: String) {
+        // 1. Spegniamo subito il Watchdog supremo
+        stopPlaybackWatchdog()
+
+        // 2. Controllo di sicurezza sullo stato di riproduzione
+        if (!_playerState.value.isPlaying || isFading) {
+            handlePlayPrevious()
+            return
+        }
+
+        // 3. Dissolvenza lampo simmetrica per il tasto "Indietro"
+        serviceScope.launch(Dispatchers.Main) {
+            isFading = true
+            val steps = 6
+            val quickFadeDurationMs = 250
+            val stepDelay = quickFadeDurationMs / steps
+
+            Timber.d("PlayerService: Quick Fade-Out UTENTE (Indietro) avviato da $source")
+
+            for (i in 1..steps) {
+                val progress = 1f - (i.toFloat() / steps)
+                hybridPlayer.setFadeVolume(progress * progress)
+                delay(stepDelay.milliseconds)
+            }
+
+            hybridPlayer.setFadeVolume(0f)
+            isFading = false
+
+            // 4. Torniamo alla traccia precedente
+            handlePlayPrevious()
+        }
+    }
+
+    fun requestSmoothPause() {
+        // Se non sta riproducendo o sta già sfumando, applichiamo la pausa hardware diretta
+        if (!_playerState.value.isPlaying || isFading) {
+            hybridPlayer.executeActualPause()
+            return
+        }
+
+        serviceScope.launch(Dispatchers.Main) {
+            isFading = true
+            val steps = 5
+            val fadeDurationMs = 200 // 200ms sono impercettibili come ritardo ma perfetti per l'orecchio
+            val stepDelay = fadeDurationMs / steps
+
+            Timber.d("PlayerService UX: Avvio Fade-Out lampo per PAUSA")
+
+            for (i in 1..steps) {
+                val progress = 1f - (i.toFloat() / steps)
+                hybridPlayer.setFadeVolume(progress * progress) // Curva morbida
+                delay(stepDelay.milliseconds)
+            }
+
+            hybridPlayer.setFadeVolume(0f)
+            isFading = false
+
+            // Il volume è a zero: ora eseguiamo la vera logica di pausa
+            hybridPlayer.executeActualPause()
+            Timber.d("PlayerService UX: Pausa hardware completata")
+        }
+    }
+
+    fun requestSmoothPlay() {
+        // Se sta già riproducendo, non facciamo nulla
+        if (_playerState.value.isPlaying) return
+
+        serviceScope.launch(Dispatchers.Main) {
+            // 1. Azzeriamo il volume software PRIMA di avviare i motori audio
+            hybridPlayer.setFadeVolume(0f)
+
+            // 2. Facciamo partire il player (Exo o YT) che inizierà a emettere audio ma in silenzio
+            hybridPlayer.executeActualPlay()
+            Timber.d("PlayerService UX: Play hardware eseguito, avvio Fade-In lampo")
+
+            isFading = true
+            val steps = 5
+            val fadeDurationMs = 250 // Un filo più lungo in risalita per un effetto avvolgente
+            val stepDelay = fadeDurationMs / steps
+
+            for (i in 1..steps) {
+                val progress = i.toFloat() / steps
+                hybridPlayer.setFadeVolume(progress)
+                delay(stepDelay.milliseconds)
+            }
+
+            // Apertura totale al 100% software: il controllo torna ai tasti fisici del telefono
+            hybridPlayer.setFadeVolume(1.0f)
+            isFading = false
+            Timber.d("PlayerService UX: Riproduzione tornata a volume pieno")
+        }
+    }
 
 
     @JvmInline
