@@ -1319,42 +1319,47 @@ class PlayerService : MediaLibraryService(),
 
                 when(state) {
                     PlayerConstants.PlayerState.UNSTARTED -> {
-                        if (!firstTimeStarted) {
+                        // 1. Cancelliamo subito eventuali watchdog precedenti per evitare sovrapposizioni
+                        unstartedWatchdogJob?.cancel()
 
+                        if (!firstTimeStarted) {
                             val expectedMediaId = currentSong.value?.id
 
                             unstartedWatchdogJob = serviceScope.launch(Dispatchers.Main) {
-                                Timber.d("PlayerService onlinePlayerView: onStateChange UNSTARTED watchdog scheduled for mediaId=$expectedMediaId")
+                                Timber.d("PlayerService onlinePlayerView: onStateChange UNSTARTED rilevato per mediaId=$expectedMediaId")
+
                                 delay(5000.milliseconds)
-                                val stillUnstarted =
-                                    _playerState.value.playbackState == PlaybackState.UNSTARTED
 
-                                val sameMedia =
-                                    currentSong.value?.id == expectedMediaId
+                                val stillUnstartedHeavy = _playerState.value.playbackState == PlaybackState.UNSTARTED
+                                val sameMediaHeavy = currentSong.value?.id == expectedMediaId
 
-                                if (stillUnstarted && sameMedia && expectedMediaId != null) {
-                                    Timber.e("PlayerService onlinePlayerView: Persistent UNSTARTED state. Probably webView killed. Force to re-initialize for mediaId=$expectedMediaId")
+                                if (stillUnstartedHeavy && sameMediaHeavy && expectedMediaId != null) {
+                                    Timber.e("PlayerService onlinePlayerView: KICK fallito. Persistent UNSTARTED dopo 5s. Probabilmente webView killed. Avvio ricreazione pesante.")
 
                                     recreateOnlinePlayerView()
+                                    // Recuperiamo la prima istanza valida post-ricreazione
                                     val currentPlayer = this@PlayerService._internalYouTubePlayer.first { it != null }!!
 
                                     currentSong.value?.let { item ->
-                                        if(item.isLocal) return@let
-                                        Timber.d("PlayerService onlinePlayerView: Try reload song/video")
-                                        // Assicura che ExoPlayer sia fermo prima del recovery
+                                        if (item.isLocal) return@let
+                                        Timber.d("PlayerService onlinePlayerView: Try reload song/video post-crash")
+
                                         if (exoPlayer.isPlaying) {
                                             exoPlayer.pause()
                                             exoPlayer.stop()
                                         }
                                         currentPlayer.pause()
-                                        _internalYouTubePlayer.value?.pause() // Pause also primary instance
+                                        _internalYouTubePlayer.value?.pause()
+
+                                        // Invece di cueVideo, proviamo a usare loadVideo se la tua libreria lo espone,
+                                        // altrimenti manteniamo cueVideo ma seguito da un piccolo delay e play()
                                         currentPlayer.cueVideo(expectedMediaId, playFromSecond)
                                     }
-
                                 }
                             }
                         }
                     }
+
 
                     PlayerConstants.PlayerState.VIDEO_CUED -> {
                         Timber.d("PlayerService onlinePlayerView: onStateChange VIDEO_CUED regular play()")
@@ -2758,12 +2763,12 @@ class PlayerService : MediaLibraryService(),
                     if (hybridPlayer.activeEngine == ActiveEngine.YOUTUBE) {
 
                         // CASO A: Rilevamento perdita focus (Timeline si blocca mentre l'interfaccia è in PLAY)
-                        if (isPlaying) {
+                        if (isPlaying && !isFading) {
                             val isWebViewStalledByFocusLoss = position == lastWatchdogPosition &&
-                                    position > 2000 &&
+                                    position > 5000 &&
                                     timeLeft > 3500
 
-                            if (isWebViewStalledByFocusLoss && !isFading) {
+                            if (isWebViewStalledByFocusLoss) {
                                 Timber.w("PlayerService PlaybackWatchdog: RILEVATO STALLO TIMELINE (Focus Loss). Sincronizzo in PAUSA.")
                                 hybridPlayer.executeActualPause() // non usare pausa con fade
                                 lastWatchdogPosition = position
@@ -2773,12 +2778,12 @@ class PlayerService : MediaLibraryService(),
 
                         // CASO B: Rilevamento risveglio automatico (Timeline avanza mentre l'interfaccia è in PAUSA)
                         // Ora funziona al 100% perché il Watchdog è vivo e vegeto!
-                        if (isPaused && lastWatchdogPosition > 0) {
+                        if (isPaused && lastWatchdogPosition > 0 && !isFading) {
                             val isWebViewAwakenedByFocusGain = position > lastWatchdogPosition &&
                                     position > 2000 &&
                                     timeLeft > 3500
 
-                            if (isWebViewAwakenedByFocusGain && !isFading) {
+                            if (isWebViewAwakenedByFocusGain) {
                                 Timber.d("PlayerService PlaybackWatchdog: RILEVATO AVANZAMENTO ANOMALO (Focus Gain). Sincronizzo in PLAY.")
                                 hybridPlayer.executeActualPlay()
                                 lastWatchdogPosition = position
@@ -2798,6 +2803,7 @@ class PlayerService : MediaLibraryService(),
                                 val isNextLocal = nextMediaItem.isLocal
 
                                 Timber.d("PlayerService PlaybackWatchdog: Attivazione Fade Out ($timeLeft ms). Prossimo locale=$isNextLocal")
+                                lastWatchdogPosition = -1L // resetto la posizione precedente durante il cambio
                                 if (isNextLocal) startExoToExoCrossfade() else startWebViewFadeOut()
                             }
                         }
@@ -3757,11 +3763,12 @@ class PlayerService : MediaLibraryService(),
         // Prima di cambiare brano, azzeriamo la variabile storica nel Service
         // così il Watchdog sa che la nuova traccia deve ricominciare a fare i calcoli da zero!
         lastWatchdogPosition = -1L
-        isFading = false
+        //isFading = false
 
         val now = System.currentTimeMillis()
         if (now - lastPlayNextTime < debounceDelayMs) {
             Timber.d("PlayerService handlePlayNext ignored (too fast) play current")
+            isFading = false
             hybridPlayer.play()
             return
         }
@@ -3772,7 +3779,7 @@ class PlayerService : MediaLibraryService(),
 
         // Resettiamo lo stato di fade prima di lanciare la nuova canzone,
         // così onMediaItemTransition e startFadeIn()
-        isFading = false
+        //isFading = false
 
         serviceScope.launch {
             withContext(Dispatchers.Main) {
@@ -3834,53 +3841,62 @@ class PlayerService : MediaLibraryService(),
     }
 
     fun handlePlayNextRequestedByUser(source: String) {
-        // 1. Spegniamo subito il Watchdog supremo per evitare conflitti asincroni
-        //stopPlaybackWatchdog()
+        // Alziamo SUBITO il semaforo prima di fare qualsiasi controllo.
+        // Questo congela istantaneamente i controlli del Watchdog supremo perenne!
+        isFading = true
+        //hybridPlayer.setFadeVolume(0f)
 
-        // 2. Se l'app non sta suonando o è in pausa, cambiamo subito senza aspettare
-        if (!_playerState.value.isPlaying || isFading) {
+
+        // Se l'app non sta suonando o è in pausa, cambiamo subito senza aspettare i 250ms
+        if (!_playerState.value.isPlaying) {
+            isFading = false // Resettiamo prima di cambiare traccia
             handlePlayNext(source)
             return
         }
 
-        // 3. Avviamo la dissolvenza lampo sul Thread Principale
+        // Avviamo la dissolvenza lampo sul Thread Principale
         serviceScope.launch(Dispatchers.Main) {
-            isFading = true
+            Timber.d("PlayerService: Svuotamento buffer in corso per $source (volume silenziato)")
+
+            hybridPlayer.setFadeVolume(0f)
+            //delay(150.milliseconds) // Tempo sufficiente per non far sentire il pop, ma invisibile per l'utente
+
             val steps = 6
-            val quickFadeDurationMs = 250 // 250ms di dissolvenza lampo
+            val quickFadeDurationMs = 250
             val stepDelay = quickFadeDurationMs / steps
 
             Timber.d("PlayerService: Quick Fade-Out UTENTE (Avanti) avviato da $source")
 
             for (i in 1..steps) {
                 val progress = 1f - (i.toFloat() / steps)
-                // Curva quadratica per una sfumatura acustica morbida
                 hybridPlayer.setFadeVolume(progress * progress)
                 delay(stepDelay.milliseconds)
             }
 
             // Garantiamo il silenzio assoluto prima dello switch hardware
             hybridPlayer.setFadeVolume(0f)
-            isFading = false
 
-            // 4. Lanciamo finalmente il cambio canzone reale
+            // Mettiamo a false un istante prima di muovere la timeline,
+            // così il brano successivo partirà con la lavagna pulita
+            //isFading = false
+
+            // Lanciamo finalmente il cambio canzone reale
             handlePlayNext(source)
         }
     }
 
     fun handlePlayPreviousRequestedByUser(source: String) {
-        // 1. Spegniamo subito il Watchdog supremo
-        //stopPlaybackWatchdog()
+        // Alziamo subito lo scudo protettivo contro il Watchdog perenne
+        isFading = true
 
-        // 2. Controllo di sicurezza sullo stato di riproduzione
-        if (!_playerState.value.isPlaying || isFading) {
+        if (!_playerState.value.isPlaying) {
+            isFading = false
             handlePlayPrevious()
             return
         }
 
-        // 3. Dissolvenza lampo simmetrica per il tasto "Indietro"
+        // Dissolvenza lampo simmetrica per il tasto "Indietro"
         serviceScope.launch(Dispatchers.Main) {
-            isFading = true
             val steps = 6
             val quickFadeDurationMs = 250
             val stepDelay = quickFadeDurationMs / steps
@@ -3896,10 +3912,11 @@ class PlayerService : MediaLibraryService(),
             hybridPlayer.setFadeVolume(0f)
             isFading = false
 
-            // 4. Torniamo alla traccia precedente
+            // Torniamo alla traccia precedente
             handlePlayPrevious()
         }
     }
+
 
     fun requestSmoothPause() {
         // Se non sta riproducendo o sta già sfumando, applichiamo la pausa hardware diretta

@@ -108,6 +108,9 @@
   var timerId;
   var adblockIntervalId;
 
+  // AGGIUNTA: Variabile globale per tracciare il timeout dello sblocco rapido
+  var unstartedKickTimeoutId;
+
   // Funzione AdBlock protetta da eccezioni Cross-Origin
   function initializeAdBlock() {
     if (adblockIntervalId) clearInterval(adblockIntervalId);
@@ -168,7 +171,7 @@
           var audioInterval = setInterval(function() {
               if (player && typeof player.unMute === 'function' && typeof player.setVolume === 'function') {
                   player.unMute();
-                  player.setVolume(100);
+                  //player.setVolume(100);
 
                   // Se getVolume restituisce 100, l'audio è sbloccato. Fermiamo il timer!
                   if (typeof player.getVolume === 'function' && player.getVolume() === 100) {
@@ -196,6 +199,10 @@
 
   function sendPlayerStateChange(playerState) {
     clearTimeout(timerId);
+
+    // Puliamo il timer di sblocco ad ogni cambio di stato per evitare attivazioni residue
+    if (unstartedKickTimeoutId) clearTimeout(unstartedKickTimeoutId);
+
     initializeAdBlock();
 
     if (!YouTubePlayerBridge) return;
@@ -203,9 +210,21 @@
     var poster = document.getElementById('customPoster');
 
     switch (playerState) {
+
       case YT.PlayerState.UNSTARTED:
+        // Spariamo subito la notifica a Kotlin come facevi prima
         YouTubePlayerBridge.sendStateChange(UNSTARTED);
         sendVideoIdFromPlaylistIfAvailable(player);
+
+        // CALCIO PREVENTIVO A BASSO LIVELLO (Thread Chromium):
+        // Aspettiamo 200ms. Se il player è ancora bloccato in UNSTARTED,
+        // forziamo un playVideo() interno per svegliare i timer di YouTube.
+        unstartedKickTimeoutId = setTimeout(function() {
+            if (player && typeof player.getPlayerState === 'function' && player.getPlayerState() === -1) {
+                console.log("JS: UNSTARTED persistente rilevato nel core. Forzo playVideo() preventivo.");
+                player.playVideo();
+            }
+        }, 200);
         return;
       case YT.PlayerState.ENDED:
         YouTubePlayerBridge.sendStateChange(ENDED);
