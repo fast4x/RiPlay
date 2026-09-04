@@ -2817,8 +2817,17 @@ class PlayerService : MediaLibraryService(),
                         }
                         // SE IL CROSSFADE È DISATTIVATO
                         else {
-                            val isPlayerStalled = timeLeft <= 3500 && position == lastWatchdogPosition
-                            val isNaturalEnd = timeLeft <= 1200
+                            val isPlayerStalled = timeLeft <= 3500
+                                    && position == lastWatchdogPosition
+                                    && position > 2000 // Protezione: lo stallo non può avvenire nei primi 2 secondi!
+
+
+                            // USIAMO UNA SOGLIA APERTA PER CONTRASTARE LE CHIAMATE MULTIPLE
+                            // La fine naturale può scattare SOLO se la canzone
+                            // è avviata da almeno 5 secondi (position > 5000).
+                            // Questo impedisce al Watchdog di confondersi con i vecchi dati hardware
+                            // nei primissimi millisecondi del cambio traccia!
+                            val isNaturalEnd = timeLeft <= 1200 && position > 5000
 
                             if ((isNaturalEnd || isPlayerStalled) && !isFading) {
                                 isFading = true
