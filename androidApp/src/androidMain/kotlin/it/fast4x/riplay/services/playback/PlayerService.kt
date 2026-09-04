@@ -2614,6 +2614,8 @@ class PlayerService : MediaLibraryService(),
         super.onIsPlayingChanged(isPlaying)
         Timber.d("PlayerService onIsPlayingChanged intercettato: isPlaying=$isPlaying ")
 
+        lastWatchdogPosition = -1 // resetto la posizione precedente se cambia lo stato
+
         if (isPlaying) {
             sendOpenExternalEqualizerIntent()
             //startPlaybackWatchdog()
@@ -2811,6 +2813,7 @@ class PlayerService : MediaLibraryService(),
                                 } else {
                                     Timber.d("PlayerService PlaybackWatchdog: Fine brano naturale a $timeLeft ms")
                                 }
+                                lastWatchdogPosition = -1L // resetto la posizione precedente durante il cambio
                                 handlePlayNext("PlayerService PlaybackWatchdog with crossfade disabled")
                             }
                         }
