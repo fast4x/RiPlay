@@ -94,6 +94,7 @@ import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.requests.searchPage
 import it.fast4x.environment.utils.from
+import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.data.models.Event
@@ -232,6 +233,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import okhttp3.OkHttpClient
 import java.io.ByteArrayOutputStream
+import kotlin.collections.none
 import kotlin.time.Duration.Companion.milliseconds
 
 @UnstableApi
@@ -526,6 +528,8 @@ class PlayerService : MediaLibraryService(),
             withContext(Dispatchers.IO) {
                 startObservingSettings()
             }
+
+            startPlaybackWatchdog()
 
             checkAndRestoreTimer()
 
@@ -912,14 +916,14 @@ class PlayerService : MediaLibraryService(),
 
                 if (isCastActive) {
                     withContext(Dispatchers.Main) {
-                        when (playerState) {
-                            PlayerConstants.PlayerState.PLAYING -> {
-                                startPlaybackWatchdog()
-                            }
-                            else -> {
-                                stopPlaybackWatchdog()
-                            }
-                        }
+//                        when (playerState) {
+//                            PlayerConstants.PlayerState.PLAYING -> {
+//                                startPlaybackWatchdog()
+//                            }
+//                            else -> {
+//                                stopPlaybackWatchdog()
+//                            }
+//                        }
 
                         playerState?.let { updatePlayerState(it) }
 
@@ -1374,7 +1378,7 @@ class PlayerService : MediaLibraryService(),
                     PlayerConstants.PlayerState.PLAYING -> {
                         lastError = null  // reset errore dopo riproduzione riuscita
                         onlineNearEndTicks = 0
-                        startPlaybackWatchdog()
+                        //startPlaybackWatchdog()
 
                         if (::hybridPlayer.isInitialized) {
                             hybridPlayer.invalidateYouTubePlayPause()
@@ -1382,7 +1386,7 @@ class PlayerService : MediaLibraryService(),
                     }
                     PlayerConstants.PlayerState.PAUSED -> {
                         onlineNearEndTicks = 0
-                        stopPlaybackWatchdog()
+                        //stopPlaybackWatchdog()
 
                         if (::hybridPlayer.isInitialized) {
                             hybridPlayer.invalidateYouTubePlayPause()
@@ -1710,6 +1714,8 @@ class PlayerService : MediaLibraryService(),
 
         _isServiceReady.value = false
 
+        stopPlaybackWatchdog()
+
         sendCloseExternalEqualizerIntent()
 
         // RIMOZIONE SICURA DEI RECEIVER
@@ -1949,7 +1955,7 @@ class PlayerService : MediaLibraryService(),
         if (mediaItem == null) return
 
         // Ferma il fade out se era in corso (es. l'utente ha premuto "Next" a metà brano)
-        stopPlaybackWatchdog()
+        //stopPlaybackWatchdog()
 
         applyPlaybackParameters()
 
@@ -2155,25 +2161,8 @@ class PlayerService : MediaLibraryService(),
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
         super.onPlayWhenReadyChanged(playWhenReady, reason)
 
-        Timber.d("PlayerService FocusWatchdog: onPlayWhenReadyChanged playWhenReady=$playWhenReady, reason=$reason")
+        Timber.d("PlayerService onPlayWhenReadyChanged playWhenReady=$playWhenReady, reason=$reason")
 
-        // INTERCETTIAMO LA PERDITA DI FOCUS (Arriva una notifica o una chiamata)
-        if (reason == Player.PLAY_WHEN_READY_CHANGE_REASON_AUDIO_FOCUS_LOSS) {
-            if (!playWhenReady) {
-                Timber.w("PlayerService FocusWatchdog: PERSO AUDIO FOCUS di sistema! Avvio pausa morbida.")
-                requestSmoothPause()
-            }
-        }
-
-        // INTERCETTIAMO LA RICONQUISTA DEL FOCUS
-        if (playWhenReady && !_playerState.value.isPlaying) {
-            if (reason == Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST ||
-                reason == Player.PLAY_WHEN_READY_CHANGE_REASON_REMOTE) {
-
-                Timber.d("PlayerService FocusWatchdog: RICONQUISTATO AUDIO FOCUS! Riprendo la riproduzione morbida.")
-                requestSmoothPlay()
-            }
-        }
     }
 
     override fun onTrimMemory(level: Int) {
@@ -2382,14 +2371,9 @@ class PlayerService : MediaLibraryService(),
                 val shouldPlay = (hasNewBt && resumeOnBt) || (hasNewWired && resumeOnWired)
 
                 if (shouldPlay) {
-                    val local = currentSong.value?.isLocal == true
-                    if (local) {
-                        exoPlayer.play()
-                    } else {
-                        serviceScope.launch {
-                            val onlinePlayer = ensureOnlinePlayerInitialized()
-                            onlinePlayer.play()
-                        }
+                    serviceScope.launch {
+                        ensureOnlinePlayerInitialized()
+                        requestSmoothPlay()
                     }
                     SmartMessage(getString(R.string.music_resumed_headphones_connected), context = this@PlayerService)
                 }
@@ -2405,8 +2389,7 @@ class PlayerService : MediaLibraryService(),
                     val hasRemainingWired = currentDevices?.any(::isWiredSink) == true
 
                     if (!hasRemainingBt && !hasRemainingWired) {
-                        exoPlayer.pause()
-                        _internalYouTubePlayer.value?.pause()
+                        requestSmoothPause()
                         SmartMessage(getString(R.string.music_paused_headphones_disconnected), context = this@PlayerService)
                     }
                 }
@@ -2633,10 +2616,10 @@ class PlayerService : MediaLibraryService(),
 
         if (isPlaying) {
             sendOpenExternalEqualizerIntent()
-            startPlaybackWatchdog()
+            //startPlaybackWatchdog()
             updatePlayerState(PlayerConstants.PlayerState.PLAYING)
         } else {
-            stopPlaybackWatchdog()
+            //stopPlaybackWatchdog()
             updatePlayerState(PlayerConstants.PlayerState.PAUSED)
 
             // Rimuove lo stato di foreground aggressivo quando l'app va in pausa
@@ -2747,77 +2730,101 @@ class PlayerService : MediaLibraryService(),
 
     private fun startPlaybackWatchdog() {
         playbackWathcDogJob?.cancel()
-        isFading = false // <-- Sicurezza: iniziamo sempre sbloccati sul nuovo brano
-        lastWatchdogPosition = -1L // Resettiamo il tracciamento dello stallo ad ogni avvio
+        isFading = false
+        lastWatchdogPosition = -1L
+
+        Timber.d("PlayerService PlaybackWatchdog: Avvio watchdog")
 
         playbackWathcDogJob = serviceScope.launch(Dispatchers.Main) {
             while (isActive) {
                 delay(200.milliseconds)
+
                 val duration = hybridPlayer.duration
                 val position = hybridPlayer.currentPosition
+                val isPlaying = _playerState.value.playbackState == PlaybackState.PLAYING
+                val isPaused = _playerState.value.playbackState == PlaybackState.PAUSED
 
+                // Il guardiano calcola i dati SOLO se c'è una canzone caricata nel player
                 if (duration > 0) {
                     val timeLeft = duration - position
                     val crossfadeDurationMs = appSettings.crossfadeDuration.milliseconds
 
-                    Timber.d("PlayerService PlaybackWatchdog: timeleft $timeLeft duration=$duration ms, position=$position ms")
+                    if (BuildConfig.DEBUG)
+                        Timber.d("PlayerService PlaybackWatchdog: isPlaying = $isPlaying isPaused = $isPaused timeleft $timeLeft duration=$duration ms, position=$position ms")
 
-                    // SE IL CROSSFADE È ATTIVO
-                    if (appSettings.crossfadeDuration != CrossfadeDuration.Off) {
+                    // ─── SENTINELLA AUDIO FOCUS PER YOUTUBE ONLINE (PERENNE) ───
+                    if (hybridPlayer.activeEngine == ActiveEngine.YOUTUBE) {
 
-                        // Usiamo una Soglia aperta!
-                        // Entriamo se il tempo rimasto è inferiore o uguale ai secondi di crossfade impostati (es. 7000ms).
-                        // Il controllo 'timeLeft > -10000' serve solo come paracadute estremo per evitare falsi positivi a inizio brano
-                        // se i metadati caricano valori sballati, ma lascia le porte totalmente aperte ai salti temporali a fine traccia.
-                        if (timeLeft <= crossfadeDurationMs && timeLeft > -10000 && !isFading) {
-                            isFading = true
+                        // CASO A: Rilevamento perdita focus (Timeline si blocca mentre l'interfaccia è in PLAY)
+                        if (isPlaying) {
+                            val isWebViewStalledByFocusLoss = position == lastWatchdogPosition &&
+                                    position > 2000 &&
+                                    timeLeft > 3500
 
-                            val nextMediaItem = hybridPlayer.getMediaItemAt(hybridPlayer.nextMediaItemIndex)
-                            val isNextLocal = nextMediaItem.isLocal
+                            if (isWebViewStalledByFocusLoss && !isFading) {
+                                Timber.w("PlayerService PlaybackWatchdog: RILEVATO STALLO TIMELINE (Focus Loss). Sincronizzo in PAUSA.")
+                                hybridPlayer.executeActualPause() // non usare pausa con fade
+                                lastWatchdogPosition = position
+                                continue
+                            }
+                        }
 
-                            Timber.d("PlayerService PlaybackWatchdog: Attivazione Fade Out (timeLeft=$timeLeft ms). Prossimo brano locale=$isNextLocal")
+                        // CASO B: Rilevamento risveglio automatico (Timeline avanza mentre l'interfaccia è in PAUSA)
+                        // Ora funziona al 100% perché il Watchdog è vivo e vegeto!
+                        if (isPaused && lastWatchdogPosition > 0) {
+                            val isWebViewAwakenedByFocusGain = position > lastWatchdogPosition &&
+                                    position > 2000 &&
+                                    timeLeft > 3500
 
-                            if (isNextLocal) {
-                                startExoToExoCrossfade()
-                            } else {
-                                startWebViewFadeOut()
+                            if (isWebViewAwakenedByFocusGain && !isFading) {
+                                Timber.d("PlayerService PlaybackWatchdog: RILEVATO AVANZAMENTO ANOMALO (Focus Gain). Sincronizzo in PLAY.")
+                                hybridPlayer.executeActualPlay()
+                                lastWatchdogPosition = position
+                                continue
                             }
                         }
                     }
-                    // SE IL CROSSFADE È DISATTIVATO
-                    else {
-                        // VERIFICA STALLO D'EMERGENZA:
-                        // Se mancano meno di 3.5 secondi alla fine (finestra critica di fine brano)
-                        // e la canzone è in stato di PLAY ma la posizione non si è mossa dall'ultimo controllo (200ms fa),
-                        // significa che il player si è piantato a fine traccia!
-                        val isPlayerStalled = timeLeft <= 3500 &&
-                                position == lastWatchdogPosition &&
-                                _playerState.value.isPlaying
+                    // ─────────────────────────────────────────────────────────────
 
-                        // USIAMO UNA SOGLIA APERTA 1,2 secondi potrebbe bastare
-                        val isNaturalEnd = timeLeft <= 1200
+                    // LE LOGICHE DI FINE BRANO SCATTANO SOLO SE L'APP STA EFFETTIVAMENTE SUONANDO
+                    if (isPlaying) {
+                        // SE IL CROSSFADE È ATTIVO
+                        if (appSettings.crossfadeDuration != CrossfadeDuration.Off) {
+                            if (timeLeft <= crossfadeDurationMs && timeLeft > -10000 && !isFading) {
+                                isFading = true
+                                val nextMediaItem = hybridPlayer.getMediaItemAt(hybridPlayer.nextMediaItemIndex)
+                                val isNextLocal = nextMediaItem.isLocal
 
-                        if ((isNaturalEnd || isPlayerStalled) && !isFading) {
-                            isFading = true
-
-                            if (isPlayerStalled) {
-                                Timber.w("PlayerService PlaybackWatchdog: RILEVATO STALLO HARDWARE a $timeLeft ms dalla fine. Forzo il cambio traccia!")
-                            } else {
-                                Timber.d("PlayerService PlaybackWatchdog: Fine brano naturale (Crossfade OFF) a $timeLeft ms dalla fine")
+                                Timber.d("PlayerService PlaybackWatchdog: Attivazione Fade Out ($timeLeft ms). Prossimo locale=$isNextLocal")
+                                if (isNextLocal) startExoToExoCrossfade() else startWebViewFadeOut()
                             }
+                        }
+                        // SE IL CROSSFADE È DISATTIVATO
+                        else {
+                            val isPlayerStalled = timeLeft <= 3500 && position == lastWatchdogPosition
+                            val isNaturalEnd = timeLeft <= 1200
 
-                            handlePlayNext("PlaybackWatchdog with crossfade disabled")
+                            if ((isNaturalEnd || isPlayerStalled) && !isFading) {
+                                isFading = true
+                                if (isPlayerStalled) {
+                                    Timber.w("PlayerService PlaybackWatchdog: RILEVATO STALLO FINE TRACCIA a $timeLeft ms. Forzo il cambio!")
+                                } else {
+                                    Timber.d("PlayerService PlaybackWatchdog: Fine brano naturale a $timeLeft ms")
+                                }
+                                handlePlayNext("PlayerService PlaybackWatchdog with crossfade disabled")
+                            }
                         }
                     }
 
-                    // Aggiorniamo la posizione storica per il prossimo ciclo di controllo stallo
+                    // Aggiorniamo la posizione storica per il prossimo ciclo
                     lastWatchdogPosition = position
+                } else {
+                    // Se non c'è nessun brano caricato (es. coda vuota), resettiamo i contatori storici
+                    lastWatchdogPosition = -1L
                 }
             }
         }
     }
-
-
 
 
     private fun stopPlaybackWatchdog() {
@@ -3743,10 +3750,11 @@ class PlayerService : MediaLibraryService(),
 
     fun handlePlayNext(origine: String? = null) {
         Timber.d("PlayerService PlaybackWatchdog: handlePlayNext cambio brano richiesto da $origine")
-        // Cancelliamo subito il watchdog prima di muovere la timeline,
-        // così la transizione avviene senza disturbi
 
-        stopPlaybackWatchdog()
+        // Prima di cambiare brano, azzeriamo la variabile storica nel Service
+        // così il Watchdog sa che la nuova traccia deve ricominciare a fare i calcoli da zero!
+        lastWatchdogPosition = -1L
+        isFading = false
 
         val now = System.currentTimeMillis()
         if (now - lastPlayNextTime < debounceDelayMs) {
@@ -3782,7 +3790,11 @@ class PlayerService : MediaLibraryService(),
         lastPlayPreviousTime = now
 
         hybridPlayer.pause()
-        isFading = false // Pulizia immediata dello stato di fade
+
+        // Prima di cambiare brano, azzeriamo la variabile storica nel Service
+        // così il Watchdog sa che la nuova traccia deve ricominciare a fare i calcoli da zero!
+        lastWatchdogPosition = -1L
+        isFading = false
 
         val currentPos = hybridPlayer.currentPosition
         val rewindThreshold = appSettings.rewindThresholdDuration.milliSeconds
@@ -3820,7 +3832,7 @@ class PlayerService : MediaLibraryService(),
 
     fun handlePlayNextRequestedByUser(source: String) {
         // 1. Spegniamo subito il Watchdog supremo per evitare conflitti asincroni
-        stopPlaybackWatchdog()
+        //stopPlaybackWatchdog()
 
         // 2. Se l'app non sta suonando o è in pausa, cambiamo subito senza aspettare
         if (!_playerState.value.isPlaying || isFading) {
@@ -3855,7 +3867,7 @@ class PlayerService : MediaLibraryService(),
 
     fun handlePlayPreviousRequestedByUser(source: String) {
         // 1. Spegniamo subito il Watchdog supremo
-        stopPlaybackWatchdog()
+        //stopPlaybackWatchdog()
 
         // 2. Controllo di sicurezza sullo stato di riproduzione
         if (!_playerState.value.isPlaying || isFading) {

@@ -267,17 +267,18 @@ class HybridPlayer (
 
 
     override fun getPlayWhenReady(): Boolean {
-        return if (activeEngine == ActiveEngine.YOUTUBE) {
-            //youtubeControl.isPlaying()
+        val result = if (activeEngine == ActiveEngine.YOUTUBE) {
             youtubePlayWhenReady
         } else {
             exoPlayer.playWhenReady
         }
+        Timber.d("HybridPlayer getPlayWhenReady() called: activeEngine = $activeEngine result = $result")
+        return result
     }
 
     override fun setPlayWhenReady(playWhenReady: Boolean) {
         if (activeEngine == ActiveEngine.YOUTUBE) {
-
+            Timber.d("HybridPlayer setPlayWhenReady() called: activeEngine = $activeEngine playWhenReady = $playWhenReady")
             // 2. Controlliamo l'audio dell'hybridPlayer in base al comando di Android Auto
             if (playWhenReady) {
                 youtubeControl.play()
@@ -286,11 +287,12 @@ class HybridPlayer (
                 youtubePlayWhenReady = true
             } else {
                 youtubeControl.pause()
+                youtubePlayWhenReady = false
                 //mainHandler.removeCallbacks(positionUpdater) // Blocca la barra
             }
 
             // Inoltriamo il comando a ExoPlayer in background per tenere allineata la sessione
-            super.setPlayWhenReady(playWhenReady)
+            super.setPlayWhenReady(youtubePlayWhenReady)
 
             // Spariamo la notifica in batch che ha reso reattiva l'applicazione
             invalidateYouTubePlayPause()
