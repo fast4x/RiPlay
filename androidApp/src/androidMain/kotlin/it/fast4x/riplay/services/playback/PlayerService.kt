@@ -2622,6 +2622,14 @@ class PlayerService : MediaLibraryService(),
         lastWatchdogPosition = -1 // resetto la posizione precedente se cambia lo stato
 
         if (isPlaying) {
+            if (appSettings.crossfadeDuration == CrossfadeDuration.Off){
+                // SE IL CROSSFADE È DISATTIVATO:
+                // Ripristiniamo immediatamente il volume pieno in modo sincrono
+                hybridPlayer.setFadeVolume(1.0f)
+                // E RISBLOCCHIAMO SUBITO IL WATCHDOG PERENNE PER IL NUOVO BRANO!
+                isFading = false
+                Timber.d("PlayerService onIsPlayingChanged: Nuovo brano avviato (Crossfade OFF). Scudo abbassato e Watchdog pronto.")
+            }
             sendOpenExternalEqualizerIntent()
             //startPlaybackWatchdog()
             updatePlayerState(PlayerConstants.PlayerState.PLAYING)
@@ -2757,7 +2765,7 @@ class PlayerService : MediaLibraryService(),
                     val crossfadeDurationMs = appSettings.crossfadeDuration.milliseconds
 
                     if (BuildConfig.DEBUG)
-                        Timber.d("PlayerService PlaybackWatchdog: isPlaying = $isPlaying isPaused = $isPaused timeleft $timeLeft duration=$duration ms, position=$position ms")
+                        Timber.d("PlayerService PlaybackWatchdog: isFading = $isFading isPlaying = $isPlaying isPaused = $isPaused timeleft $timeLeft duration=$duration ms, position=$position ms")
 
                     // ─── SENTINELLA AUDIO FOCUS PER YOUTUBE ONLINE (PERENNE) ───
                     if (hybridPlayer.activeEngine == ActiveEngine.YOUTUBE) {
@@ -3919,51 +3927,51 @@ class PlayerService : MediaLibraryService(),
 
 
     fun requestSmoothPause() {
-        // Se non sta riproducendo o sta già sfumando, applichiamo la pausa hardware diretta
         if (!_playerState.value.isPlaying || isFading) {
             hybridPlayer.executeActualPause()
             return
         }
 
+        // ADATTAMENTO DINAMICO DELLA DURATA
+        // Se il crossfade è disattivato, impostiamo un micro-fade di appena 60ms (invisibile ma salva-pop),
+        // altrimenti manteniamo i regolari 200ms morbidi.
+        val isCrossfadeOff = appSettings.crossfadeDuration == CrossfadeDuration.Off
+        val fadeDurationMs = if (isCrossfadeOff) 60 else 200
+        val steps = if (isCrossfadeOff) 3 else 5 // Meno step per il taglio netto
+        val stepDelay = fadeDurationMs / steps
+
         serviceScope.launch(Dispatchers.Main) {
             isFading = true
-            val steps = 5
-            val fadeDurationMs = 200 // 200ms sono impercettibili come ritardo ma perfetti per l'orecchio
-            val stepDelay = fadeDurationMs / steps
-
-            Timber.d("PlayerService UX: Avvio Fade-Out lampo per PAUSA")
+            Timber.d("PlayerService UX: Avvio Pause Fade (duration=$fadeDurationMs ms)")
 
             for (i in 1..steps) {
                 val progress = 1f - (i.toFloat() / steps)
-                hybridPlayer.setFadeVolume(progress * progress) // Curva morbida
+                hybridPlayer.setFadeVolume(progress * progress)
                 delay(stepDelay.milliseconds)
             }
 
             hybridPlayer.setFadeVolume(0f)
             isFading = false
 
-            // Il volume è a zero: ora eseguiamo la vera logica di pausa
             hybridPlayer.executeActualPause()
-            Timber.d("PlayerService UX: Pausa hardware completata")
         }
     }
 
     fun requestSmoothPlay() {
-        // Se sta già riproducendo, non facciamo nulla
         if (_playerState.value.isPlaying) return
 
-        serviceScope.launch(Dispatchers.Main) {
-            // 1. Azzeriamo il volume software PRIMA di avviare i motori audio
-            hybridPlayer.setFadeVolume(0f)
+        // ADATTAMENTO DINAMICO IN RISALITA
+        val isCrossfadeOff = appSettings.crossfadeDuration == CrossfadeDuration.Off
+        val fadeDurationMs = if (isCrossfadeOff) 60 else 250
+        val steps = if (isCrossfadeOff) 3 else 5
+        val stepDelay = fadeDurationMs / steps
 
-            // 2. Facciamo partire il player (Exo o YT) che inizierà a emettere audio ma in silenzio
+        serviceScope.launch(Dispatchers.Main) {
+            hybridPlayer.setFadeVolume(0f)
             hybridPlayer.executeActualPlay()
-            Timber.d("PlayerService UX: Play hardware eseguito, avvio Fade-In lampo")
 
             isFading = true
-            val steps = 5
-            val fadeDurationMs = 250 // Un filo più lungo in risalita per un effetto avvolgente
-            val stepDelay = fadeDurationMs / steps
+            Timber.d("PlayerService UX: Avvio Play Fade (duration=$fadeDurationMs ms)")
 
             for (i in 1..steps) {
                 val progress = i.toFloat() / steps
@@ -3971,12 +3979,11 @@ class PlayerService : MediaLibraryService(),
                 delay(stepDelay.milliseconds)
             }
 
-            // Apertura totale al 100% software: il controllo torna ai tasti fisici del telefono
             hybridPlayer.setFadeVolume(1.0f)
             isFading = false
-            Timber.d("PlayerService UX: Riproduzione tornata a volume pieno")
         }
     }
+
 
 
     @JvmInline
