@@ -59,6 +59,7 @@ import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.getTitleMonthlyPlaylist
+import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.seamlessQueue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -723,10 +724,26 @@ class MediaLibraryServiceCallback(
                     else -> mutableListOf()
                 } as MutableList<MediaItem>
 
-                future.set(LibraryResult.ofItemList(ImmutableList.copyOf(resultList), params))
+                // ─── APPLICAZIONE DELLA PAGINAZIONE NATIVA DI ANDROID AUTO ───
+                // Calcoliamo l'indice di partenza (OFFSET) e l'indice di arrivo (LIMIT) basandoci
+                // sulle reali richieste inviate dal display della vettura.
+                val fromIndex = page * pageSize
+                val pagedResultList = if (fromIndex >= resultList.size) {
+                    // Se l'auto richiede una pagina fuori range (es. fine della lista), restituiamo una lista vuota
+                    emptyList<MediaItem>()
+                } else {
+                    val toIndex = minOf(fromIndex + pageSize, resultList.size)
+                    // Estraiamo solo ed esclusivamente il sotto-segmento di elementi necessari a questa pagina!
+                    resultList.subList(fromIndex, toIndex)
+                }
+
+                Timber.d("PlayerService Media3: onGetChildren paginato. Pagina=$page, Elementi passati=${pagedResultList.size} di ${resultList.size} totali.")
+
+                // Inviamo a Media3 solo la pagina corretta ritagliata al millimetro
+                future.set(LibraryResult.ofItemList(ImmutableList.copyOf(pagedResultList), params))
 
             } catch (e: Exception) {
-                Timber.e(e, "Errore critico nel caricamento dei figli per $parentId")
+                Timber.e(e, "PlayerService Media3: Errore critico nel caricamento dei figli per $parentId")
                 future.setException(e)
             }
         }
@@ -941,7 +958,7 @@ class MediaLibraryServiceCallback(
         val keyEvent = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT) as? KeyEvent
 
         if (keyEvent != null && keyEvent.action == KeyEvent.ACTION_UP) {
-            val hybridPlayer = playerService.hybridPlayer // Prendi l'istanza del tuo player
+            val hybridPlayer = playerService.hybridPlayer
 
             when (keyEvent.keyCode) {
                 KeyEvent.KEYCODE_MEDIA_PLAY -> {
@@ -1213,18 +1230,30 @@ class MediaLibraryServiceCallback(
             .build()
 
     private val Song.asPlayableMediaItem: MediaItem
-        get() = MediaItem.Builder()
-            .setMediaId(MediaId.forSong(id))
-            .setMediaMetadata(
-                MediaMetadata.Builder()
-                    .setTitle(title.removePrefix())
-                    .setArtist(artistsText)
-                    .setArtworkUri(thumbnailUrl?.toUri())
-                    .setIsBrowsable(false)
-                    .setIsPlayable(true)
-                    .build()
-            )
-            .build()
+        get() {
+            // Se l'immagine è un URL remoto di YouTube, sfruttiamo toThumbnail
+            // per chiedere ai server una variante compressa e leggerissima
+            // Se è altro il framework gestirà il path nativo
+            val optimizedArtworkUri = if (isLocal) {
+                thumbnailUrl?.toUri()
+            } else {
+                thumbnailUrl?.toThumbnail(512)?.toUri()
+            }
+
+            return MediaItem.Builder()
+                .setMediaId(MediaId.forSong(id))
+                .setMediaMetadata(
+                    MediaMetadata.Builder()
+                        .setTitle(title.removePrefix())
+                        .setArtist(artistsText)
+                        .setArtworkUri(optimizedArtworkUri)
+                        .setIsBrowsable(false)
+                        .setIsPlayable(true)
+                        .build()
+                )
+                .build()
+        }
+
 
     private fun PlaylistPreview.asBrowserMediaItem(thumbnailUrls: List<String?>, onDevice: Boolean? = false): MediaItem {
 
@@ -1391,32 +1420,41 @@ class MediaLibraryServiceCallback(
 
     suspend fun regenerateCustomActions(session: MediaSession) =
         withContext(Dispatchers.Main) {
-            delay(100.milliseconds)
-            Handler(Looper.getMainLooper()).postDelayed({
-                playerService.hybridPlayer.onRefreshCustomLayoutListener?.invoke()
-            }, 100)
+            // Usiamo un delay controllato di coroutine da 80ms
+            // sono il tempo ideale per dare modo al Database Room di salvare lo stato del Like/Shuffle
+            // senza far percepire alcun ritardo visivo all'utente sul display dell'auto.
+            delay(80.milliseconds)
+
+            // Invochiamo subito il listener grafico della notifica/UI
+            playerService.hybridPlayer.onRefreshCustomLayoutListener?.invoke()
+
+            // Rinfreschiamo all'istante la notifica dei comandi di Media3 ed Android Auto
             updateCustomLayout(session)
         }
 
-
     fun updateCustomLayout(session: MediaSession) {
-        // Rigenero la lista dei 5 bottoni leggendo gli stati aggiornati del player/canzone
+        val currentSongData = playerService.currentSong.value
+        val likedAt = currentSongData?.likedAt
+
         val customLayout = NotificationButtons.entries.map { buttonEntry ->
             CommandButton.Builder(CommandButton.ICON_UNDEFINED)
                 .setDisplayName(buttonEntry.name)
                 .setCustomIconResId(
                     buttonEntry.getStateIcon(
                         buttonEntry,
-                        playerService.currentSong.value?.likedAt,
+                        likedAt,
                         session.player.repeatMode,
                         session.player.shuffleModeEnabled
                     )
                 )
                 .setSessionCommand(buttonEntry.sessionCommand)
+                .setEnabled(true)
                 .build()
         }
 
-        // Comunichiamo a Media3 e ad Android Auto di ridisegnare la barra all'istante
+        Timber.d("PlayerService Media3: setCustomLayout applicato (Like=%s, Shuffle=%b)", likedAt != null, session.player.shuffleModeEnabled)
+
+        // Comunichiamo a Media3 e ad Android Auto di ridisegnare la notifica all'istante
         session.setCustomLayout(customLayout)
     }
 

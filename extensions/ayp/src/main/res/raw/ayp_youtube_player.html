@@ -166,25 +166,39 @@
               YouTubePlayerBridge.sendReady();
           }
 
-          // WORKAROUND INIZIALE CON CONTROLLO SU GETVOLUME
-          var checks = 0;
-          var audioInterval = setInterval(function() {
+          // Sblocchiamo il volume IMMEDIATAMENTE per provare ad evitare attenuazioni di volume non voluti
+          // senza avviare loop che bombardano il player nei primi 2 secondi!
+          try {
               if (player && typeof player.unMute === 'function' && typeof player.setVolume === 'function') {
                   player.unMute();
-                  //player.setVolume(100);
+                  player.setVolume(100);
 
-                  // Se getVolume restituisce 100, l'audio è sbloccato. Fermiamo il timer!
-                  if (typeof player.getVolume === 'function' && player.getVolume() === 100) {
-                      clearInterval(audioInterval);
-                      return;
+                  // Proviamo a disattivare i nodi di compressione audio di Chromium se esposti
+                  if (player.getIframe()) {
+                      player.getIframe().setAttribute("allow", "autoplay; encrypted-media");
                   }
               }
+          } catch(e) {
+              console.log("JS: Errore sblocco volume immediato");
+          }
+
+          // Conserviamo un singolo controllo di fallback ultra-rapido solo se getVolume fallisce,
+          // ma lo spegniamo alla prima risposta positiva per non sovrapporci alla riproduzione avviata.
+          var checks = 0;
+          var audioInterval = setInterval(function() {
+              if (player && typeof player.getVolume === 'function' && player.getVolume() === 100) {
+                  clearInterval(audioInterval);
+                  return;
+              }
+              if (player && typeof player.unMute === 'function' && typeof player.setVolume === 'function') {
+                  player.unMute();
+                  player.setVolume(100);
+              }
               checks++;
-              if (checks >= 6) {
+              if (checks >= 3) { // Riduciamo i controlli a massimo 3 in modo da concluderli in meno di un secondo
                   clearInterval(audioInterval);
               }
-          }, 300);
-          // WORKAROUND INIZIALE CON CONTROLLO SU GETVOLUME
+          }, 250);
 
         },
         onStateChange: function(event) { sendPlayerStateChange(event.data) },

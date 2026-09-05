@@ -3640,7 +3640,7 @@ interface Database {
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 64,
+    version = 67,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -3730,7 +3730,10 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
                 From60To61Migration(),
                 From61To62Migration(),
                 From62To63Migration(),
-                From63To64Migration()
+                From63To64Migration(),
+                From64To65Migration(),
+                From65To66Migration(),
+                From66To67Migration()
             )
             //.fallbackToDestructiveMigration(false)
             .addCallback(object : Callback() {
@@ -4374,6 +4377,68 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
                 )
             } catch (e: Exception) {
                 println("Database From63To64Migration error ${e.stackTraceToString()}")
+            }
+        }
+    }
+
+    class From64To65Migration : Migration(64, 65) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            try {
+                db.execSQL("ALTER TABLE `webdav_account` ADD COLUMN `scanSubFolders` INTEGER NOT NULL DEFAULT 0")
+            } catch (e: Exception) {
+                println("Database From64To65Migration error ${e.stackTraceToString()}")
+            }
+        }
+    }
+
+    class From65To66Migration : Migration(65, 66) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            try {
+                // Elimina il VECCHIO indice se esiste
+                db.execSQL("DROP INDEX IF EXISTS `index_webdav_account_baseUrl_username`")
+
+                // Crea il NUOVO indice univoco con 3 colonne
+                db.execSQL("""
+                    CREATE UNIQUE INDEX IF NOT EXISTS `index_webdav_account_baseUrl_username_musicFolder` 
+                    ON `webdav_account` (`baseUrl`, `username`, `musicFolder`)
+                """.trimIndent())
+
+            } catch (e: Exception) {
+                println("Database From65To66Migration error ${e.stackTraceToString()}")
+            }
+        }
+    }
+
+    class From66To67Migration : Migration(66, 67) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            try {
+                // Butta via la vecchia tabella perchè la funzionalità non è stata rilasciata ancora
+                db.execSQL("DROP TABLE IF EXISTS `webdav_account`")
+
+                // Creazione della tabella nuova
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `webdav_account` (
+                        `id` INTEGER NOT NULL,
+                        `name` TEXT NOT NULL,
+                        `baseUrl` TEXT NOT NULL,
+                        `username` TEXT NOT NULL,
+                        `encryptedPassword` TEXT NOT NULL,
+                        `isMusicSource` INTEGER NOT NULL DEFAULT 1,
+                        `remoteFolder` TEXT NOT NULL DEFAULT '/',
+                        `scanSubFolders` INTEGER NOT NULL DEFAULT 0,
+                        PRIMARY KEY(`id`)
+                    )
+                """.trimIndent()
+                )
+
+                // Crea l'indice univoco aggiornato
+                db.execSQL("""
+                    CREATE UNIQUE INDEX IF NOT EXISTS `index_webdav_account_baseUrl_username_remoteFolder` 
+                    ON `webdav_account` (`baseUrl`, `username`, `remoteFolder`)
+                """.trimIndent())
+
+            } catch (e: Exception) {
+                println("Database From66To67Migration error ${e.stackTraceToString()}")
             }
         }
     }
