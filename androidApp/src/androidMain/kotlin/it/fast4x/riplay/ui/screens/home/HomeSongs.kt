@@ -313,14 +313,13 @@ fun HomeSongs(
 
     if (showFavoritesPlaylist && isNetworkConnected) buttonsList += BuiltInPlaylist.Favorites to stringResource(R.string.favorites)
 
-    if (appSettings.isWebDavEnabled) buttonsList += BuiltInPlaylist.WebDav to stringResource(R.string.webdav)
-
     if (showMyTopPlaylist && isNetworkConnected) buttonsList += BuiltInPlaylist.Top to String.format(stringResource(R.string.my_playlist_top), maxTopPlaylistItems.number)
 
     if (BuildConfig.FLAVOR == "full")
         buttonsList += BuiltInPlaylist.MusicVault to stringResource(R.string.settings_music_vault_title)
 
     if (showOnDevicePlaylist) buttonsList += BuiltInPlaylist.OnDevice to stringResource(R.string.on_device)
+    if (appSettings.isWebDavEnabled) buttonsList += BuiltInPlaylist.WebDav to stringResource(R.string.webdav)
     if (showDislikedPlaylist && isNetworkConnected) buttonsList += BuiltInPlaylist.Disliked to stringResource(R.string.disliked)
 
     val excludeSongWithDurationLimit = appSettings.excludeSongWithDurationLimit

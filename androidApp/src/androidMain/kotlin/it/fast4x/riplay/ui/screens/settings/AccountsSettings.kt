@@ -17,12 +17,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.CloudDownload
+import androidx.compose.material.icons.rounded.CloudSync
+import androidx.compose.material.icons.rounded.CloudUpload
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -35,6 +42,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastFilter
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.rememberNavController
@@ -49,6 +57,7 @@ import it.fast4x.riplay.LocalAudioTagger
 import it.fast4x.riplay.LocalWebDavLibrary
 import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.R
+import it.fast4x.riplay.data.models.webDavAccountEmpty
 import it.fast4x.riplay.enums.MusicIdentifierProvider
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.colorPalette
@@ -58,8 +67,11 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ValidationType
 import it.fast4x.riplay.extensions.discord.DiscordLoginAndGetToken
 import it.fast4x.riplay.extensions.accountlogin.AccountLogin
+import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavBackupInfo
 import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavBrowserState
 import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavConfig
+import it.fast4x.riplay.extensions.experimental.webdavlibrary.ui.WebDavAccountFormSheet
+import it.fast4x.riplay.extensions.experimental.webdavlibrary.ui.WebDavDatabaseRestoreConfirmDialog
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
@@ -75,9 +87,11 @@ import it.fast4x.riplay.utils.CryptoManager
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import timber.log.Timber
+import kotlin.time.Duration.Companion.milliseconds
 
 @UnstableApi
 @DelicateCoroutinesApi
@@ -102,7 +116,7 @@ fun AccountsSettings() {
     val musicIdentifierApi = appSettings.musicIdentifierApi
 
     val uriHandler = LocalUriHandler.current
-
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -125,6 +139,333 @@ fun AccountsSettings() {
             onClick = {}
         )
 
+
+
+        /****** WEBDAV ******/
+        var webDavSync by remember { mutableStateOf(false) }
+        var showWebDavAccount by remember { mutableStateOf(false) }
+        var webDavAccountEditing by remember { mutableStateOf(false) }
+        val isWebDavEnabled = appSettings.isWebDavEnabled
+//        val webDavUrl = appSettings.webDavUrl
+//        val webDavFolder = appSettings.webDavFolder
+//        val webDavUsername = appSettings.webDavUsername
+//        val webDavPassword by remember(appSettings.webDavPassword) { mutableStateOf(CryptoManager.decrypt(appSettings.webDavPassword)) }
+//        val isWebDavScanSubfoldersEnabled = appSettings.isWebDavScanSubfoldersEnabled
+        val webdavViewModel = LocalWebDavLibrary.current
+        val webdavUiState by webdavViewModel.uiState.collectAsStateWithLifecycle()
+        val webdavAccounts = webdavViewModel.accounts.collectAsStateWithLifecycle()
+        val testConnectionState by webdavViewModel.testConnectionState.collectAsStateWithLifecycle()
+        var accountSelected by remember { mutableStateOf(webdavAccounts.value.firstOrNull() ?: webDavAccountEmpty() )}
+        var isFetchingRestore by remember { mutableStateOf(false) }
+        var backupInfo by remember { mutableStateOf<WebDavBackupInfo?>(null) }
+        var isRestoring by remember { mutableStateOf(false) }
+
+        key(webDavAccountEditing) {
+            WebDavAccountFormSheet(
+                showSheet = showWebDavAccount,
+                isEditing = webDavAccountEditing,
+                account = if (webDavAccountEditing) accountSelected else webDavAccountEmpty(),
+                testState = testConnectionState,
+                onTestConnection = { account ->
+                    webdavViewModel.testConnection(account)
+                },
+                onSave = { account ->
+                    webdavViewModel.saveAccount(account)
+                    showWebDavAccount = false
+                    webDavAccountEditing = false
+                },
+            ) {
+                showWebDavAccount = false
+                webdavViewModel.resetTestState()
+            }
+        }
+
+
+        SettingsGroupSpacer()
+        SettingsEntryGroupText(title = stringResource(R.string.settings_webdav_title))
+
+        LaunchedEffect(webDavSync) {
+            if (webDavSync) {
+                webdavAccounts.value.fastFilter { it.isMusicSource }.forEach { webDavAccount ->
+                    webdavViewModel.loadMusicFolder(
+                        webDavAccount,
+                        appSettings.webDavFolder
+                    )
+                }
+                webDavSync = false
+                delay(500.milliseconds)
+            }
+        }
+
+        when (val state = webdavUiState) {
+            is WebDavBrowserState.Idle -> {
+                Timber.d("AccountsSettings WebDAV: Idle")
+            }
+            is WebDavBrowserState.Loading -> {
+                Timber.d("AccountsSettings WebDAV: Loading...")
+                Loader()
+            }
+
+            is WebDavBrowserState.Success -> {
+                Timber.d("AccountsSettings WebDAV: Success folders = ${state.folders.size} songs count = ${state.songs.size} songs urls = ${state.songs.map { it.id }}")
+                SmartMessage("WebDAV Success: songs = ${state.songs.size}", context = context)
+            }
+
+            is WebDavBrowserState.Error -> {
+                Timber.e("AccountsSettings WebDAV: Error message = ${state.message}")
+                SmartMessage("WebDAV Error: ${state.message}", context = context)
+            }
+        }
+
+        SwitchSettingEntry(
+            title = stringResource(R.string.settings_webdav_link_cloud_and_music_title),
+            text = stringResource(R.string.settings_webdav_link_cloud_and_music_subtitle),
+            isChecked = isWebDavEnabled,
+            onCheckedChange = {
+                coroutineScope.launch {
+                    val new = appSettingsManager.activeSettings.value.copy(isWebDavEnabled = it)
+                    appSettingsManager.updateSettings(new)
+                }
+            }
+        )
+
+        AnimatedVisibility(visible = isWebDavEnabled) {
+            Column(
+                modifier = Modifier.padding(start = 12.dp)
+            ) {
+
+                key(webdavAccounts.value) {
+                    ValueWebDavAccountSelectorSettingsEntry(
+                        title = stringResource(R.string.settings_webdav_cloud_accounts),
+                        titleSecondary = "",
+                        values = webdavAccounts.value,
+                        onValueSelected = { account ->
+                            accountSelected = account
+                            webDavAccountEditing = true
+                            showWebDavAccount = true
+                        },
+                        onNewAccount = {
+                            webDavAccountEditing = false
+                            showWebDavAccount = true
+                        }
+                    )
+                }
+
+//                ButtonBarSettingEntry(
+//                    isEnabled = true,
+//                    title = stringResource(R.string.webdav_sync),
+//                    text = "",
+//                    icon = R.drawable.sync,
+//                    iconColor = colorPalette().text,
+//                    onClick = {
+//                        showWebDavAccount = true
+//                    }
+//                )
+
+
+                /*
+                TextDialogSettingEntry(
+                    title = stringResource(R.string.webdav_url),
+                    text = webDavUrl,
+                    currentText = webDavUrl,
+                    onTextSave = {
+                        coroutineScope.launch {
+                            val new = appSettingsManager.activeSettings.value.copy(webDavUrl = it)
+                            appSettingsManager.updateSettings(new)
+                        }
+                    },
+                    validationType = ValidationType.Url
+                )
+                TextDialogSettingEntry(
+                    title = stringResource(R.string.webdav_folder),
+                    text = webDavFolder,
+                    currentText = webDavFolder,
+                    onTextSave = {
+                        coroutineScope.launch {
+                            val new = appSettingsManager.activeSettings.value.copy(webDavFolder = it)
+                            appSettingsManager.updateSettings(new)
+                        }
+                    }
+                )
+                SwitchSettingEntry(
+                    title = stringResource(R.string.webdav_scan_subfolders),
+                    text = "",
+                    isChecked = isWebDavScanSubfoldersEnabled,
+                    onCheckedChange = {
+                        coroutineScope.launch {
+                            val new = appSettingsManager.activeSettings.value.copy(isWebDavScanSubfoldersEnabled = it)
+                            appSettingsManager.updateSettings(new)
+                        }
+                    }
+                )
+                TextDialogSettingEntry(
+                    title = stringResource(R.string.webdav_username),
+                    text = webDavUsername,
+                    currentText = webDavUsername,
+                    onTextSave = {
+                        coroutineScope.launch {
+                            val new = appSettingsManager.activeSettings.value.copy(webDavUsername = it)
+                            appSettingsManager.updateSettings(new)
+                        }
+                    }
+                )
+                TextDialogSettingEntry(
+                    title = stringResource(R.string.webdav_password),
+                    text = if (webDavPassword.isNotEmpty()) "********" else "",
+                    currentText = webDavPassword,
+                    onTextSave = {
+                        coroutineScope.launch {
+                            // Crittografia della nuova password e salvataggio
+                            val cryptedPassword = CryptoManager.encrypt(it)
+                            val new = appSettingsManager.activeSettings.value.copy(webDavPassword = cryptedPassword)
+                            appSettingsManager.updateSettings(new)
+                        }
+                    }
+                )
+
+ */
+
+                AnimatedVisibility(visible = webdavAccounts.value.isNotEmpty()) {
+                    Column(
+                        modifier = Modifier.padding(start = 12.dp)
+                    ) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            ButtonBarSettingEntry(
+                                isEnabled = true,
+                                title = stringResource(R.string.settings_webdav_link_music_title),
+                                text = stringResource(R.string.settings_webdav_link_music_subtitle),
+                                icon = Icons.Rounded.CloudSync,
+                                iconColor = colorPalette().text,
+                                onClick = {
+                                    webDavSync = true
+                                }
+                            )
+//                        SettingsDescription(
+//                            text = stringResource(R.string.webdav_sync),
+//                            important = true,
+//                            modifier = Modifier.weight(1f)
+//                        )
+//
+//                        SecondaryTextButton(
+//                            text = stringResource(R.string.webdav_sync_now),
+//                            onClick = { webDavSync = true },
+//                            modifier = Modifier
+//                                .weight(1f)
+//                                .padding(end = 24.dp)
+//                        )
+                        }
+
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            ButtonBarSettingEntry(
+                                isEnabled = true,
+                                title = stringResource(R.string.settings_webdav_backup_title),
+                                text = stringResource(R.string.settings_webdav_backup_subtitle),
+                                icon = Icons.Rounded.CloudUpload,
+                                iconColor = colorPalette().text,
+                                onClick = {
+                                    webdavViewModel.syncDatabaseToWebDav(Dependencies.application)
+                                }
+                            )
+//                        SettingsDescription(
+//                            text = "Backup Database To WebDAV", //stringResource(R.string.webdav_sync),
+//                            important = true,
+//                            modifier = Modifier.weight(1f)
+//                        )
+//
+//                        SecondaryTextButton(
+//                            text = stringResource(R.string.webdav_sync_now),
+//                            onClick = {
+//                                webdavViewModel.syncDatabaseToWebDav(Dependencies.application)
+//                            },
+//                            modifier = Modifier
+//                                .weight(1f)
+//                                .padding(end = 24.dp)
+//                        )
+                        }
+
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            ButtonBarSettingEntry(
+                                isEnabled = true,
+                                title = stringResource(R.string.settings_webdav_restore_title),
+                                text = stringResource(R.string.settings_webdav_restore_subtitle),
+                                icon = Icons.Rounded.CloudDownload,
+                                iconColor = colorPalette().text,
+                                onClick = {
+                                    val appScope = Dependencies.application.appScopeIO
+                                    isFetchingRestore = true
+                                    webdavAccounts.value.fastFilter { !it.isMusicSource }
+                                        .firstOrNull()?.let { webDavAccount ->
+
+                                            // Lancia la coroutine nel ViewModel per scaricare il riplay_meta.json
+                                            appScope.launch {
+                                                backupInfo = webdavViewModel.fetchBackupInfo(webDavAccount)
+                                                isFetchingRestore = false
+                                            }
+                                        }
+                                }
+                            )
+                            // Mostra un loader se stai scaricando le info
+                            if (isFetchingRestore) {
+                                CircularProgressIndicator()
+                            }
+                            // Mostra il Dialog del restore se le info sono pronte
+                            backupInfo?.let { info ->
+                                WebDavDatabaseRestoreConfirmDialog(
+                                    backupInfo = info,
+                                    onConfirm = {
+                                        backupInfo = null // Chiude il dialog
+                                        isRestoring = true
+                                        // Lancia il restore vero e proprio
+                                        val appScope = Dependencies.application.appScopeIO
+                                        appScope.launch {
+                                            webdavAccounts.value.fastFilter { !it.isMusicSource }
+                                                .firstOrNull()?.let { webDavAccount ->
+                                                    webdavViewModel.syncDatabaseFromWebDav(
+                                                        Dependencies.application,
+                                                        webDavAccount
+                                                    )
+                                                }
+                                        }
+                                    },
+                                    onDismiss = {
+                                        backupInfo = null // Chiude il dialog senza fare nulla
+                                    }
+                                )
+                            }
+
+//                        SettingsDescription(
+//                            text = "Restore Database from WebDAV", //stringResource(R.string.webdav_sync),
+//                            important = true,
+//                            modifier = Modifier.weight(1f)
+//                        )
+//
+//                        SecondaryTextButton(
+//                            text = stringResource(R.string.webdav_sync_now),
+//                            onClick = {
+//                                val appScope = Dependencies.application.appScopeIO
+//                                appScope.launch {
+//                                    webdavAccounts.value.fastFilter { !it.isMusicSource }.firstOrNull()?.let { webDavAccount ->
+//                                        webdavViewModel.syncDatabaseFromWebDav(
+//                                            Dependencies.application,
+//                                            webDavAccount
+//                                        )
+//                                    }
+//                                }
+//                            },
+//                            modifier = Modifier
+//                                .weight(1f)
+//                                .padding(end = 24.dp)
+//                        )
+                        }
+                    }
+
+
+                }
+            }
+        }
+
+        /****** WEBDAV ******/
+
         /****** YOUTUBE LOGIN ******/
 
         val isYouTubeLoginEnabled = appSettings.enableYtLogin
@@ -144,8 +485,6 @@ fun AccountsSettings() {
             Timber.e(e, "Errore nel parsing della cache account")
             emptyList()
         }
-
-        val coroutineScope = rememberCoroutineScope()
 
         SettingsGroupSpacer()
         SettingsEntryGroupText(title = stringResource(R.string.title_youtube_music))
@@ -321,6 +660,8 @@ fun AccountsSettings() {
 
     /****** YOUTUBE LOGIN ******/
 
+
+
         /****** LASTFM ******/
         val isEnabledLastfm = appSettings.isEnabledLastFM
         val lastFmSessionToken = appSettings.lastFMSessionToken
@@ -389,7 +730,7 @@ fun AccountsSettings() {
                             loginLastfm = false
                             // controllare se necessario
                             //lastFmSessionToken = appSettings.lastFMSessionToken
-                                //context.preferences.getString(LASTFM_SESSION_TOKEN.key, "") ?: ""
+                            //context.preferences.getString(LASTFM_SESSION_TOKEN.key, "") ?: ""
                             Timber.d("LastFmAuthScreen: Authentication complete")
                         }
                     )
@@ -523,205 +864,6 @@ fun AccountsSettings() {
 
 
         /****** DISCORD ******/
-
-        /****** WEBDAV ******/
-        var webDavSync by remember { mutableStateOf(false) }
-        val isWebDavEnabled = appSettings.isWebDavEnabled
-        val webDavUrl = appSettings.webDavUrl
-        val webDavFolder = appSettings.webDavFolder
-        val webDavUsername = appSettings.webDavUsername
-        val webDavPassword by remember(appSettings.webDavPassword) { mutableStateOf(CryptoManager.decrypt(appSettings.webDavPassword)) }
-        val isWebDavScanSubfoldersEnabled = appSettings.isWebDavScanSubfoldersEnabled
-        val webdavViewModel = LocalWebDavLibrary.current
-        val webdavUiState by webdavViewModel.uiState.collectAsStateWithLifecycle()
-
-        SettingsGroupSpacer()
-        SettingsEntryGroupText(title = stringResource(R.string.webdav))
-
-        LaunchedEffect(webDavSync) {
-            if (webDavSync) {
-//                webdavViewModel.loadFolder(
-//                    WebDavConfig(
-//                        baseUrl = appSettings.webDavUrl,
-//                        username = appSettings.webDavUsername,
-//                        password = CryptoManager.decrypt(appSettings.webDavPassword),
-//                    ),
-//                    appSettings.webDavFolder
-//                )
-                webDavSync = false
-            }
-        }
-
-        when (val state = webdavUiState) {
-            is WebDavBrowserState.Idle -> {
-                Timber.d("AccountsSettings WebDAV: Idle")
-            }
-            is WebDavBrowserState.Loading -> {
-                Timber.d("AccountsSettings WebDAV: Loading...")
-                Loader()
-            }
-
-            is WebDavBrowserState.Success -> {
-                Timber.d("AccountsSettings WebDAV: Success folders = ${state.folders.size} songs count = ${state.songs.size} songs urls = ${state.songs.map { it.id }}")
-                SmartMessage("WebDAV Success: songs = ${state.songs.size}", context = context)
-            }
-
-            is WebDavBrowserState.Error -> {
-                Timber.e("AccountsSettings WebDAV: Error message = ${state.message}")
-                SmartMessage("WebDAV Error: ${state.message}", context = context)
-            }
-        }
-
-        SwitchSettingEntry(
-            title = stringResource(R.string.webdav_enable),
-            text = "Personal Cloud (WebDAV)",
-            isChecked = isWebDavEnabled,
-            onCheckedChange = {
-                coroutineScope.launch {
-                    val new = appSettingsManager.activeSettings.value.copy(isWebDavEnabled = it)
-                    appSettingsManager.updateSettings(new)
-                }
-            }
-        )
-
-        AnimatedVisibility(visible = isWebDavEnabled) {
-            Column(
-                modifier = Modifier.padding(start = 12.dp)
-            ) {
-                TextDialogSettingEntry(
-                    title = stringResource(R.string.webdav_url),
-                    text = webDavUrl,
-                    currentText = webDavUrl,
-                    onTextSave = {
-                        coroutineScope.launch {
-                            val new = appSettingsManager.activeSettings.value.copy(webDavUrl = it)
-                            appSettingsManager.updateSettings(new)
-                        }
-                    },
-                    validationType = ValidationType.Url
-                )
-                TextDialogSettingEntry(
-                    title = stringResource(R.string.webdav_folder),
-                    text = webDavFolder,
-                    currentText = webDavFolder,
-                    onTextSave = {
-                        coroutineScope.launch {
-                            val new = appSettingsManager.activeSettings.value.copy(webDavFolder = it)
-                            appSettingsManager.updateSettings(new)
-                        }
-                    }
-                )
-                SwitchSettingEntry(
-                    title = stringResource(R.string.webdav_scan_subfolders),
-                    text = "",
-                    isChecked = isWebDavScanSubfoldersEnabled,
-                    onCheckedChange = {
-                        coroutineScope.launch {
-                            val new = appSettingsManager.activeSettings.value.copy(isWebDavScanSubfoldersEnabled = it)
-                            appSettingsManager.updateSettings(new)
-                        }
-                    }
-                )
-                TextDialogSettingEntry(
-                    title = stringResource(R.string.webdav_username),
-                    text = webDavUsername,
-                    currentText = webDavUsername,
-                    onTextSave = {
-                        coroutineScope.launch {
-                            val new = appSettingsManager.activeSettings.value.copy(webDavUsername = it)
-                            appSettingsManager.updateSettings(new)
-                        }
-                    }
-                )
-                TextDialogSettingEntry(
-                    title = stringResource(R.string.webdav_password),
-                    text = if (webDavPassword.isNotEmpty()) "********" else "",
-                    currentText = webDavPassword,
-                    onTextSave = {
-                        coroutineScope.launch {
-                            // Crittografia della nuova password e salvataggio
-                            val cryptedPassword = CryptoManager.encrypt(it)
-                            val new = appSettingsManager.activeSettings.value.copy(webDavPassword = cryptedPassword)
-                            appSettingsManager.updateSettings(new)
-                        }
-                    }
-                )
-
-                AnimatedVisibility(visible = webDavUrl.isNotEmpty() && webDavUsername.isNotEmpty() && webDavPassword.isNotEmpty()) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        SettingsDescription(
-                            text = stringResource(R.string.webdav_sync),
-                            important = true,
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        SecondaryTextButton(
-                            text = stringResource(R.string.webdav_sync_now),
-                            onClick = { webDavSync = true },
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(end = 24.dp)
-                        )
-                    }
-                }
-
-                /*
-                AnimatedVisibility(visible = webDavUrl.isNotEmpty() && webDavUsername.isNotEmpty() && webDavPassword.isNotEmpty()) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        SettingsDescription(
-                            text = "Database Sync To WebDAV", //stringResource(R.string.webdav_sync),
-                            important = true,
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        SecondaryTextButton(
-                            text = stringResource(R.string.webdav_sync_now),
-                            onClick = {
-                                webdavViewModel.syncDatabaseToWebDav(Dependencies.application)
-                            },
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(end = 24.dp)
-                        )
-                    }
-                }
-
-                AnimatedVisibility(visible = webDavUrl.isNotEmpty() && webDavUsername.isNotEmpty() && webDavPassword.isNotEmpty()) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        SettingsDescription(
-                            text = "Database Sync from WebDAV", //stringResource(R.string.webdav_sync),
-                            important = true,
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        SecondaryTextButton(
-                            text = stringResource(R.string.webdav_sync_now),
-                            onClick = {
-                                val appScope = Dependencies.application.appScopeIO
-                                appScope.launch {
-                                    webdavViewModel.syncDatabaseFromWebDav(
-                                        Dependencies.application,
-                                        WebDavConfig(
-                                            baseUrl = webDavUrl,
-                                            username = webDavUsername,
-                                            password = webDavPassword
-                                        )
-                                    )
-                                }
-                            },
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(end = 24.dp)
-                        )
-                    }
-                }
-
-                 */
-            }
-        }
-
-        /****** WEBDAV ******/
-
 
         /**** MUSIC IDENTIFIER ******/
         SettingsGroupSpacer()

@@ -2,7 +2,7 @@ package it.fast4x.riplay.extensions.appsettings
 
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.extensions.appsettings.models.AppSettings
-import it.fast4x.riplay.utils.DbSettingsJson
+import it.fast4x.riplay.utils.JsonManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,7 +25,7 @@ class AppSettingsManager {
             Timber.d("AppSettingsManager inizializzazione AppSettings dal DB")
             val json = dao.getSettings().first()
             if (json != "{}") {
-                _activeSettings.value = DbSettingsJson.decodeFromString<AppSettings>(json)
+                _activeSettings.value = JsonManager.decodeFromString<AppSettings>(json)
             }
         } catch (e: Exception) {
             Timber.e(e, "AppSettingsManager Errore inizializzazione AppSettings dal DB, uso i default")
@@ -47,7 +47,7 @@ class AppSettingsManager {
 
 
     suspend fun updateSettings(newSettings: AppSettings) {
-        val settings = DbSettingsJson.encodeToString(newSettings)
+        val settings = JsonManager.encodeToString(newSettings)
         Timber.d("AppSettingsManager updateSettings newSettings: $settings")
         _activeSettings.value = newSettings // Aggiorna la RAM istantaneamente
         dao.updateSettings(settings) // Aggiorna il DB

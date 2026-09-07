@@ -11,10 +11,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface WebDavAccountDao {
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun upsert(account: WebDavAccount): Long
-
+    // Usiamo IGNORE: se l'URL, l'utente e la cartella esistono già, non fa nulla e ritorna -1
+    // invece di cancellare e reinserire.
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insert(account: WebDavAccount): Long
     @Update
     suspend fun update(account: WebDavAccount)
 
@@ -29,4 +29,7 @@ interface WebDavAccountDao {
 
     @Query("SELECT * FROM webdav_account WHERE id = :id")
     suspend fun getById(id: Long): WebDavAccount?
+
+    @Query("SELECT * FROM webdav_account WHERE isMusicSource = 0 LIMIT 1")
+    suspend fun getBackupAccount(): WebDavAccount?
 }

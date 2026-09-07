@@ -50,9 +50,9 @@ object CustomHttpClient {
     val okHttpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .cache(clientCache)
-            .connectTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(20, TimeUnit.SECONDS)
-            .writeTimeout(20, TimeUnit.SECONDS)
+            .connectTimeout(15, TimeUnit.SECONDS) // 15 secondi per stabilire la connessione iniziale
+            .readTimeout(120, TimeUnit.SECONDS)   // 2 minuti per attendere la risposta del server (es. dopo un upload lento o un MOVE complesso)
+            .writeTimeout(120, TimeUnit.SECONDS)   // 2 minuti per inviare i byte del file del database al server
             .addInterceptor(HttpLoggingInterceptor().apply {
                 level = if (BuildConfig.DEBUG)
                     HttpLoggingInterceptor.Level.BASIC  // mai BODY in produzione

@@ -20,7 +20,7 @@ import it.fast4x.riplay.extensions.appearancesettings.models.PresetUiState
 import it.fast4x.riplay.extensions.appearancesettings.utils.toDomain
 import it.fast4x.riplay.extensions.appearancesettings.utils.toDto
 import it.fast4x.riplay.extensions.appearancesettings.viewmodels.AppearancePresetViewModel
-import it.fast4x.riplay.utils.DbSettingsJson
+import it.fast4x.riplay.utils.JsonManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -58,7 +58,7 @@ fun AppearancePresetDialogHost(
                 try {
                     // Converto preset attuale in DTO/JSON
                     val currentPreset = viewModel.getCurrentActivePreset()
-                    val json = DbSettingsJson.encodeToString(currentPreset.toDto())
+                    val json = JsonManager.encodeToString(currentPreset.toDto())
 
                     // Scrivo il JSON nel file scelto dall'utente
                     context.contentResolver.openOutputStream(uri)?.use { outputStream ->
@@ -88,7 +88,7 @@ fun AppearancePresetDialogHost(
                     }
 
                     // Deserializzo e salvo il JSON nel DB
-                    val dto = DbSettingsJson.decodeFromString<AppearancePresetDto>(json)
+                    val dto = JsonManager.decodeFromString<AppearancePresetDto>(json)
 
                     appearanceSettings.importAndApplyPreset(dto.toDomain()) // Da creare nel Manager
 

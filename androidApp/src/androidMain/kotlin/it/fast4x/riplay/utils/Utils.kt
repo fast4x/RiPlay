@@ -3,7 +3,6 @@ package it.fast4x.riplay.utils
 
 import android.annotation.SuppressLint
 import android.os.Build
-import android.text.format.DateUtils
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.runtime.Composable
@@ -25,8 +24,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import it.fast4x.riplay.LocalAppSettingsManager
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
 
 const val EXPLICIT_BUNDLE_TAG = "is_explicit"
@@ -303,7 +300,7 @@ fun String.cleanWikipediaText(): String {
 }
 
 @OptIn(ExperimentalSerializationApi::class)
-val DbSettingsJson = Json {
+val JsonManager = Json {
     // Fondamentale: se deserializzo un JSON vecchio che non ha i campi nuovi,
     // non crasha, ma usa i valori di default del costruttore Kotlin.
     ignoreUnknownKeys = true

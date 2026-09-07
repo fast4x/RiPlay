@@ -6,7 +6,7 @@ import it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings
 import it.fast4x.riplay.extensions.appearancesettings.repository.AppearancePresetRepository
 import it.fast4x.riplay.extensions.appearancesettings.repository.AppearancePresetRepositoryImpl
 import it.fast4x.riplay.extensions.appearancesettings.utils.toEntity
-import it.fast4x.riplay.utils.DbSettingsJson
+import it.fast4x.riplay.utils.JsonManager
 import it.fast4x.riplay.utils.appContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -57,13 +57,13 @@ class AppearanceSettingsManager {
             val customAppearanceSettings = daoApp.getActiveAppearanceSettings().first()
 
             if (customAppearanceSettings != "{}" && !customAppearanceSettings.isEmpty()) {
-                _activeSettings.value = DbSettingsJson.decodeFromString<AppearanceSettings>(customAppearanceSettings)
+                _activeSettings.value = JsonManager.decodeFromString<AppearanceSettings>(customAppearanceSettings)
                 Timber.d("AppearanceSettingsManager init: Successfully loaded CUSTOM settings for $id")
             } else {
                 val entity = daoAppearance.getPresetById(id)
                 if (entity != null) {
                     val settings =
-                        DbSettingsJson.decodeFromString<AppearanceSettings>(entity.settingsJson)
+                        JsonManager.decodeFromString<AppearanceSettings>(entity.settingsJson)
                     Timber.d("AppearanceSettingsManager init: Successfully loaded settings for $id")
                     _activeSettings.value = settings
                 } else {
@@ -97,7 +97,7 @@ class AppearanceSettingsManager {
         // Aggiorno subito la ram
         _activeSettings.value = settings
         // Salva le impostazioni personalizzate nella tabella app_settings senza sovrascrivere il preset corrente
-        daoApp.updateActiveAppearanceSettings(DbSettingsJson.encodeToString(settings))
+        daoApp.updateActiveAppearanceSettings(JsonManager.encodeToString(settings))
 
     }
 

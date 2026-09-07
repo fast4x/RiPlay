@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -36,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -50,6 +52,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
+import it.fast4x.riplay.data.models.WebDavAccount
 import it.fast4x.riplay.enums.ValidationType
 import it.fast4x.riplay.ui.components.themed.DialogColorPicker
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
@@ -64,6 +67,7 @@ import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.ui.components.ScreenContainer
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.components.themed.IDialog
+import it.fast4x.riplay.ui.components.themed.SelectorWebDavAccountDialog
 import it.fast4x.riplay.ui.components.themed.Title
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.typography
@@ -198,6 +202,56 @@ inline fun <reified T : Enum<T>> EnumValueSelectorSettingsEntry(
         valueText = valueText,
         trailingContent = trailingContent,
     )
+}
+
+@Composable
+fun ValueWebDavAccountSelectorSettingsEntry(
+    modifier: Modifier = Modifier,
+    title: String,
+    titleSecondary: String? = null,
+    text: String? = null,
+    values: List<WebDavAccount>,
+    onValueSelected: (WebDavAccount) -> Unit,
+    isEnabled: Boolean = true,
+    trailingContent: (@Composable () -> Unit) = {},
+    onNewAccount: () -> Unit = {},
+) {
+    var isShowingDialog by remember {
+        mutableStateOf(false)
+    }
+    var accountSelected by remember { mutableStateOf(values.firstOrNull()) }
+
+    if (isShowingDialog) {
+        SelectorWebDavAccountDialog(
+            onDismiss = { isShowingDialog = false },
+            title = title,
+            values = values,
+            onValueSelected = {
+                onValueSelected(it)
+                accountSelected = it
+            },
+            onNewAccount = onNewAccount
+        )
+    }
+
+    SettingsEntry(
+        title = title,
+        titleSecondary = titleSecondary,
+        text = accountSelected?.name ?: "Nessun account",
+        modifier = modifier,
+        isEnabled = isEnabled,
+        onClick = { isShowingDialog = true },
+        trailingContent = trailingContent,
+    )
+
+    text?.let {
+        BasicText(
+            text = it,
+            style = typography().xs.semiBold.copy(color = colorPalette().textSecondary),
+            modifier = Modifier
+                .padding(start = 12.dp)
+        )
+    }
 }
 
 @Composable
@@ -568,6 +622,35 @@ fun ButtonBarSettingEntry(
         modifier = modifier,
     )
 
+}
+
+@Composable
+fun ButtonBarSettingEntry(
+    title: String,
+    text: String,
+    icon: ImageVector,
+    iconSize: Dp = 24.dp,
+    iconColor: Color? = null,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    isEnabled: Boolean = true,
+) {
+    SettingsEntry(
+        title = title,
+        titleSecondary = text,
+        text = "",
+        isEnabled = isEnabled,
+        onClick = onClick,
+        trailingContent = {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(iconSize),
+                tint = iconColor ?: colorPalette().text
+            )
+        },
+        modifier = modifier,
+    )
 }
 
 @Composable

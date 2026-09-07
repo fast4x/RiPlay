@@ -40,6 +40,13 @@ internal fun PlayerService.createLocalDataSourceFactory(): DataSource.Factory {
         }
 
         when {
+            dataSpec.isWebDav -> {
+                Timber.d("PlayerService createLocalDataSourceFactory dataSpec.isWebDav: YES")
+                return@Factory dataSpec.withUri(dataSpec.uri.toString().removePrefix(
+                    WEBDAV_KEY_PREFIX
+                ).toUri())
+            }
+
             dataSpec.isMusicVault || song?.isMusicVault == true -> {
                 if (song == null) {
                     throw PlaybackException(
@@ -89,14 +96,6 @@ internal fun PlayerService.createLocalDataSourceFactory(): DataSource.Factory {
                 //Timber.d("PlayerService createLocalDataSourceFactory dataSpec.isLocal: yes contentUri: $contentUri")
                 return@Factory dataSpec.withUri(contentUri)
             }
-
-            dataSpec.isWebDav -> {
-                //Timber.d("PlayerService createLocalDataSourceFactory dataSpec.isWebDav: YES")
-                return@Factory dataSpec.withUri(dataSpec.uri.toString().removePrefix(
-                    WEBDAV_KEY_PREFIX
-                ).toUri())
-            }
-
 
             else -> {
                 //Timber.d("PlayerService createLocalDataSourceFactory: Intercettato brano online/YT. Reindirizzo a /dev/null per evitare l'errore.")

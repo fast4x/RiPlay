@@ -1,29 +1,30 @@
 package it.fast4x.riplay.extensions.experimental.webdavlibrary
 
 import android.media.MediaMetadataRetriever
-import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.WebDavAccount
+import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavBackupInfo
 import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavConfig
 import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavItem
 import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavSongMetadata
 import it.fast4x.riplay.utils.CryptoManager
 import it.fast4x.riplay.utils.CustomHttpClient
+import it.fast4x.riplay.utils.JsonManager
 import it.fast4x.riplay.utils.WEBDAV_KEY_PREFIX
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.estimateDurationMillis
 import it.fast4x.riplay.utils.formatAsDuration
-import it.fast4x.riplay.utils.formatAsTime
 import it.fast4x.riplay.utils.saveByteArrayToFilesDir
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import okhttp3.Credentials
 import okhttp3.HttpUrl.Companion.toHttpUrl
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.IOException
 import org.xmlpull.v1.XmlPullParser
@@ -31,12 +32,18 @@ import org.xmlpull.v1.XmlPullParserFactory
 import timber.log.Timber
 import java.io.File
 import java.io.InputStream
+import java.net.SocketException
+import java.net.SocketTimeoutException
 import java.net.URLDecoder
 import java.text.SimpleDateFormat
 import java.util.Locale
+import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.milliseconds
 
 class WebDavLibraryRepository() {
     val client = CustomHttpClient.okHttpClient
+
+    val context = appContext()
 
     // Il body XML per richiedere le proprietà di base
     private val propfindBody = """
@@ -51,12 +58,12 @@ class WebDavLibraryRepository() {
         </D:propfind>
     """.trimIndent()
 
-    suspend fun listDirectory(account: WebDavAccount, folderPath: String): List<WebDavItem> {
+    suspend fun listMusicDirectory(account: WebDavAccount): List<WebDavItem> {
         // Usiamo l'account.baseUrl e decriptiamo la password al volo per la singola richiesta PROPFIND
         val rawPassword = CryptoManager.decrypt(account.encryptedPassword)
         val authHeader = Credentials.basic(account.username, rawPassword)
 
-        val targetUrl = resolveUrl(account.baseUrl, folderPath)
+        val targetUrl = resolveUrl(account.baseUrl, account.remoteFolder)
 
         val request = Request.Builder()
             .url(targetUrl)
@@ -79,18 +86,18 @@ class WebDavLibraryRepository() {
     }
 
     // Se l'utente vuole scansionare in modo ricorsivo (utile per indicizzare tutta la musica)
-    suspend fun listDirectoryRecursive(account: WebDavAccount, folderPath: String): List<WebDavItem> {
+    suspend fun listMusicDirectoryRecursive(account: WebDavAccount): List<WebDavItem> {
         val allItems = mutableListOf<WebDavItem>()
 
         val queue = ArrayDeque<String>()
-        queue.add(folderPath)
+        queue.add(account.remoteFolder)
 
         while (queue.isNotEmpty()) {
             val currentPath = queue.removeFirst()
             Timber.d("WebDavLibraryRepository listDirectoryRecursive > listDirectory called with folderPath: $currentPath")
 
             val items = try {
-                listDirectory(account, currentPath)
+                listMusicDirectory(account)
             } catch (e: Exception) {
                 Timber.e(e, "WebDavLibraryRepository listDirectoryRecursive Errore listando la cartella: $currentPath")
                 emptyList() // Se fallisce, passiamo alla prossima
@@ -186,20 +193,17 @@ class WebDavLibraryRepository() {
      * Esegue il backup di un file locale in modo atomico (Upload .tmp -> MOVE).
      */
     suspend fun uploadFileAtomically(config: WebDavConfig, remoteFolder: String, localFile: File) {
-        // 1. Assicurati che la cartella di backup esista (qui usiamo resolveUrl che aggiunge lo slash, ed è giusto così)
+        // 1. Assicurati che la cartella di backup esista
         ensureRemoteFolderExists(config, remoteFolder)
 
-        // 2. Costruiamo gli URL dei FILE manualmente, SENZA lo slash finale!
         val baseUrl = config.baseUrl.trimEnd('/')
         val folderPath = remoteFolder.trim('/')
-        // URL pulito: https://mioserver.com/path/RiPlayBackup/riplay_sync.db
         val finalUrlStr = "$baseUrl/$folderPath/${localFile.name}"
-        val tempUrlStr = "$baseUrl/$folderPath/${localFile.name}.tmp"
+        val tempUrlStr = "$finalUrlStr.tmp"
 
         val finalUrl = finalUrlStr.toHttpUrl()
         val tempUrl = tempUrlStr.toHttpUrl()
 
-        // 3. Upload del file come .tmp
         val requestBody = localFile.asRequestBody("application/octet-stream".toMediaType())
         val putRequest = Request.Builder()
             .url(tempUrl)
@@ -207,30 +211,171 @@ class WebDavLibraryRepository() {
             .header("Authorization", Credentials.basic(config.username, config.password))
             .build()
 
+        // Client paziente per operazioni critiche
+        val patientClient = client.newBuilder()
+            .readTimeout(5, TimeUnit.MINUTES)
+            .writeTimeout(5, TimeUnit.MINUTES)
+            .build()
+
         withContext(Dispatchers.IO) {
-            client.newCall(putRequest).execute().use { response ->
-                if (!response.isSuccessful) {
-                    throw IOException("WebDavLibraryRepository Upload fallito: ${response.code}")
+
+            // --- FASE 1: UPLOAD DEL .tmp ---
+            try {
+                client.newCall(putRequest).execute().use { response ->
+                    if (!response.isSuccessful) {
+                        throw IOException("WebDavLibraryRepository Upload fallito: ${response.code}")
+                    }
                 }
+            } catch (e: Exception) {
+                Timber.e(e, "WebDavLibraryRepository Errore durante il PUT di ${localFile.name}")
+                try { deleteFile(config, tempUrlStr) } catch (_: Exception) {}
+                throw e
             }
 
-            // 4. MOVE atomica da .tmp al nome finale
+            // --- FASE 2: ELIMINAZIONE PREVENTIVA ---
+            // Cancelliamo il vecchio file .db.
+            // Se il file non esiste ancora (primo backup), pCloud risponderà 404, e va benissimo!
+            try {
+                val deleteRequest = Request.Builder()
+                    .url(finalUrl)
+                    .delete()
+                    .header("Authorization", Credentials.basic(config.username, config.password))
+                    .build()
+
+                client.newCall(deleteRequest).execute().use { response ->
+                    Timber.d("WebDavLibraryRepository Eliminazione preventiva di ${localFile.name}: ${response.code}")
+                }
+            } catch (e: Exception) {
+                Timber.w("WebDavLibraryRepository Eliminazione preventiva fallita (probabilmente non esisteva): ${e.message}")
+            }
+
+            // --- FASE 3: MOVE ATOMICO ---
+            // Ora il vecchio file è sparito. Il MOVE non ha ostacoli.
             val moveRequest = Request.Builder()
                 .url(tempUrl)
                 .method("MOVE", "".toRequestBody("application/xml".toMediaType()))
-                // Il destination vuole l'URL assoluto come stringa
                 .header("Destination", finalUrl.toString())
-                .header("Overwrite", "T") // T = True, sovrascrivi il vecchio backup
                 .header("Authorization", Credentials.basic(config.username, config.password))
                 .build()
 
-            client.newCall(moveRequest).execute().use { response ->
-                // Alcuni server rispondono 201 (Created) se il file non esisteva,
-                // altri 204 (No Content) se l'hanno sovrascritto. Accettiamo entrambi.
-                if (!response.isSuccessful && response.code != 204 && response.code != 201) {
-                    throw IOException("WebDavLibraryRepository Impossibile finalizzare il backup (MOVE fallito): ${response.code}")
+            try {
+                client.newCall(moveRequest).execute().use { response ->
+                    if (!response.isSuccessful && response.code != 204 && response.code != 201) {
+                        throw IOException("WebDavLibraryRepository MOVE fallito: ${response.code}")
+                    }
+                    Timber.d("WebDavLibraryRepository MOVE response code = ${response.code}")
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "WebDavLibraryRepository Errore durante il MOVE di ${localFile.name}")
+                throw e
+            }
+        }
+    }
+
+    suspend fun uploadFileDirect(config: WebDavConfig, remoteFolder: String, localFile: File) {
+        val baseUrl = config.baseUrl.trimEnd('/')
+        val folderPath = remoteFolder.trim('/')
+        val finalUrlStr = "$baseUrl/$folderPath/${localFile.name}"
+        val finalUrl = finalUrlStr.toHttpUrl()
+
+        val requestBody = localFile.asRequestBody("application/octet-stream".toMediaType())
+        val putRequest = Request.Builder()
+            .url(finalUrl)
+            .put(requestBody)
+            .header("Authorization", Credentials.basic(config.username, config.password))
+            .header("Connection", "close")
+            .header("Expect", "") // Non comunica la grandezza del file da inviare (rimuove dall'header "Expect: 100-continue)
+            .build()
+
+        val patientClient = client.newBuilder()
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(2, TimeUnit.MINUTES)
+            .writeTimeout(2, TimeUnit.MINUTES)
+            .build()
+
+        withContext(Dispatchers.IO + NonCancellable) {
+            try {
+                Timber.d("WebDavLibraryRepository Inizio upload diretto per ${localFile.name} (${localFile.length()} bytes)...")
+                patientClient.newCall(putRequest).execute().use { response ->
+                    if (!response.isSuccessful) {
+                        throw IOException("WebDavLibraryRepository Upload fallito: ${response.code}")
+                    }
+                    Timber.d("WebDavLibraryRepository Upload completato con successo per ${localFile.name}")
+                }
+            } catch (e: Exception) {
+                // Controlliamo se l'errore è il famigerato Timeout o Socket Chiuso
+                val isTimeoutError = e is SocketTimeoutException || e is SocketException ||
+                        (e.cause != null && e.cause is SocketException)
+
+                if (isTimeoutError) {
+                    Timber.w("WebDavLibraryRepository Timeout/Chiusura durante l'upload di ${localFile.name}. Verifico se il server ha comunque salvato il file...")
+
+                    // Aspettiamo 3 secondi per dare il tempo al server di finire di scrivere sul disco
+                    delay(3000.milliseconds)
+
+                    // Verifichiamo se il file esiste e ha la dimensione corretta
+                    val fileExists = checkRemoteFileExists(patientClient, config, finalUrlStr, localFile.length())
+
+                    if (fileExists) {
+                        // IL TRUCCO FUNZIONA! Il server ha il file, ignoriamo l'errore di timeout.
+                        Timber.d("WebDavLibraryRepository Verifica riuscita! Il file ${localFile.name} è presente sul server. Considero l'upload valido.")
+                    } else {
+                        // Il file non c'è o ha dimensione sbagliata, l'upload è davvero fallito.
+                        Timber.e(e, "WebDavLibraryRepository Verifica fallita. Il file non è sul server. Pulizia in corso...")
+                        try { deleteFile(config, finalUrlStr) } catch (_: Exception) {}
+                        throw e
+                    }
+                } else {
+                    // Errore diverso (es. 401 Non autorizzato, 500 Errore server)
+                    Timber.e(e, "WebDavLibraryRepository Errore non di timeout durante l'upload di ${localFile.name}.")
+                    try { deleteFile(config, finalUrlStr) } catch (_: Exception) {}
+                    throw e
                 }
             }
+        }
+    }
+
+
+    /**
+     * Invia una richiesta HEAD per vedere se il file esiste e quanti byte pesa.
+     */
+    private suspend fun checkRemoteFileExists(client: OkHttpClient, config: WebDavConfig, fileUrlStr: String, expectedSize: Long): Boolean {
+        val request = Request.Builder()
+            .url(fileUrlStr.toHttpUrl())
+            .head() // HEAD è più leggero del GET, scarica solo gli header
+            .header("Authorization", Credentials.basic(config.username, config.password))
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            try {
+                client.newCall(request).execute().use { response ->
+                    if (response.isSuccessful) {
+                        // Opzionale: controlla anche la dimensione se il server la fornisce
+                        val contentLength = response.header("Content-Length")?.toLongOrNull()
+                        if (contentLength != null && contentLength != expectedSize) {
+                            Timber.w("WebDavLibraryRepository Il file esiste ma la dimensione non combacia: $contentLength vs $expectedSize")
+                            return@withContext false
+                        }
+                        return@withContext true
+                    }
+                    false
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "WebDavLibraryRepository Errore durante la verifica di esistenza del file")
+                false
+            }
+        }
+    }
+
+    private suspend fun deleteFile(config: WebDavConfig, fileUrlStr: String) {
+        val request = Request.Builder()
+            .url(fileUrlStr.toHttpUrl())
+            .delete()
+            .header("Authorization", Credentials.basic(config.username, config.password))
+            .build()
+
+        withContext(Dispatchers.IO) {
+            client.newCall(request).execute().close()
         }
     }
 
@@ -289,6 +434,8 @@ class WebDavLibraryRepository() {
     suspend fun downloadFile(config: WebDavConfig, remoteFilePath: String, localTempFile: File) {
         val targetUrl = resolveUrl(config.baseUrl, remoteFilePath)
 
+        Timber.d("WebDavLibraryRepository downloadFile: Scaricamento di $remoteFilePath in corso...")
+
         val request = Request.Builder()
             .url(targetUrl)
             .get()
@@ -297,13 +444,13 @@ class WebDavLibraryRepository() {
 
         withContext(Dispatchers.IO) {
             client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) throw IOException("Download fallito: ${response.code}")
+                if (!response.isSuccessful) throw IOException("WebDavLibraryRepository Download fallito: ${response.code}")
 
                 response.body?.byteStream()?.use { input ->
                     localTempFile.outputStream().use { output ->
                         input.copyTo(output)
                     }
-                } ?: throw IOException("Body vuoto nel download")
+                } ?: throw IOException("WebDavLibraryRepository Body vuoto nel download")
             }
         }
     }
@@ -312,6 +459,29 @@ class WebDavLibraryRepository() {
     private fun resolveUrl(base: String, path: String): okhttp3.HttpUrl {
         val fullUrl = base.trimEnd('/') + "/" + path.trimStart('/')
         return fullUrl.toHttpUrl()
+    }
+
+    // Funzione per leggere le info del backup remoto
+    suspend fun fetchBackupInfo(config: WebDavConfig): WebDavBackupInfo? {
+        return try {
+            val tempMetaFile = File(context.cacheDir, "temp_meta.json")
+            downloadFile(config, "$WEBDAV_DEFAULT_BACKUP_FOLDER/$WEBDAV_DEFAULT_BACKUP_METADATA_FILE", tempMetaFile)
+
+            val json = try {
+                tempMetaFile.readText()
+            } catch (e: Exception) {
+                Timber.e(e, "WebDavLibraryRepository fetchBackupInfo: Errore lettura temp_meta.json")
+                return null
+            }
+
+            tempMetaFile.delete()
+
+            // Parsa il JSON e ritorna data e nome dispositivo
+            val info = JsonManager.decodeFromString<WebDavBackupInfo>(json)
+            info
+        } catch (e: Exception) {
+            null // Il backup non esiste ancora
+        }
     }
 
 

@@ -1,6 +1,7 @@
 package it.fast4x.riplay.extensions.experimental.webdavlibrary.models
 
 import it.fast4x.riplay.data.models.Song
+import kotlinx.serialization.Serializable
 
 data class WebDavConfig(
     val baseUrl: String, // es. "https://cloud.server.com/remote.php/dav/files/username/"
@@ -29,4 +30,10 @@ data class WebDavSongMetadata(
     val artist: String,
     val durationMs: Long,
     val thumbnailUrl: String? = null
+)
+
+@Serializable
+data class WebDavBackupInfo(
+    val timestamp: Long,
+    val deviceName: String?
 )

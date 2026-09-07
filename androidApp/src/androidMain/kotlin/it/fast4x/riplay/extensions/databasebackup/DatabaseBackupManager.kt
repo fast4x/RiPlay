@@ -24,13 +24,25 @@ class DatabaseBackupManager(
     suspend fun backupDatabase(backupUri: Uri) {
         withContext(Dispatchers.IO) {
             try {
-                // 1. Svuota il WAL nel file principale (usiamo TRUNCATE per sicurezza massima)
+                Timber.d("DatabaseBackupManager backupDatabase checkpoint db")
+                // Svuota il WAL nel file principale (usiamo TRUNCATE per sicurezza massima)
                 database.checkpoint()
 
-                // 2. CHIUDI IL DATABASE (Fondamentale per evitare scritture concorrenti)
+                // Puliamo il database da dati superflui
+                database.vacuum()
+//                try {
+//                    // Eseguiamo il VACUUM per compattare fisicamente il file su disco
+//                    Database.openHelper().writableDatabase.execSQL("VACUUM")
+//                    Timber.d("DatabaseBackupManager Database compattato con VACUUM.")
+//                } catch (e: Exception) {
+//                    Timber.w("DatabaseBackupManager VACUUM fallito, procedo col backup del DB non compattato: ${e.message}")
+//                }
+
+                Timber.d("DatabaseBackupManager backupDatabase checkpoint db done close db")
+                // CHIUDIAMO IL DATABASE (Fondamentale per evitare scritture concorrenti)
                 database.close()
 
-                // 3. COPIA A FREDDO: Ora nessuno sta scrivendo sul file
+                // COPIA A FREDDO: Ora nessuno sta scrivendo sul file
                 try {
                     val dbPath = database.path()
                     context.applicationContext.contentResolver.openOutputStream(backupUri)?.use { outputStream ->
@@ -38,7 +50,11 @@ class DatabaseBackupManager(
                             inputStream.copyTo(outputStream)
                         }
                     }
+                }
+                catch (e: IOException) {
+                    Timber.e("DatabaseBackupManager backupDatabase Error during file copy: ${e.message}")
                 } finally {
+                    Timber.d("DatabaseBackupManager backupDatabase reload db")
                     // 4. RIAPRI IL DATABASE: Qualsiasi cosa accada, l'app deve poter funzionare
                     DatabaseInitializer.reload()
                 }

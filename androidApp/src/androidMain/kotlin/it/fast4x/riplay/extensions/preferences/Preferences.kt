@@ -30,6 +30,7 @@ import timber.log.Timber
 val Context.preferences: SharedPreferences
     get() = getSharedPreferences("preferences", Context.MODE_PRIVATE)
 
+const val lastDbModified = "lastDbModified"
 
 //lastPlayerThumbnailSizeKey = "lastPlayerThumbnailSize"
 //const val lastPlayerPlayButtonTypeKey = "lastPlayerPlayButtonType"

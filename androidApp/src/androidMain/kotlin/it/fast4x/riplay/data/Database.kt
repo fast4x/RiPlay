@@ -101,7 +101,7 @@ import it.fast4x.riplay.extensions.rewind.data.PlaylistMostListened
 import it.fast4x.riplay.extensions.rewind.data.PlaylistsListenedCount
 import it.fast4x.riplay.extensions.rewind.data.SongMostListened
 import it.fast4x.riplay.extensions.rewind.data.SongsListenedCount
-import it.fast4x.riplay.utils.DbSettingsJson
+import it.fast4x.riplay.utils.JsonManager
 import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.isExplicit
@@ -3601,6 +3601,10 @@ interface Database {
         raw(SimpleSQLiteQuery("PRAGMA wal_checkpoint(TRUNCATE);"))
     }
 
+    fun vacuum() {
+        raw(SimpleSQLiteQuery("VACUUM;"))
+    }
+
     fun path() = _internal.openHelper.writableDatabase.path
 
     fun openHelper() = _internal.openHelper
@@ -3751,7 +3755,10 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
                     super.onOpen(db)
                     db.execSQL("PRAGMA foreign_keys = ON") // ← In automatico non viene attivato da room
                 }
-            })
+
+            }
+
+            )
             .build()
 
 
@@ -4573,14 +4580,14 @@ object Converters {
     @TypeConverter
     fun fromSettingsToString(settings: it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings): String {
         // Usiamo il custom serializer che ignora i default!
-        return DbSettingsJson.encodeToString(settings)
+        return JsonManager.encodeToString(settings)
     }
 
     @TypeConverter
     fun fromStringToSettings(json: String): it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings {
         // Deserializza in modo sicuro. Se il JSON è vecchio e mancante di campi,
         // usa i default di Kotlin. Zero crash.
-        return DbSettingsJson.decodeFromString(json)
+        return JsonManager.decodeFromString(json)
     }
 
 }

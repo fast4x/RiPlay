@@ -397,23 +397,27 @@ fun SelectorWebDavAccountDialog(
                     modifier = Modifier
                         .verticalScroll(rememberScrollState())
                 ) {
-                    values.distinct().forEach { account ->
+                    values.distinct().sortedBy { it.isMusicSource } .forEach { account ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .height(40.dp)
                                 .clickable {
                                     onValueSelected(account)
                                     onDismiss()
                                 }
-                                .padding(horizontal = 24.dp, vertical = 12.dp)
+                                .padding(horizontal = 24.dp, vertical = 6.dp)
+                                .background(colorPalette().accent
+                                    .copy(alpha = if (account.isMusicSource) .2f else .5f),
+                                    getRoundnessShape())
                         ) {
 
                             Icon(
                                 painter = painterResource(id = account.icon),
                                 contentDescription = null,
                                 tint = colorPalette().text,
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier.size(24.dp).padding(start = 4.dp)
                             )
                             Spacer(Modifier.width(12.dp))
 
@@ -427,27 +431,35 @@ fun SelectorWebDavAccountDialog(
                     }
                 }
 
+                // Divider
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 12.dp),
+                    color = colorPalette().accent
+                )
+
                 // Footer
-                Box(
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier
-                        .align(Alignment.Start)
-                        .padding(start = 24.dp, top = 8.dp)
+                        .align(Alignment.CenterHorizontally)
+                        .padding(12.dp)
+                        .fillMaxWidth()
                 ) {
+
                     TextButton(onClick = onNewAccount) {
                         Text(
                             "Add new account",
                             //stringResource(R.string.add),
-                            color = colorPalette().text)
+                            color = colorPalette().text
+                        )
                     }
-                }
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.End)
-                        .padding(end = 24.dp, top = 8.dp)
-                ) {
+
+
                     TextButton(onClick = onDismiss) {
                         Text(stringResource(R.string.cancel), color = colorPalette().text)
                     }
+
                 }
             }
         }

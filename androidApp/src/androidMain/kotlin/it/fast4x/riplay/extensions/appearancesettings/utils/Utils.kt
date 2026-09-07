@@ -104,7 +104,7 @@ import it.fast4x.riplay.extensions.preferences.PreferenceKey.TOP_PADDING
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BACKGROUND_PLAYER_ACTION_BAR
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.TRANSPARENT_BAR
 import it.fast4x.riplay.extensions.preferences.PreferenceKey.VISUALIZER_ENABLED
-import it.fast4x.riplay.utils.DbSettingsJson
+import it.fast4x.riplay.utils.JsonManager
 import kotlin.Boolean
 
 
@@ -118,7 +118,7 @@ fun AppearancePreset.toEntity(): AppearancePresetEntity {
         imageUrl = imageUrl,
         localImageRes = imageRes,
         isBuiltIn = source == PresetSource.BUILTIN,
-        settingsJson = DbSettingsJson.encodeToString(settings) // Usiamo il converter
+        settingsJson = JsonManager.encodeToString(settings) // Usiamo il converter
     )
 }
 
@@ -131,7 +131,7 @@ fun AppearancePresetEntity.toDomain(): AppearancePreset {
         imageUrl = imageUrl,
         imageRes = localImageRes,
         source = if (isBuiltIn) PresetSource.BUILTIN else PresetSource.SHARED,
-        settings = DbSettingsJson.decodeFromString(settingsJson)
+        settings = JsonManager.decodeFromString(settingsJson)
     )
 }
 
