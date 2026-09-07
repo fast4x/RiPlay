@@ -77,7 +77,7 @@ body:
       label: Android Version
       description: The version of Android on your device.
       options:
-        - "17" (Cinnamon Bun)
+        - "17 (Cinnamon Bun)"
         - "16 (Baklava)"
         - "15 (Vanilla Ice Cream)"
         - "14 (Upside Down Cake)"
