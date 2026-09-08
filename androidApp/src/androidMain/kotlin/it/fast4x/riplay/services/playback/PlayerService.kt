@@ -45,6 +45,9 @@ import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.media.VolumeProviderCompat
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.AuxEffectInfo
@@ -226,6 +229,7 @@ import it.fast4x.riplay.utils.CryptoManager
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.getDeviceVolume
 import it.fast4x.riplay.utils.isWebDav
+import it.fast4x.riplay.utils.removeVideoMediaItems
 import it.fast4x.riplay.utils.setQueueLoopState
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -454,14 +458,14 @@ class PlayerService : MediaLibraryService(),
     private val myMainHandler = Handler(Looper.getMainLooper())
 
     // Observer per il ciclo di vita dell'intero processo (app in background)
-//    private val processLifecycleObserver = object : DefaultLifecycleObserver {
-//        override fun onStop(owner: LifecycleOwner) {
-//            Timber.d("PlayerService: ProcessLifecycleOwner.onStop() schermo spento, rimuovo video")
-//            // Chiamato quando l'app va in background o lo schermo si spegne
-//            // Elimino i video perchè in background non sono più visibili ma creano problemi di avanzamento al successivo mediaitem
-//            player.removeVideoMediaItems()
-//        }
-//    }
+    private val processLifecycleObserver = object : DefaultLifecycleObserver {
+        override fun onStop(owner: LifecycleOwner) {
+            Timber.d("PlayerService: ProcessLifecycleOwner.onStop() schermo spento, rimuovo video")
+            // Chiamato quando l'app va in background o lo schermo si spegne
+            // Elimino i video perchè in background nella webview non sono più visibili ma creano problemi di avanzamento al successivo mediaitem
+            exoPlayer.removeVideoMediaItems()
+        }
+    }
 
     override fun onBind(intent: Intent?): IBinder {
         return super.onBind(intent) ?: binder
@@ -557,6 +561,9 @@ class PlayerService : MediaLibraryService(),
 
             val filter = IntentFilter(Intent.ACTION_SCREEN_ON)
             registerReceiver(screenReceiver, filter)
+
+            // Registra l'observer sul ciclo di vita del processo
+            ProcessLifecycleOwner.get().lifecycle.addObserver(processLifecycleObserver)
 
             _isServiceReady.value = true
         }
@@ -1720,6 +1727,9 @@ class PlayerService : MediaLibraryService(),
         _isServiceReady.value = false
 
         stopPlaybackWatchdog()
+
+        // Tolgo il lifecycle observer per la cancellazione dei video nella coda quando l'app va in backgroound
+        ProcessLifecycleOwner.get().lifecycle.removeObserver(processLifecycleObserver)
 
         sendCloseExternalEqualizerIntent()
 
@@ -3066,6 +3076,7 @@ class PlayerService : MediaLibraryService(),
             enableFloatOutput: Boolean,
             enableAudioTrackPlaybackParams: Boolean
         ): AudioSink {
+
             val minimumSilenceDuration = (appSettings.minimumSilenceDuration)
                 .coerceIn(1000L..2_000_000L)
 

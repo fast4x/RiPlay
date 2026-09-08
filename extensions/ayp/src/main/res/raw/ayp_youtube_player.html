@@ -107,6 +107,7 @@
   var player;
   var timerId;
   var adblockIntervalId;
+  var volumeWatchdogInterval = null;
 
   // AGGIUNTA: Variabile globale per tracciare il timeout dello sblocco rapido
   var unstartedKickTimeoutId;
@@ -220,6 +221,34 @@
     initializeAdBlock();
 
     if (!YouTubePlayerBridge) return;
+
+    // MONITORAGGIO DEL VOLUME CON L'OBIETTIVO DI RIPORTARLO AL MASSIMO IN CASO SI ABBASSI IN MODO NON VOLUTO DALL'UTENTE
+    if (playerState === YT.PlayerState.PLAYING) {
+        // Se c'è già un timer attivo, lo puliamo prima di ricrearlo
+        if (volumeWatchdogInterval) {
+            clearInterval(volumeWatchdogInterval);
+        }
+
+        // Avviamo il controllo mirato: gira SOLO mentre la musica suona
+        volumeWatchdogInterval = setInterval(function() {
+            if (player && typeof player.getVolume === 'function') {
+                var currentVol = player.getVolume();
+                if (currentVol < 100) {
+                    player.setVolume(100);
+                }
+            }
+        }, 4000); // 4 secondi: bilanciamento perfetto tra reattività e consumo CPU
+
+        //console.log("AYP JS: Start monitoraggio volume");
+
+    } else {
+        // Spegniamo immediatamente il timer per liberare la CPU se non stiamo riproducendo nulla
+        if (volumeWatchdogInterval) {
+            clearInterval(volumeWatchdogInterval);
+            volumeWatchdogInterval = null;
+        }
+        //console.log("AYP JS: Stop monitoraggio volume");
+    }
 
     var poster = document.getElementById('customPoster');
 
