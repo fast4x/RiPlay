@@ -812,8 +812,8 @@ class PlayerService : MediaLibraryService(),
         when (intent?.action) {
             Action.play.value -> { if (currentSong.value?.isLocal == true) exoPlayer.play() else _internalYouTubePlayer.value?.play() }
             Action.pause.value -> { if (currentSong.value?.isLocal == true) exoPlayer.pause() else _internalYouTubePlayer.value?.pause() }
-            Action.next.value -> handlePlayNext("PlayerService.onStartCommand")
-            Action.previous.value -> handlePlayPrevious()
+            Action.next.value -> handlePlayNextRequestedByUser("PlayerService.onStartCommand")
+            Action.previous.value -> handlePlayPreviousRequestedByUser("PlayerService.onStartCommand")
         }
         updateWidgetState()
 
@@ -1682,7 +1682,7 @@ class PlayerService : MediaLibraryService(),
                             }
                         } else if (direction == VOLUME_DOWN) {
                             if (hybridPlayer.isPlaying && useVolumeKeysToChangeSong) {
-                                handlePlayPrevious()
+                                handlePlayPreviousRequestedByUser("PlayerService.getVolumeProvider.onAdjustVolume")
                             } else {
                                 audioManager.adjustStreamVolume(
                                     STREAM_TYPE,
@@ -2578,8 +2578,8 @@ class PlayerService : MediaLibraryService(),
                             }
 
                     }
-                    Action.next.value -> handlePlayNext("LegacyActionReceiver.onReceive")
-                    Action.previous.value -> handlePlayPrevious()
+                    Action.next.value -> handlePlayNextRequestedByUser("LegacyActionReceiver.onReceive")
+                    Action.previous.value -> handlePlayPreviousRequestedByUser("LegacyActionReceiver.onReceive")
                     Action.like.value -> {
                         it.toggleLike()
                     }
@@ -3923,6 +3923,12 @@ class PlayerService : MediaLibraryService(),
             return
         }
 
+        // Estraiamo la posizione attuale PRIMA di avviare la coroutine
+        val currentPositionMs = hybridPlayer.currentPosition
+
+        // Leggiamo il tempo di riavvolgimento impostato dall'utente
+        val rewindThreshold = appSettings.rewindThresholdDuration.milliSeconds
+
         // Dissolvenza lampo simmetrica per il tasto "Indietro"
         serviceScope.launch(Dispatchers.Main) {
             val steps = 6
@@ -3937,13 +3943,35 @@ class PlayerService : MediaLibraryService(),
                 delay(stepDelay.milliseconds)
             }
 
+            // Silenzio assoluto garantito sui buffer
             hybridPlayer.setFadeVolume(0f)
-            isFading = false
 
-            // Torniamo alla traccia precedente
-            handlePlayPrevious()
+            if (currentPositionMs > rewindThreshold) {
+                Timber.d("PlayerService UX: Canzone avviata da >$rewindThreshold Eseguo il riavvolgimento morbido dello stesso brano.")
+
+                // Diciamo a Media3 di resettare il tempo della canzone corrente
+                hybridPlayer.seekTo(0L)
+
+                // Resettiamo la timeline storicizzata così il Watchdog perenne sa che il salto a zero è voluto
+                lastWatchdogPosition = -1L
+
+                // Facciamo ripartire la rampa di risalita morbida dell'audio!
+                // Questa funzione al termine della risalita metterà regolarmente 'isFading = false', sbloccando l'app!
+                startFadeIn()
+
+            } else {
+                Timber.d("PlayerService UX: Canzone all'inizio (<$rewindThreshold). Salto regolarmente al BRANO PRECEDENTE.")
+
+                // In questo caso NON mettiamo isFading = false qui!
+                // Lasciamo lo scudo alzato (true) per proteggere il transitorio di handlePlayPrevious().
+                // Sarà startFadeIn() del brano precedente, quando si sveglierà in PLAYING, a rimetterlo a false!
+
+                // Torniamo alla traccia precedente reale
+                handlePlayPrevious()
+            }
         }
     }
+
 
 
     fun requestSmoothPause() {
