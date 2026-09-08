@@ -58,6 +58,12 @@ data class Context(
                 onBehalfOfUser = dataSyncId
             ),
         )
+
+        fun setLang(
+            language: String,
+            country: String,
+        ) = this.copy(hl = language, gl = country)
+
     }
 
     @Serializable

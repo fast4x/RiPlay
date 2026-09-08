@@ -192,6 +192,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import dev.kdrag0n.monet.theme.ColorScheme
+import it.fast4x.riplay.enums.Countries
 import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.extensions.appviewmodel.AppViewModelProvider
 import it.fast4x.riplay.extensions.appearancesettings.AppearanceSettingsManager
@@ -745,13 +746,14 @@ class MainActivity : AppCompatActivity() {
             val locale = LocalLocale.current.platformLocale
             val languageTag = locale.toLanguageTag().replace("-Hant", "")
             val languageApp = appSettings.languageApp
+            val contentCountry = appSettings.contentCountry
             LocalePreferences.preference =
                 LocalePreferenceItem(
-                    hl = languageApp.code.takeIf { it != Languages.System.code }
-                        ?: locale.language.takeIf { it != Languages.System.code }
-                        ?: languageTag.takeIf { it != Languages.System.code }
+                    hl = languageApp.takeIf { it != Languages.System }?.code
+                        ?: locale.language.takeIf { it.isNotEmpty() }
                         ?: "en",
-                    gl = locale.country
+                    gl = contentCountry.takeIf { it != Countries.XX }?.code
+                        ?: locale.country.takeIf { it.isNotEmpty() }
                         ?: "US"
                 )
             Environment.locale = EnvironmentLocale(
@@ -759,6 +761,19 @@ class MainActivity : AppCompatActivity() {
                 gl = LocalePreferences.preference?.gl
             )
 
+            LaunchedEffect(Unit, languageApp) {
+                if (languageApp == Languages.System) {
+                    // Resetta il codice della lingua forzando il caricamento della lingua di sistema
+                    AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
+                } else {
+                    // Applica direttamente il codice completo (es: "it-IT")
+                    AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(languageTag))
+                }
+            }
+
+            Timber.d("MainActivity onCreate language = ${locale.language} country = ${locale.country} languageTag = ${locale.toLanguageTag()}")
+
+            /*
             LaunchedEffect(Unit, languageApp) {
                 val systemLangCode =
                     AppCompatDelegate.getApplicationLocales().get(0).toString()
@@ -769,6 +784,7 @@ class MainActivity : AppCompatActivity() {
                     LocaleListCompat.forLanguageTags(languageApp.code)
                 AppCompatDelegate.setApplicationLocales(if (languageApp.code == "") sysLocale else appLocale)
             }
+             */
 
             cookie.value = appSettings.ytCookie
             visitorData.value = appSettings.ytVisitorData

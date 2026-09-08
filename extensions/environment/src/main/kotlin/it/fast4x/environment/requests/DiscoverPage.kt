@@ -5,22 +5,20 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.BrowseResponse
-import it.fast4x.environment.models.Context
 import it.fast4x.environment.models.Context.Companion.DefaultWeb
-import it.fast4x.environment.models.Context.Companion.hl
 import it.fast4x.environment.models.MusicTwoRowItemRenderer
+import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.models.bodies.BrowseBodyWithLocale
 import it.fast4x.environment.models.oddElements
 import it.fast4x.environment.models.splitBySeparator
-import java.util.Locale
 
-suspend fun Environment.discoverPage() = runCatching {
+suspend fun Environment.discoverPage(language: String, country: String) = runCatching {
 
     val response = client.post(_3djbhqyLpE) {
         setBody(
-            BrowseBodyWithLocale(
+            BrowseBody(
                 context = DefaultWeb.copy(
-                    client = DefaultWeb.client.copy(hl = Locale.getDefault().language)
+                    client = DefaultWeb.client.setLang(language, country)
                 ),
                 browseId = "FEmusic_explore"
             )

@@ -61,7 +61,7 @@ fun NewAlbums(
     LoaderScreen(show = discoverPage == null)
 
     LaunchedEffect(Unit) {
-        discoverPage = Environment.discoverPage()
+        discoverPage = Environment.discoverPage(appSettings.languageApp.code, appSettings.contentCountry.code)
     }
 
     val thumbnailSizeDp = Dimensions.thumbnails.album + 24.dp

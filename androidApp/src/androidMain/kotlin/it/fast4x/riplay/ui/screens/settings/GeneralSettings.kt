@@ -20,10 +20,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -38,7 +34,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.os.LocaleListCompat
 import androidx.media3.common.util.UnstableApi
@@ -58,22 +53,20 @@ import it.fast4x.riplay.utils.RestartActivity
 import it.fast4x.riplay.utils.RestartPlayerService
 import it.fast4x.riplay.utils.isAtLeastAndroid12
 import it.fast4x.riplay.utils.isAtLeastAndroid6
-import it.fast4x.riplay.utils.languageDestinationName
-import it.fast4x.riplay.ui.styling.semiBold
+import it.fast4x.riplay.utils.languageToName
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.DnsOverHttpsType
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ValidationType
 import it.fast4x.riplay.ui.components.themed.Search
-import it.fast4x.riplay.utils.typography
 import androidx.core.net.toUri
-import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.CheckUpdateState
+import it.fast4x.riplay.enums.Countries
 import it.fast4x.riplay.enums.EqualizerType
 import it.fast4x.riplay.enums.RewindThresholdDuration
 import it.fast4x.riplay.extensions.updater.UpdateDialog
@@ -105,6 +98,7 @@ fun GeneralSettings(
 
     val systemLocale = LocaleListCompat.getDefault().get(0).toString()
     val languageApp = appSettings.languageApp
+    val contentCountry = appSettings.contentCountry
 
     var restartService by rememberSaveable { mutableStateOf(false) }
     var restartActivity by rememberSaveable { mutableStateOf(false) }
@@ -431,20 +425,35 @@ fun GeneralSettings(
                             search.input,
                             true
                         )
-                    )
+                    ) {
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.app_language),
                             selectedValue = languageApp,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appSettingsManager.activeSettings.value.copy(languageApp = it)
+                                    val new =
+                                        appSettingsManager.activeSettings.value.copy(languageApp = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
                             valueText = {
-                                languageDestinationName(it)
+                                languageToName(it)
                             }
                         )
+
+                        EnumValueSelectorSettingsEntry(
+                            title = "Country language",
+                            selectedValue = contentCountry,
+                            onValueSelected = {
+                                coroutineScope.launch {
+                                    val new =
+                                        appSettingsManager.activeSettings.value.copy(contentCountry = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
+                            },
+                            valueText = { if (it == Countries.XX) "System Country" else it.countryName }
+                        )
+                    }
                 }
 
                 settingsItem(

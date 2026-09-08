@@ -210,7 +210,7 @@ fun HomePage(
                             discoverPage = HomeDataCache.discoverPage
                         }
                         if (discoverPage == null) {
-                            val result = Environment.discoverPage().getOrNull()
+                            val result = Environment.discoverPage(appSettings.languageApp.code, selectedCountryCode.code).getOrNull()
                             discoverPage = result
                             HomeDataCache.discoverPage = result
                         }

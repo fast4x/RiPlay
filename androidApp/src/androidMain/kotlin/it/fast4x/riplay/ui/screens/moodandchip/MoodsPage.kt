@@ -28,11 +28,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.valentinilk.shimmer.shimmer
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.environment.Environment
 import it.fast4x.environment.requests.discoverPage
+import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
@@ -59,9 +61,12 @@ fun MoodsPage(
 ) {
     val windowInsets = LocalPlayerAwareWindowInsets.current
 
+    val appSettingsManager = LocalAppSettingsManager.current
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
     var discoverPage by persist<Result<Environment.DiscoverPage>>("home/discoveryMoods")
     LaunchedEffect(Unit) {
-        discoverPage = Environment.discoverPage()
+        discoverPage = Environment.discoverPage(appSettings.languageApp.code, appSettings.contentCountry.code)
     }
     val thumbnailSizeDp = Dimensions.thumbnails.album + 24.dp
 

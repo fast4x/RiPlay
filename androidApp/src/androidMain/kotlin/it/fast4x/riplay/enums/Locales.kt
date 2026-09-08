@@ -53,60 +53,62 @@ enum class Languages {
     Ukrainian,
     Vietnamese;
 
-    val code: String
+    val tag: String
         get() = when (this) {
             System -> "system"
-            Afrikaans -> "af"
-            Azerbaijani -> "az"
-            Arabic -> "ar"
-            Bashkir -> "ba"
-            Basque -> "eu"
-            Bengali -> "bn"
-            Catalan -> "ca"
+            Afrikaans -> "af-ZA"
+            Azerbaijani -> "az-AZ"
+            Arabic -> "ar-AE" // Emirati Arabi Uniti o usa "ar-SA" per Arabia Saudita
+            Bashkir -> "ba-RU"
+            Basque -> "eu-ES"
+            Bengali -> "bn-BD"
+            Catalan -> "ca-ES"
             ChineseSimplified -> "zh-CN"
             ChineseTraditional -> "zh-TW"
-            Danish -> "da"
-            Dutch -> "nl"
-            English -> "en"
-            Esperanto -> "eo"
-            Estonian -> "et"
-            Filipino -> "fil"
-            Finnish -> "fi"
-            Galician -> "gl"
-            Italian -> "it"
-            Indonesian -> "in"
-            Irish -> "ga"
-            Japanese -> "ja"
-            Korean -> "ko"
-            Czech -> "cs"
-            German -> "de"
-            Greek -> "el"
-            Hebrew -> "iw" //Hebrew -> "he"
-            Hindi -> "hi"
-            Hungarian -> "hu"
-            Interlingua -> "ia"
-            Spanish -> "es"
-            French -> "fr"
-            Malayalam -> "ml"
-            Norwegian -> "no"
-            Odia -> "or"
-            //Persian -> "fa"
-            Polish -> "pl"
-            Portuguese -> "pt"
+            Danish -> "da-DK"
+            Dutch -> "nl-NL"
+            English -> "en-US"
+            Esperanto -> "eo"    // L'Esperanto non ha una regione/paese associato, country rimarrà vuoto
+            Estonian -> "et-EE"
+            Filipino -> "fil-PH"
+            Finnish -> "fi-FI"
+            Galician -> "gl-ES"
+            Italian -> "it-IT"
+            Indonesian -> "in-ID" // Android usa internamente "in" anziché "id"
+            Irish -> "ga-IE"
+            Japanese -> "ja-JP"
+            Korean -> "ko-KR"
+            Czech -> "cs-CZ"
+            German -> "de-DE"
+            Greek -> "el-GR"
+            Hebrew -> "iw-IL"    // Android usa internamente "iw" anziché "he"
+            Hindi -> "hi-IN"
+            Hungarian -> "hu-HU"
+            Interlingua -> "ia"   // Lingua artificiale internazionale, non ha una regione
+            Spanish -> "es-ES"
+            French -> "fr-FR"
+            Malayalam -> "ml-IN"
+            Norwegian -> "no-NO"
+            Odia -> "or-IN"
+            Polish -> "pl-PL"
+            Portuguese -> "pt-PT"
             PortugueseBrazilian -> "pt-BR"
-            Romanian -> "ro"
-            //RomanianEmo -> "ro-RO"
-            Russian -> "ru"
-            SerbianCyrillic -> "sr"
-            SerbianLatin -> "sr-CS"
-            Sinhala -> "si"
-            Swedish -> "sv"
-            Tamil -> "ta"
-            Telugu -> "te"
-            Turkish -> "tr"
-            Ukrainian -> "uk"
-            Vietnamese -> "vi"
+            Romanian -> "ro-RO"
+            Russian -> "ru-RU"
+            SerbianCyrillic -> "sr-RS" // Codice ISO corretto per la Serbia
+            SerbianLatin -> "sr-Latn-RS" // Corretto formato BCP-47 per il Serbo in caratteri Latini
+            Sinhala -> "si-LK"
+            Swedish -> "sv-SE"
+            Tamil -> "ta-IN"
+            Telugu -> "te-IN"
+            Turkish -> "tr-TR"
+            Ukrainian -> "uk-UA"
+            Vietnamese -> "vi-VN"
         }
+
+    val code: String
+        get() = tag.substringBefore("-")
+
 
     companion object {
         fun languageFromcode(code: String): Languages? = when (code) {
@@ -167,6 +169,7 @@ enum class Languages {
 }
 
 enum class Countries {
+    XX, // Funge da Paese di sistema, se selezionato il country selezionato sarà quello di sistema
     ZZ,
     AR,
     DZ,
@@ -278,8 +281,12 @@ enum class Countries {
     YE,
     ZW;
 
+    val code: String
+        get() = this.name
+
     val countryName: String
         get() = when (this) {
+            XX -> "System"
             ZZ -> "Global"
             AR -> "Argentina"
             DZ -> "Algeria"

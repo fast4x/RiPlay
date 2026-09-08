@@ -8,7 +8,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -128,7 +127,7 @@ import it.fast4x.riplay.ui.styling.PureBlackColorPalette
 import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.ui.styling.color
 import it.fast4x.riplay.utils.languageDestination
-import it.fast4x.riplay.utils.languageDestinationName
+import it.fast4x.riplay.utils.languageToName
 import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.utils.copyTextToClipboard
 import it.fast4x.riplay.utils.verticalFadingEdge
@@ -257,11 +256,11 @@ fun Lyrics(
                 MenuEntry(icon = R.drawable.translate, text = stringResource(R.string.do_not_translate), onClick = {
                     menuState.hide(); showLanguagesList = false; translateEnabled = false
                 })
-                MenuEntry(icon = R.drawable.translate, text = stringResource(R.string._default), secondaryText = languageDestinationName(otherLanguageApp), onClick = {
+                MenuEntry(icon = R.drawable.translate, text = stringResource(R.string._default), secondaryText = languageToName(otherLanguageApp), onClick = {
                     menuState.hide(); showLanguagesList = false; translateEnabled = true
                 })
                 Languages.entries.forEach {
-                    if (it != Languages.System) MenuEntry(icon = R.drawable.translate, text = languageDestinationName(it), onClick = {
+                    if (it != Languages.System) MenuEntry(icon = R.drawable.translate, text = languageToName(it), onClick = {
                         menuState.hide()
                         coroutineScope.launch {
                             appSettingsManager.updateSettings(

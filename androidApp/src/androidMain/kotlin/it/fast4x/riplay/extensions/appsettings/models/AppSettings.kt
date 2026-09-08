@@ -72,6 +72,7 @@ import java.net.Proxy
 data class AppSettings(
     val languageApp: Languages = Languages.English,
     val otherLanguageApp: Languages = Languages.English,
+    val contentCountry: Countries = Countries.XX, // XX è il codice per il sistema locale
     val pipModule: PipModule = PipModule.Cover,
     val isSnowEffectEnabled: Boolean = false,
     val ytCookie: String = "",

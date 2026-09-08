@@ -216,7 +216,7 @@ fun HomePageAtlas(
                             discoverPage = HomeDataCache.discoverPage
                         }
                         if (discoverPage == null) {
-                            val result = Environment.discoverPage().getOrNull()
+                            val result = Environment.discoverPage("","").getOrNull()
                             discoverPage = result
                             HomeDataCache.discoverPage = result
                         }

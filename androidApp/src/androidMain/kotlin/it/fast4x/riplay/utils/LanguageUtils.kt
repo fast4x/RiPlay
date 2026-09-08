@@ -81,7 +81,7 @@ fun languageDestination (
 }
 
 @Composable
-fun languageDestinationName (
+fun languageToName (
     language: Languages? = null,
 ): String {
     val appSettingsManager = LocalAppSettingsManager.current

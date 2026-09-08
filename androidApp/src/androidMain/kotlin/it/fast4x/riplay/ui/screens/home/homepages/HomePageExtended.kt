@@ -253,7 +253,7 @@ fun HomePageExtended(
                             discoverPage = HomeDataCache.discoverPage
                         } else if (discoverPage == null) {
                             // Chiamata API con .getOrNull()
-                            val result = Environment.discoverPage().getOrNull()
+                            val result = Environment.discoverPage(appSettings.languageApp.code, appSettings.contentCountry.code).getOrNull()
                             discoverPage = result
                             if (result != null) {
                                 HomeDataCache.discoverPage = result
@@ -506,7 +506,7 @@ fun HomePageExtended(
             localMonthlyPlaylists = localMonthlyPlaylists,
             moodAngGenresLazyGridState = moodAngGenresLazyGridState,
             showCharts = showCharts,
-            chartsPageInit = chartsPageInit,
+            chartsPageInit = chartsPage,
             selectedCountryCode = selectedCountryCode,
             menuState = menuState,
             onSelectCountryCode = {
