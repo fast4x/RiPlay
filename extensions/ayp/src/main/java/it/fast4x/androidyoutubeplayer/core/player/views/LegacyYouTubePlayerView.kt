@@ -191,6 +191,7 @@ internal class LegacyYouTubePlayerView(
   }
 
   internal fun onStop() {
+    webViewYouTubePlayer.resumeTimers()
     webViewYouTubePlayer.youtubePlayer.pause()
     playbackResumer.onLifecycleStop()
     canPlay = false
