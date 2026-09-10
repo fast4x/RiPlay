@@ -8,6 +8,7 @@ import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.MediaSession
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -273,10 +274,17 @@ class HybridPlayer (
             exoPlayer.playWhenReady
         }
         Timber.d("HybridPlayer getPlayWhenReady() called: activeEngine = $activeEngine result = $result")
+
+        val azione = if (result) "PLAY" else "PAUSA"
+        tracciaSorgenteComando("HybridPlayer getPlayWhenReady -> $azione")
+
         return result
     }
 
     override fun setPlayWhenReady(playWhenReady: Boolean) {
+        val azione = if (playWhenReady) "PLAY" else "PAUSA"
+        tracciaSorgenteComando("HybridPlayer setPlayWhenReady -> $azione")
+
         if (activeEngine == ActiveEngine.YOUTUBE) {
             Timber.d("HybridPlayer setPlayWhenReady() called: activeEngine = $activeEngine playWhenReady = $playWhenReady")
             // 2. Controlliamo l'audio dell'hybridPlayer in base al comando di Android Auto
@@ -407,20 +415,24 @@ class HybridPlayer (
 
     // Questo intercetta chiunque chiami player.seekToNextMediaItem() (es. Android Auto o notifiche)
     override fun seekToNextMediaItem() {
+        tracciaSorgenteComando("HybridPlayer seekToNextMediaItem()")
         playerService.handlePlayNextRequestedByUser("HybridPlayer.seekToNextMediaItem")
     }
 
     // Questo intercetta chiunque chiami player.seekToPreviousMediaItem()
     override fun seekToPreviousMediaItem() {
+        tracciaSorgenteComando("HybridPlayer seekToPreviousMediaItem()")
         playerService.handlePlayPreviousRequestedByUser("HybridPlayer.seekToPreviousMediaItem")
     }
 
     // Per sicurezza intercettiamo anche i vecchi metodi generici di Media3
     override fun seekToNext() {
+        tracciaSorgenteComando("HybridPlayer seekToNext()")
         playerService.handlePlayNextRequestedByUser("HybridPlayer.seekToNext")
     }
 
     override fun seekToPrevious() {
+        tracciaSorgenteComando("HybridPlayer seekToPrevious()")
         playerService.handlePlayPreviousRequestedByUser("HybridPlayer.seekToPrevious")
     }
 
@@ -500,6 +512,49 @@ class HybridPlayer (
             exoPlayer.volume = calculatedVolume
             Timber.d("HybridPlayer Fade ExoPlayer: volume=$calculatedVolume (Fade:$fadeMultiplier)")
         }
+    }
+
+
+    // 1. Definizione del tracker ThreadLocal
+    object CommandTracker {
+        private val currentController = ThreadLocal<MediaSession.ControllerInfo>()
+
+        fun set(controllerInfo: MediaSession.ControllerInfo) {
+            currentController.set(controllerInfo)
+        }
+
+        fun get(): MediaSession.ControllerInfo? = currentController.get()
+
+        fun clear() {
+            currentController.remove()
+        }
+    }
+
+    fun tracciaSorgenteComando(metodo: String) {
+        var controllerInfo = CommandTracker.get()
+
+        // Se è null, facciamo un fallback sul metodo nativo di Media3 (valido per chiamate sincrone alla sessione)
+        if (controllerInfo == null) {
+            controllerInfo = playerService.mediaLibrarySession?.controllerForCurrentRequest
+        }
+
+        //Timber.d("HybridPlayer RiPlay_Media3_Source_Trace: controllerForCurrentRequest = ${playerService.mediaLibrarySession?.controllerForCurrentRequest}")
+
+        val pacchetto = controllerInfo?.packageName
+        val uid = controllerInfo?.uid
+
+
+        val sorgente = when {
+            pacchetto != null && pacchetto == "com.google.android.projection.gearhead" -> "Android Auto (Gearhead)"
+            pacchetto != null && pacchetto == playerService.packageName -> "Interfaccia UI Interna (RiPlay)"
+            pacchetto != null && pacchetto.contains("bluetooth") -> "Tasti Bluetooth / Volante"
+            pacchetto != null && pacchetto == "com.android.systemui" -> "Notifica di Sistema / Lockscreen"
+            pacchetto != null && pacchetto.contains("com.google.android.googlequicksearchbox") -> "Google Assistant"
+            pacchetto != null -> "Altro Controller Esterno ($pacchetto)"
+            else -> "Metodo nativo di Media3"
+        }
+
+        Timber.d("HybridPlayer RiPlay_Media3_Source_Trace: [$sorgente] -> Esecuzione metodo: $metodo [uID] -> $uid")
     }
 
 
