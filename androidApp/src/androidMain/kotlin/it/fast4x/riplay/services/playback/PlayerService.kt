@@ -248,7 +248,7 @@ class PlayerService : MediaLibraryService(),
     OnAudioVolumeChangedListener
 {
     val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private var mediaLibrarySession: MediaLibrarySession? = null
+    var mediaLibrarySession: MediaLibrarySession? = null
     private lateinit var mediaLibrarySessionCallback: MediaLibraryServiceCallback
     lateinit var hybridPlayer: HybridPlayer
 
@@ -2817,7 +2817,9 @@ class PlayerService : MediaLibraryService(),
                         if (appSettings.crossfadeDuration != CrossfadeDuration.Off) {
                             if (timeLeft <= crossfadeDurationMs && timeLeft > -10000 && !isFading) {
                                 isFading = true
-                                val nextMediaItem = hybridPlayer.getMediaItemAt(hybridPlayer.nextMediaItemIndex)
+                                val nextMediaItemIndex = hybridPlayer.nextMediaItemIndex
+                                if (nextMediaItemIndex == -1) return@launch // se è nullo non c'è nulla da fare
+                                val nextMediaItem = hybridPlayer.getMediaItemAt(nextMediaItemIndex)
                                 val isNextLocal = nextMediaItem.isLocal
 
                                 Timber.d("PlayerService PlaybackWatchdog: Attivazione Fade Out ($timeLeft ms). Prossimo locale=$isNextLocal")
@@ -3015,37 +3017,14 @@ class PlayerService : MediaLibraryService(),
     )
 
     fun createCacheDataSource(): CacheDataSource.Factory {
-        val webDavPwdDecrypted = if (appSettings.isWebDavEnabled)
-            CryptoManager.decrypt(appSettings.webDavPassword)
-        else ""
 
-        if (webDavPwdDecrypted.isEmpty() && appSettings.isWebDavEnabled) {
-            SmartMessage(getString(R.string.warning_you_must_re_enter_your_webdav_password), type = PopupType.Warning, context = this@PlayerService)
-        }
-
-        val webDavConfig = WebDavConfig(
-            baseUrl = appSettings.webDavUrl,
-            username = appSettings.webDavUsername,
-            password = webDavPwdDecrypted
-        )
-
-        // 1. Configura il client OkHttp con le credenziali WebDAV (se presenti)
         val okHttpClient = OkHttpClient.Builder()
             .proxy(Environment.proxy)
             .apply {
                 if (appSettings.isWebDavEnabled)
                     addInterceptor(DynamicWebDavAuthInterceptor())
-                    /*
-                    addInterceptor { chain ->
-                        val request = chain.request().newBuilder()
-                            .header(
-                                "Authorization",
-                                okhttp3.Credentials.basic(webDavConfig.username, webDavConfig.password)
-                            )
-                            .build()
-                        chain.proceed(request)
-                    }
-                     */
+                // Configuriamo un interceptor che recupera le credenziali di autenticazione webdav
+                // dall'account webdav corrispondente all'url della canzone da riprodurre
             }
             .build()
 
@@ -3065,8 +3044,6 @@ class PlayerService : MediaLibraryService(),
         return CacheDataSource
             .Factory()
             .setCache(cache)
-            // ATTENZIONE: Rimuovi o modifica questa riga (leggi sotto)
-            // .setCacheWriteDataSinkFactory(null)
             .setUpstreamDataSourceFactory(upstreamDataSourceFactory)
     }
 
@@ -3460,7 +3437,6 @@ class PlayerService : MediaLibraryService(),
             }
         }
     }
-
 
 
     @Stable
