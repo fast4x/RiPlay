@@ -150,6 +150,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
+import timber.log.Timber
 import kotlin.collections.forEach
 import kotlin.toString
 
@@ -369,6 +370,35 @@ fun SelectorWebDavAccountDialog(
     modifier: Modifier = Modifier,
     onNewAccount: () -> Unit,
 ) {
+    val coroutineScope = rememberCoroutineScope()
+
+    var accountToDelete by remember {
+        mutableStateOf<WebDavAccount?>(null)
+    }
+
+    accountToDelete?.let { account ->
+        val message = if (account.isMusicSource) {
+            stringResource(R.string.webdav_account_dialog_delete_music_source, account.name)
+        } else {
+            stringResource(R.string.webdav_account_dialog_delete_backup, account.name)
+        }
+
+        ConfirmationDialog(
+            text = message,
+            onDismiss = {
+                accountToDelete = null
+            },
+            onConfirm = {
+                coroutineScope.launch {
+                    Timber.d("SelectorWebDavAccountDialog Deleting account ${account.name}")
+                    Database.webDavAccountDao().deleteAccountAndAllData(account)
+                    accountToDelete = null
+                    onDismiss()
+                }
+            }
+        )
+    }
+
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             modifier = modifier,
@@ -379,25 +409,24 @@ fun SelectorWebDavAccountDialog(
             Column(
                 modifier = Modifier.padding(vertical = 24.dp)
             ) {
-                // Title
+
                 Text(
                     text = title,
-                    style =  typography().s.semiBold,
+                    style = typography().s.semiBold,
                     modifier = Modifier.padding(horizontal = 24.dp)
                 )
 
-                // Divider
+
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = 12.dp),
                     color = colorPalette().accent
                 )
 
-                // List
                 Column(
                     modifier = Modifier
                         .verticalScroll(rememberScrollState())
                 ) {
-                    values.distinct().sortedBy { it.isMusicSource } .forEach { account ->
+                    values.distinct().sortedBy { it.isMusicSource }.forEach { account ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
@@ -408,16 +437,19 @@ fun SelectorWebDavAccountDialog(
                                     onDismiss()
                                 }
                                 .padding(horizontal = 24.dp, vertical = 6.dp)
-                                .background(colorPalette().accent
-                                    .copy(alpha = if (account.isMusicSource) .2f else .5f),
-                                    getRoundnessShape())
+                                .background(
+                                    colorPalette().accent
+                                        .copy(alpha = if (account.isMusicSource) .2f else .5f),
+                                    getRoundnessShape()
+                                )
                         ) {
-
                             Icon(
                                 painter = painterResource(id = account.icon),
                                 contentDescription = null,
                                 tint = colorPalette().text,
-                                modifier = Modifier.size(24.dp).padding(start = 4.dp)
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .padding(start = 4.dp)
                             )
                             Spacer(Modifier.width(12.dp))
 
@@ -425,19 +457,29 @@ fun SelectorWebDavAccountDialog(
                                 text = account.name,
                                 style = typography().xs.medium,
                                 maxLines = 3,
-                                overflow = TextOverflow.Ellipsis
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            IconButton(
+                                onClick = {
+                                    accountToDelete = account
+                                },
+                                icon = R.drawable.trash,
+                                color = colorPalette().text,
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .padding(end = 4.dp)
                             )
                         }
                     }
                 }
 
-                // Divider
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = 12.dp),
                     color = colorPalette().accent
                 )
 
-                // Footer
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -446,20 +488,16 @@ fun SelectorWebDavAccountDialog(
                         .padding(12.dp)
                         .fillMaxWidth()
                 ) {
-
                     TextButton(onClick = onNewAccount) {
                         Text(
-                            "Add new account",
-                            //stringResource(R.string.add),
+                            stringResource(R.string.webdav_account_dialog_add_new),
                             color = colorPalette().text
                         )
                     }
 
-
                     TextButton(onClick = onDismiss) {
                         Text(stringResource(R.string.cancel), color = colorPalette().text)
                     }
-
                 }
             }
         }

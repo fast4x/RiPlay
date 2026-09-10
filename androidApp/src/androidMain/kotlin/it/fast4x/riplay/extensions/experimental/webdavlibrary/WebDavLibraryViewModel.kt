@@ -232,17 +232,17 @@ class WebDavLibraryViewModel () : ViewModel(), ViewModelProvider.Factory {
         viewModelScope.launch {
             _uiState.value = WebDavBrowserState.Loading
             _accounts.value.filter { it.isMusicSource }.forEach { account ->
-                loadMusicFolder(account, account.remoteFolder)
+                loadMusicFolder(account)
             }
         }
     }
 
-    fun loadMusicFolder(account: WebDavAccount, folderPath: String) {
+    fun loadMusicFolder(account: WebDavAccount) {
         viewModelScope.launch {
             _uiState.value = WebDavBrowserState.Loading
             try {
                 val rawItems =
-                    if (appSettings.isWebDavScanSubfoldersEnabled)
+                    if (account.scanSubFolders)
                         webDavLibraryRepository.listMusicDirectoryRecursive(account)
                     else webDavLibraryRepository.listMusicDirectory(account)
                 // Rimuove il primo elemento se è la cartella stessa che stiamo navigando

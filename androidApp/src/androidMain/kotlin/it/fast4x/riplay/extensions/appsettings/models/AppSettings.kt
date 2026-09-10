@@ -277,11 +277,6 @@ data class AppSettings(
     val isReorderDisabled: Boolean = false,
     val isAndroidAutoEnabled: Boolean = true,
     val isWebDavEnabled: Boolean = false,
-    val webDavUrl: String = "",
-    val webDavUsername: String = "",
-    val webDavPassword: String = "",
-    val webDavFolder: String = "",
-    val isWebDavScanSubfoldersEnabled: Boolean = false,
     val crossfadeDuration: CrossfadeDuration = CrossfadeDuration.Off,
 
     // L'ID dell'account WebDAV usato PER IL BACKUP/SYNC del DB

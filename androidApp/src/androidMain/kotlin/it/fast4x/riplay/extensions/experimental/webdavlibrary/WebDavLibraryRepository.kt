@@ -92,25 +92,37 @@ class WebDavLibraryRepository() {
         val queue = ArrayDeque<String>()
         queue.add(account.remoteFolder)
 
+        // Estraiamo il percorso base dall'URL dell'account per poterlo rimuovere dagli href assoluti
+        // Es. se baseUrl è "https://server.com/remote.php/dav/files/admin", basePath sarà "/remote.php/dav/files/admin"
+        val basePath = try {
+            account.baseUrl.toHttpUrl().encodedPath.trimEnd('/')
+        } catch (e: Exception) {
+            ""
+        }
+
         while (queue.isNotEmpty()) {
             val currentPath = queue.removeFirst()
             Timber.d("WebDavLibraryRepository listDirectoryRecursive > listDirectory called with folderPath: $currentPath")
 
             val items = try {
-                listMusicDirectory(account)
+                listMusicDirectory(account.copy(remoteFolder = currentPath)).drop(1)
             } catch (e: Exception) {
                 Timber.e(e, "WebDavLibraryRepository listDirectoryRecursive Errore listando la cartella: $currentPath")
-                emptyList() // Se fallisce, passiamo alla prossima
+                emptyList()
             }
 
             for (item in items) {
-
-                val isSelf = currentPath.trimEnd('/') == item.href.trimEnd('/')
-
-                if (isSelf) continue
-
                 if (item.isDirectory) {
-                    val dirPath = if (item.href.endsWith("/")) item.href else "$item.href/"
+                    var dirPath = item.href.trimEnd('/')
+
+                    // Se l'href è assoluto, gli togliamo il basePath per renderlo relativo
+                    if (basePath.isNotEmpty() && dirPath.startsWith(basePath)) {
+                        dirPath = dirPath.removePrefix(basePath)
+                    }
+
+                    // Assicuriamoci che abbia lo slash finale per il prossimo ciclo
+                    if (!dirPath.endsWith("/")) dirPath += "/"
+
                     queue.add(dirPath)
                 } else {
                     allItems.add(item)

@@ -146,14 +146,11 @@ fun AccountsSettings() {
         var showWebDavAccount by remember { mutableStateOf(false) }
         var webDavAccountEditing by remember { mutableStateOf(false) }
         val isWebDavEnabled = appSettings.isWebDavEnabled
-//        val webDavUrl = appSettings.webDavUrl
-//        val webDavFolder = appSettings.webDavFolder
-//        val webDavUsername = appSettings.webDavUsername
-//        val webDavPassword by remember(appSettings.webDavPassword) { mutableStateOf(CryptoManager.decrypt(appSettings.webDavPassword)) }
-//        val isWebDavScanSubfoldersEnabled = appSettings.isWebDavScanSubfoldersEnabled
         val webdavViewModel = LocalWebDavLibrary.current
         val webdavUiState by webdavViewModel.uiState.collectAsStateWithLifecycle()
         val webdavAccounts = webdavViewModel.accounts.collectAsStateWithLifecycle()
+        val webdavAsMusicSource = webdavAccounts.value.any { it.isMusicSource }
+        val webdavAsBackup = webdavAccounts.value.any { !it.isMusicSource }
         val testConnectionState by webdavViewModel.testConnectionState.collectAsStateWithLifecycle()
         var accountSelected by remember { mutableStateOf(webdavAccounts.value.firstOrNull() ?: webDavAccountEmpty() )}
         var isFetchingRestore by remember { mutableStateOf(false) }
@@ -186,14 +183,8 @@ fun AccountsSettings() {
 
         LaunchedEffect(webDavSync) {
             if (webDavSync) {
-                webdavAccounts.value.fastFilter { it.isMusicSource }.forEach { webDavAccount ->
-                    webdavViewModel.loadMusicFolder(
-                        webDavAccount,
-                        appSettings.webDavFolder
-                    )
-                }
+                webdavViewModel.loadAllMusicFolders()
                 webDavSync = false
-                delay(500.milliseconds)
             }
         }
 
@@ -247,215 +238,98 @@ fun AccountsSettings() {
                         onNewAccount = {
                             webDavAccountEditing = false
                             showWebDavAccount = true
-                        }
+                        },
+                        onDismiss = { webdavViewModel.refreshAccounts() }
                     )
                 }
 
-//                ButtonBarSettingEntry(
-//                    isEnabled = true,
-//                    title = stringResource(R.string.webdav_sync),
-//                    text = "",
-//                    icon = R.drawable.sync,
-//                    iconColor = colorPalette().text,
-//                    onClick = {
-//                        showWebDavAccount = true
-//                    }
-//                )
-
-
-                /*
-                TextDialogSettingEntry(
-                    title = stringResource(R.string.webdav_url),
-                    text = webDavUrl,
-                    currentText = webDavUrl,
-                    onTextSave = {
-                        coroutineScope.launch {
-                            val new = appSettingsManager.activeSettings.value.copy(webDavUrl = it)
-                            appSettingsManager.updateSettings(new)
-                        }
-                    },
-                    validationType = ValidationType.Url
-                )
-                TextDialogSettingEntry(
-                    title = stringResource(R.string.webdav_folder),
-                    text = webDavFolder,
-                    currentText = webDavFolder,
-                    onTextSave = {
-                        coroutineScope.launch {
-                            val new = appSettingsManager.activeSettings.value.copy(webDavFolder = it)
-                            appSettingsManager.updateSettings(new)
-                        }
-                    }
-                )
-                SwitchSettingEntry(
-                    title = stringResource(R.string.webdav_scan_subfolders),
-                    text = "",
-                    isChecked = isWebDavScanSubfoldersEnabled,
-                    onCheckedChange = {
-                        coroutineScope.launch {
-                            val new = appSettingsManager.activeSettings.value.copy(isWebDavScanSubfoldersEnabled = it)
-                            appSettingsManager.updateSettings(new)
-                        }
-                    }
-                )
-                TextDialogSettingEntry(
-                    title = stringResource(R.string.webdav_username),
-                    text = webDavUsername,
-                    currentText = webDavUsername,
-                    onTextSave = {
-                        coroutineScope.launch {
-                            val new = appSettingsManager.activeSettings.value.copy(webDavUsername = it)
-                            appSettingsManager.updateSettings(new)
-                        }
-                    }
-                )
-                TextDialogSettingEntry(
-                    title = stringResource(R.string.webdav_password),
-                    text = if (webDavPassword.isNotEmpty()) "********" else "",
-                    currentText = webDavPassword,
-                    onTextSave = {
-                        coroutineScope.launch {
-                            // Crittografia della nuova password e salvataggio
-                            val cryptedPassword = CryptoManager.encrypt(it)
-                            val new = appSettingsManager.activeSettings.value.copy(webDavPassword = cryptedPassword)
-                            appSettingsManager.updateSettings(new)
-                        }
-                    }
-                )
-
- */
 
                 AnimatedVisibility(visible = webdavAccounts.value.isNotEmpty()) {
                     Column(
                         modifier = Modifier.padding(start = 12.dp)
                     ) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            ButtonBarSettingEntry(
-                                isEnabled = true,
-                                title = stringResource(R.string.settings_webdav_link_music_title),
-                                text = stringResource(R.string.settings_webdav_link_music_subtitle),
-                                icon = Icons.Rounded.CloudSync,
-                                iconColor = colorPalette().text,
-                                onClick = {
-                                    webDavSync = true
-                                }
-                            )
-//                        SettingsDescription(
-//                            text = stringResource(R.string.webdav_sync),
-//                            important = true,
-//                            modifier = Modifier.weight(1f)
-//                        )
-//
-//                        SecondaryTextButton(
-//                            text = stringResource(R.string.webdav_sync_now),
-//                            onClick = { webDavSync = true },
-//                            modifier = Modifier
-//                                .weight(1f)
-//                                .padding(end = 24.dp)
-//                        )
-                        }
-
-                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            ButtonBarSettingEntry(
-                                isEnabled = true,
-                                title = stringResource(R.string.settings_webdav_backup_title),
-                                text = stringResource(R.string.settings_webdav_backup_subtitle),
-                                icon = Icons.Rounded.CloudUpload,
-                                iconColor = colorPalette().text,
-                                onClick = {
-                                    webdavViewModel.syncDatabaseToWebDav(Dependencies.application)
-                                }
-                            )
-//                        SettingsDescription(
-//                            text = "Backup Database To WebDAV", //stringResource(R.string.webdav_sync),
-//                            important = true,
-//                            modifier = Modifier.weight(1f)
-//                        )
-//
-//                        SecondaryTextButton(
-//                            text = stringResource(R.string.webdav_sync_now),
-//                            onClick = {
-//                                webdavViewModel.syncDatabaseToWebDav(Dependencies.application)
-//                            },
-//                            modifier = Modifier
-//                                .weight(1f)
-//                                .padding(end = 24.dp)
-//                        )
-                        }
-
-                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            ButtonBarSettingEntry(
-                                isEnabled = true,
-                                title = stringResource(R.string.settings_webdav_restore_title),
-                                text = stringResource(R.string.settings_webdav_restore_subtitle),
-                                icon = Icons.Rounded.CloudDownload,
-                                iconColor = colorPalette().text,
-                                onClick = {
-                                    val appScope = Dependencies.application.appScopeIO
-                                    isFetchingRestore = true
-                                    webdavAccounts.value.fastFilter { !it.isMusicSource }
-                                        .firstOrNull()?.let { webDavAccount ->
-
-                                            // Lancia la coroutine nel ViewModel per scaricare il riplay_meta.json
-                                            appScope.launch {
-                                                backupInfo = webdavViewModel.fetchBackupInfo(webDavAccount)
-                                                isFetchingRestore = false
-                                            }
-                                        }
-                                }
-                            )
-                            // Mostra un loader se stai scaricando le info
-                            if (isFetchingRestore) {
-                                CircularProgressIndicator()
-                            }
-                            // Mostra il Dialog del restore se le info sono pronte
-                            backupInfo?.let { info ->
-                                WebDavDatabaseRestoreConfirmDialog(
-                                    backupInfo = info,
-                                    onConfirm = {
-                                        backupInfo = null // Chiude il dialog
-                                        isRestoring = true
-                                        // Lancia il restore vero e proprio
-                                        val appScope = Dependencies.application.appScopeIO
-                                        appScope.launch {
-                                            webdavAccounts.value.fastFilter { !it.isMusicSource }
-                                                .firstOrNull()?.let { webDavAccount ->
-                                                    webdavViewModel.syncDatabaseFromWebDav(
-                                                        Dependencies.application,
-                                                        webDavAccount
-                                                    )
-                                                }
-                                        }
-                                    },
-                                    onDismiss = {
-                                        backupInfo = null // Chiude il dialog senza fare nulla
+                        if (webdavAsMusicSource)
+                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                ButtonBarSettingEntry(
+                                    isEnabled = true,
+                                    title = stringResource(R.string.settings_webdav_link_music_title),
+                                    text = stringResource(R.string.settings_webdav_link_music_subtitle),
+                                    icon = Icons.Rounded.CloudSync,
+                                    iconColor = colorPalette().text,
+                                    onClick = {
+                                        webDavSync = true
                                     }
                                 )
                             }
 
-//                        SettingsDescription(
-//                            text = "Restore Database from WebDAV", //stringResource(R.string.webdav_sync),
-//                            important = true,
-//                            modifier = Modifier.weight(1f)
-//                        )
-//
-//                        SecondaryTextButton(
-//                            text = stringResource(R.string.webdav_sync_now),
-//                            onClick = {
-//                                val appScope = Dependencies.application.appScopeIO
-//                                appScope.launch {
-//                                    webdavAccounts.value.fastFilter { !it.isMusicSource }.firstOrNull()?.let { webDavAccount ->
-//                                        webdavViewModel.syncDatabaseFromWebDav(
-//                                            Dependencies.application,
-//                                            webDavAccount
-//                                        )
-//                                    }
-//                                }
-//                            },
-//                            modifier = Modifier
-//                                .weight(1f)
-//                                .padding(end = 24.dp)
-//                        )
+                        if (webdavAsBackup) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                ButtonBarSettingEntry(
+                                    isEnabled = true,
+                                    title = stringResource(R.string.settings_webdav_backup_title),
+                                    text = stringResource(R.string.settings_webdav_backup_subtitle),
+                                    icon = Icons.Rounded.CloudUpload,
+                                    iconColor = colorPalette().text,
+                                    onClick = {
+                                        webdavViewModel.syncDatabaseToWebDav(Dependencies.application)
+                                    }
+                                )
+                            }
+
+
+                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                ButtonBarSettingEntry(
+                                    isEnabled = true,
+                                    title = stringResource(R.string.settings_webdav_restore_title),
+                                    text = stringResource(R.string.settings_webdav_restore_subtitle),
+                                    icon = Icons.Rounded.CloudDownload,
+                                    iconColor = colorPalette().text,
+                                    onClick = {
+                                        val appScope = Dependencies.application.appScopeIO
+                                        isFetchingRestore = true
+                                        webdavAccounts.value.fastFilter { !it.isMusicSource }
+                                            .firstOrNull()?.let { webDavAccount ->
+
+                                                // Lancia la coroutine nel ViewModel per scaricare il riplay_meta.json
+                                                appScope.launch {
+                                                    backupInfo = webdavViewModel.fetchBackupInfo(
+                                                        webDavAccount
+                                                    )
+                                                    isFetchingRestore = false
+                                                }
+                                            }
+                                    }
+                                )
+                                // Mostra un loader se stai scaricando le info
+                                if (isFetchingRestore) {
+                                    CircularProgressIndicator()
+                                }
+                                // Mostra il Dialog del restore se le info sono pronte
+                                backupInfo?.let { info ->
+                                    WebDavDatabaseRestoreConfirmDialog(
+                                        backupInfo = info,
+                                        onConfirm = {
+                                            backupInfo = null // Chiude il dialog
+                                            isRestoring = true
+                                            // Lancia il restore vero e proprio
+                                            val appScope = Dependencies.application.appScopeIO
+                                            appScope.launch {
+                                                webdavAccounts.value.fastFilter { !it.isMusicSource }
+                                                    .firstOrNull()?.let { webDavAccount ->
+                                                        webdavViewModel.syncDatabaseFromWebDav(
+                                                            Dependencies.application,
+                                                            webDavAccount
+                                                        )
+                                                    }
+                                            }
+                                        },
+                                        onDismiss = {
+                                            backupInfo = null // Chiude il dialog senza fare nulla
+                                        }
+                                    )
+                                }
+
+                            }
                         }
                     }
 

@@ -215,6 +215,7 @@ fun ValueWebDavAccountSelectorSettingsEntry(
     isEnabled: Boolean = true,
     trailingContent: (@Composable () -> Unit) = {},
     onNewAccount: () -> Unit = {},
+    onDismiss: () -> Unit = {},
 ) {
     var isShowingDialog by remember {
         mutableStateOf(false)
@@ -223,7 +224,10 @@ fun ValueWebDavAccountSelectorSettingsEntry(
 
     if (isShowingDialog) {
         SelectorWebDavAccountDialog(
-            onDismiss = { isShowingDialog = false },
+            onDismiss = {
+                isShowingDialog = false
+                onDismiss()
+            },
             title = title,
             values = values,
             onValueSelected = {
@@ -237,7 +241,7 @@ fun ValueWebDavAccountSelectorSettingsEntry(
     SettingsEntry(
         title = title,
         titleSecondary = titleSecondary,
-        text = accountSelected?.name ?: "Nessun account",
+        text = accountSelected?.name ?: stringResource(R.string.message_no_accounts),
         modifier = modifier,
         isEnabled = isEnabled,
         onClick = { isShowingDialog = true },
