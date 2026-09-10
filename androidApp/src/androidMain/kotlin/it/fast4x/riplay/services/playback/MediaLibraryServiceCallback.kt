@@ -115,6 +115,9 @@ class MediaLibraryServiceCallback(
         session: MediaSession,
         controller: MediaSession.ControllerInfo
     ): MediaSession.ConnectionResult {
+
+        HybridPlayer.CommandTracker.set(controller) // Tracciamo il controller
+
         val connectionResult = super.onConnect(session, controller)
 
         val availableCustomSessionCommands = NotificationButtons.entries.map { it.sessionCommand }
@@ -159,6 +162,8 @@ class MediaLibraryServiceCallback(
             .setAvailablePlayerCommands(availablePlayerCommands)
             .setCustomLayout(customLayout)
             .build()
+
+        HybridPlayer.CommandTracker.clear()
 
         return result
 
@@ -894,6 +899,8 @@ class MediaLibraryServiceCallback(
         customCommand: SessionCommand,
         args: Bundle
     ): ListenableFuture<SessionResult> {
+        HybridPlayer.CommandTracker.set(controller) // Tracciamo il controller
+
         Timber.d("MediaLibraryCallback onCustomCommand $customCommand customAction ${customCommand.customAction}")
         when (customCommand.customAction) {
             MediaSessionConstants.CommandSearch.customAction -> { binder.actionSearch() }
@@ -934,7 +941,11 @@ class MediaLibraryServiceCallback(
                 }
             }
         }
-        return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+
+        val handled = Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+        HybridPlayer.CommandTracker.clear() // Puliamo prima di comunicare al prossimo gestore
+
+        return handled
     }
 
     @OptIn(UnstableApi::class)
@@ -955,6 +966,8 @@ class MediaLibraryServiceCallback(
         controllerInfo: MediaSession.ControllerInfo,
         intent: Intent
     ): Boolean {
+        HybridPlayer.CommandTracker.set(controllerInfo) // Tracciamo il controller
+
         val keyEvent = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT) as? KeyEvent
 
         if (keyEvent != null && keyEvent.action == KeyEvent.ACTION_UP) {
@@ -962,30 +975,37 @@ class MediaLibraryServiceCallback(
 
             when (keyEvent.keyCode) {
                 KeyEvent.KEYCODE_MEDIA_PLAY -> {
+                    hybridPlayer.tracciaSorgenteComando("onMediaButtonEvent PLAY")
                     hybridPlayer.play()
                     return true
                 }
                 KeyEvent.KEYCODE_MEDIA_PAUSE -> {
+                    hybridPlayer.tracciaSorgenteComando("onMediaButtonEvent PAUSE")
                     hybridPlayer.pause()
                     return true
                 }
                 KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
+                    hybridPlayer.tracciaSorgenteComando("onMediaButtonEvent PLAY/PAUSE")
                     if (hybridPlayer.isPlaying) hybridPlayer.pause() else hybridPlayer.play()
                     return true
                 }
                 KeyEvent.KEYCODE_MEDIA_NEXT -> {
+                    hybridPlayer.tracciaSorgenteComando("onMediaButtonEvent NEXT")
                     hybridPlayer.seekToNext()
                     return true
                 }
                 KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
+                    hybridPlayer.tracciaSorgenteComando("onMediaButtonEvent PREVIOUS")
                     hybridPlayer.seekToPrevious()
                     return true
                 }
             }
         }
 
+        val handled = super.onMediaButtonEvent(session, controllerInfo, intent)
+        HybridPlayer.CommandTracker.clear() // Puliamo prima di comunicare al prossimo gestore
 
-        return super.onMediaButtonEvent(session, controllerInfo, intent)
+        return handled
     }
 
     private fun uriFor(@DrawableRes id: Int) = Uri.Builder()
