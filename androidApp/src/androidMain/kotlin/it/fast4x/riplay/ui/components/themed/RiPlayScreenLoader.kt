@@ -104,5 +104,7 @@ fun RiPlayScreenLoader(
                     .widthIn(max = 260.dp)
             )
         }
+        Spacer(modifier = Modifier.height(56.dp))
+        Loader(isStartingUp = true)
     }
 }

@@ -46,7 +46,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.RippleConfiguration
 import androidx.compose.material3.Surface
@@ -340,9 +339,7 @@ class MainActivity : AppCompatActivity() {
 
 
     @ExperimentalSerializationApi
-    @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class,
-        ExperimentalMaterial3ExpressiveApi::class
-    )
+    @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     @ExperimentalMaterialApi
     @ExperimentalTextApi
     @UnstableApi
