@@ -1403,12 +1403,12 @@ Volume BAS : titre précédent</string>
     <string name="loading_msg_5">Chargement des playlists…</string>
     <string name="loading_msg_6">C\'est parti. Bonne écoute !</string>
     <string name="warning_you_must_re_enter_your_webdav_password">Vous devez saisir à nouveau votre mot de passe WebDAV</string>
-    <string name="show_miniplayer_in_settings">Show miniplayer in settings</string>
-    <string name="settings_themes_manager">Themes manager</string>
-    <string name="settings_themes_manager_title_swithes_between_themes">Swithes between themes</string>
-    <string name="notify_title_auto_close_timer_finished">Auto-close timer finished</string>
-    <string name="notify_message_the_app_has_been_closed_automatically">The app has been closed automatically.</string>
-    <string name="settings_webdav_title">Personal Cloud (WebDAV)</string>
+    <string name="show_miniplayer_in_settings">Afficher le mini-lecteur dans les paramètres</string>
+    <string name="settings_themes_manager">Gestionnaire de thèmes</string>
+    <string name="settings_themes_manager_title_swithes_between_themes">Permet de passer d\'un thème à l\'autre</string>
+    <string name="notify_title_auto_close_timer_finished">Le compte à rebours de fermeture automatique est terminé</string>
+    <string name="notify_message_the_app_has_been_closed_automatically">L\'application s\'est fermée automatiquement.</string>
+    <string name="settings_webdav_title">Cloud Personnel (WebDAV)</string>
     <string name="settings_webdav_link_cloud_and_music_title">Link Cloud &amp; Music</string>
     <string name="settings_webdav_link_cloud_and_music_subtitle">Access your remote tracks and keep your playlists and settings synced on all your devices.</string>
     <string name="settings_webdav_link_music_title">Link Music Library</string>
@@ -1454,6 +1454,6 @@ Volume BAS : titre précédent</string>
     <string name="webdav_restore_dialog_cancel">Cancel</string>
     <string name="webdav_account_dialog_delete_music_source">Are you sure you want to delete the account:\n\n%1$s\n\nas a music source and all the songs linked to it?</string>
     <string name="webdav_account_dialog_delete_backup">Are you sure you want to delete the account:\n\n%1$s\n\nas your data backup and synchronization across your devices?</string>
-    <string name="webdav_account_dialog_add_new">Add new account</string>
-    <string name="message_no_accounts">No accounts</string>
+    <string name="webdav_account_dialog_add_new">Ajouter un nouveau compte</string>
+    <string name="message_no_accounts">Aucun compte</string>
 </resources>
