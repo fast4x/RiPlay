@@ -70,6 +70,7 @@ import it.fast4x.riplay.ui.items.PlaylistItemPlaceholder
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.items.VideoItem
 import it.fast4x.riplay.ui.items.VideoItemPlaceholder
+import it.fast4x.riplay.ui.screens.search.common.ItemsPage
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.styling.secondary
@@ -190,7 +191,10 @@ fun SearchResultsContent(
                     SwipeablePlaylistItem(
                         mediaItem = song.asMediaItem,
                         onPlayNext = {
-                            localBinder?.hybridPlayer?.addNext(song.asMediaItem, queue = selectedQueue ?: defaultQueue())
+                            localBinder?.hybridPlayer?.addNext(
+                                song.asMediaItem,
+                                queue = selectedQueue ?: defaultQueue()
+                            )
                         },
                         onEnqueue = {
                             localBinder?.hybridPlayer?.enqueue(song.asMediaItem, queue = it)
@@ -199,7 +203,10 @@ fun SearchResultsContent(
                         SongItem(
                             song = song,
                             thumbnailContent = {
-                                NowPlayingSongIndicator(song.asMediaItem.mediaId, binder?.hybridPlayer)
+                                NowPlayingSongIndicator(
+                                    song.asMediaItem.mediaId,
+                                    binder?.hybridPlayer
+                                )
                             },
                             thumbnailSizePx = thumbnailSizePx,
                             thumbnailSizeDp = thumbnailSizeDp,
@@ -298,13 +305,18 @@ fun SearchResultsContent(
                                                                     binder?.hybridPlayer?.addNext(
                                                                         it1,
                                                                         context,
-                                                                        selectedQueue ?: defaultQueue()
+                                                                        selectedQueue
+                                                                            ?: defaultQueue()
                                                                     )
                                                                 }
                                                             }
-                                                        println("mediaItem success add in queue album songsPage ${albumPage
-                                                            ?.songsPage
-                                                            ?.items?.size}")
+                                                        println(
+                                                            "mediaItem success add in queue album songsPage ${
+                                                                albumPage
+                                                                    ?.songsPage
+                                                                    ?.items?.size
+                                                            }"
+                                                        )
 
                                                     }
                                                     ?.onFailure {
@@ -352,9 +364,13 @@ fun SearchResultsContent(
                                                                     )
                                                                 }
                                                             }
-                                                        println("mediaItem success add in queue album songsPage ${albumPage
-                                                            ?.songsPage
-                                                            ?.items?.size}")
+                                                        println(
+                                                            "mediaItem success add in queue album songsPage ${
+                                                                albumPage
+                                                                    ?.songsPage
+                                                                    ?.items?.size
+                                                            }"
+                                                        )
 
                                                     }
                                                     ?.onFailure {
@@ -546,7 +562,10 @@ fun SearchResultsContent(
                     SwipeablePlaylistItem(
                         mediaItem = video.asMediaItem,
                         onPlayNext = {
-                            localBinder?.hybridPlayer?.addNext(video.asMediaItem, queue = selectedQueue ?: defaultQueue())
+                            localBinder?.hybridPlayer?.addNext(
+                                video.asMediaItem,
+                                queue = selectedQueue ?: defaultQueue()
+                            )
                         },
                         onEnqueue = {
                             localBinder?.hybridPlayer?.enqueue(video.asMediaItem, queue = it)
@@ -634,7 +653,8 @@ fun SearchResultsContent(
                     var playlistById by remember { mutableStateOf<Playlist?>(null) }
                     LaunchedEffect(playlist) {
                         CoroutineScope(Dispatchers.IO).launch {
-                            playlistById = Database.playlist(playlist.key.substringAfter("VL")).firstOrNull()
+                            playlistById =
+                                Database.playlist(playlist.key.substringAfter("VL")).firstOrNull()
                         }
                     }
                     PlaylistItem(
@@ -718,7 +738,11 @@ fun SearchResultsContent(
                         val filter = Environment.SearchFilter.UserChannel
 
                         Environment.searchPage(
-                            body = SearchBody(context = Context.DefaultWeb2WithLocale, query = query, params = filter.value),
+                            body = SearchBody(
+                                context = Context.DefaultWeb2WithLocale,
+                                query = query,
+                                params = filter.value
+                            ),
                             fromMusicShelfRendererContent = Environment.PlaylistItem::from
                         )
                     } else {

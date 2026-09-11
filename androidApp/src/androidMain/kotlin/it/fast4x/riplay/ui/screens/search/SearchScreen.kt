@@ -34,6 +34,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
@@ -96,6 +97,8 @@ fun SearchScreen(
     var submittedQuery by rememberSaveable { mutableStateOf(
         if (query.isEmpty()) "" else query
     ) }
+
+    val focusManager = LocalFocusManager.current // Gestore del focus nativo di Compose
 
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -179,7 +182,7 @@ fun SearchScreen(
                             onClick = {
                                 onTextFieldValueChanged(TextFieldValue(""))
                                 submittedQuery = ""
-                                focusRequester.requestFocus()
+                                focusManager.clearFocus()
                             },
                             icon = R.drawable.close,
                             color = colorPalette().text,
@@ -236,12 +239,7 @@ fun SearchScreen(
                                 colorPalette().background4,
                                 shape = getRoundnessShape()
                             )
-                            .focusRequester(focusRequester)
-                            .onFocusChanged {
-                                if (!it.hasFocus) {
-                                    keyboardController?.hide()
-                                }
-                            },
+                            .focusRequester(focusRequester),
                         singleLine = true,
                         textStyle = typography().l.medium.align(TextAlign.Start),
                         cursorBrush = SolidColor(colorPalette().text),
@@ -250,7 +248,7 @@ fun SearchScreen(
                             onSearch = {
                                 if (textFieldValue.text.isNotEmpty()) {
                                     submittedQuery = textFieldValue.text
-                                    keyboardController?.hide()
+                                    focusManager.clearFocus() // Chiude la tastiera e rilascia il focus in modo cross-device
 
                                     if (!appSettings.isPauseListenHistoryEnabled) {
                                         Database.asyncTransaction {

@@ -1,4 +1,4 @@
-package it.fast4x.riplay.ui.screens.search
+package it.fast4x.riplay.ui.screens.search.common
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background

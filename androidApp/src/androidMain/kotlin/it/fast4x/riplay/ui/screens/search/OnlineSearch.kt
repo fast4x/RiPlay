@@ -402,9 +402,4 @@ fun OnlineSearch(
         FloatingActionsContainerWithScrollToTop(lazyListState = lazyListState)
     }
 
-    LaunchedEffect(Unit) {
-        delay(300)
-        focusRequester.requestFocus()
-    }
-
 }
