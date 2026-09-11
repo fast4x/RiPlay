@@ -31,9 +31,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
@@ -47,7 +45,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.LocalAppSettingsManager
-import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.extensions.persist.PersistMapCleanup
 import it.fast4x.riplay.R
 import it.fast4x.riplay.data.Database
@@ -276,8 +273,6 @@ fun SearchScreen(
                                             Database.asyncTransaction { insert(SearchQuery(query = textFieldValue.text)) }
                                         }
                                     },
-                                    focusRequester = focusRequester,
-                                    keyboardController = keyboardController
                                 )
                             }
                         } else {
@@ -290,29 +285,16 @@ fun SearchScreen(
                                         submittedQuery = query
                                         keyboardController?.hide()
                                     },
-                                    decorationBox = decorationBox
                                 )
 
                                 1 -> LocalSongSearch(
                                     navController = navController,
                                     textFieldValue = textFieldValue,
-                                    onTextFieldValueChanged = onTextFieldValueChanged,
-                                    decorationBox = decorationBox,
-                                    onAction1 = { onBaseTabChanged(0) },
-                                    onAction2 = { onBaseTabChanged(1) },
-                                    onAction3 = { onBaseTabChanged(2) },
-                                    onAction4 = {}
                                 )
 
                                 2 -> GoToLink(
                                     navController = navController,
                                     textFieldValue = textFieldValue,
-                                    onTextFieldValueChanged = onTextFieldValueChanged,
-                                    decorationBox = decorationBox,
-                                    onAction1 = { onBaseTabChanged(0) },
-                                    onAction2 = { onBaseTabChanged(1) },
-                                    onAction3 = { onBaseTabChanged(2) },
-                                    onAction4 = {}
                                 )
                             }
                         }

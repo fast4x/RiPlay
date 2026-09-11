@@ -73,12 +73,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 fun GoToLink(
     navController: NavController,
     textFieldValue: TextFieldValue,
-    onTextFieldValueChanged: (TextFieldValue) -> Unit,
-    decorationBox: @Composable (@Composable () -> Unit) -> Unit,
-    onAction1: () -> Unit,
-    onAction2: () -> Unit,
-    onAction3: () -> Unit,
-    onAction4: () -> Unit,
 ) {
     val binder = LocalPlayerServiceBinder.current
     val coroutineScope = CoroutineScope(Dispatchers.IO) + Job()
@@ -156,7 +150,7 @@ fun GoToLink(
 
                         LaunchedEffect(Unit) {
                             coroutineScope.launch(Dispatchers.Main) {
-                                println("mediaItem channelId: ${uri.pathSegments}")
+                                //println("mediaItem channelId: ${uri.pathSegments}")
                                 when (val path = uri.pathSegments.firstOrNull()) {
                                     "playlist" -> uri.getQueryParameter("list")?.let { playlistId ->
                                         val browseId = "VL$playlistId"

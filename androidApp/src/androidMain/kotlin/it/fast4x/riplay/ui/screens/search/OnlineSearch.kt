@@ -30,7 +30,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -75,6 +74,7 @@ import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.forcePlay
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlin.time.Duration.Companion.milliseconds
 
 @UnstableApi
 @ExperimentalFoundationApi
@@ -87,7 +87,6 @@ fun OnlineSearch(
     textFieldValue: TextFieldValue,
     onTextFieldValueChanged: (TextFieldValue) -> Unit,
     onSearch: (String) -> Unit,
-    decorationBox: @Composable (@Composable () -> Unit) -> Unit,
 ) {
     val appearanceSettingsManager = LocalAppearanceSettingsManager.current
     val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
@@ -114,7 +113,7 @@ fun OnlineSearch(
 
     LaunchedEffect(textFieldValue.text) {
         if (textFieldValue.text.isNotEmpty()) {
-            delay(200)
+            delay(200.milliseconds)
             suggestionsResult =
                 Environment.searchSuggestionsWithItems(SearchSuggestionsBody(input = textFieldValue.text))
         }
@@ -125,11 +124,6 @@ fun OnlineSearch(
     val closeIconPainter = painterResource(R.drawable.trash)
 
     val coroutineScope = rememberCoroutineScope()
-
-    val focusRequester = remember {
-        FocusRequester()
-    }
-
 
     val lazyListState = rememberLazyListState()
 
@@ -143,7 +137,6 @@ fun OnlineSearch(
     Box(
         modifier = Modifier
             .background(colorPalette().background0)
-            //.fillMaxSize()
             .fillMaxHeight()
             .fillMaxWidth(
                 if( NavigationBarPosition.Right.isCurrent() )
@@ -388,7 +381,6 @@ fun OnlineSearch(
                                         }
                                     }
                                 )
-                                //.rotate(310f)
                                 .padding(horizontal = 8.dp)
                                 .size(22.dp)
                         )

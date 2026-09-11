@@ -47,8 +47,6 @@ inline fun <T : Environment.Item> ItemsPage(
     crossinline itemContent: @Composable LazyItemScope.(T) -> Unit,
     noinline itemPlaceholderContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    initialPlaceholderCount: Int = 8,
-    continuationPlaceholderCount: Int = 3,
     emptyItemsText: String = "No items found",
     noinline itemsPageProvider: (suspend (String?) -> Result<Environment.ItemsPage<T>?>?)? = null,
     filterContentType: ContentType = ContentType.UserGenerated
@@ -83,7 +81,6 @@ inline fun <T : Environment.Item> ItemsPage(
     Box(
         modifier = Modifier
             .background(colorPalette().background0)
-            //.fillMaxSize()
             .fillMaxHeight()
             .fillMaxWidth(
                 if (NavigationBarPosition.Right.isCurrent())
@@ -97,8 +94,6 @@ inline fun <T : Environment.Item> ItemsPage(
         ) {
             LazyColumn(
                 state = lazyListState,
-                //contentPadding = LocalPlayerAwareWindowInsets.current
-                //    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
                 modifier = modifier
                     .fillMaxSize()
             ) {
@@ -152,19 +147,6 @@ inline fun <T : Environment.Item> ItemsPage(
                         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillParentMaxHeight(.6f)) {
                             LoaderScreen()
                         }
-                        //val isFirstLoad = itemsPage?.items.isNullOrEmpty()
-                        /*
-                        ShimmerHost(
-                            modifier = Modifier
-                                .run {
-                                    if (isFirstLoad) fillParentMaxSize() else this
-                                }
-                        ) {
-                            repeat(if (isFirstLoad) initialPlaceholderCount else continuationPlaceholderCount) {
-                                itemPlaceholderContent()
-                            }
-                        }
-                        */
                     }
                 }
 
@@ -178,7 +160,6 @@ inline fun <T : Environment.Item> ItemsPage(
         }
 
         FloatingActionsContainerWithScrollToTop(lazyListState = lazyListState)
-
 
     }
 }

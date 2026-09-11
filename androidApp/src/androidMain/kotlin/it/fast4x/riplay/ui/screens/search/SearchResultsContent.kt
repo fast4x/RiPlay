@@ -19,11 +19,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
@@ -104,8 +102,6 @@ fun SearchResultsContent(
     onFilterChanged: (ContentType) -> Unit,
     navController: NavController,
     onSaveHistory: () -> Unit,
-    focusRequester: FocusRequester,
-    keyboardController: SoftwareKeyboardController?
 ) {
     val appearanceSettingsManager = LocalAppearanceSettingsManager.current
     val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
@@ -184,7 +180,6 @@ fun SearchResultsContent(
                 emptyItemsText = emptyItemsText,
                 headerContent = headerContent,
                 itemContent = { song ->
-                    //Log.d("mediaItem",song.toString())
                     if (parentalControlEnabled && song.explicit)
                         return@ItemsPage
 
@@ -292,7 +287,7 @@ fun SearchResultsContent(
                                                         albumPage =
                                                             currentAlbumPage
 
-                                                        println("mediaItem success home album songsPage ${currentAlbumPage.songsPage} description ${currentAlbumPage.description} year ${currentAlbumPage.year}")
+                                                        //println("mediaItem success home album songsPage ${currentAlbumPage.songsPage} description ${currentAlbumPage.description} year ${currentAlbumPage.year}")
 
                                                         albumPage
                                                             ?.songsPage
@@ -310,22 +305,22 @@ fun SearchResultsContent(
                                                                     )
                                                                 }
                                                             }
-                                                        println(
-                                                            "mediaItem success add in queue album songsPage ${
-                                                                albumPage
-                                                                    ?.songsPage
-                                                                    ?.items?.size
-                                                            }"
-                                                        )
+//                                                        println(
+//                                                            "mediaItem success add in queue album songsPage ${
+//                                                                albumPage
+//                                                                    ?.songsPage
+//                                                                    ?.items?.size
+//                                                            }"
+//                                                        )
 
                                                     }
                                                     ?.onFailure {
-                                                        println("mediaItem error searchResultScreen album ${it.stackTraceToString()}")
+                                                       // println("mediaItem error searchResultScreen album ${it.stackTraceToString()}")
                                                     }
 
                                             }
 
-                                        //}
+
                                     }
 
                             }
@@ -348,7 +343,7 @@ fun SearchResultsContent(
                                                         albumPage =
                                                             currentAlbumPage
 
-                                                        println("mediaItem success home album songsPage ${currentAlbumPage.songsPage} description ${currentAlbumPage.description} year ${currentAlbumPage.year}")
+                                                        //println("mediaItem success home album songsPage ${currentAlbumPage.songsPage} description ${currentAlbumPage.description} year ${currentAlbumPage.year}")
 
                                                         albumPage
                                                             ?.songsPage
@@ -364,22 +359,21 @@ fun SearchResultsContent(
                                                                     )
                                                                 }
                                                             }
-                                                        println(
-                                                            "mediaItem success add in queue album songsPage ${
-                                                                albumPage
-                                                                    ?.songsPage
-                                                                    ?.items?.size
-                                                            }"
-                                                        )
+//                                                        println(
+//                                                            "mediaItem success add in queue album songsPage ${
+//                                                                albumPage
+//                                                                    ?.songsPage
+//                                                                    ?.items?.size
+//                                                            }"
+//                                                        )
 
                                                     }
-                                                    ?.onFailure {
-                                                        println("mediaItem error searchResultScreen album ${it.stackTraceToString()}")
-                                                    }
+//                                                    ?.onFailure {
+//                                                        println("mediaItem error searchResultScreen album ${it.stackTraceToString()}")
+//                                                    }
 
                                             }
 
-                                        //}
                                     }
 
                             }
@@ -402,7 +396,7 @@ fun SearchResultsContent(
                                                         albumPage =
                                                             currentAlbumPage
 
-                                                        println("mediaItem success home album songsPage ${currentAlbumPage.songsPage} description ${currentAlbumPage.description} year ${currentAlbumPage.year}")
+                                                        //println("mediaItem success home album songsPage ${currentAlbumPage.songsPage} description ${currentAlbumPage.description} year ${currentAlbumPage.year}")
 
                                                         Database.upsert(
                                                             Album(
@@ -441,9 +435,9 @@ fun SearchResultsContent(
                                                         )
 
                                                     }
-                                                    ?.onFailure {
-                                                        println("mediaItem error searchResultScreen album ${it.stackTraceToString()}")
-                                                    }
+//                                                    ?.onFailure {
+//                                                        println("mediaItem error searchResultScreen album ${it.stackTraceToString()}")
+//                                                    }
 
                                             }
                                     }
@@ -595,9 +589,6 @@ fun SearchResultsContent(
                                     },
                                     onClick = {
                                         localBinder?.stopRadio()
-//                                                        if (isVideoEnabled)
-//                                                            localBinder?.player?.playOnline(video.asMediaItem)
-//                                                        else
                                         localBinder?.hybridPlayer?.forcePlay(video.asMediaItem)
                                         localBinder?.setupRadio(video.info?.endpoint)
                                     }
@@ -619,8 +610,6 @@ fun SearchResultsContent(
         4, 5 -> {
             val thumbnailSizeDp = Dimensions.thumbnails.playlist
             val thumbnailSizePx = thumbnailSizeDp.px
-            //val thumbnailSizeDp = 108.dp
-            //val thumbnailSizePx = thumbnailSizeDp.px
 
             ItemsPage(
                 tag = "searchResults/$query/${
@@ -665,7 +654,6 @@ fun SearchResultsContent(
                         isYoutubePlaylist = playlistById?.isYoutubePlaylist == true,
                         modifier = Modifier
                             .clickable(onClick = {
-                                //playlistRoute(playlist.key)
                                 navController.navigate("${NavRoutes.playlist.name}/${playlist.key}")
                             }),
                         disableScrollingText = disableScrollingText
@@ -681,8 +669,6 @@ fun SearchResultsContent(
         6 -> {
             val thumbnailSizeDp = Dimensions.thumbnails.playlist
             val thumbnailSizePx = thumbnailSizeDp.px
-            //val thumbnailSizeDp = 108.dp
-            //val thumbnailSizePx = thumbnailSizeDp.px
 
             ItemsPage(
                 tag = "searchResults/$query/podcasts",
@@ -711,8 +697,7 @@ fun SearchResultsContent(
                         showSongsCount = false,
                         modifier = Modifier
                             .clickable(onClick = {
-                                //playlistRoute(playlist.key)
-                                println("mediaItem searchResultScreen playlist key ${playlist.key}")
+                               // println("mediaItem searchResultScreen playlist key ${playlist.key}")
                                 navController.navigate("${NavRoutes.podcast.name}/${playlist.key}")
                             }),
                         disableScrollingText = disableScrollingText
@@ -728,8 +713,6 @@ fun SearchResultsContent(
         7 -> {
             val thumbnailSizeDp = Dimensions.thumbnails.playlist
             val thumbnailSizePx = thumbnailSizeDp.px
-            //val thumbnailSizeDp = 108.dp
-            //val thumbnailSizePx = thumbnailSizeDp.px
 
             ItemsPage(
                 tag = "searchResults/$query/userchannels",
@@ -762,8 +745,7 @@ fun SearchResultsContent(
                         showSongsCount = false,
                         modifier = Modifier
                             .clickable(onClick = {
-                                //playlistRoute(playlist.key)
-                                println("mediaItem searchResultScreen playlist key ${playlist.key}")
+                               // println("mediaItem searchResultScreen playlist key ${playlist.key}")
                                 navController.navigate("${NavRoutes.podcast.name}/${playlist.key}")
                             }),
                         disableScrollingText = disableScrollingText

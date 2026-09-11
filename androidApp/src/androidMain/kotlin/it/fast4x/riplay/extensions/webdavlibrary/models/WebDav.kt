@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.webdavlibrary.models
+package it.fast4x.riplay.extensions.webdavlibrary.models
 
 import it.fast4x.riplay.data.models.Song
 import kotlinx.serialization.Serializable

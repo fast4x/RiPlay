@@ -28,7 +28,7 @@ import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategie
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategies.MBGraphWalkStrategy
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategies.NewReleasesStrategy
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategies.QualityCuratorStrategy
-import it.fast4x.riplay.extensions.experimental.webdavlibrary.WebDavCredentialsProvider
+import it.fast4x.riplay.extensions.webdavlibrary.WebDavCredentialsProvider
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.musicbrainz.workers.WorkScheduler
 import it.fast4x.riplay.extensions.musicbrainz.workers.WorkerDependencies

@@ -219,13 +219,11 @@ import kotlin.math.sqrt
 import kotlin.time.Duration.Companion.seconds
 import android.os.Binder as AndroidBinder
 import it.fast4x.riplay.extensions.appsettings.AppSettingsManager
-import it.fast4x.riplay.extensions.experimental.webdavlibrary.DynamicWebDavAuthInterceptor
-import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavConfig
+import it.fast4x.riplay.extensions.webdavlibrary.DynamicWebDavAuthInterceptor
 import it.fast4x.riplay.services.playback.common.PlaybackContext
 import it.fast4x.riplay.services.playback.common.PlaybackState
 import it.fast4x.riplay.services.playback.common.PlayerState
 import it.fast4x.riplay.utils.BitmapLoader
-import it.fast4x.riplay.utils.CryptoManager
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.getDeviceVolume
 import it.fast4x.riplay.utils.isWebDav
@@ -237,7 +235,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import okhttp3.OkHttpClient
 import java.io.ByteArrayOutputStream
-import kotlin.collections.none
 import kotlin.time.Duration.Companion.milliseconds
 
 @UnstableApi

@@ -61,7 +61,6 @@ val Environment.AlbumItem.asAlbum: Album
         thumbnailUrl = thumbnail?.url,
         year = year,
         authorsText = authors?.joinToString(", ") { it.name ?: "" },
-        //shareUrl =
     )
 
 fun Environment.Podcast.toPlaylist(browseId: String): Playlist

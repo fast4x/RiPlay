@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.webdavlibrary
+package it.fast4x.riplay.extensions.webdavlibrary
 
 import android.content.Context
 import androidx.core.content.edit

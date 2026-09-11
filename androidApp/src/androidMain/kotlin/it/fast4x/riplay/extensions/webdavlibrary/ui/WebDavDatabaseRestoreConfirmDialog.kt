@@ -1,13 +1,12 @@
-package it.fast4x.riplay.extensions.experimental.webdavlibrary.ui
+package it.fast4x.riplay.extensions.webdavlibrary.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavBackupInfo
+import it.fast4x.riplay.extensions.webdavlibrary.models.WebDavBackupInfo
 import it.fast4x.riplay.R
 import java.text.SimpleDateFormat
 import java.util.Date

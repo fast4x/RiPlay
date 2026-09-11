@@ -55,12 +55,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 fun LocalSongSearch(
     navController: NavController,
     textFieldValue: TextFieldValue,
-    onTextFieldValueChanged: (TextFieldValue) -> Unit,
-    decorationBox: @Composable (@Composable () -> Unit) -> Unit,
-    onAction1: () -> Unit,
-    onAction2: () -> Unit,
-    onAction3: () -> Unit,
-    onAction4: () -> Unit,
 ) {
 
     val appearanceSettingsManager = LocalAppearanceSettingsManager.current
@@ -81,8 +75,6 @@ fun LocalSongSearch(
     val thumbnailSizePx = thumbnailSizeDp.px
 
     val lazyListState = rememberLazyListState()
-
-    //val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
     val disableScrollingText = appearanceSettings.disableScrollingText
 
     val focusRequester = remember {
@@ -92,7 +84,6 @@ fun LocalSongSearch(
     Box(
         modifier = Modifier
             .background(colorPalette().background0)
-            //.fillMaxSize()
             .fillMaxHeight()
             .fillMaxWidth(
                 if( NavigationBarPosition.Right.isCurrent() )
@@ -106,44 +97,9 @@ fun LocalSongSearch(
         ) {
             LazyColumn(
                 state = lazyListState,
-//                contentPadding = LocalPlayerAwareWindowInsets.current
-//                    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End).asPaddingValues(),
                 modifier = Modifier
                     .fillMaxSize()
             ) {
-                /*
-                item(
-                    key = "header",
-                    contentType = 0
-                ) {
-
-                    Header(
-                        titleContent = {
-                            BasicTextField(
-                                value = textFieldValue,
-                                onValueChange = onTextFieldValueChanged,
-                                textStyle = typography().l.medium.align(TextAlign.Start),
-                                singleLine = true,
-                                maxLines = 1,
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                cursorBrush = SolidColor(colorPalette().text),
-                                decorationBox = decorationBox,
-                                modifier = Modifier
-                                    .background(
-                                        colorPalette().background1,
-                                        shape = thumbnailRoundness.shape()
-                                    )
-                                    .padding(all = 4.dp)
-                                    .focusRequester(focusRequester)
-                                    .fillMaxWidth()
-                            )
-                        },
-                        actionsContent = {},
-                    )
-                }
-
-                 */
-
                 items(
                     items = items,
                     key = Song::id,
@@ -177,8 +133,6 @@ fun LocalSongSearch(
                                 }
                             )
                             .animateItem(),
-                        //disableScrollingText = disableScrollingText,
-                        //isNowPlaying = binder?.player?.isNowPlaying(song.id) ?: false
                     )
                 }
             }

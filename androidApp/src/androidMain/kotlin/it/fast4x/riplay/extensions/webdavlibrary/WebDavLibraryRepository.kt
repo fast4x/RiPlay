@@ -1,12 +1,12 @@
-package it.fast4x.riplay.extensions.experimental.webdavlibrary
+package it.fast4x.riplay.extensions.webdavlibrary
 
 import android.media.MediaMetadataRetriever
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.WebDavAccount
-import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavBackupInfo
-import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavConfig
-import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavItem
-import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavSongMetadata
+import it.fast4x.riplay.extensions.webdavlibrary.models.WebDavBackupInfo
+import it.fast4x.riplay.extensions.webdavlibrary.models.WebDavConfig
+import it.fast4x.riplay.extensions.webdavlibrary.models.WebDavItem
+import it.fast4x.riplay.extensions.webdavlibrary.models.WebDavSongMetadata
 import it.fast4x.riplay.utils.CryptoManager
 import it.fast4x.riplay.utils.CustomHttpClient
 import it.fast4x.riplay.utils.JsonManager
@@ -20,6 +20,7 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import okhttp3.Credentials
+import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -468,7 +469,7 @@ class WebDavLibraryRepository() {
     }
 
     // Helper per risolvere gli URL (semplificato, OkHttp è rigoroso sugli slash)
-    private fun resolveUrl(base: String, path: String): okhttp3.HttpUrl {
+    private fun resolveUrl(base: String, path: String): HttpUrl {
         val fullUrl = base.trimEnd('/') + "/" + path.trimStart('/')
         return fullUrl.toHttpUrl()
     }

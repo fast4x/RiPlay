@@ -197,7 +197,7 @@ import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.extensions.appviewmodel.AppViewModelProvider
 import it.fast4x.riplay.extensions.appearancesettings.AppearanceSettingsManager
 import it.fast4x.riplay.extensions.appsettings.AppSettingsManager
-import it.fast4x.riplay.extensions.experimental.webdavlibrary.WebDavLibraryViewModel
+import it.fast4x.riplay.extensions.webdavlibrary.WebDavLibraryViewModel
 import it.fast4x.riplay.extensions.shazam.handleShazamShare
 import it.fast4x.riplay.extensions.qrcodeanalyzer.qrCodeToAction
 import it.fast4x.riplay.extensions.musicbrainz.viewmodels.AlbumInsightsViewModel

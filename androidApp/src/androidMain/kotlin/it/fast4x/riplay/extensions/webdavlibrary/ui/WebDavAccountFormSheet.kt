@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.webdavlibrary.ui
+package it.fast4x.riplay.extensions.webdavlibrary.ui
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -18,7 +18,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.data.models.WebDavAccount
 import it.fast4x.riplay.data.models.webDavAccountEmpty
-import it.fast4x.riplay.extensions.experimental.webdavlibrary.WebDavLibraryViewModel
+import it.fast4x.riplay.extensions.webdavlibrary.WebDavLibraryViewModel
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.utils.CryptoManager
 import it.fast4x.riplay.utils.colorPalette

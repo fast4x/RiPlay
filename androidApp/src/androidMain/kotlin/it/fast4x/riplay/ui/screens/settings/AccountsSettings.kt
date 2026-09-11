@@ -29,7 +29,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -67,11 +66,10 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.ValidationType
 import it.fast4x.riplay.extensions.discord.DiscordLoginAndGetToken
 import it.fast4x.riplay.extensions.accountlogin.AccountLogin
-import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavBackupInfo
-import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavBrowserState
-import it.fast4x.riplay.extensions.experimental.webdavlibrary.models.WebDavConfig
-import it.fast4x.riplay.extensions.experimental.webdavlibrary.ui.WebDavAccountFormSheet
-import it.fast4x.riplay.extensions.experimental.webdavlibrary.ui.WebDavDatabaseRestoreConfirmDialog
+import it.fast4x.riplay.extensions.webdavlibrary.models.WebDavBackupInfo
+import it.fast4x.riplay.extensions.webdavlibrary.models.WebDavBrowserState
+import it.fast4x.riplay.extensions.webdavlibrary.ui.WebDavAccountFormSheet
+import it.fast4x.riplay.extensions.webdavlibrary.ui.WebDavDatabaseRestoreConfirmDialog
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
@@ -81,17 +79,13 @@ import it.fast4x.riplay.utils.isAtLeastAndroid81
 import it.fast4x.riplay.ui.components.themed.AccountInfoDialog
 import it.fast4x.riplay.extensions.lastfm.LastFmAuthScreen
 import it.fast4x.riplay.ui.components.themed.Loader
-import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
 import it.fast4x.riplay.ui.styling.semiBold
-import it.fast4x.riplay.utils.CryptoManager
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import timber.log.Timber
-import kotlin.time.Duration.Companion.milliseconds
 
 @UnstableApi
 @DelicateCoroutinesApi
