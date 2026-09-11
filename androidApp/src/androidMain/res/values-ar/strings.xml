@@ -1455,5 +1455,4 @@
     <string name="webdav_account_dialog_delete_backup">Are you sure you want to delete the account:\n\n%1$s\n\nas your data backup and synchronization across your devices?</string>
     <string name="webdav_account_dialog_add_new">Add new account</string>
     <string name="message_no_accounts">No accounts</string>
-
 </resources>
