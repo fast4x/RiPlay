@@ -1500,7 +1500,7 @@ fun GeneralSettings(
                     ) {
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.settings_audio_reverb),
-                            text = stringResource(R.string.settings_audio_reverb_info_apply_a_depth_effect_to_the_audio),
+                            titleSecondary = stringResource(R.string.settings_audio_reverb_info_apply_a_depth_effect_to_the_audio),
                             selectedValue = audioReverb,
                             onValueSelected = {
                                 coroutineScope.launch {

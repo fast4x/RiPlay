@@ -772,8 +772,8 @@
     <string name="no_thumbnail_present">Nessuna Copertina Presente</string>
     <string name="removed_thumbnail">Copertina Rimossa</string>
     <string name="failed_to_remove_thumbnail">Impossibile rimuovere la copertina</string>
-    <string name="settings_enable_pip">Abilita immagine nell\'immagine</string>
-    <string name="settings_enable_pip_auto">Abilita immagine automatica in immagine</string>
+    <string name="settings_enable_pip">Attiva Picture-in-Picture</string>
+    <string name="settings_enable_pip_auto">Attiva Picture-in-Picture automatico</string>
     <string name="pipmodule_cover">Copertina</string>
     <string name="settings_pip_module">Modulo Pip</string>
     <string name="menu_go_to_picture_in_picture">PIP</string>
@@ -899,8 +899,8 @@
     <string name="settings_bass_boost_level">Livello aumento bassi</string>
     <string name="settings_audio_reverb">Riverbero audio</string>
     <string name="settings_audio_reverb_info_apply_a_depth_effect_to_the_audio">Applica un effetto di profondità all\'audio</string>
-    <string name="settings_audio_focus">Audio concentrazione</string>
-    <string name="settings_audio_focus_info">Abilita pausa e ripresa automatica dopo una chiamata</string>
+    <string name="settings_audio_focus">Audio focus</string>
+    <string name="settings_audio_focus_info">Metti in pausa e riprendi automaticamente la riproduzione dopo una chiamata</string>
     <string name="please_wait">Per favore aspetta</string>
     <string name="songs_liked_yt">Messo like a canzone/i su YouTube</string>
     <string name="song_unliked_yt">Messo unlike a canzone/i su YouTube</string>
