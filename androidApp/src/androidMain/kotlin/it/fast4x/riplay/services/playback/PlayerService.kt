@@ -466,6 +466,9 @@ class PlayerService : MediaLibraryService(),
         }
     }
 
+    private val _isLoadingRadio = MutableStateFlow(false)
+    val isLoadingRadio: StateFlow<Boolean> = _isLoadingRadio.asStateFlow()
+
     override fun onBind(intent: Intent?): IBinder {
         return super.onBind(intent) ?: binder
     }
@@ -3498,8 +3501,8 @@ class PlayerService : MediaLibraryService(),
 
         private var radioJob: Job? = null
 
-        var isLoadingRadio by mutableStateOf(false)
-            private set
+        val isLoadingRadio: StateFlow<Boolean>
+            get() = this@PlayerService.isLoadingRadio
 
         val bitmap: Bitmap?
             get() = this@PlayerService.bitmapProvider?.bitmap
@@ -3630,7 +3633,7 @@ class PlayerService : MediaLibraryService(),
                 binder,
                 serviceScope
             ).let {
-                isLoadingRadio = true
+                _isLoadingRadio.value = true
                 radioJob = serviceScope.launch(Dispatchers.Main) {
 
                     val songs =
@@ -3654,13 +3657,13 @@ class PlayerService : MediaLibraryService(),
                         hybridPlayer.forcePlayFromBeginning(songs)
                     }
                     radio = it
-                    isLoadingRadio = false
+                    _isLoadingRadio.value = false
                 }
             }
         }
 
         fun stopRadio() {
-            isLoadingRadio = false
+            _isLoadingRadio.value = false
             radioJob?.cancel()
             radio = null
         }

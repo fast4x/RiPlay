@@ -433,10 +433,8 @@ fun Queue(
 
 
     val filteredItemsCount = finalFilteredWindows.size
-//    val filteredItemsCount = windowsInQueue.filter { item ->
-//        blacklisted.value?.map { it.path }?.contains(item.mediaItem.mediaId) == false
-//                || item.mediaItem.isVideo == !excludeSongsIfAreVideos
-//    }.size
+
+    val isLoadingRadio by binder.isLoadingRadio.collectAsStateWithLifecycle()
 
 
     // ─── Root container ─────────────────────────────────────────────────────
@@ -936,7 +934,7 @@ fun Queue(
             }
 
             item {
-                if (binder.isLoadingRadio) {
+                if (isLoadingRadio) {
                     Loader()
 //                    Column(modifier = Modifier.shimmer()) {
 //                        repeat(3) { index ->
