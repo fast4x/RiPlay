@@ -2828,6 +2828,10 @@ class PlayerService : MediaLibraryService(),
 
                                 Timber.d("PlayerService PlaybackWatchdog: Attivazione Fade Out ($timeLeft ms). Prossimo locale=$isNextLocal")
                                 lastWatchdogPosition = -1L // resetto la posizione precedente durante il cambio
+
+                                // Controllo il tipo di ripetizione
+                                if (processQueueRepeat()) continue
+
                                 if (isNextLocal) startExoToExoCrossfade() else startWebViewFadeOut()
                             }
                         }
@@ -2853,6 +2857,10 @@ class PlayerService : MediaLibraryService(),
                                     Timber.d("PlayerService PlaybackWatchdog: Fine brano naturale a $timeLeft ms")
                                 }
                                 lastWatchdogPosition = -1L // resetto la posizione precedente durante il cambio
+
+                                // Controllo il tipo di ripetizione
+                                if (processQueueRepeat()) continue
+
                                 handlePlayNext("PlayerService PlaybackWatchdog with crossfade disabled")
                             }
                         }
@@ -2868,6 +2876,25 @@ class PlayerService : MediaLibraryService(),
         }
     }
 
+    private fun processQueueRepeat(): Boolean { // Ritorna true se esegue il cambio di canzone
+        when (appSettings.queueLoopType) {
+            QueueLoopType.RepeatOne -> {
+                isFading = true
+                hybridPlayer.seekTo(0)
+                return true
+            }
+
+            QueueLoopType.RepeatAll -> {
+                if (currentQueuePosition == hybridPlayer.mediaItemCount-1){
+                    isFading = true
+                    hybridPlayer.seekToDefaultPosition(0)
+                    return true
+                } else return false
+            }
+
+            else -> return false
+        }
+    }
 
     private fun stopPlaybackWatchdog() {
         playbackWathcDogJob?.cancel()
