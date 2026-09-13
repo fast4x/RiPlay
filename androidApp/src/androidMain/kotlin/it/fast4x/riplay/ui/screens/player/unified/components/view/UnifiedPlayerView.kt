@@ -1,8 +1,10 @@
-package it.fast4x.riplay.ui.screens.player.unified.components.core
+package it.fast4x.riplay.ui.screens.player.unified.components.view
 
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -17,7 +19,7 @@ import it.fast4x.riplay.utils.isVideo
 
 @Composable
 fun UnifiedPlayerView(
-    onlinePlayerView: YouTubePlayerView? = null,
+    videoPlayerView: YouTubePlayerView? = null,
     mediaItem: MediaItem,
     actAsMini: Boolean = false,
 ){
@@ -36,7 +38,8 @@ fun UnifiedPlayerView(
 
     if (mediaItem.isVideo) {
         AndroidView(
-            factory = { onlinePlayerView as View },
+            factory = { videoPlayerView as View },
+            modifier = Modifier.fillMaxSize(),
             update = {
                 it.keepScreenOn = enableKeepScreenOn
 
@@ -69,6 +72,6 @@ fun UnifiedPlayerView(
         )
     } else {
         LocalView.current.keepScreenOn = enableKeepScreenOn
-        onlinePlayerView?.keepScreenOn = enableKeepScreenOn
+        videoPlayerView?.keepScreenOn = enableKeepScreenOn
     }
 }

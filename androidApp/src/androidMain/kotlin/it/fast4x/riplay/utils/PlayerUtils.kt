@@ -23,7 +23,6 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.musicvault.MusicVaultState
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.utils.isVideo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -315,7 +314,7 @@ fun Player.excludeMediaItems(mediaItems: List<MediaItem>, context: Context): Lis
         var filteredMediaItems = mediaItems
 
         // --- Escludi Video ---
-        val excludeIfIsVideo = appSettings.excludeIfIsVideo
+        val excludeIfIsVideo = appSettings.videoContentMode.excluded
         if (excludeIfIsVideo) {
             filteredMediaItems = filteredMediaItems.filter { !it.isVideo }
         }
@@ -374,7 +373,7 @@ fun Player.excludeMediaItem(mediaItem: MediaItem, context: Context): Boolean {
         val appSettings = getAppSettings()
 
         // --- CHECK VIDEO ---
-        val excludeIfIsVideo = appSettings.excludeIfIsVideo
+        val excludeIfIsVideo = appSettings.videoContentMode.excluded
         if (excludeIfIsVideo && mediaItem.isVideo) {
             showExcludedMessage(context, R.string.message_excluded_videos, 1)
             return true

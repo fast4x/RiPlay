@@ -1,5 +1,9 @@
 package it.fast4x.riplay.enums
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import it.fast4x.riplay.R
+
 enum class RewindThresholdDuration(val rawSeconds: Int) {
     Disabled(0),
     `3`(3),
@@ -15,6 +19,25 @@ enum class RewindThresholdDuration(val rawSeconds: Int) {
 
     val milliSeconds: Long
         get() = rawSeconds * 1000L
+
+    val textName: String
+        @Composable
+        get() = when (this) {
+            RewindThresholdDuration.Disabled -> stringResource(R.string.vt_disabled)
+            RewindThresholdDuration.`3` -> "3s"
+            RewindThresholdDuration.`4` -> "4s"
+            RewindThresholdDuration.`5` -> "5s"
+            RewindThresholdDuration.`6` -> "6s"
+            RewindThresholdDuration.`7` -> "7s"
+            RewindThresholdDuration.`8` -> "8s"
+            RewindThresholdDuration.`9` -> "9s"
+            RewindThresholdDuration.`10` -> "10s"
+            RewindThresholdDuration.`11` -> "11s"
+            RewindThresholdDuration.`12` -> "12s"
+
+
+
+        }
 }
 
 

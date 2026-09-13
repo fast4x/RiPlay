@@ -21,7 +21,6 @@ import it.fast4x.riplay.enums.FontType
 import it.fast4x.riplay.enums.HistoryType
 import it.fast4x.riplay.enums.HomeItemSize
 import it.fast4x.riplay.enums.HomePagetype
-import it.fast4x.riplay.enums.HomeScreenTabs
 import it.fast4x.riplay.enums.HomeType
 import it.fast4x.riplay.enums.ImportPlaylistType
 import it.fast4x.riplay.enums.Languages
@@ -61,10 +60,9 @@ import it.fast4x.riplay.enums.StatisticsCategory
 import it.fast4x.riplay.enums.TopPlaylistPeriod
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.enums.UiType
+import it.fast4x.riplay.enums.VideoContentMode
 import it.fast4x.riplay.enums.ViewType
 import it.fast4x.riplay.enums.WallpaperType
-import it.fast4x.riplay.utils.appContext
-import it.fast4x.riplay.utils.getDeviceVolume
 import kotlinx.serialization.Serializable
 import java.net.Proxy
 
@@ -199,7 +197,6 @@ data class AppSettings(
     val parentalControlEnabled: Boolean = false,
     val checkUpdateState: CheckUpdateState = CheckUpdateState.Enabled,
     val offlineModeEnabled: Boolean = false,
-    val excludeIfIsVideo: Boolean = false,
     val excludeSongWithDurationLimit: DurationInMinutes = DurationInMinutes.Disabled,
     val initialSetupWorkerDone: Boolean = false,
     val currentVisualizer: Int = 0,
@@ -284,5 +281,8 @@ data class AppSettings(
 
     val showMiniPlayerInSettings: Boolean = false,
     val rewindThresholdDuration: RewindThresholdDuration = RewindThresholdDuration.`3`,
+
+    val videoContentMode: VideoContentMode = VideoContentMode.AudioOnly,
+    val forceUserVideoPlayback: Boolean = false
 )
 

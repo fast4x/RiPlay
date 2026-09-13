@@ -806,8 +806,8 @@
     <string name="enable_youtube_music_login">유튜브 뮤직 로그인 활성화</string>
     <string name="show_cover_thumbnail_animation">커버 썸네일 애니메이션 표시</string>
     <string name="cover_thumbnail_animation_type">커버 애니메이션 유형</string>
-    <string name="jump_previous">이전 버튼은 지정된 시간 이후 현재 곡을 다시 재생합니다</string>
-    <string name="jump_previous_blank">이전 버튼이 항상 이전 곡을 재생하도록 하려면 0을 입력하거나 공백으로 두세요</string>
+
+
     <string name="delete_hidden_songs">정말로 데이터베이스에 있는 모든 숨겨진 곡들을 삭제하시겠어요? 이 작업은 되돌릴 수 없습니다.</string>
     <string name="delete_hidden_songs_message">숨겨진 곡 삭제</string>
     <string name="cover_type_vinyl">레코드판</string>
@@ -963,7 +963,7 @@
     <string name="voice_microphone_permission_denied">마이크 권한이 거부되었습니다</string>
     <string name="voice_missing_microphone_permissions_please_grant">마이크 권한이 없습니다, 앱 설정에서 허용해주세요</string>
     <string name="message_excluded_videos">%s개의 동영상 제외됨</string>
-    <string name="exclude_song_if_is_video">동영상 재생 제외됨</string>
+
     <string name="enable_voice_input">목소리 입력 활성화</string>
     <string name="music_identifier_provider">음악 식별 제공자</string>
     <string name="music_identify">식별하기</string>
@@ -1455,4 +1455,12 @@
     <string name="webdav_account_dialog_delete_backup">Are you sure you want to delete the account:\n\n%1$s\n\nas your data backup and synchronization across your devices?</string>
     <string name="webdav_account_dialog_add_new">Add new account</string>
     <string name="message_no_accounts">No accounts</string>
+    <string name="video_content_mode_title">Video content mode</string>
+    <string name="video_content_mode_description">Choose how video content is handled during playback</string>
+    <string name="video_content_mode_normal">Play video normally</string>
+    <string name="video_content_mode_audio_only">Play video as audio</string>
+    <string name="video_content_mode_excluded">Exclude videos from queue and suggestions</string>
+    <string name="jump_previous_title">Restart with Previous</string>
+    <string name="jump_previous_description">Previous button restarts the current song if pressed after this many seconds have passed</string>
+    <string name="online_video_now_playing_title">ONLINE VIDEO</string>
 </resources>

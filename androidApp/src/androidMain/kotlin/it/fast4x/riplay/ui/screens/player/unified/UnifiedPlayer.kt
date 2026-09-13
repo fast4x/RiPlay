@@ -23,6 +23,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -254,7 +255,6 @@ import it.fast4x.riplay.utils.hide
 import it.fast4x.riplay.utils.horizontalFadingEdge
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isLandscape
-import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.mediaItems
@@ -301,7 +301,7 @@ import kotlin.math.sqrt
 fun UnifiedPlayer(
     navController: NavController,
     playFromSecond: Float = 0f,
-    onlineCore: @Composable () -> Unit,
+    videoPlayerView: @Composable () -> Unit,
     playerSheetState: BottomSheetState,
     onDismiss: () -> Unit,
 ) {
@@ -1355,7 +1355,7 @@ fun UnifiedPlayer(
     }
 
 
-    val thumbnailContent: @Composable (
+    val videoThumbnailContent: @Composable (
         modifier: Modifier,
     ) -> Unit = { innerModifier ->
 
@@ -1464,19 +1464,18 @@ fun UnifiedPlayer(
                 ) {}
             }
 
-            onlineCore()
+            if (appSettings.videoContentMode.normal || appSettings.forceUserVideoPlayback)
+                videoPlayerView()
 
         }
 
     }
 
-
-    //val textoutline by rememberPreference(TEXT_OUTLINE.key, false)
     val textoutline = appearanceSettings.textoutline
 
 
     var songPlaylist by rememberSaveable {
-        mutableStateOf(0)
+        mutableIntStateOf(0)
     }
     LaunchedEffect(Unit, mediaItem.mediaId) {
         withContext(Dispatchers.IO) {
@@ -1519,7 +1518,6 @@ fun UnifiedPlayer(
                         !showButtonPlayerDiscover &&
                         !showButtonPlayerVideo) ||
                 (!showlyricsthumbnail && isShowingLyrics && !actionExpanded)
-            //|| (mediaItem.isVideo && it.fast4x.riplay.utils.isLandscape)
             ) {
                 Row {}
             } else
@@ -1833,11 +1831,23 @@ fun UnifiedPlayer(
 
             // START LANDSCAPE SECTION
 
-            //use online player core for landscape mode
-            thumbnailContent( if (!mediaItem.isVideo) Modifier.hide() else Modifier )
+            // ThumbnailContent lo nascondiamo se è una canzone ma solo se l'utente non ha cliccato esplicitamente in un video
+            videoThumbnailContent(
+                if ((mediaItem.isVideo)
+                    || appSettings.forceUserVideoPlayback
+                    || appSettings.videoContentMode.normal){
+                    Modifier
+                } else
+                    Modifier.hide()
+//                if (!mediaItem.isVideo || !appSettings.forceUserVideoPlayback)
+//                    Modifier.hide()
+//                else Modifier
+            )
 
-            // IS NOT A VIDEO
-            if (!mediaItem.isVideo) {
+            // Visualizziamo la cover se è una canzone e l'utente non ha cliccato specificatamente su un video
+            if (!mediaItem.isVideo
+                || (!appSettings.forceUserVideoPlayback && appSettings.videoContentMode.audioOnly)
+            ) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -1891,28 +1901,16 @@ fun UnifiedPlayer(
                                     state = pagerStateFS,
                                     snapPositionalThreshold = 0.20f
                                 )
-                                binder.hybridPlayer?.currentMediaItemIndex?.let {
+                                binder.hybridPlayer.currentMediaItemIndex?.let {
                                     pagerStateFS.LaunchedEffectScrollToPage(it)
                                 }
 
 
                                 if (!showQueue) {
-                                    //PATCH
                                     pagerStateFS.LaunchedEffectPlayAtIndexOnUserSwipe(
                                         player = binder.hybridPlayer ?: return@Box
                                     )
-//                                    LaunchedEffect(pagerStateFS) {
-//                                        var previousPage = pagerStateFS.settledPage
-//                                        snapshotFlow { pagerStateFS.settledPage }.distinctUntilChanged()
-//                                            .collect {
-//                                                if (previousPage != it) {
-//                                                    if (it != binder.player.currentMediaItemIndex) binder.player.playAtIndex(
-//                                                        it
-//                                                    )
-//                                                }
-//                                                previousPage = it
-//                                            }
-//                                    }
+
                                 }
 
                                 HorizontalPager(
@@ -1923,7 +1921,7 @@ fun UnifiedPlayer(
                                     userScrollEnabled = !((albumCoverRotation || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) && (isShowingLyrics || showthumbnail)),
                                     modifier = Modifier
                                 ) { index ->
-                                    if (!(index < (binder.hybridPlayer?.mediaItemCount ?: 0) && index >= 0)) return@HorizontalPager
+                                    if (!(index < (binder.hybridPlayer.mediaItemCount ?: 0) && index >= 0)) return@HorizontalPager
 
                                     var currentRotation by rememberSaveable {
                                         mutableFloatStateOf(0f)
@@ -1960,10 +1958,10 @@ fun UnifiedPlayer(
                                     val blurRadius = if ((isShowingLyrics && !isShowingVisualizer) || !noblur)
                                         blurStrength.toInt() else 0
 
-                                    val request = remember(index, binder.hybridPlayer?.getMediaItemAt(index)?.mediaId, showthumbnail, blurRadius) {
+                                    val request = remember(index, binder.hybridPlayer.getMediaItemAt(index)?.mediaId, showthumbnail, blurRadius) {
                                         ImageRequest.Builder(context)
                                             .data(
-                                                binder.hybridPlayer?.getMediaItemAt(index)?.mediaMetadata?.artworkUri.toString()
+                                                binder.hybridPlayer.getMediaItemAt(index)?.mediaMetadata?.artworkUri.toString()
                                                     .toThumbnail(1200)
                                             )
                                             .size(1200, 1200)
@@ -2104,10 +2102,10 @@ fun UnifiedPlayer(
                                                     onDragEnd = {
                                                         if (!disablePlayerHorizontalSwipe) {
                                                             if (deltaX > 5) {
-                                                                binder.hybridPlayer?.playPrevious()
+                                                                binder.hybridPlayer.playPrevious()
                                                                 Timber.d("OnlinePlayer Swipe to LEFT 3 deltaX $deltaX")
                                                             } else if (deltaX < -5) {
-                                                                binder.hybridPlayer?.playNext()
+                                                                binder.hybridPlayer.playNext()
                                                                 Timber.d("OnlinePlayer Swipe to RIGHT 3 deltaX $deltaX")
                                                             }
 
@@ -2124,13 +2122,7 @@ fun UnifiedPlayer(
                             if (playerType == PlayerType.Modern) {
                                 BoxWithConstraints(
                                     contentAlignment = Alignment.Center,
-                                    modifier = Modifier
-                                    //.weight(.5f)
-
-                                    //.border(BorderStroke(2.dp, Color.Blue))
-                                    /*modifier = Modifier
-                                   .weight(1f)*/
-                                    //.padding(vertical = 10.dp)
+                                    //modifier = Modifier
                                 ) {
                                     if (showthumbnail) {
                                         if (!isShowingVisualizer) {
@@ -2160,18 +2152,7 @@ fun UnifiedPlayer(
                                                 pagerState.LaunchedEffectPlayAtIndexOnUserSwipe(
                                                     player = binder.hybridPlayer ?: return@BoxWithConstraints
                                                 )
-//                                                LaunchedEffect(pagerState) {
-//                                                    var previousPage = pagerState.settledPage
-//                                                    snapshotFlow { pagerState.settledPage }.distinctUntilChanged()
-//                                                        .collect {
-//                                                            if (previousPage != it) {
-//                                                                if (it != binder.player.currentMediaItemIndex) binder.player.playAtIndex(
-//                                                                    it
-//                                                                )
-//                                                            }
-//                                                            previousPage = it
-//                                                        }
-//                                                }
+
                                             }
 
 
@@ -2214,12 +2195,12 @@ fun UnifiedPlayer(
                                                     )
                                                     .conditional(fadingedge) { horizontalFadingEdge() }
                                             ) { index ->
-                                                if (!(index < (binder.hybridPlayer?.mediaItemCount ?: 0) && index >= 0)) return@HorizontalPager
+                                                if (!(index < (binder.hybridPlayer.mediaItemCount ?: 0) && index >= 0)) return@HorizontalPager
 
-                                                val request = remember(index, binder.hybridPlayer?.getMediaItemAt(index)?.mediaId) {
+                                                val request = remember(index, binder.hybridPlayer.getMediaItemAt(index)?.mediaId) {
                                                     ImageRequest.Builder(context)
                                                         .data(
-                                                            binder.hybridPlayer?.getMediaItemAt(index)?.mediaMetadata?.artworkUri.toString()
+                                                            binder.hybridPlayer.getMediaItemAt(index)?.mediaMetadata?.artworkUri.toString()
                                                                 .toThumbnail(1200)
                                                         )
                                                         .size(1200, 1200)
@@ -2230,9 +2211,7 @@ fun UnifiedPlayer(
                                                 val coverPainter = rememberAsyncImagePainter(model = request)
 
                                                 val coverModifier = Modifier
-                                                    .applyIf(!isLandscape) {
-                                                        fillMaxSize()
-                                                    }
+                                                    .fillMaxSize()
                                                     .aspectRatio(1f)
                                                     .padding(all = playerThumbnailSizeL.padding.dp)
                                                     .graphicsLayer {
@@ -2303,7 +2282,7 @@ fun UnifiedPlayer(
                                                         }
                                                     )
 
-                                                if (binder.hybridPlayer?.getMediaItemAt(index)?.isVideo == false) {
+                                                if (!binder.hybridPlayer.getMediaItemAt(index).isVideo) {
                                                     if (showCoverThumbnailAnimation) {
                                                         when (coverThumbnailAnimation) {
                                                             ThumbnailCoverType.CD, ThumbnailCoverType.Vinyl, ThumbnailCoverType.CDWithCover -> {
@@ -2382,7 +2361,7 @@ fun UnifiedPlayer(
                                                                 contentScale = ContentScale.Fit,
                                                                 modifier = coverModifier
                                                             )
-                                                            if (isDragged && index == binder.hybridPlayer?.currentMediaItemIndex) {
+                                                            if (isDragged && index == binder.hybridPlayer.currentMediaItemIndex) {
                                                                 Box(
                                                                     modifier = Modifier
                                                                         .align(Alignment.Center)
@@ -2416,7 +2395,7 @@ fun UnifiedPlayer(
                                                             contentDescription = "",
                                                             contentScale = ContentScale.Fit,
                                                             modifier = Modifier
-                                                                .fillMaxSize(.5f)
+                                                                .fillMaxSize(.85f)
                                                                 .align(Alignment.Center)
                                                         )
                                                     }
@@ -2478,12 +2457,12 @@ fun UnifiedPlayer(
                             } else {
 
                                 val index = (if (!showthumbnail) {
-                                    if (pagerStateFS.currentPage > (binder.hybridPlayer?.currentTimeline?.windowCount ?: 0)) 0 else pagerStateFS.currentPage
-                                } else if (pagerState.currentPage > (binder.hybridPlayer?.currentTimeline?.windowCount ?: 0)) 0 else pagerState.currentPage).coerceIn(
+                                    if (pagerStateFS.currentPage > (binder.hybridPlayer.currentTimeline.windowCount ?: 0)) 0 else pagerStateFS.currentPage
+                                } else if (pagerState.currentPage > (binder.hybridPlayer.currentTimeline.windowCount ?: 0)) 0 else pagerState.currentPage).coerceIn(
                                     0,
-                                    ((binder.hybridPlayer?.mediaItemCount ?: 0)) - 1
+                                    ((binder.hybridPlayer.mediaItemCount ?: 0)) - 1
                                 )
-                                if (!(index < (binder.hybridPlayer?.mediaItemCount ?: 0) && index >= 0)) return
+                                if (!(index < (binder.hybridPlayer.mediaItemCount ?: 0) && index >= 0)) return
 
                                 UnifiedControls(
                                     navController = navController,
@@ -2569,6 +2548,7 @@ fun UnifiedPlayer(
             // END LANDSCAPE SECTION
 
         } else {
+            // START PORTRATE SECTION
             Box(
                 modifier = Modifier
                     .conditional(queueType == QueueType.Modern) {
@@ -2590,30 +2570,16 @@ fun UnifiedPlayer(
                     val scaleAnimationFloat by animateFloatAsState(
                         if (isDraggedFS) 0.85f else 1f, label = ""
                     )
-                    binder.hybridPlayer?.currentMediaItemIndex?.let {
+                    binder.hybridPlayer.currentMediaItemIndex.let {
                         pagerStateFS.LaunchedEffectScrollToPage(it)
                     }
 
 
                     if (!showQueue) {
-                        //PATCH
                         pagerStateFS.LaunchedEffectPlayAtIndexOnUserSwipe(
                             player = binder.hybridPlayer ?: return@Box,
                             delayBeforePlayMs = if (swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Fade) 0L else 400L
                         )
-//                        LaunchedEffect(pagerStateFS) {
-//                            var previousPage = pagerStateFS.settledPage
-//                            snapshotFlow { pagerStateFS.settledPage }.distinctUntilChanged()
-//                                .collect {
-//                                    if (previousPage != it) {
-//                                        delay(if (swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Fade) 0 else 400)
-//                                        if (it != binder.player.currentMediaItemIndex) binder.player.playAtIndex(
-//                                            it
-//                                        )
-//                                    }
-//                                    previousPage = it
-//                                }
-//                        }
                     }
                     HorizontalPager(
                         state = pagerStateFS,
@@ -2627,7 +2593,7 @@ fun UnifiedPlayer(
                                 false
                             }
                     ) { index ->
-                        if (!(index < (binder.hybridPlayer?.mediaItemCount ?: 0) && index >= 0)) return@HorizontalPager
+                        if (!(index < (binder.hybridPlayer.mediaItemCount ?: 0) && index >= 0)) return@HorizontalPager
 
                         var currentRotation by rememberSaveable {
                             mutableFloatStateOf(0f)
@@ -2680,7 +2646,7 @@ fun UnifiedPlayer(
                             val request = remember(index, binder.hybridPlayer?.getMediaItemAt(index)?.mediaId, showthumbnail, blurRadius) {
                                 ImageRequest.Builder(context)
                                     .data(
-                                        binder.hybridPlayer?.getMediaItemAt(index)?.mediaMetadata?.artworkUri.toString()
+                                        binder.hybridPlayer.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
                                             .toThumbnail(1200)
                                     )
                                     .size(1200, 1200)
@@ -2946,21 +2912,6 @@ fun UnifiedPlayer(
                                 },
                             )
 
-                            /*
-                            Image(
-                                painter = painterResource(R.drawable.chevron_down),
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(if (playerBackgroundColors == PlayerBackgroundColors.MidnightOdyssey) dynamicColorPalette.background2 else colorPalette().collapsedPlayerProgressBar),
-                                modifier = Modifier
-                                    .clickable {
-                                        onDismiss()
-                                    }
-                                    .rotate(rotationAngle)
-                                    //.padding(10.dp)
-                                    .size(24.dp)
-                            )
-                             */
-
                             // todo add permanent badge
 //                            DiscoveryBadge(
 //                                discoveryInfo = currentDiscoveryReason.value,
@@ -2978,46 +2929,6 @@ fun UnifiedPlayer(
                                 style = typography().xxs,
                             )
 
-                            /*
-                            Column(
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                            ) {
-                                Text(
-                                    stringResource(R.string.now_playing_title),
-                                    style = typography().xs,
-                                    color = colorPalette().text,
-                                    modifier = Modifier
-                                        .clickable {
-                                            onDismiss()
-                                            navController.navigate(NavRoutes.home.name)
-                                        }
-                                )
-
-                                Text(
-                                    mediaItem.origin,
-                                    color = colorPalette().text,
-                                    style = typography().xxs,
-                                )
-                            }
-                             */
-
-                            /*
-                            Image(
-                                painter = painterResource(R.drawable.app_icon),
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(if (playerBackgroundColors == PlayerBackgroundColors.MidnightOdyssey) dynamicColorPalette.background2 else colorPalette().collapsedPlayerProgressBar),
-                                modifier = Modifier
-                                    .clickable {
-                                        onDismiss()
-                                        navController.navigate(NavRoutes.home.name)
-                                    }
-                                    .rotate(rotationAngle)
-                                    //.padding(10.dp)
-                                    .size(24.dp)
-
-                            )
-                             */
 
                             if (!showButtonPlayerMenu)
                                 ActionPillButton(
@@ -3041,48 +2952,10 @@ fun UnifiedPlayer(
                                         }
                                     },
                                 )
-                                /*
-                                Image(
-                                    painter = painterResource(R.drawable.ellipsis_vertical),
-                                    contentDescription = null,
-                                    colorFilter = ColorFilter.tint(if (playerBackgroundColors == PlayerBackgroundColors.MidnightOdyssey) dynamicColorPalette.background2 else colorPalette().collapsedPlayerProgressBar),
-                                    modifier = Modifier
-                                        .clickable {
-                                            menuState.display {
-                                                PlayerMenu(
-                                                    navController = navController,
-                                                    onDismiss = menuState::hide,
-                                                    mediaItem = mediaItem,
-                                                    binder = binder,
-                                                    onClosePlayer = {
-                                                        onDismiss()
-                                                    },
-                                                    onInfo = {
-                                                        navController.navigate("${NavRoutes.videoOrSongInfo.name}/${mediaItem.mediaId}")
-                                                    },
-                                                    disableScrollingText = disableScrollingText
-                                                )
-                                            }
-                                        }
-                                        .rotate(rotationAngle)
-                                        //.padding(10.dp)
-                                        .size(24.dp)
-
-                                )
-
-                                 */
 
                         }
 
-//                        Spacer(
-//                            modifier = Modifier
-//                                .height(5.dp)
-//                                .padding(
-//                                    windowInsets
-//                                        .only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
-//                                        .asPaddingValues()
-//                                )
-//                        )
+
                     }
 
                     if (topPadding && !showTopActionsBar) {
@@ -3123,7 +2996,10 @@ fun UnifiedPlayer(
                         //.border(BorderStroke(2.dp, colorPalette().collapsedPlayerProgressBar))
                     ) {
 
-                        if (showthumbnail) {
+                        if (showthumbnail
+                            && ((!appSettings.forceUserVideoPlayback && appSettings.videoContentMode.audioOnly)
+                                    || (appSettings.videoContentMode.normal && !mediaItem.isVideo))
+                            ) {
                             if ((!isShowingLyrics && !isShowingVisualizer) || (isShowingVisualizer && showvisthumbnail) || (isShowingLyrics && showlyricsthumbnail)) {
                                 if (playerType == PlayerType.Modern) {
                                     val fling = PagerDefaults.flingBehavior(
@@ -3131,7 +3007,7 @@ fun UnifiedPlayer(
                                         snapPositionalThreshold = 0.25f
                                     )
 
-                                    binder.hybridPlayer?.currentMediaItemIndex?.let {
+                                    binder.hybridPlayer.currentMediaItemIndex.let {
                                         pagerState.LaunchedEffectScrollToPage(it)
                                     }
 
@@ -3141,18 +3017,7 @@ fun UnifiedPlayer(
                                         pagerState.LaunchedEffectPlayAtIndexOnUserSwipe(
                                             player = binder.hybridPlayer ?: return@BoxWithConstraints
                                         )
-//                                        LaunchedEffect(pagerState) {
-//                                            var previousPage = pagerState.settledPage
-//                                            snapshotFlow { pagerState.settledPage }.distinctUntilChanged()
-//                                                .collect {
-//                                                    if (previousPage != it) {
-//                                                        if (it != binder.player.currentMediaItemIndex) binder.player.playAtIndex(
-//                                                            it
-//                                                        )
-//                                                    }
-//                                                    previousPage = it
-//                                                }
-//                                        }
+
                                     }
 
                                     val pageSpacing =
@@ -3165,6 +3030,8 @@ fun UnifiedPlayer(
                                     val animatePadding by animateDpAsState(
                                         if (expandedplayer) carouselSize.size.dp else playerThumbnailSize.padding.dp
                                     )
+
+
                                     VerticalPager(
                                         state = pagerState,
                                         pageSize = PageSize.Fixed(if (maxWidth < maxHeight) maxWidth else maxHeight),
@@ -3191,12 +3058,12 @@ fun UnifiedPlayer(
                                                 )
                                             }
                                     ) { index ->
-                                        if (!(index < (binder.hybridPlayer?.mediaItemCount ?: 0) && index >= 0)) return@VerticalPager
+                                        if (!(index < (binder.hybridPlayer.mediaItemCount ?: 0) && index >= 0)) return@VerticalPager
 
-                                        val request = remember(index, binder.hybridPlayer?.getMediaItemAt(index)?.mediaId) {
+                                        val request = remember(index, binder.hybridPlayer.getMediaItemAt(index)?.mediaId) {
                                             ImageRequest.Builder(context)
                                                 .data(
-                                                    binder.hybridPlayer?.getMediaItemAt(index)?.mediaMetadata?.artworkUri.toString()
+                                                    binder.hybridPlayer.getMediaItemAt(index).mediaMetadata.artworkUri.toString()
                                                         .toThumbnail(1200)
                                                 )
                                                 .size(1200, 1200)
@@ -3207,9 +3074,7 @@ fun UnifiedPlayer(
                                         val coverPainter = rememberAsyncImagePainter(model = request)
 
                                         val coverModifier = Modifier
-                                            .applyIf(!isLandscape) {
-                                                fillMaxSize()
-                                            }
+                                            .fillMaxSize()
                                             .aspectRatio(1f)
                                             .padding(all = animatePadding)
                                             .conditional(carousel) {
@@ -3281,7 +3146,7 @@ fun UnifiedPlayer(
                                                 }
                                             )
 
-                                        if (binder.hybridPlayer?.getMediaItemAt(index)?.isVideo == false) {
+                                        if (!binder.hybridPlayer.getMediaItemAt(index).isVideo) {
                                             if (showCoverThumbnailAnimation) {
                                                 when (coverThumbnailAnimation) {
                                                     ThumbnailCoverType.CD, ThumbnailCoverType.Vinyl, ThumbnailCoverType.CDWithCover -> {
@@ -3356,9 +3221,9 @@ fun UnifiedPlayer(
 
                                                     val isVideo =
                                                         rememberSaveable {
-                                                            binder.hybridPlayer?.getMediaItemAt(
+                                                            binder.hybridPlayer.getMediaItemAt(
                                                                 index
-                                                            )?.isVideo == true
+                                                            ).isVideo
                                                         }
                                                     if (!isVideo)
                                                         Image(
@@ -3375,9 +3240,9 @@ fun UnifiedPlayer(
                                                                 .matchParentSize()
                                                         ) {
                                                             NowPlayingSongIndicator(
-                                                                binder.hybridPlayer?.getMediaItemAt(
-                                                                    binder.hybridPlayer?.currentMediaItemIndex ?: return@Box
-                                                                )?.mediaId ?: "", binder.hybridPlayer,
+                                                                binder.hybridPlayer.getMediaItemAt(
+                                                                    binder.hybridPlayer.currentMediaItemIndex ?: return@Box
+                                                                ).mediaId ?: "", binder.hybridPlayer,
                                                                 Dimensions.thumbnails.album
                                                             )
                                                         }
@@ -3402,7 +3267,7 @@ fun UnifiedPlayer(
                                                     contentDescription = "",
                                                     contentScale = ContentScale.Fit,
                                                     modifier = Modifier
-                                                        .fillMaxSize(.5f)
+                                                        .fillMaxSize(.85f)
                                                         .align(Alignment.Center)
                                                 )
                                             }
@@ -3411,9 +3276,6 @@ fun UnifiedPlayer(
                                     }
 
                                 } else {
-                                    val animatePadding by animateDpAsState(
-                                        if (expandedplayer) carouselSize.size.dp else playerThumbnailSize.padding.dp
-                                    )
 
                                     val request = remember(mediaItem.mediaId) {
                                         ImageRequest.Builder(context)
@@ -3470,10 +3332,10 @@ fun UnifiedPlayer(
                                         onDragEnd = {
                                             if (!disablePlayerHorizontalSwipe) {
                                                 if (deltaX > 5) {
-                                                    binder.hybridPlayer?.playPrevious()
+                                                    binder.hybridPlayer.playPrevious()
                                                     Timber.d("OnlinePlayer Swipe to LEFT 5 deltaX $deltaX")
                                                 } else if (deltaX < -5) {
-                                                    binder.hybridPlayer?.playNext()
+                                                    binder.hybridPlayer.playNext()
                                                     Timber.d("OnlinePlayer Swipe to RIGHT 5 deltaX $deltaX")
                                                 }
 
@@ -3531,12 +3393,15 @@ fun UnifiedPlayer(
                             }
                             .clip(thumbnailRoundness.shape())
 
-                        //use online player core in portrait mode
-                        thumbnailContent(
-                            if ((!mediaItem.isVideo || isShowingVisualizer))
-                                Modifier.hide()
-                            else
+                        //use video player in portrait mode
+                        videoThumbnailContent(
+                            if ((mediaItem.isVideo || !isShowingVisualizer)
+                                || appSettings.forceUserVideoPlayback
+                                || appSettings.videoContentMode.normal){
                                 coverModifier
+                            } else
+                                Modifier.hide()
+
                         )
 
                     }
@@ -3708,10 +3573,10 @@ fun UnifiedPlayer(
                                 )
                             } else if (!(swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Scale && isDraggedFS)) {
                                 val index = (if (!showthumbnail) {
-                                    if (pagerStateFS.currentPage > (binder.hybridPlayer?.currentTimeline?.windowCount ?: 0)) 0 else pagerStateFS.currentPage
-                                } else if (pagerState.currentPage > (binder.hybridPlayer?.currentTimeline?.windowCount ?: 0)) 0 else pagerState.currentPage).coerceIn(
+                                    if (pagerStateFS.currentPage > (binder.hybridPlayer.currentTimeline.windowCount ?: 0)) 0 else pagerStateFS.currentPage
+                                } else if (pagerState.currentPage > (binder.hybridPlayer.currentTimeline.windowCount ?: 0)) 0 else pagerState.currentPage).coerceIn(
                                     0,
-                                    (binder.hybridPlayer?.mediaItemCount ?: 0) - 1
+                                    (binder.hybridPlayer.mediaItemCount ?: 0) - 1
                                 )
 
                                 UnifiedControls(
@@ -3858,8 +3723,18 @@ fun UnifiedPlayer(
             shape = thumbnailRoundness.shape()
         ) {
             SearchOnlineEntity(
-                navController = navController,
-                onDismiss = { showSearchEntity = false },
+                onDismiss = { isUserVideoSelected ->
+                    // Se video content mode = audio only, forziamo la visualizzazione del video su richiesta dell'utente
+                    // Verrà resettato dal service quando andrà alla successiva o precedente
+                    if (appSettings.videoContentMode.audioOnly && isUserVideoSelected)
+                        coroutineScope.launch {
+                            appSettingsManager.updateSettings(
+                                appSettings.copy(forceUserVideoPlayback = true)
+                            )
+                        }
+
+                    showSearchEntity = false
+                },
                 query = "${mediaItem.mediaMetadata.artist.toString()} - ${mediaItem.mediaMetadata.title.toString()}",
                 filter = if (mediaItem.isVideo) Environment.SearchFilter.Song else Environment.SearchFilter.Video,
                 disableScrollingText = disableScrollingText

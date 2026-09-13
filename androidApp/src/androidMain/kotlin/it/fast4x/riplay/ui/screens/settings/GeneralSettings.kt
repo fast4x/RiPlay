@@ -148,7 +148,7 @@ fun GeneralSettings(
     val shakeEventEnabled = appSettings.shakeEventEnabled
     val crossfadeDuration = appSettings.crossfadeDuration
     val excludeSongWithDurationLimit = appSettings.excludeSongWithDurationLimit
-    val excludeSongsIfAreVideos = appSettings.excludeIfIsVideo
+    val videoContentMode = appSettings.videoContentMode
     val playlistindicator = appearanceSettings.playlistIndicator
     val nowPlayingIndicator = appSettings.nowPlayingIndicator
     val discoverIsEnabled = appSettings.discoverIsEnabled
@@ -265,59 +265,8 @@ fun GeneralSettings(
                 ) 1f
                 else Dimensions.contentWidthRightBar
             )
-            //.verticalScroll(rememberScrollState())
-            /*
-            .padding(
-                LocalPlayerAwareWindowInsets.current
-                    .only(WindowInsetsSides.Vertical + WindowInsetsSides.End)
-                    .asPaddingValues()
-            )
-             */
     ) {
 
-//
-//        if (resetCustomLightThemeDialog) {
-//            ConfirmationDialog(
-//                text = stringResource(R.string.do_you_really_want_to_reset_the_custom_light_theme_colors),
-//                onDismiss = { resetCustomLightThemeDialog = false },
-//                onConfirm = {
-//                    resetCustomLightThemeDialog = false
-//                    customThemeLight_Background0 = DefaultLightColorPalette.background0.hashCode()
-//                    customThemeLight_Background1 = DefaultLightColorPalette.background1.hashCode()
-//                    customThemeLight_Background2 = DefaultLightColorPalette.background2.hashCode()
-//                    customThemeLight_Background3 = DefaultLightColorPalette.background3.hashCode()
-//                    customThemeLight_Background4 = DefaultLightColorPalette.background4.hashCode()
-//                    customThemeLight_Text = DefaultLightColorPalette.text.hashCode()
-//                    customThemeLight_TextSecondary =
-//                        DefaultLightColorPalette.textSecondary.hashCode()
-//                    customThemeLight_TextDisabled = DefaultLightColorPalette.textDisabled.hashCode()
-//                    customThemeLight_IconButtonPlayer =
-//                        DefaultLightColorPalette.iconButtonPlayer.hashCode()
-//                    customThemeLight_Accent = DefaultLightColorPalette.accent.hashCode()
-//                }
-//            )
-//        }
-//
-//        if (resetCustomDarkThemeDialog) {
-//            ConfirmationDialog(
-//                text = stringResource(R.string.do_you_really_want_to_reset_the_custom_dark_theme_colors),
-//                onDismiss = { resetCustomDarkThemeDialog = false },
-//                onConfirm = {
-//                    resetCustomDarkThemeDialog = false
-//                    customThemeDark_Background0 = DefaultDarkColorPalette.background0.hashCode()
-//                    customThemeDark_Background1 = DefaultDarkColorPalette.background1.hashCode()
-//                    customThemeDark_Background2 = DefaultDarkColorPalette.background2.hashCode()
-//                    customThemeDark_Background3 = DefaultDarkColorPalette.background3.hashCode()
-//                    customThemeDark_Background4 = DefaultDarkColorPalette.background4.hashCode()
-//                    customThemeDark_Text = DefaultDarkColorPalette.text.hashCode()
-//                    customThemeDark_TextSecondary = DefaultDarkColorPalette.textSecondary.hashCode()
-//                    customThemeDark_TextDisabled = DefaultDarkColorPalette.textDisabled.hashCode()
-//                    customThemeDark_IconButtonPlayer =
-//                        DefaultDarkColorPalette.iconButtonPlayer.hashCode()
-//                    customThemeDark_Accent = DefaultDarkColorPalette.accent.hashCode()
-//                }
-//            )
-//        }
 
         val state = rememberLazyListState()
         LazyListContainer(
@@ -776,14 +725,37 @@ fun GeneralSettings(
 
                 settingsItem {
 
-                    if (search.input.isBlank() || stringResource(R.string.jump_previous).contains(
+                    if (search.input.isBlank() || stringResource(R.string.video_content_mode_title).contains(
                             search.input,
                             true
                         )
                     ) {
 
                         EnumValueSelectorSettingsEntry(
-                            title = stringResource(R.string.jump_previous),
+                            title = stringResource(R.string.video_content_mode_title),
+                            titleSecondary = stringResource(R.string.video_content_mode_description),
+                            selectedValue = videoContentMode,
+                            onValueSelected = {
+                                coroutineScope.launch {
+                                    val new =
+                                        appSettingsManager.activeSettings.value.copy(videoContentMode = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
+                            },
+                            valueText = { it.textName }
+                        )
+
+                    }
+
+                    if (search.input.isBlank() || stringResource(R.string.jump_previous_title).contains(
+                            search.input,
+                            true
+                        )
+                    ) {
+
+                        EnumValueSelectorSettingsEntry(
+                            title = stringResource(R.string.jump_previous_title),
+                            titleSecondary = stringResource(R.string.jump_previous_description),
                             selectedValue = rewindThresholdDuration,
                             onValueSelected = {
                                 coroutineScope.launch {
@@ -792,24 +764,7 @@ fun GeneralSettings(
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
-                            valueText = {
-                                when (it) {
-                                    RewindThresholdDuration.Disabled -> stringResource(R.string.vt_disabled)
-                                    RewindThresholdDuration.`3` -> "3s"
-                                    RewindThresholdDuration.`4` -> "4s"
-                                    RewindThresholdDuration.`5` -> "5s"
-                                    RewindThresholdDuration.`6` -> "6s"
-                                    RewindThresholdDuration.`7` -> "7s"
-                                    RewindThresholdDuration.`8` -> "8s"
-                                    RewindThresholdDuration.`9` -> "9s"
-                                    RewindThresholdDuration.`10` -> "10s"
-                                    RewindThresholdDuration.`11` -> "11s"
-                                    RewindThresholdDuration.`12` -> "12s"
-
-
-
-                                }
-                            }
+                            valueText = { it.textName }
                         )
 
                     }
@@ -879,25 +834,7 @@ fun GeneralSettings(
                         SettingsDescription(text = stringResource(R.string.exclude_songs_with_duration_limit_description))
                     }
 
-                    if (search.input.isBlank() || stringResource(R.string.exclude_song_if_is_video).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.exclude_song_if_is_video),
-                            text = "",
-                            isChecked = excludeSongsIfAreVideos,
-                            onCheckedChange = {
-                                coroutineScope.launch {
-                                    val new = appSettingsManager.activeSettings.value.copy(excludeIfIsVideo = it)
-                                    appSettingsManager.updateSettings(new)
-                                }
-                                restartService = true
-                            }
-                        )
-                        RestartPlayerService(restartService, onRestart = { restartService = false })
-                    }
+
 
                     if (search.input.isBlank() || stringResource(R.string.pause_between_songs).contains(
                             search.input,

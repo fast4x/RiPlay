@@ -84,6 +84,7 @@ import androidx.compose.material3.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import it.fast4x.riplay.extensions.musicbrainz.repository.ArtistRepository
+import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 
 @UnstableApi
@@ -189,8 +190,7 @@ data class OnlineRadio (
 @UnstableApi
 @Composable
 fun SearchOnlineEntity (
-    navController: NavController,
-    onDismiss: () -> Unit,
+    onDismiss: (Boolean) -> Unit,
     query: String,
     filter: Environment.SearchFilter = Environment.SearchFilter.Video,
     disableScrollingText: Boolean
@@ -204,12 +204,7 @@ fun SearchOnlineEntity (
     val songThumbnailSizeDp = Dimensions.thumbnails.song
     val songThumbnailSizePx = songThumbnailSizeDp.px
     val emptyItemsText = stringResource(R.string.no_results_found)
-    val headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit = {
-//        Title(
-//            title = stringResource(id = R.string.videos),
-//            modifier = Modifier.padding(bottom = 12.dp)
-//        )
-    }
+    val headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit = {}
 
     var filterContentType by remember { mutableStateOf(it.fast4x.riplay.enums.ContentType.Official) }
 
@@ -237,7 +232,7 @@ fun SearchOnlineEntity (
                     onClick1 = {
                         menuState.display {
                             Menu {
-                                it.fast4x.riplay.enums.ContentType.entries.forEach {
+                                ContentType.entries.forEach {
                                     MenuEntry(
                                         icon = it.icon,
                                         text = it.textName,
@@ -293,14 +288,12 @@ fun SearchOnlineEntity (
                             mediaItem = when (media) {
                                 is Environment.VideoItem -> media.asMediaItem
                                 is Environment.SongItem -> media.asMediaItem
-                                else -> throw IllegalArgumentException("Unknown media type")
                             },
                             onPlayNext = {
                                 binder?.hybridPlayer?.addNext(
                                     when (media) {
                                         is Environment.VideoItem -> media.asMediaItem
                                         is Environment.SongItem -> media.asMediaItem
-                                        else -> throw IllegalArgumentException("Unknown media type")
                                     },
                                     queue = selectedQueue ?: defaultQueue()
                                 )
@@ -309,7 +302,6 @@ fun SearchOnlineEntity (
                                 binder?.hybridPlayer?.enqueue(when (media) {
                                     is Environment.VideoItem -> media.asMediaItem
                                     is Environment.SongItem -> media.asMediaItem
-                                    else -> throw IllegalArgumentException("Unknown media type")
                                 }, queue = it)
                             }
                         ) {
@@ -334,10 +326,8 @@ fun SearchOnlineEntity (
                                                 )
                                             },
                                             onClick = {
-                                                //binder?.stopRadio()
                                                 binder?.hybridPlayer?.forcePlay(media.asMediaItem, true)
-                                                //binder?.setupRadio(media.info?.endpoint)
-                                                onDismiss()
+                                                onDismiss(true)
                                             }
                                         ),
                                     disableScrollingText = disableScrollingText
@@ -369,7 +359,7 @@ fun SearchOnlineEntity (
                                                 //binder?.stopRadio()
                                                 binder?.hybridPlayer?.forcePlay(media.asMediaItem, true)
                                                 //binder?.setupRadio(media.info?.endpoint)
-                                                onDismiss()
+                                                onDismiss(false)
                                             }
                                         )
                                 )

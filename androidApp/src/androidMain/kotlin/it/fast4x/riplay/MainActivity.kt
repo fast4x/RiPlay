@@ -161,7 +161,7 @@ import it.fast4x.riplay.enums.CastType
 import it.fast4x.riplay.extensions.storagewarning.StorageWarningChecker
 import it.fast4x.riplay.services.playback.common.PlayerState
 import it.fast4x.riplay.ui.components.Snowfall
-import it.fast4x.riplay.ui.screens.player.unified.components.core.UnifiedPlayerView
+import it.fast4x.riplay.ui.screens.player.unified.components.view.UnifiedPlayerView
 import it.fast4x.riplay.ui.screens.player.unified.UnifiedMiniPlayer
 import it.fast4x.riplay.ui.screens.player.unified.UnifiedPlayer
 import it.fast4x.riplay.utils.GlobalSharedData
@@ -258,7 +258,7 @@ class MainActivity : AppCompatActivity() {
 
     var selectedQueue: MutableState<Queues> = mutableStateOf(defaultQueue())
 
-    private var onlinePlayerView: YouTubePlayerView? = null
+    private var videoPlayerView: YouTubePlayerView? = null
 
     private var isclosebackgroundPlayerEnabled = false
 
@@ -1122,7 +1122,7 @@ class MainActivity : AppCompatActivity() {
 
                 val isPlaying = playerState.isPlaying
                 val playerView = binder?.youtubePlayerView?.collectAsState()
-                onlinePlayerView = playerView?.value
+                videoPlayerView = playerView?.value
 
                 val castSheetState = rememberBottomSheetState(
                     dismissedBound = 0.dp,
@@ -1279,10 +1279,10 @@ class MainActivity : AppCompatActivity() {
                                             if (useTvInterface) {
                                                 TvUnifiedPlayer(
                                                     navController = it,
-                                                    onlineCore = {
+                                                    videoPlayerView = {
                                                         binder?.hybridPlayer?.currentMediaItem?.let {
                                                             UnifiedPlayerView(
-                                                                onlinePlayerView = onlinePlayerView,
+                                                                videoPlayerView = videoPlayerView,
                                                                 mediaItem = it,
                                                             )
                                                         }
@@ -1294,10 +1294,10 @@ class MainActivity : AppCompatActivity() {
                                             } else {
                                                 UnifiedPlayer(
                                                     navController = it,
-                                                    onlineCore = {
+                                                    videoPlayerView = {
                                                         binder?.hybridPlayer?.currentMediaItem?.let {
                                                             UnifiedPlayerView(
-                                                                onlinePlayerView = onlinePlayerView,
+                                                                videoPlayerView = videoPlayerView,
                                                                 mediaItem = it,
                                                             )
                                                         }

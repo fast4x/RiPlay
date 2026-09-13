@@ -807,8 +807,8 @@ Volume BAS : titre précédent</string>
     <string name="enable_youtube_music_login">Activer la connexion via YouTube Music</string>
     <string name="show_cover_thumbnail_animation">Afficher l\'animation de la miniature de la pochette</string>
     <string name="cover_thumbnail_animation_type">Type d\'animation de la pochette</string>
-    <string name="jump_previous">Le bouton « Précédent » relancera le titre en cours une fois que les secondes suivantes se seront écoulées</string>
-    <string name="jump_previous_blank">Laissez ce champ vide ou indiquez « 0 » pour que le bouton « Précédent » lance toujours le titre précédent.</string>
+
+
     <string name="delete_hidden_songs">Voulez-vous vraiment supprimer tous les titres cachés de la base de données ? Cette action est irréversible.</string>
     <string name="delete_hidden_songs_message">Supprimer les titres cachés</string>
     <string name="cover_type_vinyl">Vinyle</string>
@@ -964,7 +964,7 @@ Volume BAS : titre précédent</string>
     <string name="voice_microphone_permission_denied">Autorisation d\'utilisation du microphone refusée</string>
     <string name="voice_missing_microphone_permissions_please_grant">Autorisation d\'accès au microphone manquante. Veuillez l\'accorder dans les paramètres de l\'application.</string>
     <string name="message_excluded_videos">Vidéos %s exclues</string>
-    <string name="exclude_song_if_is_video">Exclure la lecture vidéo</string>
+
     <string name="enable_voice_input">Activer la saisie vocale</string>
     <string name="music_identifier_provider">Fournisseur d\'identifiants musicaux</string>
     <string name="music_identify">Identifier</string>
@@ -1456,4 +1456,12 @@ Volume BAS : titre précédent</string>
     <string name="webdav_account_dialog_delete_backup">Are you sure you want to delete the account:\n\n%1$s\n\nas your data backup and synchronization across your devices?</string>
     <string name="webdav_account_dialog_add_new">Add new account</string>
     <string name="message_no_accounts">No accounts</string>
+    <string name="video_content_mode_title">Video content mode</string>
+    <string name="video_content_mode_description">Choose how video content is handled during playback</string>
+    <string name="video_content_mode_normal">Play video normally</string>
+    <string name="video_content_mode_audio_only">Play video as audio</string>
+    <string name="video_content_mode_excluded">Exclude videos from queue and suggestions</string>
+    <string name="jump_previous_title">Restart with Previous</string>
+    <string name="jump_previous_description">Previous button restarts the current song if pressed after this many seconds have passed</string>
+    <string name="online_video_now_playing_title">ONLINE VIDEO</string>
 </resources>

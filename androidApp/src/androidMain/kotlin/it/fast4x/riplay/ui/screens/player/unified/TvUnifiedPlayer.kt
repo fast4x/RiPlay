@@ -144,7 +144,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @Composable
 fun TvUnifiedPlayer(
     navController: NavController,
-    onlineCore: @Composable () -> Unit,
+    videoPlayerView: @Composable () -> Unit,
     onDismiss: () -> Unit,
 ) {
     val binder = LocalPlayerServiceBinder.current

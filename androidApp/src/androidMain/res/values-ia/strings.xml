@@ -806,8 +806,8 @@
     <string name="enable_youtube_music_login">Enable YouTube Music Login</string>
     <string name="show_cover_thumbnail_animation">Show cover thumbnail animation</string>
     <string name="cover_thumbnail_animation_type">Cover animation type</string>
-    <string name="jump_previous">Previous Button Will Restart the Current Song After the Following Seconds Have Passed</string>
-    <string name="jump_previous_blank">Leave it Blank or 0 for Previous Button to Always Play the Previous Song</string>
+
+
     <string name="delete_hidden_songs">Vole tu realmente supprimer tote le cantiones oculte del base de datos? Iste action es irreversibile.</string>
     <string name="delete_hidden_songs_message">Delete hidden songs</string>
     <string name="cover_type_vinyl">Vinyl</string>
@@ -963,7 +963,7 @@
     <string name="voice_microphone_permission_denied">Microphone permission denied</string>
     <string name="voice_missing_microphone_permissions_please_grant">Missing microphone permissions, please grant it in the app settings</string>
     <string name="message_excluded_videos">Excluded %s videos</string>
-    <string name="exclude_song_if_is_video">Exclude video playback</string>
+
     <string name="enable_voice_input">Enable voice input</string>
     <string name="music_identifier_provider">Music identifier provider</string>
     <string name="music_identify">Identify</string>
@@ -1455,4 +1455,12 @@
     <string name="webdav_account_dialog_delete_backup">Are you sure you want to delete the account:\n\n%1$s\n\nas your data backup and synchronization across your devices?</string>
     <string name="webdav_account_dialog_add_new">Add new account</string>
     <string name="message_no_accounts">No accounts</string>
+    <string name="video_content_mode_title">Video content mode</string>
+    <string name="video_content_mode_description">Choose how video content is handled during playback</string>
+    <string name="video_content_mode_normal">Play video normally</string>
+    <string name="video_content_mode_audio_only">Play video as audio</string>
+    <string name="video_content_mode_excluded">Exclude videos from queue and suggestions</string>
+    <string name="jump_previous_title">Restart with Previous</string>
+    <string name="jump_previous_description">Previous button restarts the current song if pressed after this many seconds have passed</string>
+    <string name="online_video_now_playing_title">ONLINE VIDEO</string>
 </resources>

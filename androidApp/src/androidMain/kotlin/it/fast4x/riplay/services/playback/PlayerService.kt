@@ -366,7 +366,7 @@ class PlayerService : MediaLibraryService(),
 //        ViewModelProvider(AppSharedScope)[GlobalQueueViewModel::class.java]
 //    }
 
-    private var unstartedWatchdogJob: Job? = null
+    //private var unstartedWatchdogJob: Job? = null
 
     private var audioDeviceCallback: AudioDeviceCallback? = null
     private val handler = Handler(Looper.getMainLooper())
@@ -457,10 +457,12 @@ class PlayerService : MediaLibraryService(),
     // Observer per il ciclo di vita dell'intero processo (app in background)
     private val processLifecycleObserver = object : DefaultLifecycleObserver {
         override fun onStop(owner: LifecycleOwner) {
-            Timber.d("PlayerService: ProcessLifecycleOwner.onStop() schermo spento, rimuovo video")
-            // Chiamato quando l'app va in background o lo schermo si spegne
+            // Chiamato quando l'app va in background o lo schermo si spegne se l'utente ha impostato l'esclusione dei video
             // Elimino i video perchè in background nella webview non sono più visibili ma creano problemi di avanzamento al successivo mediaitem
-            exoPlayer.removeVideoMediaItems()
+            if (appSettings.videoContentMode.excluded) {
+                Timber.d("PlayerService: ProcessLifecycleOwner.onStop() schermo spento o app in secondo piano, rimuovo video")
+                hybridPlayer.removeVideoMediaItems()
+            }
         }
     }
 
@@ -822,8 +824,8 @@ class PlayerService : MediaLibraryService(),
     }
 
     fun replaceOnlinePlayerView() {
-        _internalYouTubePlayer.value?.pause()
-        _internalYouTubePlayer.value = null
+//        _internalYouTubePlayer.value?.pause()
+//        _internalYouTubePlayer.value = null
 
         // DISTRUZIONE REALE DELLA VECCHIA WEBVIEW
         _internalYouTubePlayerView.value?.let { oldView ->
@@ -1317,11 +1319,12 @@ class PlayerService : MediaLibraryService(),
                 if (currentSong.value?.isLocal == true) return
                 Timber.d("PlayerService onlinePlayerView: onStateChange $state")
 
-                unstartedWatchdogJob?.cancel()
+                //unstartedWatchdogJob?.cancel()
 
                 updatePlayerState(state)
 
                 when(state) {
+                    /* UNSTARTED è gestito a livello di js
                     PlayerConstants.PlayerState.UNSTARTED -> {
                         // 1. Cancelliamo subito eventuali watchdog precedenti per evitare sovrapposizioni
                         unstartedWatchdogJob?.cancel()
@@ -1363,6 +1366,7 @@ class PlayerService : MediaLibraryService(),
                             }
                         }
                     }
+                     */
 
 
                     PlayerConstants.PlayerState.VIDEO_CUED -> {
@@ -1776,7 +1780,7 @@ class PlayerService : MediaLibraryService(),
             endedObserverJob?.cancel()
             riTuneObserverJob?.cancel()
             timerJob?.cancel()
-            unstartedWatchdogJob?.cancel()
+            //unstartedWatchdogJob?.cancel()
             volumeNormalizationJob?.cancel()
             settingsObserverJob?.cancel()
 
@@ -2771,8 +2775,8 @@ class PlayerService : MediaLibraryService(),
                     val timeLeft = duration - position
                     val crossfadeDurationMs = appSettings.crossfadeDuration.milliseconds
 
-                    if (BuildConfig.DEBUG)
-                        Timber.d("PlayerService PlaybackWatchdog: isFading = $isFading isPlaying = $isPlaying isPaused = $isPaused timeleft $timeLeft duration=$duration ms, position=$position ms")
+//                    if (BuildConfig.DEBUG)
+//                        Timber.d("PlayerService PlaybackWatchdog: isFading = $isFading isPlaying = $isPlaying isPaused = $isPaused timeleft $timeLeft duration=$duration ms, position=$position ms")
 
                     // ─── SENTINELLA AUDIO FOCUS PER YOUTUBE ONLINE (PERENNE) ───
                     if (hybridPlayer.activeEngine == ActiveEngine.YOUTUBE) {
@@ -3761,6 +3765,13 @@ class PlayerService : MediaLibraryService(),
     fun handlePlayNext(origine: String? = null) {
         Timber.d("PlayerService PlaybackWatchdog: handlePlayNext cambio brano richiesto da $origine")
 
+        // Se l'utente aveva richiesto la visualizzazione di un video, quando passiamo avanti lo resettiamo
+        if (appSettings.forceUserVideoPlayback) {
+            serviceScope.launch {
+                appSettingsManager.updateSettings(appSettings.copy(forceUserVideoPlayback = false))
+            }
+        }
+
         // Prima di cambiare brano, azzeriamo la variabile storica nel Service
         // così il Watchdog sa che la nuova traccia deve ricominciare a fare i calcoli da zero!
         lastWatchdogPosition = -1L
@@ -3798,6 +3809,14 @@ class PlayerService : MediaLibraryService(),
             Timber.d("PlayerService handlePlayPrevious: Click filtrato (troppo veloce)")
             return
         }
+
+        // Se l'utente aveva richiest la visualizzazione di un video, quando passiamo avanti lo resettiamo
+        if (appSettings.forceUserVideoPlayback) {
+            serviceScope.launch {
+                appSettingsManager.updateSettings(appSettings.copy(forceUserVideoPlayback = false))
+            }
+        }
+
         lastPlayPreviousTime = now
 
         hybridPlayer.pause()

@@ -15,6 +15,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -115,7 +116,7 @@ fun SearchResultsContent(
     val disableScrollingText = appearanceSettings.disableScrollingText
     val emptyItemsText = stringResource(R.string.no_results_found)
     val context = LocalContext.current
-
+    val coroutineScope = rememberCoroutineScope()
 
     val headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit = {
 
@@ -588,9 +589,17 @@ fun SearchResultsContent(
                                         )
                                     },
                                     onClick = {
-                                        localBinder?.stopRadio()
+                                        // Se video content mode = audio only, forziamo la visualizzazione del video su richiesta dell'utente
+                                        // Verrà resettato dal service quando andrà alla successiva o precedente
+                                        if (appSettings.videoContentMode.audioOnly)
+                                            coroutineScope.launch {
+                                                appSettingsManager.updateSettings(
+                                                    appSettings.copy(forceUserVideoPlayback = true)
+                                                )
+                                            }
+                                        //localBinder?.stopRadio()
                                         localBinder?.hybridPlayer?.forcePlay(video.asMediaItem)
-                                        localBinder?.setupRadio(video.info?.endpoint)
+                                        //localBinder?.setupRadio(video.info?.endpoint)
                                     }
                                 ),
                             disableScrollingText = disableScrollingText

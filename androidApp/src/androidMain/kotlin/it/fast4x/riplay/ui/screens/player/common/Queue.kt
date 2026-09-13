@@ -244,7 +244,7 @@ fun Queue(
     val binderPlayer = binder.hybridPlayer
 
     val queueLoopType = appSettings.queueLoopType
-    val excludeSongsIfAreVideos = appSettings.excludeIfIsVideo
+    val excludeSongsIfAreVideos = appSettings.videoContentMode.excluded
     val menuState = LocalGlobalSheetState.current
     val thumbnailSizeDp = Dimensions.thumbnails.song
     val thumbnailSizePx = thumbnailSizeDp.px

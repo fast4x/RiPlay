@@ -326,7 +326,10 @@ val MediaItem.origin: String
         this.isMusicVault -> "MUSIC VAULT"
         this.isWebDav -> "WEBDAV"
         this.isLocal -> appContext().resources.getString(R.string.local_now_playing_title)
-        else -> appContext().resources.getString(R.string.online_now_playing_title)
+        else -> appContext().resources.getString(
+            if (this.isVideo) R.string.online_video_now_playing_title
+            else R.string.online_now_playing_title
+        )
     }
 
 val Song.asSongItem: Environment.SongItem

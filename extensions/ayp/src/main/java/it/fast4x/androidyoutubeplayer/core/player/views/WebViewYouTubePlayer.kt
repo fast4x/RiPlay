@@ -172,13 +172,36 @@ internal class WebViewYouTubePlayer (
   }
 
   override fun onWindowVisibilityChanged(visibility: Int) {
-    var newVisibility = visibility
-
-    if (isBackgroundPlaybackEnabled && (visibility == View.GONE || visibility == View.INVISIBLE)) {
-      newVisibility = View.VISIBLE
+    if (visibility == View.INVISIBLE || visibility == View.GONE) {
+      super.onWindowVisibilityChanged(View.VISIBLE)
+    } else {
+      super.onWindowVisibilityChanged(visibility)
     }
+  }
 
-    super.onWindowVisibilityChanged(newVisibility)
+  override fun onVisibilityChanged(changedView: View, visibility: Int) {
+    if (visibility == View.INVISIBLE || visibility == View.GONE) {
+      super.onVisibilityChanged(changedView, View.VISIBLE)
+    } else {
+      super.onVisibilityChanged(changedView, visibility)
+    }
+  }
+
+  override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
+    // Impedisce a Chromium di marcare la pagina come "hidden" (Page Visibility API)
+    // quando la finestra perde il focus (schermo spento, tendina notifiche, app in
+    // background). Altrimenti lo script IFrame di YouTube reagisce all'evento
+    // "visibilitychange" e mette in pausa il video di sua iniziativa, lato JS.
+    super.onWindowFocusChanged(true)
+  }
+
+  override fun onVisibilityAggregated(isVisible: Boolean) {
+    // Segnale "definitivo" (API 24+) che Chromium usa per decidere se
+    // sospendere rendering/JS timers, indipendentemente da window focus
+    // e dai singoli visibility change già gestiti sopra. Forziamo sempre
+    // "visibile" per evitare che la pagina IFrame riceva un evento
+    // visibilitychange e metta in pausa il video da sola.
+    super.onVisibilityAggregated(true)
   }
 
 
