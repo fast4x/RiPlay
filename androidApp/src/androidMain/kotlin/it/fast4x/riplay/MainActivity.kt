@@ -741,7 +741,7 @@ class MainActivity : AppCompatActivity() {
                 colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
 
             val locale = LocalLocale.current.platformLocale
-            val languageTag = locale.toLanguageTag().replace("-Hant", "")
+            //val languageTag = locale.toLanguageTag().replace("-Hant", "")
             val languageApp = appSettings.languageApp
             val contentCountry = appSettings.contentCountry
             LocalePreferences.preference =
@@ -764,11 +764,11 @@ class MainActivity : AppCompatActivity() {
                     AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
                 } else {
                     // Applica direttamente il codice completo (es: "it-IT")
-                    AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(languageTag))
+                    AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(languageApp.tag))
                 }
             }
 
-            Timber.d("MainActivity onCreate language = ${locale.language} country = ${locale.country} languageTag = ${locale.toLanguageTag()}")
+            Timber.d("MainActivity onCreate language = ${locale.language} country = ${locale.country} languageTag = ${locale.toLanguageTag()} languageApp = $languageApp")
 
             /*
             LaunchedEffect(Unit, languageApp) {
@@ -1280,10 +1280,10 @@ class MainActivity : AppCompatActivity() {
                                                 TvUnifiedPlayer(
                                                     navController = it,
                                                     videoPlayerView = {
-                                                        binder?.hybridPlayer?.currentMediaItem?.let {
+                                                        binder?.hybridPlayer?.currentMediaItem?.let { item ->
                                                             UnifiedPlayerView(
                                                                 videoPlayerView = videoPlayerView,
-                                                                mediaItem = it,
+                                                                mediaItem = item,
                                                             )
                                                         }
                                                     },
@@ -1295,10 +1295,10 @@ class MainActivity : AppCompatActivity() {
                                                 UnifiedPlayer(
                                                     navController = it,
                                                     videoPlayerView = {
-                                                        binder?.hybridPlayer?.currentMediaItem?.let {
+                                                        binder?.hybridPlayer?.currentMediaItem?.let { item ->
                                                             UnifiedPlayerView(
                                                                 videoPlayerView = videoPlayerView,
-                                                                mediaItem = it,
+                                                                mediaItem = item,
                                                             )
                                                         }
                                                     },
