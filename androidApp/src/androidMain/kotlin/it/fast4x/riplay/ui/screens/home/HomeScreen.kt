@@ -133,7 +133,7 @@ fun HomeScreen(
             }
             Timber.d("HomeScreen clicked  homeScreenTabIndex = $it in db = ${appSettingsManager.activeSettings.value.homeScreenTabIndex}")
         },
-        miniPlayer,
+        miniPlayer = miniPlayer,
         transitionEffect = transitionEffect,
         navBarContent = { Item ->
 
