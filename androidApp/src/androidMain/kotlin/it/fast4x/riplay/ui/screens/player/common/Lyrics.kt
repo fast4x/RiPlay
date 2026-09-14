@@ -209,7 +209,7 @@ fun Lyrics(
     //Timber.d("LyricsNew positionAndDuration ${positionAndDuration.first}")
 
     val showlyricsthumbnail = appearanceSettings.showLyricsThumbnail
-    val isShowingSynchronizedLyrics = appSettings.isShowingThumbnailInLockscreen
+    val isShowingSynchronizedLyrics = appearanceSettings.isShowingSynchronizedLyrics
     val isShowingSynchronizedWordByWordLyrics = appearanceSettings.isShowingSynchronizedWordByWordLyrics
     
     val currentLyrics by Database.lyrics(mediaId).collectAsState(initial = null)

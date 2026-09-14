@@ -936,14 +936,6 @@ fun Queue(
             item {
                 if (isLoadingRadio) {
                     Loader()
-//                    Column(modifier = Modifier.shimmer()) {
-//                        repeat(3) { index ->
-//                            SongItemPlaceholder(
-//                                thumbnailSizeDp = thumbnailSizeDp,
-//                                modifier = Modifier.alpha(1f - index * 0.125f).fillMaxWidth()
-//                            )
-//                        }
-//                    }
                 }
             }
 
