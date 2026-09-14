@@ -225,7 +225,8 @@ fun StatisticsPage(
                     enabled = true,
                     showIcon = true,
                     onClick = {},
-                    modifier = Modifier
+                    modifier = Modifier,
+                    navController = navController
                 )
             }
 

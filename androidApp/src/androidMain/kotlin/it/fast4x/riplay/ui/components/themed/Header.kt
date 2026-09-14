@@ -163,7 +163,7 @@ fun HeaderWithIcon (
     showIcon: Boolean = true,
     enabled: Boolean = true,
     onClick: () -> Unit,
-    navController: NavController = rememberNavController()
+    navController: NavController
 ){
     //val disableIconButtonOnTop by rememberPreference(disableIconButtonOnTopKey, false)
     Row (

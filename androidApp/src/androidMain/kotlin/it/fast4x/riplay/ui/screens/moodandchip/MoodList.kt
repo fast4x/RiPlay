@@ -127,7 +127,8 @@ fun MoodList(
                                 enabled = true,
                                 showIcon = true,
                                 modifier = Modifier,
-                                onClick = {}
+                                onClick = {},
+                                navController = navController
                             )
                         }
                     }

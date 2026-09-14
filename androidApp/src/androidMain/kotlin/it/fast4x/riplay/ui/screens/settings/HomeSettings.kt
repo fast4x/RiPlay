@@ -17,6 +17,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
+import androidx.navigation.NavController
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.HomePagetype
@@ -31,7 +32,9 @@ import kotlinx.coroutines.launch
 @ExperimentalAnimationApi
 @UnstableApi
 @Composable
-fun  HomeSettings() {
+fun  HomeSettings(
+    navController: NavController
+) {
     val appSettingsManager = LocalAppSettingsManager.current
     val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
@@ -75,7 +78,8 @@ fun  HomeSettings() {
                         enabled = false,
                         showIcon = true,
                         modifier = Modifier,
-                        onClick = {}
+                        onClick = {},
+                        navController = navController
                     )
                 }
 

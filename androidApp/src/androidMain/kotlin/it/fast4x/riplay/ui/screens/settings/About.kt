@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavigationBarPosition
@@ -33,7 +34,9 @@ import it.fast4x.riplay.utils.typography
 
 @ExperimentalAnimationApi
 @Composable
-fun About() {
+fun About(
+    navController: NavController
+) {
     val uriHandler = LocalUriHandler.current
 
     Column(
@@ -55,7 +58,8 @@ fun About() {
             enabled = false,
             showIcon = true,
             modifier = Modifier,
-            onClick = {}
+            onClick = {},
+            navController = navController
         )
         Row(
             horizontalArrangement = Arrangement.Center,

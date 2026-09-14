@@ -136,7 +136,8 @@ fun ChipList(
                                 enabled = true,
                                 showIcon = true,
                                 modifier = Modifier,
-                                onClick = {}
+                                onClick = {},
+                                navController = navController
                             )
                         }
                     }

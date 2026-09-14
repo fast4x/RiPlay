@@ -1004,7 +1004,8 @@ fun PlayerAppearanceSettings(
                         enabled = false,
                         showIcon = true,
                         modifier = Modifier,
-                        onClick = {}
+                        onClick = {},
+                        navController = navController
                     )
                 }
 

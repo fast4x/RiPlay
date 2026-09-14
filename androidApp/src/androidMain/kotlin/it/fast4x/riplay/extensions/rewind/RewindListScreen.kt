@@ -121,7 +121,8 @@ fun RewindListScreen(
                             enabled = true,
                             showIcon = !showSearchTab,
                             modifier = Modifier,
-                            onClick = {}
+                            onClick = {},
+                            navController = navController
                         )
 
                     }

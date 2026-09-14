@@ -138,7 +138,8 @@ fun NewAlbumsFromArtists(
                             enabled = true,
                             showIcon = !showSearchTab,
                             modifier = Modifier,
-                            onClick = {}
+                            onClick = {},
+                            navController = navController
                         )
 
                     }

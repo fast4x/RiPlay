@@ -113,7 +113,8 @@ fun MoodsPage(
                             enabled = true,
                             showIcon = false,
                             modifier = Modifier,
-                            onClick = {}
+                            onClick = {},
+                            navController = navController
                         )
                     }
 

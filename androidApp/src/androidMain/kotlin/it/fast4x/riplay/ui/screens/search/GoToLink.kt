@@ -124,7 +124,8 @@ fun GoToLink(
                             showIcon = true,
                             modifier = Modifier
                                 .padding(bottom = 8.dp),
-                            onClick = {}
+                            onClick = {},
+                            navController = navController
                         )
 
                     }

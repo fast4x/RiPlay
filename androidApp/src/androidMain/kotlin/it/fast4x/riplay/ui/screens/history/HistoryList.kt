@@ -168,7 +168,8 @@ fun HistoryList(
                         enabled = false,
                         showIcon = false,
                         modifier = Modifier,
-                        onClick = {}
+                        onClick = {},
+                        navController = navController
                     )
                 }
 

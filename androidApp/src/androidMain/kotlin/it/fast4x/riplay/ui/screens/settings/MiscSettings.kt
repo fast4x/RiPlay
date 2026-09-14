@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
+import androidx.navigation.NavController
 import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.Dependencies
 import it.fast4x.riplay.LocalAppSettingsManager
@@ -54,7 +55,9 @@ import java.util.Date
 @SuppressLint("BatteryLife")
 @ExperimentalAnimationApi
 @Composable
-fun MiscSettings() {
+fun MiscSettings(
+    navController: NavController
+) {
     val context = LocalContext.current
     val (colorPalette, _, _) = LocalAppearance.current
     val appSettingsManager = LocalAppSettingsManager.current
@@ -156,7 +159,8 @@ fun MiscSettings() {
                     enabled = false,
                     showIcon = true,
                     modifier = Modifier,
-                    onClick = {}
+                    onClick = {},
+                    navController = navController
                 )
             }
 

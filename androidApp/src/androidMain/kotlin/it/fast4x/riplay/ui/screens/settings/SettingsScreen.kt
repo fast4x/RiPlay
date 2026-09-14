@@ -125,11 +125,11 @@ fun SettingsScreen(
                 0 -> GeneralSettings(navController = navController)
                 1 -> UiSettings(navController = navController)
                 2 -> PlayerAppearanceSettings(navController = navController)
-                3 -> HomeSettings()
-                4 -> DataSettings()
-                5 -> AccountsSettings()
-                6 -> MiscSettings()
-                7 -> About()
+                3 -> HomeSettings(navController = navController)
+                4 -> DataSettings(navController = navController)
+                5 -> AccountsSettings(navController = navController)
+                6 -> MiscSettings(navController = navController)
+                7 -> About(navController = navController)
 
             }
         }

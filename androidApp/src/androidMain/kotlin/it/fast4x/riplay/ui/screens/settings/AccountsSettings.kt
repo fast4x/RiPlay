@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastFilter
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
+import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import it.fast4x.environment.Environment
@@ -93,7 +94,9 @@ import timber.log.Timber
 @SuppressLint("BatteryLife")
 @ExperimentalAnimationApi
 @Composable
-fun AccountsSettings() {
+fun AccountsSettings(
+    navController: NavController
+) {
     val appearanceSettingsManager = LocalAppearanceSettingsManager.current
     val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
     val appSettingsManager = LocalAppSettingsManager.current
@@ -130,7 +133,8 @@ fun AccountsSettings() {
             enabled = false,
             showIcon = true,
             modifier = Modifier,
-            onClick = {}
+            onClick = {},
+            navController = navController
         )
 
 

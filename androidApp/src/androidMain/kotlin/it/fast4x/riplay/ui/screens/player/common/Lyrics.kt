@@ -206,7 +206,6 @@ fun Lyrics(
     val (currentPosition, duration) = rememberPlayerPositionAndDuration(binder)
     val positionProvider = remember { LatestValueProvider(currentPosition) }
     positionProvider.value = currentPosition
-    //Timber.d("LyricsNew positionAndDuration ${positionAndDuration.first}")
 
     val showlyricsthumbnail = appearanceSettings.showLyricsThumbnail
     val isShowingSynchronizedLyrics = appearanceSettings.isShowingSynchronizedLyrics

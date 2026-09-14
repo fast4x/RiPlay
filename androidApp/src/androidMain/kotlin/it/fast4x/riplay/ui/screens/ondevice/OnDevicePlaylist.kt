@@ -473,7 +473,8 @@ fun OnDevicePlaylist(
                                 showIcon = false,
                                 modifier = Modifier
                                     .padding(bottom = 8.dp),
-                                onClick = {}
+                                onClick = {},
+                                navController = navController
                             )
 
                         }

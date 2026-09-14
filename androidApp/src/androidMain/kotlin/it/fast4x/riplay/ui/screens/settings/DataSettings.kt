@@ -35,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
+import androidx.navigation.NavController
 import coil.Coil
 import coil.annotation.ExperimentalCoilApi
 import it.fast4x.riplay.LocalAppSettingsManager
@@ -71,7 +72,9 @@ import java.util.Date
 @ExperimentalAnimationApi
 @UnstableApi
 @Composable
-fun DataSettings() {
+fun DataSettings(
+    navController: NavController
+) {
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
     val backupViewModel = LocalBackupManager.current
@@ -240,7 +243,8 @@ fun DataSettings() {
             enabled = false,
             showIcon = true,
             modifier = Modifier,
-            onClick = {}
+            onClick = {},
+            navController = navController
         )
 
         SettingsDescription(text = stringResource(R.string.cache_cleared))
