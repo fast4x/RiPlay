@@ -21,6 +21,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -56,7 +57,7 @@ import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.isCompositionLaunched
-import it.fast4x.riplay.utils.rememberPlayerPositionAndDuration
+import it.fast4x.riplay.utils.rememberPlayerPositionAndDurationState
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.delay
 import timber.log.Timber
@@ -87,10 +88,13 @@ fun UnifiedGetSeekBar(
 
     val binder = LocalPlayerServiceBinder.current
 
-    val (currentPosition, duration) = rememberPlayerPositionAndDuration(binder)
+    val positionAndDurationState = rememberPlayerPositionAndDurationState(binder)
+    val durationState = remember {
+        derivedStateOf { positionAndDurationState.value.second }   // da usare solo dove devo passare solo la durata
+    }
 
     val transparentbar = appearanceSettings.transparentBar
-    val animatedPosition = remember { Animatable(currentPosition.toFloat()) }
+    val animatedPosition = remember { Animatable(positionAndDurationState.value.first.toFloat()) }
     var isSeeking by remember { mutableStateOf(false) }
     val showRemainingSongTime = appearanceSettings.showRemainingSongTime
     val pauseBetweenSongs = appSettings.pauseBetweenSongs
@@ -100,10 +104,10 @@ fun UnifiedGetSeekBar(
         if (compositionLaunched) animatedPosition.animateTo(0f)
     }
     val colorPaletteMode = appearanceSettings.colorPaletteMode
-    LaunchedEffect(currentPosition) {
+    LaunchedEffect(positionAndDurationState.value.first) {
         if (!isSeeking && !animatedPosition.isRunning)
             animatedPosition.animateTo(
-                currentPosition.toFloat(), tween(
+                positionAndDurationState.value.first.toFloat(), tween(
                     durationMillis = 1000,
                     easing = LinearEasing
                 )
@@ -127,15 +131,15 @@ fun UnifiedGetSeekBar(
             && playerTimelineType != PlayerTimelineType.ColoredBar
         )
             SeekBar(
-                value = scrubbingPosition ?: currentPosition,
+                value = scrubbingPosition ?: positionAndDurationState.value.first,
                 minimumValue = 0,
-                maximumValue = duration,
+                maximumValue = durationState.value,
                 onDragStart = {
                     scrubbingPosition = it
                 },
                 onDrag = { delta ->
-                    scrubbingPosition = if (duration != C.TIME_UNSET) {
-                        scrubbingPosition?.plus(delta)?.coerceIn(0, duration)
+                    scrubbingPosition = if (positionAndDurationState.value.second != C.TIME_UNSET) {
+                        scrubbingPosition?.plus(delta)?.coerceIn(0, positionAndDurationState.value.second)
                     } else {
                         null
                     }
@@ -169,15 +173,15 @@ fun UnifiedGetSeekBar(
         )
     */
             SeekBar(
-                value = scrubbingPosition ?: currentPosition,
+                value = scrubbingPosition ?: positionAndDurationState.value.first,
                 minimumValue = 0,
-                maximumValue = duration,
+                maximumValue = durationState.value,
                 onDragStart = {
                     scrubbingPosition = it
                 },
                 onDrag = { delta ->
-                    scrubbingPosition = if (duration != C.TIME_UNSET) {
-                        scrubbingPosition?.plus(delta)?.coerceIn(0, duration)
+                    scrubbingPosition = if (positionAndDurationState.value.second != C.TIME_UNSET) {
+                        scrubbingPosition?.plus(delta)?.coerceIn(0, positionAndDurationState.value.second)
                     } else {
                         null
                     }
@@ -192,15 +196,15 @@ fun UnifiedGetSeekBar(
 
         if (playerTimelineType == PlayerTimelineType.ThinBar)
             SeekBar(
-                value = scrubbingPosition ?: currentPosition,
+                value = scrubbingPosition ?: positionAndDurationState.value.first,
                 minimumValue = 0,
-                maximumValue = duration,
+                maximumValue = durationState.value,
                 onDragStart = {
                     scrubbingPosition = it
                 },
                 onDrag = { delta ->
-                    scrubbingPosition = if (duration != C.TIME_UNSET) {
-                        scrubbingPosition?.plus(delta)?.coerceIn(0, duration)
+                    scrubbingPosition = if (positionAndDurationState.value.second != C.TIME_UNSET) {
+                        scrubbingPosition?.plus(delta)?.coerceIn(0, positionAndDurationState.value.second)
                     } else {
                         null
                     }
@@ -218,15 +222,15 @@ fun UnifiedGetSeekBar(
 
         if (playerTimelineType == PlayerTimelineType.Wavy) {
             SeekBarSinusoidalWave(
-                value = scrubbingPosition ?: currentPosition,
+                value = scrubbingPosition ?: positionAndDurationState.value.first,
                 minimumValue = 0,
-                maximumValue = duration,
+                maximumValue = durationState.value,
                 onDragStart = {
                     scrubbingPosition = it
                 },
                 onDrag = { delta ->
-                    scrubbingPosition = if (duration != C.TIME_UNSET) {
-                        scrubbingPosition?.plus(delta)?.coerceIn(0, duration)
+                    scrubbingPosition = if (positionAndDurationState.value.second != C.TIME_UNSET) {
+                        scrubbingPosition?.plus(delta)?.coerceIn(0, positionAndDurationState.value.second)
                     } else {
                         null
                     }
@@ -242,15 +246,15 @@ fun UnifiedGetSeekBar(
 
         if (playerTimelineType == PlayerTimelineType.FakeAudioBar)
             SeekBarAudioForms(
-                value = scrubbingPosition ?: currentPosition,
+                value = scrubbingPosition ?: positionAndDurationState.value.first,
                 minimumValue = 0,
-                maximumValue = duration,
+                maximumValue = durationState.value,
                 onDragStart = {
                     scrubbingPosition = it
                 },
                 onDrag = { delta ->
-                    scrubbingPosition = if (duration != C.TIME_UNSET) {
-                        scrubbingPosition?.plus(delta)?.coerceIn(0, duration)
+                    scrubbingPosition = if (positionAndDurationState.value.second != C.TIME_UNSET) {
+                        scrubbingPosition?.plus(delta)?.coerceIn(0, positionAndDurationState.value.second)
                     } else {
                         null
                     }
@@ -265,15 +269,15 @@ fun UnifiedGetSeekBar(
 
         if (playerTimelineType == PlayerTimelineType.ColoredBar)
             SeekBarSegmentColored(
-                value = scrubbingPosition ?: currentPosition,
+                value = scrubbingPosition ?: positionAndDurationState.value.first,
                 minimumValue = 0,
-                maximumValue = duration,
+                maximumValue = durationState.value,
                 onDragStart = {
                     scrubbingPosition = it
                 },
                 onDrag = { delta ->
-                    scrubbingPosition = if (duration != C.TIME_UNSET) {
-                        scrubbingPosition?.plus(delta)?.coerceIn(0, duration)
+                    scrubbingPosition = if (positionAndDurationState.value.second != C.TIME_UNSET) {
+                        scrubbingPosition?.plus(delta)?.coerceIn(0, positionAndDurationState.value.second)
                     } else {
                         null
                     }
@@ -308,8 +312,8 @@ fun UnifiedGetSeekBar(
                     indication = ripple(false),
                     onClick = {
                         val skippedPosition = 5000
-                        Timber.d("UnifiedGetSeekbar fast seek position $currentPosition skippedPosition $skippedPosition")
-                        onSeekTo(( currentPosition - 5000).toFloat())
+                        Timber.d("UnifiedGetSeekbar fast seek position ${positionAndDurationState.value.first} skippedPosition $skippedPosition")
+                        onSeekTo(( positionAndDurationState.value.first - 5000).toFloat())
                     }
                 )
         ){
@@ -325,7 +329,7 @@ fun UnifiedGetSeekBar(
                         modifier = Modifier
                             .size(10.dp)
                             .rotate(180f)
-                            .offset((5).dp,0.dp)
+                            .offset((5).dp, 0.dp)
                     )
                     Icon(
                         painter =  painterResource(R.drawable.play),
@@ -338,13 +342,13 @@ fun UnifiedGetSeekBar(
                 }
             Box{
                 BasicText(
-                    text = formatAsDuration(currentPosition),
+                    text = formatAsDuration(positionAndDurationState.value.first),
                     style = typography().xxs.semiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 BasicText(
-                    text = formatAsDuration(currentPosition),
+                    text = formatAsDuration(positionAndDurationState.value.first),
                     style = typography().xxs.semiBold.merge(TextStyle(
                         drawStyle = Stroke(width = 1.0f, join = StrokeJoin.Round),
                         color = if (!textoutline) Color.Transparent else if (colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))) Color.White.copy(0.5f)
@@ -356,9 +360,9 @@ fun UnifiedGetSeekBar(
         }
 
 
-        if (duration != C.TIME_UNSET) {
+        if (positionAndDurationState.value.second != C.TIME_UNSET) {
             var timeRemaining by remember { mutableIntStateOf( 0 ) }
-            timeRemaining = (duration.toInt() - currentPosition.toInt())
+            timeRemaining = (positionAndDurationState.value.second.toInt() - positionAndDurationState.value.first.toInt())
             var paused by remember { mutableStateOf(false) }
 
             if (pauseBetweenSongs != PauseBetweenSongs.`0`)
@@ -425,19 +429,19 @@ fun UnifiedGetSeekBar(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = ripple(false),
                             onClick = {
-                                onSeekTo(( currentPosition + 5000).toFloat())
+                                onSeekTo(( positionAndDurationState.value.first + 5000).toFloat())
                             }
                         )
                 ){
                     Box{
                         BasicText(
-                            text = formatAsDuration(duration),
+                            text = formatAsDuration(durationState.value),
                             style = typography().xxs.semiBold,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
                         BasicText(
-                            text = formatAsDuration(duration),
+                            text = formatAsDuration(durationState.value),
                             style = typography().xxs.semiBold.merge(
                                 TextStyle(
                                     drawStyle = Stroke(width = 1.0f, join = StrokeJoin.Round),
@@ -462,7 +466,7 @@ fun UnifiedGetSeekBar(
                                 tint = colorPalette().text,
                                 modifier = Modifier
                                     .size(10.dp)
-                                    .offset((5).dp,0.dp)
+                                    .offset((5).dp, 0.dp)
                             )
                             Icon(
                                 painter =  painterResource(R.drawable.play),

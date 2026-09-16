@@ -22,7 +22,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.BuildConfig
@@ -33,7 +32,6 @@ import it.fast4x.riplay.LocalPlayerSheetState
 import it.fast4x.riplay.R
 import it.fast4x.riplay.data.models.toUiChip
 import it.fast4x.riplay.enums.CheckUpdateState
-import it.fast4x.riplay.enums.HomeScreenTabs
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.data.models.toUiMood
 import it.fast4x.riplay.enums.HomePagetype
@@ -66,7 +64,8 @@ fun HomeScreen(
     navController: NavController,
     onPlaylistUrl: (String) -> Unit,
     miniPlayer: @Composable () -> Unit = {},
-    openTabFromShortcut: Int
+    openTabFromShortcut: Int,
+    playerIsExpanded: Boolean
 ) {
     val appSettingsManager = LocalAppSettingsManager.current
     val appSettings = appSettingsManager.activeSettings.collectAsState().value
@@ -333,20 +332,13 @@ fun HomeScreen(
     var confirmCount by remember { mutableIntStateOf( 0 ) }
     val playerSheetState = LocalPlayerSheetState.current
     val closeWithBackButton = appSettings.closeWithBackButton
+    val isOnHome = NavRoutes.home.isHere(navController)
     BackHandler(
-        enabled = !playerSheetState.isExpanded
+        enabled = isOnHome && (!playerSheetState.isExpanded || !playerIsExpanded)
     ) {
-        // Prevent this from being applied when user is not on HomeScreen
-        if( NavRoutes.home.isNotHere( navController ) )  {
-            if ( navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED )
-                navController.popBackStack()
 
-            return@BackHandler
-        }
-
-
-        if (closeWithBackButton)
-            if( confirmCount == 0 ) {
+        if (closeWithBackButton) {
+            if (confirmCount == 0) {
                 SmartMessage(
                     context.resources.getString(R.string.press_once_again_to_exit),
                     context = context
@@ -354,15 +346,16 @@ fun HomeScreen(
                 confirmCount++
 
                 // Reset confirmCount after 5s
-                CoroutineScope( Dispatchers.Default ).launch {
-                    delay( 5000L )
+                CoroutineScope(Dispatchers.Default).launch {
+                    delay(5000L)
                     confirmCount = 0
                 }
             } else {
                 val activity = context as? Activity
                 activity?.finishAffinity()
                 // Close app with exit 0 notify that no problem occurred
-                exitProcess( 0 )
+                exitProcess(0)
             }
+        }
     }
 }

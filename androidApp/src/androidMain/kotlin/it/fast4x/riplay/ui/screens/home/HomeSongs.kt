@@ -1093,9 +1093,13 @@ fun HomeSongs(
                             }
                         }
                         if (currentFolderPath != "/") {
+                            // TODO REMOVE IN THE FUTURE OR REPLACE WITH PREDICTIVE
+                            /*
                             item {
-                                BackHandler(onBack = { currentFolderPath = currentFolderPath.removeSuffix("/").substringBeforeLast("/") + "/" })
+                                BackHandler(
+                                    onBack = { currentFolderPath = currentFolderPath.removeSuffix("/").substringBeforeLast("/") + "/" })
                             }
+                             */
                             itemsIndexed(items = listOf(backButtonFolder)) { _, folderItem ->
                                 FolderItem(
                                     folder = folderItem, thumbnailSizeDp = thumbnailSizeDp,

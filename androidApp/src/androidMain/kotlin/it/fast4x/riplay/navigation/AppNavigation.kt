@@ -19,15 +19,16 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -49,7 +50,6 @@ import it.fast4x.riplay.enums.StatisticsType
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.data.models.Mood
 import it.fast4x.riplay.enums.QueueType
-import it.fast4x.riplay.extensions.appsettings.models.AppSettings
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.ui.screens.player.common.Queue
 import it.fast4x.riplay.ui.screens.blacklist.BlacklistScreen
@@ -81,8 +81,6 @@ import it.fast4x.riplay.ui.screens.onboarding.OnboardingScreen
 import it.fast4x.riplay.ui.screens.ondevice.OnDevicePlaylistScreen
 import it.fast4x.riplay.utils.MusicIdentifier
 import it.fast4x.riplay.utils.colorPalette
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 
@@ -95,9 +93,10 @@ import kotlinx.serialization.ExperimentalSerializationApi
 @ExperimentalPermissionsApi
 @Composable
 fun AppNavigation(
-    miniPlayer: @Composable () -> Unit = {},
+    miniPlayer: @Composable (artworkKey: String) -> Unit = {},
     openTabFromShortcut: Int,
-    onNavControllerInit: (NavHostController) -> Unit
+    onNavControllerInit: (NavHostController) -> Unit,
+    playerIsExpanded: Boolean
 ) {
     val navController = rememberNavController()
     onNavControllerInit(navController)
@@ -271,8 +270,9 @@ fun AppNavigation(
             HomeScreen(
                 navController = navController,
                 onPlaylistUrl = navigateToPlaylist,
-                miniPlayer = miniPlayer,
-                openTabFromShortcut = backStackEntry.arguments?.getInt("tab") ?: openTabFromShortcut
+                miniPlayer = { miniPlayer("${NavRoutes.home.name}?tab={tab}") } ,
+                openTabFromShortcut = backStackEntry.arguments?.getInt("tab") ?: openTabFromShortcut,
+                playerIsExpanded = playerIsExpanded
             )
         }
 
@@ -332,19 +332,17 @@ fun AppNavigation(
         }
 
         composable(route = NavRoutes.queue.name) {
-            val showModalBottomSheetPage = rememberSaveable { mutableStateOf(true) }
-            modalBottomSheetPage(showSheet = showModalBottomSheetPage.value) {
-                Queue (
-                    navController = navController,
-                    showPlayer = {},
-                    hidePlayer = {},
-                    onDismiss = {
-                        showModalBottomSheetPage.value = false
-                        navController.popBackStack()
-                    },
-                    onDiscoverClick = {}
-                )
-            }
+            var showQueue by remember { mutableStateOf(true) }
+            Queue (
+                showQueue = showQueue,
+                navController = navController,
+                onDismiss = {
+                    //showModalBottomSheetPage.value = false
+                    showQueue = false
+                    navController.popBackStack()
+                },
+                onDiscoverClick = {}
+            )
         }
 
         composable(
@@ -360,7 +358,7 @@ fun AppNavigation(
             ArtistScreen(
                 navController = navController,
                 browseId = id,
-                miniPlayer = miniPlayer,
+                miniPlayer = { miniPlayer("${NavRoutes.artist.name}/{id}") },
             )
         }
 
@@ -398,7 +396,7 @@ fun AppNavigation(
             OnDeviceArtistScreen(
                 navController = navController,
                 artistId = id,
-                miniPlayer = miniPlayer,
+                miniPlayer = { miniPlayer("${NavRoutes.onDeviceArtist.name}/{id}") },
             )
         }
 
@@ -415,7 +413,7 @@ fun AppNavigation(
             AlbumScreen(
                 navController = navController,
                 browseId = id,
-                miniPlayer = miniPlayer,
+                miniPlayer = { miniPlayer("${NavRoutes.album.name}/{id}") },
             )
         }
 
@@ -456,7 +454,7 @@ fun AppNavigation(
             OnDeviceAlbumScreen(
                 navController = navController,
                 albumId = id,
-                miniPlayer = miniPlayer,
+                miniPlayer = { miniPlayer("${NavRoutes.onDeviceAlbum.name}/{id}") },
             )
         }
 
@@ -473,7 +471,7 @@ fun AppNavigation(
             PlaylistScreen(
                 navController = navController,
                 browseId = id,
-                miniPlayer = miniPlayer,
+                miniPlayer = { miniPlayer("${NavRoutes.playlist.name}/{id}") },
             )
         }
 
@@ -490,14 +488,14 @@ fun AppNavigation(
             PodcastScreen(
                 navController = navController,
                 browseId = id,
-                miniPlayer = miniPlayer,
+                miniPlayer = { miniPlayer("${NavRoutes.podcast.name}/{id}") },
             )
         }
 
         composable(route = NavRoutes.settings.name) {
             SettingsScreen(
                 navController = navController,
-                miniPlayer = miniPlayer,
+                miniPlayer = { miniPlayer(NavRoutes.settings.name) },
             )
         }
 
@@ -505,14 +503,14 @@ fun AppNavigation(
             StatisticsScreen(
                 navController = navController,
                 statisticsType = StatisticsType.Today,
-                miniPlayer = miniPlayer,
+                miniPlayer = { miniPlayer(NavRoutes.statistics.name) },
             )
         }
 
         composable(route = NavRoutes.history.name) {
             HistoryScreen(
                 navController = navController,
-                miniPlayer = miniPlayer,
+                miniPlayer = { miniPlayer(NavRoutes.history.name) },
 
                 )
         }
@@ -524,7 +522,7 @@ fun AppNavigation(
         }
 
         composable(route = NavRoutes.blacklist.name) {
-            BlacklistScreen(navController, miniPlayer)
+            BlacklistScreen(navController, { miniPlayer(NavRoutes.blacklist.name) })
         }
 
         composable(
@@ -542,7 +540,7 @@ fun AppNavigation(
             val text = navBackStackEntry.arguments?.getString("text") ?: ""
             SearchScreen(
                 navController = navController,
-                miniPlayer = miniPlayer,
+                miniPlayer = { miniPlayer("${NavRoutes.search.name}?text={text}") },
                 query = text
             )
         }
@@ -561,7 +559,7 @@ fun AppNavigation(
             LocalPlaylistScreen(
                 navController = navController,
                 playlistId = id,
-                miniPlayer = miniPlayer
+                miniPlayer = { miniPlayer("${NavRoutes.localPlaylist.name}/{id}") }
             )
         }
 
@@ -579,7 +577,7 @@ fun AppNavigation(
             OnDevicePlaylistScreen (
                 navController = navController,
                 folder = folder,
-                miniPlayer = miniPlayer
+                miniPlayer = { miniPlayer("${NavRoutes.onDevicePlaylist.name}/{folder}") }
             )
         }
 
@@ -591,7 +589,7 @@ fun AppNavigation(
                 MoodListScreen(
                     navController = navController,
                     mood = mood,
-                    miniPlayer = miniPlayer,
+                    miniPlayer = { miniPlayer(NavRoutes.mood.name) },
                 )
             }
         }
@@ -601,7 +599,7 @@ fun AppNavigation(
         ) { navBackStackEntry ->
             MoodsPageScreen(
                 navController = navController,
-                miniPlayer = miniPlayer,
+                miniPlayer = { miniPlayer(NavRoutes.moodsPage.name) },
             )
 
         }
@@ -614,7 +612,7 @@ fun AppNavigation(
                 ChipListScreen(
                     navController = navController,
                     chip = chip,
-                    miniPlayer = miniPlayer,
+                    miniPlayer = { miniPlayer(NavRoutes.chip.name) },
                 )
             }
         }
@@ -624,7 +622,7 @@ fun AppNavigation(
         ) { navBackStackEntry ->
             NewreleasesScreen(
                 navController = navController,
-                miniPlayer = miniPlayer,
+                miniPlayer = { miniPlayer(NavRoutes.newAlbums.name) },
             )
         }
 

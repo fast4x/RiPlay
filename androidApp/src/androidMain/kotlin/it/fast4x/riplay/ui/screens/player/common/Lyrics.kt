@@ -164,7 +164,7 @@ import it.fast4x.riplay.ui.components.themed.Loader
 import it.fast4x.riplay.utils.CustomHttpClient
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.getRoundnessShape
-import it.fast4x.riplay.utils.rememberPlayerPositionAndDuration
+import it.fast4x.riplay.utils.rememberPlayerPositionAndDurationState
 import it.fast4x.simpmusiclyrics.SimpMusicClient
 
 
@@ -203,9 +203,9 @@ fun Lyrics(
     val appSettingsManager = LocalAppSettingsManager.current
     val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
-    val (currentPosition, duration) = rememberPlayerPositionAndDuration(binder)
-    val positionProvider = remember { LatestValueProvider(currentPosition) }
-    positionProvider.value = currentPosition
+    val positionAndDurationState = rememberPlayerPositionAndDurationState(binder)
+    val positionProvider = remember { LatestValueProvider(positionAndDurationState.value.first) }
+    positionProvider.value = positionAndDurationState.value.first
 
     val showlyricsthumbnail = appearanceSettings.showLyricsThumbnail
     val isShowingSynchronizedLyrics = appearanceSettings.isShowingSynchronizedLyrics

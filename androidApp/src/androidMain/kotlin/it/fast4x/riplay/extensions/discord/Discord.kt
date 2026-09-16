@@ -168,8 +168,11 @@ fun DiscordLoginAndGetToken(
         }
     )
 
+
     BackHandler(enabled = webView?.canGoBack() == true) {
         webView?.goBack()
     }
+
+
     //}
 }

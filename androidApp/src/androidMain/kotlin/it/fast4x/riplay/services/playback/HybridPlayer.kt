@@ -378,6 +378,7 @@ class HybridPlayer (
     }
 
     fun executeActualPause() {
+        //Timber.d("EXECUTE_ACTUAL_PAUSE stack:\n${Exception().stackTraceToString()}")
         if (activeEngine == ActiveEngine.YOUTUBE) {
             youtubeControl.pause()
             youtubePlayWhenReady = false

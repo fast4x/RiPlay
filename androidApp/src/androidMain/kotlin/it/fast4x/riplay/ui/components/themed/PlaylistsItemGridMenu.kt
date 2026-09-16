@@ -169,7 +169,7 @@ fun PlaylistsItemGridMenu(
                 )
             }
 
-            BackHandler {
+            BackHandler(enabled = isViewingPlaylists) {
                 isViewingPlaylists = false
             }
 

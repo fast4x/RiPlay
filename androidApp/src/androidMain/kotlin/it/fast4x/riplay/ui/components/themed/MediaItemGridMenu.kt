@@ -96,7 +96,7 @@ import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.commonutils.setDisLikeState
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
-import it.fast4x.riplay.utils.rememberPlayerPositionAndDuration
+import it.fast4x.riplay.utils.rememberPlayerPositionAndDurationState
 import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import kotlinx.serialization.ExperimentalSerializationApi
 
@@ -526,8 +526,12 @@ fun MediaItemGridMenu (
         ?: flowOf(null))
         .collectAsState(initial = null)
 
-    val (currentPosition, duration) = rememberPlayerPositionAndDuration(binder)
-    val timeRemaining = duration.toInt() - currentPosition.toInt()
+    val positionAndDurationState = rememberPlayerPositionAndDurationState(binder)
+    val timeRemaining by remember {
+        derivedStateOf {
+            positionAndDurationState.value.second.toInt() - positionAndDurationState.value.first.toInt()
+        }
+    }
 
     if (isShowingSleepTimerDialog) {
         if (sleepTimerMillisLeft != null) {
@@ -749,7 +753,7 @@ fun MediaItemGridMenu (
                 )
             }
 
-            BackHandler {
+            BackHandler(enabled = isViewingPlaylists) {
                 isViewingPlaylists = false
             }
 

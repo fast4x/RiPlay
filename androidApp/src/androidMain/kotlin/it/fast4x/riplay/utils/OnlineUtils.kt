@@ -81,9 +81,16 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.chrisbanes.haze.hazeChild
+import it.fast4x.riplay.LocalAppearanceSettingsManager
+import it.fast4x.riplay.enums.PlayerType
+import it.fast4x.riplay.enums.QueueType
 import it.fast4x.riplay.extensions.musicbrainz.repository.ArtistRepository
+import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 
@@ -190,6 +197,7 @@ data class OnlineRadio (
 @UnstableApi
 @Composable
 fun SearchOnlineEntity (
+    showSheet: Boolean,
     onDismiss: (Boolean) -> Unit,
     query: String,
     filter: Environment.SearchFilter = Environment.SearchFilter.Video,
@@ -199,182 +207,215 @@ fun SearchOnlineEntity (
     val menuState = LocalGlobalSheetState.current
     val hapticFeedback = LocalHapticFeedback.current
     val selectedQueue = LocalSelectedQueue.current
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
     val thumbnailHeightDp = 72.dp
     val thumbnailWidthDp = 128.dp
     val songThumbnailSizeDp = Dimensions.thumbnails.song
     val songThumbnailSizePx = songThumbnailSizeDp.px
     val emptyItemsText = stringResource(R.string.no_results_found)
     val headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit = {}
+    val playerType = appearanceSettings.playerType
+    val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
     var filterContentType by remember { mutableStateOf(it.fast4x.riplay.enums.ContentType.Official) }
 
-    Box(
+    CustomModalBottomSheet(
+        showSheet = showSheet,
+        onDismissRequest = { onDismiss(false) },
+        containerColor = if (playerType == PlayerType.Modern) Color.Transparent else colorPalette().background2,
+        contentColor = if (playerType == PlayerType.Modern) Color.Transparent else colorPalette().background2,
         modifier = Modifier
-            .background(colorPalette().background0)
-            .fillMaxSize()
+            .fillMaxWidth(),
+        dragHandle = {
+            Surface(
+                modifier = Modifier.padding(vertical = 0.dp),
+                color = colorPalette().background0,
+                shape = thumbnailShape()
+            ) {}
+        },
+        shape = thumbnailRoundness.shape()
     ) {
-        Column(
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .systemBarsPadding(),
 
-            ) {
-            Title(
-                title = stringResource(id = if (filter == Environment.SearchFilter.Video) R.string.videos
-                else R.string.songs),
-                modifier = Modifier.padding(bottom = 12.dp),
-            )
+        Box(
+            modifier = Modifier
+                .background(colorPalette().background0)
+                .fillMaxSize()
+        ) {
             Column(
-                modifier = Modifier.background(colorPalette().accent.copy(alpha = 0.15f))
-            ) {
-                Title2Actions(
-                    title = "Filter content type",
-                    onClick1 = {
-                        menuState.display {
-                            Menu {
-                                ContentType.entries.forEach {
-                                    MenuEntry(
-                                        icon = it.icon,
-                                        text = it.textName,
-                                        onClick = {
-                                            filterContentType = it
-                                            menuState.hide()
-                                        }
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .systemBarsPadding(),
+
+                ) {
+                Title(
+                    title = stringResource(
+                        id = if (filter == Environment.SearchFilter.Video) R.string.videos
+                        else R.string.songs
+                    ),
+                    modifier = Modifier.padding(bottom = 12.dp),
+                )
+                Column(
+                    modifier = Modifier.background(colorPalette().accent.copy(alpha = 0.15f))
+                ) {
+                    Title2Actions(
+                        title = "Filter content type",
+                        onClick1 = {
+                            menuState.display {
+                                Menu {
+                                    ContentType.entries.forEach {
+                                        MenuEntry(
+                                            icon = it.icon,
+                                            text = it.textName,
+                                            onClick = {
+                                                filterContentType = it
+                                                menuState.hide()
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    )
+                    BasicText(
+                        text = when (filterContentType) {
+                            ContentType.All -> ContentType.All.textName
+                            ContentType.Official -> ContentType.Official.textName
+                            ContentType.UserGenerated -> ContentType.UserGenerated.textName
+
+                        },
+                        style = typography().xxs.secondary,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .padding(bottom = 8.dp)
+                    )
+                }
+
+                ItemsPage(
+                    tag = "searchYTEntity/$query/entities",
+                    itemsPageProvider = { continuation ->
+                        if (continuation == null) {
+                            Environment.searchPage(
+                                body = SearchBody(
+                                    query = query,
+                                    params = filter.value
+                                ),
+                                fromMusicShelfRendererContent = if (filter == Environment.SearchFilter.Video) Environment.VideoItem::from
+                                else Environment.SongItem::from
+                            )
+                        } else {
+                            Environment.searchPage(
+                                body = ContinuationBody(continuation = continuation),
+                                fromMusicShelfRendererContent = if (filter == Environment.SearchFilter.Video) Environment.VideoItem::from
+                                else Environment.SongItem::from
+                            )
+                        }
+                    },
+                    emptyItemsText = emptyItemsText,
+                    headerContent = headerContent,
+                    itemContent = { media ->
+                        if (media is Environment.VideoItem || media is Environment.SongItem) {
+                            SwipeablePlaylistItem(
+                                mediaItem = when (media) {
+                                    is Environment.VideoItem -> media.asMediaItem
+                                    is Environment.SongItem -> media.asMediaItem
+                                },
+                                onPlayNext = {
+                                    binder?.hybridPlayer?.addNext(
+                                        when (media) {
+                                            is Environment.VideoItem -> media.asMediaItem
+                                            is Environment.SongItem -> media.asMediaItem
+                                        },
+                                        queue = selectedQueue ?: defaultQueue()
+                                    )
+                                },
+                                onEnqueue = {
+                                    binder?.hybridPlayer?.enqueue(
+                                        when (media) {
+                                            is Environment.VideoItem -> media.asMediaItem
+                                            is Environment.SongItem -> media.asMediaItem
+                                        }, queue = it
+                                    )
+                                }
+                            ) {
+                                if (media is Environment.VideoItem) {
+                                    VideoItem(
+                                        video = media,
+                                        thumbnailWidthDp = thumbnailWidthDp,
+                                        thumbnailHeightDp = thumbnailHeightDp,
+                                        modifier = Modifier
+                                            .combinedClickable(
+                                                onLongClick = {
+                                                    menuState.display {
+                                                        NonQueuedMediaItemMenu(
+                                                            navController = rememberNavController(),
+                                                            onDismiss = menuState::hide,
+                                                            mediaItem = media.asMediaItem,
+                                                            disableScrollingText = disableScrollingText,
+                                                        )
+                                                    };
+                                                    hapticFeedback.performHapticFeedback(
+                                                        HapticFeedbackType.LongPress
+                                                    )
+                                                },
+                                                onClick = {
+                                                    binder?.hybridPlayer?.forcePlay(
+                                                        media.asMediaItem,
+                                                        true
+                                                    )
+                                                    onDismiss(true)
+                                                }
+                                            ),
+                                        disableScrollingText = disableScrollingText
+                                    )
+                                }
+                                if (media is Environment.SongItem) {
+                                    SongItem(
+                                        song = media,
+                                        thumbnailSizePx = songThumbnailSizePx,
+                                        thumbnailSizeDp = songThumbnailSizeDp,
+                                        //disableScrollingText = disableScrollingText,
+                                        //isNowPlaying = false,
+                                        modifier = Modifier
+                                            .combinedClickable(
+                                                onLongClick = {
+                                                    menuState.display {
+                                                        NonQueuedMediaItemMenu(
+                                                            navController = rememberNavController(),
+                                                            onDismiss = menuState::hide,
+                                                            mediaItem = media.asMediaItem,
+                                                            disableScrollingText = disableScrollingText,
+                                                        )
+                                                    };
+                                                    hapticFeedback.performHapticFeedback(
+                                                        HapticFeedbackType.LongPress
+                                                    )
+                                                },
+                                                onClick = {
+                                                    //binder?.stopRadio()
+                                                    binder?.hybridPlayer?.forcePlay(
+                                                        media.asMediaItem,
+                                                        true
+                                                    )
+                                                    //binder?.setupRadio(media.info?.endpoint)
+                                                    onDismiss(false)
+                                                }
+                                            )
                                     )
                                 }
                             }
                         }
-                    }
-                )
-                BasicText(
-                    text = when (filterContentType) {
-                        ContentType.All -> ContentType.All.textName
-                        ContentType.Official -> ContentType.Official.textName
-                        ContentType.UserGenerated -> ContentType.UserGenerated.textName
-
                     },
-                    style = typography().xxs.secondary,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .padding(bottom = 8.dp)
+                    itemPlaceholderContent = {
+                        VideoItemPlaceholder(
+                            thumbnailHeightDp = thumbnailHeightDp,
+                            thumbnailWidthDp = thumbnailWidthDp
+                        )
+                    },
+                    filterContentType = filterContentType
                 )
             }
-
-            ItemsPage(
-                tag = "searchYTEntity/$query/entities",
-                itemsPageProvider = { continuation ->
-                    if (continuation == null) {
-                        Environment.searchPage(
-                            body = SearchBody(
-                                query = query,
-                                params = filter.value
-                            ),
-                            fromMusicShelfRendererContent = if (filter == Environment.SearchFilter.Video) Environment.VideoItem::from
-                            else Environment.SongItem::from
-                        )
-                    } else {
-                        Environment.searchPage(
-                            body = ContinuationBody(continuation = continuation),
-                            fromMusicShelfRendererContent = if (filter == Environment.SearchFilter.Video) Environment.VideoItem::from
-                            else Environment.SongItem::from
-                        )
-                    }
-                },
-                emptyItemsText = emptyItemsText,
-                headerContent = headerContent,
-                itemContent = { media ->
-                    if (media is Environment.VideoItem || media is Environment.SongItem) {
-                        SwipeablePlaylistItem(
-                            mediaItem = when (media) {
-                                is Environment.VideoItem -> media.asMediaItem
-                                is Environment.SongItem -> media.asMediaItem
-                            },
-                            onPlayNext = {
-                                binder?.hybridPlayer?.addNext(
-                                    when (media) {
-                                        is Environment.VideoItem -> media.asMediaItem
-                                        is Environment.SongItem -> media.asMediaItem
-                                    },
-                                    queue = selectedQueue ?: defaultQueue()
-                                )
-                            },
-                            onEnqueue = {
-                                binder?.hybridPlayer?.enqueue(when (media) {
-                                    is Environment.VideoItem -> media.asMediaItem
-                                    is Environment.SongItem -> media.asMediaItem
-                                }, queue = it)
-                            }
-                        ) {
-                            if (media is Environment.VideoItem) {
-                                VideoItem(
-                                    video = media,
-                                    thumbnailWidthDp = thumbnailWidthDp,
-                                    thumbnailHeightDp = thumbnailHeightDp,
-                                    modifier = Modifier
-                                        .combinedClickable(
-                                            onLongClick = {
-                                                menuState.display {
-                                                    NonQueuedMediaItemMenu(
-                                                        navController = rememberNavController(),
-                                                        onDismiss = menuState::hide,
-                                                        mediaItem = media.asMediaItem,
-                                                        disableScrollingText = disableScrollingText,
-                                                    )
-                                                };
-                                                hapticFeedback.performHapticFeedback(
-                                                    HapticFeedbackType.LongPress
-                                                )
-                                            },
-                                            onClick = {
-                                                binder?.hybridPlayer?.forcePlay(media.asMediaItem, true)
-                                                onDismiss(true)
-                                            }
-                                        ),
-                                    disableScrollingText = disableScrollingText
-                                )
-                            }
-                            if (media is Environment.SongItem) {
-                                SongItem(
-                                    song = media,
-                                    thumbnailSizePx = songThumbnailSizePx,
-                                    thumbnailSizeDp = songThumbnailSizeDp,
-                                    //disableScrollingText = disableScrollingText,
-                                    //isNowPlaying = false,
-                                    modifier = Modifier
-                                        .combinedClickable(
-                                            onLongClick = {
-                                                menuState.display {
-                                                    NonQueuedMediaItemMenu(
-                                                        navController = rememberNavController(),
-                                                        onDismiss = menuState::hide,
-                                                        mediaItem = media.asMediaItem,
-                                                        disableScrollingText = disableScrollingText,
-                                                    )
-                                                };
-                                                hapticFeedback.performHapticFeedback(
-                                                    HapticFeedbackType.LongPress
-                                                )
-                                            },
-                                            onClick = {
-                                                //binder?.stopRadio()
-                                                binder?.hybridPlayer?.forcePlay(media.asMediaItem, true)
-                                                //binder?.setupRadio(media.info?.endpoint)
-                                                onDismiss(false)
-                                            }
-                                        )
-                                )
-                            }
-                        }
-                    }
-                },
-                itemPlaceholderContent = {
-                    VideoItemPlaceholder(
-                        thumbnailHeightDp = thumbnailHeightDp,
-                        thumbnailWidthDp = thumbnailWidthDp
-                    )
-                },
-                filterContentType = filterContentType
-            )
         }
     }
 }
@@ -608,7 +649,9 @@ fun ShowVideoOrSongInfo(
 
             item {
                 Box(
-                    modifier = Modifier.fillMaxWidth().padding(32.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(

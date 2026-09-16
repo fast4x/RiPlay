@@ -79,6 +79,7 @@ import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import dev.chrisbanes.haze.HazeState
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -121,7 +122,7 @@ import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.mediaItems
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
-import it.fast4x.riplay.utils.rememberPlayerPositionAndDuration
+import it.fast4x.riplay.utils.rememberPlayerPositionAndDurationState
 import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.utils.shuffleQueue
 import it.fast4x.riplay.utils.typography
@@ -220,7 +221,7 @@ fun TvUnifiedPlayer(
 
     val mediaItem = nullableMediaItem ?: return
 
-    val (currentPosition, duration) = rememberPlayerPositionAndDuration(binder)
+    val positionAndDurationState = rememberPlayerPositionAndDurationState(binder)
 
     // ── DB info ──────────────────────────────────────────────────
     var albumInfo by remember {
@@ -421,8 +422,8 @@ fun TvUnifiedPlayer(
 
                 // Seek bar
                 TvSeekBar(
-                    position = currentPosition.toFloat(),
-                    duration = duration.toFloat(),
+                    position = positionAndDurationState.value.first.toFloat(),
+                    duration = positionAndDurationState.value.second.toFloat(),
                     onSeek = { pos ->
                         binder.hybridPlayer.seekTo(pos.toLong())
                     },
@@ -437,7 +438,7 @@ fun TvUnifiedPlayer(
                     binder = binder,
                     playerState = playerState,
                     mediaItem = mediaItem,
-                    positionAndDuration = Pair(currentPosition, duration),
+                    positionAndDuration = Pair(positionAndDurationState.value.first, positionAndDurationState.value.second),
                     //jumpPrevious = jumpPrevious,
                     playPauseFocusRequester = playPauseFocusRequester,
                     modifier = Modifier.padding(bottom = 24.dp)
@@ -493,7 +494,7 @@ fun TvUnifiedPlayer(
         if (isShowingLyrics) {
             TvLyricsOverlay(
                 mediaItem = mediaItem,
-                positionAndDuration = Pair(currentPosition, duration),
+                positionAndDuration = Pair(positionAndDurationState.value.first, positionAndDurationState.value.second),
                 isLandscape = true,
                 onDismiss = { isShowingLyrics = false },
                 disableScrollingText = disableScrollingText,
@@ -521,30 +522,19 @@ fun TvUnifiedPlayer(
     }
 
     // ── Queue sheet ──────────────────────────────────────────────
-    if (showQueue) {
-        CustomModalBottomSheet(
-            showSheet = showQueue,
-            onDismissRequest = { showQueue = false },
-            containerColor = color.background2,
-            contentColor = color.background2,
-            modifier = Modifier.fillMaxWidth(),
-            dragHandle = {},
-            shape = thumbnailRoundness.shape(),
-        ) {
-            Queue(
-                navController = navController,
-                showPlayer = {},
-                hidePlayer = {},
-                onDismiss = {
-                    coroutineScope.launch {
-                        appSettingsManager.updateSettings(appSettingsManager.activeSettings.value.copy(queueLoopType = it))
-                    }
-                    showQueue = false
-                },
-                onDiscoverClick = {}
-            )
-        }
-    }
+
+    Queue(
+        showQueue = showQueue,
+        navController = navController,
+        onDismiss = {
+            coroutineScope.launch {
+                appSettingsManager.updateSettings(appSettingsManager.activeSettings.value.copy(queueLoopType = it))
+            }
+            showQueue = false
+        },
+        onDiscoverClick = {},
+    )
+
 }
 
 // ═══════════════════════════════════════════════════════════════════

@@ -215,6 +215,9 @@ fun PlayerAppearanceSettings(
     val colorPaletteMode = appearanceSettings.colorPaletteMode
     val swipeAnimationNoThumbnail = appearanceSettings.swipeAnimationNoThumbnail
 
+    val playerTransitionsEnabled = appearanceSettings.playerTransitionsEnabled
+    val playerTransitionAnimation = appearanceSettings.playerTransitionAnimation
+
     var appearanceFilename by remember {
         mutableStateOf("")
     }
@@ -369,275 +372,6 @@ fun PlayerAppearanceSettings(
                         .onSuccess { settings -> preferences.applyFrom(settings) }
                         .onFailure { Timber.e("PlayerAppearanceSettings failed to load appearance from file") }
 
-
-
-                    /*
-                    csvReader().open(inputStream) {
-                        readAllWithHeaderAsSequence().forEachIndexed { index, row: Map<String, String> ->
-                            if (row["SettingsType"] == "Appearance") {
-                                println("Import appearance settings parameter ${row["Parameter"]}")
-                                when (row["Parameter"]) {
-                                    "showthumbnail" -> {
-                                        showthumbnail = row["Value"].toBoolean()
-                                    }
-                                    "playerBackgroundColors" -> {
-                                        playerBackgroundColors = PlayerBackgroundColors.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
-                                    }
-                                    "thumbnailRoundness" -> {
-                                        thumbnailRoundness = ThumbnailRoundness.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
-                                    }
-                                    "playerType" -> {
-                                        playerType = PlayerType.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
-                                    }
-                                    "queueType" -> {
-                                        queueType = QueueType.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
-                                    }
-                                    "noblur" -> {
-                                        noblur = row["Value"].toBoolean()
-                                    }
-                                    "fadingedge" -> {
-                                        fadingedge = row["Value"].toBoolean()
-                                    }
-                                    "carousel" -> {
-                                        carousel = row["Value"].toBoolean()
-                                    }
-                                    "carouselSize" -> {
-                                        carouselSize =
-                                            CarouselSize.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
-                                    }
-                                    "keepPlayerMinimized" -> {
-                                        keepPlayerMinimized = row["Value"].toBoolean()
-                                    }
-                                    "playerInfoShowIcons" -> {
-                                        playerInfoShowIcons = row["Value"].toBoolean()
-                                    }
-                                    "showTopActionsBar" -> {
-                                        showTopActionsBar = row["Value"].toBoolean()
-                                    }
-                                    "playerControlsType" -> {
-                                        playerControlsType = PlayerControlsType.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
-                                    }
-                                    "playerInfoType" -> {
-                                        playerInfoType = PlayerInfoType.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
-                                    }
-                                    "transparentBackgroundActionBarPlayer" -> {
-                                        transparentBackgroundActionBarPlayer = row["Value"].toBoolean()
-                                    }
-                                    "iconLikeType" -> {
-                                        iconLikeType = IconLikeType.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
-                                    }
-                                    "playerSwapControlsWithTimeline" -> {
-                                        playerSwapControlsWithTimeline = row["Value"].toBoolean()
-                                    }
-                                    "playerEnableLyricsPopupMessage" -> {
-                                        playerEnableLyricsPopupMessage = row["Value"].toBoolean()
-                                    }
-                                    "actionspacedevenly" -> {
-                                        actionspacedevenly = row["Value"].toBoolean()
-                                    }
-                                    "thumbnailType" -> {
-                                        thumbnailType = ThumbnailType.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
-                                    }
-                                    "showvisthumbnail" -> {
-                                        showvisthumbnail = row["Value"].toBoolean()
-                                    }
-                                    "buttonzoomout" -> {
-                                        buttonzoomout = row["Value"].toBoolean()
-                                    }
-                                    "thumbnailpause" -> {
-                                        thumbnailpause = row["Value"].toBoolean()
-                                    }
-                                    "showsongs" -> {
-                                        showsongs = SongsNumber.entries.toTypedArray()[row["Value"]!!.toInt()]
-                                    }
-                                    "showalbumcover" -> {
-                                        showalbumcover = row["Value"].toBoolean()
-                                    }
-                                    "prevNextSongs" -> {
-                                        prevNextSongs = PrevNextSongs.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
-                                    }
-                                    "tapqueue" -> {
-                                        tapqueue = row["Value"].toBoolean()
-                                    }
-                                    "swipeUpQueue" -> {
-                                        swipeUpQueue = row["Value"].toBoolean()
-                                    }
-                                    "statsfornerds" -> {
-                                        statsfornerds = row["Value"].toBoolean()
-                                    }
-                                    "transparentbar" -> {
-                                        transparentbar = row["Value"].toBoolean()
-                                    }
-                                    "blackgradient" -> {
-                                        blackgradient = row["Value"].toBoolean()
-                                    }
-                                    "showlyricsthumbnail" -> {
-                                        showlyricsthumbnail = row["Value"].toBoolean()
-                                    }
-                                    "expandedplayer" -> {
-                                        expandedplayer = row["Value"].toBoolean()
-                                    }
-                                    "playerPlayButtonType" -> {
-                                        playerPlayButtonType = PlayerPlayButtonType.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
-                                    }
-                                    "bottomgradient" -> {
-                                        bottomgradient = row["Value"].toBoolean()
-                                    }
-                                    "textoutline" -> {
-                                        textoutline = row["Value"].toBoolean()
-                                    }
-                                    "thumbnailTapEnabled" -> {
-                                        thumbnailTapEnabled = row["Value"].toBoolean()
-                                    }
-                                    "showButtonPlayerAddToPlaylist" -> {
-                                        showButtonPlayerAddToPlaylist = row["Value"].toBoolean()
-                                    }
-                                    "showButtonPlayerArrow" -> {
-                                        showButtonPlayerArrow = row["Value"].toBoolean()
-                                    }
-//                                    "showButtonPlayerDownload" -> {
-//                                        showButtonPlayerDownload = row["Value"].toBoolean()
-//                                    }
-                                    "showButtonPlayerLoop" -> {
-                                        showButtonPlayerLoop = row["Value"].toBoolean()
-                                    }
-                                    "showButtonPlayerLyrics" -> {
-                                        showButtonPlayerLyrics = row["Value"].toBoolean()
-                                    }
-                                    "expandedplayertoggle" -> {
-                                        expandedplayertoggle = row["Value"].toBoolean()
-                                    }
-                                    "showButtonPlayerShuffle" -> {
-                                        showButtonPlayerShuffle = row["Value"].toBoolean()
-                                    }
-                                    "showButtonPlayerSleepTimer" -> {
-                                        showButtonPlayerSleepTimer = row["Value"].toBoolean()
-                                    }
-                                    "showButtonPlayerMenu" -> {
-                                        showButtonPlayerMenu = row["Value"].toBoolean()
-                                    }
-                                    "showButtonPlayerStartradio" -> {
-                                        showButtonPlayerStartradio = row["Value"].toBoolean()
-                                    }
-                                    "showButtonPlayerSystemEqualizer" -> {
-                                        showButtonPlayerSystemEqualizer = row["Value"].toBoolean()
-                                    }
-                                    "showButtonPlayerDiscover" -> {
-                                        showButtonPlayerDiscover = row["Value"].toBoolean()
-                                    }
-                                    "showButtonPlayerVideo" -> {
-                                        showButtonPlayerVideo = row["Value"].toBoolean()
-                                    }
-                                    "showBackgroundLyrics" -> {
-                                        showBackgroundLyrics = row["Value"].toBoolean()
-                                    }
-                                    "showTotalTimeQueue" -> {
-                                        showTotalTimeQueue = row["Value"].toBoolean()
-                                    }
-                                    "backgroundProgress" -> {
-                                        backgroundProgress = BackgroundProgress.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
-                                    }
-                                    "showNextSongsInPlayer" -> {
-                                        showNextSongsInPlayer = row["Value"].toBoolean()
-                                    }
-                                    "showRemainingSongTime" -> {
-                                        showRemainingSongTime = row["Value"].toBoolean()
-                                    }
-                                    "clickLyricsText" -> {
-                                        clickLyricsText = row["Value"].toBoolean()
-                                    }
-                                    "queueDurationExpanded" -> {
-                                        queueDurationExpanded = row["Value"].toBoolean()
-                                    }
-                                    "titleExpanded" -> {
-                                        titleExpanded = row["Value"].toBoolean()
-                                    }
-                                    "timelineExpanded" -> {
-                                        timelineExpanded = row["Value"].toBoolean()
-                                    }
-                                    "controlsExpanded" -> {
-                                        controlsExpanded = row["Value"].toBoolean()
-                                    }
-                                    "miniQueueExpanded" -> {
-                                        miniQueueExpanded = row["Value"].toBoolean()
-                                    }
-                                    "statsExpanded" -> {
-                                        statsExpanded = row["Value"].toBoolean()
-                                    }
-                                    "actionExpanded" -> {
-                                        actionExpanded = row["Value"].toBoolean()
-                                    }
-                                    "showCoverThumbnailAnimation" -> {
-                                        showCoverThumbnailAnimation = row["Value"].toBoolean()
-                                    }
-                                    "coverThumbnailAnimation" -> {
-                                        coverThumbnailAnimation =
-                                            ThumbnailCoverType.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
-                                    }
-                                    "notificationPlayerFirstIcon" -> {
-                                        notificationPlayerFirstIcon =
-                                            NotificationButtons.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
-                                    }
-                                    "notificationPlayerSecondIcon" -> {
-                                        notificationPlayerSecondIcon =
-                                            NotificationButtons.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
-                                    }
-                                    "enableWallpaper" -> {
-                                        enableWallpaper = row["Value"].toBoolean()
-                                    }
-                                    "wallpaperType" -> {
-                                        wallpaperType = WallpaperType.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
-                                    }
-                                    "topPadding" -> {
-                                        topPadding = row["Value"].toBoolean()
-                                    }
-                                    "animatedGradient" -> {
-                                        animatedGradient = AnimatedGradient.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
-                                    }
-                                    "albumCoverRotation" -> {
-                                        albumCoverRotation = row["Value"].toBoolean()
-                                    }
-                                    "blurStrength" -> {
-                                        blurStrength = row["Value"]?.toFloat() ?: 0f
-                                    }
-                                    "thumbnailFadeEx" -> {
-                                        thumbnailFadeEx = row["Value"]?.toFloat() ?: 0f
-                                    }
-                                    "thumbnailFade" -> {
-                                        thumbnailFade = row["Value"]?.toFloat() ?: 0f
-                                    }
-                                    "thumbnailSpacing" -> {
-                                        thumbnailSpacing = row["Value"]?.toFloat() ?: 0f
-                                    }
-                                    "colorPaletteName" -> {
-                                        colorPaletteName =
-                                            ColorPaletteName.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
-                                    }
-                                    "colorPaletteMode" -> {
-                                        colorPaletteMode =
-                                            ColorPaletteMode.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
-                                    }
-                                    "swipeAnimationNoThumbnail" -> {
-                                        swipeAnimationNoThumbnail =
-                                            SwipeAnimationNoThumbnail.entries.toTypedArray()[row["Value"]?.toInt() ?: 0]
-                                    }
-                                    "showLikeButtonBackgroundPlayer" -> {
-                                        showLikeButtonBackgroundPlayer = row["Value"].toBoolean()
-                                    }
-                                    "visualizerEnabled" -> {
-                                        visualizerEnabled = row["Value"].toBoolean()
-                                    }
-
-
-
-
-                                }
-                            }
-
-                        }
-                    }
-                    */
-
                 }
         }
 
@@ -706,287 +440,6 @@ fun PlayerAppearanceSettings(
             AppearancePresetDialogHost(context) { appearanceChooser = false }
         }
 
-
-
-        /* // OLD CHOOSER
-        if (appearanceChooser) {
-
-            AppearancePresetDialog(
-                onDismiss = { appearanceChooser = false },
-                onClick0 = {
-                    showTopActionsBar = true
-                    showthumbnail = true
-                    playerBackgroundColors = PlayerBackgroundColors.BlurredCoverColor
-                    blurStrength = 50f
-                    thumbnailRoundness = ThumbnailRoundness.None
-                    playerInfoType = PlayerInfoType.Essential
-                    playerTimelineType = PlayerTimelineType.ThinBar
-                    playerTimelineSize = PlayerTimelineSize.Biggest
-                    playerControlsType = PlayerControlsType.Essential
-                    playerPlayButtonType = PlayerPlayButtonType.Disabled
-                    transparentbar = true
-                    playerType = PlayerType.Essential
-                    showlyricsthumbnail = false
-                    expandedplayer = true
-                    thumbnailType = ThumbnailType.Modern
-                    playerThumbnailSize = PlayerThumbnailSize.Big
-                    showTotalTimeQueue = false
-                    bottomgradient = true
-                    showRemainingSongTime = true
-                    showNextSongsInPlayer = false
-                    colorPaletteName = ColorPaletteName.Dynamic
-                    colorPaletteMode = ColorPaletteMode.System
-                    ///////ACTION BAR BUTTONS////////////////
-                    transparentBackgroundActionBarPlayer = true
-                    actionspacedevenly = true
-                    showButtonPlayerVideo = false
-                    showButtonPlayerDiscover = false
-                    //showButtonPlayerDownload = false
-                    showButtonPlayerAddToPlaylist = true
-                    showButtonPlayerLoop = false
-                    showButtonPlayerShuffle = true
-                    showButtonPlayerLyrics = false
-                    expandedplayertoggle = false
-                    showButtonPlayerSleepTimer = false
-                    visualizerEnabled = false
-                    appearanceChooser = false
-                    showButtonPlayerArrow = false
-                    showButtonPlayerStartradio = false
-                    showButtonPlayerMenu = true
-                    ///////////////////////////
-                    appearanceChooser = false
-                },
-                onClick1 = {
-                    showTopActionsBar = true
-                    showthumbnail = true
-                    playerBackgroundColors = PlayerBackgroundColors.BlurredCoverColor
-                    blurStrength = 50f
-                    playerInfoType = PlayerInfoType.Essential
-                    playerPlayButtonType = PlayerPlayButtonType.Disabled
-                    playerTimelineType = PlayerTimelineType.ThinBar
-                    playerControlsType = PlayerControlsType.Essential
-                    transparentbar = true
-                    playerType = PlayerType.Modern
-                    expandedplayer = true
-                    fadingedge = true
-                    thumbnailFadeEx = 4f
-                    thumbnailSpacing = -32f
-                    thumbnailType = ThumbnailType.Essential
-                    carouselSize = CarouselSize.Big
-                    playerThumbnailSize = PlayerThumbnailSize.Biggest
-                    showTotalTimeQueue = false
-                    transparentBackgroundActionBarPlayer = true
-                    showRemainingSongTime = true
-                    bottomgradient = true
-                    showlyricsthumbnail = false
-                    thumbnailRoundness = ThumbnailRoundness.Medium
-                    showNextSongsInPlayer = true
-                    colorPaletteName = ColorPaletteName.Dynamic
-                    colorPaletteMode = ColorPaletteMode.System
-                    ///////ACTION BAR BUTTONS////////////////
-                    transparentBackgroundActionBarPlayer = true
-                    actionspacedevenly = true
-                    showButtonPlayerVideo = false
-                    showButtonPlayerDiscover = false
-                    //showButtonPlayerDownload = false
-                    showButtonPlayerAddToPlaylist = true
-                    showButtonPlayerLoop = false
-                    showButtonPlayerShuffle = false
-                    showButtonPlayerLyrics = false
-                    expandedplayertoggle = true
-                    showButtonPlayerSleepTimer = false
-                    visualizerEnabled = false
-                    appearanceChooser = false
-                    showButtonPlayerArrow = false
-                    showButtonPlayerStartradio = false
-                    showButtonPlayerMenu = true
-                    ///////////////////////////
-                    appearanceChooser = false
-                },
-                onClick2 = {
-                    showTopActionsBar = false
-                    showthumbnail = false
-                    noblur = true
-                    topPadding = false
-                    playerBackgroundColors = PlayerBackgroundColors.BlurredCoverColor
-                    blurStrength = 50f
-                    playerPlayButtonType = PlayerPlayButtonType.Disabled
-                    playerInfoType = PlayerInfoType.Modern
-                    playerInfoShowIcons = false
-                    playerTimelineType = PlayerTimelineType.ThinBar
-                    playerControlsType = PlayerControlsType.Essential
-                    transparentbar = true
-                    playerType = PlayerType.Modern
-                    expandedplayer = true
-                    showTotalTimeQueue = false
-                    transparentBackgroundActionBarPlayer = true
-                    showRemainingSongTime = true
-                    bottomgradient = true
-                    showlyricsthumbnail = false
-                    showNextSongsInPlayer = false
-                    colorPaletteName = ColorPaletteName.Dynamic
-                    colorPaletteMode = ColorPaletteMode.System
-                    ///////ACTION BAR BUTTONS////////////////
-                    transparentBackgroundActionBarPlayer = true
-                    actionspacedevenly = true
-                    showButtonPlayerVideo = false
-                    showButtonPlayerDiscover = false
-                    //showButtonPlayerDownload = false
-                    showButtonPlayerAddToPlaylist = false
-                    showButtonPlayerLoop = false
-                    showButtonPlayerShuffle = false
-                    showButtonPlayerLyrics = false
-                    expandedplayertoggle = false
-                    showButtonPlayerSleepTimer = false
-                    visualizerEnabled = false
-                    appearanceChooser = false
-                    showButtonPlayerArrow = false
-                    showButtonPlayerStartradio = false
-                    showButtonPlayerMenu = true
-                    ///////////////////////////
-                    appearanceChooser = false
-                },
-                onClick3 = {
-                    showTopActionsBar = false
-                    topPadding = false
-                    showthumbnail = true
-                    playerBackgroundColors = PlayerBackgroundColors.BlurredCoverColor
-                    blurStrength = 50f
-                    playerInfoType = PlayerInfoType.Essential
-                    playerTimelineType = PlayerTimelineType.FakeAudioBar
-                    playerTimelineSize = PlayerTimelineSize.Biggest
-                    playerControlsType = PlayerControlsType.Modern
-                    playerPlayButtonType = PlayerPlayButtonType.Disabled
-                    colorPaletteName = ColorPaletteName.PureBlack
-                    transparentbar = false
-                    playerType = PlayerType.Essential
-                    expandedplayer = false
-                    playerThumbnailSize = PlayerThumbnailSize.Expanded
-                    showTotalTimeQueue = false
-                    transparentBackgroundActionBarPlayer = true
-                    showRemainingSongTime = true
-                    bottomgradient = true
-                    showlyricsthumbnail = false
-                    thumbnailType = ThumbnailType.Essential
-                    thumbnailRoundness = ThumbnailRoundness.Light
-                    playerType = PlayerType.Modern
-                    fadingedge = true
-                    thumbnailFade = 5f
-                    showNextSongsInPlayer = false
-                    ///////ACTION BAR BUTTONS////////////////
-                    transparentBackgroundActionBarPlayer = true
-                    actionspacedevenly = true
-                    showButtonPlayerVideo = false
-                    showButtonPlayerDiscover = false
-                    //showButtonPlayerDownload = false
-                    showButtonPlayerAddToPlaylist = false
-                    showButtonPlayerLoop = true
-                    showButtonPlayerShuffle = true
-                    showButtonPlayerLyrics = false
-                    expandedplayertoggle = false
-                    showButtonPlayerSleepTimer = false
-                    visualizerEnabled = false
-                    appearanceChooser = false
-                    showButtonPlayerArrow = true
-                    showButtonPlayerStartradio = false
-                    showButtonPlayerMenu = true
-                    ///////////////////////////
-                    appearanceChooser = false
-                },
-                onClick4 = {
-                    showTopActionsBar = false
-                    topPadding = true
-                    showthumbnail = true
-                    playerBackgroundColors = PlayerBackgroundColors.AnimatedGradient
-                    animatedGradient = AnimatedGradient.Linear
-                    playerInfoType = PlayerInfoType.Essential
-                    playerTimelineType = PlayerTimelineType.PinBar
-                    playerTimelineSize = PlayerTimelineSize.Biggest
-                    playerControlsType = PlayerControlsType.Essential
-                    playerPlayButtonType = PlayerPlayButtonType.Square
-                    colorPaletteName = ColorPaletteName.Dynamic
-                    colorPaletteMode = ColorPaletteMode.PitchBlack
-                    transparentbar = false
-                    playerType = PlayerType.Modern
-                    expandedplayer = false
-                    playerThumbnailSize = PlayerThumbnailSize.Biggest
-                    showTotalTimeQueue = false
-                    transparentBackgroundActionBarPlayer = true
-                    showRemainingSongTime = true
-                    showlyricsthumbnail = false
-                    thumbnailType = ThumbnailType.Modern
-                    thumbnailRoundness = ThumbnailRoundness.Light
-                    fadingedge = true
-                    thumbnailFade = 0f
-                    thumbnailFadeEx = 5f
-                    thumbnailSpacing = -32f
-                    showNextSongsInPlayer = false
-                    ///////ACTION BAR BUTTONS////////////////
-                    transparentBackgroundActionBarPlayer = true
-                    actionspacedevenly = true
-                    showButtonPlayerVideo = false
-                    showButtonPlayerDiscover = false
-                    //showButtonPlayerDownload = true
-                    showButtonPlayerAddToPlaylist = false
-                    showButtonPlayerLoop = false
-                    showButtonPlayerShuffle = false
-                    showButtonPlayerLyrics = false
-                    expandedplayertoggle = true
-                    showButtonPlayerSleepTimer = false
-                    visualizerEnabled = false
-                    appearanceChooser = false
-                    showButtonPlayerArrow = false
-                    showButtonPlayerStartradio = false
-                    showButtonPlayerMenu = true
-                    ///////////////////////////
-                    appearanceChooser = false
-                },
-                onClick5 = {
-                    showTopActionsBar = true
-                    showthumbnail = true
-                    playerBackgroundColors = PlayerBackgroundColors.CoverColorGradient
-                    playerInfoType = PlayerInfoType.Essential
-                    playerTimelineType = PlayerTimelineType.Wavy
-                    playerTimelineSize = PlayerTimelineSize.Biggest
-                    playerControlsType = PlayerControlsType.Essential
-                    playerPlayButtonType = PlayerPlayButtonType.CircularRibbed
-                    colorPaletteName = ColorPaletteName.Dynamic
-                    colorPaletteMode = ColorPaletteMode.System
-                    transparentbar = false
-                    playerType = PlayerType.Essential
-                    expandedplayer = true
-                    playerThumbnailSize = PlayerThumbnailSize.Big
-                    showTotalTimeQueue = false
-                    transparentBackgroundActionBarPlayer = true
-                    showRemainingSongTime = true
-                    showlyricsthumbnail = false
-                    thumbnailType = ThumbnailType.Modern
-                    thumbnailRoundness = ThumbnailRoundness.Light
-                    showNextSongsInPlayer = false
-                    ///////ACTION BAR BUTTONS////////////////
-                    transparentBackgroundActionBarPlayer = true
-                    actionspacedevenly = true
-                    showButtonPlayerVideo = false
-                    showButtonPlayerDiscover = false
-                    //showButtonPlayerDownload = false
-                    showButtonPlayerAddToPlaylist = false
-                    showButtonPlayerLoop = false
-                    showButtonPlayerShuffle = true
-                    showButtonPlayerLyrics = true
-                    expandedplayertoggle = false
-                    showButtonPlayerSleepTimer = false
-                    visualizerEnabled = false
-                    appearanceChooser = false
-                    showButtonPlayerArrow = false
-                    showButtonPlayerStartradio = false
-                    showButtonPlayerMenu = true
-                    ///////////////////////////
-                    appearanceChooser = false
-                }
-            )
-        }
-        */
-
         val coroutineScope = rememberCoroutineScope()
 
         val state = rememberLazyListState()
@@ -1033,6 +486,47 @@ fun PlayerAppearanceSettings(
                 }
 
                 settingsItem {
+
+                    if (search.input.isBlank() || stringResource(R.string.player_transitions_enabled).contains(
+                            search.input,
+                            true
+                        )
+                    ) {
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.player_transitions_enabled),
+                            text = stringResource(R.string.player_transitions_enabled_description),
+                            isChecked = playerTransitionsEnabled,
+                            onCheckedChange = {
+                                coroutineScope.launch {
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        playerTransitionsEnabled = it
+                                    )
+                                    appearanceSettingsManager.updatePreset(new)
+                                }
+                            }
+                        )
+
+                        AnimatedVisibility(visible = playerTransitionsEnabled) {
+                            Column(modifier = Modifier.padding(start = 12.dp)) {
+                                EnumValueSelectorSettingsEntry(
+                                    title = stringResource(R.string.player_transition_animation),
+                                    titleSecondary = stringResource(R.string.player_transition_animation_description),
+                                    selectedValue = playerTransitionAnimation,
+                                    onValueSelected = {
+                                        coroutineScope.launch {
+                                            val new =
+                                                appearanceSettingsManager.activeSettings.value.copy(
+                                                    playerTransitionAnimation = it
+                                                )
+                                            appearanceSettingsManager.updatePreset(new)
+                                        }
+                                    },
+                                    valueText = { it.name },
+                                )
+                            }
+                        }
+                    }
+
 
                         if (search.input.isBlank() || stringResource(R.string.show_player_top_actions_bar).contains(
                                 search.input,

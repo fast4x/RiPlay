@@ -1,8 +1,12 @@
 package it.fast4x.riplay.ui.screens.player.unified
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Image
@@ -71,6 +75,7 @@ import it.fast4x.riplay.enums.MiniPlayerType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
+import it.fast4x.riplay.enums.PlayerTransitionAnimation
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.services.playback.common.PlaybackState
 import it.fast4x.riplay.services.playback.PlayerService
@@ -85,6 +90,7 @@ import it.fast4x.riplay.ui.styling.favoritesOverlay
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.GlobalSharedData
+import it.fast4x.riplay.utils.PLAYER_ARTWORK_KEY
 import it.fast4x.riplay.utils.addToOnlineLikedSong
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.applyIf
@@ -97,7 +103,8 @@ import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
-import it.fast4x.riplay.utils.rememberPlayerPositionAndDuration
+import it.fast4x.riplay.utils.playerArtworkKey
+import it.fast4x.riplay.utils.rememberPlayerPositionAndDurationState
 import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
@@ -106,6 +113,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
+import timber.log.Timber
 import kotlin.math.absoluteValue
 
 @UnstableApi
@@ -114,8 +122,17 @@ import kotlin.math.absoluteValue
 fun UnifiedMiniPlayer(
     showPlayer: () -> Unit,
     hidePlayer: () -> Unit,
-    navController: NavController? = null
+    navController: NavController? = null,
+    sharedTransitionScope: SharedTransitionScope? = null,
+    animatedVisibilityScope: AnimatedVisibilityScope? = null,
+    artworkKeySuffix: String? = null,
 ) {
+
+//    LaunchedEffect(Unit) {
+//        Timber.d("UnifiedMiniPlayer STS=${sharedTransitionScope != null} AVS=${animatedVisibilityScope != null}")
+//    }
+    //LaunchedEffect(Unit) { Timber.d("UnifiedMiniPlayer LaunchedEffect artworkKeySuffix=$artworkKeySuffix") }
+
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
 
@@ -156,7 +173,7 @@ fun UnifiedMiniPlayer(
 
     val miniPlayerType = appearanceSettings.miniPlayerType
 
-    val (currentPosition, duration) = rememberPlayerPositionAndDuration(binder)
+    val positionAndDurationState = rememberPlayerPositionAndDurationState(binder)
 
     var updateLike by rememberSaveable { mutableStateOf(false) }
     var updateDislike by rememberSaveable { mutableStateOf(false) }
@@ -241,6 +258,23 @@ fun UnifiedMiniPlayer(
 
     val colorPalette = colorPalette()
 
+    val artworkModifier = if (sharedTransitionScope != null && animatedVisibilityScope != null) {
+        with(sharedTransitionScope) {
+            Modifier.sharedElement(
+                rememberSharedContentState(key = playerArtworkKey(artworkKeySuffix)),
+                animatedVisibilityScope = animatedVisibilityScope,
+                boundsTransform = { initial, target ->
+                    PlayerTransitionAnimation.playerBoundsAnimation(
+                        appearanceSettings.playerTransitionAnimation,
+                        initial,
+                        target
+                    )
+                },
+                //clipInOverlayDuringTransition = OverlayClip(thumbnailShape()),
+            )
+        }
+    } else Modifier
+
     SwipeToDismissBox(
         modifier = Modifier
             .padding(horizontal = 16.dp)
@@ -288,7 +322,7 @@ fun UnifiedMiniPlayer(
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                     },
                     onClick = {
-                        showPlayer()
+                        if (sharedTransitionScope?.isTransitionActive != true) showPlayer()
                     }
                 )
                 .pointerInput(Unit) {
@@ -330,8 +364,8 @@ fun UnifiedMiniPlayer(
                             color = colorPalette.favoritesOverlay,
                             topLeft = Offset.Zero,
                             size = Size(
-                                width = currentPosition.toFloat() /
-                                        duration.absoluteValue * size.width,
+                                width = positionAndDurationState.value.first.toFloat() /
+                                        positionAndDurationState.value.second.absoluteValue * size.width,
                                 height = size.maxDimension
                             )
                         )
@@ -349,10 +383,12 @@ fun UnifiedMiniPlayer(
                     .height(Dimensions.miniPlayerHeight)
             ) {
                 AsyncImage(
-                    model = mediaItem.mediaMetadata.artworkUri.toString().toThumbnail(Dimensions.thumbnails.song.px),
+                    model = mediaItem.mediaMetadata.artworkUri.toString()
+                        .toThumbnail(Dimensions.thumbnails.song.px),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
+                        .then(artworkModifier)
                         .clip(thumbnailShape())
                         .size(48.dp)
                 )

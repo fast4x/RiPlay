@@ -131,7 +131,9 @@ fun BottomSheet(
                 Box(
                     modifier = Modifier.fillMaxSize()
                 ){
-                    BackHandler(onBack = state::collapseSoft)
+                    BackHandler(
+                        enabled = state.isExpanded,
+                        onBack = state::collapseSoft)
                     content()
                 }
 

@@ -158,7 +158,7 @@ fun AlbumsItemGridMenu(
 
                 }
 
-                BackHandler {
+                BackHandler(enabled = isViewingPlaylists) {
                     isViewingPlaylists = false
                 }
 

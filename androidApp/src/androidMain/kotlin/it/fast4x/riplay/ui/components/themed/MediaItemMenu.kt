@@ -138,7 +138,7 @@ import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.utils.SetupWriteSettingsPermission
 import it.fast4x.riplay.utils.getLocalFileUri
 import it.fast4x.riplay.utils.getRoundnessShape
-import it.fast4x.riplay.utils.rememberPlayerPositionAndDuration
+import it.fast4x.riplay.utils.rememberPlayerPositionAndDurationState
 import it.fast4x.riplay.utils.removeFromOnlineLikedSong
 import it.fast4x.riplay.utils.setRingtoneSmart
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -1112,7 +1112,7 @@ fun MediaItemMenu(
 
             }
 
-            BackHandler {
+            BackHandler(enabled = isViewingPlaylists) {
                 isViewingPlaylists = false
             }
 
@@ -1735,8 +1735,12 @@ fun MediaItemMenu(
                         ?: flowOf(null))
                         .collectAsState(initial = null)
 
-                    val (currentPosition, duration) = rememberPlayerPositionAndDuration(binder)
-                    val timeRemaining = duration.toInt() - currentPosition.toInt()
+                    val positionAndDurationState = rememberPlayerPositionAndDurationState(binder)
+                    val timeRemaining by remember {
+                        derivedStateOf {
+                            positionAndDurationState.value.second.toInt() - positionAndDurationState.value.first.toInt()
+                        }
+                    }
 
                     Timber.d("SleepTimer sleepTimerMillisLeft $sleepTimerMillisLeft timeRemaining $timeRemaining")
 

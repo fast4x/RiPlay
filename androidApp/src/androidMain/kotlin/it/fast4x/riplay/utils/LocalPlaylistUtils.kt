@@ -85,7 +85,7 @@ class PositionLock private constructor(
             val appSettingsManager = LocalAppSettingsManager.current
             val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
             return PositionLock(
-                remember { mutableStateOf(appSettings.reorderInQueueEnabled) },
+                remember { mutableStateOf(appSettings.isReorderDisabled) },
                 rememberSaveable(sortOrder) { mutableStateOf(sortOrder == SortOrder.Ascending) }
             )
         }

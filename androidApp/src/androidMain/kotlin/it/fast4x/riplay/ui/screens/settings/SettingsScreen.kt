@@ -416,7 +416,7 @@ fun SettingsEntry(
                     BasicText(
                         text = titleSecondary,
                         style = typography().xxs.secondary,
-                        maxLines = 2,
+                        maxLines = 4,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }

@@ -3,18 +3,23 @@ package it.fast4x.riplay.utils
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.widget.FrameLayout
 import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSpec
+import coil.request.ImageRequest
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.durationTextToMillis
+import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.data.models.Song
@@ -31,6 +36,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 import kotlin.time.Duration.Companion.milliseconds
+import androidx.compose.runtime.State
 
 
 const val LOCAL_KEY_PREFIX = "local:"
@@ -460,6 +466,29 @@ inline fun Player.DisposableListener(crossinline listenerProvider: () -> Player.
 
 @OptIn(UnstableApi::class)
 @Composable
+fun rememberPlayerPositionAndDurationState(
+    binder: PlayerService.Binder?
+): State<Pair<Long, Long>> {
+    val player = binder?.hybridPlayer
+    return produceState(0L to 0L, player) {
+        while (isActive) {
+            if (player == null) {
+                value = 0L to 0L
+            } else if (player.currentMediaItem?.isLocal == true) {
+                value = player.currentPosition to player.duration
+            } else {
+                val sec = binder.youtubePlayerCurrentSecond.value
+                val dur = binder.youtubePlayerCurrentDuration.value
+                value = (sec.toLong() * 1000L) to (dur.toLong() * 1000L)
+            }
+            delay(200.milliseconds)
+        }
+    }
+}
+
+/*
+@OptIn(UnstableApi::class)
+@Composable
 fun rememberPlayerPositionAndDuration(binder: PlayerService.Binder?): Pair<Long, Long> {
     val player = binder?.hybridPlayer
     val default = 0L to 0L
@@ -480,6 +509,8 @@ fun rememberPlayerPositionAndDuration(binder: PlayerService.Binder?): Pair<Long,
     }.value
 }
 
+ */
+
 
 fun formatMillis(millis: Long): String {
     val totalSeconds = millis / 1000
@@ -492,4 +523,31 @@ fun formatMillis(millis: Long): String {
     } else {
         String.format("%02d:%02d", minutes, seconds)
     }
+}
+
+const val PLAYER_ARTWORK_KEY = "riplay-player-artwork"
+
+fun playerArtworkKey(routeSuffix: String?): String =
+    if (routeSuffix.isNullOrBlank()) PLAYER_ARTWORK_KEY
+    else "$PLAYER_ARTWORK_KEY-$routeSuffix"
+
+@Composable
+fun rememberPlayerArtworkRequest(artworkUri: String): ImageRequest {
+    val context = LocalContext.current
+    return remember(artworkUri) {
+        ImageRequest.Builder(context)
+            .data(artworkUri.toThumbnail(1200))
+            .size(1200, 1200)
+            .transformations(listOf(LandscapeToSquareTransformation(1200)))
+            .crossfade(false)
+            .build()
+    }
+}
+
+object VideoParkingLot {
+    var host: FrameLayout? = null
+    var generation = 0
+    private var claim = 0  // generazione dell'ultimo detentore
+    fun newClaim(): Int = (++generation).also { claim = it }
+    fun isMine(token: Int): Boolean = claim == token
 }

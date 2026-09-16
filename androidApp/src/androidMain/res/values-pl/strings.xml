@@ -1463,4 +1463,13 @@
     <string name="jump_previous_title">Restart with Previous</string>
     <string name="jump_previous_description">Previous button restarts the current song if pressed after this many seconds have passed</string>
     <string name="online_video_now_playing_title">ONLINE VIDEO</string>
+    <string name="player_transitions_enabled">Player transitions</string>
+    <string name="player_transitions_enabled_description">Animate the player opening and closing, with the artwork flying to the mini player. Disable for instant switching — useful on slower devices.</string>
+    <string name="player_transition_animation">Player transition style</string>
+    <string name="player_transition_animation_description">How the artwork travels between the mini player and the full player.</string>
+    <string name="queue_empty">Your queue is empty</string>
+    <string name="queue_empty_hint">Play something to fill it up</string>
+    <string name="queue_no_results">No songs match your search</string>
+    <string name="queue_up_next">Up next</string>
+    <string name="queue_now_playing">Now playing</string>
 </resources>

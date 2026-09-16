@@ -5,17 +5,22 @@ import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.RenderEffect
 import android.graphics.Shader
-import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.exponentialDecay
 import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -26,6 +31,10 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.DraggableAnchors
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.gestures.snapping.SnapPosition
@@ -90,6 +99,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.draw.rotate
@@ -111,6 +121,7 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.ContentScale
@@ -118,6 +129,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
@@ -125,6 +137,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
@@ -193,6 +206,8 @@ import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailType
 import it.fast4x.riplay.extensions.equalizer.InternalEqualizerScreen
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
+import it.fast4x.riplay.enums.CollapseValue
+import it.fast4x.riplay.enums.PlayerTransitionAnimation
 import it.fast4x.riplay.enums.QrType
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.extensions.qrcodeanalyzer.GenerateQrButton
@@ -234,6 +249,7 @@ import it.fast4x.riplay.utils.BlurTransformation
 import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.LandscapeToSquareTransformation
+import it.fast4x.riplay.utils.PLAYER_ARTWORK_KEY
 import it.fast4x.riplay.utils.SearchOnlineEntity
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.addToOnlineLikedSong
@@ -269,7 +285,8 @@ import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.utils.shuffleQueue
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.origin
-import it.fast4x.riplay.utils.rememberPlayerPositionAndDuration
+import it.fast4x.riplay.utils.playerArtworkKey
+import it.fast4x.riplay.utils.rememberPlayerPositionAndDurationState
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.verticalfadingEdge2
 import kotlinx.coroutines.CoroutineScope
@@ -283,7 +300,9 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 import kotlin.Float.Companion.POSITIVE_INFINITY
 import kotlin.math.absoluteValue
+import kotlin.math.roundToInt
 import kotlin.math.sqrt
+import kotlin.time.Duration.Companion.milliseconds
 
 @ExperimentalSerializationApi
 @ExperimentalPermissionsApi
@@ -302,14 +321,12 @@ fun UnifiedPlayer(
     navController: NavController,
     playFromSecond: Float = 0f,
     videoPlayerView: @Composable () -> Unit,
-    playerSheetState: BottomSheetState,
+    //playerSheetState: BottomSheetState,
     onDismiss: () -> Unit,
+    sharedTransitionScope: SharedTransitionScope? = null,
+    animatedVisibilityScope: AnimatedVisibilityScope? = null,
+    backProgressFraction: () -> Float = { 0f },  // predictive back progress
 ) {
-
-    BackHandler(
-        enabled = playerSheetState.isExpanded,
-        onBack = onDismiss
-    )
 
     val appearanceSettingsManager = LocalAppearanceSettingsManager.current
     val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
@@ -321,6 +338,55 @@ fun UnifiedPlayer(
 
     val coroutineScope = rememberCoroutineScope()
 
+    val artworkKey = playerArtworkKey(navController.currentDestination?.route)
+    var isExiting by remember { mutableStateOf(false) }
+
+    var openingFlight by remember { mutableStateOf(false) }
+
+    // Serve a resettare il volo della cover nella transizione
+    LaunchedEffect(Unit) {
+        openingFlight = true                      // il volo di apertura è iniziato
+        delay(700.milliseconds)         // durata massima del volo (preset più lento)
+        openingFlight = false
+    }
+
+    val dragBlocked = openingFlight               // il guard del drag per non bloccare lo swipe down
+    val transitionActive = sharedTransitionScope?.isTransitionActive == true
+    val dragEnabled = !isExiting && !transitionActive
+
+//    LaunchedEffect(sharedTransitionScope?.isTransitionActive) {
+//        Timber.d("UnifiedPlayer SHARED isTransitionActive=${sharedTransitionScope?.isTransitionActive}")
+//    }
+
+    @Composable
+    fun artworkShared(key: String): Modifier {
+        val sts = sharedTransitionScope ?: return Modifier
+        val avs = animatedVisibilityScope ?: return Modifier
+        return with(sts) {
+            Modifier.sharedElement(
+                rememberSharedContentState(key),
+                animatedVisibilityScope = avs,
+                boundsTransform = { initial, target ->
+//                    Timber.d(
+//                        "FLIGHT initial=[${initial.left.roundToInt()},${initial.top.roundToInt()} → ${initial.right.roundToInt()},${initial.bottom.roundToInt()}] " +
+//                                "target=[${target.left.roundToInt()},${target.top.roundToInt()} → ${target.right.roundToInt()},${target.bottom.roundToInt()}]"
+//                    )
+                    PlayerTransitionAnimation.playerBoundsAnimation(
+                        appearanceSettings.playerTransitionAnimation,
+                        initial,
+                        target
+                    )
+                }
+            )
+        }
+    }
+
+    // Da applicare alle sezioni testuali o altri blocchi ma non alla cover
+    val contentAlpha by animateFloatAsState(
+        targetValue = if (sharedTransitionScope?.isTransitionActive == true) 0f else 1f,
+        animationSpec = tween(250, delayMillis = 120),
+        label = "playerContentAlpha",
+    )
 
     val playerThumbnailSize = appearanceSettings.playerThumbnailSize
     val playerThumbnailSizeL = appearanceSettings.playerThumbnailSizeL
@@ -334,12 +400,12 @@ fun UnifiedPlayer(
     if (binder.hybridPlayer.currentTimeline.windowCount == 0) return
 
     val playerState = LocalPlayerServiceState.current
-
-    val mediaItemPolicy = object : SnapshotMutationPolicy<MediaItem?> {
-        override fun equivalent(a: MediaItem?, b: MediaItem?): Boolean {
-            return a?.mediaId == b?.mediaId // ricompone solo se cambia la traccia
-        }
-    }
+//
+//    val mediaItemPolicy = object : SnapshotMutationPolicy<MediaItem?> {
+//        override fun equivalent(a: MediaItem?, b: MediaItem?): Boolean {
+//            return a?.mediaId == b?.mediaId // ricompone solo se cambia la traccia
+//        }
+//    }
 
 
     var isRotated by rememberSaveable { mutableStateOf(false) }
@@ -529,8 +595,8 @@ fun UnifiedPlayer(
     }
      */
 
-    val pagerState = rememberPagerState(pageCount = { mediaItems?.size ?: 0})
-    val pagerStateFS = rememberPagerState(pageCount = { mediaItems?.size ?: 0 })
+    val pagerState = rememberPagerState(pageCount = { mediaItems?.size ?: 0}, initialPage = mediaItemIndex,)
+    val pagerStateFS = rememberPagerState(pageCount = { mediaItems?.size ?: 0 }, initialPage = mediaItemIndex,)
     val isDragged by pagerState.interactionSource.collectIsDraggedAsState()
     val isDraggedFS by pagerStateFS.interactionSource.collectIsDraggedAsState()
 
@@ -546,11 +612,14 @@ fun UnifiedPlayer(
         ?: flowOf(null))
         .collectAsState(initial = null)
 
-    val (currentPosition, duration) = rememberPlayerPositionAndDuration(binder)
+    val positionAndDurationState = rememberPlayerPositionAndDurationState(binder)
+    val durationState = remember {
+        derivedStateOf { positionAndDurationState.value.second }   // da usare solo dove devo passare solo la durata
+    }
 
     val timeRemaining by remember {
         derivedStateOf {
-            duration.toInt() - currentPosition.toInt()
+            positionAndDurationState.value.second.toInt() - positionAndDurationState.value.first.toInt()
         }
     }
 
@@ -1283,10 +1352,6 @@ fun UnifiedPlayer(
     }
 
 
-//    val thumbnailRoundness by rememberPreference(
-//        THUMBNAIL_ROUNDNESS.key,
-//        ThumbnailRoundness.Light
-//    )
     val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
     val controlsContent: @Composable (
@@ -1300,7 +1365,7 @@ fun UnifiedPlayer(
             timelineExpanded = timelineExpanded,
             controlsExpanded = controlsExpanded,
             isShowingLyrics = isShowingLyrics,
-            media = mediaItem.toUiMedia(duration),
+            media = mediaItem.toUiMedia(durationState.value),
             title = mediaItem.mediaMetadata.title?.toString() ?: "",
             artist = mediaItem.mediaMetadata.artist?.toString(),
             artistIds = artistsInfo,
@@ -1361,7 +1426,6 @@ fun UnifiedPlayer(
 
         Box(
             modifier = innerModifier
-                .fillMaxSize()
                 .background(Color.Transparent)
         ) {
             AnimatedVisibility(
@@ -1376,12 +1440,12 @@ fun UnifiedPlayer(
                     modifier = Modifier
                         .background(Color.Gray.copy(alpha = .4f), thumbnailRoundness.shape())
                         .fillMaxWidth(0.9f)
-                        .fillMaxHeight(0.8f)
+                        .fillMaxHeight(0.6f)
                         .detectGestures(
                             detectPlayerGestures = true,
                             onTap = {
                                 showControls = !showControls
-                                Timber.d("OnlinePlayer inside showControls - $showControls")
+                                //Timber.d("OnlinePlayer inside showControls - $showControls")
                             }
                         )
                 ) {
@@ -1464,9 +1528,7 @@ fun UnifiedPlayer(
                 ) {}
             }
 
-            if (appSettings.videoContentMode.normal || appSettings.forceUserVideoPlayback)
-                videoPlayerView()
-
+            if (sharedTransitionScope?.isTransitionActive == false && (appSettings.videoContentMode.normal || appSettings.forceUserVideoPlayback)) videoPlayerView()
         }
 
     }
@@ -1495,7 +1557,7 @@ fun UnifiedPlayer(
     val density = LocalDensity.current
     val bottomInset = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
     val contentPadding = PaddingValues(bottom = bottomInset)
-
+    val collapseDistance = with(density) { screenHeight.toPx() }
     val isNetworkConnected = rememberIsNetworkConnected()
 
     val currentDiscoveryReason = binder.currentDiscoveryReason.collectAsStateWithLifecycle()
@@ -1826,6 +1888,9 @@ fun UnifiedPlayer(
 
         val swipeAnimationNoThumbnail = appearanceSettings.swipeAnimationNoThumbnail
 
+        val collapseOffset = remember { Animatable(0f) }
+        val collapseThresholdPx = with(LocalDensity.current) { 140.dp.toPx() }
+        val dragProgress = (collapseOffset.value / collapseThresholdPx).coerceIn(0f, 1f)
 
         if ( isLandscape ) {
 
@@ -1837,20 +1902,99 @@ fun UnifiedPlayer(
                     || appSettings.forceUserVideoPlayback
                     || appSettings.videoContentMode.normal){
                     Modifier
+                        //.fillMaxWidth() // Serve a stirare in orizzontale il video, ma taglia leggermente in altezza
+                        .fillMaxSize() // Come fillMaxWidth ma ci assicuriamo di occupare tutto lo spazio del parent
+                        .aspectRatio(16f / 9f)
                 } else
                     Modifier.hide()
-//                if (!mediaItem.isVideo || !appSettings.forceUserVideoPlayback)
-//                    Modifier.hide()
-//                else Modifier
             )
 
             // Visualizziamo la cover se è una canzone e l'utente non ha cliccato specificatamente su un video
             if (!mediaItem.isVideo
                 || (!appSettings.forceUserVideoPlayback && appSettings.videoContentMode.audioOnly)
             ) {
+
+                val collapseState = remember(collapseDistance) {
+                    AnchoredDraggableState(
+                        initialValue = CollapseValue.Open,
+                        anchors = DraggableAnchors {
+                            CollapseValue.Open at 0f
+                            CollapseValue.Dismissed at collapseDistance
+                        },
+                        positionalThreshold = { _ -> with(density) { 140.dp.toPx() } },
+                        velocityThreshold = { with(density) { 125.dp.toPx() } },
+                        snapAnimationSpec = spring(
+                            dampingRatio = 0.9f,
+                            stiffness = Spring.StiffnessMediumLow
+                        ),
+                        decayAnimationSpec = exponentialDecay(),
+                    )
+                }
+
+                LaunchedEffect(collapseState) {
+                    snapshotFlow { collapseState.settledValue }
+                        .collect { target ->
+                            if (target == CollapseValue.Dismissed && !isExiting) {
+                                isExiting = true
+                                onDismiss()   // bounds catturati al punto di rilascio
+                            }
+                        }
+                }
+
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
+                        // Modalità nuova con anchorable
+                        .offset { IntOffset(0, collapseState.offset.roundToInt()) }
+                        .anchoredDraggable(
+                            state = collapseState,
+                            orientation = Orientation.Vertical,
+                            enabled = !isExiting && sharedTransitionScope?.isTransitionActive == false,
+                        )
+                        .graphicsLayer {
+                            val progress = (collapseState.offset / collapseDistance).coerceIn(0f, 1f)
+                            val s = 1f - 0.04f * progress
+                            scaleX = s; scaleY = s
+                            shape = RoundedCornerShape(24.dp * progress)
+                            clip = true
+                        }
+                        //.offset { IntOffset(0, collapseOffset.value.roundToInt()) } // modalità senza anchorable
+                        //.fillMaxSize()
+                        // gesture per chiudere il box in landscape mode
+                        /*
+                        .pointerInput(Unit) {
+                            detectVerticalDragGestures(
+                                onVerticalDrag = { _, dragAmount ->
+                                    val inTransition = sharedTransitionScope?.isTransitionActive == true
+                                    //Timber.d("UnifiedPlayer LANDSCAPE COLLAPSE drag=$dragAmount inTransition=$inTransition")
+                                    if (inTransition || isExiting || dragBlocked) return@detectVerticalDragGestures
+                                    coroutineScope.launch {
+                                        collapseOffset.snapTo(
+                                            (collapseOffset.value + dragAmount).coerceAtLeast(0f)
+                                        )
+                                    }
+                                },
+                                onDragEnd = {
+                                    if (isExiting) return@detectVerticalDragGestures
+                                    if (!isExiting && collapseOffset.value > collapseThresholdPx) {
+                                        coroutineScope.launch {
+                                            isExiting = true
+                                            collapseOffset.stop()
+                                            onDismiss()
+                                        }
+                                    }
+                                    else coroutineScope.launch {
+                                        collapseOffset.animateTo(0f, spring(stiffness = Spring.StiffnessMediumLow))
+                                    }
+                                },
+                                onDragCancel = {
+                                    coroutineScope.launch {
+                                        collapseOffset.animateTo(0f, spring(stiffness = Spring.StiffnessMediumLow))
+                                    }
+                                }
+                            )
+                        }
+
+                         */
                         .conditional(queueType == QueueType.Modern) {
                             hazeEffect(
                                 state = hazeState,
@@ -1879,8 +2023,8 @@ fun UnifiedPlayer(
                                         color = color.favoritesOverlay,
                                         topLeft = Offset.Zero,
                                         size = Size(
-                                            width = currentPosition.toFloat() /
-                                                    duration.absoluteValue * size.width,
+                                            width = positionAndDurationState.value.first.toFloat() /
+                                                    positionAndDurationState.value.second.absoluteValue * size.width,
                                             height = size.maxDimension
                                         )
                                     )
@@ -2041,6 +2185,9 @@ fun UnifiedPlayer(
                             if (isShowingVisualizer && !showvisthumbnail && playerType == PlayerType.Essential) {
                                 Box(
                                     modifier = Modifier
+                                        .then(
+                                            artworkShared(artworkKey)
+                                        )
                                         .fillMaxWidth(0.5f)
                                         .pointerInput(Unit) {
                                             detectHorizontalDragGestures(
@@ -2088,7 +2235,7 @@ fun UnifiedPlayer(
                                         ensureSongInserted = { Database.insert(mediaItem) },
                                         size = 1000.dp,
                                         mediaMetadataProvider = mediaItem::mediaMetadata,
-                                        durationProvider = { duration },
+                                        durationProvider = { durationState.value },
                                         isLandscape = isLandscape,
                                         clickLyricsText = clickLyricsText,
                                         modifier = Modifier
@@ -2167,7 +2314,7 @@ fun UnifiedPlayer(
                                                     ensureSongInserted = { Database.insert(mediaItem) },
                                                     size = 1000.dp,
                                                     mediaMetadataProvider = mediaItem::mediaMetadata,
-                                                    durationProvider = { duration },
+                                                    durationProvider = { durationState.value },
                                                     isLandscape = isLandscape,
                                                     clickLyricsText = clickLyricsText,
                                                 )
@@ -2479,7 +2626,7 @@ fun UnifiedPlayer(
                                     controlsExpanded = controlsExpanded,
                                     isShowingLyrics = isShowingLyrics,
                                     media = binder.hybridPlayer?.getMediaItemAt(index)
-                                        ?.toUiMedia(duration) ?: return,
+                                        ?.toUiMedia(durationState.value) ?: return,
                                     title = binder.hybridPlayer?.getMediaItemAt(index)?.mediaMetadata?.title?.toString(),
                                     artist = binder.hybridPlayer?.getMediaItemAt(index)?.mediaMetadata?.artist?.toString(),
                                     artistIds = artistsInfo,
@@ -2548,9 +2695,104 @@ fun UnifiedPlayer(
             // END LANDSCAPE SECTION
 
         } else {
-            // START PORTRATE SECTION
+            // START PORTRAIT SECTION
+            val collapseState = remember(collapseDistance) {
+                AnchoredDraggableState(
+                    initialValue = CollapseValue.Open,
+                    anchors = DraggableAnchors {
+                        CollapseValue.Open at 0f
+                        CollapseValue.Dismissed at collapseDistance
+                    },
+                    positionalThreshold = { _ -> with(density) { 140.dp.toPx() } },
+                    velocityThreshold = { with(density) { 125.dp.toPx() } },
+                    snapAnimationSpec = spring(
+                        dampingRatio = 0.9f,
+                        stiffness = Spring.StiffnessMediumLow
+                    ),
+                    decayAnimationSpec = exponentialDecay(),
+                )
+            }
+
+            LaunchedEffect(collapseState) {
+                snapshotFlow { collapseState.settledValue }
+                    .collect { target ->
+                        if (target == CollapseValue.Dismissed && !isExiting) {
+                            isExiting = true
+                            onDismiss()   // bounds catturati al punto di rilascio
+                        }
+                    }
+            }
+            LaunchedEffect(Unit) { Timber.d("UnifiedPlayer PORTRAIT DRAG-STATE init=${collapseState.currentValue}") }
+            LaunchedEffect(Unit) {
+                Timber.d("UnifiedPlayer PORTRAIT ANCHORS dist=${collapseDistance} anchors=${collapseState.anchors.size}")
+            }
+
+            Timber.d("UnifiedPlayer PORTRAIT DRAG-ENABLED enabled=$dragEnabled inTransition=$transitionActive isExiting=$isExiting")
+
             Box(
                 modifier = Modifier
+                    // Modalità nuova con anchorable
+                    .offset {
+                        Timber.d("UnifiedPlayer PORTRAIT PLACEMENT offset=${collapseState.offset}")
+                        val backPx = backProgressFraction() * collapseDistance * 0.35f
+                        IntOffset(0, (collapseState.offset + backPx).roundToInt())
+                    }
+                    .anchoredDraggable(
+                        state = collapseState,
+                        orientation = Orientation.Vertical,
+                        enabled = dragEnabled,
+                    )
+                    .graphicsLayer {
+                        Timber.d("UnifiedPlayer PORTRAIT PLACEMENT graphicsLayer offset=${collapseState.offset}")
+                        val progress = (collapseState.offset / collapseDistance).coerceIn(0f, 1f)
+                        val s = 1f - 0.04f * progress
+                        scaleX = s; scaleY = s
+                        shape = RoundedCornerShape(24.dp * progress)
+                        clip = true
+                    }
+                    /* // Modalità senza anchorable
+                    .offset { IntOffset(0, collapseOffset.value.roundToInt()) }
+                    .graphicsLayer {
+                        val s = 1f - 0.04f * dragProgress
+                        scaleX = s; scaleY = s
+                    }
+                     */
+                    /*
+                    .clip(RoundedCornerShape(24.dp * dragProgress))
+                    .pointerInput(Unit) {
+                        detectVerticalDragGestures(
+                            onVerticalDrag = { _, dragAmount ->
+                                val inTransition = sharedTransitionScope?.isTransitionActive == true
+                                //Timber.d("UnifiedPlayer PORTRAIT COLLAPSE drag=$dragAmount inTransition=$inTransition")
+                                if (inTransition || isExiting || dragBlocked) return@detectVerticalDragGestures
+                                coroutineScope.launch {
+                                    collapseOffset.snapTo(
+                                        (collapseOffset.value + dragAmount).coerceAtLeast(0f)
+                                    )
+                                }
+                            },
+                            onDragEnd = {
+                                if (isExiting) return@detectVerticalDragGestures
+                                if (!isExiting && collapseOffset.value > collapseThresholdPx) {
+                                    coroutineScope.launch {
+                                        isExiting = true
+                                        collapseOffset.stop()
+                                        onDismiss()
+                                    }
+                                }
+                                else coroutineScope.launch {
+                                    collapseOffset.animateTo(0f, spring(stiffness = Spring.StiffnessMediumLow))
+                                }
+                            },
+                            onDragCancel = {
+                                coroutineScope.launch {
+                                    collapseOffset.animateTo(0f, spring(stiffness = Spring.StiffnessMediumLow))
+                                }
+                            }
+                        )
+                    }
+
+                     */
                     .conditional(queueType == QueueType.Modern) {
                         hazeEffect(
                             state = hazeState,
@@ -2792,13 +3034,14 @@ fun UnifiedPlayer(
                                             controlsExpanded = controlsExpanded,
                                             isShowingLyrics = isShowingLyrics,
                                             media = binder.hybridPlayer?.getMediaItemAt(index)
-                                                ?.toUiMedia(duration) ?: return@Box,
+                                                ?.toUiMedia(durationState.value) ?: return@Box,
                                             title = binder.hybridPlayer?.getMediaItemAt(index)?.mediaMetadata?.title?.toString(),
                                             artist = binder.hybridPlayer?.getMediaItemAt(index)?.mediaMetadata?.artist?.toString(),
                                             artistIds = artistsInfo,
                                             albumId = albumId,
                                             isExplicit = binder.hybridPlayer?.getMediaItemAt(index)?.isExplicit == true,
                                             modifier = Modifier
+                                                .graphicsLayer { alpha = contentAlpha }
                                                 .padding(vertical = 4.dp)
                                                 .fillMaxWidth(),
                                             onPlay = {
@@ -2879,8 +3122,8 @@ fun UnifiedPlayer(
                                     color = color.favoritesOverlay,
                                     topLeft = Offset.Zero,
                                     size = Size(
-                                        width = currentPosition.toFloat() /
-                                                duration.absoluteValue * size.width,
+                                        width = positionAndDurationState.value.first.toFloat() /
+                                                positionAndDurationState.value.second.absoluteValue * size.width,
                                         height = size.maxDimension
                                     )
                                 )
@@ -2995,11 +3238,15 @@ fun UnifiedPlayer(
                             }
                         //.border(BorderStroke(2.dp, colorPalette().collapsedPlayerProgressBar))
                     ) {
+//                        Timber.d("PlayerCover showthumbnail=$showthumbnail playerType=$playerType " +
+//                                "forceVideo=${appSettings.forceUserVideoPlayback} vcm=${appSettings.videoContentMode} " +
+//                                "isVideo=${mediaItem.isVideo} lyrics=$isShowingLyrics vis=$isShowingVisualizer")
 
                         if (showthumbnail
                             && ((!appSettings.forceUserVideoPlayback && appSettings.videoContentMode.audioOnly)
                                     || (appSettings.videoContentMode.normal && !mediaItem.isVideo))
                             ) {
+
                             if ((!isShowingLyrics && !isShowingVisualizer) || (isShowingVisualizer && showvisthumbnail) || (isShowingLyrics && showlyricsthumbnail)) {
                                 if (playerType == PlayerType.Modern) {
                                     val fling = PagerDefaults.flingBehavior(
@@ -3074,6 +3321,10 @@ fun UnifiedPlayer(
                                         val coverPainter = rememberAsyncImagePainter(model = request)
 
                                         val coverModifier = Modifier
+                                            .then(
+                                                if (index == mediaItemIndex) artworkShared(artworkKey)
+                                                else Modifier
+                                            )
                                             .fillMaxSize()
                                             .aspectRatio(1f)
                                             .padding(all = animatePadding)
@@ -3288,6 +3539,7 @@ fun UnifiedPlayer(
                                     val coverPainter = rememberAsyncImagePainter(model = request)
 
                                     val coverModifier = Modifier
+                                        .graphicsLayer { alpha = contentAlpha }
                                         .applyIf(!it.fast4x.riplay.utils.isLandscape) {
                                             fillMaxSize()
                                         }
@@ -3356,7 +3608,7 @@ fun UnifiedPlayer(
                                     ensureSongInserted = { Database.insert(mediaItem) },
                                     size = 1000.dp,
                                     mediaMetadataProvider = mediaItem::mediaMetadata,
-                                    durationProvider = { duration },
+                                    durationProvider = { durationState.value },
                                     isLandscape = isLandscape,
                                     clickLyricsText = clickLyricsText,
                                 )
@@ -3399,6 +3651,9 @@ fun UnifiedPlayer(
                                 || appSettings.forceUserVideoPlayback
                                 || appSettings.videoContentMode.normal){
                                 coverModifier
+                                    .then(
+                                        artworkShared(artworkKey)
+                                    )
                             } else
                                 Modifier.hide()
 
@@ -3594,7 +3849,7 @@ fun UnifiedPlayer(
                                     controlsExpanded = controlsExpanded,
                                     isShowingLyrics = isShowingLyrics,
                                     media = binder.hybridPlayer?.getMediaItemAt(index)
-                                        ?.toUiMedia(duration) ?: return@Box,
+                                        ?.toUiMedia(durationState.value) ?: return@Box,
                                     title = binder.hybridPlayer?.getMediaItemAt(index)?.mediaMetadata?.title?.toString(),
                                     artist = binder.hybridPlayer?.getMediaItemAt(index)?.mediaMetadata?.artist?.toString(),
                                     artistIds = artistsInfo,
@@ -3668,78 +3923,45 @@ fun UnifiedPlayer(
             }
         }
 
-        CustomModalBottomSheet(
-            showSheet = showQueue,
-            onDismissRequest = { showQueue = false },
-            containerColor = if (queueType == QueueType.Modern) colorPalette().background2.copy(alpha = 0.5f) else colorPalette().background2,
-            contentColor = if (queueType == QueueType.Modern) colorPalette().background2.copy(alpha = 0.5f) else colorPalette().background2,
-            modifier = Modifier
-                .fillMaxWidth()
-                .conditional(queueType == QueueType.Modern) { hazeEffect(state = hazeState) },
-            dragHandle = {
-                Surface(
-                    modifier = Modifier.padding(vertical = 0.dp),
-                    color = colorPalette().background0,
-                    shape = thumbnailShape()
-                ) {}
-            },
-            shape = thumbnailRoundness.shape(),
-        ) {
-            Queue (
-                navController = navController,
-                showPlayer = {},
-                hidePlayer = {},
-                onDismiss = {
-                    coroutineScope.launch {
-                        val new = appSettingsManager.activeSettings.value.copy(queueLoopType = it)
-                        appSettingsManager.updateSettings(new)
-                    }
-                    showQueue = false
-                },
-                onDiscoverClick = {
-                    coroutineScope.launch {
-                        val new = appSettingsManager.activeSettings.value.copy(discoverIsEnabled = it)
-                        appSettingsManager.updateSettings(new)
-                    }
+
+        Queue (
+            showQueue = showQueue,
+            navController = navController,
+            onDismiss = {
+                coroutineScope.launch {
+                    val new = appSettingsManager.activeSettings.value.copy(queueLoopType = it)
+                    appSettingsManager.updateSettings(new)
                 }
-            )
-        }
-
-        CustomModalBottomSheet(
-            showSheet = showSearchEntity,
-            onDismissRequest = { showSearchEntity = false },
-            containerColor = if (playerType == PlayerType.Modern) Color.Transparent else colorPalette().background2,
-            contentColor = if (playerType == PlayerType.Modern) Color.Transparent else colorPalette().background2,
-            modifier = Modifier
-                .fillMaxWidth()
-                .conditional(queueType == QueueType.Modern) { hazeChild(state = hazeState) },
-            dragHandle = {
-                Surface(
-                    modifier = Modifier.padding(vertical = 0.dp),
-                    color = colorPalette().background0,
-                    shape = thumbnailShape()
-                ) {}
+                showQueue = false
             },
-            shape = thumbnailRoundness.shape()
-        ) {
-            SearchOnlineEntity(
-                onDismiss = { isUserVideoSelected ->
-                    // Se video content mode = audio only, forziamo la visualizzazione del video su richiesta dell'utente
-                    // Verrà resettato dal service quando andrà alla successiva o precedente
-                    if (appSettings.videoContentMode.audioOnly && isUserVideoSelected)
-                        coroutineScope.launch {
-                            appSettingsManager.updateSettings(
-                                appSettings.copy(forceUserVideoPlayback = true)
-                            )
-                        }
+            onDiscoverClick = {
+                coroutineScope.launch {
+                    val new = appSettingsManager.activeSettings.value.copy(discoverIsEnabled = it)
+                    appSettingsManager.updateSettings(new)
+                }
+            },
 
-                    showSearchEntity = false
-                },
-                query = "${mediaItem.mediaMetadata.artist.toString()} - ${mediaItem.mediaMetadata.title.toString()}",
-                filter = if (mediaItem.isVideo) Environment.SearchFilter.Song else Environment.SearchFilter.Video,
-                disableScrollingText = disableScrollingText
-            )
-        }
+        )
+
+        SearchOnlineEntity(
+            showSheet = showSearchEntity,
+            onDismiss = { isUserVideoSelected ->
+                // Se video content mode = audio only, forziamo la visualizzazione del video su richiesta dell'utente
+                // Verrà resettato dal service quando andrà alla successiva o precedente
+                if (appSettings.videoContentMode.audioOnly && isUserVideoSelected)
+                    coroutineScope.launch {
+                        appSettingsManager.updateSettings(
+                            appSettings.copy(forceUserVideoPlayback = true)
+                        )
+                    }
+
+                showSearchEntity = false
+            },
+            query = "${mediaItem.mediaMetadata.artist.toString()} - ${mediaItem.mediaMetadata.title.toString()}",
+            filter = if (mediaItem.isVideo) Environment.SearchFilter.Song else Environment.SearchFilter.Video,
+            disableScrollingText = disableScrollingText
+        )
+
 
     }
 

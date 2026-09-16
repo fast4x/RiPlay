@@ -27,7 +27,9 @@ fun GlobalSheet(
         enter = fadeIn(),
         exit = fadeOut()
     ) {
-        BackHandler(onBack = state::hide)
+        BackHandler(
+            enabled = state.isDisplayed,
+            onBack = state::hide)
 
         Spacer(
             modifier = Modifier

@@ -22,6 +22,7 @@ import it.fast4x.riplay.enums.PlayerPlayButtonType
 import it.fast4x.riplay.enums.PlayerThumbnailSize
 import it.fast4x.riplay.enums.PlayerTimelineSize
 import it.fast4x.riplay.enums.PlayerTimelineType
+import it.fast4x.riplay.enums.PlayerTransitionAnimation
 import it.fast4x.riplay.enums.PlayerType
 import it.fast4x.riplay.enums.PrevNextSongs
 import it.fast4x.riplay.enums.QueueType
@@ -170,7 +171,8 @@ data class AppearanceSettings(
     val customThemeDark_TextDisabled: Int           = DefaultDarkColorPalette.textDisabled.hashCode(),
     val customThemeDark_IconButtonPlayer: Int       = DefaultDarkColorPalette.iconButtonPlayer.hashCode(),
     val customThemeDark_Accent: Int                 = DefaultDarkColorPalette.accent.hashCode(),
-
+    val playerTransitionsEnabled: Boolean           = true,
+    val playerTransitionAnimation: PlayerTransitionAnimation = PlayerTransitionAnimation.Smooth,
 
     ) {
     companion object {

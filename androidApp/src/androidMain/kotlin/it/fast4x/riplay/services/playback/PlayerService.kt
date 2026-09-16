@@ -2057,6 +2057,14 @@ class PlayerService : MediaLibraryService(),
             )
         }
 
+        // Se l'utente aveva richiesto la visualizzazione di un video, quando passiamo avanti lo resettiamo
+        // se in onmediaitemtransition non è ancora stato intercettato, lo facciamo qua
+        if (appSettings.forceUserVideoPlayback) {
+            serviceScope.launch {
+                appSettingsManager.updateSettings(appSettings.copy(forceUserVideoPlayback = false))
+            }
+        }
+
         mediaItem.let {
 
             if (!it.isLocal){
@@ -2829,6 +2837,13 @@ class PlayerService : MediaLibraryService(),
                                 Timber.d("PlayerService PlaybackWatchdog: Attivazione Fade Out ($timeLeft ms). Prossimo locale=$isNextLocal")
                                 lastWatchdogPosition = -1L // resetto la posizione precedente durante il cambio
 
+                                // Se il playback sta finendo ed è un video forzato, resettiamo il flag
+                                if(appSettings.forceUserVideoPlayback){
+                                    withContext(Dispatchers.IO){
+                                        appSettingsManager.updateSettings(appSettings.copy(forceUserVideoPlayback = false))
+                                    }
+                                }
+
                                 // Controllo il tipo di ripetizione
                                 if (processQueueRepeat()) continue
 
@@ -2857,6 +2872,13 @@ class PlayerService : MediaLibraryService(),
                                     Timber.d("PlayerService PlaybackWatchdog: Fine brano naturale a $timeLeft ms")
                                 }
                                 lastWatchdogPosition = -1L // resetto la posizione precedente durante il cambio
+
+                                // Se il playback sta finendo ed è un video forzato, resettiamo il flag
+                                if(appSettings.forceUserVideoPlayback){
+                                    withContext(Dispatchers.IO){
+                                        appSettingsManager.updateSettings(appSettings.copy(forceUserVideoPlayback = false))
+                                    }
+                                }
 
                                 // Controllo il tipo di ripetizione
                                 if (processQueueRepeat()) continue
@@ -3997,6 +4019,8 @@ class PlayerService : MediaLibraryService(),
 
 
     fun requestSmoothPause() {
+        //Timber.d("EXECUTE_SMOOTH_PAUSE stack:\n${Exception().stackTraceToString()}")
+
         if (!_playerState.value.isPlaying || isFading) {
             hybridPlayer.executeActualPause()
             return

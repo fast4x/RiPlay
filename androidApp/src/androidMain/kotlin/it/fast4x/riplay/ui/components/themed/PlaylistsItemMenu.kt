@@ -201,7 +201,7 @@ fun PlaylistsItemMenu(
 
                 }
 
-                BackHandler {
+                BackHandler(enabled = isViewingPlaylists) {
                     isViewingPlaylists = false
                 }
                 //val density = LocalDensity.current
