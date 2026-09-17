@@ -97,7 +97,6 @@ import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.requests.searchPage
 import it.fast4x.environment.utils.from
-import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.data.models.Event
@@ -229,6 +228,7 @@ import it.fast4x.riplay.utils.getDeviceVolume
 import it.fast4x.riplay.utils.isWebDav
 import it.fast4x.riplay.utils.removeVideoMediaItems
 import it.fast4x.riplay.utils.setQueueLoopState
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
@@ -244,7 +244,9 @@ class PlayerService : MediaLibraryService(),
     PlaybackStatsListener.Callback,
     OnAudioVolumeChangedListener
 {
-    val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    val serviceScope = CoroutineScope(
+        SupervisorJob() + Dispatchers.IO + CoroutineName("PlayerServiceScope")
+    )
     var mediaLibrarySession: MediaLibrarySession? = null
     private lateinit var mediaLibrarySessionCallback: MediaLibraryServiceCallback
     lateinit var hybridPlayer: HybridPlayer
@@ -298,7 +300,7 @@ class PlayerService : MediaLibraryService(),
                     }
             }
         }
-        .stateIn(serviceScope, SharingStarted.WhileSubscribed(5000), null)
+        .stateIn(this@PlayerService.serviceScope, SharingStarted.WhileSubscribed(5000), null)
 
     lateinit var sleepTimerListener: SleepTimerListener
 
@@ -436,7 +438,7 @@ class PlayerService : MediaLibraryService(),
                     // Rischia di resettare il guadagno hardware a metà canzone.
 
                     if (!isFading) {
-                        serviceScope.launch(Dispatchers.Main) {
+                        this@PlayerService.serviceScope.launch(Dispatchers.Main) {
                             // Abbassiamo impercettibilmente il volume del player per un millisecondo
                             // per forzare Android a sbloccare lo stato di Standby/Ducking hardware
                             hybridPlayer.setFadeVolume(0.95f)
@@ -529,7 +531,7 @@ class PlayerService : MediaLibraryService(),
         super.onCreate()
 
         // Lancio tutto il resto delle configurazioni in background senza bloccare l'avvio nativo
-        serviceScope.launch(Dispatchers.Main) {
+        this@PlayerService.serviceScope.launch(Dispatchers.Main) {
 
             withContext(Dispatchers.IO) {
                 startObservingSettings()
@@ -575,7 +577,7 @@ class PlayerService : MediaLibraryService(),
     @kotlin.OptIn(ExperimentalSerializationApi::class, ExperimentalCoroutinesApi::class)
     private fun setupPersistentQueueAndObservers() {
         if (appSettings.persistentQueue) {
-            serviceScope.launch {
+            this@PlayerService.serviceScope.launch {
                 // Caricamento iniziale obbligatorio sul Main thread per ExoPlayer
                 withContext(Dispatchers.Main) {
                     loadQueue()
@@ -595,7 +597,7 @@ class PlayerService : MediaLibraryService(),
             }
 
             // Ciclo leggero isolato solo per l'avanzamento della cronologia online (senza toccare la timeline di ExoPlayer)
-            serviceScope.launch(Dispatchers.IO) {
+            this@PlayerService.serviceScope.launch(Dispatchers.IO) {
                 while (isActive) {
                     delay(10.seconds)
                     if (_playerState.value.isPlaying && youtubeCurrentSecond.value >= minTimeForEvent.seconds && lastMediaIdInHistory != currentSong.value?.id) {
@@ -608,7 +610,7 @@ class PlayerService : MediaLibraryService(),
             }
         }
 
-        serviceScope.launch {
+        this@PlayerService.serviceScope.launch {
             currentSong.collect { song ->
                 if (song == null) return@collect
                 if (currentMediaItemState.value?.mediaId != song.id) return@collect
@@ -664,7 +666,7 @@ class PlayerService : MediaLibraryService(),
         }
 
         // Monitora il tempo di ascolto della canzone riprodotta dalla webview
-        serviceScope.launch(Dispatchers.IO) {
+        this@PlayerService.serviceScope.launch(Dispatchers.IO) {
             while (isActive) {
                 if (currentSong.value?.isLocal == false) {
                     if (_playerState.value.isPlaying) {
@@ -687,7 +689,7 @@ class PlayerService : MediaLibraryService(),
             }
         }
 
-        serviceScope.launch {
+        this@PlayerService.serviceScope.launch {
             MusicVaultEvents.events.collect { event ->
                 when (event) {
                     is MusicVaultEvent.DownloadCompleted -> {
@@ -731,7 +733,7 @@ class PlayerService : MediaLibraryService(),
     }
 
     private fun startObservingSettings() {
-        settingsObserverJob = serviceScope.launch {
+        settingsObserverJob = this@PlayerService.serviceScope.launch {
             appSettingsManager.activeSettings      
                 .collect { settings -> 
                     Timber.d("PlayerService: impostazioni cambiate $settings")
@@ -875,7 +877,7 @@ class PlayerService : MediaLibraryService(),
     }
 
     private fun initializeMedleyMode() {
-        serviceScope.launch {
+        this@PlayerService.serviceScope.launch {
             while (appSettings.playbackDuration > 0) {
                 withContext(Dispatchers.Main) {
                     Timber.d("PlayerService initializeMedleyMode medleyDuration ${appSettings.playbackDuration} player.isPlaying ${exoPlayer.isPlaying} internalOnlinePlayerState ${_playerState.value.isPlaying}")
@@ -899,7 +901,7 @@ class PlayerService : MediaLibraryService(),
 
         var isConnecting = false
 
-        riTuneObserverJob = serviceScope.launch {
+        riTuneObserverJob = this@PlayerService.serviceScope.launch {
 
             while (isActive) {
 
@@ -1145,7 +1147,7 @@ class PlayerService : MediaLibraryService(),
             .build()
             .apply {
                 //addListener(this@PlayerService) // listener è registrato su hybridPlayer
-                sleepTimerListener = SleepTimerListener(serviceScope, this)
+                sleepTimerListener = SleepTimerListener(this@PlayerService.serviceScope, this)
                 addListener(sleepTimerListener)
                 addAnalyticsListener(PlaybackStatsListener(false, this@PlayerService))
             }
@@ -1188,7 +1190,7 @@ class PlayerService : MediaLibraryService(),
 
         val customBitmapLoader = CacheBitmapLoader(BitmapLoader(
             this,
-            serviceScope,
+            this@PlayerService.serviceScope,
             (512 * resources.displayMetrics.density).roundToInt()
         ))
 
@@ -1429,13 +1431,13 @@ class PlayerService : MediaLibraryService(),
                 if (currentSong.value == null || currentSong.value?.isLocal == true) return
 
                 if (appSettings.persistentQueue)
-                    serviceScope.launch { saveQueue() }
+                    this@PlayerService.serviceScope.launch { saveQueue() }
 
 
                 if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
                     youTubePlayer.pause()
                 else
-                    serviceScope.launch {
+                    this@PlayerService.serviceScope.launch {
                         riTuneCastClient.sendCommand(
                             RiTuneRemoteCommand(
                                 "pause",
@@ -1480,7 +1482,7 @@ class PlayerService : MediaLibraryService(),
                                 youTubePlayer.pause()
                                 youTubePlayer.cueVideo(it, playFromSecond)
                             }
-                            else serviceScope.launch {
+                            else this@PlayerService.serviceScope.launch {
                                 riTuneCastClient.sendCommand(
                                     RiTuneRemoteCommand(
                                         "load",
@@ -1529,7 +1531,7 @@ class PlayerService : MediaLibraryService(),
         //This initilize chromecast if available (available only on full build variant)
         if (CastHelper.isCastAvailable
             && appSettings.castType !in listOf(CastType.NONE, CastType.RITUNECAST)) {
-            serviceScope.launch {
+            this@PlayerService.serviceScope.launch {
                 CastHelper.initChromecastYouTubePlayerContext(this@PlayerService)
                 while (isActive) {
                     delay(1.seconds)
@@ -1710,7 +1712,7 @@ class PlayerService : MediaLibraryService(),
             exoPlayer.shuffleOrder = DefaultShuffleOrder(shuffledIndices, System.currentTimeMillis())
         }
 
-        serviceScope.launch { saveQueue() }
+        this@PlayerService.serviceScope.launch { saveQueue() }
     }
 
     // Gestito tramite onUnBind
@@ -1727,7 +1729,7 @@ class PlayerService : MediaLibraryService(),
     @UnstableApi
     override fun onDestroy() {
         Timber.d("PlayerService: onDestroy AVVIATO")
-
+        Timber.d("SCOPES PlayerService.serviceScope CANCELLED (was ${this@PlayerService.serviceScope.hashCode()})")
         _isServiceReady.value = false
 
         stopPlaybackWatchdog()
@@ -1799,7 +1801,7 @@ class PlayerService : MediaLibraryService(),
         }
 
         // Chiudiamo il raggio d'azione delle coroutine solo alla fine, dopo che l'hardware è spento
-        serviceScope.cancel()
+        this@PlayerService.serviceScope.cancel()
 
         isServiceInForeground = false
 
@@ -1812,7 +1814,7 @@ class PlayerService : MediaLibraryService(),
     override fun onAudioVolumeChanged(currentVolume: Int, maxVolume: Int) {
         if (appSettings.isPauseOnVolumeZeroEnabled) {
             if ((_playerState.value.isPlaying) && currentVolume < 1) {
-                serviceScope.launch {
+                this@PlayerService.serviceScope.launch {
                     delay(300.milliseconds)
                     if (audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) < 1) {
                         hybridPlayer.pause()
@@ -1937,7 +1939,7 @@ class PlayerService : MediaLibraryService(),
 
         if (totalPlayTimeMs > 5000) {
             Timber.d("PlayerService onPlaybackStatsReady INCREMENT totalPlayTimeMs $totalPlayTimeMs mediaItem ${mediaItem.mediaId}")
-            serviceScope.launch {
+            this@PlayerService.serviceScope.launch {
                 Database.incrementTotalPlayTimeMs(mediaItem.mediaId, totalPlayTimeMs)
             }
         }
@@ -1947,7 +1949,7 @@ class PlayerService : MediaLibraryService(),
 
         if (totalPlayTimeMs > minTimeForEvent.ms) {
             Timber.d("PlayerService onPlaybackStatsReady INSERT EVENT totalPlayTimeMs $totalPlayTimeMs")
-            serviceScope.launch {
+            this@PlayerService.serviceScope.launch {
                 try {
                     Database.insert(
                         Event(
@@ -1986,7 +1988,7 @@ class PlayerService : MediaLibraryService(),
         Timber.d("PlayerService onMediaItemTransition to ${mediaItem.mediaId}, origin=$origin, isSuggestion=$isFromSuggestion")
 
         // todo in the future save in preferences if enabled
-        serviceScope.launch {
+        this@PlayerService.serviceScope.launch {
             if (isFromSuggestion) {
                 binder.setDiscoverySource(
                     strategyId = suggestionInfo.strategyId,
@@ -2060,7 +2062,7 @@ class PlayerService : MediaLibraryService(),
         // Se l'utente aveva richiesto la visualizzazione di un video, quando passiamo avanti lo resettiamo
         // se in onmediaitemtransition non è ancora stato intercettato, lo facciamo qua
         if (appSettings.forceUserVideoPlayback) {
-            serviceScope.launch {
+            this@PlayerService.serviceScope.launch {
                 appSettingsManager.updateSettings(appSettings.copy(forceUserVideoPlayback = false))
             }
         }
@@ -2079,7 +2081,7 @@ class PlayerService : MediaLibraryService(),
                     startFadeIn()
                     Timber.d("PlayerService onMediaItemTransition mediaItem not local, inside")
                 } else
-                    serviceScope.launch {
+                    this@PlayerService.serviceScope.launch {
                         riTuneCastClient.sendCommand(
                             RiTuneRemoteCommand(
                                 "load",
@@ -2095,7 +2097,7 @@ class PlayerService : MediaLibraryService(),
                 // Recupera genere
                 val mbclient = MusicBrainz()
                 val genreHelper = MBMetadataHelper(mbclient)
-                serviceScope.launch {
+                this@PlayerService.serviceScope.launch {
                     genreHelper.onSongPlayed(it.mediaId)
                 }
 
@@ -2136,7 +2138,7 @@ class PlayerService : MediaLibraryService(),
             }
 
             bitmapProvider?.load(it.mediaMetadata.artworkUri) { bitmap ->
-                serviceScope.launch {
+                this@PlayerService.serviceScope.launch {
                     setWallpaper(this@PlayerService, bitmap)
                 }
             }
@@ -2149,7 +2151,7 @@ class PlayerService : MediaLibraryService(),
 
         updateDiscordPresence()
 
-        serviceScope.launch { saveQueue() }
+        this@PlayerService.serviceScope.launch { saveQueue() }
 
         if (appSettings.isEnabledLastFM) {
             appSettings.lastFMSessionToken.let {
@@ -2196,7 +2198,7 @@ class PlayerService : MediaLibraryService(),
         val isLowMemory = level == TRIM_MEMORY_RUNNING_CRITICAL
         Timber.d("PlayerService onTrimMemory level $level isLowMemory $isLowMemory")
         if (isLowMemory)
-            serviceScope.launch { saveQueue() }
+            this@PlayerService.serviceScope.launch { saveQueue() }
     }
 
     suspend fun recordListeningEvent(songId: String) {
@@ -2250,7 +2252,7 @@ class PlayerService : MediaLibraryService(),
                 )
             } else {
                 radio?.let { radio ->
-                    serviceScope.launch(Dispatchers.Main) {
+                    this@PlayerService.serviceScope.launch(Dispatchers.Main) {
                         if (exoPlayer.playbackState != STATE_IDLE)
                             exoPlayer.addMediaItems(radio.process())
                     }
@@ -2301,7 +2303,7 @@ class PlayerService : MediaLibraryService(),
         val boostLevel = appSettings.volumeBoostLevel
 
         volumeNormalizationJob?.cancel()
-        volumeNormalizationJob = serviceScope.launch(Dispatchers.Main) {
+        volumeNormalizationJob = this@PlayerService.serviceScope.launch(Dispatchers.Main) {
 
             fun Float?.toMb() = ((this ?: 0f) * 100).toInt()
 
@@ -2398,7 +2400,7 @@ class PlayerService : MediaLibraryService(),
                 val shouldPlay = (hasNewBt && resumeOnBt) || (hasNewWired && resumeOnWired)
 
                 if (shouldPlay) {
-                    serviceScope.launch {
+                    this@PlayerService.serviceScope.launch {
                         ensureOnlinePlayerInitialized()
                         requestSmoothPlay()
                     }
@@ -2566,7 +2568,7 @@ class PlayerService : MediaLibraryService(),
                         if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
                             _internalYouTubePlayer.value?.pause()
                         else
-                            serviceScope.launch {
+                            this@PlayerService.serviceScope.launch {
                                 riTuneCastClient.sendCommand(
                                     RiTuneRemoteCommand(
                                         "pause",
@@ -2580,7 +2582,7 @@ class PlayerService : MediaLibraryService(),
                         if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
                             hybridPlayer.play()
                         else
-                            serviceScope.launch {
+                            this@PlayerService.serviceScope.launch {
                                 riTuneCastClient.sendCommand(
                                     RiTuneRemoteCommand(
                                         "play",
@@ -2609,7 +2611,7 @@ class PlayerService : MediaLibraryService(),
                             if(!GlobalSharedData.riTuneCastActive)
                                 _internalYouTubePlayer.value?.play()
                             else
-                                serviceScope.launch {
+                                this@PlayerService.serviceScope.launch {
                                     riTuneCastClient.sendCommand(
                                         RiTuneRemoteCommand(
                                             "play",
@@ -2772,7 +2774,7 @@ class PlayerService : MediaLibraryService(),
 
         Timber.d("PlayerService PlaybackWatchdog: Avvio watchdog")
 
-        playbackWathcDogJob = serviceScope.launch(Dispatchers.Main) {
+        playbackWathcDogJob = this@PlayerService.serviceScope.launch(Dispatchers.Main) {
             while (isActive) {
                 delay(200.milliseconds)
 
@@ -2933,7 +2935,7 @@ class PlayerService : MediaLibraryService(),
         isFading = true
         hybridPlayer.setFadeVolume(0f) // Inizia dal silenzio totale
 
-        fadeInJob = serviceScope.launch(Dispatchers.Main) {
+        fadeInJob = this@PlayerService.serviceScope.launch(Dispatchers.Main) {
             val steps = 20
             val stepDelay = FADE_IN_DURATION_MS / steps
 
@@ -2955,7 +2957,7 @@ class PlayerService : MediaLibraryService(),
     private fun startExoToExoCrossfade() {
         fadeInJob?.cancel() // Cancelliamo eventuali fade-in residui
 
-        serviceScope.launch(Dispatchers.Main) {
+        this@PlayerService.serviceScope.launch(Dispatchers.Main) {
             val steps = 30 // Aumentiamo gli step per rendere la sfumatura ultra-morbida nelle cuffie
 
             // Recuperiamo la durata reale impostata (es. 7 secondi)
@@ -2987,7 +2989,7 @@ class PlayerService : MediaLibraryService(),
     private fun startWebViewFadeOut() {
         fadeInJob?.cancel()
 
-        serviceScope.launch(Dispatchers.Main) {
+        this@PlayerService.serviceScope.launch(Dispatchers.Main) {
             val steps = 30
             val durationMs = appSettings.crossfadeDuration.milliseconds
             val stepDelay = durationMs / steps
@@ -3138,7 +3140,7 @@ class PlayerService : MediaLibraryService(),
 
     fun updateWidgetState() {
         Timber.d("PlayerService updateWidgetState _playerState ${_playerState.value.isPlaying}")
-        serviceScope.launch {
+        this@PlayerService.serviceScope.launch {
             if (!::exoPlayer.isInitialized) {
                 Timber.w("PlayerService updateWidgetState invocato ma il player non è ancora pronto. Salto l'aggiornamento.")
                 return@launch
@@ -3260,7 +3262,7 @@ class PlayerService : MediaLibraryService(),
         if (!enabled) return
         val wallpaperTarget = appSettings.wallpaperType
 
-        serviceScope.launch {
+        this@PlayerService.serviceScope.launch {
             val wallpaperManager = WallpaperManager.getInstance(context) ?: return@launch
 
             try {
@@ -3297,7 +3299,7 @@ class PlayerService : MediaLibraryService(),
             if (remainingMillis > 0) {
                 Timber.d("PlayerService: Ripristino timer di spegnimento rilevato. Rimanenti: $remainingMillis ms")
                 // Riavvia il timer usando l'estensione custom del serviceScope
-                timerJob = serviceScope.timer(remainingMillis) {
+                timerJob = this@PlayerService.serviceScope.timer(remainingMillis) {
                     binder.executeAutoCloseLogic()
                 }
             } else {
@@ -3424,7 +3426,7 @@ class PlayerService : MediaLibraryService(),
         fileName: String,
         thumbnailFileName: String
     ) {
-        serviceScope.launch {
+        this@PlayerService.serviceScope.launch {
             withContext(Dispatchers.Main) {
                 val itemCount = exoPlayer.mediaItemCount
                 for (i in 0 until itemCount) {
@@ -3495,7 +3497,7 @@ class PlayerService : MediaLibraryService(),
     @Stable
     open inner class Binder : AndroidBinder() {
 
-        val coroutineScope: CoroutineScope
+        val serviceScope: CoroutineScope
             get() = this@PlayerService.serviceScope
 
         val hybridPlayer: HybridPlayer
@@ -3504,8 +3506,8 @@ class PlayerService : MediaLibraryService(),
         val playerState: StateFlow<PlayerState>
             get() = this@PlayerService.playerState
 
-        val youtubePlayerPlayingState: Boolean
-            get() = this@PlayerService.playerState.value.isPlaying
+//        val youtubePlayerPlayingState: Boolean
+//            get() = this@PlayerService.playerState.value.isPlaying
 
         val youtubePlayerBufferedFraction: StateFlow<Float>
             get() = this@PlayerService.internalYoutubeBufferedFraction
@@ -3566,20 +3568,20 @@ class PlayerService : MediaLibraryService(),
 
             // Calcoliamo e salviamo il timestamp esatto di fine
             val endTime = System.currentTimeMillis() + delayMillis
-            serviceScope.launch {
+            this@PlayerService.serviceScope.launch {
                 appSettingsManager.updateSettings(appSettings.copy(timerEndTime = endTime))
             }
 
             Timber.d("PlayerService startAutoCloseTimer delayMillis $delayMillis, pianificato per timestamp: $endTime")
 
-            timerJob = serviceScope.timer(delayMillis) {
+            timerJob = this@PlayerService.serviceScope.timer(delayMillis) {
                 Timber.d("PlayerService: Timer multiuso terminato naturalmente")
                 executeAutoCloseLogic()
             }
         }
 
         fun executeAutoCloseLogic() {
-            serviceScope.launch(Dispatchers.Main) {
+            this@PlayerService.serviceScope.launch(Dispatchers.Main) {
 
                 val wasPlaying = _playerState.value.isPlaying
 
@@ -3651,7 +3653,7 @@ class PlayerService : MediaLibraryService(),
             timerJob?.cancel()
             timerJob = null
             // Resettiamo il valore nel database/impostazioni per evitare ripristini errati al riavvio
-            serviceScope.launch {
+            this@PlayerService.serviceScope.launch {
                 appSettingsManager.updateSettings(appSettings.copy(timerEndTime = 0L))
             }
         }
@@ -3680,10 +3682,10 @@ class PlayerService : MediaLibraryService(),
                 isDiscoverEnabled,
                 applicationContext,
                 binder,
-                serviceScope
+                this@PlayerService.serviceScope
             ).let {
                 _isLoadingRadio.value = true
-                radioJob = serviceScope.launch(Dispatchers.Main) {
+                radioJob = this@PlayerService.serviceScope.launch(Dispatchers.Main) {
 
                     val songs =
                         (if (filterArtist.isEmpty()) it.process()
@@ -3718,7 +3720,7 @@ class PlayerService : MediaLibraryService(),
         }
 
         fun playFromSearch(query: String) {
-            serviceScope.launch {
+            this@PlayerService.serviceScope.launch {
                 Environment.searchPage(
                     body = SearchBody(
                         query = query,
@@ -3748,7 +3750,7 @@ class PlayerService : MediaLibraryService(),
 
         @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
         fun toggleShuffle() {
-            serviceScope.launch {
+            this@PlayerService.serviceScope.launch {
                 withContext(Dispatchers.Main) {
                     hybridPlayer.shuffleModeEnabled.let { hybridPlayer.shuffleModeEnabled = !it }
                 }
@@ -3760,7 +3762,7 @@ class PlayerService : MediaLibraryService(),
             val queueLoopType = appSettings.queueLoopType
             val newQueueLoopType = setQueueLoopState(queueLoopType)
             val repeatMode = newQueueLoopType.type
-            serviceScope.launch {
+            this@PlayerService.serviceScope.launch {
                 withContext(Dispatchers.Main) {
                     hybridPlayer.repeatMode = repeatMode
                 }
@@ -3819,7 +3821,7 @@ class PlayerService : MediaLibraryService(),
 
         // Se l'utente aveva richiesto la visualizzazione di un video, quando passiamo avanti lo resettiamo
         if (appSettings.forceUserVideoPlayback) {
-            serviceScope.launch {
+            this@PlayerService.serviceScope.launch {
                 appSettingsManager.updateSettings(appSettings.copy(forceUserVideoPlayback = false))
             }
         }
@@ -3845,7 +3847,7 @@ class PlayerService : MediaLibraryService(),
         // così onMediaItemTransition e startFadeIn()
         //isFading = false
 
-        serviceScope.launch {
+        this@PlayerService.serviceScope.launch {
             withContext(Dispatchers.Main) {
                 // USO IL PLAYER REALE SOTTOSTANTE (exoPlayer)
                 // per eseguire il vero salto atomico nella timeline di Media3,
@@ -3864,7 +3866,7 @@ class PlayerService : MediaLibraryService(),
 
         // Se l'utente aveva richiest la visualizzazione di un video, quando passiamo avanti lo resettiamo
         if (appSettings.forceUserVideoPlayback) {
-            serviceScope.launch {
+            this@PlayerService.serviceScope.launch {
                 appSettingsManager.updateSettings(appSettings.copy(forceUserVideoPlayback = false))
             }
         }
@@ -3897,7 +3899,7 @@ class PlayerService : MediaLibraryService(),
                 Timber.d("PlayerService: Salto forzato al brano precedente con indice: $targetPreviousIndex")
 
                 playFromSecond = 0f
-                serviceScope.launch(Dispatchers.Main) {
+                this@PlayerService.serviceScope.launch(Dispatchers.Main) {
                     // Usiamo il comando atomico che forza ExoPlayer ad andare all'indice desiderato,
                     // aggirando qualsiasi problema di validazione dell'URI o della timeline!
                     exoPlayer.seekToDefaultPosition(targetPreviousIndex)
@@ -3927,7 +3929,7 @@ class PlayerService : MediaLibraryService(),
         }
 
         // Avviamo la dissolvenza lampo sul Thread Principale
-        serviceScope.launch(Dispatchers.Main) {
+        this@PlayerService.serviceScope.launch(Dispatchers.Main) {
             Timber.d("PlayerService: Svuotamento buffer in corso per $source (volume silenziato)")
 
             hybridPlayer.setFadeVolume(0f)
@@ -3974,7 +3976,7 @@ class PlayerService : MediaLibraryService(),
         val rewindThreshold = appSettings.rewindThresholdDuration.milliSeconds
 
         // Dissolvenza lampo simmetrica per il tasto "Indietro"
-        serviceScope.launch(Dispatchers.Main) {
+        this@PlayerService.serviceScope.launch(Dispatchers.Main) {
             val steps = 6
             val quickFadeDurationMs = 250
             val stepDelay = quickFadeDurationMs / steps
@@ -4034,7 +4036,7 @@ class PlayerService : MediaLibraryService(),
         val steps = if (isCrossfadeOff) 3 else 5 // Meno step per il taglio netto
         val stepDelay = fadeDurationMs / steps
 
-        serviceScope.launch(Dispatchers.Main) {
+        this@PlayerService.serviceScope.launch(Dispatchers.Main) {
             isFading = true
             Timber.d("PlayerService UX: Avvio Pause Fade (duration=$fadeDurationMs ms)")
 
@@ -4060,7 +4062,7 @@ class PlayerService : MediaLibraryService(),
         val steps = if (isCrossfadeOff) 3 else 5
         val stepDelay = fadeDurationMs / steps
 
-        serviceScope.launch(Dispatchers.Main) {
+        this@PlayerService.serviceScope.launch(Dispatchers.Main) {
             hybridPlayer.setFadeVolume(0f)
             hybridPlayer.executeActualPlay()
 

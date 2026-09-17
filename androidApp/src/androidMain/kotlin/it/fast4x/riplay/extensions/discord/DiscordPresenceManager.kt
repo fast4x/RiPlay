@@ -29,6 +29,7 @@ import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.utils.SecureConfig
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.isAtLeastAndroid8
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -55,7 +56,8 @@ import java.util.concurrent.TimeUnit
 class DiscordPresenceManager(
     private val context: Context,
     private val getToken: () -> String?,
-    private val externalScope: CoroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val externalScope: CoroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob()
+    + CoroutineName("DiscordPresenceManagerScope"))
 ) {
     companion object {
 

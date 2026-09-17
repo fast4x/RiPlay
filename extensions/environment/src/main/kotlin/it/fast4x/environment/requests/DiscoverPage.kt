@@ -18,7 +18,7 @@ suspend fun Environment.discoverPage(language: String, country: String) = runCat
         setBody(
             BrowseBody(
                 context = DefaultWeb.copy(
-                    client = DefaultWeb.client.setLang(language, country)
+                    client = DefaultWeb.client.setLocale(language, country)
                 ),
                 browseId = "FEmusic_explore"
             )

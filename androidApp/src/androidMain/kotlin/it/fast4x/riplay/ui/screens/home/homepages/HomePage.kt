@@ -117,13 +117,20 @@ import it.fast4x.riplay.utils.getUnplayedSongs
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 import it.fast4x.riplay.utils.toMediaItem
 import it.fast4x.riplay.utils.typography
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
+import kotlin.time.Duration.Companion.milliseconds
 
 @ExperimentalSerializationApi
 @OptIn(ExperimentalMaterial3Api::class)
@@ -150,6 +157,8 @@ fun HomePage(
     val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
     val appSettingsManager = LocalAppSettingsManager.current
     val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appSettingsIsInitialized = appSettingsManager.isInitialized
+    Timber.d("HOME-GATE loaded=${appSettingsIsInitialized}")
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalGlobalSheetState.current
     val windowInsets = LocalPlayerAwareWindowInsets.current
@@ -192,6 +201,7 @@ fun HomePage(
 
     suspend fun loadData() {
         loadDataMutex.withLock {
+            Timber.d("HOME-LOAD start: cache home=${HomeDataCache.homePage != null} discover=${HomeDataCache.discoverPage != null}")
             try {
                 withContext(Dispatchers.IO) {
 
@@ -199,10 +209,41 @@ fun HomePage(
                     if (homePage == null && HomeDataCache.homePage != null) {
                         homePage = HomeDataCache.homePage
                     }
+
                     if (homePage == null) {
-                        val result = EnvironmentExt.getHomePage(setLogin = isYtLoggedIn()).getOrNull()
-                        homePage = result
-                        HomeDataCache.homePage = result
+
+                        var attempt = 0
+                        while (homePage == null && attempt < 3) {
+                            Timber.d(
+                                "HOME-ATTEMPT scope=${coroutineContext[CoroutineName]?.name} " +
+                                        "active=${coroutineContext[Job]?.isActive}"
+                            )
+                            try {
+                                homePage = EnvironmentExt.getHomePage(setLogin = isYtLoggedIn())
+//                                .onFailure {
+//                                    Timber.e(it, "HOME-LOAD homePage attempt $attempt failed")
+//                                }
+                                    .getOrNull()
+                            } catch (e: CancellationException) {
+                                // SE questo scope era serviceScope e il service è stato ricreato nel frattempo,
+                                // IL SERVIZIO NUOVO ha uno scope nuovo: logga l'identità del service corrente:
+                                Timber.d("HOME-CANCELLATION — serviceScope.isActive=${binder?.serviceScope?.coroutineContext?.isActive}")
+                                throw e
+                            }
+                            attempt++
+                            if (homePage == null && attempt < 3) {
+                                Timber.d("HOME-LOAD empty (attempt $attempt), retrying")
+                                delay((500L * attempt).milliseconds)   // backoff: 500, 1000, 2000ms
+                            }
+                        }
+                        HomeDataCache.homePage = homePage
+
+
+//                        Timber.d("HOME-LOAD isYtLoggedIn=${isYtLoggedIn()}")
+//                        val result = EnvironmentExt.getHomePage(setLogin = isYtLoggedIn()).getOrNull()
+//                        homePage = result
+//                        HomeDataCache.homePage = result
+//                        Timber.d("HOME-LOAD api result: ${result != null}, err=${EnvironmentExt.getHomePage(setLogin = isYtLoggedIn()).exceptionOrNull()?.message}")
                     }
 
                     if (showNewAlbums || showNewAlbumsArtists || showMoodsAndGenres) {
@@ -277,9 +318,10 @@ fun HomePage(
                         }
                     }
                 }
-            } catch (e: Exception) {
-                Timber.e("HomePage loadData failed: ${e.message}")
+            } catch (e: Exception ) {
+                Timber.e(e, "HOME-LOAD FAILED")   // ← l'eccezione INTERA, non solo il messaggio!
             }
+            Timber.d("HOME-LOAD end: home=${homePage != null} discover=${discoverPage != null} related=${relatedPage != null} trending=${trending != null}")
         }
     }
 
@@ -298,12 +340,14 @@ fun HomePage(
         refreshScope.launch(Dispatchers.IO) {
             refreshing = true
             loadData()
-            delay(500)
+            delay(500.milliseconds)
             refreshing = false
         }
     }
 
-    LaunchedEffect(Unit, playEventType, selectedCountryCode) {
+    LaunchedEffect( appSettingsIsInitialized, playEventType, selectedCountryCode) {
+        Timber.d("HOME-EFFECT start loaded=$appSettingsIsInitialized")
+        if (!appSettingsIsInitialized) return@LaunchedEffect
 
         val countryChanged = HomeDataCache.lastCountryCode != selectedCountryCode.name
         val playEventChanged = HomeDataCache.lastPlayEventType != playEventType
@@ -709,6 +753,7 @@ fun HomePage(
                     if (relatedPage == null) Loader()
 
                 }
+
 
                 discoverPage?.let { page ->
 

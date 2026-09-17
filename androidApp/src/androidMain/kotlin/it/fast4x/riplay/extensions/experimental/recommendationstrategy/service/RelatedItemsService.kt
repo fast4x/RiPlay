@@ -8,6 +8,7 @@ import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.Re
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.RelatedArtist
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.RelatedSong
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.RelatedSource
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -26,7 +27,7 @@ class RelatedItemsService() {
     private val artistRelationDao = Database.relationDao()
     private val mbAlbumDao = Database.mbAlbumDao()
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + CoroutineName("RelatedItemsServiceScope"))
     private val preloadedRelated = MutableStateFlow<Map<String, List<RelatedSong>>>(emptyMap())
     val preloadedRelatedSongs: StateFlow<Map<String, List<RelatedSong>>> = preloadedRelated
 

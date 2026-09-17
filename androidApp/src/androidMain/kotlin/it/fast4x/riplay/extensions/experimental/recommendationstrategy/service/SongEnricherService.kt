@@ -8,6 +8,7 @@ import it.fast4x.riplay.data.models.SongArtistCrossRef
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.musicbrainz.repository.AlbumRepository
 import it.fast4x.riplay.extensions.musicbrainz.repository.ArtistRepository
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -27,7 +28,7 @@ class SongEnricherService() {
     private val albumRepository = AlbumRepository()
     private val mbClient = MusicBrainz()
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + CoroutineName("SongEnricherServiceScope"))
 
     // Stato di enrich per la UI (mostra spinner "Recuperando info...")
     private val _enrichmentState = MutableStateFlow<EnrichmentState>(EnrichmentState.Idle)

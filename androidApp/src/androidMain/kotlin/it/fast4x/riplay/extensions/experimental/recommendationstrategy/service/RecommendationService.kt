@@ -9,6 +9,7 @@ import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.Us
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.repository.UserProfileRepository
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.strategies.RecommendationCopy
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.ui.RecommendationSection
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -32,7 +33,7 @@ class RecommendationService(
     private val strategies: List<RecommendationStrategy>,
 ) {
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + CoroutineName("RecommendationServiceScope"))
     private val refreshMutex = Mutex()
 
     private val _sections = MutableStateFlow<List<RecommendationSection>>(emptyList())

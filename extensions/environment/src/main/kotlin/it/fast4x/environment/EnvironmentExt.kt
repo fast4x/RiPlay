@@ -133,8 +133,8 @@ object EnvironmentExt {
 
         var response = Environment.browse(browseId = "FEmusic_home", setLogin = setLogin, params = params).body<BrowseResponse>()
 
-        println("EnvironmentExt homePage() response sections: ${response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
-            ?.tabRenderer?.content?.sectionListRenderer?.contents}" )
+//        println("EnvironmentExt homePage() response sections: ${response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
+//            ?.tabRenderer?.content?.sectionListRenderer?.contents}" )
 
 
         var continuation = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()

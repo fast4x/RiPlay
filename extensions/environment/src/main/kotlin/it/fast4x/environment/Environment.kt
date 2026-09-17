@@ -30,7 +30,6 @@ import it.fast4x.environment.models.BrowseResponse
 import it.fast4x.environment.models.Context
 import it.fast4x.environment.models.Context.Client
 import it.fast4x.environment.models.Context.Companion.DefaultWeb
-import it.fast4x.environment.models.Context.Companion.DefaultWeb2
 import it.fast4x.environment.models.Context.Companion.DefaultWeb2WithLocale
 import it.fast4x.environment.models.GridRenderer
 import it.fast4x.environment.models.MusicNavigationButtonRenderer
@@ -53,9 +52,7 @@ import it.fast4x.environment.models.bodies.PlayerBody
 import it.fast4x.environment.models.bodies.PlaylistDeleteBody
 import it.fast4x.environment.models.bodies.ResolveUrlBody
 import it.fast4x.environment.models.bodies.SubscribeBody
-import it.fast4x.environment.models.responses.BrowseEndpoint
 import it.fast4x.environment.models.responses.CachedAccountProfile
-import it.fast4x.environment.models.responses.Endpoint
 import it.fast4x.environment.models.responses.ResolveUrlResponse
 import it.fast4x.environment.models.responses.providers.DeezerTrack
 import it.fast4x.environment.models.responses.toCachedProfiles
@@ -66,6 +63,7 @@ import it.fast4x.environment.utils.ProxyPreferences
 import it.fast4x.environment.utils.getProxy
 import it.fast4x.environment.utils.parseCookieString
 import it.fast4x.environment.utils.sha1
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -79,6 +77,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import java.net.InetAddress
 import java.net.Proxy
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.coroutineContext
 
 const val YT_PLAYLIST_SHARE_BASEURL = "https://www.youtube.com/playlist?list="
 const val YTM_PLAYLIST_SHARE_BASEURL = "https://music.youtube.com/playlist?list="
@@ -219,16 +218,22 @@ object Environment {
         }
     }
 
-    var client = buildClient()
+    var client: HttpClient = buildClient()
 
     var dnsToUse: String? = null
         set(value) {
+            // "the client was being rebuilt because nothing had changed"
+            println("CLIENT-REBUILD triggered by dnsToUse=$value (was $field)")
+            if (field == value) return
             field = value
             client.close()
             client = buildClient()
         }
     var customDnsToUse: String? = null
         set(value) {
+            // "the client was being rebuilt because nothing had changed"
+            println("CLIENT-REBUILD triggered by customDnsToUse=$value (was $field)")
+            if (field == value) return
             field = value
             client.close()
             client = buildClient()
@@ -236,6 +241,9 @@ object Environment {
 
     var proxy: Proxy? = null
         set(value) {
+            // "the client was being rebuilt because nothing had changed"
+            println("CLIENT-REBUILD triggered by proxy=$value (was $field)")
+            if (field == value) return
             field = value
             client.close()
             client = buildClient()
@@ -935,21 +943,30 @@ object Environment {
         params: String? = null,
         continuation: String? = null,
         setLogin: Boolean = true,
-    ) = client.post(_3djbhqyLpE) {
-        setLogin(ytClient, setLogin)
-        setBody(
-            BrowseBody(
+    ): HttpResponse {
+        val response = client.post(_3djbhqyLpE) {
+            println("ENVIRONMENT BROWSE pre-setLogin (engine=${currentCoroutineContext()})")
+            setLogin(ytClient, setLogin)
+            println("ENVIRONMENT BROWSE post-setLogin")
+            val browseBody = BrowseBody(
                 context = Context.DefaultWebWithLocale,
                 browseId = browseId,
                 params = params,
                 continuation = continuation
             )
-        )
-        parameter("continuation", continuation)
-        parameter("ctoken", continuation)
-        if (continuation != null) {
-            parameter("type", "next")
+            val bodyWithLocale = browseBody.copy(
+                context = browseBody.context.setLocale(locale.hl, locale.gl)
+            )
+            println("Environment browse hl = ${locale.hl} gl = ${locale.gl} browseBody $bodyWithLocale")
+            setBody(bodyWithLocale)
+            parameter("continuation", continuation)
+            parameter("ctoken", continuation)
+            if (continuation != null) {
+                parameter("type", "next")
+            }
         }
+
+        return response
     }
 
     suspend fun customBrowse(

@@ -35,6 +35,7 @@ import it.fast4x.riplay.extensions.musicbrainz.workers.WorkerDependencies
 import it.fast4x.riplay.musicvault.initializeMusicVault
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.utils.InitializeEnvironment
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -54,8 +55,12 @@ class MainApplication : Application(), ImageLoaderFactory {
             NetworkConnectivity.Disconnected
         )
 
-    private val appScopeMain = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-    val appScopeIO = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val appScopeMain = CoroutineScope(
+        SupervisorJob() + Dispatchers.Main + CoroutineName("AppScopeMain")
+    )
+    val appScopeIO = CoroutineScope(
+        SupervisorJob() + Dispatchers.IO + CoroutineName("AppScopeIO")
+    )
 
     val appViewModelFactory by lazy {
         AppViewModel.factory(this)

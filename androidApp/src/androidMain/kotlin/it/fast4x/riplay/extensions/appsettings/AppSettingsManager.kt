@@ -17,7 +17,7 @@ class AppSettingsManager {
     val activeSettings: StateFlow<AppSettings> = _activeSettings.asStateFlow()
 
     @Volatile
-    private var isInitialized = false
+    var isInitialized = false
 
     suspend fun initialize() {
         try {

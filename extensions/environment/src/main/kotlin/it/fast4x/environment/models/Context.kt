@@ -59,9 +59,9 @@ data class Context(
             ),
         )
 
-        fun setLang(
-            language: String,
-            country: String,
+        fun setLocale(
+            language: String? = "en",
+            country: String? = "US",
         ) = this.copy(hl = language, gl = country)
 
     }
@@ -94,6 +94,9 @@ data class Context(
         }
     }
 
+    fun setLocale(hl: String? = "en", gl: String? = "US"): Context {
+        return copy(client = client.setLocale(hl, gl))
+    }
 
 
     companion object {

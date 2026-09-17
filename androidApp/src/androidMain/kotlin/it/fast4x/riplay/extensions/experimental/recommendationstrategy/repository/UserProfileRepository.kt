@@ -9,6 +9,7 @@ import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.Ar
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.utils.RecommendationConstants
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.UserProfile
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.builders.UserProfileBuilder
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -24,7 +25,7 @@ class UserProfileRepository(
     private val builder: UserProfileBuilder
 ) {
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + CoroutineName("UserProfileRepositoryScope"))
     private val rebuildMutex = Mutex()
 
     private val _profile = MutableStateFlow<UserProfile?>(null)
