@@ -44,7 +44,7 @@ fun UnifiedPlayerView(
     // viene eseguito durante la COMPOSIZIONE del nuovo ramo
     val myClaim = remember { VideoParkingLot.newClaim() }
 
-    if (mediaItem.isVideo) {
+    //if (mediaItem.isVideo) {
         DisposableEffect(Unit) {
             onDispose {
                 val v = videoPlayerView ?: return@onDispose
@@ -97,8 +97,8 @@ fun UnifiedPlayerView(
 
             }
         )
-    } else {
-        LocalView.current.keepScreenOn = enableKeepScreenOn
-        videoPlayerView?.keepScreenOn = enableKeepScreenOn
-    }
+//    } else {
+//        LocalView.current.keepScreenOn = enableKeepScreenOn
+//        videoPlayerView?.keepScreenOn = enableKeepScreenOn
+//    }
 }

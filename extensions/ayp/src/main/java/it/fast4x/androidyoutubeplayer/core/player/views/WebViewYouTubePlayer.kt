@@ -172,6 +172,7 @@ internal class WebViewYouTubePlayer (
   }
 
   override fun onWindowVisibilityChanged(visibility: Int) {
+    println("AYPFORK-onWindowVisibilityChanged visibility=$visibility")   // 0=GONE 4=INVISIBLE 0? 8=VISIBLE... usa i valori grezzi
     if (visibility == View.INVISIBLE || visibility == View.GONE) {
       super.onWindowVisibilityChanged(View.VISIBLE)
     } else {
@@ -180,6 +181,7 @@ internal class WebViewYouTubePlayer (
   }
 
   override fun onVisibilityChanged(changedView: View, visibility: Int) {
+    println("AYPFORK-onVisibilityChanged changedView=${changedView::class.simpleName} vis=$visibility")
     if (visibility == View.INVISIBLE || visibility == View.GONE) {
       super.onVisibilityChanged(changedView, View.VISIBLE)
     } else {
@@ -188,6 +190,7 @@ internal class WebViewYouTubePlayer (
   }
 
   override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
+    println("AYPFORK-onWindowFocusChanged hasWindowFocus=${hasWindowFocus::class.simpleName} vis=$visibility")
     // Impedisce a Chromium di marcare la pagina come "hidden" (Page Visibility API)
     // quando la finestra perde il focus (schermo spento, tendina notifiche, app in
     // background). Altrimenti lo script IFrame di YouTube reagisce all'evento
@@ -196,6 +199,7 @@ internal class WebViewYouTubePlayer (
   }
 
   override fun onVisibilityAggregated(isVisible: Boolean) {
+    println("AYPFORK-onVisibilityAggregated isVisible=${isVisible::class.simpleName} vis=$visibility")
     // Segnale "definitivo" (API 24+) che Chromium usa per decidere se
     // sospendere rendering/JS timers, indipendentemente da window focus
     // e dai singoli visibility change già gestiti sopra. Forziamo sempre
@@ -204,6 +208,15 @@ internal class WebViewYouTubePlayer (
     super.onVisibilityAggregated(true)
   }
 
+  override fun onDetachedFromWindow() {
+    super.onDetachedFromWindow()
+    println("AYPFORK-onDetachedFromWindow DETACHED ")
+  }
+
+  override fun onAttachedToWindow() {
+    super.onAttachedToWindow()
+    println("AYPFORK-onAttachedToWindow ATTACHED")
+  }
 
   /**
    * Riceve una Bitmap pre-renderizzata dall'applicazione e la imposta

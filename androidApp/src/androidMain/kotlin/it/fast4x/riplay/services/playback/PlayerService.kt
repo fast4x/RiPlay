@@ -1321,8 +1321,11 @@ class PlayerService : MediaLibraryService(),
                 youTubePlayer: YouTubePlayer,
                 state: PlayerConstants.PlayerState
             ) {
+                Timber.d("AYPFORK-PlayerService onStateChange $state")
+
                 if (currentSong.value?.isLocal == true) return
-                Timber.d("PlayerService onlinePlayerView: onStateChange $state")
+                //Timber.d("PlayerService onlinePlayerView: onStateChange $state")
+
 
                 //unstartedWatchdogJob?.cancel()
 
@@ -2802,6 +2805,7 @@ class PlayerService : MediaLibraryService(),
 
                             if (isWebViewStalledByFocusLoss) {
                                 Timber.w("PlayerService PlaybackWatchdog: RILEVATO STALLO TIMELINE (Focus Loss). Sincronizzo in PAUSA.")
+                                Timber.d("AYPFORK-PlayerService PlaybackWatchdog: RILEVATO STALLO TIMELINE (Focus Loss). Sincronizzo in PAUSA.")
                                 hybridPlayer.executeActualPause() // non usare pausa con fade
                                 lastWatchdogPosition = position
                                 continue
@@ -2817,6 +2821,7 @@ class PlayerService : MediaLibraryService(),
 
                             if (isWebViewAwakenedByFocusGain) {
                                 Timber.d("PlayerService PlaybackWatchdog: RILEVATO AVANZAMENTO ANOMALO (Focus Gain). Sincronizzo in PLAY.")
+                                Timber.d("AYPFORK-PlayerService PlaybackWatchdog: RILEVATO AVANZAMENTO ANOMALO (Focus Gain). Sincronizzo in PLAY.")
                                 hybridPlayer.executeActualPlay()
                                 lastWatchdogPosition = position
                                 continue
