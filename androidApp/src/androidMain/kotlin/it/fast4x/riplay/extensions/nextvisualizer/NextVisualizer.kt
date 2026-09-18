@@ -182,8 +182,10 @@ fun NextVisualizer() {
 
             val visualizersList = getVisualizers()
             val currentVisualizer = appSettings.currentVisualizer
+            val safeVisualizerIndex = currentVisualizer.coerceIn(0, visualizersList.lastIndex)
             LaunchedEffect(currentVisualizer) {
-                if (currentVisualizer > 0) return@LaunchedEffect
+                Timber.d("NextVisualizer LaunchedEffect currentVisualizer: $currentVisualizer visualizerList size: ${visualizersList.size}")
+                if (currentVisualizer in visualizersList.indices) return@LaunchedEffect
 
                 appSettingsManager.updateSettings(
                     appSettingsManager.activeSettings.value.copy(currentVisualizer = 0)
@@ -233,7 +235,7 @@ fun NextVisualizer() {
                          */
                     },
                     update = {
-                        it.setup(helper, visualizersList[currentVisualizer])
+                        it.setup(helper, visualizersList[safeVisualizerIndex])
                     }
 
                 )
@@ -260,19 +262,12 @@ fun NextVisualizer() {
                     ) {
                         IconButton(
                             onClick = {
-                                if (currentVisualizer <= visualizersList.lastIndex) {
-                                    coroutineScope.launch {
-                                        appSettingsManager.updateSettings(
-                                            appSettingsManager.activeSettings.value.copy(currentVisualizer = currentVisualizer - 1)
+                                coroutineScope.launch {
+                                    appSettingsManager.updateSettings(
+                                        appSettingsManager.activeSettings.value.copy(
+                                            currentVisualizer = if (safeVisualizerIndex > 0) safeVisualizerIndex - 1 else visualizersList.lastIndex
                                         )
-                                    }
-                                }
-                                if (currentVisualizer < 0) {
-                                    coroutineScope.launch {
-                                        appSettingsManager.updateSettings(
-                                            appSettingsManager.activeSettings.value.copy(currentVisualizer = visualizersList.lastIndex)
-                                        )
-                                    }
+                                    )
                                 }
                             },
                             icon = R.drawable.arrow_left,
@@ -282,7 +277,7 @@ fun NextVisualizer() {
                         )
 
                         BasicText(
-                            text = "${currentVisualizer + 1}/${visualizersList.size}",
+                            text = "${safeVisualizerIndex + 1}/${visualizersList.size}",
                             style = typography().xs.semiBold.copy(color = colorPalette().text),
                         )
 
@@ -291,8 +286,8 @@ fun NextVisualizer() {
                                 coroutineScope.launch {
                                     appSettingsManager.updateSettings(
                                         appSettingsManager.activeSettings.value.copy(
-                                            currentVisualizer =
-                                            if (currentVisualizer < visualizersList.lastIndex) currentVisualizer + 1 else 0)
+                                            currentVisualizer = if (safeVisualizerIndex < visualizersList.lastIndex) safeVisualizerIndex + 1 else 0
+                                        )
                                     )
                                 }
                             },
