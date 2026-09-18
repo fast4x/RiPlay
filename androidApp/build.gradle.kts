@@ -169,8 +169,8 @@ extensions.configure<ApplicationExtension> {
         applicationId = "it.fast4x.riplay"
         targetSdk = 37
 
-        versionCode = 93
-        versionName = "0.7.92"
+        versionCode = 94
+        versionName = "0.7.93"
 
 
         // INIT ENVIRONMENT
