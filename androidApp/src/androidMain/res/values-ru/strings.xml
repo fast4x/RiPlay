@@ -808,8 +808,6 @@
     <string name="enable_youtube_music_login">Включить вход в YouTube Music</string>
     <string name="show_cover_thumbnail_animation">Показывать анимацию миниатюр обложки</string>
     <string name="cover_thumbnail_animation_type">Тип анимации обложки</string>
-
-
     <string name="delete_hidden_songs">Вы действительно хотите удалить все скрытые песни из базы данных? Это действие необратимо.</string>
     <string name="delete_hidden_songs_message">Удалить скрытые песни</string>
     <string name="cover_type_vinyl">Винил</string>
@@ -965,7 +963,6 @@
     <string name="voice_microphone_permission_denied">Microphone permission denied</string>
     <string name="voice_missing_microphone_permissions_please_grant">Missing microphone permissions, please grant it in the app settings</string>
     <string name="message_excluded_videos">Excluded %s videos</string>
-
     <string name="enable_voice_input">Enable voice input</string>
     <string name="music_identifier_provider">Music identifier provider</string>
     <string name="music_identify">Identify</string>
