@@ -8,6 +8,8 @@ import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.analytics.PlaybackStatsListener
 import androidx.media3.session.MediaSession
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -31,7 +33,7 @@ enum class ActiveEngine { EXOPLAYER, YOUTUBE }
 @UnstableApi
 class HybridPlayer (
     private val playerService: PlayerService,
-    private val exoPlayer: Player,
+    private val exoPlayer: ExoPlayer,
     private val youtubeControl: YouTubeControl
 ) : ForwardingPlayer(exoPlayer) {
 
@@ -50,6 +52,10 @@ class HybridPlayer (
         private set
 
     private val hybridListeners = mutableListOf<Player.Listener>()
+
+    private val playbackStatsListener =
+        PlaybackStatsListener(false, playerService)
+    private var analyticsAttached = false
 
     /* // Non è necessario lo mantengo come eventuale workaround
     private val positionUpdater = object : Runnable {
@@ -111,6 +117,12 @@ class HybridPlayer (
 
         exoPlayer.volume = userVolume
 
+        // Registriamo il listener delle statistiche solo quando yt è il motore attivo
+        if (!analyticsAttached) {
+            exoPlayer.addAnalyticsListener(playbackStatsListener)
+            analyticsAttached = true
+        }
+
         hybridListeners.forEach { listener ->
             listener.onTimelineChanged(currentTimeline, Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED)
         }
@@ -118,6 +130,12 @@ class HybridPlayer (
 
     fun switchToYoutube() {
         activeEngine = ActiveEngine.YOUTUBE
+
+        // Rimuoviamo il listener delle statistiche non ci serve per l'online
+        if (analyticsAttached) {
+            exoPlayer.removeAnalyticsListener(playbackStatsListener)
+            analyticsAttached = false
+        }
 
         youtubePlayWhenReady = youtubeControl.isPlaying()
 

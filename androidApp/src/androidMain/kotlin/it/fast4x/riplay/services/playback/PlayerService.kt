@@ -1147,9 +1147,9 @@ class PlayerService : MediaLibraryService(),
             .build()
             .apply {
                 //addListener(this@PlayerService) // listener è registrato su hybridPlayer
+                //addAnalyticsListener(PlaybackStatsListener(false, this@PlayerService)) // listener è registrato dinamicamente dentro hybridPlayer
                 sleepTimerListener = SleepTimerListener(this@PlayerService.serviceScope, this)
                 addListener(sleepTimerListener)
-                addAnalyticsListener(PlaybackStatsListener(false, this@PlayerService))
             }
 
         exoPlayer.repeatMode = appSettings.queueLoopType.type
@@ -1162,6 +1162,8 @@ class PlayerService : MediaLibraryService(),
         // REGISTRA IL SERVIZIO SULL'HYBRID PLAYER
         // In questo modo onIsPlayingChanged riceverà gli eventi di ENTRAMBI i motori
         hybridPlayer.addListener(this@PlayerService)
+        // Dichiariamo subito qual è il motore da preparare, serve anche a registrare il listener delle statistiche se la canzone dipende da exo
+        if (currentSong.value?.isLocal == true) hybridPlayer.switchToExo() else hybridPlayer.switchToYoutube()
 
         // Imposto il volume dell'Hybrid Player
         val deviceVol = getDeviceVolume(this)
@@ -2210,6 +2212,7 @@ class PlayerService : MediaLibraryService(),
     }
 
     suspend fun recordListeningEvent(songId: String) {
+        Timber.d("PlayerService recordListeningEvent")
         try {
             // Crea un Event per il profiling
             val event = Event(
