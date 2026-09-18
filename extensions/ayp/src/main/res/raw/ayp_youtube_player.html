@@ -112,6 +112,7 @@
   var timerId;
   var adblockIntervalId;
   var volumeWatchdogInterval = null;
+  var desiredVolume = 100;
 
   // AGGIUNTA: Variabile globale per tracciare il timeout dello sblocco rapido
   var unstartedKickTimeoutId;
@@ -176,7 +177,7 @@
           try {
               if (player && typeof player.unMute === 'function' && typeof player.setVolume === 'function') {
                   player.unMute();
-                  player.setVolume(100);
+                  setVolume(100); // Passa dalla funzione interna non direttamente dal player
 
                   // Proviamo a disattivare i nodi di compressione audio di Chromium se esposti
                   if (player.getIframe()) {
@@ -197,7 +198,7 @@
               }
               if (player && typeof player.unMute === 'function' && typeof player.setVolume === 'function') {
                   player.unMute();
-                  player.setVolume(100);
+                  setVolume(100); // Passa dalla funzione interna non direttamente dal player
               }
               checks++;
               if (checks >= 3) { // Riduciamo i controlli a massimo 3 in modo da concluderli in meno di un secondo
@@ -237,8 +238,9 @@
         volumeWatchdogInterval = setInterval(function() {
             if (player && typeof player.getVolume === 'function') {
                 var currentVol = player.getVolume();
-                if (currentVol < 100) {
-                    player.setVolume(100);
+                if (currentVol !== desiredVolume) {
+                    setVolume(desiredVolume); // Passa dalla funzione interna non direttamente dal player
+                    //console.log("AYP JS: VOLUME-DRIFT actual=" + currentVol + " desired=" + desiredVolume);
                 }
             }
         }, 4000); // 4 secondi: bilanciamento perfetto tra reattività e consumo CPU
@@ -345,7 +347,13 @@
 
   function mute() { if(player) player.mute(); }
   function unMute() { if(player) player.unMute(); }
-  function setVolume(volumePercent) { if(player) player.setVolume(volumePercent); }
+  function getVolume() { if(player) player.getVolume(); }
+  function setVolume(volumePercent) {
+      if(player) {
+          desiredVolume = volumePercent; // memorizza il volume desiderato
+          player.setVolume(volumePercent);
+      }
+  }
   function setPlaybackRate(playbackRate) { if(player) player.setPlaybackRate(playbackRate); }
   function toggleFullscreen() { if(player) player.toggleFullscreen(); }
   function nextVideo() { if(player) player.nextVideo(); }
