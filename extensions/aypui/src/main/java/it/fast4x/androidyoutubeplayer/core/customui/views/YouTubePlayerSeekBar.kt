@@ -184,6 +184,8 @@ class YouTubePlayerSeekBar(context: Context, attrs: AttributeSet? = null) :
   }
 
   override fun onError(youTubePlayer: YouTubePlayer, error: PlayerConstants.PlayerError) {}
+
+  override fun onVolumeChange(youTubePlayer: YouTubePlayer, volume: Int) {}
 }
 
 interface YouTubePlayerSeekBarListener {

@@ -48,6 +48,11 @@ interface YouTubePlayer {
   fun setVolume(volumePercent: Int)
 
   /**
+   * @return The current volume in percent.
+   */
+  fun getVolume()
+
+  /**
    *
    * @param time The absolute time in seconds to seek to
    */

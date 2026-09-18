@@ -1317,6 +1317,11 @@ class PlayerService : MediaLibraryService(),
                 hybridPlayer.updateCurrentMediaItemDuration(duration.toLong() * 1000L)
             }
 
+//            override fun onVolumeChange(youTubePlayer: YouTubePlayer, volume: Int) {
+//                super.onVolumeChange(youTubePlayer, volume)
+//                Timber.d("PlayerService onlinePlayer onVolumeChange $volume")
+//            }
+
             override fun onStateChange(
                 youTubePlayer: YouTubePlayer,
                 state: PlayerConstants.PlayerState

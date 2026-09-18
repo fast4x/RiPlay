@@ -26,6 +26,7 @@ internal object ChromecastCommunicationConstants {
   const val PLAY = "PLAY"
   const val PAUSE = "PAUSE"
   const val SET_VOLUME = "SET_VOLUME"
+  const val GET_VOLUME = "GET_VOLUME"
   const val SEEK_TO = "SEEK_TO"
   const val MUTE = "MUTE"
   const val UNMUTE = "UNMUTE"
@@ -53,6 +54,7 @@ internal object ChromecastCommunicationConstants {
     PLAY to PLAY,
     PAUSE to PAUSE,
     SET_VOLUME to SET_VOLUME,
+    GET_VOLUME to GET_VOLUME,
     SEEK_TO to SEEK_TO,
     MUTE to MUTE,
     UNMUTE to UNMUTE,

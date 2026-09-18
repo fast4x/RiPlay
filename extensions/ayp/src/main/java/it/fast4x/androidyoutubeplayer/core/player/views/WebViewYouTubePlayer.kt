@@ -53,6 +53,10 @@ private class YouTubePlayerImpl(
     val requestId = callbacks.registerBooleanCallback(callback)
     webView.invoke("getMuteValue", requestId)
   }
+
+  override fun getVolume() {
+    webView.invoke("sendCurrentVolume")
+  }
   override fun setVolume(volumePercent: Int) {
     require(volumePercent in 0..100) { "Volume must be between 0 and 100" }
     webView.invoke("setVolume", volumePercent)

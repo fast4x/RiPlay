@@ -238,6 +238,7 @@
         volumeWatchdogInterval = setInterval(function() {
             if (player && typeof player.getVolume === 'function') {
                 var currentVol = player.getVolume();
+                YouTubePlayerBridge.sendCurrentVolume(currentVol)
                 if (currentVol !== desiredVolume) {
                     setVolume(desiredVolume); // Passa dalla funzione interna non direttamente dal player
                     //console.log("AYP JS: VOLUME-DRIFT actual=" + currentVol + " desired=" + desiredVolume);
@@ -314,6 +315,15 @@
       var index = player.getPlaylistIndex();
       YouTubePlayerBridge.sendVideoId(playlist[index]);
     }
+  }
+
+  function sendCurrentVolume(player) {
+    if (!player || !YouTubePlayerBridge) return;
+    var volume = player.getVolume();
+    if (typeof volume !== 'undefined') {
+      YouTubePlayerBridge.sendCurrentVolume(volume);
+    }
+
   }
 
   function startSendCurrentTimeInterval() {

@@ -6,6 +6,7 @@ import android.text.TextUtils
 import android.webkit.JavascriptInterface
 import androidx.annotation.RestrictTo
 import it.fast4x.androidyoutubeplayer.core.player.listeners.YouTubePlayerListener
+import kotlinx.coroutines.flow.MutableStateFlow
 
 
 /**
@@ -49,6 +50,8 @@ class YouTubePlayerBridge(private val youTubePlayerOwner: YouTubePlayerBridgeCal
   }
 
   private val mainThreadHandler: Handler = Handler(Looper.getMainLooper())
+
+  private val _currentVolume = MutableStateFlow(100)
 
   interface YouTubePlayerBridgeCallbacks {
     val listeners: Collection<YouTubePlayerListener>
@@ -151,6 +154,14 @@ class YouTubePlayerBridge(private val youTubePlayerOwner: YouTubePlayerBridgeCal
   @JavascriptInterface
   fun sendVideoId(videoId: String) = mainThreadHandler.post {
     youTubePlayerOwner.listeners.forEach { it.onVideoId(youTubePlayerOwner.getInstance(), videoId) }
+  }
+
+  @JavascriptInterface
+  fun sendCurrentVolume(v: Int) {
+    _currentVolume.value = v
+    mainThreadHandler.post {
+      youTubePlayerOwner.listeners.forEach { it.onVolumeChange(youTubePlayerOwner.getInstance(), _currentVolume.value) }
+    }
   }
 
   private fun parsePlayerState(state: String): PlayerConstants.PlayerState {
