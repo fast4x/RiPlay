@@ -1453,11 +1453,11 @@ Volume BAS : titre précédent</string>
     <string name="webdav_account_dialog_delete_backup">Êtes-vous sûr de vouloir supprimer le compte :\n\n%1$s\n\nainsi que la sauvegarde et la synchronisation de vos données sur tous vos appareils ?</string>
     <string name="webdav_account_dialog_add_new">Ajouter un nouveau compte</string>
     <string name="message_no_accounts">Aucun compte</string>
-    <string name="video_content_mode_title">Video content mode</string>
-    <string name="video_content_mode_description">Choose how video content is handled during playback</string>
-    <string name="video_content_mode_normal">Play video normally</string>
-    <string name="video_content_mode_audio_only">Play video as audio</string>
-    <string name="video_content_mode_excluded">Exclude videos from queue and suggestions</string>
+    <string name="video_content_mode_title">Mode de contenu vidéo</string>
+    <string name="video_content_mode_description">Choisissez comment le contenu vidéo est géré pendant la lecture</string>
+    <string name="video_content_mode_normal">Lire la vidéo normalement</string>
+    <string name="video_content_mode_audio_only">Lire la vidéo en mode audio</string>
+    <string name="video_content_mode_excluded">Exclure des vidéos de la file d\'attente et des suggestions</string>
     <string name="jump_previous_title">Restart with Previous</string>
     <string name="jump_previous_description">Previous button restarts the current song if pressed after this many seconds have passed</string>
     <string name="online_video_now_playing_title">ONLINE VIDEO</string>
@@ -1469,5 +1469,5 @@ Volume BAS : titre précédent</string>
     <string name="queue_empty_hint">Play something to fill it up</string>
     <string name="queue_no_results">No songs match your search</string>
     <string name="queue_up_next">Up next</string>
-    <string name="queue_now_playing">Now playing</string>
+    <string name="queue_now_playing">En cours de lecture</string>
 </resources>
