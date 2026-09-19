@@ -806,8 +806,6 @@
     <string name="enable_youtube_music_login">Enable YouTube Music Login</string>
     <string name="show_cover_thumbnail_animation">Show cover thumbnail animation</string>
     <string name="cover_thumbnail_animation_type">Cover animation type</string>
-
-
     <string name="delete_hidden_songs">Do you really want to delete all hidden songs from database? This action is irreversible.</string>
     <string name="delete_hidden_songs_message">Delete hidden songs</string>
     <string name="cover_type_vinyl">Vinyl</string>
@@ -963,7 +961,6 @@
     <string name="voice_microphone_permission_denied">Microphone permission denied</string>
     <string name="voice_missing_microphone_permissions_please_grant">Missing microphone permissions, please grant it in the app settings</string>
     <string name="message_excluded_videos">Excluded %s videos</string>
-
     <string name="enable_voice_input">Enable voice input</string>
     <string name="music_identifier_provider">Music identifier provider</string>
     <string name="music_identify">पहचान करें</string>

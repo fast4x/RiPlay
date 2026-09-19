@@ -807,8 +807,6 @@ Volume BAS : titre précédent</string>
     <string name="enable_youtube_music_login">Activer la connexion via YouTube Music</string>
     <string name="show_cover_thumbnail_animation">Afficher l\'animation de la miniature de la pochette</string>
     <string name="cover_thumbnail_animation_type">Type d\'animation de la pochette</string>
-
-
     <string name="delete_hidden_songs">Voulez-vous vraiment supprimer tous les titres cachés de la base de données ? Cette action est irréversible.</string>
     <string name="delete_hidden_songs_message">Supprimer les titres cachés</string>
     <string name="cover_type_vinyl">Vinyle</string>
@@ -964,7 +962,6 @@ Volume BAS : titre précédent</string>
     <string name="voice_microphone_permission_denied">Autorisation d\'utilisation du microphone refusée</string>
     <string name="voice_missing_microphone_permissions_please_grant">Autorisation d\'accès au microphone manquante. Veuillez l\'accorder dans les paramètres de l\'application.</string>
     <string name="message_excluded_videos">Vidéos %s exclues</string>
-
     <string name="enable_voice_input">Activer la saisie vocale</string>
     <string name="music_identifier_provider">Fournisseur d\'identifiants musicaux</string>
     <string name="music_identify">Identifier</string>

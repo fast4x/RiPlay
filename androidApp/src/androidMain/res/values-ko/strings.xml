@@ -806,8 +806,6 @@
     <string name="enable_youtube_music_login">유튜브 뮤직 로그인 활성화</string>
     <string name="show_cover_thumbnail_animation">커버 썸네일 애니메이션 표시</string>
     <string name="cover_thumbnail_animation_type">커버 애니메이션 유형</string>
-
-
     <string name="delete_hidden_songs">정말로 데이터베이스에 있는 모든 숨겨진 곡들을 삭제하시겠어요? 이 작업은 되돌릴 수 없습니다.</string>
     <string name="delete_hidden_songs_message">숨겨진 곡 삭제</string>
     <string name="cover_type_vinyl">레코드판</string>
@@ -963,7 +961,6 @@
     <string name="voice_microphone_permission_denied">마이크 권한이 거부되었습니다</string>
     <string name="voice_missing_microphone_permissions_please_grant">마이크 권한이 없습니다, 앱 설정에서 허용해주세요</string>
     <string name="message_excluded_videos">%s개의 동영상 제외됨</string>
-
     <string name="enable_voice_input">목소리 입력 활성화</string>
     <string name="music_identifier_provider">음악 식별 제공자</string>
     <string name="music_identify">식별하기</string>

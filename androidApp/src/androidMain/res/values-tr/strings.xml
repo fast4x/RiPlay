@@ -806,8 +806,6 @@
     <string name="enable_youtube_music_login">Youtube Müzik Girişini Etkinleştir</string>
     <string name="show_cover_thumbnail_animation">Kapak resmi animasyonunu göster</string>
     <string name="cover_thumbnail_animation_type">Kapak resmi animasyon tipi</string>
-
-
     <string name="delete_hidden_songs">Tüm gizli şarkıları veri tabanından gerçekten silmek istiyor musunuz? Bu işlem geri alınamaz.</string>
     <string name="delete_hidden_songs_message">Gizli şarkıları sil</string>
     <string name="cover_type_vinyl">Plak</string>
@@ -963,7 +961,6 @@
     <string name="voice_microphone_permission_denied">Mikrofon izni reddedildi</string>
     <string name="voice_missing_microphone_permissions_please_grant">Mikrofon izinleri eksik, lütfen uygulama ayarlarından izin verin</string>
     <string name="message_excluded_videos">Hariç tutulan %s videolar</string>
-
     <string name="enable_voice_input">Sesli girişi etkinleştir</string>
     <string name="music_identifier_provider">Müzik tanımlayıcı sağlayıcısı</string>
     <string name="music_identify">Tanımla</string>
