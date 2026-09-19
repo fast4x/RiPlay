@@ -1458,16 +1458,16 @@ Volume BAS : titre précédent</string>
     <string name="video_content_mode_normal">Lire la vidéo normalement</string>
     <string name="video_content_mode_audio_only">Lire la vidéo en mode audio</string>
     <string name="video_content_mode_excluded">Exclure des vidéos de la file d\'attente et des suggestions</string>
-    <string name="jump_previous_title">Restart with Previous</string>
-    <string name="jump_previous_description">Previous button restarts the current song if pressed after this many seconds have passed</string>
-    <string name="online_video_now_playing_title">ONLINE VIDEO</string>
-    <string name="player_transitions_enabled">Player transitions</string>
-    <string name="player_transitions_enabled_description">Animate the player opening and closing, with the artwork flying to the mini player. Disable for instant switching — useful on slower devices.</string>
-    <string name="player_transition_animation">Player transition style</string>
-    <string name="player_transition_animation_description">How the artwork travels between the mini player and the full player.</string>
-    <string name="queue_empty">Your queue is empty</string>
-    <string name="queue_empty_hint">Play something to fill it up</string>
-    <string name="queue_no_results">No songs match your search</string>
-    <string name="queue_up_next">Up next</string>
+    <string name="jump_previous_title">Redémarrer avec la version précédente</string>
+    <string name="jump_previous_description">Le bouton « Précédent » relance la chanson en cours si l\'on appuie dessus une fois ce délai écoulé</string>
+    <string name="online_video_now_playing_title">VIDÉO EN LIGNE</string>
+    <string name="player_transitions_enabled">Transitions du lecteur</string>
+    <string name="player_transitions_enabled_description">Animez l\'ouverture et la fermeture du lecteur, en faisant voler l\'illustration vers le mini-lecteur. Désactivez cette option pour un changement instantané — utile sur les appareils moins performants.</string>
+    <string name="player_transition_animation">Style de transition du lecteur</string>
+    <string name="player_transition_animation_description">Comment l\'illustration est transférée entre le mini-lecteur et le lecteur complet.</string>
+    <string name="queue_empty">Votre file d\'attente est vide</string>
+    <string name="queue_empty_hint">Écoutez quelque chose pour le remplir</string>
+    <string name="queue_no_results">Aucun titre ne correspond à votre recherche</string>
+    <string name="queue_up_next">À suivre</string>
     <string name="queue_now_playing">En cours de lecture</string>
 </resources>
