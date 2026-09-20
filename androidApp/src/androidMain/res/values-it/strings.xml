@@ -1463,7 +1463,7 @@
     <string name="player_transitions_enabled">Transizioni del player</string>
     <string name="player_transitions_enabled_description">Anima l\'apertura e la chiusura del player, con la copertina che vola verso il mini player. Disattiva per il passaggio istantaneo, utile sui dispositivi meno potenti.</string>
     <string name="player_transition_animation">Stile di transizione del player</string>
-    <string name="player_transition_animation_description">Come la copertina viaggia tra il mini player e il player esteso.</string>
+    <string name="player_transition_animation_description">Come la copertina si sposta tra il mini player e il player esteso.</string>
     <string name="queue_empty">La coda è vuota</string>
     <string name="queue_empty_hint">Riproduci qualcosa per riempirla</string>
     <string name="queue_no_results">Nessun brano corrisponde alla ricerca</string>
