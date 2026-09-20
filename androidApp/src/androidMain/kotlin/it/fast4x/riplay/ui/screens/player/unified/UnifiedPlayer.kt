@@ -28,7 +28,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.AnchoredDraggableState
@@ -77,12 +76,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SnapshotMutationPolicy
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -99,7 +96,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.draw.rotate
@@ -121,7 +117,6 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.ContentScale
@@ -129,7 +124,6 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
@@ -170,7 +164,6 @@ import com.mikepenz.hypnoticcanvas.shaders.Stage
 import dev.chrisbanes.haze.HazeDefaults
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.hazeChild
 import dev.chrisbanes.haze.hazeEffect
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.NavigationEndpoint
@@ -210,12 +203,12 @@ import it.fast4x.riplay.enums.CollapseValue
 import it.fast4x.riplay.enums.PlayerTransitionAnimation
 import it.fast4x.riplay.enums.QrType
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
+import it.fast4x.riplay.extensions.artworkcovermix.ArtworkRepository
+import it.fast4x.riplay.extensions.artworkcovermix.CoverMixBackground
 import it.fast4x.riplay.extensions.qrcodeanalyzer.GenerateQrButton
 import it.fast4x.riplay.musicvault.MusicVaultButton
 import it.fast4x.riplay.ui.components.ActionPillButton
 import it.fast4x.riplay.ui.screens.player.common.Queue
-import it.fast4x.riplay.ui.components.BottomSheetState
-import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.DelayedControls
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.SheetBody
@@ -249,7 +242,6 @@ import it.fast4x.riplay.utils.BlurTransformation
 import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.LandscapeToSquareTransformation
-import it.fast4x.riplay.utils.PLAYER_ARTWORK_KEY
 import it.fast4x.riplay.utils.SearchOnlineEntity
 import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.addToOnlineLikedSong
@@ -283,7 +275,6 @@ import it.fast4x.riplay.utils.saturate
 import it.fast4x.riplay.utils.seamlessPlay
 import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.utils.shuffleQueue
-import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.origin
 import it.fast4x.riplay.utils.playerArtworkKey
 import it.fast4x.riplay.utils.rememberPlayerPositionAndDurationState
@@ -654,7 +645,6 @@ fun UnifiedPlayer(
         }
     }
 
-
     LaunchedEffect(mediaItem.mediaId) {
         withContext(Dispatchers.IO) {
             albumInfo = Database.songAlbumInfo(mediaItem.mediaId)
@@ -702,6 +692,33 @@ fun UnifiedPlayer(
     LaunchedEffect(mediaItem.mediaId) {
         Database.likedAt(mediaItem.mediaId).distinctUntilChanged().collect { likedAt = it }
         updateBrush = true
+    }
+
+
+    var coverMixArtworks by remember { mutableStateOf<List<String>>(emptyList()) }
+
+    LaunchedEffect(mediaItem.mediaId) {
+        coverMixArtworks = ArtworkRepository.artworksFor(
+            context = context,
+            mediaId = mediaItem.mediaId,
+            rawTitle = mediaItem.mediaMetadata.title?.toString().orEmpty(),
+            artist = mediaItem.mediaMetadata.artist?.toString()
+                ?: mediaItem.mediaMetadata.extras?.getStringArrayList("artistNames")?.firstOrNull(),
+            fallbackThumb = mediaItem.mediaMetadata.artworkUri.toString(),
+            forceRefresh = false
+        )
+    }
+
+    LaunchedEffect(mediaItemIndex, mediaItems) {
+        val next = mediaItems?.getOrNull(mediaItemIndex + 1) ?: return@LaunchedEffect
+        ArtworkRepository.artworksFor(
+            context = context,
+            mediaId = next.mediaId,
+            rawTitle = next.mediaMetadata.title?.toString().orEmpty(),
+            artist = next.mediaMetadata.artist?.toString()
+                ?: next.mediaMetadata.extras?.getStringArrayList("artistNames")?.firstOrNull(),
+            fallbackThumb = next.mediaMetadata.artworkUri.toString()
+        )
     }
 
     val showthumbnail = appearanceSettings.showThumbnail
@@ -1063,8 +1080,13 @@ fun UnifiedPlayer(
         tempGradient = gradients[valueGrad]
     }
 
-
-    if (playerBackgroundColors == PlayerBackgroundColors.MidnightOdyssey) {
+    if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverMix) {
+        CoverMixBackground(
+            artworks = coverMixArtworks,
+            fallbackColors = listOf(dynamicColorPalette.background1, dynamicColorPalette.accent),
+            //modifier = Modifier.matchParentSize()
+        )
+    } else if (playerBackgroundColors == PlayerBackgroundColors.MidnightOdyssey) {
         containerModifier = containerModifier
             .background(dynamicColorPalette.accent.copy(0.8f).compositeOver(Color.Black))
     } else if (!isGradientBackgroundEnabled) {

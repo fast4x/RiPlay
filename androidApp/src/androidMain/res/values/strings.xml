@@ -1469,4 +1469,5 @@
     <string name="queue_no_results">No songs match your search</string>
     <string name="queue_up_next">Up next</string>
     <string name="queue_now_playing">Now playing</string>
+    <string name="bg_colors_blurred_cover_mix">Blurred cover mix</string>
 </resources>

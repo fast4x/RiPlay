@@ -1275,18 +1275,7 @@ fun PlayerAppearanceSettings(
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             },
-                            valueText = {
-                                when (it) {
-                                    PlayerBackgroundColors.CoverColor -> stringResource(R.string.bg_colors_background_from_cover)
-                                    PlayerBackgroundColors.ThemeColor -> stringResource(R.string.bg_colors_background_from_theme)
-                                    PlayerBackgroundColors.CoverColorGradient -> stringResource(R.string.bg_colors_gradient_background_from_cover)
-                                    PlayerBackgroundColors.ThemeColorGradient -> stringResource(R.string.bg_colors_gradient_background_from_theme)
-                                    PlayerBackgroundColors.BlurredCoverColor -> stringResource(R.string.bg_colors_blurred_cover_background)
-                                    PlayerBackgroundColors.ColorPalette -> stringResource(R.string.colorpalette)
-                                    PlayerBackgroundColors.AnimatedGradient -> stringResource(R.string.animatedgradient)
-                                    PlayerBackgroundColors.MidnightOdyssey -> stringResource(R.string.midnightodyssey)
-                                }
-                            },
+                            valueText = { it.textName },
                         )
 
                     AnimatedVisibility(visible = playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient) {
