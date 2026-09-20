@@ -806,8 +806,6 @@
     <string name="enable_youtube_music_login">Omogući Prijavu na YouTube Music</string>
     <string name="show_cover_thumbnail_animation">Prikaži animaciju sličice omota</string>
     <string name="cover_thumbnail_animation_type">Tip animacije Omota</string>
-
-
     <string name="delete_hidden_songs">Da li zaista želite da izbrišete sve skrivene pesme iz baze podataka? Ova akcija je nepovratna.</string>
     <string name="delete_hidden_songs_message">Obriši skrivene pesme</string>
     <string name="cover_type_vinyl">Vinil</string>
@@ -963,7 +961,6 @@
     <string name="voice_microphone_permission_denied">Microphone permission denied</string>
     <string name="voice_missing_microphone_permissions_please_grant">Missing microphone permissions, please grant it in the app settings</string>
     <string name="message_excluded_videos">Excluded %s videos</string>
-
     <string name="enable_voice_input">Enable voice input</string>
     <string name="music_identifier_provider">Music identifier provider</string>
     <string name="music_identify">Identify</string>
