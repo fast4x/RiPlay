@@ -313,7 +313,7 @@ fun Queue(
     }
 
     val queueslist by Database.queues().collectAsState(initial = emptyList())
-    val selectedQueue = Database.selectedQueueFlow().collectAsState(defaultQueue()).let {
+    val selectedQueue = Database.selectedQueue().collectAsState(defaultQueue()).let {
         if (it.value == null) defaultQueue() else it.value
     }
     val rippleIndication = ripple(bounded = false)

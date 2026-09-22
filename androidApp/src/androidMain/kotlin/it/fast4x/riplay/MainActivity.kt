@@ -186,7 +186,6 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
@@ -207,6 +206,7 @@ import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.extensions.appviewmodel.AppViewModelProvider
 import it.fast4x.riplay.extensions.appearancesettings.AppearanceSettingsManager
 import it.fast4x.riplay.extensions.appsettings.AppSettingsManager
+import it.fast4x.riplay.extensions.appsettings.models.AppSettings
 import it.fast4x.riplay.extensions.webdavlibrary.WebDavLibraryViewModel
 import it.fast4x.riplay.extensions.shazam.handleShazamShare
 import it.fast4x.riplay.extensions.qrcodeanalyzer.qrCodeToAction
@@ -257,16 +257,7 @@ class MainActivity : AppCompatActivity() {
 
     private val pipState: MutableState<Boolean> = mutableStateOf(false)
 
-    var cookie: MutableState<String> =
-        mutableStateOf("")
-    var visitorData: MutableState<String> =
-        mutableStateOf("")
-
-    //var riTuneDevices: MutableState<List<RiTuneDevice>> = mutableStateOf(emptyList())
-
     var playerState: PlayerState = PlayerState()
-
-    var selectedQueue: MutableState<Queues> = mutableStateOf(defaultQueue())
 
     private var videoPlayerView: YouTubePlayerView? = null
 
@@ -602,6 +593,11 @@ class MainActivity : AppCompatActivity() {
                     VideoParkingLot.host = null
                 }
             }
+
+            val selectedQueue by remember {
+                Database.selectedQueue()
+            }.collectAsStateWithLifecycle(initialValue = defaultQueue())
+
             ////////////////////////////////////////////////////////////
 
 
@@ -791,62 +787,9 @@ class MainActivity : AppCompatActivity() {
 
             Timber.d("MainActivity onCreate language = ${locale.language} country = ${locale.country} languageTag = ${locale.toLanguageTag()} languageApp = $languageApp")
 
-            /*
-            LaunchedEffect(Unit, languageApp) {
-                val systemLangCode =
-                    AppCompatDelegate.getApplicationLocales().get(0).toString()
-
-                val sysLocale: LocaleListCompat =
-                    LocaleListCompat.forLanguageTags(systemLangCode)
-                val appLocale: LocaleListCompat =
-                    LocaleListCompat.forLanguageTags(languageApp.code)
-                AppCompatDelegate.setApplicationLocales(if (languageApp.code == "") sysLocale else appLocale)
-            }
-             */
-
-            cookie.value = appSettings.ytCookie
-            visitorData.value = appSettings.ytVisitorData
-
-
-
-            // If visitorData is empty, get it from the server with or without login
-            if (visitorData.value.isEmpty() || visitorData.value == "null" || visitorData.value == "")
-                runCatching {
-                    Timber.d("MainActivity.setContent visitorData.isEmpty() getInitialVisitorData visitorData ${visitorData.value}")
-                    visitorData.value = runBlocking {
-                        Environment.getInitialVisitorData().getOrNull()
-                    }.takeIf { it != "null" } ?: ""
-                    // Save visitorData in SharedPreferences
-                    //preferences.edit { putString(YT_VISITOR_DATA.key, visitorData.value) }
-
-                }.onFailure {
-                    Timber.e("MainActivity.setContent visitorData.isEmpty() getInitialVisitorData ${it.stackTraceToString()}")
-                    visitorData.value = "" //Environment._uMYwa66ycM
-                }
-
-            LaunchedEffect(Unit, visitorData.value) {
-                if (visitorData.value.isEmpty()
-                    || visitorData.value == "null"
-                    || visitorData.value == "") return@LaunchedEffect
-
-                val settings = withContext(Dispatchers.IO) {
-                    appSettingsManager.waitForInitialization()
-                }
-                val new = settings.copy(ytVisitorData = visitorData.value)
-                appSettingsManager.updateSettings(new)
-            }
-
-
-            Environment.visitorData = visitorData.value
-            Timber.d("MainActivity.setContent visitorData in use: ${visitorData.value}")
-
-            cookie.let {
-                if (isYtLoggedIn())
-                    Environment.cookie = it.value
-                else {
-                    Environment.cookie = ""
-                    cookie.value = ""
-                }
+            LaunchedEffect(appSettingsManager.isInitialized, appSettings.ytVisitorData, appSettings.ytCookie) {
+                if (!appSettingsManager.isInitialized) return@LaunchedEffect
+                bootstrapEnvironment(appSettings)
             }
 
             //val dataSyncId = preferences.getString(YT_DATA_SYNC_ID.key, "").toString()
@@ -1216,7 +1159,7 @@ class MainActivity : AppCompatActivity() {
                                     LocalLayoutDirection provides LayoutDirection.Ltr,
                                     LocalPlayerSheetState provides localPlayerSheetState,
                                     //LocalMonetCompat provides localMonet,
-                                    LocalSelectedQueue provides selectedQueue.value,
+                                    LocalSelectedQueue provides selectedQueue,
                                     LocalAudioTagger provides audioTaggerViewModel,
                                     LocalBackupManager provides backupManagerViewModel,
                                     LocalOnDeviceViewModel provides onDeviceViewModel,
@@ -1737,6 +1680,28 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+
+    suspend fun bootstrapEnvironment(settings: AppSettings) {
+        val cookie = if (isYtLoggedIn()) settings.ytCookie else ""
+        Environment.cookie = cookie
+
+        var visitorData = settings.ytVisitorData
+        if (visitorData.isEmpty() || visitorData == "null") {
+            visitorData = Environment.getInitialVisitorData()
+                .onFailure { Timber.e(it, "MainActivity bootstrapEnvironment: getInitialVisitorData failed") }
+                .getOrNull()
+                ?.takeIf { it != "null" } ?: ""
+
+            if (visitorData.isNotEmpty()) {
+                appSettingsManager.updateSettings(settings.copy(ytVisitorData = visitorData))
+            }
+        }
+        Environment.visitorData = visitorData
+
+        Timber.d("MainActivity bootstrapEnvironment: cookie=${cookie.isNotEmpty()} visitorData=${visitorData.isNotEmpty()}")
+        Timber.d("MainActivity bootstrapEnvironment: cookie=$cookie visitorData=$visitorData")
+    }
+
     /*
     private fun updatePresentation() {
 
@@ -1780,11 +1745,6 @@ class MainActivity : AppCompatActivity() {
     }
      */
 
-    fun updateSelectedQueue() {
-        Database.asyncTransaction {
-            selectedQueue.value = Database.selectedQueue() ?: defaultQueue()
-        }
-    }
 
     private val sensorListener: SensorEventListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent) {

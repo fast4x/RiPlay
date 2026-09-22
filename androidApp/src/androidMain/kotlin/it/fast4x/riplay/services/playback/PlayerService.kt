@@ -353,11 +353,7 @@ class PlayerService : MediaLibraryService(),
 
     private var lastMediaIdInHistory: String = ""
 
-    var excludeIfIsVideoEnabled by mutableStateOf(false)
-
-    var parentalControlEnabled by mutableStateOf(false)
-
-    var firstTimeStarted by mutableStateOf(true)
+    var firstTimeStarted = true
 
     private val riTuneCastClient: RiTuneCastClient = RiTuneCastClient()
     private var riTuneObserverJob: Job? = null
@@ -2037,19 +2033,19 @@ class PlayerService : MediaLibraryService(),
 
         currentQueuePosition = exoPlayer.currentMediaItemIndex
 
-        if (parentalControlEnabled && mediaItem.isExplicit) {
+        if (appSettings.parentalControlEnabled && mediaItem.isExplicit) {
             handlePlayNext("PlayerService.onMediaItemTransition parental control enabled")
             SmartMessage(resources.getString(androidx.media3.session.R.string.error_message_parental_control_restricted), context = this@PlayerService)
             return
         }
 
-        if (excludeIfIsVideoEnabled && mediaItem.isVideo) {
+        if (appSettings.videoContentMode.excluded && mediaItem.isVideo) {
             handlePlayNext("PlayerService.onMediaItemTransition excludeIfIsVideoEnabled")
             SmartMessage(getString(R.string.warning_skipped_video), context = this@PlayerService)
             return
         }
 
-        var blacklisted by mutableStateOf(false)
+        var blacklisted = false
         runBlocking(Dispatchers.IO) {
             blacklisted = Database.blacklisted(mediaItem.mediaId) > 0
         }

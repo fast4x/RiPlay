@@ -258,9 +258,11 @@ object Environment {
 
     var locale = EnvironmentLocale()
 
+    @Volatile
     var visitorData: String = "" //_uMYwa66ycM
     var dataSyncId: String? = null
 
+    @Volatile
     var cookie: String? = null
         set(value) {
             field = value

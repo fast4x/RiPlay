@@ -2950,10 +2950,7 @@ interface Database {
     fun deleteQueue(id: Long)
 
     @Query("SELECT * FROM Queues WHERE isSelected = 1 LIMIT 1")
-    fun selectedQueue(): Queues?
-
-    @Query("SELECT * FROM Queues WHERE isSelected = 1 LIMIT 1")
-    fun selectedQueueFlow(): Flow<Queues?>
+    fun selectedQueue(): Flow<Queues?>
 
     @Query("SELECT * FROM Queues WHERE id = :id")
     fun getQueue(id: Long): Queues?
