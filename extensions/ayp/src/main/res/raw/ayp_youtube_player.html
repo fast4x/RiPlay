@@ -329,6 +329,7 @@
   function startSendCurrentTimeInterval() {
     timerId = setInterval(function() {
       if (player && typeof player.getCurrentTime === 'function' && YouTubePlayerBridge) {
+        //console.log("AYP JS: SEND CURRENT TIME " + player.getCurrentTime());
         YouTubePlayerBridge.sendVideoCurrentTime(player.getCurrentTime());
         YouTubePlayerBridge.sendVideoLoadedFraction(player.getVideoLoadedFraction());
       }

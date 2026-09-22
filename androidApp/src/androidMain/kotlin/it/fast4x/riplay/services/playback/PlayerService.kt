@@ -1282,11 +1282,16 @@ class PlayerService : MediaLibraryService(),
             }
 
             override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
+                Timber.d("TICK-RECV sec=$second thread=${Thread.currentThread().name}")
+
                 val oldSecond = _currentSecond.value
                 _currentSecond.value = second
 
-                if (oldSecond == 0f || kotlin.math.abs(second - oldSecond) >= 1f) {
-                    if (hybridPlayer.activeEngine == ActiveEngine.YOUTUBE) {
+
+                if (hybridPlayer.activeEngine == ActiveEngine.YOUTUBE) {
+                    hybridPlayer.invalidateYouTubePositionOnly()
+                    if (oldSecond == 0f || kotlin.math.abs(second - oldSecond) >= 1f) {
+
                         val posEvents = Player.Events(
                             FlagSet.Builder()
                                 .add(Player.EVENT_IS_PLAYING_CHANGED)
@@ -2019,7 +2024,8 @@ class PlayerService : MediaLibraryService(),
             recordListeningEvent(mediaItem.mediaId)
         }
 
-        _currentSecond.value = 0F
+        //_currentSecond.value = 0F
+        //hybridPlayer.invalidateYouTubePositionOnly() // resetta la posizione
 
         val newMediaId = mediaItem.mediaId
 
@@ -2514,6 +2520,7 @@ class PlayerService : MediaLibraryService(),
         }
 
         override fun seekTo(positionMs: Long) {
+            Timber.d("TICK-SEEK-RECV positionMs=$positionMs")
             // ATTENZIONE: L'API di YouTube IFrame usa i SECONDI (Float), non i millisecondi!
             val seconds = positionMs.toFloat() / 1000f
             _internalYouTubePlayer.value?.seekTo(seconds)

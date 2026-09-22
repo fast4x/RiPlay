@@ -243,9 +243,15 @@ class HybridPlayer (
     }
 
     override fun getCurrentPosition(): Long {
-        val currentPosition = if (activeEngine == ActiveEngine.YOUTUBE) (playerService._currentSecond.value * 1000L).toLong()
-        else super.getCurrentPosition()
-        //Timber.d("HybridPlayer activeEngine = $activeEngine getCurrentPosition = $currentPosition")
+        val currentPosition = if (activeEngine == ActiveEngine.YOUTUBE) {
+            val v = (playerService._currentSecond.value * 1000L).toLong()
+            //Timber.d("TICK-POS-YT $v")
+            v
+        } else {
+            val v = super.getCurrentPosition()
+            //Timber.d("TICK-POS-EXO $v (idx=$currentMediaItemIndex)")
+            v
+        }
         return currentPosition
     }
 
