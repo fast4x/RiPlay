@@ -177,7 +177,7 @@ kotlin {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_21)
-            freeCompilerArgs.add("-Xcontext-parameters")
+            //freeCompilerArgs.add("-Xcontext-parameters")
         }
     }
 
