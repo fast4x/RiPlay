@@ -278,7 +278,8 @@ class PlayerService : MediaLibraryService(),
 
     private val binder = Binder()
 
-    var legacyActionReceiver: LegacyActionReceiver? = null
+    // Obsoleto media3 gestisce anche il pregresso
+    //var legacyActionReceiver: LegacyActionReceiver? = null
 
     private val playerVerticalWidget = PlayerVerticalWidget()
     private val playerHorizontalWidget = PlayerHorizontalWidget()
@@ -810,8 +811,14 @@ class PlayerService : MediaLibraryService(),
 
         Timber.d("PlayerService onStartCommand intent action ${intent?.action}")
         when (intent?.action) {
-            Action.play.value -> { if (currentSong.value?.isLocal == true) exoPlayer.play() else _internalYouTubePlayer.value?.play() }
-            Action.pause.value -> { if (currentSong.value?.isLocal == true) exoPlayer.pause() else _internalYouTubePlayer.value?.pause() }
+            Action.play.value -> {
+                hybridPlayer.play()
+                //if (currentSong.value?.isLocal == true) exoPlayer.play() else _internalYouTubePlayer.value?.play()
+            }
+            Action.pause.value -> {
+                hybridPlayer.pause()
+               // if (currentSong.value?.isLocal == true) exoPlayer.pause() else _internalYouTubePlayer.value?.pause()
+            }
             Action.next.value -> handlePlayNextRequestedByUser("PlayerService.onStartCommand")
             Action.previous.value -> handlePlayPreviousRequestedByUser("PlayerService.onStartCommand")
         }
@@ -1271,6 +1278,7 @@ class PlayerService : MediaLibraryService(),
 
                 currentSong.value?.id?.let{
                     if (appSettings.persistentQueue && appSettings.resumePlaybackOnStart && firstTimeStarted && !skipAutoload) {
+                        Timber.d("LOAD-COMMAND videoId=${it} start=${playFromSecond}")
                         youTubePlayer.loadVideo(it, playFromSecond)
                         playFromSecond = 0f
                         Timber.d("PlayerService onlinePlayer onReady loadVideo ${it}")
@@ -1329,7 +1337,7 @@ class PlayerService : MediaLibraryService(),
                 youTubePlayer: YouTubePlayer,
                 state: PlayerConstants.PlayerState
             ) {
-                Timber.d("AYPFORK-PlayerService onStateChange $state")
+                Timber.d("PlayerService onStateChange: $state")
 
                 if (currentSong.value?.isLocal == true) return
                 //Timber.d("PlayerService onlinePlayerView: onStateChange $state")
@@ -1388,7 +1396,8 @@ class PlayerService : MediaLibraryService(),
                     PlayerConstants.PlayerState.VIDEO_CUED -> {
                         Timber.d("PlayerService onlinePlayerView: onStateChange VIDEO_CUED regular play()")
                         playFromSecond = 0f
-                        _internalYouTubePlayer.value?.pause()
+                        hybridPlayer.pause()
+                        //_internalYouTubePlayer.value?.pause()
                         youTubePlayer.pause()
                         if (!firstTimeStarted) {
                             if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
@@ -1483,15 +1492,18 @@ class PlayerService : MediaLibraryService(),
                         currentSong.value?.id?.let {
                             if(it.isLocal) return@let
                             // Assicura che ExoPlayer sia fermo
-                            if (exoPlayer.isPlaying) {
-                                exoPlayer.pause()
-                                exoPlayer.stop()
-                            }
+                            hybridPlayer.pause()
+//                            if (exoPlayer.isPlaying) {
+//                                exoPlayer.pause()
+//                                exoPlayer.stop()
+//                            }
 
                             if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
-                                _internalYouTubePlayer.value?.pause()
+                                //_internalYouTubePlayer.value?.pause()
+                                hybridPlayer.pause()
                                 youTubePlayer.pause()
-                                youTubePlayer.cueVideo(it, playFromSecond)
+                                if (!it.isEmpty())
+                                    youTubePlayer.cueVideo(it, playFromSecond)
                             }
                             else this@PlayerService.serviceScope.launch {
                                 riTuneCastClient.sendCommand(
@@ -1590,7 +1602,7 @@ class PlayerService : MediaLibraryService(),
 
 
             val iFramePlayerOptions = IFramePlayerOptions.Builder(appContext())
-                .listType("playlist")
+                //.listType("playlist")
                 .build()
 
             initialize(listener, iFramePlayerOptions)
@@ -1624,6 +1636,7 @@ class PlayerService : MediaLibraryService(),
         equalizerHelper.setup(0)
     }
 
+    /* // obsoleto
     private fun initializeLegacyNotificationActionReceiver() {
 
         legacyActionReceiver = LegacyActionReceiver()
@@ -1647,6 +1660,8 @@ class PlayerService : MediaLibraryService(),
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
     }
+
+     */
 
     @ExperimentalCoroutinesApi
     private fun updateDiscordPresence() {
@@ -1757,11 +1772,13 @@ class PlayerService : MediaLibraryService(),
             Timber.e("PlayerService onDestroy Errore nella rimozione dello screenReceiver: ${e.message}")
         }
 
+        /* // obsoleto
         try {
             unregisterReceiver(legacyActionReceiver)
         } catch (e: Exception) {
             Timber.e("PlayerService onDestroy unregisterReceiver legacyActionReceiver: ${e.message}")
         }
+         */
 
         if (::equalizerHelper.isInitialized) {
             equalizerHelper.release()
@@ -1893,7 +1910,8 @@ class PlayerService : MediaLibraryService(),
                 if (!isFading) {
                     startFadeIn()
                 } else {
-                    hybridPlayer.applyCurrentVolume()
+                    hybridPlayer.setFadeVolume(1.0f)
+                    //hybridPlayer.applyCurrentVolume()
                 }
             } else {
                 hybridPlayer.setFadeVolume(1.0f) // Volume pieno se il crossfade è spento
@@ -2088,7 +2106,8 @@ class PlayerService : MediaLibraryService(),
                 Timber.d("PlayerService onMediaItemTransition mediaItem not local, before")
 
                 if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
-                    _internalYouTubePlayer.value?.cueVideo(it.mediaId, playFromSecond)
+                    if (!it.mediaId.isEmpty())
+                        _internalYouTubePlayer.value?.cueVideo(it.mediaId, playFromSecond)
                     // Avvia il fade in per il nuovo brano appena parte il play
                     startFadeIn()
                     Timber.d("PlayerService onMediaItemTransition mediaItem not local, inside")
@@ -2578,9 +2597,11 @@ class PlayerService : MediaLibraryService(),
             binder.let {
                 when (intent.action) {
                     Action.pause.value -> {
-                        exoPlayer.pause()
+                        //exoPlayer.pause()
+                        //hybridPlayer.pause()
                         if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
-                            _internalYouTubePlayer.value?.pause()
+                            //_internalYouTubePlayer.value?.pause()
+                            hybridPlayer.pause()
                         else
                             this@PlayerService.serviceScope.launch {
                                 riTuneCastClient.sendCommand(
@@ -2623,7 +2644,8 @@ class PlayerService : MediaLibraryService(),
                             hybridPlayer.seamlessQueue(currentMediaItem)
 
                             if(!GlobalSharedData.riTuneCastActive)
-                                _internalYouTubePlayer.value?.play()
+                                //_internalYouTubePlayer.value?.play()
+                                hybridPlayer.play()
                             else
                                 this@PlayerService.serviceScope.launch {
                                     riTuneCastClient.sendCommand(
@@ -2816,7 +2838,7 @@ class PlayerService : MediaLibraryService(),
 
                             if (isWebViewStalledByFocusLoss) {
                                 Timber.w("PlayerService PlaybackWatchdog: RILEVATO STALLO TIMELINE (Focus Loss). Sincronizzo in PAUSA.")
-                                Timber.d("AYPFORK-PlayerService PlaybackWatchdog: RILEVATO STALLO TIMELINE (Focus Loss). Sincronizzo in PAUSA.")
+                                //Timber.d("AYPFORK-PlayerService PlaybackWatchdog: RILEVATO STALLO TIMELINE (Focus Loss). Sincronizzo in PAUSA.")
                                 hybridPlayer.executeActualPause() // non usare pausa con fade
                                 lastWatchdogPosition = position
                                 continue
@@ -2832,7 +2854,7 @@ class PlayerService : MediaLibraryService(),
 
                             if (isWebViewAwakenedByFocusGain) {
                                 Timber.d("PlayerService PlaybackWatchdog: RILEVATO AVANZAMENTO ANOMALO (Focus Gain). Sincronizzo in PLAY.")
-                                Timber.d("AYPFORK-PlayerService PlaybackWatchdog: RILEVATO AVANZAMENTO ANOMALO (Focus Gain). Sincronizzo in PLAY.")
+                                //Timber.d("AYPFORK-PlayerService PlaybackWatchdog: RILEVATO AVANZAMENTO ANOMALO (Focus Gain). Sincronizzo in PLAY.")
                                 hybridPlayer.executeActualPlay()
                                 lastWatchdogPosition = position
                                 continue
@@ -3429,7 +3451,8 @@ class PlayerService : MediaLibraryService(),
                 playFromSecond = position.toFloat()
                 _currentSecond.value = playFromSecond
                 _currentDuration.value = if (queuedSong.mediaId == mId) duration else 0f
-                _internalYouTubePlayer.value?.pause()
+                //_internalYouTubePlayer.value?.pause()
+                hybridPlayer.pause()
             }
 
             Timber.d("PlayerService LoadQueue: Ripristino della coda in ExoPlayer completato con successo.")

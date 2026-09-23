@@ -165,10 +165,16 @@ internal class WebViewYouTubePlayer (
       }
     }
 
+    // videoId: quando c'è, va QUOTATO come stringa JS; quando manca, è undefined JS vero
+    val injectedVideoId = if (videoId != null) { "'$videoId'" } else { "undefined" } //videoId?.takeIf { it.isNotBlank() }?.let { "'$it'" } ?: "undefined"
+    val injectedPlayerVars = playerOptions.toString()
+
+    println("AYPFORK-initWebView videoId originale=$videoId videoId=$injectedVideoId playerVars=$injectedPlayerVars")
+
     // Generazione e Iniezione dell'HTML
     val htmlPage = readHTMLFromUTF8File(resources.openRawResource(R.raw.ayp_youtube_player))
-      .replace("<<injectedVideoId>>", if (videoId != null) { "'$videoId'" } else { "undefined" })
-      .replace("<<injectedPlayerVars>>", playerOptions.toString())
+      .replace("<<injectedVideoId>>", injectedVideoId)
+      .replace("<<injectedPlayerVars>>", injectedPlayerVars)
 
     // Caricamento definitivo impostando l'Origin corretto per bypassare le restrizioni CORS sui codec audio
     val baseUrl = playerOptions.getOrigin()
