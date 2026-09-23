@@ -1920,9 +1920,10 @@ fun UnifiedPlayer(
 
             // ThumbnailContent lo nascondiamo se è una canzone ma solo se l'utente non ha cliccato esplicitamente in un video
             videoThumbnailContent(
-                if ((mediaItem.isVideo)
-                    || appSettings.forceUserVideoPlayback
-                    || appSettings.videoContentMode.normal){
+                if (mediaItem.isVideo &&
+                     (appSettings.forceUserVideoPlayback
+                    || appSettings.videoContentMode.normal)
+                ){
                     Modifier
                         //.fillMaxWidth() // Serve a stirare in orizzontale il video, ma taglia leggermente in altezza
                         .fillMaxSize() // Come fillMaxWidth ma ci assicuriamo di occupare tutto lo spazio del parent
@@ -3669,9 +3670,12 @@ fun UnifiedPlayer(
 
                         //use video player in portrait mode
                         videoThumbnailContent(
-                            if ((mediaItem.isVideo || !isShowingVisualizer)
+                            if (
+                                mediaItem.isVideo &&
+                                (!isShowingVisualizer
                                 || appSettings.forceUserVideoPlayback
-                                || appSettings.videoContentMode.normal){
+                                || appSettings.videoContentMode.normal)
+                            ){
                                 coverModifier
                                     .then(
                                         artworkShared(artworkKey)
