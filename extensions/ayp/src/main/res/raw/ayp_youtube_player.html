@@ -163,7 +163,7 @@
        YouTubePlayerBridge.sendYouTubeIFrameAPIReady();
     }
 
-    player = new YT.Player('youTubePlayerDOM', {
+    var playerConfig = {
       height: '100%',
       width:  '100%',
       events: {
@@ -214,7 +214,14 @@
         onApiChange: function(event) { if(YouTubePlayerBridge) YouTubePlayerBridge.sendApiChange() }
       },
       playerVars: <<injectedPlayerVars>>
-    });
+    };
+
+    if (<<injectedVideoId>>) {
+      playerConfig.videoId = <<injectedVideoId>>;
+    }
+
+    player = new YT.Player('youTubePlayerDOM', playerConfig);
+
   }
 
   function sendPlayerStateChange(playerState) {
@@ -351,6 +358,7 @@
 
   function cueVideo(videoId, startSeconds) {
     if(player) {
+       console.log("AYP LOAD: videoId=" + videoId + " start=" + startSeconds + " type=" + typeof videoId);
        player.cueVideoById(videoId, startSeconds);
        if(YouTubePlayerBridge) YouTubePlayerBridge.sendVideoId(videoId);
     }
