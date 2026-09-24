@@ -453,7 +453,15 @@ fun Lyrics(
                 tracks.forEach {
                     MenuEntry(icon = R.drawable.text, text = "${it.artistName} - ${it.trackName}", secondaryText = "${stringResource(R.string.sort_duration)} ${it.duration.seconds.toComponents { m, s, _ -> "$m:${s.toString().padStart(2, '0')}" }} ${stringResource(R.string.id)} ${it.id}", onClick = {
                         menuState.hide()
-                        Database.asyncTransaction { upsert(Lyrics(songId = mediaId, fixed = lyrics?.fixed, synced = it.syncedLyrics.orEmpty())) }
+                        coroutineScope.launch {
+                            Database.upsert(
+                                Lyrics(
+                                    songId = mediaId,
+                                    fixed = lyrics?.fixed,
+                                    synced = it.syncedLyrics.orEmpty()
+                                )
+                            )
+                        }
                     })
                 }
                 MenuEntry(icon = R.drawable.chevron_back, text = stringResource(R.string.cancel), onClick = { menuState.hide() })
