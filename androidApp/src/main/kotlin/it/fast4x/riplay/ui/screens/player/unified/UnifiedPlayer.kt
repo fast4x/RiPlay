@@ -2745,12 +2745,12 @@ fun UnifiedPlayer(
                         }
                     }
             }
-            LaunchedEffect(Unit) { Timber.d("UnifiedPlayer PORTRAIT DRAG-STATE init=${collapseState.currentValue}") }
-            LaunchedEffect(Unit) {
-                Timber.d("UnifiedPlayer PORTRAIT ANCHORS dist=${collapseDistance} anchors=${collapseState.anchors.size}")
-            }
-
-            Timber.d("UnifiedPlayer PORTRAIT DRAG-ENABLED enabled=$dragEnabled inTransition=$transitionActive isExiting=$isExiting")
+//            LaunchedEffect(Unit) { Timber.d("UnifiedPlayer PORTRAIT DRAG-STATE init=${collapseState.currentValue}") }
+//            LaunchedEffect(Unit) {
+//                Timber.d("UnifiedPlayer PORTRAIT ANCHORS dist=${collapseDistance} anchors=${collapseState.anchors.size}")
+//            }
+//
+//            Timber.d("UnifiedPlayer PORTRAIT DRAG-ENABLED enabled=$dragEnabled inTransition=$transitionActive isExiting=$isExiting")
 
             Box(
                 modifier = Modifier
@@ -3114,6 +3114,7 @@ fun UnifiedPlayer(
                             }
                         }
                     }
+
                     Column(
                         modifier = Modifier
                             .matchParentSize()
