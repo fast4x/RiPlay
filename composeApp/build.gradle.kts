@@ -6,7 +6,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.Properties
 
 plugins {
-    alias(libs.plugins.android.library)
+    alias(libs.plugins.android.kmp.library)
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.kotlin.compose)
@@ -121,10 +121,6 @@ repositories {
 }
  */
 
-android {
-    namespace = "it.fast4x.riplay.composeapp"
-    compileSdk = 37
-}
 
 java {
     toolchain {
@@ -172,19 +168,13 @@ compose.resources {
 }
 
 kotlin {
-    applyDefaultHierarchyTemplate()
-    androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_21)
-            //freeCompilerArgs.add("-Xcontext-parameters")
-        }
+    androidLibrary {
+        namespace = "it.fast4x.riplay.composeapp"
+        compileSdk = 37
+        minSdk = 23
     }
 
     jvm()
-
-
-
 
     sourceSets {
         all {

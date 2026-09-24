@@ -6,131 +6,14 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.multiplatform)
+    //alias(libs.plugins.kotlin)
+    //alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.jetbrainsCompose)
+    //alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.room)
     alias(libs.plugins.kotlin.serialization)
     //alias(libs.plugins.chaquopy)
-}
-
-kotlin {
-
-    androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_21)
-            //freeCompilerArgs.add("-Xcontext-parameters")
-        }
-    }
-
-    dependencies {
-        implementation(projects.composeApp)
-        implementation(libs.navigation)
-        implementation(libs.media3.session)
-        implementation(libs.kotlin.coroutines.guava)
-        implementation(libs.kotlin.concurrent.futures)
-        implementation(libs.androidx.webkit)
-        implementation(libs.workmanager)
-        implementation(libs.accompanist)
-
-        implementation(libs.compose.activity)
-        implementation(libs.compose.foundation)
-        implementation(libs.compose.ui)
-        implementation(libs.compose.ui.util)
-        implementation(libs.compose.ripple)
-        implementation(libs.compose.shimmer)
-        implementation(libs.compose.coil)
-        implementation(libs.palette)
-        implementation(libs.media3.exoplayer)
-        implementation(libs.media3.datasource.okhttp)
-        implementation(libs.appcompat)
-        implementation(libs.appcompat.resources)
-        implementation(libs.support)
-        implementation(libs.material)
-        implementation(libs.material3)
-        implementation(libs.compose.ui.graphics.android)
-        implementation(libs.constraintlayout)
-        implementation(libs.compose.runtime.livedata)
-        implementation(libs.compose.animation)
-        implementation(libs.kotlin.csv)
-        implementation(libs.monetcompat)
-        implementation(libs.androidmaterial)
-        implementation(libs.timber)
-        implementation(libs.crypto)
-        implementation(libs.logging.interceptor)
-        implementation(libs.math3)
-        implementation(libs.toasty)
-        implementation(libs.haze)
-        //implementation(libs.androidyoutubeplayer) // replaced by project ayp
-        //implementation(libs.androidyoutubeplayer.custom.ui) // replaced by project aypui
-        implementation(projects.ayp)
-        implementation(projects.aypui)
-        implementation(libs.glance.widgets)
-        implementation(libs.kizzy.rpc)
-        implementation(libs.gson)
-        implementation(libs.hypnoticcanvas)
-        implementation(libs.hypnoticcanvas.shaders)
-        //implementation(libs.multidex)
-        implementation(libs.jsoup)
-
-        implementation(libs.ktor.client.core)
-        implementation(libs.ktor.client.okhttp)
-        implementation(libs.ktor.client.websockets)
-
-        implementation(projects.environment)
-        implementation(projects.kugou)
-        implementation(projects.lrclib)
-        implementation(projects.audiotaginfo)
-        implementation(projects.lastfm)
-        implementation(projects.simpmusiclyrics)
-
-        implementation(libs.room.ktx)
-        implementation(libs.room.runtime)
-        implementation(libs.room.sqlite.bundled)
-
-        implementation(libs.mediaplayer.kmp)
-
-        implementation(libs.navigation.kmp)
-
-        //coil3 mp
-        implementation(libs.coil.compose.core)
-        implementation(libs.coil.compose)
-        implementation(libs.coil.mp)
-
-        implementation(libs.translator)
-        implementation(libs.reorderable)
-
-        implementation(libs.fastscroller)
-        implementation(libs.fastscroller.material3)
-        implementation(libs.fastscroller.indicator)
-
-        implementation (libs.jaudiotagger)
-
-        implementation(libs.ktor.client.core)
-        implementation(libs.ktor.client.okhttp)
-        implementation(libs.ktor.client.content.negotiation)
-        implementation(libs.ktor.client.encoding)
-        implementation(libs.ktor.client.serialization)
-        implementation(libs.ktor.serialization.json)
-        implementation(libs.material.icons.extended)
-
-        implementation(libs.camerax.lifecycle)
-        implementation(libs.camerax.core)
-        implementation(libs.camerax.camera2)
-        implementation(libs.camerax.camera.view)
-        implementation(libs.zxing.core)
-        implementation(libs.splashscreen)
-        implementation(libs.lifecycle.process)
-
-    }
-
-    sourceSets {
-        androidUnitTest.dependencies {
-            implementation(kotlin("test"))
-        }
-    }
 }
 
 val localProperties = Properties()
@@ -526,11 +409,6 @@ extensions.configure<ApplicationExtension> {
         }
     }
 
-//    sourceSets.all {
-//        kotlin.srcDir("src/$name/kotlin")
-//    }
-
-
 
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
@@ -553,13 +431,116 @@ room {
 }
 
 dependencies {
+        implementation(projects.composeApp)
+        implementation(libs.navigation)
+        implementation(libs.media3.session)
+        implementation(libs.kotlin.coroutines.guava)
+        implementation(libs.kotlin.concurrent.futures)
+        implementation(libs.androidx.webkit)
+        implementation(libs.workmanager)
+        implementation(libs.accompanist)
+
+        implementation(libs.compose.activity)
+        implementation(libs.compose.foundation)
+        implementation(libs.compose.ui)
+        implementation(libs.compose.ui.util)
+        implementation(libs.compose.ripple)
+        implementation(libs.compose.shimmer)
+        implementation(libs.compose.coil)
+        implementation(libs.palette)
+        implementation(libs.media3.exoplayer)
+        implementation(libs.media3.datasource.okhttp)
+        implementation(libs.appcompat)
+        implementation(libs.appcompat.resources)
+        implementation(libs.support)
+        implementation(libs.material)
+        implementation(libs.material3)
+        implementation(libs.compose.ui.graphics.android)
+        implementation(libs.constraintlayout)
+        implementation(libs.compose.runtime.livedata)
+        implementation(libs.compose.animation)
+        implementation(libs.kotlin.csv)
+        implementation(libs.monetcompat)
+        implementation(libs.androidmaterial)
+        implementation(libs.timber)
+        implementation(libs.crypto)
+        implementation(libs.logging.interceptor)
+        implementation(libs.math3)
+        implementation(libs.toasty)
+        implementation(libs.haze)
+        //implementation(libs.androidyoutubeplayer) // replaced by project ayp
+        //implementation(libs.androidyoutubeplayer.custom.ui) // replaced by project aypui
+        implementation(projects.ayp)
+        implementation(projects.aypui)
+        implementation(libs.glance.widgets)
+        implementation(libs.kizzy.rpc)
+        implementation(libs.gson)
+        implementation(libs.hypnoticcanvas)
+        implementation(libs.hypnoticcanvas.shaders)
+        //implementation(libs.multidex)
+        implementation(libs.jsoup)
+
+        implementation(libs.ktor.client.core)
+        implementation(libs.ktor.client.okhttp)
+        implementation(libs.ktor.client.websockets)
+
+        implementation(projects.environment)
+        implementation(projects.kugou)
+        implementation(projects.lrclib)
+        implementation(projects.audiotaginfo)
+        implementation(projects.lastfm)
+        implementation(projects.simpmusiclyrics)
+
+        implementation(libs.room.ktx)
+        implementation(libs.room.runtime)
+        implementation(libs.room.sqlite.bundled)
+
+        implementation(libs.mediaplayer.kmp)
+
+        implementation(libs.navigation.kmp)
+
+        //coil3 mp
+        implementation(libs.coil.compose.core)
+        implementation(libs.coil.compose)
+        implementation(libs.coil.mp)
+
+        implementation(libs.translator)
+        implementation(libs.reorderable)
+
+        implementation(libs.fastscroller)
+        implementation(libs.fastscroller.material3)
+        implementation(libs.fastscroller.indicator)
+
+        implementation (libs.jaudiotagger)
+
+        implementation(libs.ktor.client.core)
+        implementation(libs.ktor.client.okhttp)
+        implementation(libs.ktor.client.content.negotiation)
+        implementation(libs.ktor.client.encoding)
+        implementation(libs.ktor.client.serialization)
+        implementation(libs.ktor.serialization.json)
+        implementation(libs.material.icons.extended)
+
+        implementation(libs.camerax.lifecycle)
+        implementation(libs.camerax.core)
+        implementation(libs.camerax.camera2)
+        implementation(libs.camerax.camera.view)
+        implementation(libs.zxing.core)
+        implementation(libs.splashscreen)
+        implementation(libs.lifecycle.process)
+
+
+
+
     "fullImplementation"(libs.media3.ui)
     "fullImplementation"(libs.media3.cast)
     "fullImplementation"(projects.aypcast)
     "fullImplementation"(projects.chaquopy)
 
-    add("kspAndroid", libs.room.compiler)
-//    add("kspDesktop", libs.room.compiler)
+    testImplementation(kotlin("test"))
+
+    ksp(libs.room.compiler)
+
 
     coreLibraryDesugaring(libs.desugaring)
 }

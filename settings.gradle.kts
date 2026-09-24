@@ -38,7 +38,7 @@ rootProject.name = "RiPlay"
 
 include(":androidApp")
 include(":composeApp")
-//include(":compose-persist")
+
 // Projects from extensions
 include(":environment")
 project(":environment").projectDir = file("extensions/environment")
