@@ -159,6 +159,7 @@ import it.fast4x.riplay.enums.AlbumSortBy
 import it.fast4x.riplay.enums.ArtistSortBy
 import it.fast4x.riplay.enums.CastType
 import it.fast4x.riplay.enums.CrossfadeDuration
+import it.fast4x.riplay.enums.LoadPhase
 import it.fast4x.riplay.enums.PlaybackOrigin
 import it.fast4x.riplay.enums.PlaylistSongSortBy
 import it.fast4x.riplay.enums.PlaylistSortBy
@@ -1279,6 +1280,7 @@ class PlayerService : MediaLibraryService(),
                 currentSong.value?.id?.let{
                     if (appSettings.persistentQueue && appSettings.resumePlaybackOnStart && firstTimeStarted && !skipAutoload) {
                         Timber.d("LOAD-COMMAND videoId=${it} start=${playFromSecond}")
+                        setLoadPending(LoadPhase.PENDING, "onReady")
                         youTubePlayer.loadVideo(it, playFromSecond)
                         playFromSecond = 0f
                         Timber.d("PlayerService onlinePlayer onReady loadVideo ${it}")
@@ -1289,8 +1291,26 @@ class PlayerService : MediaLibraryService(),
 
             }
 
+            private var lastTickSecond = -1f
             override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
                 Timber.d("TICK-RECV sec=$second thread=${Thread.currentThread().name}")
+
+                if (_playerState.value.loadPending.isPending) {
+                    val now = System.currentTimeMillis()
+                    // rinnova SOLO se è cambiato (evita copie inutili del PlayerState a ogni evento!)
+                    if (now - _playerState.value.loadPendingLastActivity > 1_000) {
+                        _playerState.value = _playerState.value.copy(loadPendingLastActivity = now)
+                    }
+                }
+                // Il criterio del suono REALE: il tempo avanza rispetto al tick precedente
+                val isActuallyPlaying = second > lastTickSecond + 0.05f   // avanza davvero
+                lastTickSecond = second
+
+                //Timber.d("PlayerService LOAD-PENDING onCurrentSecond isActuallyPlaying $isActuallyPlaying second=$second")
+
+                if (_playerState.value.loadPending.isPending && isActuallyPlaying && second > 0.3f) {
+                    setLoadPending(LoadPhase.NONE, "onCurrentSecond")
+                }
 
                 val oldSecond = _currentSecond.value
                 _currentSecond.value = second
@@ -1443,6 +1463,8 @@ class PlayerService : MediaLibraryService(),
                 error: PlayerConstants.PlayerError
             ) {
 
+                setLoadPending(LoadPhase.PENDING, "onError $error")
+
                 val currentState = _playerState.value
                 _playerState.value = currentState.copy(
                     playbackState = PlaybackState.ERROR
@@ -1500,10 +1522,10 @@ class PlayerService : MediaLibraryService(),
 
                             if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                                 //_internalYouTubePlayer.value?.pause()
+                                setLoadPending(LoadPhase.PENDING, "onError INVALID_PARAMETER_IN_REQUEST")
                                 hybridPlayer.pause()
                                 youTubePlayer.pause()
-                                if (!it.isEmpty())
-                                    youTubePlayer.cueVideo(it, playFromSecond)
+                                youTubePlayer.cueVideo(it, playFromSecond)
                             }
                             else this@PlayerService.serviceScope.launch {
                                 riTuneCastClient.sendCommand(
@@ -2100,8 +2122,7 @@ class PlayerService : MediaLibraryService(),
                 Timber.d("PlayerService onMediaItemTransition mediaItem not local, before")
 
                 if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
-                    if (!it.mediaId.isEmpty())
-                        _internalYouTubePlayer.value?.cueVideo(it.mediaId, playFromSecond)
+                    _internalYouTubePlayer.value?.cueVideo(it.mediaId, playFromSecond)
                     // Avvia il fade in per il nuovo brano appena parte il play
                     startFadeIn()
                     Timber.d("PlayerService onMediaItemTransition mediaItem not local, inside")
@@ -2815,6 +2836,23 @@ class PlayerService : MediaLibraryService(),
 
                 // Il guardiano calcola i dati SOLO se c'è una canzone caricata nel player
                 if (duration > 0) {
+
+                    val now = System.currentTimeMillis()
+                    val live = _playerState.value
+                    if (live.loadPending == LoadPhase.PENDING) {
+                        when {
+                            live.playbackState == PlaybackState.ERROR ->
+                                setLoadPending(LoadPhase.STALE, "watchdog-error")
+                            live.loadPendingSince <= 0L || live.loadPendingLastActivity <= 0L -> {
+                                Timber.w("LOAD-PENDING PENDING con stamp a 0 (writer bypass?) → re-stamp")
+                                _playerState.value = live.copy(loadPendingSince = now, loadPendingLastActivity = now)
+                            }
+                            now - live.loadPendingLastActivity > 15_000 ->
+                                setLoadPending(LoadPhase.STALE, "watchdog-timeout")
+                        }
+                    }
+
+
                     val timeLeft = duration - position
                     val crossfadeDurationMs = appSettings.crossfadeDuration.milliseconds
 
@@ -3558,6 +3596,20 @@ class PlayerService : MediaLibraryService(),
         }
     }
 
+    fun setLoadPending(phase: LoadPhase, reason: String) {
+        val cur = _playerState.value
+        val now = System.currentTimeMillis()
+        Timber.w("LOAD-PENDING %s→%s reason=%s state=%s Δsince=%d ΔlastAct=%d",
+            cur.loadPending, phase, reason, cur.playbackState,
+            now - cur.loadPendingSince, now - cur.loadPendingLastActivity)
+
+        val currentState = _playerState.value
+        _playerState.value = currentState.copy(
+            loadPending = phase,
+            loadPendingSince = if (phase == LoadPhase.PENDING) System.currentTimeMillis() else 0L,
+            loadPendingLastActivity = if (phase == LoadPhase.PENDING) System.currentTimeMillis() else 0L,
+        )
+    }
 
     @Stable
     open inner class Binder : AndroidBinder() {

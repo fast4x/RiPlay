@@ -1,13 +1,17 @@
 package it.fast4x.riplay.services.playback.common
 
 import androidx.media3.common.MediaItem
+import it.fast4x.riplay.enums.LoadPhase
 import it.fast4x.riplay.enums.QueueLoopType
 
 data class PlayerState(
     val playbackState: PlaybackState = PlaybackState.IDLE,
     val mediaInfo: MediaInfo? = null,
     val settings: PlayerSettings = PlayerSettings(),
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val loadPending: LoadPhase = LoadPhase.NONE,
+    val loadPendingSince: Long = 0L,
+    val loadPendingLastActivity: Long = 0L,
 ) {
     val isPlaying: Boolean
         get() = playbackState == PlaybackState.PLAYING

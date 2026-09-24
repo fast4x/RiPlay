@@ -1,10 +1,13 @@
 package it.fast4x.riplay.ui.screens.player.unified.components.controls
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -99,6 +102,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
+import timber.log.Timber
 
 @OptIn(ExperimentalSerializationApi::class)
 @SuppressLint("UnusedBoxWithConstraintsScope")
@@ -604,6 +608,8 @@ fun UnifiedControlsEssential(
             )
 
         val imgSize = remember { if (playerPlayButtonType == PlayerPlayButtonType.Disabled) 40.dp else 30.dp }
+        //Timber.d("UI-LOADER phase=${playerState.loadPending} state=${playerState.playbackState}")
+        //if (!playerState.loadPending.isPending) {
         if (playerState.playbackState != PlaybackState.BUFFERING) {
             Image(
                 painter = painterResource(if (playerState.isPlaying) R.drawable.pause else R.drawable.play),
@@ -614,7 +620,13 @@ fun UnifiedControlsEssential(
                     .size(imgSize)
                     .bounceClick()
             )
-        } else PlayerCircularLoader(64.dp)
+        } else AnimatedVisibility(
+            visible = true,
+            enter = fadeIn(tween(300, delayMillis = 350)),
+            exit = fadeOut(tween(150))
+        ) {
+            PlayerCircularLoader(64.dp)
+        }
 
         val fmtSpeed = "%.1fx".format(playbackSpeed).replace(",", ".")
         if (fmtSpeed != "1.0x")

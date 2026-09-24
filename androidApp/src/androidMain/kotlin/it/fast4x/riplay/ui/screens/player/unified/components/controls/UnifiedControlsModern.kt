@@ -1,6 +1,10 @@
 package it.fast4x.riplay.ui.screens.player.unified.components.controls
 
 import android.os.Build
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.basicMarquee
@@ -179,6 +183,8 @@ fun UnifiedControlsModern(
                     contentDescription = "Background Image",
                     contentScale = ContentScale.Fit
                 )
+                //Timber.d("UI-LOADER phase=${playerState.loadPending} state=${playerState.playbackState}")
+                //if (!playerState.loadPending.isPending) {
                 if (playerState.playbackState != PlaybackState.BUFFERING) {
                     Image(
                         painter = painterResource(if (playerState.isPlaying) R.drawable.pause else R.drawable.play),
@@ -188,7 +194,13 @@ fun UnifiedControlsModern(
                             .align(Alignment.Center)
                             .size(30.dp)
                     )
-                } else PlayerCircularLoader(64.dp)
+                } else AnimatedVisibility(
+                    visible = true,
+                    enter = fadeIn(tween(300, delayMillis = 350)),
+                    exit = fadeOut(tween(150))
+                ) {
+                    PlayerCircularLoader(64.dp)
+                }
             }
         }
         else {

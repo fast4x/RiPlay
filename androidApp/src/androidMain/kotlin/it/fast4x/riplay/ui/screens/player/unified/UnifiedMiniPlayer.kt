@@ -1,5 +1,6 @@
 package it.fast4x.riplay.ui.screens.player.unified
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.LinearEasing
@@ -9,6 +10,8 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
@@ -458,6 +461,10 @@ fun UnifiedMiniPlayer(
                             .size(24.dp)
                     )
 
+                //Timber.d("UnifiedMiniplayer playbackState=${playerState.playbackState} loadPending=${playerState.loadPending}")
+                //Timber.d("UI-LOADER phase=${playerState.loadPending} state=${playerState.playbackState}")
+
+                //if (!playerState.loadPending.isPending) {
                 if (playerState.playbackState != PlaybackState.BUFFERING) {
                     Box(
                         modifier = Modifier
@@ -508,8 +515,13 @@ fun UnifiedMiniPlayer(
                                 .size(24.dp)
                         )
                     }
-                } else
+                } else AnimatedVisibility(
+                    visible = true,
+                    enter = fadeIn(tween(300, delayMillis = 350)),
+                    exit = fadeOut(tween(150))
+                ) {
                     PlayerCircularLoader(42.dp)
+                }
 
                 if (miniPlayerType == MiniPlayerType.Essential)
                     IconButton(

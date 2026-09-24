@@ -705,8 +705,8 @@ class MainActivity : AppCompatActivity() {
 
 
 
-            val state = binder?.playerState?.collectAsState()
-            playerState = state?.value ?: PlayerState()
+            val playerState = binder?.playerState?.collectAsStateWithLifecycle(initialValue = PlayerState())?.value
+                ?: PlayerState()
             Timber.d("MainActivity onCreate playerState: $playerState")
 
             //Check if webview component exists
