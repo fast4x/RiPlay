@@ -931,14 +931,6 @@ class PlayerService : MediaLibraryService(),
 
                 if (isCastActive) {
                     withContext(Dispatchers.Main) {
-//                        when (playerState) {
-//                            PlayerConstants.PlayerState.PLAYING -> {
-//                                startPlaybackWatchdog()
-//                            }
-//                            else -> {
-//                                stopPlaybackWatchdog()
-//                            }
-//                        }
 
                         playerState?.let { updatePlayerState(it) }
 
@@ -1280,7 +1272,7 @@ class PlayerService : MediaLibraryService(),
                 currentSong.value?.id?.let{
                     if (appSettings.persistentQueue && appSettings.resumePlaybackOnStart && firstTimeStarted && !skipAutoload) {
                         Timber.d("LOAD-COMMAND videoId=${it} start=${playFromSecond}")
-                        setLoadPending(LoadPhase.PENDING, "onReady")
+
                         youTubePlayer.loadVideo(it, playFromSecond)
                         playFromSecond = 0f
                         Timber.d("PlayerService onlinePlayer onReady loadVideo ${it}")
@@ -1291,24 +1283,11 @@ class PlayerService : MediaLibraryService(),
 
             }
 
-            private var lastTickSecond = -1f
             override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
-                Timber.d("TICK-RECV sec=$second thread=${Thread.currentThread().name}")
 
-                if (_playerState.value.loadPending.isPending) {
-                    val now = System.currentTimeMillis()
-                    // rinnova SOLO se è cambiato (evita copie inutili del PlayerState a ogni evento!)
-                    if (now - _playerState.value.loadPendingLastActivity > 1_000) {
-                        _playerState.value = _playerState.value.copy(loadPendingLastActivity = now)
-                    }
-                }
-                // Il criterio del suono REALE: il tempo avanza rispetto al tick precedente
-                val isActuallyPlaying = second > lastTickSecond + 0.05f   // avanza davvero
-                lastTickSecond = second
-
-                //Timber.d("PlayerService LOAD-PENDING onCurrentSecond isActuallyPlaying $isActuallyPlaying second=$second")
-
-                if (_playerState.value.loadPending.isPending && isActuallyPlaying && second > 0.3f) {
+                //Timber.d("PlayerService LOAD-PENDING onCurrentSecond sec=$second isPlaying = ${_playerState.value.isPlaying}")
+                if(_playerState.value.loadPending.isPending && _playerState.value.isPlaying && (second in  2f..9f )) {
+                  //  Timber.d("PlayerService LOAD-PENDING OnCurrentSecond sec=$second >> firstTimeStarted = $firstTimeStarted << ")
                     setLoadPending(LoadPhase.NONE, "onCurrentSecond")
                 }
 
@@ -1436,7 +1415,6 @@ class PlayerService : MediaLibraryService(),
                     PlayerConstants.PlayerState.PLAYING -> {
                         lastError = null  // reset errore dopo riproduzione riuscita
                         onlineNearEndTicks = 0
-                        //startPlaybackWatchdog()
 
                         if (::hybridPlayer.isInitialized) {
                             hybridPlayer.invalidateYouTubePlayPause()
@@ -1444,7 +1422,6 @@ class PlayerService : MediaLibraryService(),
                     }
                     PlayerConstants.PlayerState.PAUSED -> {
                         onlineNearEndTicks = 0
-                        //stopPlaybackWatchdog()
 
                         if (::hybridPlayer.isInitialized) {
                             hybridPlayer.invalidateYouTubePlayPause()
@@ -1462,8 +1439,6 @@ class PlayerService : MediaLibraryService(),
                 youTubePlayer: YouTubePlayer,
                 error: PlayerConstants.PlayerError
             ) {
-
-                setLoadPending(LoadPhase.PENDING, "onError $error")
 
                 val currentState = _playerState.value
                 _playerState.value = currentState.copy(
@@ -1521,8 +1496,7 @@ class PlayerService : MediaLibraryService(),
 //                            }
 
                             if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
-                                //_internalYouTubePlayer.value?.pause()
-                                setLoadPending(LoadPhase.PENDING, "onError INVALID_PARAMETER_IN_REQUEST")
+
                                 hybridPlayer.pause()
                                 youTubePlayer.pause()
                                 youTubePlayer.cueVideo(it, playFromSecond)
@@ -2116,16 +2090,17 @@ class PlayerService : MediaLibraryService(),
         mediaItem.let {
 
             if (!it.isLocal){
+                if (!firstTimeStarted) // Non mostro il loader se è il primo avvio, serve solo a precaricare il player online
+                    setLoadPending(LoadPhase.PENDING, "onMediaItemTsransition >> firstTimeStarted = $firstTimeStarted << ")
                 // Ferma ExoPlayer prima di avviare il player online
                 _internalYouTubePlayer.value?.pause()
                 hybridPlayer.switchToYoutube()
-                Timber.d("PlayerService onMediaItemTransition mediaItem not local, before")
 
                 if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                     _internalYouTubePlayer.value?.cueVideo(it.mediaId, playFromSecond)
                     // Avvia il fade in per il nuovo brano appena parte il play
                     startFadeIn()
-                    Timber.d("PlayerService onMediaItemTransition mediaItem not local, inside")
+                    Timber.d("PlayerService onMediaItemTransition mediaItem not local video cued id = ${it.mediaId} playFromSecond $playFromSecond")
                 } else
                     this@PlayerService.serviceScope.launch {
                         riTuneCastClient.sendCommand(
@@ -2706,10 +2681,10 @@ class PlayerService : MediaLibraryService(),
                 Timber.d("PlayerService onIsPlayingChanged: Nuovo brano avviato (Crossfade OFF). Scudo abbassato e Watchdog pronto.")
             }
             sendOpenExternalEqualizerIntent()
-            //startPlaybackWatchdog()
+
             updatePlayerState(PlayerConstants.PlayerState.PLAYING)
         } else {
-            //stopPlaybackWatchdog()
+
             updatePlayerState(PlayerConstants.PlayerState.PAUSED)
 
             // Rimuove lo stato di foreground aggressivo quando l'app va in pausa
@@ -2837,22 +2812,6 @@ class PlayerService : MediaLibraryService(),
                 // Il guardiano calcola i dati SOLO se c'è una canzone caricata nel player
                 if (duration > 0) {
 
-                    val now = System.currentTimeMillis()
-                    val live = _playerState.value
-                    if (live.loadPending == LoadPhase.PENDING) {
-                        when {
-                            live.playbackState == PlaybackState.ERROR ->
-                                setLoadPending(LoadPhase.STALE, "watchdog-error")
-                            live.loadPendingSince <= 0L || live.loadPendingLastActivity <= 0L -> {
-                                Timber.w("LOAD-PENDING PENDING con stamp a 0 (writer bypass?) → re-stamp")
-                                _playerState.value = live.copy(loadPendingSince = now, loadPendingLastActivity = now)
-                            }
-                            now - live.loadPendingLastActivity > 15_000 ->
-                                setLoadPending(LoadPhase.STALE, "watchdog-timeout")
-                        }
-                    }
-
-
                     val timeLeft = duration - position
                     val crossfadeDurationMs = appSettings.crossfadeDuration.milliseconds
 
@@ -2898,7 +2857,7 @@ class PlayerService : MediaLibraryService(),
                     // LE LOGICHE DI FINE BRANO SCATTANO SOLO SE L'APP STA EFFETTIVAMENTE SUONANDO
                     if (isPlaying) {
                         // SE IL CROSSFADE È ATTIVO
-                        Timber.d("PlayerService PlaybackWatchdog: engine = ${hybridPlayer.activeEngine} isFading = $isFading isPlaying = $isPlaying isPaused = $isPaused timeleft $timeLeft duration=$duration ms, position=$position ms")
+                        //Timber.d("PlayerService PlaybackWatchdog: engine = ${hybridPlayer.activeEngine} isFading = $isFading isPlaying = $isPlaying isPaused = $isPaused timeleft $timeLeft duration=$duration ms, position=$position ms")
                         if (appSettings.crossfadeDuration != CrossfadeDuration.Off) {
                             if (timeLeft <= crossfadeDurationMs && timeLeft > -10000 && !isFading) {
                                 isFading = true
@@ -2911,20 +2870,7 @@ class PlayerService : MediaLibraryService(),
                                 lastWatchdogPosition = -1L // resetto la posizione precedente durante il cambio
 
                                 handleEndOfSong("PlayerService PlaybackWatchdog with crossfade enabled")
-                                /*
-                                // Se il playback sta finendo ed è un video forzato, resettiamo il flag
-                                if(appSettings.forceUserVideoPlayback){
-                                    withContext(Dispatchers.IO){
-                                        appSettingsManager.updateSettings(appSettings.copy(forceUserVideoPlayback = false))
-                                    }
-                                }
 
-                                // Controllo il tipo di ripetizione
-                                if (processQueueRepeat()) continue
-
-                                if (isNextLocal) startExoToExoCrossfade() else startWebViewFadeOut()
-
-                                 */
                             }
                         }
                         // SE IL CROSSFADE È DISATTIVATO
@@ -2951,20 +2897,7 @@ class PlayerService : MediaLibraryService(),
                                 lastWatchdogPosition = -1L // resetto la posizione precedente durante il cambio
 
                                 handleEndOfSong("PlayerService PlaybackWatchdog with crossfade disabled")
-                                /*
-                                // Se il playback sta finendo ed è un video forzato, resettiamo il flag
-                                if(appSettings.forceUserVideoPlayback){
-                                    withContext(Dispatchers.IO){
-                                        appSettingsManager.updateSettings(appSettings.copy(forceUserVideoPlayback = false))
-                                    }
-                                }
 
-                                // Controllo il tipo di ripetizione
-                                if (processQueueRepeat()) continue
-
-                                handlePlayNext("PlayerService PlaybackWatchdog with crossfade disabled")
-
-                                 */
                             }
                         }
                     }
@@ -2980,8 +2913,7 @@ class PlayerService : MediaLibraryService(),
     }
 
     suspend fun handleEndOfSong(source: String) {
-        //if (isFading) return
-        //isFading = true
+
         lastWatchdogPosition = -1L
 
         if(appSettings.forceUserVideoPlayback){
@@ -3599,7 +3531,7 @@ class PlayerService : MediaLibraryService(),
     fun setLoadPending(phase: LoadPhase, reason: String) {
         val cur = _playerState.value
         val now = System.currentTimeMillis()
-        Timber.w("LOAD-PENDING %s→%s reason=%s state=%s Δsince=%d ΔlastAct=%d",
+        Timber.w("PlayerService LOAD-PENDING %s→%s reason=%s state=%s Δsince=%d ΔlastAct=%d",
             cur.loadPending, phase, reason, cur.playbackState,
             now - cur.loadPendingSince, now - cur.loadPendingLastActivity)
 

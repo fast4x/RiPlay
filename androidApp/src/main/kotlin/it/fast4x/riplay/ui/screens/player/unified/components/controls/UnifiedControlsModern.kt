@@ -183,9 +183,8 @@ fun UnifiedControlsModern(
                     contentDescription = "Background Image",
                     contentScale = ContentScale.Fit
                 )
-                //Timber.d("UI-LOADER phase=${playerState.loadPending} state=${playerState.playbackState}")
-                //if (!playerState.loadPending.isPending) {
-                if (playerState.playbackState != PlaybackState.BUFFERING) {
+
+                if (!playerState.loadPending.isPending) {
                     Image(
                         painter = painterResource(if (playerState.isPlaying) R.drawable.pause else R.drawable.play),
                         contentDescription = null,

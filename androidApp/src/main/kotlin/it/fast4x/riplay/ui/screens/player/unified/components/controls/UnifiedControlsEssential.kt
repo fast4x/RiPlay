@@ -608,9 +608,8 @@ fun UnifiedControlsEssential(
             )
 
         val imgSize = remember { if (playerPlayButtonType == PlayerPlayButtonType.Disabled) 40.dp else 30.dp }
-        //Timber.d("UI-LOADER phase=${playerState.loadPending} state=${playerState.playbackState}")
-        //if (!playerState.loadPending.isPending) {
-        if (playerState.playbackState != PlaybackState.BUFFERING) {
+
+        if (!playerState.loadPending.isPending) {
             Image(
                 painter = painterResource(if (playerState.isPlaying) R.drawable.pause else R.drawable.play),
                 contentDescription = null,

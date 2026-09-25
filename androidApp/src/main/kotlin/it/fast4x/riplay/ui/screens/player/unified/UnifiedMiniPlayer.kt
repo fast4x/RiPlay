@@ -461,45 +461,35 @@ fun UnifiedMiniPlayer(
                             .size(24.dp)
                     )
 
-                //Timber.d("UnifiedMiniplayer playbackState=${playerState.playbackState} loadPending=${playerState.loadPending}")
-                //Timber.d("UI-LOADER phase=${playerState.loadPending} state=${playerState.playbackState}")
-
-                //if (!playerState.loadPending.isPending) {
-                if (playerState.playbackState != PlaybackState.BUFFERING) {
+                if (!playerState.loadPending.isPending) {
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(playPauseRoundness))
                             .clickable {
                                 if (shouldBePlaying) {
-//                                    if (mediaItem.isLocal) {
-//                                        binder.hybridPlayer.pause()
-//                                    } else {
-                                        if (!GlobalSharedData.riTuneCastActive)
-                                            binder.hybridPlayer.pause()
-                                        else
-                                            CoroutineScope(Dispatchers.IO).launch {
-                                                binder.riTuneCastClient.sendCommand(
-                                                    RiTuneRemoteCommand(
-                                                        "pause"
-                                                    )
+                                    if (!GlobalSharedData.riTuneCastActive)
+                                        binder.hybridPlayer.pause()
+                                    else
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            binder.riTuneCastClient.sendCommand(
+                                                RiTuneRemoteCommand(
+                                                    "pause"
                                                 )
-                                            }
-                                    //}
+                                            )
+                                        }
+
                                 } else {
-//                                    if (mediaItem.isLocal) {
-//                                        binder.hybridPlayer?.play()
-//                                    } else {
-                                        if (!GlobalSharedData.riTuneCastActive)
-                                            binder.hybridPlayer.play()
-                                        else
-                                            CoroutineScope(Dispatchers.IO).launch {
-                                                binder.riTuneCastClient.sendCommand(
-                                                    RiTuneRemoteCommand(
-                                                        "play", mediaId = mediaItem.mediaId
-                                                    )
+                                    if (!GlobalSharedData.riTuneCastActive)
+                                        binder.hybridPlayer.play()
+                                    else
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            binder.riTuneCastClient.sendCommand(
+                                                RiTuneRemoteCommand(
+                                                    "play", mediaId = mediaItem.mediaId
                                                 )
-                                            }
-                                    //}
+                                            )
+                                        }
+
                                 }
                             }
                             .background(colorPalette().background2)
