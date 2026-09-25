@@ -2393,6 +2393,7 @@ fun UnifiedPlayer(
                                                         thumbnailType == ThumbnailType.Modern
                                                                 && coverThumbnailAnimation != ThumbnailCoverType.AudioCassette
                                                                 && coverThumbnailAnimation != ThumbnailCoverType.AudioCassetteWithCover
+                                                                && !isShowingLyrics
                                                     ) {
                                                         doubleShadowDrop(
                                                             if (showCoverThumbnailAnimation && binder.hybridPlayer?.getMediaItemAt(
@@ -2626,7 +2627,7 @@ fun UnifiedPlayer(
                                             all = 14.dp
                                         )
                                     }
-                                    .conditional(thumbnailType == ThumbnailType.Modern) {
+                                    .conditional(thumbnailType == ThumbnailType.Modern && !isShowingLyrics) {
                                         doubleShadowDrop(
                                             shadowShape,
                                             8.dp,
@@ -3396,6 +3397,7 @@ fun UnifiedPlayer(
                                                 thumbnailType == ThumbnailType.Modern
                                                         && coverThumbnailAnimation != ThumbnailCoverType.AudioCassette
                                                         && coverThumbnailAnimation != ThumbnailCoverType.AudioCassetteWithCover
+                                                        && !isShowingLyrics
                                             ) {
                                                 doubleShadowDrop(
                                                     if (showCoverThumbnailAnimation && binder.hybridPlayer?.getMediaItemAt(
@@ -3607,7 +3609,7 @@ fun UnifiedPlayer(
                                                 all = 14.dp
                                             )
                                         }
-                                        .conditional(thumbnailType == ThumbnailType.Modern) {
+                                        .conditional(thumbnailType == ThumbnailType.Modern && !isShowingLyrics) {
                                             doubleShadowDrop(
                                                 shadowShape,
                                                 8.dp,
@@ -3693,7 +3695,7 @@ fun UnifiedPlayer(
                                 padding(all = animatePadding)
                             }
                             //.padding(all = animatePadding)
-                            .conditional(thumbnailType == ThumbnailType.Modern) {
+                            .conditional(thumbnailType == ThumbnailType.Modern && !isShowingLyrics) {
                                 padding(
                                     all = 14.dp
                                 )
