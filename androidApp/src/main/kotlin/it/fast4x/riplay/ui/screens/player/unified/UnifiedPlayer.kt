@@ -2384,6 +2384,26 @@ fun UnifiedPlayer(
                                                     .fillMaxSize()
                                                     .aspectRatio(1f)
                                                     .padding(all = playerThumbnailSizeL.padding.dp)
+                                                    .conditional(thumbnailType == ThumbnailType.Modern) {
+                                                        padding(
+                                                            all = 14.dp
+                                                        )
+                                                    }
+                                                    .conditional(
+                                                        thumbnailType == ThumbnailType.Modern
+                                                                && coverThumbnailAnimation != ThumbnailCoverType.AudioCassette
+                                                                && coverThumbnailAnimation != ThumbnailCoverType.AudioCassetteWithCover
+                                                    ) {
+                                                        doubleShadowDrop(
+                                                            if (showCoverThumbnailAnimation && binder.hybridPlayer?.getMediaItemAt(
+                                                                    index
+                                                                )?.isVideo == false
+                                                            ) CircleShape else thumbnailRoundness.shape(),
+                                                            4.dp,
+                                                            8.dp
+                                                        )
+                                                    }
+                                                    .clip(thumbnailRoundness.shape())
                                                     .graphicsLayer {
                                                         val pageOffSet =
                                                             ((pagerState.currentPage - index) + pagerState.currentPageOffsetFraction).absoluteValue
@@ -2412,26 +2432,6 @@ fun UnifiedPlayer(
                                                             )
                                                         )
                                                     }
-                                                    .conditional(thumbnailType == ThumbnailType.Modern) {
-                                                        padding(
-                                                            all = 10.dp
-                                                        )
-                                                    }
-//                                                    .conditional(
-//                                                        thumbnailType == ThumbnailType.Modern
-//                                                                && coverThumbnailAnimation != ThumbnailCoverType.AudioCassette
-//                                                                && coverThumbnailAnimation != ThumbnailCoverType.AudioCassetteWithCover
-//                                                    ) {
-//                                                        doubleShadowDrop(
-//                                                            if (showCoverThumbnailAnimation && binder.hybridPlayer?.getMediaItemAt(
-//                                                                    index
-//                                                                )?.isVideo == false
-//                                                            ) CircleShape else thumbnailRoundness.shape(),
-//                                                            4.dp,
-//                                                            8.dp
-//                                                        )
-//                                                    }
-                                                    .clip(thumbnailRoundness.shape())
                                                     .combinedClickable(
                                                         interactionSource = remember { MutableInteractionSource() },
                                                         indication = null,
@@ -2608,6 +2608,41 @@ fun UnifiedPlayer(
                                         }
                                     }
                                 }
+                            } else {
+                                val request = remember(mediaItem.mediaId) {
+                                    ImageRequest.Builder(context)
+                                        .data(mediaItem.mediaMetadata.artworkUri.toString().toThumbnail(1200))
+                                        .size(1200, 1200)
+                                        .transformations(LandscapeToSquareTransformation(1200))
+                                        .build()
+                                }
+
+                                val coverPainter = rememberAsyncImagePainter(model = request)
+                                val shadowShape = if (showCoverThumbnailAnimation && !mediaItem.isVideo)
+                                    CircleShape else thumbnailRoundness.shape()
+                                val coverModifier = Modifier
+                                    .conditional(thumbnailType == ThumbnailType.Modern) {
+                                        padding(
+                                            all = 14.dp
+                                        )
+                                    }
+                                    .conditional(thumbnailType == ThumbnailType.Modern) {
+                                        doubleShadowDrop(
+                                            shadowShape,
+                                            8.dp,
+                                            4.dp
+                                        )
+                                    }
+                                    .clip(shadowShape)
+                                    .graphicsLayer { alpha = contentAlpha }
+
+                                if (!mediaItem.isVideo)
+                                    Image(
+                                        painter = coverPainter,
+                                        contentDescription = "",
+                                        contentScale = ContentScale.Fit,
+                                        modifier = coverModifier
+                                    )
                             }
 
                         }
@@ -3352,6 +3387,26 @@ fun UnifiedPlayer(
                                             .fillMaxSize()
                                             .aspectRatio(1f)
                                             .padding(all = animatePadding)
+                                            .conditional(thumbnailType == ThumbnailType.Modern) {
+                                                padding(
+                                                    all = 14.dp
+                                                )
+                                            }
+                                            .conditional(
+                                                thumbnailType == ThumbnailType.Modern
+                                                        && coverThumbnailAnimation != ThumbnailCoverType.AudioCassette
+                                                        && coverThumbnailAnimation != ThumbnailCoverType.AudioCassetteWithCover
+                                            ) {
+                                                doubleShadowDrop(
+                                                    if (showCoverThumbnailAnimation && binder.hybridPlayer?.getMediaItemAt(
+                                                            index
+                                                        )?.isVideo == false
+                                                    ) CircleShape else thumbnailRoundness.shape(),
+                                                    4.dp,
+                                                    8.dp
+                                                )
+                                            }
+                                            .clip(thumbnailRoundness.shape())
                                             .conditional(carousel) {
                                                 graphicsLayer {
                                                     val pageOffSet =
@@ -3382,26 +3437,6 @@ fun UnifiedPlayer(
                                                     )
                                                 }
                                             }
-                                            .conditional(thumbnailType == ThumbnailType.Modern) {
-                                                padding(
-                                                    all = 10.dp
-                                                )
-                                            }
-//                                            .conditional(
-//                                                thumbnailType == ThumbnailType.Modern
-//                                                        && coverThumbnailAnimation != ThumbnailCoverType.AudioCassette
-//                                                        && coverThumbnailAnimation != ThumbnailCoverType.AudioCassetteWithCover
-//                                            ) {
-//                                                doubleShadowDrop(
-//                                                    if (showCoverThumbnailAnimation && binder.hybridPlayer?.getMediaItemAt(
-//                                                            index
-//                                                        )?.isVideo == false
-//                                                    ) CircleShape else thumbnailRoundness.shape(),
-//                                                    4.dp,
-//                                                    8.dp
-//                                                )
-//                                            }
-                                            .clip(thumbnailRoundness.shape())
                                             .combinedClickable(
                                                 interactionSource = remember { MutableInteractionSource() },
                                                 indication = null,
@@ -3561,25 +3596,26 @@ fun UnifiedPlayer(
                                     }
 
                                     val coverPainter = rememberAsyncImagePainter(model = request)
-
+                                    val shadowShape = if (showCoverThumbnailAnimation && !mediaItem.isVideo)
+                                        CircleShape else thumbnailRoundness.shape()
                                     val coverModifier = Modifier
-                                        .graphicsLayer { alpha = contentAlpha }
 //                                        .applyIf(!it.fast4x.riplay.utils.isLandscape) {
 //                                            fillMaxSize()
 //                                        }
                                         .conditional(thumbnailType == ThumbnailType.Modern) {
                                             padding(
-                                                all = 10.dp
+                                                all = 14.dp
                                             )
                                         }
                                         .conditional(thumbnailType == ThumbnailType.Modern) {
                                             doubleShadowDrop(
-                                                if (showCoverThumbnailAnimation && !mediaItem.isVideo) CircleShape else thumbnailRoundness.shape(),
-                                                4.dp,
-                                                8.dp
+                                                shadowShape,
+                                                8.dp,
+                                                4.dp
                                             )
                                         }
-                                        .clip(thumbnailRoundness.shape())
+                                        .clip(shadowShape)
+                                        .graphicsLayer { alpha = contentAlpha }
 
                                     if (!mediaItem.isVideo)
                                         Image(
@@ -3659,7 +3695,7 @@ fun UnifiedPlayer(
                             //.padding(all = animatePadding)
                             .conditional(thumbnailType == ThumbnailType.Modern) {
                                 padding(
-                                    all = 10.dp
+                                    all = 14.dp
                                 )
                                 doubleShadowDrop(
                                     if (showCoverThumbnailAnimation && !mediaItem.isVideo) CircleShape else thumbnailRoundness.shape(),

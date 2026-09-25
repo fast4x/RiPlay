@@ -1,6 +1,7 @@
 package it.fast4x.riplay.utils
 
 import android.graphics.BlurMaskFilter
+import android.graphics.RectF
 import androidx.annotation.OptIn
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutLinearInEasing
@@ -35,13 +36,17 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.Dp
@@ -375,6 +380,70 @@ fun Modifier.horizontalfadingEdge2(fade: Float) = this
         drawRect(brush = Fade, blendMode = BlendMode.DstIn)
     }
 
+fun Modifier.doubleShadowDrop(
+    shape: Shape,
+    elevationBig: Dp = 8.dp,
+    elevationSmall: Dp = 4.dp,
+    colorBig: Color = Color.Black.copy(alpha = 0.75f),
+    colorSmall: Color = Color.Black.copy(alpha = 0.50f),
+): Modifier = drawWithCache {
+    val outline = shape.createOutline(size, layoutDirection, this)
+
+    // conversione fatta UNA volta
+    val androidPath: android.graphics.Path? = when (outline) {
+        is Outline.Rectangle -> null
+        is Outline.Rounded -> android.graphics.Path().apply {
+            val rr = outline.roundRect
+            addRoundRect(
+                RectF(rr.left, rr.top, rr.right, rr.bottom),
+                floatArrayOf(
+                    rr.topLeftCornerRadius.x, rr.topLeftCornerRadius.y,
+                    rr.topRightCornerRadius.x, rr.topRightCornerRadius.y,
+                    rr.bottomRightCornerRadius.x, rr.bottomRightCornerRadius.y,
+                    rr.bottomLeftCornerRadius.x, rr.bottomLeftCornerRadius.y
+                ),
+                android.graphics.Path.Direction.CW
+            )
+        }
+        is Outline.Generic -> outline.path.asAndroidPath()
+    }
+    val androidRect: RectF? = (outline as? Outline.Rectangle)
+        ?.let { RectF(it.rect.left, it.rect.top, it.rect.right, it.rect.bottom) }
+
+    val paint = Paint().asFrameworkPaint().apply {
+        isAntiAlias = true
+        color = android.graphics.Color.TRANSPARENT
+    }
+
+    onDrawBehind {
+        drawIntoCanvas { canvas ->
+            val native = canvas.nativeCanvas
+
+            paint.setShadowLayer(
+                elevationBig.toPx(), 0f, elevationBig.toPx() * 0.5f, colorBig.toArgb()
+            )
+            native.drawRectOrPath(androidRect, androidPath, paint)
+
+            paint.setShadowLayer(
+                elevationSmall.toPx(), 0f, elevationSmall.toPx() * 0.5f, colorSmall.toArgb()
+            )
+            native.drawRectOrPath(androidRect, androidPath, paint)
+        }
+    }
+}
+
+private fun android.graphics.Canvas.drawRectOrPath(
+    rect: RectF?,
+    path: android.graphics.Path?,
+    paint: android.graphics.Paint
+) {
+    when {
+        rect != null -> drawRect(rect, paint)
+        path != null -> drawPath(path, paint)
+    }
+}
+
+
 fun Modifier.dropShadow(
     shape: Shape,
     color: Color = Color.Black.copy(0.25f),
@@ -409,6 +478,7 @@ fun Modifier.dropShadow(
     }
 }
 
+/*
 fun Modifier.doubleShadowDrop(
     shape: Shape,
     offset: Dp = 4.dp,
@@ -416,6 +486,7 @@ fun Modifier.doubleShadowDrop(
 ) = this
     .dropShadow(shape, Color.Black.copy(0.75f), blur, offset, offset)
     .dropShadow(shape, Color.Black.copy(0.50f), blur, -offset, -offset)
+*/
 
 
 fun Modifier.pulsatingEffect(
