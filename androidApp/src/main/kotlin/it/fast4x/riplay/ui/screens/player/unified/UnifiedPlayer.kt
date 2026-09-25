@@ -2417,20 +2417,20 @@ fun UnifiedPlayer(
                                                             all = 10.dp
                                                         )
                                                     }
-                                                    .conditional(
-                                                        thumbnailType == ThumbnailType.Modern
-                                                                && coverThumbnailAnimation != ThumbnailCoverType.AudioCassette
-                                                                && coverThumbnailAnimation != ThumbnailCoverType.AudioCassetteWithCover
-                                                    ) {
-                                                        doubleShadowDrop(
-                                                            if (showCoverThumbnailAnimation && binder.hybridPlayer?.getMediaItemAt(
-                                                                    index
-                                                                )?.isVideo == false
-                                                            ) CircleShape else thumbnailRoundness.shape(),
-                                                            4.dp,
-                                                            8.dp
-                                                        )
-                                                    }
+//                                                    .conditional(
+//                                                        thumbnailType == ThumbnailType.Modern
+//                                                                && coverThumbnailAnimation != ThumbnailCoverType.AudioCassette
+//                                                                && coverThumbnailAnimation != ThumbnailCoverType.AudioCassetteWithCover
+//                                                    ) {
+//                                                        doubleShadowDrop(
+//                                                            if (showCoverThumbnailAnimation && binder.hybridPlayer?.getMediaItemAt(
+//                                                                    index
+//                                                                )?.isVideo == false
+//                                                            ) CircleShape else thumbnailRoundness.shape(),
+//                                                            4.dp,
+//                                                            8.dp
+//                                                        )
+//                                                    }
                                                     .clip(thumbnailRoundness.shape())
                                                     .combinedClickable(
                                                         interactionSource = remember { MutableInteractionSource() },
@@ -3387,20 +3387,20 @@ fun UnifiedPlayer(
                                                     all = 10.dp
                                                 )
                                             }
-                                            .conditional(
-                                                thumbnailType == ThumbnailType.Modern
-                                                        && coverThumbnailAnimation != ThumbnailCoverType.AudioCassette
-                                                        && coverThumbnailAnimation != ThumbnailCoverType.AudioCassetteWithCover
-                                            ) {
-                                                doubleShadowDrop(
-                                                    if (showCoverThumbnailAnimation && binder.hybridPlayer?.getMediaItemAt(
-                                                            index
-                                                        )?.isVideo == false
-                                                    ) CircleShape else thumbnailRoundness.shape(),
-                                                    4.dp,
-                                                    8.dp
-                                                )
-                                            }
+//                                            .conditional(
+//                                                thumbnailType == ThumbnailType.Modern
+//                                                        && coverThumbnailAnimation != ThumbnailCoverType.AudioCassette
+//                                                        && coverThumbnailAnimation != ThumbnailCoverType.AudioCassetteWithCover
+//                                            ) {
+//                                                doubleShadowDrop(
+//                                                    if (showCoverThumbnailAnimation && binder.hybridPlayer?.getMediaItemAt(
+//                                                            index
+//                                                        )?.isVideo == false
+//                                                    ) CircleShape else thumbnailRoundness.shape(),
+//                                                    4.dp,
+//                                                    8.dp
+//                                                )
+//                                            }
                                             .clip(thumbnailRoundness.shape())
                                             .combinedClickable(
                                                 interactionSource = remember { MutableInteractionSource() },
@@ -3564,9 +3564,9 @@ fun UnifiedPlayer(
 
                                     val coverModifier = Modifier
                                         .graphicsLayer { alpha = contentAlpha }
-                                        .applyIf(!it.fast4x.riplay.utils.isLandscape) {
-                                            fillMaxSize()
-                                        }
+//                                        .applyIf(!it.fast4x.riplay.utils.isLandscape) {
+//                                            fillMaxSize()
+//                                        }
                                         .conditional(thumbnailType == ThumbnailType.Modern) {
                                             padding(
                                                 all = 10.dp
