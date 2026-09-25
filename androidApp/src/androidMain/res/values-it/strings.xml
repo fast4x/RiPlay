@@ -722,7 +722,7 @@
     <string name="social_telegram">Telegram</string>
     <string name="social_telegram_info">Unisciti al gruppo su Telegram</string>
     <string name="social_github">GitHub</string>
-    <string name="update">Aggiornamento</string>
+    <string name="update">Aggiorna informazioni</string>
     <string name="update_song">Vuoi davvero ricaricare questa canzone? Il tempo di riproduzione e la cache verranno cancellati. Questa azione è irreversibile.</string>
     <string name="player_pause_listen_history_info">Non salva gli eventi di riproduzione usati per statistiche, cronologia e suggerimenti nelle scelte rapide</string>
     <string name="vertical_widget">Widget verticale</string>
@@ -1315,7 +1315,7 @@
     <string name="update_downloading">Downloading...</string>
     <string name="update_download_and_install">Download and install</string>
     <string name="update_later">Later</string>
-    <string name="update_error">Update error</string>
+    <string name="update_error">Errore nell\'aggiornamento</string>
     <string name="login_select_your_preferred_account_or_profile_and_click_here_to_confirm_access">Select your preferred account or profile and click here to confirm access</string>
     <string name="login_connect_or_disconnect_your_account">Connect or disconnect your account</string>
     <string name="login_switch_account">Switch account</string>
