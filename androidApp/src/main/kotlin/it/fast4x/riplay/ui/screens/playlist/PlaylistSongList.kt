@@ -113,8 +113,8 @@ import it.fast4x.riplay.ui.components.themed.HeaderIconButton
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
 import it.fast4x.riplay.ui.components.themed.LayoutWithAdaptiveThumbnail
-import it.fast4x.riplay.ui.components.themed.Loader
-import it.fast4x.riplay.ui.components.themed.LoaderScreen
+import it.fast4x.riplay.extensions.experimental.smoothloader.Loader
+import it.fast4x.riplay.extensions.experimental.smoothloader.LoaderScreen
 import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenu
 import it.fast4x.riplay.ui.components.themed.PlaylistsItemMenu
 import it.fast4x.riplay.ui.components.themed.SmartMessage

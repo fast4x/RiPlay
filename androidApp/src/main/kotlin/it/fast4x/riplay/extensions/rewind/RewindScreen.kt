@@ -64,7 +64,7 @@ import it.fast4x.riplay.extensions.rewind.slides.TopSongsSlide
 import it.fast4x.riplay.extensions.rewind.utils.getRewindYears
 import it.fast4x.riplay.extensions.rewind.utils.shadersList
 import it.fast4x.riplay.extensions.visualbitmap.VisualBitmapCreator
-import it.fast4x.riplay.ui.components.themed.LoaderScreen
+import it.fast4x.riplay.extensions.experimental.smoothloader.LoaderScreen
 import it.fast4x.riplay.ui.components.themed.Title
 import it.fast4x.riplay.ui.items.RewindItem
 import it.fast4x.riplay.utils.colorPalette

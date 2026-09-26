@@ -173,7 +173,6 @@ data class AppearanceSettings(
     val customThemeDark_Accent: Int                 = DefaultDarkColorPalette.accent.hashCode(),
     val playerTransitionsEnabled: Boolean           = true,
     val playerTransitionAnimation: PlayerTransitionAnimation = PlayerTransitionAnimation.Smooth,
-
     ) {
     companion object {
 

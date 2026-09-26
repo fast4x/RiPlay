@@ -91,7 +91,7 @@ import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.extensions.rewind.HomepageRewind
 import it.fast4x.riplay.ui.components.themed.ChipItemColored
 import it.fast4x.riplay.utils.isLocal
-import it.fast4x.riplay.ui.components.themed.Loader
+import it.fast4x.riplay.extensions.experimental.smoothloader.Loader
 import it.fast4x.riplay.ui.components.themed.Menu
 import it.fast4x.riplay.ui.components.themed.MenuEntry
 import it.fast4x.riplay.ui.components.themed.MoodItemColored
@@ -121,8 +121,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.sync.Mutex

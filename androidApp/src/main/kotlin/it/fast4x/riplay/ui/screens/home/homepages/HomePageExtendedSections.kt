@@ -61,7 +61,7 @@ import it.fast4x.riplay.extensions.rewind.HomepageRewind
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.GlobalSheetState
 import it.fast4x.riplay.ui.components.themed.ChipItemColored
-import it.fast4x.riplay.ui.components.themed.Loader
+import it.fast4x.riplay.extensions.experimental.smoothloader.Loader
 import it.fast4x.riplay.ui.components.themed.Menu
 import it.fast4x.riplay.ui.components.themed.MenuEntry
 import it.fast4x.riplay.ui.components.themed.MoodItemColored

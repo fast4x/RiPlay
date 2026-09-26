@@ -32,7 +32,6 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
-import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
@@ -59,7 +58,7 @@ import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
-import it.fast4x.riplay.ui.components.themed.Loader
+import it.fast4x.riplay.extensions.experimental.smoothloader.Loader
 import it.fast4x.riplay.ui.components.themed.Menu
 import it.fast4x.riplay.ui.components.themed.MenuEntry
 import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenu
@@ -85,13 +84,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.chrisbanes.haze.hazeChild
 import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.enums.PlayerType
-import it.fast4x.riplay.enums.QueueType
 import it.fast4x.riplay.extensions.musicbrainz.repository.ArtistRepository
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
-import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 
 @UnstableApi

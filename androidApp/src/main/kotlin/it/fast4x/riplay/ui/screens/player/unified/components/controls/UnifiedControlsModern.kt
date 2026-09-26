@@ -65,11 +65,11 @@ import it.fast4x.riplay.enums.PlayerControlsType
 import it.fast4x.riplay.enums.PlayerPlayButtonType
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
+import it.fast4x.riplay.extensions.experimental.smoothloader.Loader
 import it.fast4x.riplay.services.playback.common.PlaybackState
 import it.fast4x.riplay.services.playback.common.PlayerState
 import it.fast4x.riplay.ui.components.themed.CustomElevatedButton
 import it.fast4x.riplay.ui.components.themed.IconButton
-import it.fast4x.riplay.ui.components.themed.PlayerCircularLoader
 import it.fast4x.riplay.ui.components.themed.SelectorArtistsDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
@@ -198,7 +198,7 @@ fun UnifiedControlsModern(
                     enter = fadeIn(tween(300, delayMillis = 350)),
                     exit = fadeOut(tween(150))
                 ) {
-                    PlayerCircularLoader(64.dp)
+                    Loader(size = 64.dp)
                 }
             }
         }

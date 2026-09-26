@@ -1469,4 +1469,20 @@
     <string name="queue_no_results">Nessun brano corrisponde alla ricerca</string>
     <string name="queue_up_next">Prossimo brano</string>
     <string name="queue_now_playing">In riproduzione</string>
+    <string name="bg_colors_blurred_cover_mix">Blurred cover mix</string>
+    <string name="loader_style">Stile del loader</string>
+    <string name="loader_style_default">Predefinito</string>
+    <string name="loader_style_arc">Arco</string>
+    <string name="loader_style_dots">Punti</string>
+    <string name="loader_style_orbit">Orbita</string>
+    <string name="loader_style_wave">Onda</string>
+    <string name="loader_style_pulse">Pulsazione</string>
+    <string name="loader_style_blob">Gelatina</string>
+    <string name="loader_style_dash">Tratteggio</string>
+    <string name="loader_style_gooey">Fusione</string>
+    <string name="loader_style_squares">Quadrati</string>
+    <string name="loader_style_gradient">Gradiente</string>
+    <string name="loader_style_helix">Elica</string>
+    <string name="loader_style_bounce">Rimbalzo</string>
+    <string name="loader_style_polygons">Poligoni</string>
 </resources>

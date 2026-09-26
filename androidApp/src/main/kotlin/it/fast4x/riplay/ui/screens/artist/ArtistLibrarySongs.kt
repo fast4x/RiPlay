@@ -55,7 +55,7 @@ import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.forcePlayAtIndex
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
-import it.fast4x.riplay.ui.components.themed.Loader
+import it.fast4x.riplay.extensions.experimental.smoothloader.Loader
 import it.fast4x.riplay.ui.components.themed.SortMenu
 import it.fast4x.riplay.ui.components.themed.Title
 import it.fast4x.riplay.ui.components.themed.TitleSection

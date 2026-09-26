@@ -149,6 +149,7 @@ fun UiSettings(
     val isSnowEffectEnabled = appSettings.isSnowEffectEnabled
     val showListenerLevels = appSettings.showListenerLevels
     val showMiniPlayerInSettings = appSettings.showMiniPlayerInSettings
+    val loaderStyle = appSettings.loaderStyle
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -395,17 +396,7 @@ fun UiSettings(
                                 appearanceSettingsManager.updatePreset(new)
                             }
                         },
-                        valueText = {
-                            when (it) {
-                                ColorPaletteName.Default -> stringResource(R.string._default)
-                                ColorPaletteName.Dynamic -> stringResource(R.string.dynamic)
-                                ColorPaletteName.PureBlack -> stringResource(R.string.theme_pure_black)
-                                ColorPaletteName.ModernBlack -> stringResource(R.string.theme_modern_black)
-                                ColorPaletteName.MaterialYou -> stringResource(R.string.theme_material_you)
-                                ColorPaletteName.Customized -> stringResource(R.string.theme_customized)
-                                ColorPaletteName.CustomColor -> stringResource(R.string.customcolor)
-                            }
-                        }
+                        valueText = { it.displayName }
                     )
 
                 AnimatedVisibility(visible = colorPaletteName == ColorPaletteName.CustomColor) {
@@ -732,14 +723,7 @@ fun UiSettings(
                             }
                             //if (it == ColorPaletteMode.PitchBlack) colorPaletteName = ColorPaletteName.ModernBlack
                         },
-                        valueText = {
-                            when (it) {
-                                ColorPaletteMode.Dark -> stringResource(R.string.dark)
-                                ColorPaletteMode.Light -> stringResource(R.string._light)
-                                ColorPaletteMode.System -> stringResource(R.string.system)
-                                ColorPaletteMode.PitchBlack -> stringResource(R.string.theme_mode_pitch_black)
-                            }
-                        }
+                        valueText = { it.displayName }
                     )
 
                 if (search.input.isBlank() || stringResource(R.string.navigation_bar_position).contains(
@@ -759,14 +743,7 @@ fun UiSettings(
                         // As of version 0.6.53, changing navigation bar to top or bottom
                         // while using ViMusic theme breaks the UI
                         isEnabled = uiType != UiType.ViMusic,
-                        valueText = {
-                            when (it) {
-                                NavigationBarPosition.Left -> stringResource(R.string.direction_left)
-                                NavigationBarPosition.Right -> stringResource(R.string.direction_right)
-                                NavigationBarPosition.Top -> stringResource(R.string.direction_top)
-                                NavigationBarPosition.Bottom -> stringResource(R.string.direction_bottom)
-                            }
-                        }
+                        valueText = { it.displayName }
                     )
 
                 if (search.input.isBlank() || stringResource(R.string.navigation_bar_type).contains(
@@ -783,12 +760,7 @@ fun UiSettings(
                                 appSettingsManager.updateSettings(new)
                             }
                         },
-                        valueText = {
-                            when (it) {
-                                NavigationBarType.IconAndText -> stringResource(R.string.icon_and_text)
-                                NavigationBarType.IconOnly -> stringResource(R.string.only_icon)
-                            }
-                        }
+                        valueText = { it.displayName }
                     )
 
                 if (UiType.RiPlay.isCurrent()) {
@@ -807,12 +779,7 @@ fun UiSettings(
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
-                            valueText = {
-                                when (it) {
-                                    PlayerPosition.Top -> stringResource(R.string.position_top)
-                                    PlayerPosition.Bottom -> stringResource(R.string.position_bottom)
-                                }
-                            }
+                            valueText = { it.displayName }
                         )
                 }
 
@@ -833,6 +800,23 @@ fun UiSettings(
                         }
                     )
 
+                if (search.input.isBlank() || stringResource(R.string.loader_style).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    EnumValueSelectorSettingsEntry(
+                        title = stringResource(R.string.loader_style),
+                        selectedValue = loaderStyle,
+                        onValueSelected = {
+                            coroutineScope.launch {
+                                val new = appSettingsManager.activeSettings.value.copy(loaderStyle = it)
+                                appSettingsManager.updateSettings(new)
+                            }
+                        },
+                        valueText = { it.displayName }
+                    )
+
                 if (search.input.isBlank() || stringResource(R.string.menu_style).contains(
                         search.input,
                         true
@@ -847,12 +831,7 @@ fun UiSettings(
                                 appSettingsManager.updateSettings(new)
                             }
                         },
-                        valueText = {
-                            when (it) {
-                                MenuStyle.Grid -> stringResource(R.string.style_grid)
-                                MenuStyle.List -> stringResource(R.string.style_list)
-                            }
-                        }
+                        valueText = { it.displayName }
                     )
 
                 if (search.input.isBlank() || stringResource(R.string.message_type).contains(
@@ -869,12 +848,7 @@ fun UiSettings(
                                 appSettingsManager.updateSettings(new)
                             }
                         },
-                        valueText = {
-                            when (it) {
-                                MessageType.Modern -> stringResource(R.string.message_type_modern)
-                                MessageType.Essential -> stringResource(R.string.message_type_essential)
-                            }
-                        }
+                        valueText = { it.displayName }
                     )
 
                 if (search.input.isBlank() || stringResource(R.string.transition_effect).contains(
@@ -891,16 +865,7 @@ fun UiSettings(
                                 appSettingsManager.updateSettings(new)
                             }
                         },
-                        valueText = {
-                            when (it) {
-                                TransitionEffect.None -> stringResource(R.string.none)
-                                TransitionEffect.Expand -> stringResource(R.string.te_expand)
-                                TransitionEffect.Fade -> stringResource(R.string.te_fade)
-                                TransitionEffect.Scale -> stringResource(R.string.te_scale)
-                                TransitionEffect.SlideVertical -> stringResource(R.string.te_slide_vertical)
-                                TransitionEffect.SlideHorizontal -> stringResource(R.string.te_slide_horizontal)
-                            }
-                        }
+                        valueText = { it.displayName }
                     )
 
                 if (search.input.isBlank() || stringResource(R.string.snow_effect).contains(
@@ -1000,12 +965,7 @@ fun UiSettings(
                                 appSettingsManager.updateSettings(new)
                             }
                         },
-                        valueText = {
-                            when (it) {
-                                FontType.Rubik -> FontType.Rubik.name
-                                FontType.Poppins -> FontType.Poppins.name
-                            }
-                        }
+                        valueText = { it.displayName }
                     )
 
                 if (search.input.isBlank() || stringResource(R.string.use_system_font).contains(

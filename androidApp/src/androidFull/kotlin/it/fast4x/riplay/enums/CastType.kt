@@ -1,5 +1,7 @@
 package it.fast4x.riplay.enums
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import it.fast4x.riplay.R
 
 enum class CastType(val title: Int, val description: Int) {
@@ -14,5 +16,9 @@ enum class CastType(val title: Int, val description: Int) {
     NONE(
         title = R.string.none,
         description = R.string.none_info,
-    )
+    );
+
+    val displayName: String
+        @Composable
+        get() = stringResource(title)
 }

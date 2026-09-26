@@ -46,7 +46,7 @@ import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.styling.center
 import it.fast4x.riplay.ui.styling.secondary
-import it.fast4x.riplay.ui.components.themed.LoaderScreen
+import it.fast4x.riplay.extensions.experimental.smoothloader.LoaderScreen
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.LazyListContainer

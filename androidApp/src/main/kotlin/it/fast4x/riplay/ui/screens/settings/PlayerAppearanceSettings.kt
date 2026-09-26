@@ -579,12 +579,7 @@ fun PlayerAppearanceSettings(
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             },
-                            valueText = {
-                                when (it) {
-                                    PlayerType.Modern -> stringResource(R.string.pcontrols_modern)
-                                    PlayerType.Essential -> stringResource(R.string.pcontrols_essential)
-                                }
-                            },
+                            valueText = { it.displayName },
                         )
 
                     if (search.input.isBlank() || stringResource(R.string.queuetype).contains(
@@ -601,12 +596,7 @@ fun PlayerAppearanceSettings(
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             },
-                            valueText = {
-                                when (it) {
-                                    QueueType.Modern -> stringResource(R.string.pcontrols_modern)
-                                    QueueType.Essential -> stringResource(R.string.pcontrols_essential)
-                                }
-                            },
+                            valueText = { it.displayName },
                         )
 
                     if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) {
@@ -643,15 +633,7 @@ fun PlayerAppearanceSettings(
                                         appearanceSettingsManager.updatePreset(new)
                                     }
                                 },
-                                valueText = {
-                                    when (it) {
-                                        SwipeAnimationNoThumbnail.Sliding -> stringResource(R.string.te_slide_vertical)
-                                        SwipeAnimationNoThumbnail.Fade -> stringResource(R.string.te_fade)
-                                        SwipeAnimationNoThumbnail.Scale -> stringResource(R.string.te_scale)
-                                        SwipeAnimationNoThumbnail.Carousel -> stringResource(R.string.carousel)
-                                        SwipeAnimationNoThumbnail.Circle -> stringResource(R.string.vt_circular)
-                                    }
-                                },
+                                valueText = { it.displayName },
                                 modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                             )
                     }
@@ -710,15 +692,7 @@ fun PlayerAppearanceSettings(
                                                 appearanceSettingsManager.updatePreset(new)
                                             }
                                         },
-                                        valueText = {
-                                            when (it) {
-                                                CarouselSize.Small -> stringResource(R.string.small)
-                                                CarouselSize.Medium -> stringResource(R.string.medium)
-                                                CarouselSize.Big -> stringResource(R.string.big)
-                                                CarouselSize.Biggest -> stringResource(R.string.biggest)
-                                                CarouselSize.Expanded -> stringResource(R.string.expanded)
-                                            }
-                                        },
+                                        valueText = { it.displayName },
                                         modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                                     )
                             }
@@ -837,15 +811,7 @@ fun PlayerAppearanceSettings(
                                                 appearanceSettingsManager.updatePreset(new)
                                             }
                                         },
-                                        valueText = {
-                                            when (it) {
-                                                PlayerThumbnailSize.Small -> stringResource(R.string.small)
-                                                PlayerThumbnailSize.Medium -> stringResource(R.string.medium)
-                                                PlayerThumbnailSize.Big -> stringResource(R.string.big)
-                                                PlayerThumbnailSize.Biggest -> stringResource(R.string.biggest)
-                                                PlayerThumbnailSize.Expanded -> stringResource(R.string.expanded)
-                                            }
-                                        },
+                                        valueText = { it.displayName },
                                         modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                                     )
                             } else {
@@ -864,15 +830,7 @@ fun PlayerAppearanceSettings(
                                                 appearanceSettingsManager.updatePreset(new)
                                             }
                                         },
-                                        valueText = {
-                                            when (it) {
-                                                PlayerThumbnailSize.Small -> stringResource(R.string.small)
-                                                PlayerThumbnailSize.Medium -> stringResource(R.string.medium)
-                                                PlayerThumbnailSize.Big -> stringResource(R.string.big)
-                                                PlayerThumbnailSize.Biggest -> stringResource(R.string.biggest)
-                                                PlayerThumbnailSize.Expanded -> stringResource(R.string.expanded)
-                                            }
-                                        },
+                                        valueText = { it.displayName },
                                         modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                                     )
                             }
@@ -890,12 +848,7 @@ fun PlayerAppearanceSettings(
                                             appearanceSettingsManager.updatePreset(new)
                                         }
                                     },
-                                    valueText = {
-                                        when (it) {
-                                            ThumbnailType.Modern -> stringResource(R.string.pcontrols_modern)
-                                            ThumbnailType.Essential -> stringResource(R.string.pcontrols_essential)
-                                        }
-                                    },
+                                    valueText = { it.displayName },
                                     modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                                 )
 
@@ -929,14 +882,7 @@ fun PlayerAppearanceSettings(
                                                 .size(36.dp)
                                         )
                                     },
-                                    valueText = {
-                                        when (it) {
-                                            ThumbnailRoundness.None -> stringResource(R.string.none)
-                                            ThumbnailRoundness.Light -> stringResource(R.string.light)
-                                            ThumbnailRoundness.Heavy -> stringResource(R.string.heavy)
-                                            ThumbnailRoundness.Medium -> stringResource(R.string.medium)
-                                        }
-                                    },
+                                    valueText = { it.displayName },
                                     modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                                 )
                         }
@@ -996,12 +942,7 @@ fun PlayerAppearanceSettings(
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             },
-                            valueText = {
-                                when (it) {
-                                    PlayerInfoType.Modern -> stringResource(R.string.pcontrols_modern)
-                                    PlayerInfoType.Essential -> stringResource(R.string.pcontrols_essential)
-                                }
-                            },
+                            valueText = { it.displayName },
                         )
                         SettingsDescription(text = stringResource(R.string.pinfo_album_and_artist_name))
 
@@ -1047,12 +988,7 @@ fun PlayerAppearanceSettings(
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             },
-                            valueText = {
-                                when (it) {
-                                    MiniPlayerType.Modern -> stringResource(R.string.pcontrols_modern)
-                                    MiniPlayerType.Essential -> stringResource(R.string.pcontrols_essential)
-                                }
-                            },
+                            valueText = { it.displayName },
                         )
 
                     if (search.input.isBlank() || stringResource(R.string.player_swap_controls_with_timeline).contains(
@@ -1125,15 +1061,7 @@ fun PlayerAppearanceSettings(
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             },
-                            valueText = {
-                                when (it) {
-                                    PlayerTimelineSize.Small -> stringResource(R.string.small)
-                                    PlayerTimelineSize.Medium -> stringResource(R.string.medium)
-                                    PlayerTimelineSize.Big -> stringResource(R.string.big)
-                                    PlayerTimelineSize.Biggest -> stringResource(R.string.biggest)
-                                    PlayerTimelineSize.Expanded -> stringResource(R.string.expanded)
-                                }
-                            }
+                            valueText = { it.displayName }
                         )
 
                     if (search.input.isBlank() || stringResource(R.string.seek_with_tap).contains(
@@ -1167,12 +1095,7 @@ fun PlayerAppearanceSettings(
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             },
-                            valueText = {
-                                when (it) {
-                                    PlayerControlsType.Modern -> stringResource(R.string.pcontrols_modern)
-                                    PlayerControlsType.Essential -> stringResource(R.string.pcontrols_essential)
-                                }
-                            },
+                            valueText = { it.displayName },
                         )
 
 
@@ -1193,16 +1116,7 @@ fun PlayerAppearanceSettings(
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             },
-                            valueText = {
-                                when (it) {
-                                    PlayerPlayButtonType.Disabled -> stringResource(R.string.vt_disabled)
-                                    PlayerPlayButtonType.Default -> stringResource(R.string._default)
-                                    PlayerPlayButtonType.Rectangular -> stringResource(R.string.rectangular)
-                                    PlayerPlayButtonType.Square -> stringResource(R.string.square)
-                                    PlayerPlayButtonType.CircularRibbed -> stringResource(R.string.circular_ribbed)
-                                    PlayerPlayButtonType.Circle -> stringResource(R.string.circle)
-                                }
-                            },
+                            valueText = { it.displayName },
                         )
 
                     if (search.input.isBlank() || stringResource(R.string.buttonzoomout).contains(
@@ -1237,17 +1151,7 @@ fun PlayerAppearanceSettings(
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             },
-                            valueText = {
-                                when (it) {
-                                    IconLikeType.Essential -> stringResource(R.string.pcontrols_essential)
-                                    IconLikeType.Apple -> stringResource(R.string.icon_like_apple)
-                                    IconLikeType.Breaked -> stringResource(R.string.icon_like_breaked)
-                                    IconLikeType.Gift -> stringResource(R.string.icon_like_gift)
-                                    IconLikeType.Shape -> stringResource(R.string.icon_like_shape)
-                                    IconLikeType.Striped -> stringResource(R.string.icon_like_striped)
-                                    IconLikeType.Brilliant -> stringResource(R.string.icon_like_brilliant)
-                                }
-                            },
+                            valueText = { it.displayName },
                         )
 
                     /*
@@ -1293,25 +1197,7 @@ fun PlayerAppearanceSettings(
                                         appearanceSettingsManager.updatePreset(new)
                                     }
                                 },
-                                valueText = {
-                                    when (it) {
-                                        AnimatedGradient.FluidThemeColorGradient -> stringResource(R.string.bg_colors_fluid_gradient_background_from_theme)
-                                        AnimatedGradient.FluidCoverColorGradient -> stringResource(R.string.bg_colors_fluid_gradient_background_from_cover)
-                                        AnimatedGradient.Linear -> stringResource(R.string.linear)
-                                        AnimatedGradient.Mesh -> stringResource(R.string.mesh)
-                                        AnimatedGradient.MesmerizingLens -> stringResource(R.string.mesmerizinglens)
-                                        AnimatedGradient.GlossyGradients -> stringResource(R.string.glossygradient)
-                                        AnimatedGradient.GradientFlow -> stringResource(R.string.gradientflow)
-                                        AnimatedGradient.PurpleLiquid -> stringResource(R.string.purpleliquid)
-                                        AnimatedGradient.Stage -> stringResource(R.string.stage)
-                                        AnimatedGradient.InkFlow -> stringResource(R.string.inkflow)
-                                        AnimatedGradient.GoldenMagma -> stringResource(R.string.goldenmagma)
-                                        AnimatedGradient.OilFlow -> stringResource(R.string.oilflow)
-                                        AnimatedGradient.IceReflection -> stringResource(R.string.icereflection)
-                                        AnimatedGradient.BlackCherryCosmos -> stringResource(R.string.blackcherrycosmos)
-                                        AnimatedGradient.Random -> stringResource(R.string.random)
-                                    }
-                                },
+                                valueText = { it.displayName },
                                 modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient) 12.dp else 0.dp)
                             )
                     }
@@ -1600,14 +1486,7 @@ fun PlayerAppearanceSettings(
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             },
-                            valueText = {
-                                when (it) {
-                                    BackgroundProgress.Player -> stringResource(R.string.player)
-                                    BackgroundProgress.MiniPlayer -> stringResource(R.string.minimized_player)
-                                    BackgroundProgress.Both -> stringResource(R.string.both)
-                                    BackgroundProgress.Disabled -> stringResource(R.string.vt_disabled)
-                                }
-                            },
+                            valueText = { it.displayName },
                         )
 
 

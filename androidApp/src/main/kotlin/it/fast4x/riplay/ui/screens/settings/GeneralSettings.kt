@@ -330,15 +330,7 @@ fun GeneralSettings(
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
-                            valueText = {
-                                when (it) {
-                                    CheckUpdateState.Disabled -> stringResource(R.string.vt_disabled)
-                                    CheckUpdateState.Enabled -> stringResource(R.string.enabled)
-                                    CheckUpdateState.OnlyCheck -> stringResource(R.string.only_check_update)
-                                    //CheckUpdateState.Ask -> stringResource(R.string.ask)
-                                }
-
-                            }
+                            valueText = { it.displayName }
                         )
                         SettingsDescription(text = stringResource(R.string.when_enabled_a_new_version_is_checked_and_notified_during_startup))
                         AnimatedVisibility(visible = checkUpdateState != CheckUpdateState.Disabled) {
@@ -692,26 +684,7 @@ fun GeneralSettings(
                                         appSettingsManager.updateSettings(new)
                                     }
                                 },
-                                valueText = {
-                                    when (it) {
-                                        DurationInMinutes.Disabled -> stringResource(R.string.vt_disabled)
-                                        DurationInMinutes.`0` -> "0m"
-                                        DurationInMinutes.`1` -> "1m"
-                                        DurationInMinutes.`3` -> "3m"
-                                        DurationInMinutes.`5` -> "5m"
-                                        DurationInMinutes.`10` -> "10m"
-                                        DurationInMinutes.`15` -> "15m"
-                                        DurationInMinutes.`20` -> "20m"
-                                        DurationInMinutes.`25` -> "25m"
-                                        DurationInMinutes.`30` -> "30m"
-                                        DurationInMinutes.`60` -> "60m"
-                                        DurationInMinutes.`90` -> "90m"
-                                        DurationInMinutes.`120` -> "120m"
-                                        DurationInMinutes.`150` -> "150m"
-                                        DurationInMinutes.`180` -> "180m"
-
-                                    }
-                                }
+                                valueText = { it.displayName }
                             )
 
 
@@ -785,16 +758,7 @@ fun GeneralSettings(
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
-                            valueText = {
-                                when (it) {
-                                    MinTimeForEvent.`10s` -> "10s"
-                                    MinTimeForEvent.`15s` -> "15s"
-                                    MinTimeForEvent.`20s` -> "20s"
-                                    MinTimeForEvent.`30s` -> "30s"
-                                    MinTimeForEvent.`40s` -> "40s"
-                                    MinTimeForEvent.`60s` -> "60s"
-                                }
-                            }
+                            valueText = { it.displayName }
                         )
                         SettingsDescription(text = stringResource(R.string.is_min_list_time_for_tips_or_quick_pics))
                     }
@@ -813,25 +777,7 @@ fun GeneralSettings(
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
-                            valueText = {
-                                when (it) {
-                                    DurationInMinutes.Disabled -> stringResource(R.string.vt_disabled)
-                                    DurationInMinutes.`0` -> "0m"
-                                    DurationInMinutes.`1` -> "1m"
-                                    DurationInMinutes.`3` -> "3m"
-                                    DurationInMinutes.`5` -> "5m"
-                                    DurationInMinutes.`10` -> "10m"
-                                    DurationInMinutes.`15` -> "15m"
-                                    DurationInMinutes.`20` -> "20m"
-                                    DurationInMinutes.`25` -> "25m"
-                                    DurationInMinutes.`30` -> "30m"
-                                    DurationInMinutes.`60` -> "60m"
-                                    DurationInMinutes.`90` -> "90m"
-                                    DurationInMinutes.`120` -> "120m"
-                                    DurationInMinutes.`150` -> "150m"
-                                    DurationInMinutes.`180` -> "180m"
-                                }
-                            }
+                            valueText = { it.displayName }
                         )
                         SettingsDescription(text = stringResource(R.string.exclude_songs_with_duration_limit_description))
                     }
@@ -852,19 +798,7 @@ fun GeneralSettings(
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
-                            valueText = {
-                                when (it) {
-                                    PauseBetweenSongs.`0` -> "0s"
-                                    PauseBetweenSongs.`5` -> "5s"
-                                    PauseBetweenSongs.`10` -> "10s"
-                                    PauseBetweenSongs.`15` -> "15s"
-                                    PauseBetweenSongs.`20` -> "20s"
-                                    PauseBetweenSongs.`30` -> "30s"
-                                    PauseBetweenSongs.`40` -> "40s"
-                                    PauseBetweenSongs.`50` -> "50s"
-                                    PauseBetweenSongs.`60` -> "60s"
-                                }
-                            }
+                            valueText = { it.displayName }
                         )
 
 
@@ -955,19 +889,7 @@ fun GeneralSettings(
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
-                            valueText = {
-                                when (it) {
-                                    MaxSongs.Unlimited -> stringResource(R.string.unlimited)
-                                    MaxSongs.`50` -> MaxSongs.`50`.name
-                                    MaxSongs.`100` -> MaxSongs.`100`.name
-                                    MaxSongs.`200` -> MaxSongs.`200`.name
-                                    MaxSongs.`300` -> MaxSongs.`300`.name
-                                    MaxSongs.`500` -> MaxSongs.`500`.name
-                                    MaxSongs.`1000` -> MaxSongs.`1000`.name
-                                    MaxSongs.`2000` -> MaxSongs.`2000`.name
-                                    MaxSongs.`3000` -> MaxSongs.`3000`.name
-                                }
-                            }
+                            valueText = { it.displayName }
                         )
 
                     if (search.input.isBlank() || stringResource(R.string.filter_content_type).contains(
@@ -1274,11 +1196,7 @@ fun GeneralSettings(
                                         }
                                         restartActivity = true
                                     },
-                                    valueText = {
-                                        when (it) {
-                                            PipModule.Cover -> stringResource(R.string.pipmodule_cover)
-                                        }
-                                    }
+                                    valueText = { it.displayName }
                                 )
 
                                 SwitchSettingEntry(
@@ -1598,9 +1516,7 @@ fun GeneralSettings(
                                 }
                                 restartActivity = true
                             },
-                            valueText = {
-                                context.resources.getString(it.title)
-                            }
+                            valueText = { it.displayName }
                         )
                         RestartActivity(
                             restartActivity,
@@ -1827,10 +1743,7 @@ fun GeneralSettings(
                                             )
                                         }
                                     },
-                                    valueText = {
-                                        it.number?.toString()
-                                            ?: stringResource(R.string.aa_playlist_song_limit_unlimited)
-                                    }
+                                    valueText = { it.displayName }
                                 )
                             }
 

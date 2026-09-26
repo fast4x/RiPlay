@@ -63,6 +63,7 @@ import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.enums.VideoContentMode
 import it.fast4x.riplay.enums.ViewType
 import it.fast4x.riplay.enums.WallpaperType
+import it.fast4x.riplay.extensions.experimental.smoothloader.LoaderStyle
 import kotlinx.serialization.Serializable
 import java.net.Proxy
 
@@ -283,6 +284,7 @@ data class AppSettings(
     val rewindThresholdDuration: RewindThresholdDuration = RewindThresholdDuration.`3`,
 
     val videoContentMode: VideoContentMode = VideoContentMode.AudioOnly,
-    val forceUserVideoPlayback: Boolean = false
+    val forceUserVideoPlayback: Boolean = false,
+    val loaderStyle: LoaderStyle = LoaderStyle.Gradient,
 )
 

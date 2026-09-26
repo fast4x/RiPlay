@@ -889,7 +889,7 @@ class PlayerService : MediaLibraryService(),
                         if (currentSong.value?.isLocal == true) exoPlayer.currentPosition.div(1000)
                             .toInt() else _currentSecond.value.toInt()
                     if (appSettings.playbackDuration.toInt() <= seconds) {
-                        handlePlayNext("PlayerService.initializeMedleyMode")
+                        handlePlayNext("initializeMedleyMode")
                     }
                 }
             }
@@ -1061,7 +1061,7 @@ class PlayerService : MediaLibraryService(),
                 if (shakeCounter >= 1) {
                     //Toast.makeText(applicationContext, "Shaked $shakeCounter times", Toast.LENGTH_SHORT).show()
                     shakeCounter = 0
-                    handlePlayNext("PlayerService.onSensorChanged")
+                    handlePlayNext("onSensorChanged")
                 }
 
             }
@@ -1427,6 +1427,12 @@ class PlayerService : MediaLibraryService(),
                             hybridPlayer.invalidateYouTubePlayPause()
                         }
                     }
+                    PlayerConstants.PlayerState.ENDED -> {
+                        onlineNearEndTicks = 0
+                        serviceScope.launch {
+                            handleEndOfSong("onStateChange ENDED")
+                        }
+                    }
 
                     else -> {}
                 }
@@ -1526,7 +1532,7 @@ class PlayerService : MediaLibraryService(),
 //                    exoPlayer.stop()
 //                }
 
-                handlePlayNext("PlayerService.initializeOnlinePlayer.onError")
+                handlePlayNext("initializeOnlinePlayer.onError")
 
                 SmartMessage(
                     message = this@PlayerService.getString(
@@ -1700,7 +1706,7 @@ class PlayerService : MediaLibraryService(),
                         // Up = 1, Down = -1, Release = 0
                         if (direction == VOLUME_UP) {
                             if (hybridPlayer.isPlaying && useVolumeKeysToChangeSong) {
-                                handlePlayNext("PlayerService.getVolumeProvider.onAdjustVolume")
+                                handlePlayNext("getVolumeProvider.onAdjustVolume")
                             } else {
                                 audioManager.adjustStreamVolume(
                                     STREAM_TYPE,
@@ -1927,7 +1933,7 @@ class PlayerService : MediaLibraryService(),
                 // Se dovesse saltare un brano di troppo, uso il workaround diretto
                 //exoPlayer.seekToPreviousMediaItem()
 
-                handlePlayNext("PlayerService.onPositionDiscontinuity")
+                handlePlayNext("onPositionDiscontinuity")
             } else {
                 // SE IL CROSSFADE È ATTIVO:
                 // (Ci ha già pensato il monitor del crossfade a sfumare, quindi qui resettiamo solo il volume)
@@ -2039,7 +2045,7 @@ class PlayerService : MediaLibraryService(),
 
         if (lastOnlineMediaId == newMediaId) {
             Timber.d("PlayerService: onMediaItemTransition Transition ignored, same MediaID ($newMediaId) skipped")
-            handlePlayNext("PlayerService.onMediaTransition Transition ignored same id")
+            handlePlayNext("onMediaTransition Transition ignored same id")
             return
         }
 
@@ -2048,13 +2054,13 @@ class PlayerService : MediaLibraryService(),
         currentQueuePosition = exoPlayer.currentMediaItemIndex
 
         if (appSettings.parentalControlEnabled && mediaItem.isExplicit) {
-            handlePlayNext("PlayerService.onMediaItemTransition parental control enabled")
+            handlePlayNext("onMediaItemTransition parental control enabled")
             SmartMessage(resources.getString(androidx.media3.session.R.string.error_message_parental_control_restricted), context = this@PlayerService)
             return
         }
 
         if (appSettings.videoContentMode.excluded && mediaItem.isVideo) {
-            handlePlayNext("PlayerService.onMediaItemTransition excludeIfIsVideoEnabled")
+            handlePlayNext("onMediaItemTransition excludeIfIsVideoEnabled")
             SmartMessage(getString(R.string.warning_skipped_video), context = this@PlayerService)
             return
         }
@@ -2064,7 +2070,7 @@ class PlayerService : MediaLibraryService(),
             blacklisted = Database.blacklisted(mediaItem.mediaId) > 0
         }
         if (blacklisted) {
-            handlePlayNext("PlayerService.onMediaItemTransition blacklisted")
+            handlePlayNext("onMediaItemTransition blacklisted")
             SmartMessage(getString(R.string.warning_skipped_blacklisted_song), context = this@PlayerService)
             return
         }
@@ -2854,8 +2860,10 @@ class PlayerService : MediaLibraryService(),
                     }
                     // ─────────────────────────────────────────────────────────────
 
+
                     // LE LOGICHE DI FINE BRANO SCATTANO SOLO SE L'APP STA EFFETTIVAMENTE SUONANDO
-                    if (isPlaying) {
+                    // La logica di fine brano la limitiamo a EXOPLAYER perchè abbiamo mmesso la pausa tra i mediaitems per non creare doppi salti
+                    if (isPlaying && hybridPlayer.activeEngine == ActiveEngine.EXOPLAYER) {
                         // SE IL CROSSFADE È ATTIVO
                         //Timber.d("PlayerService PlaybackWatchdog: engine = ${hybridPlayer.activeEngine} isFading = $isFading isPlaying = $isPlaying isPaused = $isPaused timeleft $timeLeft duration=$duration ms, position=$position ms")
                         if (appSettings.crossfadeDuration != CrossfadeDuration.Off) {
@@ -2869,7 +2877,7 @@ class PlayerService : MediaLibraryService(),
                                 Timber.d("PlayerService PlaybackWatchdog: Attivazione Fade Out ($timeLeft ms). Prossimo locale=$isNextLocal")
                                 lastWatchdogPosition = -1L // resetto la posizione precedente durante il cambio
 
-                                handleEndOfSong("PlayerService PlaybackWatchdog with crossfade enabled")
+                                handleEndOfSong("cambio con crossfade attivo")
 
                             }
                         }
@@ -2896,11 +2904,12 @@ class PlayerService : MediaLibraryService(),
                                 }
                                 lastWatchdogPosition = -1L // resetto la posizione precedente durante il cambio
 
-                                handleEndOfSong("PlayerService PlaybackWatchdog with crossfade disabled")
+                                handleEndOfSong("cambio con crossfade disattivo")
 
                             }
                         }
                     }
+
 
                     // Aggiorniamo la posizione storica per il prossimo ciclo
                     lastWatchdogPosition = position
@@ -2913,6 +2922,7 @@ class PlayerService : MediaLibraryService(),
     }
 
     suspend fun handleEndOfSong(source: String) {
+        isFading = true // blocchiamo il watchdog per il controllo dello stallo per perdita focus
 
         lastWatchdogPosition = -1L
 
@@ -2929,7 +2939,7 @@ class PlayerService : MediaLibraryService(),
             val isNextLocal = hybridPlayer.getMediaItemAt(nextMediaItemIndex).isLocal
             if (isNextLocal) startExoToExoCrossfade() else startWebViewFadeOut()
         } else {
-            handlePlayNext("PlayerService handleEndOfSong PlaybackWatchdog chiamato da $source")
+            handlePlayNext("handleEndOfSong chiamato da $source")
         }
     }
 
@@ -3016,7 +3026,7 @@ class PlayerService : MediaLibraryService(),
             hybridPlayer.setFadeVolume(0f)
 
             Timber.d("PlayerService: Fade Out Exo completato, lancio handlePlayNext()")
-            handlePlayNext("PlayerService.startExoToExoCrossfade")
+            handlePlayNext("startExoToExoCrossfade")
         }
     }
 
@@ -3039,7 +3049,7 @@ class PlayerService : MediaLibraryService(),
             hybridPlayer.setFadeVolume(0f)
 
             Timber.d("PlayerService: Fade Out WebView completato, lancio handlePlayNext()")
-            handlePlayNext("PlayerService.startWebViewFadeOut")
+            handlePlayNext("startWebViewFadeOut")
         }
     }
 
@@ -3878,12 +3888,11 @@ class PlayerService : MediaLibraryService(),
         // Prima di cambiare brano, azzeriamo la variabile storica nel Service
         // così il Watchdog sa che la nuova traccia deve ricominciare a fare i calcoli da zero!
         lastWatchdogPosition = -1L
-        isFading = false
 
         val now = System.currentTimeMillis()
         if (now - lastPlayNextTime < debounceDelayMs) {
             Timber.d("PlayerService handlePlayNext ignored (too fast) play current")
-            //isFading = false
+            isFading = false
             hybridPlayer.play()
             return
         }
@@ -3894,7 +3903,7 @@ class PlayerService : MediaLibraryService(),
 
         // Resettiamo lo stato di fade prima di lanciare la nuova canzone,
         // così onMediaItemTransition e startFadeIn()
-        //isFading = false
+        isFading = false
 
         this@PlayerService.serviceScope.launch {
             withContext(Dispatchers.Main) {

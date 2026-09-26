@@ -8,6 +8,16 @@ enum class MinTimeForEvent {
     `40s`,
     `60s`;
 
+    val displayName: String
+        get() = when (this) {
+            MinTimeForEvent.`10s` -> "10s"
+            MinTimeForEvent.`15s` -> "15s"
+            MinTimeForEvent.`20s` -> "20s"
+            MinTimeForEvent.`30s` -> "30s"
+            MinTimeForEvent.`40s` -> "40s"
+            MinTimeForEvent.`60s` -> "60s"
+        }
+
     val ms: Long
         get() = when (this) {
             `10s` -> 10

@@ -58,6 +58,27 @@ enum class DurationInMinutes(val minutes: Int) {
     `150`(150),
     `180`(180);
 
+    val displayName: String
+        @Composable
+        get() = when (this) {
+            DurationInMinutes.Disabled -> stringResource(R.string.vt_disabled)
+            DurationInMinutes.`0` -> "0m"
+            DurationInMinutes.`1` -> "1m"
+            DurationInMinutes.`3` -> "3m"
+            DurationInMinutes.`5` -> "5m"
+            DurationInMinutes.`10` -> "10m"
+            DurationInMinutes.`15` -> "15m"
+            DurationInMinutes.`20` -> "20m"
+            DurationInMinutes.`25` -> "25m"
+            DurationInMinutes.`30` -> "30m"
+            DurationInMinutes.`60` -> "60m"
+            DurationInMinutes.`90` -> "90m"
+            DurationInMinutes.`120` -> "120m"
+            DurationInMinutes.`150` -> "150m"
+            DurationInMinutes.`180` -> "180m"
+
+        }
+
     val milliSeconds: Long
         get() = if (minutes == -1) -1L else minutes * 60000L
 }

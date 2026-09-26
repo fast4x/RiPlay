@@ -118,8 +118,8 @@ import kotlinx.coroutines.withContext
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.extensions.fastshare.FastShare
 import it.fast4x.riplay.data.models.defaultQueue
-import it.fast4x.riplay.ui.components.themed.Loader
-import it.fast4x.riplay.ui.components.themed.LoaderScreen
+import it.fast4x.riplay.extensions.experimental.smoothloader.Loader
+import it.fast4x.riplay.extensions.experimental.smoothloader.LoaderScreen
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.utils.LazyListContainer

@@ -4,10 +4,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.fadeIn
@@ -80,11 +78,10 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
 import it.fast4x.riplay.enums.PlayerTransitionAnimation
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
-import it.fast4x.riplay.services.playback.common.PlaybackState
+import it.fast4x.riplay.extensions.experimental.smoothloader.Loader
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
-import it.fast4x.riplay.ui.components.themed.PlayerCircularLoader
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
@@ -93,7 +90,6 @@ import it.fast4x.riplay.ui.styling.favoritesOverlay
 import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.GlobalSharedData
-import it.fast4x.riplay.utils.PLAYER_ARTWORK_KEY
 import it.fast4x.riplay.utils.addToOnlineLikedSong
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.applyIf
@@ -102,7 +98,6 @@ import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.intent
 import it.fast4x.riplay.utils.isExplicit
-import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.mediaItemToggleLike
 import it.fast4x.riplay.utils.playNext
 import it.fast4x.riplay.utils.playPrevious
@@ -116,7 +111,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
-import timber.log.Timber
 import kotlin.math.absoluteValue
 
 @UnstableApi
@@ -510,7 +504,7 @@ fun UnifiedMiniPlayer(
                     enter = fadeIn(tween(300, delayMillis = 350)),
                     exit = fadeOut(tween(150))
                 ) {
-                    PlayerCircularLoader(42.dp)
+                    Loader(size = 42.dp, expandWidth = false)
                 }
 
                 if (miniPlayerType == MiniPlayerType.Essential)

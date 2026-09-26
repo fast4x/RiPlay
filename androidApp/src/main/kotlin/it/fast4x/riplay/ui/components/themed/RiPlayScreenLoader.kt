@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 import it.fast4x.riplay.R
+import it.fast4x.riplay.extensions.experimental.smoothloader.Loader
 
 @Composable
 fun RiPlayScreenLoader(

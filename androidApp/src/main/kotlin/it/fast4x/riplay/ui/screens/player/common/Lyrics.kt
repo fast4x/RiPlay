@@ -160,7 +160,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.services.playback.PlayerService
-import it.fast4x.riplay.ui.components.themed.Loader
+import it.fast4x.riplay.extensions.experimental.smoothloader.Loader
 import it.fast4x.riplay.utils.CustomHttpClient
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.getRoundnessShape

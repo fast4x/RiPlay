@@ -990,7 +990,7 @@
     <string name="mll_leveldesc_music_has_become_the_backbone_of_your_days_every_moment_has_its_own_song">La música se ha convertido en la columna vertebral de tus días. Cada momento tiene su propia canción.</string>
     <string name="mll_leveldesc_your_headphones_are_almost_an_extension_of_you_you_re_always_tuned_into_the_right_frequency">Tus auriculares son casi una extensión de ti. Siempre sintonizado con la frecuencia correcta.</string>
     <string name="mll_leveldesc_you_don_t_just_listen_to_music_you_control_it_you_are_the_master_of_this_month_s_atmosphere">No solo escuchas música; la controlas. Eres el maestro de la atmósfera de este mes.</string>
-    <string name="mll_leveldesc_your_listening_level_is_legendary_your_listening_level_is_legendary_you_re_a_sonic_reference_point_for_everyone_around_you">Tu nivel de escucha es legendario. Eres un punto de referencia sónico para todos los que te rodean.</string>
+    <string name="mll_leveldesc_your_listening_level_is_legendary_you_re_a_sonic_reference_point_for_everyone_around_you">Your listening level is legendary. You\'re a sonic reference point for everyone around you.</string>
     <string name="ll_to_next_level">Al siguiente nivel</string>
     <string name="mll_your_monthly_level">Tu Nivel Mensual</string>
     <string name="ll_your_annual_level">Tu Nivel Anual</string>
@@ -1469,4 +1469,20 @@
     <string name="queue_no_results">Ninguna canción coincide con tu búsqueda</string>
     <string name="queue_up_next">A continuación</string>
     <string name="queue_now_playing">Reproduciendo</string>
+    <string name="bg_colors_blurred_cover_mix">Blurred cover mix</string>
+    <string name="loader_style">Loader style</string>
+    <string name="loader_style_default">Default</string>
+    <string name="loader_style_arc">Arc</string>
+    <string name="loader_style_dots">Dots</string>
+    <string name="loader_style_orbit">Orbit</string>
+    <string name="loader_style_wave">Wave</string>
+    <string name="loader_style_pulse">Pulse</string>
+    <string name="loader_style_blob">Blob</string>
+    <string name="loader_style_dash">Dash</string>
+    <string name="loader_style_gooey">Gooey</string>
+    <string name="loader_style_squares">Squares</string>
+    <string name="loader_style_gradient">Gradient</string>
+    <string name="loader_style_helix">Helix</string>
+    <string name="loader_style_bounce">Bounce</string>
+    <string name="loader_style_polygons">Polygons</string>
 </resources>
