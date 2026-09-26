@@ -211,8 +211,8 @@ jobs:
             echo "## 📱 RiPlay ${CURRENT_TAG} - Released ${RELEASE_DATE}"
             echo ""
             echo "### 📋 What's Changed"
-            # 🔧 FIX: niente ${{ }} — il changelog viene letto da file,
-            # così bash non interpreta virgolette/backtick/parentesi nei commit
+            # Il changelog viene letto da file: bash non interpreta
+            # virgolette, backtick o parentesi nei messaggi di commit
             cat /tmp/changelog.txt
             echo ""
             echo "### 📦 Downloads"
