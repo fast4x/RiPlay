@@ -31,9 +31,10 @@ jobs:
 
       - name: Validate version format and check if tag exists
         if: github.event_name == 'workflow_dispatch'
+        env:
+          # 🔧 FIX: input passato via env, non iniettato nello script
+          VERSION: ${{ github.event.inputs.version }}
         run: |
-          VERSION="${{ github.event.inputs.version }}"
-
           if [[ ! $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "❌ Invalid version format! Use v1.0.0"
             exit 1
@@ -48,10 +49,12 @@ jobs:
 
       - name: Resolve version output
         id: resolve
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
         run: |
-          CURRENT_TAG="${{ github.event.inputs.version }}"
+          CURRENT_TAG="$INPUT_VERSION"
           if [ -z "$CURRENT_TAG" ]; then
-            CURRENT_TAG="${{ github.ref_name }}"
+            CURRENT_TAG="${GITHUB_REF_NAME}"
           fi
           echo "version=$CURRENT_TAG" >> "$GITHUB_OUTPUT"
 
@@ -102,9 +105,9 @@ jobs:
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
-          mkdir -p ${{ runner.temp }}/keystore
-          echo "$KEYSTORE_BASE64" | base64 -d > ${{ runner.temp }}/keystore/RiPlayKeystore.jks
-          chmod 600 ${{ runner.temp }}/keystore/RiPlayKeystore.jks
+          mkdir -p "${RUNNER_TEMP}/keystore"
+          echo "$KEYSTORE_BASE64" | base64 -d > "${RUNNER_TEMP}/keystore/RiPlayKeystore.jks"
+          chmod 600 "${RUNNER_TEMP}/keystore/RiPlayKeystore.jks"
 
       - name: Build Release APK - ${{ matrix.flavor }} flavor
         env:
@@ -119,7 +122,7 @@ jobs:
       - name: Clean up sensitive files
         if: always()
         run: |
-          rm -rf ${{ runner.temp }}/keystore
+          rm -rf "${RUNNER_TEMP}/keystore"
           echo "✅ Keystore removed from temporary directory"
 
       - name: Collect APK for this flavor
@@ -155,11 +158,11 @@ jobs:
         run: ls -lah release-apks/
 
       - name: Package desktop distribution as 7z
+        env:
+          CURRENT_TAG: ${{ needs.validate.outputs.version }}
         run: |
           echo "📦 Installing 7zip..."
           sudo apt-get install -y p7zip-full
-
-          CURRENT_TAG="${{ needs.validate.outputs.version }}"
 
           AVD_ARCHIVE="RiPlay-desktop-AVD-${CURRENT_TAG}.7z"
           WSA_ARCHIVE="RiPlay-desktop-WSA-${CURRENT_TAG}.7z"
@@ -178,31 +181,29 @@ jobs:
           ls -lah release-apks/
 
       - name: Generate Changelog
-        id: changelog
+        env:
+          CURRENT_TAG: ${{ needs.validate.outputs.version }}
         run: |
-          CURRENT_TAG="${{ needs.validate.outputs.version }}"
-
           PREVIOUS_TAG=$(git tag --sort=-version:refname --list "v*" --merged HEAD | grep -v "^${CURRENT_TAG}$" | head -1)
 
           if [ -z "$PREVIOUS_TAG" ]; then
             echo "⚠️  No previous tag found - showing all commits"
-            git log --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))" --reverse | grep -v "Update stats and chart \[skip ci\]" | head -20 > /tmp/changelog.txt
+            # 🔧 FIX: GITHUB_REPOSITORY è una env di default; || true evita fallimento
+            # se grep filtra tutte le righe
+            git log --pretty=format:"- %s ([%h](https://github.com/${GITHUB_REPOSITORY}/commit/%H))" --reverse \
+              | grep -v "Update stats and chart \[skip ci\]" | head -20 > /tmp/changelog.txt || true
           else
             echo "📋 Changes between $PREVIOUS_TAG and $CURRENT_TAG"
-            git log ${PREVIOUS_TAG}..HEAD --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))" | grep -v "Update stats and chart \[skip ci\]" > /tmp/changelog.txt
+            git log "${PREVIOUS_TAG}..HEAD" --pretty=format:"- %s ([%h](https://github.com/${GITHUB_REPOSITORY}/commit/%H))" \
+              | grep -v "Update stats and chart \[skip ci\]" > /tmp/changelog.txt || true
           fi
 
           echo "" >> /tmp/changelog.txt
 
-          DELIMITER="EOF_CHANGEOLOG_Z_$(date +%s)"
-          echo "changelog<<$DELIMITER" >> $GITHUB_OUTPUT
-          cat /tmp/changelog.txt >> $GITHUB_OUTPUT
-          echo "$DELIMITER" >> $GITHUB_OUTPUT
-
       - name: Create Release Notes
-        id: release_notes
+        env:
+          CURRENT_TAG: ${{ needs.validate.outputs.version }}
         run: |
-          CURRENT_TAG="${{ needs.validate.outputs.version }}"
           RELEASE_DATE=$(date +'%Y-%m-%d')
           COMMIT_HASH=$(git rev-parse --short HEAD)
 
@@ -210,7 +211,9 @@ jobs:
             echo "## 📱 RiPlay ${CURRENT_TAG} - Released ${RELEASE_DATE}"
             echo ""
             echo "### 📋 What's Changed"
-            echo "${{ steps.changelog.outputs.changelog }}"
+            # 🔧 FIX: niente ${{ }} — il changelog viene letto da file,
+            # così bash non interpreta virgolette/backtick/parentesi nei commit
+            cat /tmp/changelog.txt
             echo ""
             echo "### 📦 Downloads"
             echo "- **Full Flavor** (All features)"
@@ -227,16 +230,11 @@ jobs:
             echo "**Thank you for using RiPlay!** 🎵"
           } > /tmp/release_notes.md
 
-          DELIMITER="EOF_NOTES_Z_$(date +%s)"
-          echo "release_notes<<$DELIMITER" >> $GITHUB_OUTPUT
-          cat /tmp/release_notes.md >> $GITHUB_OUTPUT
-          echo "$DELIMITER" >> $GITHUB_OUTPUT
-
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: release-apks/*
-          body: ${{ steps.release_notes.outputs.release_notes }}
+          body_path: /tmp/release_notes.md
           draft: false
           prerelease: false
           tag_name: ${{ needs.validate.outputs.version }}
