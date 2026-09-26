@@ -1516,7 +1516,7 @@ fun GeneralSettings(
                                 }
                                 restartActivity = true
                             },
-                            valueText = { it.displayName }
+                            valueText = { stringResource(it.title) }
                         )
                         RestartActivity(
                             restartActivity,
