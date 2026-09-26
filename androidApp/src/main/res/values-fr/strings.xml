@@ -966,7 +966,7 @@ Volume BAS : titre précédent</string>
     <string name="music_identifier_provider">Fournisseur d\'identifiants musicaux</string>
     <string name="music_identify">Identifier</string>
     <string name="listener_levels">Niveaux d\'écoute</string>
-    <string name="rewinds">Retour en arrière</string>
+    <string name="rewinds">Rétrospectives</string>
     <string name="rw_watch_your_rewind">Revivez votre écoute musicale</string>
     <string name="all_levelname_sonic_whisper">Murmure Sonique</string>
     <string name="all_levelname_the_sound_explorer">L\'Explorateur Sonore</string>
@@ -997,8 +997,8 @@ Volume BAS : titre précédent</string>
     <string name="ll_your_annual_level">Votre Niveau Annuel</string>
     <string name="ll_your_monthly_level">Votre Niveau Mensuel</string>
     <string name="ll_listener_level_charts">Analyse du Niveau d\'Écoute</string>
-    <string name="rw_riplay_rewind">Riplay Rewind</string>
-    <string name="rw_rewind">Retour en Arrière</string>
+    <string name="rw_riplay_rewind">Rétrospective Riplay</string>
+    <string name="rw_rewind">Rétrospectives</string>
     <string name="rw_top_songs">Meilleurs Titres %1$d</string>
     <string name="rw_top_albums">Meilleurs Albums %1$d</string>
     <string name="rw_top_artists">Meilleurs Artistes %1$d</string>
