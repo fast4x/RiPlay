@@ -565,13 +565,13 @@ fun ArtistOverview(
                                         }
 
 
-                                        binder?.notifyAutoChildrenChanged(
+                                        binder?.notifyAndroidAutoChildrenChanged(
                                             MediaLibraryServiceCallback.MediaId.ARTISTS_IN_LIBRARY
                                         )
-                                        binder?.notifyAutoChildrenChanged(
+                                        binder?.notifyAndroidAutoChildrenChanged(
                                             MediaLibraryServiceCallback.MediaId.ARTISTS_ONDEVICE
                                         )
-                                        binder?.notifyAutoChildrenChanged(
+                                        binder?.notifyAndroidAutoChildrenChanged(
                                             MediaLibraryServiceCallback.MediaId.ARTISTS_FAVORITES
                                         )
 

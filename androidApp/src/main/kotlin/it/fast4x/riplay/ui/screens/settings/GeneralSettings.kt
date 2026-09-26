@@ -33,20 +33,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.os.LocaleListCompat
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.DurationInMinutes
-import it.fast4x.riplay.enums.MinTimeForEvent
-import it.fast4x.riplay.enums.MaxSongs
 import it.fast4x.riplay.enums.NavigationBarPosition
-import it.fast4x.riplay.enums.PauseBetweenSongs
-import it.fast4x.riplay.enums.PipModule
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.styling.Dimensions
@@ -69,7 +63,6 @@ import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.Countries
 import it.fast4x.riplay.enums.EqualizerType
-import it.fast4x.riplay.enums.RewindThresholdDuration
 import it.fast4x.riplay.extensions.updater.UpdateDialog
 import it.fast4x.riplay.services.helpers.AudioDRCHelper
 import it.fast4x.riplay.services.playback.MediaLibraryServiceCallback
@@ -80,6 +73,7 @@ import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.utils.CheckForNewVersion
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.isIgnoringBatteryOptimizations
+import it.fast4x.riplay.utils.restartApp
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
@@ -1673,6 +1667,9 @@ fun GeneralSettings(
                                 coroutineScope.launch {
                                     val new = appSettingsManager.activeSettings.value.copy(isAndroidAutoEnabled = it)
                                     appSettingsManager.updateSettings(new)
+
+                                    //binder?.notifyAndroidAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.ROOT)
+                                    restartApp(context)
                                 }
                             }
                         )
@@ -1697,16 +1694,16 @@ fun GeneralSettings(
                                             val new = appSettingsManager.activeSettings.value.copy(showGridAA = it)
                                             appSettingsManager.updateSettings(new)
                                             binder?.let { service ->
-                                                service.notifyAutoChildrenChanged(
+                                                service.notifyAndroidAutoChildrenChanged(
                                                     MediaLibraryServiceCallback.MediaId.SONGS
                                                 )
-                                                service.notifyAutoChildrenChanged(
+                                                service.notifyAndroidAutoChildrenChanged(
                                                     MediaLibraryServiceCallback.MediaId.ARTISTS_FAVORITES
                                                 )
-                                                service.notifyAutoChildrenChanged(
+                                                service.notifyAndroidAutoChildrenChanged(
                                                     MediaLibraryServiceCallback.MediaId.ALBUMS_FAVORITES
                                                 )
-                                                service.notifyAutoChildrenChanged(
+                                                service.notifyAndroidAutoChildrenChanged(
                                                     MediaLibraryServiceCallback.MediaId.PLAYLISTS
                                                 )
                                             }
@@ -1729,16 +1726,16 @@ fun GeneralSettings(
                                             appSettingsManager.updateSettings(new)
                                         }
                                         binder?.let { service ->
-                                            service.notifyAutoChildrenChanged(
+                                            service.notifyAndroidAutoChildrenChanged(
                                                 MediaLibraryServiceCallback.MediaId.SONGS
                                             )
-                                            service.notifyAutoChildrenChanged(
+                                            service.notifyAndroidAutoChildrenChanged(
                                                 MediaLibraryServiceCallback.MediaId.ARTISTS_FAVORITES
                                             )
-                                            service.notifyAutoChildrenChanged(
+                                            service.notifyAndroidAutoChildrenChanged(
                                                 MediaLibraryServiceCallback.MediaId.ALBUMS_FAVORITES
                                             )
-                                            service.notifyAutoChildrenChanged(
+                                            service.notifyAndroidAutoChildrenChanged(
                                                 MediaLibraryServiceCallback.MediaId.PLAYLISTS
                                             )
                                         }
@@ -1760,7 +1757,7 @@ fun GeneralSettings(
                                         coroutineScope.launch {
                                             val new = appSettingsManager.activeSettings.value.copy(showMonthlyPlaylistAA = it)
                                             appSettingsManager.updateSettings(new)
-                                            binder?.notifyAutoChildrenChanged(
+                                            binder?.notifyAndroidAutoChildrenChanged(
                                                 MediaLibraryServiceCallback.MediaId.PLAYLISTS
                                             )
                                         }
@@ -1780,7 +1777,7 @@ fun GeneralSettings(
                                         coroutineScope.launch {
                                             val new = appSettingsManager.activeSettings.value.copy(showPodcastAA = it)
                                             appSettingsManager.updateSettings(new)
-                                            binder?.notifyAutoChildrenChanged(
+                                            binder?.notifyAndroidAutoChildrenChanged(
                                                 MediaLibraryServiceCallback.MediaId.PLAYLISTS
                                             )
                                         }
@@ -1800,7 +1797,7 @@ fun GeneralSettings(
                                         coroutineScope.launch {
                                             val new = appSettingsManager.activeSettings.value.copy(showPinnedAA = it)
                                             appSettingsManager.updateSettings(new)
-                                            binder?.notifyAutoChildrenChanged(
+                                            binder?.notifyAndroidAutoChildrenChanged(
                                                 MediaLibraryServiceCallback.MediaId.PLAYLISTS
                                             )
                                         }
@@ -1821,16 +1818,16 @@ fun GeneralSettings(
                                             val new = appSettingsManager.activeSettings.value.copy(showInLibraryAA = it)
                                             appSettingsManager.updateSettings(new)
                                             binder?.let { service ->
-                                                service.notifyAutoChildrenChanged(
+                                                service.notifyAndroidAutoChildrenChanged(
                                                     MediaLibraryServiceCallback.MediaId.SONGS
                                                 )
-                                                service.notifyAutoChildrenChanged(
+                                                service.notifyAndroidAutoChildrenChanged(
                                                     MediaLibraryServiceCallback.MediaId.ARTISTS_FAVORITES
                                                 )
-                                                service.notifyAutoChildrenChanged(
+                                                service.notifyAndroidAutoChildrenChanged(
                                                     MediaLibraryServiceCallback.MediaId.ALBUMS_FAVORITES
                                                 )
-                                                service.notifyAutoChildrenChanged(
+                                                service.notifyAndroidAutoChildrenChanged(
                                                     MediaLibraryServiceCallback.MediaId.PLAYLISTS
                                                 )
                                             }
@@ -1852,16 +1849,16 @@ fun GeneralSettings(
                                             val new = appSettingsManager.activeSettings.value.copy(showOnDeviceAA = it)
                                             appSettingsManager.updateSettings(new)
                                             binder?.let { service ->
-                                                service.notifyAutoChildrenChanged(
+                                                service.notifyAndroidAutoChildrenChanged(
                                                     MediaLibraryServiceCallback.MediaId.SONGS
                                                 )
-                                                service.notifyAutoChildrenChanged(
+                                                service.notifyAndroidAutoChildrenChanged(
                                                     MediaLibraryServiceCallback.MediaId.ARTISTS_FAVORITES
                                                 )
-                                                service.notifyAutoChildrenChanged(
+                                                service.notifyAndroidAutoChildrenChanged(
                                                     MediaLibraryServiceCallback.MediaId.ALBUMS_FAVORITES
                                                 )
-                                                service.notifyAutoChildrenChanged(
+                                                service.notifyAndroidAutoChildrenChanged(
                                                     MediaLibraryServiceCallback.MediaId.PLAYLISTS
                                                 )
                                             }
@@ -1882,7 +1879,7 @@ fun GeneralSettings(
                                         coroutineScope.launch {
                                             val new = appSettingsManager.activeSettings.value.copy(showTopSongsAA = it)
                                             appSettingsManager.updateSettings(new)
-                                            binder?.notifyAutoChildrenChanged(
+                                            binder?.notifyAndroidAutoChildrenChanged(
                                                 MediaLibraryServiceCallback.MediaId.SONGS
                                             )
                                         }
@@ -1902,7 +1899,7 @@ fun GeneralSettings(
                                         coroutineScope.launch {
                                             val new = appSettingsManager.activeSettings.value.copy(showAllSongsAA = it)
                                             appSettingsManager.updateSettings(new)
-                                            binder?.notifyAutoChildrenChanged(
+                                            binder?.notifyAndroidAutoChildrenChanged(
                                                 MediaLibraryServiceCallback.MediaId.SONGS
                                             )
                                         }
@@ -1922,7 +1919,7 @@ fun GeneralSettings(
                                         coroutineScope.launch {
                                             val new = appSettingsManager.activeSettings.value.copy(showShuffleSongsAA = it)
                                             appSettingsManager.updateSettings(new)
-                                            binder?.notifyAutoChildrenChanged(
+                                            binder?.notifyAndroidAutoChildrenChanged(
                                                 MediaLibraryServiceCallback.MediaId.SONGS
                                             )
                                         }

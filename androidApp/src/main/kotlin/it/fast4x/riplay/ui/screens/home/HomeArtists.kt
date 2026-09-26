@@ -152,9 +152,9 @@ fun HomeArtists(
     // Configurazione Shuffle
     val shuffle = SongsShuffle.init {
         when (artistType) {
-            ArtistsType.Favorites -> Database.songsInAllFollowedArtistsFiltered(itemsOnDisplay.map { it.id }).map { it.map(Song::asMediaItem) }
-            ArtistsType.Library -> Database.songsInLibraryArtistsFiltered(itemsOnDisplay.map { it.id }).map { it.map(Song::asMediaItem) }
-            ArtistsType.OnDevice -> Database.songsOnDeviceArtistsFiltered(itemsOnDisplay.map { it.id }).map { it.map(Song::asMediaItem) }
+            ArtistsType.Favorites -> Database.songsByBookmarkedArtists().map { it.map(Song::asMediaItem) }
+            ArtistsType.Library -> Database.songsByLibraryArtists().map { it.map(Song::asMediaItem) }
+            ArtistsType.OnDevice -> Database.songsByOnDeviceArtists().map { it.map(Song::asMediaItem) }
             ArtistsType.All -> Database.songsByArtistAsc().map { it.map { song -> song.asMediaItem } }
         }
     }

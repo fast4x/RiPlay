@@ -4,8 +4,6 @@ import android.content.ContentResolver
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.KeyEvent
 import androidx.annotation.DrawableRes
 import androidx.compose.ui.util.fastFilter
@@ -61,7 +59,6 @@ import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.getTitleMonthlyPlaylist
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.seamlessQueue
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -177,10 +174,6 @@ class MediaLibraryServiceCallback(
         params: MediaLibraryService.LibraryParams?
     ): ListenableFuture<LibraryResult<MediaItem>> {
 
-        if (!playerService.appSettings.isAndroidAutoEnabled) {
-            return Futures.immediateFuture(LibraryResult.ofItem(MediaItem.EMPTY, params))
-        }
-
         if (browser.packageName in androidAutoPackages) {
             GlobalSharedData.androidAutoConnected.value = true
             Timber.d("PlayerService: Android Auto connected (${browser.packageName})")
@@ -201,7 +194,7 @@ class MediaLibraryServiceCallback(
             .build()
 
         val rootItem = MediaItem.Builder()
-            .setMediaId(MediaId.ROOT)
+            .setMediaId(if (!playerService.appSettings.isAndroidAutoEnabled) MediaId.DISABLED else MediaId.ROOT)
             .setMediaMetadata(
                 MediaMetadata.Builder()
                     .setTitle("Riplay")
@@ -236,8 +229,8 @@ class MediaLibraryServiceCallback(
 
                 val resultList: MutableList<MediaItem> = when (data.firstOrNull()) {
 
-                    MediaId.FAULT -> listOf(
-                        faultBrowserMediaItem
+                    MediaId.DISABLED -> listOf(
+                        disabledBrowserMediaItem
                     )
 
                     MediaId.ROOT -> listOf(
@@ -1015,14 +1008,15 @@ class MediaLibraryServiceCallback(
         .appendPath(playerService.resources.getResourceEntryName(id))
         .build()
 
-    private val faultBrowserMediaItem: MediaItem
+    private val disabledBrowserMediaItem: MediaItem
         get() = MediaItem.Builder()
-            .setMediaId(MediaId.FAULT)
+            .setMediaId(MediaId.DISABLED)
             .setMediaMetadata(
                 MediaMetadata.Builder()
-                    .setTitle("Fault")
-                    .setArtworkUri(uriFor(R.drawable.close))
-                    .setIsBrowsable(true)
+                    .setTitle(playerService.resources.getString(R.string.riplay_app_name))
+                    .setSubtitle(playerService.resources.getString(R.string.android_auto_is_disabled))
+                    .setArtworkUri(uriFor(R.drawable.ic_android_auto))
+                    .setIsBrowsable(false)
                     .setIsPlayable(false)
                     .build()
             )
@@ -1482,7 +1476,7 @@ class MediaLibraryServiceCallback(
     // OBJECTS WITH CONSTANTS
 
     object MediaId {
-        const val FAULT = "fault"
+        const val DISABLED = "fault"
         const val ROOT = "root"
         const val SONGS = "songs"
         const val PLAYLISTS = "playlists"

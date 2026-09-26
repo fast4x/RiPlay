@@ -166,11 +166,13 @@ fun HomeAlbums(
         override fun onClick(index: Int) = onAlbumClick(itemsOnDisplay[index])
     }
 
+    val albumType = appSettings.albumType
+
     val shuffle = SongsShuffle.init {
         Database.songsInAllBookmarkedAlbums().map { it.map(Song::asMediaItem) }
     }
 
-    val albumType = appSettings.albumType
+
     val isNetworkConnected = rememberIsNetworkConnected()
 
     val buttonsList = AlbumsType.entries.map { it to it.textName }.filter {

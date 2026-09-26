@@ -40,10 +40,8 @@ import androidx.annotation.OptIn
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -734,7 +732,7 @@ class PlayerService : MediaLibraryService(),
         settingsObserverJob = this@PlayerService.serviceScope.launch {
             appSettingsManager.activeSettings      
                 .collect { settings -> 
-                    Timber.d("PlayerService: impostazioni cambiate $settings")
+                    //Timber.d("PlayerService: impostazioni cambiate $settings")
 
                     when {
                         (settings.songSortOrder != songSortOrder) -> {
@@ -1263,7 +1261,7 @@ class PlayerService : MediaLibraryService(),
 
 
                 Timber.d("PlayerService onlinePlayer onReady localmediaItem ${currentSong.value?.id} queue index ${hybridPlayer.currentMediaItemIndex}")
-                Timber.d("PlayerService onlinePlayer onReady isPersistentQueueEnabled $appSettings.persistentQueue isResumePlaybackOnStart ${appSettings.resumePlaybackOnStart}")
+                //Timber.d("PlayerService onlinePlayer onReady isPersistentQueueEnabled $appSettings.persistentQueue isResumePlaybackOnStart ${appSettings.resumePlaybackOnStart}")
 
                 youTubePlayer.setVolume(getSystemMediaVolume())
 
@@ -1429,7 +1427,7 @@ class PlayerService : MediaLibraryService(),
                     }
                     PlayerConstants.PlayerState.ENDED -> {
                         onlineNearEndTicks = 0
-                        serviceScope.launch {
+                        serviceScope.launch(Dispatchers.Main) {
                             handleEndOfSong("onStateChange ENDED")
                         }
                     }
@@ -3860,7 +3858,7 @@ class PlayerService : MediaLibraryService(),
             _currentDiscoveryReason.value = null
         }
 
-        fun notifyAutoChildrenChanged(parentId: String) = this@PlayerService.notifyAutoChildrenChanged(parentId)
+        fun notifyAndroidAutoChildrenChanged(parentId: String) = this@PlayerService.notifyAutoChildrenChanged(parentId)
 
     }
 

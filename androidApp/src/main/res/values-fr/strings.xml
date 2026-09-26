@@ -1486,4 +1486,6 @@ Volume BAS : titre précédent</string>
     <string name="loader_style_helix">Helix</string>
     <string name="loader_style_bounce">Bounce</string>
     <string name="loader_style_polygons">Polygons</string>
+    <string name="android_auto_is_disabled">AA is disabled</string>
+    <string name="riplay_app_name">RiPlay</string>
 </resources>

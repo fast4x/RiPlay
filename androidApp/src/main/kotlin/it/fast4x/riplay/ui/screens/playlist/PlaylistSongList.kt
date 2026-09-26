@@ -329,22 +329,22 @@ fun PlaylistSongList(
                         }
                     }
 
-                    binder?.notifyAutoChildrenChanged(
+                    binder?.notifyAndroidAutoChildrenChanged(
                         MediaLibraryServiceCallback.MediaId.PLAYLISTS
                     )
-                    binder?.notifyAutoChildrenChanged(
+                    binder?.notifyAndroidAutoChildrenChanged(
                         MediaLibraryServiceCallback.MediaId.PLAYLISTS_IN_LIBRARY
                     )
-                    binder?.notifyAutoChildrenChanged(
+                    binder?.notifyAndroidAutoChildrenChanged(
                         MediaLibraryServiceCallback.MediaId.PLAYLISTS_PINNED
                     )
-                    binder?.notifyAutoChildrenChanged(
+                    binder?.notifyAndroidAutoChildrenChanged(
                         MediaLibraryServiceCallback.MediaId.PLAYLISTS_MONTHLY
                     )
-                    binder?.notifyAutoChildrenChanged(
+                    binder?.notifyAndroidAutoChildrenChanged(
                         MediaLibraryServiceCallback.MediaId.PLAYLISTS_PODCAST
                     )
-                    binder?.notifyAutoChildrenChanged(
+                    binder?.notifyAndroidAutoChildrenChanged(
                         MediaLibraryServiceCallback.MediaId.PLAYLISTS_ONDEVICE
                     )
 

@@ -776,13 +776,13 @@ fun AlbumDetails(
                                                 }
 
 
-                                                binder?.notifyAutoChildrenChanged(
+                                                binder?.notifyAndroidAutoChildrenChanged(
                                                     MediaLibraryServiceCallback.MediaId.ALBUMS_FAVORITES
                                                 )
-                                                binder?.notifyAutoChildrenChanged(
+                                                binder?.notifyAndroidAutoChildrenChanged(
                                                     MediaLibraryServiceCallback.MediaId.ALBUMS_IN_LIBRARY
                                                 )
-                                                binder?.notifyAutoChildrenChanged(
+                                                binder?.notifyAndroidAutoChildrenChanged(
                                                     MediaLibraryServiceCallback.MediaId.ALBUMS_ON_DEVICE
                                                 )
 
