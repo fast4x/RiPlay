@@ -94,7 +94,7 @@
         android:configChanges="colorMode|density|fontScale|keyboard|keyboardHidden|layoutDirection|locale|mcc|mnc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|touchscreen|uiMode"
         android:appCategory="audio"
         android:icon="@mipmap/ic_launcher"
-        android:label="${appName}"
+        android:label="@string/riplay_app_name"
         android:supportsRtl="true"
         android:requestLegacyExternalStorage="true"
         android:enableOnBackInvokedCallback="true"
