@@ -26,7 +26,7 @@ import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.R
 import it.fast4x.riplay.ui.components.themed.CachedAccountsSelectorDialog
 import it.fast4x.riplay.ui.components.themed.DefaultDialog
-import it.fast4x.riplay.extensions.experimental.smoothloader.LoaderScreen
+import it.fast4x.riplay.extensions.smoothloader.LoaderScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

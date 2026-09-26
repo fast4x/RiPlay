@@ -35,7 +35,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ContentType
-import it.fast4x.riplay.extensions.experimental.smoothloader.LoaderScreen
+import it.fast4x.riplay.extensions.smoothloader.LoaderScreen
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.LazyListContainer
 

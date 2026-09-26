@@ -145,8 +145,8 @@ import it.fast4x.riplay.ui.components.themed.ExternalLinksSection
 import it.fast4x.riplay.ui.components.themed.FastPlayActionsBar
 import it.fast4x.riplay.ui.components.themed.InfoBar
 import it.fast4x.riplay.ui.components.themed.KeywordChips
-import it.fast4x.riplay.extensions.experimental.smoothloader.Loader
-import it.fast4x.riplay.extensions.experimental.smoothloader.LoaderScreen
+import it.fast4x.riplay.extensions.smoothloader.Loader
+import it.fast4x.riplay.extensions.smoothloader.LoaderScreen
 import it.fast4x.riplay.ui.components.themed.QueuesDialog
 import it.fast4x.riplay.ui.components.themed.RatingBar
 import it.fast4x.riplay.ui.components.themed.Title

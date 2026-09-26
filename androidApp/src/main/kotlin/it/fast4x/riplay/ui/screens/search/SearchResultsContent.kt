@@ -54,7 +54,7 @@ import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.SwipeableAlbumItem
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
-import it.fast4x.riplay.extensions.experimental.smoothloader.Loader
+import it.fast4x.riplay.extensions.smoothloader.Loader
 import it.fast4x.riplay.ui.components.themed.Menu
 import it.fast4x.riplay.ui.components.themed.MenuEntry
 import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenu

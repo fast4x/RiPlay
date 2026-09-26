@@ -63,7 +63,7 @@ import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.enums.VideoContentMode
 import it.fast4x.riplay.enums.ViewType
 import it.fast4x.riplay.enums.WallpaperType
-import it.fast4x.riplay.extensions.experimental.smoothloader.LoaderStyle
+import it.fast4x.riplay.extensions.smoothloader.LoaderStyle
 import kotlinx.serialization.Serializable
 import java.net.Proxy
 

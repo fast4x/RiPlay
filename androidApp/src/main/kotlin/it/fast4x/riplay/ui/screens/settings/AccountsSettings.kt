@@ -79,7 +79,7 @@ import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.isAtLeastAndroid81
 import it.fast4x.riplay.ui.components.themed.AccountInfoDialog
 import it.fast4x.riplay.extensions.lastfm.LastFmAuthScreen
-import it.fast4x.riplay.extensions.experimental.smoothloader.Loader
+import it.fast4x.riplay.extensions.smoothloader.Loader
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.DelicateCoroutinesApi

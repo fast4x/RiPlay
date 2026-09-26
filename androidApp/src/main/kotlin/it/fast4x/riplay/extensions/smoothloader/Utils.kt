@@ -1,4 +1,4 @@
-package it.fast4x.riplay.extensions.experimental.smoothloader
+package it.fast4x.riplay.extensions.smoothloader
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
