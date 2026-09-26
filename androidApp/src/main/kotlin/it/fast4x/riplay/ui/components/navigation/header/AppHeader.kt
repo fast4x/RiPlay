@@ -35,7 +35,7 @@ class AppHeader(
 
     @Composable
     private fun BackButton() {
-        Timber.d("AppHeader BackButton")
+        //Timber.d("AppHeader BackButton")
         if ( NavRoutes.home.isNotHere( navController ) )
             androidx.compose.material3.IconButton(
                 onClick = {
@@ -55,7 +55,6 @@ class AppHeader(
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun Draw() {
-        val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         val context = LocalContext.current
 
         ModernTopAppBar(
@@ -64,18 +63,5 @@ class AppHeader(
             context = context
         )
 
-        /*
-        TopAppBar(
-            title = { AppTitle( navController, context ) },
-            actions = { ActionBar( navController ) },
-            navigationIcon = { BackButton() },
-            scrollBehavior = scrollBehavior,
-            colors = colors(),
-            windowInsets = if (isEnabledFullscreen()) TopAppBarDefaults.windowInsets
-                .only(WindowInsetsSides.Horizontal)
-            else TopAppBarDefaults.windowInsets
-        )
-
-         */
     }
 }

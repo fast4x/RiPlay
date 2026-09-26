@@ -579,7 +579,7 @@ class HybridPlayer (
             else -> "Metodo nativo di Media3"
         }
 
-        Timber.d("HybridPlayer RiPlay_Media3_Source_Trace: [$sorgente] -> Esecuzione metodo: $metodo [uID] -> $uid")
+        Timber.d("HybridPlayer RiPlay_Media3_Source_Trace: [$sorgente] -> Esecuzione metodo: $metodo")
     }
 
 

@@ -688,7 +688,7 @@ fun HomePage(
                                 ?: emptyList(),
                             key = Environment.SongItem::key
                         ) { song ->
-                            Timber.d("HomePage RELATED Environment.SongItem duration ${song.durationText}")
+                            //Timber.d("HomePage RELATED Environment.SongItem duration ${song.durationText}")
                             SongItem(
                                 song = song,
                                 thumbnailSizePx = songThumbnailSizePx,
@@ -724,7 +724,7 @@ fun HomePage(
                                         },
                                         onClick = {
                                             CoroutineScope(Dispatchers.IO).launch {
-                                                Timber.d("HomePage Clicked on song")
+                                                //Timber.d("HomePage Clicked on song")
                                                 val mediaItem = if (song.isAudioOnly)
                                                 //song.asMediaItem
                                                     song.toMediaItem()
@@ -762,7 +762,7 @@ fun HomePage(
                         LaunchedEffect(Unit, preferredNames) {
                             page.newReleaseAlbums.forEach { album ->
                                 val apiAuthorsNames = album.authors?.map { it.name } ?: emptyList()
-                                Timber.d("HomePage newReleaseAlbums Author ${album.title} $apiAuthorsNames")
+                                //Timber.d("HomePage newReleaseAlbums Author ${album.title} $apiAuthorsNames")
                                 val match = apiAuthorsNames.any { apiName ->
 
                                     preferredNames.any { dbName ->
@@ -775,8 +775,8 @@ fun HomePage(
                                 if (match) newReleaseAlbumsFiltered.add(album)
                             }
 
-                            Timber.d("HomePage newReleaseAlbums preferredNames $preferredNames")
-                            Timber.d("HomePage newReleaseAlbums newReleaseAlbumsFiltered $newReleaseAlbumsFiltered")
+                            //Timber.d("HomePage newReleaseAlbums preferredNames $preferredNames")
+                            //Timber.d("HomePage newReleaseAlbums newReleaseAlbumsFiltered $newReleaseAlbumsFiltered")
                         }
 
 
@@ -859,7 +859,7 @@ fun HomePage(
                             items(it.items.filter {item -> blacklisted.value?.map { it.path }?.contains(item?.key) == false }) { item ->
                                 when (item) {
                                     is Environment.SongItem -> {
-                                        Timber.d("Environment homePage SongItem: ${item.info?.name}")
+                                        //Timber.d("Environment homePage SongItem: ${item.info?.name}")
                                         SongItem(
                                             song = item,
                                             thumbnailSizePx = albumThumbnailSizePx,
@@ -874,7 +874,7 @@ fun HomePage(
                                     }
 
                                     is Environment.AlbumItem -> {
-                                        Timber.d("Environment homePage AlbumItem: ${item.info?.name}")
+                                        //Timber.d("Environment homePage AlbumItem: ${item.info?.name}")
                                         AlbumItem(
                                             album = item,
                                             alternative = true,
@@ -889,7 +889,7 @@ fun HomePage(
                                     }
 
                                     is Environment.ArtistItem -> {
-                                        Timber.d("Environment homePage ArtistItem: ${item.info?.name}")
+                                        //Timber.d("Environment homePage ArtistItem: ${item.info?.name}")
                                         ArtistItem(
                                             artist = item,
                                             thumbnailSizePx = artistThumbnailSizePx,
@@ -902,7 +902,7 @@ fun HomePage(
                                     }
 
                                     is Environment.PlaylistItem -> {
-                                        Timber.d("Environment homePage PlaylistItem: ${item.info?.name}")
+                                        //Timber.d("Environment homePage PlaylistItem: ${item.info?.name}")
                                         PlaylistItem(
                                             playlist = item,
                                             alternative = true,
@@ -916,7 +916,7 @@ fun HomePage(
                                     }
 
                                     is Environment.VideoItem -> {
-                                        Timber.d("Environment homePage VideoItem: ${item.info?.name}")
+                                        //Timber.d("Environment homePage VideoItem: ${item.info?.name}")
                                         VideoItem(
                                             video = item,
                                             thumbnailHeightDp = playlistThumbnailSizeDp,
