@@ -443,7 +443,7 @@ fun DataSettings(
 //        )
         ImportantSettingsDescription(text = stringResource(
             R.string.existing_data_will_be_overwritten,
-            context.applicationInfo.nonLocalizedLabel
+            stringResource(R.string.riplay_app_name)
         ))
 
         SettingsGroupSpacer(
