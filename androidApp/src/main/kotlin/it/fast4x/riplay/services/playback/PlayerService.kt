@@ -2688,16 +2688,7 @@ class PlayerService : MediaLibraryService(),
 
             updatePlayerState(PlayerConstants.PlayerState.PLAYING)
         } else {
-
             updatePlayerState(PlayerConstants.PlayerState.PAUSED)
-
-            // Rimuove lo stato di foreground aggressivo quando l'app va in pausa
-            if (isAtLeastAndroid7) {
-                stopForeground(STOP_FOREGROUND_DETACH)
-            } else {
-                @Suppress("DEPRECATION")
-                stopForeground(false)
-            }
         }
 
         // Forziamo il ridisegno dei pulsanti nella notifica, utile per android auto e lettori bluetooth in auto
