@@ -266,8 +266,33 @@ fun HomeSongs(
 
     var songs: List<SongEntity> = emptyList()
     var folders: List<Folder> = emptyList()
-    var filteredSongs = songs
-    var filteredFolders = folders
+
+    // Chiave di ricerca normalizzata: String? -> String ("" se null)
+    val q = filter.orEmpty()
+
+    val visibleItems = remember(items, q) {
+        if (q.isBlank()) items
+        else items.filter {
+            it.song.title.contains(q, true) ||
+                    it.song.artistsText?.contains(q, true) == true ||
+                    it.albumTitle?.contains(q, true) == true
+        }
+    }
+
+    var filteredSongs = remember(songs, q) {
+        if (q.isBlank()) songs
+        else songs.filter {
+            it.song.title.contains(q, true) ||
+                    it.song.artistsText?.contains(q, true) == true ||
+                    it.albumTitle?.contains(q, true) == true
+        }
+    }
+
+    var filteredFolders = remember(folders, q) {
+        if (q.isBlank()) folders
+        else folders.filter { it.name.contains(q, true) }
+    }
+
     var currentFolder: Folder? = null
     var currentFolderPath by remember { mutableStateOf(defaultFolder) }
 
@@ -858,7 +883,7 @@ fun HomeSongs(
                             //enabled = items.any { it.song.likedAt != -1L },
                             color = if (items.any { it.song.likedAt != -1L }) colorPalette().text else colorPalette().textDisabled,
                             onClick = {
-                                if (builtInPlaylist == BuiltInPlaylist.OnDevice) items = filteredSongs
+                                if (builtInPlaylist == BuiltInPlaylist.OnDevice) items = visibleItems
                                 if (items.filter { it.song.likedAt != -1L }.isNotEmpty()) {
                                     val itemsLimited = if (items.filter { it.song.likedAt != -1L }.size > maxSongsInQueue.number) items.filter { it.song.likedAt != -1L }.shuffled().take(maxSongsInQueue.number.toInt()) else items.filter { it.song.likedAt != -1L }
                                     binder?.stopRadio()
@@ -924,7 +949,7 @@ fun HomeSongs(
                                             selectItems = !selectItems; if (!selectItems) listMediaItems.clear()
                                         },
                                         onPlayNext = {
-                                            if (builtInPlaylist == BuiltInPlaylist.OnDevice) items = filteredSongs
+                                            if (builtInPlaylist == BuiltInPlaylist.OnDevice) items = visibleItems
                                             if (listMediaItems.isEmpty()) {
                                                 if (items.any { it.song.likedAt != -1L }) {
                                                     binder?.hybridPlayer?.addNext(items.filter { it.song.likedAt != -1L }.map(SongEntity::asMediaItem), context, selectedQueue ?: defaultQueue())
@@ -937,7 +962,7 @@ fun HomeSongs(
                                             }
                                         },
                                         onEnqueue = {
-                                            if (builtInPlaylist == BuiltInPlaylist.OnDevice) items = filteredSongs
+                                            if (builtInPlaylist == BuiltInPlaylist.OnDevice) items = visibleItems
                                             if (listMediaItems.isEmpty()) {
                                                 if (items.any { it.song.likedAt != -1L }) {
                                                     binder?.hybridPlayer?.enqueue(items.filter { it.song.likedAt != -1L }.map(SongEntity::asMediaItem), context)
@@ -972,7 +997,7 @@ fun HomeSongs(
                                             else { showRiPlayLikeYoutubeLikeConfirmDialog = true }
                                         },
                                         onAddToPlaylist = { playlistPreview ->
-                                            if (builtInPlaylist == BuiltInPlaylist.OnDevice) items = filteredSongs
+                                            if (builtInPlaylist == BuiltInPlaylist.OnDevice) items = visibleItems
                                             position = playlistPreview.songCount.minus(1) ?: 0
                                             if (position > 0) position++ else position = 0
                                             val filteredItems = items.filterNot { it.asMediaItem.mediaId.startsWith(LOCAL_KEY_PREFIX) || it.song.thumbnailUrl == "" }
@@ -1063,7 +1088,7 @@ fun HomeSongs(
                 }
             }
 
-            // Content Logic
+            // Ondevice Content Logic
             if (builtInPlaylist == BuiltInPlaylist.OnDevice) {
                 if (!hasPermission) {
                     item(key = "OnDeviceSongsPermission") {

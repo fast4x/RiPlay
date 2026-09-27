@@ -44,6 +44,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -99,6 +100,7 @@ import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.themed.ArtistsItemMenu
 import it.fast4x.riplay.ui.components.themed.EnumsMenu
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
+import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.importYTMSubscribedChannels
@@ -129,9 +131,6 @@ fun HomeArtists(
     val lazyListState = rememberLazyListState() // Stato per la vista lista
     val menuState = LocalGlobalSheetState.current
 
-    var items by persistList<Artist>("")
-    var itemsOnDisplay by persistList<Artist>("home/artists/on_display")
-
     val appearanceSettingsManager = LocalAppearanceSettingsManager.current
     val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
     val appSettingsManager = LocalAppSettingsManager.current
@@ -140,6 +139,23 @@ fun HomeArtists(
     val disableScrollingText = appearanceSettings.disableScrollingText
     val search = Search.init()
     val itemSize = ItemSize.init(HOME_ARTIST_ITEM_SIZE)
+
+//    var items by persistList<Artist>("")
+//    var itemsOnDisplay by persistList<Artist>("home/artists/on_display")
+    var items by remember { mutableStateOf(emptyList<Artist>()) }   // derivato dal DB: niente persist
+
+    val blacklistIds by remember {
+        Database.blacklisted(listOf(BlacklistType.Artist.name))
+            .map { list -> list.mapTo(hashSetOf()) { it.path } }
+    }.collectAsStateWithLifecycle(initialValue = emptySet())        // mai null, e come Set
+
+    val itemsOnDisplay = remember(items, search.input, blacklistIds) {
+        val q = search.input
+        items.asSequence()
+            .filter { q.isBlank() || it.name?.contains(q, true) == true }
+            .filter { it.id !in blacklistIds }
+            .toList()
+    }
 
     // Configurazione Randomizer
     val randomizer = object : Randomizer<Artist> {
@@ -175,21 +191,30 @@ fun HomeArtists(
         animationSpec = tween(durationMillis = 400, easing = LinearEasing), label = ""
     )
 
-    LaunchedEffect(isNetworkConnected, sortBy, sortOrder, artistType) {
-        // 1. Calcolo del tipo effettivo in base alla rete
+    var reloadKey by remember { mutableIntStateOf(0) }
+
+    // Pull to Refresh
+    var refreshing by remember { mutableStateOf(false) }
+    val refreshScope = rememberCoroutineScope()
+
+    fun refresh() {
+        if (refreshing) return
+        reloadKey++
+        refreshScope.launch {
+            withContext(Dispatchers.IO) { importYTMSubscribedChannels() }
+            refreshing = false
+        }
+    }
+
+    LaunchedEffect(isNetworkConnected, sortBy, sortOrder, artistType, reloadKey) {
+        // Calcolo del tipo effettivo in base alla rete
         val targetArtistType = if (!isNetworkConnected && artistType !in listOf(ArtistsType.OnDevice)) {
             ArtistsType.OnDevice
         } else {
             artistType
         }
 
-        // 2. Aggiorno lo stato esterno (se necessario) per far riflettere
-        // la forzatura sull'UI (es. cambiare tab selezionato), senza causare loop infiniti
-//        if (artistType != targetArtistType) {
-//            artistType = targetArtistType
-//        }
-
-        // 3. Caricamento dati usando il tipo effettivo calcolato
+        // Caricamento dati usando il tipo effettivo calcolato
         when (targetArtistType) {
             ArtistsType.Favorites -> Database.artists(sortBy, sortOrder).collect { items = it }
             ArtistsType.Library -> Database.artistsInLibrary(sortBy, sortOrder).collect { items = it.filter { it.isYoutubeArtist } }
@@ -198,66 +223,24 @@ fun HomeArtists(
         }
     }
 
-    // Filtro Blacklist e Ricerca
-    val blacklisted = remember {
-        Database.blacklisted(listOf(BlacklistType.Artist.name))
-    }.collectAsState(initial = null, context = Dispatchers.IO)
-
-    LaunchedEffect(items, search.input) {
-        // Salvataggio posizione scroll per evitare salti durante il filtro
-        val scrollIndex = if (getViewType() == ViewType.List) lazyListState.firstVisibleItemIndex else lazyGridState.firstVisibleItemIndex
-        val scrollOffset = if (getViewType() == ViewType.List) lazyListState.firstVisibleItemScrollOffset else lazyGridState.firstVisibleItemScrollOffset
-
-        itemsOnDisplay = items
-            .filter {
-                it.name?.contains(search.input, true) ?: false
-            }
-            .filter { item -> blacklisted.value?.map { it.path }?.contains(item.id) == false }
-
-        // Ripristino scroll
-        if (getViewType() == ViewType.List) lazyListState.scrollToItem(scrollIndex, scrollOffset)
-        else lazyGridState.scrollToItem(scrollIndex, scrollOffset)
-    }
-
     // Caricamento Thumbnail mancanti
-    if (items.any { it.thumbnailUrl == null }) {
-        LaunchedEffect(Unit) {
-            withContext(Dispatchers.IO) {
-                items.filter { it.thumbnailUrl == null }.forEach { artist ->
-                    coroutineScope.launch(Dispatchers.IO) {
-                        val artistThumbnail = EnvironmentExt.getArtistPage(artist.id).getOrNull()?.artist?.thumbnail?.url
-                        Database.asyncTransaction {
-                            update(artist.copy(thumbnailUrl = artistThumbnail))
-                        }
-                    }
+    val attempted = remember { mutableSetOf<String>() }
+    LaunchedEffect(items) {
+        items.forEach { artist ->
+            val isLocal = artist.id.startsWith(LOCAL_KEY_PREFIX)
+            if (artist.thumbnailUrl == null && !isLocal && artist.id !in attempted) {
+                attempted.add(artist.id)
+                coroutineScope.launch(Dispatchers.IO) {
+                    val url = EnvironmentExt.getArtistPage(artist.id).getOrNull()
+                        ?.artist?.thumbnail?.url ?: return@launch
+                    Database.asyncTransaction { update(artist.copy(thumbnailUrl = url)) }
                 }
             }
         }
     }
 
-    // Sync Logic
-    //val sync = autoSyncToolbutton(R.string.autosync_channels)
-    var justSynced by rememberSaveable { mutableStateOf(false) }
+
     val viewType = viewTypeToolbutton(R.string.viewType)
-
-    // Pull to Refresh
-    var refreshing by remember { mutableStateOf(false) }
-    val refreshScope = rememberCoroutineScope()
-
-    fun refresh() {
-        if (refreshing) return
-        refreshScope.launch(Dispatchers.IO) {
-            refreshing = true
-            justSynced = false
-            delay(500)
-            refreshing = false
-        }
-    }
-
-    LaunchedEffect(Unit, justSynced) {
-        if (!justSynced && importYTMSubscribedChannels())
-            justSynced = true
-    }
 
     // Menu Ordinamento
     val sortMenu: @Composable () -> Unit = {

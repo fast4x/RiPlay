@@ -47,6 +47,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -185,15 +186,45 @@ fun HomePlaylists(
     val playlistType = appSettings.playlistType
     val disableScrollingText = appearanceSettings.disableScrollingText
 
-    var items by persistList<PlaylistPreview>("home/playlists")
-    var itemsOnDisplay by persistList<PlaylistPreview>("home/playlists/on_display")
+    var items by remember { mutableStateOf(emptyList<PlaylistPreview>()) }
+    val search = Search.init()
+
+    val blacklistIds by remember {
+        Database.blacklisted(listOf(BlacklistType.Playlist.name))
+            .map { list -> list.mapTo(hashSetOf()) { it.path } }
+    }.collectAsStateWithLifecycle(initialValue = emptySet())
+
+    fun PlaylistPreview.matchesType(type: PlaylistType): Boolean  {
+        val listPrefix = when (playlistType) {
+            PlaylistType.Playlist, PlaylistType.OnDevicePlaylist -> ""
+            PlaylistType.PinnedPlaylist -> PINNED_PREFIX
+            PlaylistType.MonthlyPlaylist -> MONTHLY_PREFIX
+            PlaylistType.PodcastPlaylist -> ""
+            PlaylistType.YTPlaylist -> YTP_PREFIX
+        }
+        return when (type) {
+            PlaylistType.YTPlaylist -> playlist.isYoutubePlaylist
+            PlaylistType.PodcastPlaylist -> playlist.isPodcast
+            PlaylistType.OnDevicePlaylist -> isOnDevice
+            else -> playlist.name.startsWith(listPrefix, true)
+        }
+    }
+
+    val itemsOnDisplay = remember(items, search.input, blacklistIds, playlistType) {
+        val q = search.input
+        items.asSequence()
+            .filter { q.isBlank() || it.playlist.name.contains(q, true) }
+            .filter { it.playlist.id.toString() !in blacklistIds }
+            .filter { it.matchesType(playlistType) }
+            .toList()
+    }
 
     val playlistThumbnailSizeDp = Dimensions.thumbnails.playlist
     val playlistThumbnailSizePx = playlistThumbnailSizeDp.px
 
     // Dialog states
     val newPlaylistToggleState = remember { mutableStateOf(false) }
-    val search = Search.init()
+
     val itemSize = ItemSize.init(HOME_LIBRARY_ITEM_SIZE)
 
     val shuffle = SongsShuffle.init {
@@ -404,13 +435,15 @@ fun HomePlaylists(
             title = stringResource(R.string.import_playlist),
             onDismiss = menuState::hide,
             selectedValue = importType.menuItem,
-            onValueSelected = {
+            onValueSelected = { index ->
+                val selected = ImportPlaylistType.entries[index.ordinal]
                 coroutineScope.launch {
                     appSettingsManager.updateSettings(
-                        appSettingsManager.activeSettings.value.copy(importPlaylistType = ImportPlaylistType.entries[it.ordinal])
+                        appSettingsManager
+                            .activeSettings.value.copy(importPlaylistType = selected)
                     )
                 }
-                when(importType) {
+                when(selected) {
                     ImportPlaylistType.Riplay -> importPlaylistDialog.onShortClick()
                     ImportPlaylistType.ExportifyNet -> importPlaylistSpotifyDialog.onShortClick()
                     ImportPlaylistType.TuneMyMusicDeezer -> importPlaylistDeezerDialog.onShortClick()
@@ -512,20 +545,6 @@ fun HomePlaylists(
     val blacklisted = remember {
         Database.blacklisted(listOf(BlacklistType.Playlist.name))
     }.collectAsState(initial = null, context = Dispatchers.IO)
-
-    LaunchedEffect(items, search.input) {
-        val scrollIndex = if (getViewType() == ViewType.List) lazyListState.firstVisibleItemIndex else lazyGridState.firstVisibleItemIndex
-        val scrollOffset = if (getViewType() == ViewType.List) lazyListState.firstVisibleItemScrollOffset else lazyGridState.firstVisibleItemScrollOffset
-
-        itemsOnDisplay = items
-            .filter {
-                it.playlist.name.contains(search.input, true)
-            }
-            .filter { item -> blacklisted.value?.map { it.path }?.contains(item.playlist.id.toString()) == false }
-
-        if (getViewType() == ViewType.List) lazyListState.scrollToItem(scrollIndex, scrollOffset)
-        else lazyGridState.scrollToItem(scrollIndex, scrollOffset)
-    }
 
     val showPinnedPlaylists = appSettings.showPinnedPlaylists
     val showMonthlyPlaylists = appSettings.showMonthlyPlaylists
@@ -780,25 +799,20 @@ fun HomePlaylists(
                                                                     coroutineScope.launch(
                                                                         Dispatchers.IO
                                                                     ) {
-                                                                        Database.playlistSongs(
-                                                                            preview.playlist.id
-                                                                        )
-                                                                            .distinctUntilChanged()
-                                                                            .map { it?.map(Song::asMediaItem) }
-                                                                            .onEach {
-                                                                                withContext(
-                                                                                    Dispatchers.Main
-                                                                                ) {
-                                                                                    binder?.hybridPlayer?.addNext(
-                                                                                        it
-                                                                                            ?: emptyList(),
-                                                                                        appContext(),
-                                                                                        selectedQueue
-                                                                                            ?: defaultQueue()
-                                                                                    )
-                                                                                }
-                                                                            }
-                                                                            .collect()
+                                                                        val mediaItems =
+                                                                            Database.playlistSongs(
+                                                                                preview.playlist.id
+                                                                            )
+                                                                                .first().orEmpty()
+                                                                                .map(Song::asMediaItem)
+                                                                        withContext(Dispatchers.Main) {
+                                                                            binder?.hybridPlayer?.addNext(
+                                                                                mediaItems,
+                                                                                context,
+                                                                                selectedQueue
+                                                                                    ?: defaultQueue()
+                                                                            )
+                                                                        }
                                                                     }
                                                                 },
                                                                 onBlacklist = {
@@ -817,18 +831,18 @@ fun HomePlaylists(
                                         )
                                     else {
                                         // Logica OnDevice Playlist (List View)
-                                        var songs by persistList<SongEntity>("playlist${preview.playlist.id}/songsThumbnails")
-                                        LaunchedEffect(Unit) {
-                                            onDeviceViewModel.audioFilesFromFolder(
-                                                preview.folder ?: ""
-                                            ).collect {
-                                                songs = it
-                                            }
+                                        val thumbnails by produceState(emptyList<String>(), preview.folder) {
+                                            onDeviceViewModel.audioFilesFromFolder(preview.folder ?: "")
+                                                .map { files ->
+                                                    files.asSequence()
+                                                        .map { it.song }
+                                                        .mapNotNull { it.thumbnailUrl?.takeIf { url -> url.isNotEmpty() } }
+                                                        .take(4)
+                                                        .mapNotNull { it.toThumbnail(playlistThumbnailSizePx / 2) }
+                                                        .toList()
+                                                }
+                                                .collect { value = it }
                                         }
-                                        val thumbnails = songs.map { song -> song.song }
-                                            .takeWhile { it.thumbnailUrl?.isNotEmpty() ?: false }
-                                            .take(4)
-                                            .map { it.thumbnailUrl.toThumbnail(playlistThumbnailSizePx / 2) }
 
                                         PlaylistItem(
                                             thumbnailContent = {
@@ -894,17 +908,17 @@ fun HomePlaylists(
                                                                         val mediaItems =
                                                                             Database.playlistSongs(
                                                                                 preview.playlist.id
-                                                                            ).first().map { it.asMediaItem }
-
-                                                                            withContext(Dispatchers.Main) {
-                                                                                binder?.hybridPlayer?.addNext(
-                                                                                    mediaItems,
-                                                                                    appContext(),
-                                                                                    selectedQueue
-                                                                                        ?: defaultQueue()
-                                                                                )
-                                                                            }
-
+                                                                            )
+                                                                                .first().orEmpty()
+                                                                                .map(Song::asMediaItem)
+                                                                        withContext(Dispatchers.Main) {
+                                                                            binder?.hybridPlayer?.addNext(
+                                                                                mediaItems,
+                                                                                context,
+                                                                                selectedQueue
+                                                                                    ?: defaultQueue()
+                                                                            )
+                                                                        }
                                                                     }
                                                                 },
                                                                 onPlayNow = {
@@ -912,10 +926,13 @@ fun HomePlaylists(
                                                                         val mediaItems =
                                                                             Database.playlistSongs(
                                                                                 preview.playlist.id
-                                                                            ).first().map { it.asMediaItem }
+                                                                            ).first()
+                                                                                .map { it.asMediaItem }
 
                                                                         withContext(Dispatchers.Main) {
-                                                                            binder?.hybridPlayer?.forcePlayFromBeginning(mediaItems)
+                                                                            binder?.hybridPlayer?.forcePlayFromBeginning(
+                                                                                mediaItems
+                                                                            )
                                                                         }
 
                                                                     }
@@ -927,13 +944,15 @@ fun HomePlaylists(
                                                                         val mediaItems =
                                                                             Database.playlistSongs(
                                                                                 preview.playlist.id
-                                                                            ).first().map { it.asMediaItem }.shuffled()
+                                                                            ).first()
+                                                                                .map { it.asMediaItem }
+                                                                                .shuffled()
 
-                                                                            withContext(Dispatchers.Main) {
-                                                                                binder?.hybridPlayer?.forcePlayFromBeginning(
-                                                                                    mediaItems
-                                                                                )
-                                                                            }
+                                                                        withContext(Dispatchers.Main) {
+                                                                            binder?.hybridPlayer?.forcePlayFromBeginning(
+                                                                                mediaItems
+                                                                            )
+                                                                        }
 
                                                                     }
                                                                 },
@@ -1027,25 +1046,20 @@ fun HomePlaylists(
                                                                     coroutineScope.launch(
                                                                         Dispatchers.IO
                                                                     ) {
-                                                                        Database.playlistSongs(
-                                                                            preview.playlist.id
-                                                                        )
-                                                                            .distinctUntilChanged()
-                                                                            .map { it?.map(Song::asMediaItem) }
-                                                                            .onEach {
-                                                                                withContext(
-                                                                                    Dispatchers.Main
-                                                                                ) {
-                                                                                    binder?.hybridPlayer?.addNext(
-                                                                                        it
-                                                                                            ?: emptyList(),
-                                                                                        appContext(),
-                                                                                        selectedQueue
-                                                                                            ?: defaultQueue()
-                                                                                    )
-                                                                                }
-                                                                            }
-                                                                            .collect()
+                                                                        val mediaItems =
+                                                                            Database.playlistSongs(
+                                                                                preview.playlist.id
+                                                                            )
+                                                                                .first().orEmpty()
+                                                                                .map(Song::asMediaItem)
+                                                                        withContext(Dispatchers.Main) {
+                                                                            binder?.hybridPlayer?.addNext(
+                                                                                mediaItems,
+                                                                                context,
+                                                                                selectedQueue
+                                                                                    ?: defaultQueue()
+                                                                            )
+                                                                        }
                                                                     }
                                                                 },
                                                                 onPlayNow = {
@@ -1104,18 +1118,18 @@ fun HomePlaylists(
                                         )
                                     else {
                                         // Logica OnDevice Playlist (Grid View)
-                                        var songs by persistList<SongEntity>("playlist${preview.playlist.id}/songsThumbnails")
-                                        LaunchedEffect(Unit) {
-                                            onDeviceViewModel.audioFilesFromFolder(
-                                                preview.folder ?: ""
-                                            ).collect {
-                                                songs = it
-                                            }
+                                        val thumbnails by produceState(emptyList<String>(), preview.folder) {
+                                            onDeviceViewModel.audioFilesFromFolder(preview.folder ?: "")
+                                                .map { files ->
+                                                    files.asSequence()
+                                                        .map { it.song }
+                                                        .mapNotNull { it.thumbnailUrl?.takeIf { url -> url.isNotEmpty() } }
+                                                        .take(4)
+                                                        .mapNotNull { it.toThumbnail(playlistThumbnailSizePx / 2) }
+                                                        .toList()
+                                                }
+                                                .collect { value = it }
                                         }
-                                        val thumbnails = songs.map { song -> song.song }
-                                            .takeWhile { it.thumbnailUrl?.isNotEmpty() ?: false }
-                                            .take(4)
-                                            .map { it.thumbnailUrl.toThumbnail(playlistThumbnailSizePx / 2) }
 
                                         PlaylistItem(
                                             thumbnailContent = {
@@ -1178,25 +1192,20 @@ fun HomePlaylists(
                                                                     coroutineScope.launch(
                                                                         Dispatchers.IO
                                                                     ) {
-                                                                        Database.playlistSongs(
-                                                                            preview.playlist.id
-                                                                        )
-                                                                            .distinctUntilChanged()
-                                                                            .map { it?.map(Song::asMediaItem) }
-                                                                            .onEach {
-                                                                                withContext(
-                                                                                    Dispatchers.Main
-                                                                                ) {
-                                                                                    binder?.hybridPlayer?.addNext(
-                                                                                        it
-                                                                                            ?: emptyList(),
-                                                                                        appContext(),
-                                                                                        selectedQueue
-                                                                                            ?: defaultQueue()
-                                                                                    )
-                                                                                }
-                                                                            }
-                                                                            .collect()
+                                                                        val mediaItems =
+                                                                            Database.playlistSongs(
+                                                                                preview.playlist.id
+                                                                            )
+                                                                                .first().orEmpty()
+                                                                                .map(Song::asMediaItem)
+                                                                        withContext(Dispatchers.Main) {
+                                                                            binder?.hybridPlayer?.addNext(
+                                                                                mediaItems,
+                                                                                context,
+                                                                                selectedQueue
+                                                                                    ?: defaultQueue()
+                                                                            )
+                                                                        }
                                                                     }
                                                                 },
                                                                 onPlayNow = {

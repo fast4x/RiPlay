@@ -154,11 +154,26 @@ fun HomeAlbums(
     val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val disableScrollingText = appearanceSettings.disableScrollingText
-
-    var items by persistList<Album>("home/albums")
-    var itemsOnDisplay by persistList<Album>("home/albums/on_display")
-
+    var items by remember { mutableStateOf(emptyList<Album>()) }
     val search = Search.init()
+
+    val blacklistIds by remember {
+        Database.blacklisted(listOf(BlacklistType.Album.name))
+            .map { list -> list.mapTo(hashSetOf()) { it.path } }
+    }.collectAsStateWithLifecycle(initialValue = emptySet())
+
+    val itemsOnDisplay = remember(items, search.input, blacklistIds) {
+        val q = search.input
+        items.asSequence()
+            .filter { q.isBlank() ||
+                    it.title?.contains(q, true) == true ||
+                    it.year?.contains(q, true) == true ||
+                    it.authorsText?.contains(q, true) == true }
+            .filter { it.id !in blacklistIds }
+            .toList()
+    }
+
+
     val itemSize = ItemSize.init(HOME_ALBUM_ITEM_SIZE)
 
     val randomizer = object : Randomizer<Album> {
@@ -206,44 +221,23 @@ fun HomeAlbums(
         }
     }
 
-    val blacklisted = remember {
-        Database.blacklisted(listOf(BlacklistType.Album.name))
-    }.collectAsState(initial = null, context = Dispatchers.IO)
-
-    LaunchedEffect(items, search.input) {
-        // Salvataggio posizione scroll corretta in base alla vista corrente
-        val scrollIndex = if (getViewType() == ViewType.List) lazyListState.firstVisibleItemIndex else lazyGridState.firstVisibleItemIndex
-        val scrollOffset = if (getViewType() == ViewType.List) lazyListState.firstVisibleItemScrollOffset else lazyGridState.firstVisibleItemScrollOffset
-
-        itemsOnDisplay = items.filter {
-            it.title?.contains(search.input, true) ?: false
-                    || it.year?.contains(search.input, true) ?: false
-                    || it.authorsText?.contains(search.input, true) ?: false
-        }
-            .filter { item -> blacklisted.value?.map { it.path }?.contains(item.id) == false }
-
-        // Ripristino scroll
-        if (getViewType() == ViewType.List) lazyListState.scrollToItem(scrollIndex, scrollOffset)
-        else lazyGridState.scrollToItem(scrollIndex, scrollOffset)
-    }
-
     // Caricamento Thumbnail specifico per Albums
-    if (albumType == AlbumsType.Library || albumType == AlbumsType.OnDevice) {
-        if (items.any { it.thumbnailUrl == null }) {
-            LaunchedEffect(Unit) {
-                withContext(Dispatchers.IO) {
-                    items.filter { it.thumbnailUrl == null }.forEach { album ->
-                        coroutineScope.launch(Dispatchers.IO) {
-                            Database.asyncTransaction {
-                                val albumThumbnail = albumThumbnailFromSong(album.id)
-                                update(album.copy(thumbnailUrl = albumThumbnail))
-                            }
-                        }
-                    }
+    val attemptedCovers = remember { mutableSetOf<String>() }
+
+    LaunchedEffect(items, albumType) {
+        if (albumType != AlbumsType.Library && albumType != AlbumsType.OnDevice) return@LaunchedEffect
+        items.forEach { album ->
+            if (album.thumbnailUrl == null && album.id !in attemptedCovers) {
+                attemptedCovers += album.id
+                coroutineScope.launch(Dispatchers.IO) {
+                    val url = Database.albumThumbnailFromSong(album.id)
+                    if (url != null)
+                        Database.asyncTransaction { update(album.copy(thumbnailUrl = url)) }
                 }
             }
         }
     }
+
 
     //val sync = autoSyncToolbutton(R.string.autosync_albums)
     var justSynced by rememberSaveable { mutableStateOf(false) }
@@ -551,29 +545,28 @@ fun HomeAlbums(
                                                                     context
                                                                 )
                                                             },
-                                                            onAddToPlaylist = { playlistPreview ->
-                                                                position = playlistPreview.songCount.minus(1) ?: 0
-                                                                if (position > 0) position++ else position = 0
+                                                            onAddToPlaylist = { preview ->
+                                                                coroutineScope.launch {
+                                                                    val songs = withContext(Dispatchers.IO) { albumSongsList(album.id) }
+                                                                    val startPosition = (preview.songCount ?: 0).coerceAtLeast(0)   // append in coda, sempre
 
-                                                                if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
-                                                                    songs.forEachIndexed { index, song ->
-                                                                        Database.asyncTransaction {
-                                                                            insert(song.asMediaItem)
-                                                                            insert(
-                                                                                SongPlaylistMap(
-                                                                                    songId = song.asMediaItem.mediaId,
-                                                                                    playlistId = playlistPreview.playlist.id,
-                                                                                    position = position + index
-                                                                                ).default()
-                                                                            )
+                                                                    if (!isYtSyncEnabled() || !preview.playlist.isYoutubePlaylist) {
+                                                                        Database.asyncTransaction {                                 // 🔑 UNA sola transazione
+                                                                            songs.forEachIndexed { index, song ->
+                                                                                insert(song.asMediaItem)
+                                                                                insert(
+                                                                                    SongPlaylistMap(
+                                                                                        songId = song.asMediaItem.mediaId,
+                                                                                        playlistId = preview.playlist.id,
+                                                                                        position = startPosition + index
+                                                                                    ).default()
+                                                                                )
+                                                                            }
                                                                         }
-                                                                    }
-                                                                } else {
-                                                                    coroutineScope.launch(Dispatchers.IO) {
+                                                                    } else {
                                                                         addToYtPlaylist(
-                                                                            playlistPreview.playlist.id,
-                                                                            position,
-                                                                            playlistPreview.playlist.browseId ?: "",
+                                                                            preview.playlist.id, startPosition,
+                                                                            preview.playlist.browseId.orEmpty(),
                                                                             songs.map { it.asMediaItem }
                                                                         )
                                                                     }
@@ -708,29 +701,28 @@ fun HomeAlbums(
                                                                     context
                                                                 )
                                                             },
-                                                            onAddToPlaylist = { playlistPreview ->
-                                                                position = playlistPreview.songCount.minus(1) ?: 0
-                                                                if (position > 0) position++ else position = 0
+                                                            onAddToPlaylist = { preview ->
+                                                                coroutineScope.launch {
+                                                                    val songs = withContext(Dispatchers.IO) { albumSongsList(album.id) }
+                                                                    val startPosition = (preview.songCount ?: 0).coerceAtLeast(0)   // append in coda, sempre
 
-                                                                if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
-                                                                    songs.forEachIndexed { index, song ->
-                                                                        Database.asyncTransaction {
-                                                                            insert(song.asMediaItem)
-                                                                            insert(
-                                                                                SongPlaylistMap(
-                                                                                    songId = song.asMediaItem.mediaId,
-                                                                                    playlistId = playlistPreview.playlist.id,
-                                                                                    position = position + index
-                                                                                ).default()
-                                                                            )
+                                                                    if (!isYtSyncEnabled() || !preview.playlist.isYoutubePlaylist) {
+                                                                        Database.asyncTransaction {                                 // 🔑 UNA sola transazione
+                                                                            songs.forEachIndexed { index, song ->
+                                                                                insert(song.asMediaItem)
+                                                                                insert(
+                                                                                    SongPlaylistMap(
+                                                                                        songId = song.asMediaItem.mediaId,
+                                                                                        playlistId = preview.playlist.id,
+                                                                                        position = startPosition + index
+                                                                                    ).default()
+                                                                                )
+                                                                            }
                                                                         }
-                                                                    }
-                                                                } else {
-                                                                    coroutineScope.launch(Dispatchers.IO) {
+                                                                    } else {
                                                                         addToYtPlaylist(
-                                                                            playlistPreview.playlist.id,
-                                                                            position,
-                                                                            playlistPreview.playlist.browseId ?: "",
+                                                                            preview.playlist.id, startPosition,
+                                                                            preview.playlist.browseId.orEmpty(),
                                                                             songs.map { it.asMediaItem }
                                                                         )
                                                                     }
