@@ -220,6 +220,10 @@ import it.fast4x.riplay.ui.screens.player.unified.components.LocalSharedTransiti
 import it.fast4x.riplay.utils.VideoParkingLot
 import it.fast4x.riplay.utils.isTVDevice
 import it.fast4x.riplay.utils.isTvMode
+import it.fast4x.spotifymeta.SpotifyAlbumMeta
+import it.fast4x.spotifymeta.SpotifyArtistMeta
+import it.fast4x.spotifymeta.SpotifyMeta
+import it.fast4x.spotifymeta.SpotifyTrackMeta
 import kotlinx.coroutines.delay
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.seconds
@@ -1650,6 +1654,33 @@ class MainActivity : AppCompatActivity() {
                                         navController?.navigate(route = "${NavRoutes.search.name}?text=$query")
                                     }
                                 }
+                                null
+                            }
+
+                            uri.host == "open.spotify.com" &&  (path == "track" || path == "album" || path == "artist") -> {
+                                Timber.d("MainActivity intentUriData uri.host spotify uri = $uri path = $path")
+                                //Timber.d("${SpotifyMeta.dumpSource(uri.toString())}")
+                                when(val entity = SpotifyMeta.fetch(uri.toString())) {
+                                    is SpotifyTrackMeta -> {
+                                        val query = Uri.encode("${entity.name} ${entity.album} ${entity.artist}")
+                                        Timber.d("MainActivity intentUriData spotify track query = $query")
+                                        navController?.navigate(route = "${NavRoutes.searchOnlineEntity.name}?type=song&text=$query")
+                                    }
+                                    is SpotifyAlbumMeta -> {
+                                        val query = Uri.encode("${entity.name}")
+                                        Timber.d("MainActivity intentUriData spotify album query = $query")
+                                        navController?.navigate(route = "${NavRoutes.searchOnlineEntity.name}?type=album&text=$query")
+                                    }
+                                    is SpotifyArtistMeta -> {
+                                        val query = Uri.encode("${entity.name}")
+                                        Timber.d("MainActivity intentUriData spotify artist query = $query")
+                                        navController?.navigate(route = "${NavRoutes.searchOnlineEntity.name}?type=artist&text=$query")
+                                    }
+                                    else -> {
+                                        Timber.d("MainActivity intentUriData spotify entity = $entity")
+                                    }
+                                }
+                                //Timber.d("MainActivity intentUriData spotify entity = $entity")
                                 null
                             }
 

@@ -5,6 +5,7 @@ import androidx.annotation.OptIn
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.compose.rememberNavController
-import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.VideoInfo
 import it.fast4x.environment.models.bodies.BrowseBody
@@ -43,7 +43,7 @@ import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.requests.artistPage
 import it.fast4x.environment.requests.nextPage
 import it.fast4x.environment.requests.searchPage
-import it.fast4x.environment.utils.from
+import it.fast4x.environment.utils.fromMusicShelfRenderer
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalSelectedQueue
@@ -84,10 +84,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
+import it.fast4x.environment.Environment
 import it.fast4x.riplay.LocalAppearanceSettingsManager
+import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PlayerType
 import it.fast4x.riplay.extensions.musicbrainz.repository.ArtistRepository
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
+import it.fast4x.riplay.ui.items.AlbumItem
+import it.fast4x.riplay.ui.items.ArtistItem
 import kotlinx.serialization.ExperimentalSerializationApi
 
 @UnstableApi
@@ -193,6 +198,7 @@ data class OnlineRadio (
 @UnstableApi
 @Composable
 fun SearchOnlineEntity (
+    navController: NavController,
     showSheet: Boolean,
     onDismiss: (Boolean) -> Unit,
     query: String,
@@ -247,8 +253,14 @@ fun SearchOnlineEntity (
                 ) {
                 Title(
                     title = stringResource(
-                        id = if (filter == Environment.SearchFilter.Video) R.string.videos
-                        else R.string.songs
+                        id = when (filter) {
+                            Environment.SearchFilter.Video -> R.string.videos
+                            Environment.SearchFilter.Song -> R.string.songs
+                            Environment.SearchFilter.Artist -> R.string.artists
+                            Environment.SearchFilter.Album -> R.string.albums
+                            Environment.SearchFilter.Podcast -> R.string.podcasts
+                            else -> R.string.videos
+                        }
                     ),
                     modifier = Modifier.padding(bottom = 12.dp),
                 )
@@ -297,14 +309,26 @@ fun SearchOnlineEntity (
                                     query = query,
                                     params = filter.value
                                 ),
-                                fromMusicShelfRendererContent = if (filter == Environment.SearchFilter.Video) Environment.VideoItem::from
-                                else Environment.SongItem::from
+                                fromMusicShelfRendererContent = when (filter) {
+                                    Environment.SearchFilter.Video -> Environment.VideoItem::fromMusicShelfRenderer
+                                    Environment.SearchFilter.Song -> Environment.SongItem::fromMusicShelfRenderer
+                                    Environment.SearchFilter.Artist -> Environment.ArtistItem::fromMusicShelfRenderer
+                                    Environment.SearchFilter.Album -> Environment.AlbumItem::fromMusicShelfRenderer
+                                    else -> Environment.SongItem::fromMusicShelfRenderer
+                                }
+//                                fromMusicShelfRendererContent = if (filter == Environment.SearchFilter.Video) Environment.VideoItem::fromMusicShelfRenderer
+//                                else Environment.SongItem::fromMusicShelfRenderer
                             )
                         } else {
                             Environment.searchPage(
                                 body = ContinuationBody(continuation = continuation),
-                                fromMusicShelfRendererContent = if (filter == Environment.SearchFilter.Video) Environment.VideoItem::from
-                                else Environment.SongItem::from
+                                fromMusicShelfRendererContent = when (filter) {
+                                    Environment.SearchFilter.Video -> Environment.VideoItem::fromMusicShelfRenderer
+                                    Environment.SearchFilter.Song -> Environment.SongItem::fromMusicShelfRenderer
+                                    Environment.SearchFilter.Artist -> Environment.ArtistItem::fromMusicShelfRenderer
+                                    Environment.SearchFilter.Album -> Environment.AlbumItem::fromMusicShelfRenderer
+                                    else -> Environment.SongItem::fromMusicShelfRenderer
+                                }
                             )
                         }
                     },
@@ -402,6 +426,31 @@ fun SearchOnlineEntity (
                                 }
                             }
                         }
+                        if (media is Environment.ArtistItem) {
+                            ArtistItem(
+                                artist = media,
+                                thumbnailSizePx = songThumbnailSizePx,
+                                thumbnailSizeDp = songThumbnailSizeDp,
+                                disableScrollingText = disableScrollingText,
+                                isYoutubeArtist = true,
+                                modifier = Modifier.clickable(onClick = {
+                                    navController.navigate("${NavRoutes.artist.name}/${media.key}")
+                                })
+                            )
+                        }
+                        if (media is Environment.AlbumItem) {
+                            AlbumItem(
+                                album = media,
+                                thumbnailSizePx = songThumbnailSizePx,
+                                thumbnailSizeDp = songThumbnailSizeDp,
+                                disableScrollingText = disableScrollingText,
+                                isYoutubeAlbum = true,
+                                modifier = Modifier.clickable(onClick = {
+                                    navController.navigate("${NavRoutes.album.name}/${media.key}")
+                                })
+                            )
+                        }
+
                     },
                     itemPlaceholderContent = {
                         VideoItemPlaceholder(

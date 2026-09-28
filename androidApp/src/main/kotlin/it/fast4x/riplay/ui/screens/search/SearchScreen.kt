@@ -21,6 +21,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -69,7 +70,8 @@ import timber.log.Timber
 fun SearchScreen(
     navController: NavController,
     miniPlayer: @Composable () -> Unit = {},
-    query: String = ""
+    query: String = "",
+    resultTabSelectedIndex: Int = 0
 ) {
     val appSettingsManager = LocalAppSettingsManager.current
     val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
@@ -121,8 +123,8 @@ fun SearchScreen(
     val isSearchActive = submittedQuery.isNotEmpty()
     Timber.d("SearchScreen: isSearchActive $isSearchActive")
 
-    val (baseTabIndex, onBaseTabChanged) = rememberSaveable { mutableStateOf(0) }
-    val (resultTabIndex, onResultTabChanged) = rememberSaveable { mutableStateOf(0) }
+    val (baseTabIndex, onBaseTabChanged) = rememberSaveable { mutableIntStateOf(0) }
+    val (resultTabIndex, onResultTabChanged) = rememberSaveable { mutableIntStateOf(resultTabSelectedIndex) }
 
     val decorationBox: @Composable (@Composable () -> Unit) -> Unit = { innerTextField ->
         Row(
