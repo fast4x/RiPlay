@@ -4009,6 +4009,7 @@ fun UnifiedPlayer(
         )
 
         SearchOnlineEntity(
+            navController = navController,
             showSheet = showSearchEntity,
             onDismiss = { isUserVideoSelected ->
                 // Se video content mode = audio only, forziamo la visualizzazione del video su richiesta dell'utente

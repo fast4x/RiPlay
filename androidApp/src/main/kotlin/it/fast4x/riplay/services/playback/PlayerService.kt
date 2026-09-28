@@ -94,7 +94,7 @@ import it.fast4x.environment.Environment
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.requests.searchPage
-import it.fast4x.environment.utils.from
+import it.fast4x.environment.utils.fromMusicShelfRenderer
 import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.data.models.Event
@@ -3774,7 +3774,7 @@ class PlayerService : MediaLibraryService(),
                         query = query,
                         params = Environment.SearchFilter.Song.value
                     ),
-                    fromMusicShelfRendererContent = Environment.SongItem.Companion::from
+                    fromMusicShelfRendererContent = Environment.SongItem.Companion::fromMusicShelfRenderer
                 )?.getOrNull()?.items?.firstOrNull()?.info?.endpoint?.let { playRadio(it) }
             }
         }

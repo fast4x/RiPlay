@@ -42,6 +42,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.github.doyaaaaaken.kotlincsv.client.KotlinCsvExperimental
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import it.fast4x.environment.Environment
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.models.Chip
@@ -543,6 +544,42 @@ fun AppNavigation(
                 miniPlayer = { miniPlayer("${NavRoutes.search.name}?text={text}") },
                 query = text
             )
+        }
+
+        composable(
+            route = "${NavRoutes.searchOnlineEntity.name}?type={type}&text={text}",
+            arguments = listOf(
+                navArgument(
+                    name = "type",
+                    builder = {
+                        type = NavType.StringType
+                        defaultValue = ""
+                    }
+                ),
+                navArgument(
+                    name = "text",
+                    builder = {
+                        type = NavType.StringType
+                        defaultValue = ""
+                    }
+                )
+            )
+        ) { navBackStackEntry ->
+            val type = navBackStackEntry.arguments?.getString("type") ?: ""
+            val text = navBackStackEntry.arguments?.getString("text") ?: ""
+            val tabSelectedIndex = when (type) {
+                "album" -> 1
+                "artist" -> 2
+                else -> 0
+            }
+
+            SearchScreen(
+                navController = navController,
+                miniPlayer = { miniPlayer("${NavRoutes.search.name}?text={text}") },
+                query = text,
+                resultTabSelectedIndex = tabSelectedIndex
+            )
+
         }
 
         composable(

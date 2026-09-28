@@ -36,7 +36,7 @@ import it.fast4x.environment.models.bodies.ContinuationBody
 import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.requests.albumPage
 import it.fast4x.environment.requests.searchPage
-import it.fast4x.environment.utils.from
+import it.fast4x.environment.utils.fromMusicShelfRenderer
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -169,12 +169,12 @@ fun SearchResultsContent(
                                 query = query,
                                 params = Environment.SearchFilter.Song.value
                             ),
-                            fromMusicShelfRendererContent = Environment.SongItem.Companion::from
+                            fromMusicShelfRendererContent = Environment.SongItem.Companion::fromMusicShelfRenderer
                         )
                     } else {
                         Environment.searchPage(
                             body = ContinuationBody(continuation = continuation),
-                            fromMusicShelfRendererContent = Environment.SongItem.Companion::from
+                            fromMusicShelfRendererContent = Environment.SongItem.Companion::fromMusicShelfRenderer
                         )
                     }
                 },
@@ -256,12 +256,12 @@ fun SearchResultsContent(
                                 query = query,
                                 params = Environment.SearchFilter.Album.value
                             ),
-                            fromMusicShelfRendererContent = Environment.AlbumItem::from
+                            fromMusicShelfRendererContent = Environment.AlbumItem::fromMusicShelfRenderer
                         )
                     } else {
                         Environment.searchPage(
                             body = ContinuationBody(continuation = continuation),
-                            fromMusicShelfRendererContent = Environment.AlbumItem::from
+                            fromMusicShelfRendererContent = Environment.AlbumItem::fromMusicShelfRenderer
                         )
                     }
                 },
@@ -489,12 +489,12 @@ fun SearchResultsContent(
                                 query = query,
                                 params = Environment.SearchFilter.Artist.value
                             ),
-                            fromMusicShelfRendererContent = Environment.ArtistItem::from
+                            fromMusicShelfRendererContent = Environment.ArtistItem::fromMusicShelfRenderer
                         )
                     } else {
                         Environment.searchPage(
                             body = ContinuationBody(continuation = continuation),
-                            fromMusicShelfRendererContent = Environment.ArtistItem::from
+                            fromMusicShelfRendererContent = Environment.ArtistItem::fromMusicShelfRenderer
                         )
                     }
                 },
@@ -542,12 +542,12 @@ fun SearchResultsContent(
                                 query = query,
                                 params = Environment.SearchFilter.Video.value
                             ),
-                            fromMusicShelfRendererContent = Environment.VideoItem::from
+                            fromMusicShelfRendererContent = Environment.VideoItem::fromMusicShelfRenderer
                         )
                     } else {
                         Environment.searchPage(
                             body = ContinuationBody(continuation = continuation),
-                            fromMusicShelfRendererContent = Environment.VideoItem::from
+                            fromMusicShelfRendererContent = Environment.VideoItem::fromMusicShelfRenderer
                         )
                     }
                 },
@@ -636,12 +636,12 @@ fun SearchResultsContent(
 
                         Environment.searchPage(
                             body = SearchBody(query = query, params = filter.value),
-                            fromMusicShelfRendererContent = Environment.PlaylistItem::from
+                            fromMusicShelfRendererContent = Environment.PlaylistItem::fromMusicShelfRenderer
                         )
                     } else {
                         Environment.searchPage(
                             body = ContinuationBody(continuation = continuation),
-                            fromMusicShelfRendererContent = Environment.PlaylistItem::from
+                            fromMusicShelfRendererContent = Environment.PlaylistItem::fromMusicShelfRenderer
                         )
                     }
                 },
@@ -687,12 +687,12 @@ fun SearchResultsContent(
 
                         Environment.searchPage(
                             body = SearchBody(query = query, params = filter.value),
-                            fromMusicShelfRendererContent = Environment.PlaylistItem::from
+                            fromMusicShelfRendererContent = Environment.PlaylistItem::fromMusicShelfRenderer
                         )
                     } else {
                         Environment.searchPage(
                             body = ContinuationBody(continuation = continuation),
-                            fromMusicShelfRendererContent = Environment.PlaylistItem::from
+                            fromMusicShelfRendererContent = Environment.PlaylistItem::fromMusicShelfRenderer
                         )
                     }
                 },
@@ -735,12 +735,12 @@ fun SearchResultsContent(
                                 query = query,
                                 params = filter.value
                             ),
-                            fromMusicShelfRendererContent = Environment.PlaylistItem::from
+                            fromMusicShelfRendererContent = Environment.PlaylistItem::fromMusicShelfRenderer
                         )
                     } else {
                         Environment.searchPage(
                             body = ContinuationBody(continuation = continuation),
-                            fromMusicShelfRendererContent = Environment.PlaylistItem::from
+                            fromMusicShelfRendererContent = Environment.PlaylistItem::fromMusicShelfRenderer
                         )
                     }
                 },

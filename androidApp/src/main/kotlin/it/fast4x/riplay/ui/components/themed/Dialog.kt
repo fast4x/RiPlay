@@ -98,7 +98,7 @@ import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.models.responses.CachedAccountProfile
 import it.fast4x.environment.requests.searchPage
-import it.fast4x.environment.utils.from
+import it.fast4x.environment.utils.fromMusicShelfRenderer
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.Database
@@ -2001,7 +2001,7 @@ fun SongMatchingDialog(
                             query = searchText,
                             params = Environment.SearchFilter.Song.value
                         ),
-                        fromMusicShelfRendererContent = Environment.SongItem.Companion::from
+                        fromMusicShelfRendererContent = Environment.SongItem.Companion::fromMusicShelfRenderer
                     )
 
                     songsList = searchQuery?.getOrNull()?.items ?: emptyList()

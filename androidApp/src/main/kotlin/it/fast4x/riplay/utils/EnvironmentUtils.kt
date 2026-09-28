@@ -24,7 +24,7 @@ import it.fast4x.environment.requests.searchPage
 import it.fast4x.environment.requests.song
 import it.fast4x.environment.utils.EnvironmentPreferenceItem
 import it.fast4x.environment.utils.EnvironmentPreferences
-import it.fast4x.environment.utils.from
+import it.fast4x.environment.utils.fromMusicShelfRenderer
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.commonutils.durationTextToMillis
@@ -370,7 +370,7 @@ suspend fun matchSongInPlaylist(song: Song, playlistId : Long, position : Int, p
             query = filteredText("${cleanPrefix(song.title)} ${song.artistsText}"),
             params = Environment.SearchFilter.Song.value
         ),
-        fromMusicShelfRendererContent = Environment.SongItem.Companion::from
+        fromMusicShelfRendererContent = Environment.SongItem.Companion::fromMusicShelfRenderer
     )
 
     val searchResults = searchQuery?.getOrNull()?.items

@@ -8,7 +8,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
-import it.fast4x.environment.Environment
 import it.fast4x.riplay.Dependencies
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.R
@@ -22,9 +21,11 @@ import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
 import it.fast4x.riplay.ui.components.tab.toolbar.MenuIcon
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.getFileNameFromUri
+import it.fast4x.spotifymeta.SpotifyMeta
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class ImportSongsFromSpotifyCSV private constructor(
     private val launcher: ManagedActivityResultLauncher<Array<String>, Uri?>
@@ -167,10 +168,10 @@ class ImportSongsFromSpotifyCSV private constructor(
 
                     // 3. Chiamata di rete 'suspend' integrata nel flusso lineare (Solo se formato Spotify)
                     if (isSpotifyFormat && spotifyTrackId != null) {
-                        val url = Environment.spotifyThumbnail(spotifyTrackId).getOrNull()
+                        val url = SpotifyMeta.oEmbedInfo(spotifyTrackId).getOrNull()?.thumbnailUrl
                         if (!url.isNullOrEmpty() && song != null) {
                             song = song.copy(thumbnailUrl = url)
-                            println("ImportPlaylist Copertina integrata per ${song.title}: $url")
+                            Timber.d("ImportPlaylist Cover for ${song.title}: $url")
                         }
                     }
 
@@ -180,7 +181,7 @@ class ImportSongsFromSpotifyCSV private constructor(
 
                         try {
                             Database.upsert(song)
-                            println("ImportSongsFromSpotifyCSV inserito nel DB con successo: ${song.title}")
+                            Timber.d("ImportSongsFromSpotifyCSV saved in the db: ${song.title}")
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }

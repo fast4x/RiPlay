@@ -4,7 +4,7 @@ import it.fast4x.environment.Environment
 import it.fast4x.environment.models.MusicShelfRenderer
 import it.fast4x.environment.models.NavigationEndpoint
 
-fun Environment.SongItem.Companion.from(content: MusicShelfRenderer.Content): Environment.SongItem? {
+fun Environment.SongItem.Companion.fromMusicShelfRenderer(content: MusicShelfRenderer.Content): Environment.SongItem? {
     val (mainRuns, otherRuns) = content.runs
 
     val album: Environment.Info<NavigationEndpoint.Endpoint.Browse>? = otherRuns
@@ -41,7 +41,7 @@ fun Environment.SongItem.Companion.from(content: MusicShelfRenderer.Content): En
     ).takeIf { it.info?.endpoint?.videoId != null }
 }
 
-fun Environment.VideoItem.Companion.from(content: MusicShelfRenderer.Content): Environment.VideoItem? {
+fun Environment.VideoItem.Companion.fromMusicShelfRenderer(content: MusicShelfRenderer.Content): Environment.VideoItem? {
     val (mainRuns, otherRuns) = content.runs
 
     return runCatching {
@@ -67,7 +67,7 @@ fun Environment.VideoItem.Companion.from(content: MusicShelfRenderer.Content): E
 
 }
 
-fun Environment.AlbumItem.Companion.from(content: MusicShelfRenderer.Content): Environment.AlbumItem? {
+fun Environment.AlbumItem.Companion.fromMusicShelfRenderer(content: MusicShelfRenderer.Content): Environment.AlbumItem? {
     val (mainRuns, otherRuns) = content.runs
 
     return Environment.AlbumItem(
@@ -92,7 +92,7 @@ fun Environment.AlbumItem.Companion.from(content: MusicShelfRenderer.Content): E
     ).takeIf { it.info?.endpoint?.browseId != null }
 }
 
-fun Environment.ArtistItem.Companion.from(content: MusicShelfRenderer.Content): Environment.ArtistItem? {
+fun Environment.ArtistItem.Companion.fromMusicShelfRenderer(content: MusicShelfRenderer.Content): Environment.ArtistItem? {
     val (mainRuns, otherRuns) = content.runs
 
     return Environment.ArtistItem(
@@ -114,7 +114,7 @@ fun Environment.ArtistItem.Companion.from(content: MusicShelfRenderer.Content): 
     ).takeIf { it.info?.endpoint?.browseId != null }
 }
 
-fun Environment.PlaylistItem.Companion.from(content: MusicShelfRenderer.Content): Environment.PlaylistItem? {
+fun Environment.PlaylistItem.Companion.fromMusicShelfRenderer(content: MusicShelfRenderer.Content): Environment.PlaylistItem? {
     val (mainRuns, otherRuns) = content.runs
 
     println("Environment.PlaylistItem.Companion.from $content")

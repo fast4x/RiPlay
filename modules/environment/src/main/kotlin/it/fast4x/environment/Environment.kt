@@ -65,6 +65,7 @@ import it.fast4x.environment.utils.parseCookieString
 import it.fast4x.environment.utils.sha1
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
@@ -77,22 +78,19 @@ import okhttp3.logging.HttpLoggingInterceptor
 import java.net.InetAddress
 import java.net.Proxy
 import java.util.concurrent.TimeUnit
-import kotlin.coroutines.coroutineContext
-
-const val YT_PLAYLIST_SHARE_BASEURL = "https://www.youtube.com/playlist?list="
-const val YTM_PLAYLIST_SHARE_BASEURL = "https://music.youtube.com/playlist?list="
-const val YT_VIDEOORSONG_SHARE_BASEURL = "https://www.youtube.com/watch?v="
-const val YTM_VIDEOORSONG_SHARE_BASEURL = "https://music.youtube.com/watch?v="
-const val YT_ARTIST_SHARE_BASEURL = "https://www.youtube.com/channel/"
-const val YTM_ARTIST_SHARE_BASEURL = "https://music.youtube.com/channel/"
-const val YT_ALBUM_SHARE_BASEURL = "https://www.youtube.com/browse/"
-const val YTM_ALBUM_SHARE_BASEURL = "https://music.youtube.com/browse/"
-
-private val VISITOR_DATA_SUFFIX = Regex("^Cg[t|s]")
-
-
 
 object Environment {
+
+    const val YT_PLAYLIST_SHARE_BASEURL = "https://www.youtube.com/playlist?list="
+    const val YTM_PLAYLIST_SHARE_BASEURL = "https://music.youtube.com/playlist?list="
+    const val YT_VIDEOORSONG_SHARE_BASEURL = "https://www.youtube.com/watch?v="
+    const val YTM_VIDEOORSONG_SHARE_BASEURL = "https://music.youtube.com/watch?v="
+    const val YT_ARTIST_SHARE_BASEURL = "https://www.youtube.com/channel/"
+    const val YTM_ARTIST_SHARE_BASEURL = "https://music.youtube.com/channel/"
+    const val YT_ALBUM_SHARE_BASEURL = "https://www.youtube.com/browse/"
+    const val YTM_ALBUM_SHARE_BASEURL = "https://music.youtube.com/browse/"
+
+    private val VISITOR_DATA_SUFFIX = Regex("^Cg[t|s]")
 
     val _7ZoUy0mkCP = EnvironmentPreferences.preference?.p37 ?: ""
     val _uMYwa66ycM = EnvironmentPreferences.preference?.p38 ?: ""
@@ -1232,24 +1230,6 @@ object Environment {
             parameter("referrer", "$_XsHo8IdebO/playlist?list=$playlistId")
         }
     }
-
-    @Serializable
-    data class SpotifyOEmbedResponse(
-        val thumbnail_url: String? = null
-    )
-
-    suspend fun spotifyThumbnail(trackId: String): Result<String?> =
-        runCatching {
-            val oembedUrl = "https://open.spotify.com/oembed"
-            val trackUrl = "https://open.spotify.com/track/$trackId"
-            val response = client.get(oembedUrl) {
-                parameter("url", trackUrl)
-            }.body<SpotifyOEmbedResponse>()
-
-            response.thumbnail_url
-        }.onFailure {
-            println("Environment spotifyThumbnail error ${it.message}")
-        }
 
     suspend fun getArtistDiscography(
         browseId: String,

@@ -32,7 +32,7 @@ import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.requests.searchPage
 import it.fast4x.environment.utils.completed
-import it.fast4x.environment.utils.from
+import it.fast4x.environment.utils.fromMusicShelfRenderer
 import it.fast4x.riplay.Dependencies.application
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.MODIFIED_PREFIX
@@ -845,7 +845,7 @@ class MediaLibraryServiceCallback(
                     query = query,
                     params = Environment.SearchFilter.Song.value
                 ),
-                fromMusicShelfRendererContent = Environment.SongItem.Companion::from
+                fromMusicShelfRendererContent = Environment.SongItem.Companion::fromMusicShelfRenderer
             )?.map {
                 it?.items?.map { it.asSong }
             }?.getOrNull() ?: emptyList()

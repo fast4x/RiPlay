@@ -14,6 +14,7 @@ enum class NavRoutes {
     playlist,
     queue,
     search,
+    searchOnlineEntity,
     settings,
     statistics,
     newAlbums,
