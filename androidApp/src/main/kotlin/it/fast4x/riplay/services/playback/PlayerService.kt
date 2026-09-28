@@ -322,7 +322,7 @@ class PlayerService : MediaLibraryService(),
     var youtubeCurrentDuration: StateFlow<Float> = _currentDuration
 
     var load = true
-    var playFromSecond by mutableFloatStateOf(0f)
+    private var playFromSecond = 0f
     var lastError: PlayerConstants.PlayerError? = null
 
     private var onlineListenedDurationMs = 0L
@@ -1391,11 +1391,11 @@ class PlayerService : MediaLibraryService(),
 
 
                     PlayerConstants.PlayerState.VIDEO_CUED -> {
-                        Timber.d("PlayerService onlinePlayerView: onStateChange VIDEO_CUED regular play()")
+                        Timber.d("PlayerService onlinePlayerView: onStateChange VIDEO_CUED")
                         playFromSecond = 0f
                         hybridPlayer.pause()
                         //_internalYouTubePlayer.value?.pause()
-                        youTubePlayer.pause()
+                        //youTubePlayer.pause()
                         if (!firstTimeStarted) {
                             if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                                 youTubePlayer.unMute()
@@ -1403,8 +1403,9 @@ class PlayerService : MediaLibraryService(),
 
                                 // Prepara hybridPlayer per la riproduzione
                                 hybridPlayer.playWhenReady = true
-
-                                youTubePlayer.play()
+                                hybridPlayer.play()
+                                //youTubePlayer.play()
+                                Timber.d("PlayerService onlinePlayerView: onStateChange VIDEO_CUED regular play() > ${currentSong.value?.id} ${currentSong.value?.title}")
                             }
 
                         }
