@@ -114,8 +114,9 @@
   var volumeWatchdogInterval = null;
   var desiredVolume = 100;
 
-  // AGGIUNTA: Variabile globale per tracciare il timeout dello sblocco rapido
-  var unstartedKickTimeoutId;
+  // WatchDog per UNSTARTED
+  var lastLoadRequest = null;
+  var unstartedRetryDone = false;
 
   // Funzione AdBlock protetta da eccezioni Cross-Origin
   function initializeAdBlock() {
@@ -206,6 +207,18 @@
               }
           }, 250);
 
+          // Rilevatore per UNSTARTED sempre attivo
+          setInterval(function() {
+              if (!player || !lastLoadRequest) return;
+              if (player.getPlayerState() !== -1) return;          // solo UNSTARTED appeso
+              var stuckFor = performance.now() - lastLoadRequest.at;
+              if (stuckFor > 2000 && !unstartedRetryDone) {
+                  unstartedRetryDone = true; // max 1 retry: poi passano i livelli Kotlin
+                  console.log("[JS] UNSTARTED persistente " + stuckFor.toFixed(0) + "ms → re-issue loadVideo");
+                  loadVideo(lastLoadRequest.videoId, lastLoadRequest.startSeconds);
+              }
+          }, 500);
+
         },
         onStateChange: function(event) { sendPlayerStateChange(event.data) },
         onPlaybackQualityChange: function(event) { if(YouTubePlayerBridge) YouTubePlayerBridge.sendPlaybackQualityChange(event.data) },
@@ -226,9 +239,6 @@
 
   function sendPlayerStateChange(playerState) {
     clearTimeout(timerId);
-
-    // Puliamo il timer di sblocco ad ogni cambio di stato per evitare attivazioni residue
-    if (unstartedKickTimeoutId) clearTimeout(unstartedKickTimeoutId);
 
     initializeAdBlock();
 
@@ -269,19 +279,7 @@
     switch (playerState) {
 
       case YT.PlayerState.UNSTARTED:
-        // Spariamo subito la notifica a Kotlin come facevi prima
         YouTubePlayerBridge.sendStateChange(UNSTARTED);
-        sendVideoIdFromPlaylistIfAvailable(player);
-
-        // CALCIO PREVENTIVO A BASSO LIVELLO (Thread Chromium):
-        // Aspettiamo 200ms. Se il player è ancora bloccato in UNSTARTED,
-        // forziamo un playVideo() interno per svegliare i timer di YouTube.
-        unstartedKickTimeoutId = setTimeout(function() {
-            if (player && typeof player.getPlayerState === 'function' && player.getPlayerState() === -1) {
-                console.log("JS: UNSTARTED persistente rilevato nel core. Forzo playVideo() preventivo.");
-                player.playVideo();
-            }
-        }, 200);
         return;
       case YT.PlayerState.ENDED:
         YouTubePlayerBridge.sendStateChange(ENDED);
@@ -305,6 +303,7 @@
         return;
       case YT.PlayerState.CUED:
         YouTubePlayerBridge.sendStateChange(CUED);
+        sendVideoData(player);
         return;
     }
   }
@@ -350,18 +349,19 @@
   function playVideo() { if(player) player.playVideo(); }
 
   function loadVideo(videoId, startSeconds) {
-    if(player) {
-       player.loadVideoById(videoId, startSeconds);
-       if(YouTubePlayerBridge) YouTubePlayerBridge.sendVideoId(videoId);
-    }
+    if (!player) return;
+    lastLoadRequest = { videoId: videoId, startSeconds: startSeconds, at: performance.now() };
+    unstartedRetryDone = false;
+    player.loadVideoById(videoId, startSeconds);
+    if (YouTubePlayerBridge) YouTubePlayerBridge.sendVideoId(videoId);
   }
 
   function cueVideo(videoId, startSeconds) {
-    if(player) {
-       console.log("AYP LOAD: videoId=" + videoId + " start=" + startSeconds + " type=" + typeof videoId);
-       player.cueVideoById(videoId, startSeconds);
-       if(YouTubePlayerBridge) YouTubePlayerBridge.sendVideoId(videoId);
-    }
+    if (!player) return;
+    lastLoadRequest = { videoId: videoId, startSeconds: startSeconds, at: performance.now() };
+    unstartedRetryDone = false;
+    player.cueVideoById(videoId, startSeconds);
+    if (YouTubePlayerBridge) YouTubePlayerBridge.sendVideoId(videoId);
   }
 
   function mute() { if(player) player.mute(); }

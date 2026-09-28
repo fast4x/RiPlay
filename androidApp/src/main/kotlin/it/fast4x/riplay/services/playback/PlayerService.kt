@@ -1267,13 +1267,20 @@ class PlayerService : MediaLibraryService(),
 
                 if (currentSong.value?.isLocal == true) return
 
+                // Diciamo a HybridPlayer di passare all'engine YT
+                hybridPlayer.switchToYoutube()
+                // Imposto i secondi dall'inizio in base a playFromSecond che viene salvata nella coda
+                _currentSecond.value = playFromSecond
+
                 currentSong.value?.id?.let{
                     if (appSettings.persistentQueue && appSettings.resumePlaybackOnStart && firstTimeStarted && !skipAutoload) {
-                        Timber.d("LOAD-COMMAND videoId=${it} start=${playFromSecond}")
+                        //Timber.d("LOAD-COMMAND videoId=${it} start=${playFromSecond}")
 
                         youTubePlayer.loadVideo(it, playFromSecond)
-                        playFromSecond = 0f
-                        Timber.d("PlayerService onlinePlayer onReady loadVideo ${it}")
+                        Timber.d("PlayerService onlinePlayer onReady loadVideo = $it playFromSecond = $playFromSecond")
+                    } else {
+                        youTubePlayer.cueVideo(it, playFromSecond)
+                        Timber.d("PlayerService onlinePlayer onReady cueVideo = $it playFromSecond = $playFromSecond")
                     }
                 }
 
@@ -1283,8 +1290,8 @@ class PlayerService : MediaLibraryService(),
 
             override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
 
-                //Timber.d("PlayerService LOAD-PENDING onCurrentSecond sec=$second isPlaying = ${_playerState.value.isPlaying}")
-                if(_playerState.value.loadPending.isPending && _playerState.value.isPlaying && (second in  2f..9f )) {
+                //Timber.d("PlayerService LOAD-PENDING onCurrentSecond sec=$second isPlaying = ${_playerState.value.isPlaying} playerState = ${_playerState.value.playbackState}")
+                if(_playerState.value.loadPending.isPending && _playerState.value.isPlaying && (second in  0f..3f )) {
                   //  Timber.d("PlayerService LOAD-PENDING OnCurrentSecond sec=$second >> firstTimeStarted = $firstTimeStarted << ")
                     setLoadPending(LoadPhase.NONE, "onCurrentSecond")
                 }
@@ -1322,6 +1329,7 @@ class PlayerService : MediaLibraryService(),
                     )
                     hybridPlayer.forwardEventsToSession(timelineEvents)
                 }
+
                 hybridPlayer.updateCurrentMediaItemDuration(duration.toLong() * 1000L)
             }
 
@@ -1338,8 +1346,6 @@ class PlayerService : MediaLibraryService(),
 
                 if (currentSong.value?.isLocal == true) return
                 //Timber.d("PlayerService onlinePlayerView: onStateChange $state")
-
-
                 //unstartedWatchdogJob?.cancel()
 
                 updatePlayerState(state)
@@ -1389,7 +1395,7 @@ class PlayerService : MediaLibraryService(),
                     }
                      */
 
-
+                    /*
                     PlayerConstants.PlayerState.VIDEO_CUED -> {
                         Timber.d("PlayerService onlinePlayerView: onStateChange VIDEO_CUED")
                         playFromSecond = 0f
@@ -1411,6 +1417,7 @@ class PlayerService : MediaLibraryService(),
                         }
 
                     }
+                    */
                     PlayerConstants.PlayerState.PLAYING -> {
                         lastError = null  // reset errore dopo riproduzione riuscita
                         onlineNearEndTicks = 0
@@ -1617,10 +1624,10 @@ class PlayerService : MediaLibraryService(),
         _playerState.value = when (state) {
             PlayerConstants.PlayerState.PLAYING -> currentState.copy(playbackState = PlaybackState.PLAYING)
             PlayerConstants.PlayerState.UNSTARTED -> currentState.copy(playbackState = PlaybackState.UNSTARTED)
-            PlayerConstants.PlayerState.VIDEO_CUED -> currentState.copy(playbackState = PlaybackState.PLAYING)
+            PlayerConstants.PlayerState.PAUSED,
+            PlayerConstants.PlayerState.VIDEO_CUED -> currentState.copy(playbackState = PlaybackState.PAUSED)
             PlayerConstants.PlayerState.ENDED -> currentState.copy(playbackState = PlaybackState.ENDED)
             PlayerConstants.PlayerState.BUFFERING -> currentState.copy(playbackState = PlaybackState.BUFFERING)
-            PlayerConstants.PlayerState.PAUSED -> currentState.copy(playbackState = PlaybackState.PAUSED)
             PlayerConstants.PlayerState.UNKNOWN -> currentState.copy(playbackState = PlaybackState.IDLE)
         }
 
@@ -2098,11 +2105,11 @@ class PlayerService : MediaLibraryService(),
                 if (!firstTimeStarted) // Non mostro il loader se è il primo avvio, serve solo a precaricare il player online
                     setLoadPending(LoadPhase.PENDING, "onMediaItemTsransition >> firstTimeStarted = $firstTimeStarted << ")
                 // Ferma ExoPlayer prima di avviare il player online
-                _internalYouTubePlayer.value?.pause()
+                hybridPlayer.pause()
                 hybridPlayer.switchToYoutube()
 
                 if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
-                    _internalYouTubePlayer.value?.cueVideo(it.mediaId, playFromSecond)
+                    _internalYouTubePlayer.value?.loadVideo(it.mediaId, playFromSecond)
                     // Avvia il fade in per il nuovo brano appena parte il play
                     startFadeIn()
                     Timber.d("PlayerService onMediaItemTransition mediaItem not local video cued id = ${it.mediaId} playFromSecond $playFromSecond")
@@ -2675,6 +2682,9 @@ class PlayerService : MediaLibraryService(),
         Timber.d("PlayerService onIsPlayingChanged intercettato: isPlaying=$isPlaying ")
 
         lastWatchdogPosition = -1 // resetto la posizione precedente se cambia lo stato
+
+        if (hybridPlayer.activeEngine == ActiveEngine.EXOPLAYER)
+            setLoadPending(LoadPhase.NONE, "ExoPlayer onIsPlayingChanged = $isPlaying")
 
         if (isPlaying) {
             if (appSettings.crossfadeDuration == CrossfadeDuration.Off){
