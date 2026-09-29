@@ -1291,7 +1291,7 @@ class PlayerService : MediaLibraryService(),
             override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
 
                 //Timber.d("PlayerService LOAD-PENDING onCurrentSecond sec=$second isPlaying = ${_playerState.value.isPlaying} playerState = ${_playerState.value.playbackState}")
-                if(_playerState.value.loadPending.isPending && _playerState.value.isPlaying && (second in  0f..3f )) {
+                if(_playerState.value.loadPending.isPending && _playerState.value.isPlaying && (second in  1f..4f )) {
                   //  Timber.d("PlayerService LOAD-PENDING OnCurrentSecond sec=$second >> firstTimeStarted = $firstTimeStarted << ")
                     setLoadPending(LoadPhase.NONE, "onCurrentSecond")
                 }
@@ -2104,8 +2104,8 @@ class PlayerService : MediaLibraryService(),
             if (!it.isLocal){
                 if (!firstTimeStarted) // Non mostro il loader se è il primo avvio, serve solo a precaricare il player online
                     setLoadPending(LoadPhase.PENDING, "onMediaItemTsransition >> firstTimeStarted = $firstTimeStarted << ")
-                // Ferma ExoPlayer prima di avviare il player online
-                hybridPlayer.pause()
+                // (forse non è necessario) Ferma ExoPlayer prima di avviare il player online
+                //hybridPlayer.pause()
                 hybridPlayer.switchToYoutube()
 
                 if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
