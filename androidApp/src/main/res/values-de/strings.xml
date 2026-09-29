@@ -1490,4 +1490,5 @@ Mach dich bereit, deine unvergesslichsten musikalischen Momente noch einmal zu e
     <string name="loader_style_polygons">Polygons</string>
     <string name="android_auto_is_disabled">AA is disabled</string>
     <string name="riplay_app_name">RiPlay</string>
+    <string name="lock_orientation">Lock orientation</string>
 </resources>

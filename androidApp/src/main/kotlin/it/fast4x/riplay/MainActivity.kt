@@ -5,6 +5,7 @@ import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Bitmap
@@ -217,6 +218,7 @@ import it.fast4x.riplay.extensions.preferences.cleanUpUnusedPreferences
 import it.fast4x.riplay.ui.components.themed.RiPlayScreenLoader
 import it.fast4x.riplay.ui.screens.player.unified.TvUnifiedPlayer
 import it.fast4x.riplay.ui.screens.player.unified.components.LocalSharedTransitionScope
+import it.fast4x.riplay.utils.OrientationLock
 import it.fast4x.riplay.utils.VideoParkingLot
 import it.fast4x.riplay.utils.isTVDevice
 import it.fast4x.riplay.utils.isTvMode
@@ -608,7 +610,9 @@ class MainActivity : AppCompatActivity() {
             val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
             val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
-            Timber.d("MainActivity onCreate appSettings: $appSettings")
+            //Timber.d("MainActivity onCreate appSettings: ${appSettings.lockOrientation}")
+
+            OrientationLock(if (appSettings.lockOrientation) ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT else null)
 
             if (appSettings.keepScreenEnabled) {
                 window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)

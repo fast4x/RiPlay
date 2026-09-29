@@ -286,5 +286,6 @@ data class AppSettings(
     val videoContentMode: VideoContentMode = VideoContentMode.AudioOnly,
     val forceUserVideoPlayback: Boolean = false,
     val loaderStyle: LoaderStyle = LoaderStyle.Gradient,
+    val lockOrientation: Boolean = false,
 )
 

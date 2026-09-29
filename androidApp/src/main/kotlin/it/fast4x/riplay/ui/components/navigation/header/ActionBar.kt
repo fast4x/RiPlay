@@ -81,6 +81,7 @@ private fun HamburgerMenu(
     val launchSystemEqualizer by rememberSystemEqualizerLauncher(audioSessionId = {0})
     val showListenerLevels = appSettings.showListenerLevels
     val offlineModeEnabled = appSettings.offlineModeEnabled
+    val lockOrientation = appSettings.lockOrientation
     val scope = rememberCoroutineScope()
     var menuIndex = 0
 
@@ -157,6 +158,7 @@ private fun HamburgerMenu(
                 )
 
 
+                /*
                 if (showListenerLevels)
                     ModernMenuItem(
                         index = menuIndex++,
@@ -172,6 +174,7 @@ private fun HamburgerMenu(
                     textRes = R.string.rewinds,
                     onClick = { onItemClick(NavRoutes.rewind) }
                 )
+                */
 
                 if (isPipSupported && enablePictureInPicture) {
                     ModernMenuItem(
@@ -204,6 +207,20 @@ private fun HamburgerMenu(
                         scope.launch {
                             appSettingsManager.updateSettings(
                                 appSettingsManager.activeSettings.value.copy(offlineModeEnabled = it)
+                            )
+                        }
+                    }
+                )
+
+                ModernMenuCheckboxItem(
+                    index = menuIndex++,
+                    iconRes = R.drawable.rotation_lock,
+                    textRes = R.string.lock_orientation,
+                    checked = lockOrientation,
+                    onCheckedChange = {
+                        scope.launch {
+                            appSettingsManager.updateSettings(
+                                appSettingsManager.activeSettings.value.copy(lockOrientation = it)
                             )
                         }
                     }

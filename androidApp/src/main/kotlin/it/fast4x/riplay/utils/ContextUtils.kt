@@ -20,6 +20,9 @@ import androidx.media3.exoplayer.offline.DownloadService.sendAddDownload
 import androidx.media3.exoplayer.offline.DownloadService.sendRemoveDownload
 import android.net.Uri
 import android.provider.OpenableColumns
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.platform.LocalContext
 import timber.log.Timber
 import java.io.File
 
@@ -164,4 +167,14 @@ fun Context.getFileNameFromUri(uri: Uri): String? {
 
     // Caso 3: Altri schemi (es. http/https)
     return uri.lastPathSegment ?: uri.path?.substringAfterLast("/")
+}
+
+@Composable
+fun OrientationLock(orientation: Int?) {
+    val activity = LocalContext.current.findActivity()
+    DisposableEffect(orientation) {
+        val previous = activity.requestedOrientation
+        orientation?.let { activity.requestedOrientation = it }
+        onDispose { activity.requestedOrientation = previous }
+    }
 }
