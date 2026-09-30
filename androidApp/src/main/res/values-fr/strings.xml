@@ -1489,4 +1489,5 @@ Volume BAS : titre précédent</string>
     <string name="android_auto_is_disabled">AA is disabled</string>
     <string name="riplay_app_name">RiPlay</string>
     <string name="lock_orientation">Lock orientation</string>
+    <string name="equalizer_pre_amp_title_pre_amp_1f_db">Pre-amp: %.1f dB</string>
 </resources>

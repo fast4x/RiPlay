@@ -356,7 +356,7 @@ class PlayerService : MediaLibraryService(),
     private val riTuneCastClient: RiTuneCastClient = RiTuneCastClient()
     private var riTuneObserverJob: Job? = null
 
-    private lateinit var equalizerHelper: EqualizerHelper
+    private val equalizerHelper: EqualizerHelper by lazy { EqualizerHelper(this) }
 
 //    private val globalQueue: GlobalQueueViewModel by lazy {
 //        ViewModelProvider(AppSharedScope)[GlobalQueueViewModel::class.java]
@@ -468,6 +468,8 @@ class PlayerService : MediaLibraryService(),
     @Volatile private var resumePending = false
     @Volatile var userInitiatedPause = false
 
+    private var eqSetupDone = false
+
     override fun onBind(intent: Intent?): IBinder {
         return super.onBind(intent) ?: binder
     }
@@ -540,7 +542,7 @@ class PlayerService : MediaLibraryService(),
 
             initializeAudioManager()
             initializeAudioVolumeObserver()
-            initializeAudioEqualizer()
+
             initializeLegacyNotificationActionReceiver()
             initializeAudioDeviceCallback()
 
@@ -1670,12 +1672,6 @@ class PlayerService : MediaLibraryService(),
         audioVolumeObserver.register(AudioManager.STREAM_MUSIC, this)
     }
 
-    private fun initializeAudioEqualizer() {
-        equalizerHelper = EqualizerHelper(this)
-        equalizerHelper.setup(0)
-    }
-
-
     private fun initializeLegacyNotificationActionReceiver() {
 
         legacyActionReceiver = LegacyActionReceiver()
@@ -1816,9 +1812,8 @@ class PlayerService : MediaLibraryService(),
         }
 
 
-        if (::equalizerHelper.isInitialized) {
-            equalizerHelper.release()
-        }
+        equalizerHelper.release()
+
 
         if (::hybridPlayer.isInitialized) {
             hybridPlayer.release()
@@ -1935,9 +1930,19 @@ class PlayerService : MediaLibraryService(),
 
         Timber.d("PlayerService onPlaybackStateChanged playbackState $playbackState")
 
-        if (hybridPlayer.activeEngine != ActiveEngine.EXOPLAYER) return
+        //if (hybridPlayer.activeEngine != ActiveEngine.EXOPLAYER) return
 
         if (playbackState == Player.STATE_READY) {
+
+            // Inizializziamo l'equalizzatore solo se non è già inizializzato
+            if (!eqSetupDone) {
+                eqSetupDone = true
+                equalizerHelper.setupWithRetry(0)
+            }
+
+            // Torniamo indietro se l'engine non è EXO
+            if (hybridPlayer.activeEngine != ActiveEngine.EXOPLAYER) return
+
             // Fade-in solo all'inizio del brano
             if (appSettings.crossfadeDuration != CrossfadeDuration.Off) {
                 if (!isFading) startFadeIn()
@@ -3631,8 +3636,8 @@ class PlayerService : MediaLibraryService(),
             @Synchronized
             get() = this@PlayerService.riTuneCastClient
 
-        val equalizer: EqualizerHelper?
-            get() = if (this@PlayerService::equalizerHelper.isInitialized) this@PlayerService.equalizerHelper else null
+        val equalizer: EqualizerHelper
+            get() = this@PlayerService.equalizerHelper
 
         val sleepTimerMillisLeft: StateFlow<Long?>?
             get() = timerJob?.millisLeft

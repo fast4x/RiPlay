@@ -33,6 +33,9 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.EqualizerPreset
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun InternalEqualizerScreen(equalizerHelper: EqualizerHelper) {
@@ -44,34 +47,22 @@ fun InternalEqualizerScreen(equalizerHelper: EqualizerHelper) {
     var selectedPreset by remember { mutableStateOf(EqualizerPreset.FLAT) }
     var isEqEnabled by remember { mutableStateOf(false) }
 
+    val preampDb by equalizerHelper.preampDb.collectAsState()
+
     LaunchedEffect(Unit) {
-        config = equalizerHelper.getEqualizerConfig()
-        //Timber.d("EqualizerScreen: LaunchedEffect config $config")
-        val savedData = equalizerHelper.loadSettings()
+        withTimeoutOrNull(5000.milliseconds) { equalizerHelper.eqReady.first { it } }
+        val cfg = equalizerHelper.getEqualizerConfig() ?: return@LaunchedEffect
+        config = cfg
 
-        config?.let { cfg ->
-            if (savedData != null) {
-
-                isEqEnabled = savedData.first
-                val savedPreset = savedData.second
-                if (savedPreset != null) selectedPreset = EqualizerPreset.fromString(savedPreset)
-
-                val savedBands = savedData.third
-
-                cfg.bands.forEach { band ->
-                    val savedValue = savedBands[band.index] ?: 0.5f
-                    bandLevels[band.index] = savedValue
-
-                    val levelShort = percentToLevel(savedValue, cfg.minLevel, cfg.maxLevel)
-                    equalizerHelper.setBandLevel(band.index, levelShort)
-                }
-
-                equalizerHelper.setEnabled(isEqEnabled)
-            } else {
-                cfg.bands.forEach { bandLevels[it.index] = 0.5f }
-                equalizerHelper.setEnabled(false)
-            }
+        val saved = equalizerHelper.loadSettings()
+        if (saved == null) {
+            cfg.bands.forEach { bandLevels[it.index] = 0.5f }
+            return@LaunchedEffect
         }
+        isEqEnabled = saved.first
+        saved.second?.let { selectedPreset = EqualizerPreset.fromString(it) }
+        saved.third.forEach { (i, p) -> bandLevels[i] = p }
+
     }
 
     config?.let { cfg ->
@@ -97,21 +88,7 @@ fun InternalEqualizerScreen(equalizerHelper: EqualizerHelper) {
                     checked = isEqEnabled,
                     onCheckedChange = { isChecked ->
                         isEqEnabled = isChecked
-
-                        if (isChecked) {
-                            equalizerHelper.setEnabled(true)
-
-                            config?.let { cfg ->
-                                bandLevels.forEach { (index, percent) ->
-                                    val levelShort = percentToLevel(percent, cfg.minLevel, cfg.maxLevel)
-                                    equalizerHelper.setBandLevel(index, levelShort)
-                                }
-                            }
-                        } else {
-                            equalizerHelper.setEnabled(false)
-                        }
-
-                        equalizerHelper.saveSettings(isEqEnabled, selectedPreset.name, bandLevels)
+                        cfg.let { equalizerHelper.applyAndSave(isChecked, selectedPreset.name, it, bandLevels) }
                     },
                     colors = androidx.compose.material3.SwitchDefaults.colors(
                         checkedThumbColor = colorPalette().accent,
@@ -119,6 +96,19 @@ fun InternalEqualizerScreen(equalizerHelper: EqualizerHelper) {
                     ),
                     modifier = Modifier.scale(0.7f)
                 )
+            }
+            if (isEqEnabled && preampDb != 0f) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.equalizer_pre_amp_title_pre_amp_1f_db).format(preampDb),
+                        fontSize = 12.sp,
+                        color = colorPalette().textSecondary
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -144,14 +134,10 @@ fun InternalEqualizerScreen(equalizerHelper: EqualizerHelper) {
 
                 PresetSelector(
                     selectedPreset = selectedPreset,
-                    onPresetSelected = { name ->
-                        if (!isEqEnabled) {
-                            isEqEnabled = true
-                            equalizerHelper.setEnabled(true)
-                        }
-                        selectedPreset = name
-                        applyPreset(name.name, cfg, bandLevels, equalizerHelper)
-                        equalizerHelper.saveSettings(true, name.name, bandLevels)
+                    onPresetSelected = { preset ->
+                        selectedPreset = preset
+                        isEqEnabled = true
+                        applyPreset(preset, cfg, bandLevels, equalizerHelper)
                     },
                     onReset = {
                         selectedPreset = EqualizerPreset.FLAT
@@ -162,7 +148,7 @@ fun InternalEqualizerScreen(equalizerHelper: EqualizerHelper) {
                             cfg.maxLevel
                         )
                         cfg.bands.forEach { bandLevels[it.index] = centerPercent }
-                        equalizerHelper.saveSettings(isEqEnabled, selectedPreset.name, bandLevels)
+                        equalizerHelper.applyAndSave(isEqEnabled, selectedPreset.name, cfg, bandLevels)
                     }
                 )
 
@@ -177,6 +163,7 @@ fun InternalEqualizerScreen(equalizerHelper: EqualizerHelper) {
                 ) {
                     cfg.bands.forEach { band ->
                         BandColumnLinked(
+                            helper = equalizerHelper,
                             bandConfig = band,
                             minLevel = cfg.minLevel,
                             maxLevel = cfg.maxLevel,
@@ -185,13 +172,7 @@ fun InternalEqualizerScreen(equalizerHelper: EqualizerHelper) {
                             allBandLevels = bandLevels,
                             onPercentChanged = { updatedLevels ->
                                 updatedLevels.forEach { (k, v) -> bandLevels[k] = v }
-
-                                updatedLevels.forEach { (index, percent) ->
-                                    val levelShort =
-                                        percentToLevel(percent, cfg.minLevel, cfg.maxLevel)
-                                    equalizerHelper.setBandLevel(index, levelShort)
-                                }
-                                equalizerHelper.saveSettings(isEqEnabled, selectedPreset.name, bandLevels)
+                                equalizerHelper.applyAndSave(isEqEnabled, selectedPreset.name, cfg, bandLevels)
                             },
                             enabled = isEqEnabled
                         )
@@ -206,6 +187,7 @@ fun InternalEqualizerScreen(equalizerHelper: EqualizerHelper) {
 
 @Composable
 fun BandColumnLinked(
+    helper: EqualizerHelper,
     bandConfig: BandConfig,
     minLevel: Short,
     maxLevel: Short,
@@ -267,9 +249,9 @@ fun BandColumnLinked(
             )
         }
 
-        val currentDb = percentToLevel(sliderPosition, minLevel, maxLevel)
+        val currentMb = helper.percentToMb(sliderPosition)
         Text(
-            "${currentDb / 100}",
+            "${currentMb / 100}",
             fontSize = 10.sp,
             color = colorPalette().text,
         )
@@ -353,37 +335,43 @@ fun PresetSelector(
 }
 
 fun applyPreset(
-    name: String,
+    preset: EqualizerPreset,
     cfg: EqualizerConfig,
     bandLevels: MutableMap<Short, Float>,
     helper: EqualizerHelper
 ) {
     val count = cfg.bands.size
+    if (count == 0) return
 
-    val shape: List<Float> = when (name) {
-        "Bass Boost" -> listOf(1.0f, 0.9f, 0.8f, 0.7f, 0.6f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f)
-        "Rock"       -> listOf(0.8f, 0.7f, 0.5f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f)
-        "Jazz"       -> listOf(0.7f, 0.7f, 0.6f, 0.6f, 0.7f, 0.7f, 0.6f, 0.5f, 0.5f, 0.5f)
-        "Vocal"      -> listOf(0.4f, 0.5f, 0.6f, 0.8f, 0.9f, 0.9f, 0.8f, 0.7f, 0.6f, 0.5f)
-        "Classical"  -> listOf(0.6f, 0.6f, 0.5f, 0.5f, 0.5f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f)
-        "Pop"        -> listOf(0.8f, 0.7f, 0.6f, 0.6f, 0.7f, 0.7, 0.6f, 0.5f, 0.5f, 0.5f)
-        "Electronic" -> listOf(1.0f, 0.9f, 0.7f, 0.5f, 0.4f, 0.5f, 0.7f, 0.9f, 1.0f, 1.0f)
-        "Dance"      -> listOf(0.9f, 0.8f, 0.6f, 0.5f, 0.5f, 0.7f, 0.8f, 0.9f, 1.0f, 1.0f)
-        "Acoustic"   -> listOf(0.6f, 0.6f, 0.7f, 0.7f, 0.7f, 0.7f, 0.7f, 0.6f, 0.6f, 0.6f)
-        else         -> List(count) { 0.5f } // Flat
-    } as List<Float>
-
-    helper.setEnabled(true)
-
-    val finalLevels = mutableListOf<Short>()
-    for (i in 0 until count) {
-        val shapeIndex = ((i.toFloat() / (count - 1)) * (shape.size - 1)).roundToInt().coerceIn(0, shape.size - 1)
-        val percent = shape[shapeIndex]
-
-        val levelShort = percentToLevel(percent, cfg.minLevel, cfg.maxLevel)
-        finalLevels.add(levelShort)
-        bandLevels[cfg.bands[i].index] = percent
+    val shape: List<Float> = when (preset) {
+        EqualizerPreset.BASS_BOOST -> listOf(1.0f, 0.9f, 0.8f, 0.7f, 0.6f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f)
+        EqualizerPreset.ROCK       -> listOf(0.8f, 0.7f, 0.5f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f)
+        EqualizerPreset.JAZZ       -> listOf(0.7f, 0.7f, 0.6f, 0.6f, 0.7f, 0.7f, 0.6f, 0.5f, 0.5f, 0.5f)
+        EqualizerPreset.VOCAL      -> listOf(0.4f, 0.5f, 0.6f, 0.8f, 0.9f, 0.9f, 0.8f, 0.7f, 0.6f, 0.5f)
+        EqualizerPreset.CLASSICAL  -> listOf(0.6f, 0.6f, 0.5f, 0.5f, 0.5f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f)
+        EqualizerPreset.POP        -> listOf(0.8f, 0.7f, 0.6f, 0.6f, 0.7f, 0.7f, 0.6f, 0.5f, 0.5f, 0.5f)
+        EqualizerPreset.ELECTRONIC -> listOf(1.0f, 0.9f, 0.7f, 0.5f, 0.4f, 0.5f, 0.7f, 0.9f, 1.0f, 1.0f)
+        EqualizerPreset.DANCE      -> listOf(0.9f, 0.8f, 0.6f, 0.5f, 0.5f, 0.7f, 0.8f, 0.9f, 1.0f, 1.0f)
+        EqualizerPreset.ACOUSTIC   -> listOf(0.6f, 0.6f, 0.7f, 0.7f, 0.7f, 0.7f, 0.7f, 0.6f, 0.6f, 0.6f)
+        EqualizerPreset.FLAT       -> List(count) { 0.5f }
     }
 
-    helper.setBandsLevels(finalLevels)
+    // Costruisce la mappa
+    val newMap: Map<Short, Float> = if (count == 1) {
+        mapOf(cfg.bands[0].index to shape[shape.size / 2])
+    } else {
+        (0 until count).associate { i ->
+            val t = i.toFloat() / (count - 1) * (shape.size - 1)
+            val i0 = t.toInt().coerceAtMost(shape.size - 2)
+            val percent = shape[i0] + (shape[i0 + 1] - shape[i0]) * (t - i0)
+            cfg.bands[i].index to percent
+        }
+    }
+
+    // Aggiorna lo stato UI
+    bandLevels.clear()
+    bandLevels.putAll(newMap)
+
+    // Applica preset selezionato = scelta intenzionale di attivare l'EQ
+    helper.applyAndSave(true, preset.name, cfg, newMap)
 }
