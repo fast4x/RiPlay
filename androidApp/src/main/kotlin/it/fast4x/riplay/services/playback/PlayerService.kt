@@ -2325,22 +2325,25 @@ class PlayerService : MediaLibraryService(),
 
     }
 
+    private fun getAudioSessionId() =
+        if (hybridPlayer.activeEngine == ActiveEngine.EXOPLAYER) hybridPlayer.audioSessionId else 0
+
     /**
      * Collega il LoudnessEnhancer alla sessione audio specifica di ExoPlayer.
      */
     @OptIn(UnstableApi::class)
-    private fun setupLoudnessEnhancerForExo() {
+    private fun setupLoudnessEnhancer() {
         if (loudnessEnhancer != null) return
 
         try {
-            val audioSessionId = hybridPlayer.audioSessionId
+            val audioSessionId = getAudioSessionId()
 
-            if (audioSessionId != C.AUDIO_SESSION_ID_UNSET) {
+            //if (audioSessionId != C.AUDIO_SESSION_ID_UNSET) {
                 loudnessEnhancer = LoudnessEnhancer(audioSessionId)
-                Timber.d("PlayerService LoudnessEnhancer attached to ExoPlayer session: $audioSessionId")
-            }
+                Timber.d("PlayerService LoudnessEnhancer attached to audio session: $audioSessionId")
+            //}
         } catch (e: Exception) {
-            Timber.e("PlayerService Errore inizializzazione LoudnessEnhancer: ${e.message}")
+            Timber.e("PlayerService Error in initialization LoudnessEnhancer: ${e.message}")
         }
     }
 
@@ -2359,8 +2362,8 @@ class PlayerService : MediaLibraryService(),
             return
         }
 
-        // Collego l'enhancer alla sessione audio di ExoPlayer
-        setupLoudnessEnhancerForExo()
+        // Collego l'enhancer alla sessione audio di ExoPlayer o a quella di sistema in base al tipo di riproduzione
+        setupLoudnessEnhancer()
 
         val baseGain = appSettings.loudnessBaseGain
         val boostLevel = appSettings.volumeBoostLevel
@@ -2513,16 +2516,12 @@ class PlayerService : MediaLibraryService(),
     fun sendOpenExternalEqualizerIntent() {
         // Estraiamo l'ID in modo dinamico: se l'engine attivo è ExoPlayer usiamo il suo id nativo,
         // altrimenti per YouTube forziamo la scansione globale del processo dell'app
-        val sessionId = if (hybridPlayer.activeEngine == ActiveEngine.EXOPLAYER) {
-            try { exoPlayer.audioSessionId } catch (e: Exception) { 0 }
-        } else {
-            AudioManager.AUDIO_SESSION_ID_GENERATE
-        }
+        val sessionId = getAudioSessionId()
 
-        if (sessionId == AudioEffect.ERROR_BAD_VALUE || sessionId == 0) return
+        //if (sessionId == AudioEffect.ERROR_BAD_VALUE || sessionId == 0) return
 
         try {
-            Timber.d("PlayerService External Equalizer: Invio OPEN Intent centralizzato per engine: ${hybridPlayer.activeEngine}, session: $sessionId")
+            Timber.d("PlayerService External Equalizer: Sent OPEN Intent for engine: ${hybridPlayer.activeEngine}, session: $sessionId")
             sendBroadcast(
                 Intent(AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION).apply {
                     putExtra(AudioEffect.EXTRA_AUDIO_SESSION, sessionId)
@@ -2531,7 +2530,7 @@ class PlayerService : MediaLibraryService(),
                 }
             )
         } catch (e: Exception) {
-            Timber.e("PlayerService External Equalizer: Errore OPEN Intent centralizzato: ${e.message}")
+            Timber.e("PlayerService External Equalizer: Error OPEN Intent centralized: ${e.message}")
         }
     }
 
@@ -2539,11 +2538,10 @@ class PlayerService : MediaLibraryService(),
 
     @UnstableApi
     private fun sendCloseExternalEqualizerIntent() {
-        val sessionId = try { exoPlayer.audioSessionId } catch (e: Exception) { 0 }
-        if (sessionId <= 0) return
+        val sessionId = getAudioSessionId()
 
         try {
-            Timber.d("PlayerService External Equalizer: Invio intent di CHIUSURA sessione audio: $sessionId")
+            Timber.d("PlayerService External Equalizer: Sent intent CLOSE audio sessionId: $sessionId")
             sendBroadcast(
                 Intent(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION).apply {
                     putExtra(AudioEffect.EXTRA_AUDIO_SESSION, sessionId)
@@ -2551,7 +2549,7 @@ class PlayerService : MediaLibraryService(),
                 }
             )
         } catch (e: Exception) {
-            Timber.e("PlayerService External Equalizer: Errore durante l'invio dell'intent CLOSE: ${e.message}")
+            Timber.e("PlayerService External Equalizer: Error during sent intent CLOSE: ${e.message}")
         }
     }
 
@@ -2755,8 +2753,8 @@ class PlayerService : MediaLibraryService(),
 
         runCatching {
             // Collego l'audiosession di exoplayer
-            val audioSessionId = hybridPlayer.audioSessionId
-            if (audioSessionId == C.AUDIO_SESSION_ID_UNSET) return@runCatching
+            val audioSessionId = getAudioSessionId()
+            //if (audioSessionId == C.AUDIO_SESSION_ID_UNSET) return@runCatching
 
             if (bassBoost == null) bassBoost = BassBoost(0, audioSessionId)
             val bassboostLevel =
@@ -2788,8 +2786,8 @@ class PlayerService : MediaLibraryService(),
 
         runCatching {
             // Collego l'audiosession di exoplayer
-            val audioSessionId = hybridPlayer.audioSessionId
-            if (audioSessionId == C.AUDIO_SESSION_ID_UNSET) return@runCatching
+            val audioSessionId = getAudioSessionId()
+            //if (audioSessionId == C.AUDIO_SESSION_ID_UNSET) return@runCatching
 
             if (reverbPreset == null) reverbPreset = PresetReverb(1,
                 audioSessionId
