@@ -974,12 +974,16 @@ class MediaLibraryServiceCallback(
                 }
                 KeyEvent.KEYCODE_MEDIA_PAUSE -> {
                     hybridPlayer.tracciaSorgenteComando("onMediaButtonEvent PAUSE")
+                    playerService.userInitiatedPause = true
                     hybridPlayer.pause()
                     return true
                 }
                 KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
                     hybridPlayer.tracciaSorgenteComando("onMediaButtonEvent PLAY/PAUSE")
-                    if (hybridPlayer.isPlaying) hybridPlayer.pause() else hybridPlayer.play()
+                    if (hybridPlayer.isPlaying) {
+                        playerService.userInitiatedPause = true
+                        hybridPlayer.pause()
+                    } else hybridPlayer.play()
                     return true
                 }
                 KeyEvent.KEYCODE_MEDIA_NEXT -> {

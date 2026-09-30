@@ -42,6 +42,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -277,8 +278,8 @@ class PlayerService : MediaLibraryService(),
 
     private val binder = Binder()
 
-    // Obsoleto media3 gestisce anche il pregresso
-    //var legacyActionReceiver: LegacyActionReceiver? = null
+    // Forse richiesto su dispositivi auto legacy anche se media3 gestisce anche il pregresso
+    var legacyActionReceiver: LegacyActionReceiver? = null
 
     private val playerVerticalWidget = PlayerVerticalWidget()
     private val playerHorizontalWidget = PlayerHorizontalWidget()
@@ -322,7 +323,7 @@ class PlayerService : MediaLibraryService(),
     var youtubeCurrentDuration: StateFlow<Float> = _currentDuration
 
     var load = true
-    private var playFromSecond = 0f
+    @Volatile private var playFromSecond = 0f
     var lastError: PlayerConstants.PlayerError? = null
 
     private var onlineListenedDurationMs = 0L
@@ -467,6 +468,9 @@ class PlayerService : MediaLibraryService(),
     private val _isLoadingRadio = MutableStateFlow(false)
     val isLoadingRadio: StateFlow<Boolean> = _isLoadingRadio.asStateFlow()
 
+    @Volatile private var resumePending = false
+    @Volatile var userInitiatedPause = false
+
     override fun onBind(intent: Intent?): IBinder {
         return super.onBind(intent) ?: binder
     }
@@ -540,7 +544,7 @@ class PlayerService : MediaLibraryService(),
             initializeAudioManager()
             initializeAudioVolumeObserver()
             initializeAudioEqualizer()
-
+            initializeLegacyNotificationActionReceiver()
             initializeAudioDeviceCallback()
 
             // Ora che la webview e l'hybrid player sono stabili, calcolo il volume di normalizzazione
@@ -564,6 +568,19 @@ class PlayerService : MediaLibraryService(),
 
             // Registra l'observer sul ciclo di vita del processo
             ProcessLifecycleOwner.get().lifecycle.addObserver(processLifecycleObserver)
+
+            // Listener di appoggio per la ripresa della riproduzione al termine di una chiamata
+            serviceScope.launch {
+                var recoveryAttempts = 0
+                while (isActive) {
+                    delay(2000.milliseconds)
+                    if (!resumePending || hybridPlayer.activeEngine != ActiveEngine.YOUTUBE) continue
+                    if (audioManager.mode != AudioManager.MODE_NORMAL) continue   // chiamata ancora attiva
+                    if (recoveryAttempts++ > 5) { resumePending = false; recoveryAttempts = 0; continue }
+                    Timber.d("PlayerService YT: recovery playVideo() (tentativo $recoveryAttempts)")
+                    _internalYouTubePlayer.value?.play()
+                }
+            }
 
             _isServiceReady.value = true
         }
@@ -815,6 +832,7 @@ class PlayerService : MediaLibraryService(),
                 //if (currentSong.value?.isLocal == true) exoPlayer.play() else _internalYouTubePlayer.value?.play()
             }
             Action.pause.value -> {
+                userInitiatedPause = true
                 hybridPlayer.pause()
                // if (currentSong.value?.isLocal == true) exoPlayer.pause() else _internalYouTubePlayer.value?.pause()
             }
@@ -1117,8 +1135,8 @@ class PlayerService : MediaLibraryService(),
 //            .setMediaSourceFactory(
 //                ProgressiveMediaSource.Factory(DefaultDataSource.Factory(this))
 //            )
-            .setHandleAudioBecomingNoisy(true)
             .setWakeMode(C.WAKE_MODE_LOCAL)
+            .setHandleAudioBecomingNoisy(true)
             .setAudioAttributes(
                 AudioAttributes.Builder()
                     .setUsage(C.USAGE_MEDIA)
@@ -1419,14 +1437,28 @@ class PlayerService : MediaLibraryService(),
                     }
                     */
                     PlayerConstants.PlayerState.PLAYING -> {
+                        resumePending = false
+
                         lastError = null  // reset errore dopo riproduzione riuscita
                         onlineNearEndTicks = 0
+                        Timber.d("PlayerService YT: Evento PLAYING")
+                        hybridPlayer.playWhenReady = true
+
 
                         if (::hybridPlayer.isInitialized) {
                             hybridPlayer.invalidateYouTubePlayPause()
                         }
                     }
                     PlayerConstants.PlayerState.PAUSED -> {
+                        val inCall = audioManager.mode != AudioManager.MODE_NORMAL
+                        if (inCall && !userInitiatedPause && hybridPlayer.activeEngine == ActiveEngine.YOUTUBE) {
+                            resumePending = true
+                            Timber.d("PlayerService YT: pausa esterna durante chiamata (mode=${audioManager.mode}) → resumePending")
+                        }
+                        userInitiatedPause = false
+                        Timber.d("PlayerService YT: Evento PAUSED (inCall = $inCall audioManager.mode=${audioManager.mode})")
+                        hybridPlayer.playWhenReady = false
+
                         onlineNearEndTicks = 0
 
                         if (::hybridPlayer.isInitialized) {
@@ -1644,7 +1676,7 @@ class PlayerService : MediaLibraryService(),
         equalizerHelper.setup(0)
     }
 
-    /* // obsoleto
+
     private fun initializeLegacyNotificationActionReceiver() {
 
         legacyActionReceiver = LegacyActionReceiver()
@@ -1668,8 +1700,6 @@ class PlayerService : MediaLibraryService(),
             ContextCompat.RECEIVER_NOT_EXPORTED
         )
     }
-
-     */
 
     @ExperimentalCoroutinesApi
     private fun updateDiscordPresence() {
@@ -1780,13 +1810,12 @@ class PlayerService : MediaLibraryService(),
             Timber.e("PlayerService onDestroy Errore nella rimozione dello screenReceiver: ${e.message}")
         }
 
-        /* // obsoleto
         try {
             unregisterReceiver(legacyActionReceiver)
         } catch (e: Exception) {
             Timber.e("PlayerService onDestroy unregisterReceiver legacyActionReceiver: ${e.message}")
         }
-         */
+
 
         if (::equalizerHelper.isInitialized) {
             equalizerHelper.release()
@@ -2106,6 +2135,7 @@ class PlayerService : MediaLibraryService(),
                     setLoadPending(LoadPhase.PENDING, "onMediaItemTsransition >> firstTimeStarted = $firstTimeStarted << ")
                 // (forse non è necessario) Ferma ExoPlayer prima di avviare il player online
                 //hybridPlayer.pause()
+                exoPlayer.pause()
                 hybridPlayer.switchToYoutube()
 
                 if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
@@ -2537,6 +2567,7 @@ class PlayerService : MediaLibraryService(),
         }
 
         override fun pause() {
+            userInitiatedPause = true
             _internalYouTubePlayer.value?.pause()
         }
 
@@ -2599,10 +2630,9 @@ class PlayerService : MediaLibraryService(),
             binder.let {
                 when (intent.action) {
                     Action.pause.value -> {
-                        //exoPlayer.pause()
-                        //hybridPlayer.pause()
+                        userInitiatedPause = true
+
                         if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
-                            //_internalYouTubePlayer.value?.pause()
                             hybridPlayer.pause()
                         else
                             this@PlayerService.serviceScope.launch {
@@ -2646,7 +2676,6 @@ class PlayerService : MediaLibraryService(),
                             hybridPlayer.seamlessQueue(currentMediaItem)
 
                             if(!GlobalSharedData.riTuneCastActive)
-                                //_internalYouTubePlayer.value?.play()
                                 hybridPlayer.play()
                             else
                                 this@PlayerService.serviceScope.launch {
@@ -2824,6 +2853,8 @@ class PlayerService : MediaLibraryService(),
 //                    if (BuildConfig.DEBUG)
 //                        Timber.d("PlayerService PlaybackWatchdog: isFading = $isFading isPlaying = $isPlaying isPaused = $isPaused timeleft $timeLeft duration=$duration ms, position=$position ms")
 
+                    // Maybe not needed remove when sure
+                    /*
                     // ─── SENTINELLA AUDIO FOCUS PER YOUTUBE ONLINE (PERENNE) ───
                     if (hybridPlayer.activeEngine == ActiveEngine.YOUTUBE) {
 
@@ -2859,6 +2890,8 @@ class PlayerService : MediaLibraryService(),
                         }
                     }
                     // ─────────────────────────────────────────────────────────────
+
+                     */
 
 
                     // LE LOGICHE DI FINE BRANO SCATTANO SOLO SE L'APP STA EFFETTIVAMENTE SUONANDO
