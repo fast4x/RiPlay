@@ -13,7 +13,6 @@ import it.fast4x.riplay.utils.getSafeDefaultDir
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
 
@@ -71,7 +70,7 @@ class MusicVaultWorker(
 
 
             MusicVaultEvents.emit(
-                MusicVaultEvent.DownloadCompleted(
+                MusicVaultEvent.Completed(
                     songId            = songId,
                     fileName          = finalFileName,
                     thumbnailFileName = finalThumbnailFileName

@@ -71,7 +71,7 @@ object MusicVaultService {
                         thumbnailFileName = ""
                     )
                     MusicVaultEvents.emit(
-                        MusicVaultEvent.DownloadRemoved(
+                        MusicVaultEvent.Removed(
                             songId = songId
                         )
                     )

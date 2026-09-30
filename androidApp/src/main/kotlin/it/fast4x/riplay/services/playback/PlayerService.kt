@@ -38,9 +38,6 @@ import android.util.Base64
 import android.view.LayoutInflater
 import androidx.annotation.OptIn
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
@@ -630,7 +627,7 @@ class PlayerService : MediaLibraryService(),
 
                 Timber.d("PlayerService onCreate update currentSong $song")
 
-                val currentMediaId = if (!song.isLocal) song.id else song.mediaId.toString()
+                val currentMediaId = if (!song.isLocal) song.id else song.mediaId ?: song.id
 
                 if (lastOnlineMediaId != currentMediaId && onlineListenedDurationMs > 0) {
                     Timber.d("PlayerService incrementOnlineListenedPlaytimeMs update currentSong onlineListenedDurationMs = $onlineListenedDurationMs onlineMediaId = $currentMediaId currentMediaId = $currentMediaId")
@@ -640,6 +637,7 @@ class PlayerService : MediaLibraryService(),
                     lastOnlineMediaId = currentMediaId
                 }
 
+                // Recuperiamo alcuni metadata utili per la riproduzione
                 val format = Database.format(currentMediaId).first()
                 if (format == null && (!song.isLocal || song.isWebDav)) {
                     getOnlineMetadata(currentMediaId)
@@ -702,10 +700,11 @@ class PlayerService : MediaLibraryService(),
             }
         }
 
+        // Gestisce gli eventi di MediaVault
         this@PlayerService.serviceScope.launch {
             MusicVaultEvents.events.collect { event ->
                 when (event) {
-                    is MusicVaultEvent.DownloadCompleted -> {
+                    is MusicVaultEvent.Completed -> {
                         updateMusicVaultMediaItem(
                             songId = event.songId,
                             fileName = event.fileName,
@@ -713,7 +712,7 @@ class PlayerService : MediaLibraryService(),
                         )
                     }
 
-                    is MusicVaultEvent.DownloadRemoved -> {
+                    is MusicVaultEvent.Removed -> {
                         updateMusicVaultMediaItem(
                             songId = event.songId,
                             fileName = "",
@@ -1792,8 +1791,8 @@ class PlayerService : MediaLibraryService(),
 
     @UnstableApi
     override fun onDestroy() {
-        Timber.d("PlayerService: onDestroy AVVIATO")
-        Timber.d("SCOPES PlayerService.serviceScope CANCELLED (was ${this@PlayerService.serviceScope.hashCode()})")
+        Timber.d("PlayerService: onDestroy STARTED")
+        //Timber.d("SCOPES PlayerService.serviceScope CANCELLED (was ${this@PlayerService.serviceScope.hashCode()})")
         _isServiceReady.value = false
 
         stopPlaybackWatchdog()
@@ -1807,7 +1806,7 @@ class PlayerService : MediaLibraryService(),
         try {
             unregisterReceiver(screenReceiver)
         } catch (e: Exception) {
-            Timber.e("PlayerService onDestroy Errore nella rimozione dello screenReceiver: ${e.message}")
+            Timber.e("PlayerService onDestroy Error when removing screenReceiver: ${e.message}")
         }
 
         try {
@@ -1829,7 +1828,7 @@ class PlayerService : MediaLibraryService(),
         try {
             exoPlayer.removeListener(this@PlayerService)
             exoPlayer.release()
-            Timber.d("PlayerService onDestroy: ExoPlayer rilasciato in sicurezza")
+            Timber.d("PlayerService onDestroy: ExoPlayer released")
         } catch (e: Exception) {
             Timber.e("PlayerService Error in local player release: ${e.message}")
         }
@@ -1870,7 +1869,7 @@ class PlayerService : MediaLibraryService(),
 
         isServiceInForeground = false
 
-        Timber.d("PlayerService: onDestroy COMPLETATO CON SUCCESSO")
+        Timber.d("PlayerService: onDestroy completed")
         super.onDestroy()
     }
 
@@ -2463,7 +2462,8 @@ class PlayerService : MediaLibraryService(),
 
                 val shouldPlay = (hasNewBt && resumeOnBt) || (hasNewWired && resumeOnWired)
 
-                if (shouldPlay) {
+                // Non riproduciamo se il dispositivo viene ricollegato ma il servizio è appena partito
+                if (shouldPlay && !firstTimeStarted) {
                     this@PlayerService.serviceScope.launch {
                         ensureOnlinePlayerInitialized()
                         requestSmoothPlay()

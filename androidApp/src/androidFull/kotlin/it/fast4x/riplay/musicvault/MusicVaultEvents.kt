@@ -14,11 +14,11 @@ object MusicVaultEvents {
 }
 
 sealed class MusicVaultEvent {
-    data class DownloadCompleted(
+    data class Completed(
         val songId: String,
         val fileName: String,
         val thumbnailFileName: String
     ) : MusicVaultEvent()
 
-    data class DownloadRemoved(val songId: String) : MusicVaultEvent()
+    data class Removed(val songId: String) : MusicVaultEvent()
 }
