@@ -1052,7 +1052,7 @@
     <string name="rw_thank_you">Thank You</string>
     <string name="rw_the_music_you_love_is_a_piece_of_you_sharing_it_is_the_best_way_to_connect_with_others">The music you love is a piece of you. Sharing it is the best way to connect with others.</string>
     <string name="rw_keep_listening_keep_sharing_keep_loving_never_hate_anyone">Keep listening, keep sharing, keep loving, never hate anyone.</string>
-    <string name="rw_riplay">RiPlay</string>
+
     <string name="your_in_music">Your %1$d in music</string>
     <string name="rw_your_listening_your_discoveries_your_obsessions_get_ready_to_relive_your_most_unforgettable_musical_moments">Your listening!\nYour discoveries!\nYour obsessions!\nGet ready to relive your most unforgettable musical moments.</string>
     <string name="rw_remember_your_privacy_is_respected_all_data_used_is_only_in_your_device_and_managed_by_you">Remember, your privacy is respected!\nAll data used is only in your device and managed by you.</string>
@@ -1488,7 +1488,7 @@
     <string name="loader_style_bounce">Bounce</string>
     <string name="loader_style_polygons">Polygons</string>
     <string name="android_auto_is_disabled">AA is disabled</string>
-    <string name="riplay_app_name">RiPlay</string>
+
     <string name="lock_orientation">Lock orientation</string>
     <string name="equalizer_pre_amp_title_pre_amp_1f_db">Pre-amp: %.1f dB</string>
 </resources>

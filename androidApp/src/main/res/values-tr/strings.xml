@@ -1050,7 +1050,7 @@
     <string name="rw_thank_you">Teşekkürler</string>
     <string name="rw_the_music_you_love_is_a_piece_of_you_sharing_it_is_the_best_way_to_connect_with_others">Sevdiğiniz müzik sizin bir parçanızdır. Onu paylaşmak, başkalarıyla bağlantı kurmanın en iyi yoludur.</string>
     <string name="rw_keep_listening_keep_sharing_keep_loving_never_hate_anyone">Dinlemeye devam edin, paylaşmaya devam edin, sevmeye devam edin, asla kimseden nefret etmeyin.</string>
-    <string name="rw_riplay">RiPlay</string>
+
     <string name="your_in_music">Müzikteki yeriniz %1$d</string>
     <string name="rw_your_listening_your_discoveries_your_obsessions_get_ready_to_relive_your_most_unforgettable_musical_moments">Sizin dnlemeleriniz! Sizin keşifleriniz! Sizin takıntılarınız! En unutulmaz müzik anlarınızı yeniden yaşamaya hazır olun.</string>
     <string name="rw_remember_your_privacy_is_respected_all_data_used_is_only_in_your_device_and_managed_by_you">Unutmayın, gizliliğiniz korunur! Kullanılan tüm veriler yalnızca cihazınızda bulunur ve sizin tarafınızdan yönetilir.</string>
@@ -1486,7 +1486,7 @@
     <string name="loader_style_bounce">Bounce</string>
     <string name="loader_style_polygons">Polygons</string>
     <string name="android_auto_is_disabled">AA is disabled</string>
-    <string name="riplay_app_name">RiPlay</string>
+
     <string name="lock_orientation">Lock orientation</string>
     <string name="equalizer_pre_amp_title_pre_amp_1f_db">Pre-amp: %.1f dB</string>
 </resources>
