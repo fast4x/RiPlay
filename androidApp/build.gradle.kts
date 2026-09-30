@@ -344,17 +344,16 @@ extensions.configure<ApplicationExtension> {
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
-            manifestPlaceholders["appName"] = "RiPlay-Debug"
+            manifestPlaceholders["appName"] = "RiPlay DEBUG"
         }
 
         release {
             vcsInfo.include = true
             isMinifyEnabled = true
             isShrinkResources = true
-            //manifestPlaceholders["appName"] = "RiPlay"
+            manifestPlaceholders["appName"] = "RiPlay"
             signingConfig = signingConfigs.getByName("release")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            //multiDexKeepProguard = File("multidex-config.pro")
         }
     }
 
