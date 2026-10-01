@@ -1105,13 +1105,13 @@ fun Queue(
                                                             onClick = {
                                                                 if (!selectQueueItems) {
                                                                     if (isPlayingThisMediaItem) {
-                                                                        if (shouldBePlaying == true) binderPlayer?.pause() else binderPlayer?.play()
+                                                                        if (shouldBePlaying == true) binderPlayer.pause() else binderPlayer.play()
                                                                     } else {
-                                                                        binderPlayer?.seekToDefaultPosition(
+                                                                        binderPlayer.seekToDefaultPosition(
                                                                             window.firstPeriodIndex
                                                                         )
-                                                                        binderPlayer?.prepare()
-                                                                        binderPlayer?.playWhenReady =
+                                                                        binderPlayer.prepare()
+                                                                        binderPlayer.playWhenReady =
                                                                             true
                                                                     }
                                                                 } else checkedState.value =

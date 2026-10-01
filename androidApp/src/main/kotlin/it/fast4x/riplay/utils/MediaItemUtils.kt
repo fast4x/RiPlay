@@ -84,6 +84,18 @@ fun mediaItemSetLiked( mediaItem: MediaItem ) {
     }
 }
 
+fun emptyMediaItem(title: String): MediaItem {
+    return MediaItem.Builder()
+        .setMediaMetadata(
+            MediaMetadata.Builder()
+                .setTitle(title)
+                .build()
+        )
+        .setMediaId("")
+        .setUri("")
+        .build()
+}
+
 val Song.asMediaItem: MediaItem
     @UnstableApi
     get() {

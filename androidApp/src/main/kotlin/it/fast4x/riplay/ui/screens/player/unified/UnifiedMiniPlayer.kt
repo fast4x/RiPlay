@@ -54,9 +54,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -94,6 +96,7 @@ import it.fast4x.riplay.utils.addToOnlineLikedSong
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.emptyMediaItem
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.intent
@@ -145,18 +148,6 @@ fun UnifiedMiniPlayer(
 
     val playerState = LocalPlayerServiceState.current
     val shouldBePlaying = playerState.isPlaying
-
-//    var nullableMediaItem by remember {
-//        mutableStateOf(binder.player.currentMediaItem, neverEqualPolicy())
-//    }
-
-//    binder.player.DisposableListener {
-//        object : Player.Listener {
-//            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-//                nullableMediaItem = mediaItem
-//            }
-//        }
-//    }
 
     val mediaItem = playerState.mediaInfo?.mediaItem ?: return // nullableMediaItem ?: return
 
@@ -272,9 +263,13 @@ fun UnifiedMiniPlayer(
         }
     } else Modifier
 
+    val hasNextMediaItem = binder.hybridPlayer.hasNextMediaItem()
+    val nextMediaItemIndex = if (hasNextMediaItem) binder.hybridPlayer.nextMediaItemIndex else -1
+    val upNextMediaItem = if (nextMediaItemIndex != -1) binder.hybridPlayer.getMediaItemAt(nextMediaItemIndex) else emptyMediaItem("End")
+
     SwipeToDismissBox(
         modifier = Modifier
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 12.dp)
             .clip(getRoundnessShape()),
         state = dismissState,
         backgroundContent = {
@@ -309,110 +304,121 @@ fun UnifiedMiniPlayer(
             }
         }
     ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.Top,
-            modifier = Modifier
-                .combinedClickable(
-                    onLongClick = {
-                        navController?.navigate(NavRoutes.queue.name);
-                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                    },
-                    onClick = {
-                        if (sharedTransitionScope?.isTransitionActive != true) showPlayer()
-                    }
-                )
-                .pointerInput(Unit) {
-                    detectVerticalDragGestures(
-                        onVerticalDrag = { _, dragAmount ->
-                            if (dragAmount < 0) showPlayer()
-                            else if (dragAmount > 20) {
-                                if (!disableClosingPlayerSwipingDown) {
-                                    if (!GlobalSharedData.riTuneCastActive)
-                                        binder.hybridPlayer.pause()
-                                    else
-                                        CoroutineScope(Dispatchers.IO).launch {
-                                            binder.riTuneCastClient.sendCommand(
-                                                RiTuneRemoteCommand(
-                                                    "play"
-                                                )
-                                            )
-                                        }
-                                    binder.hybridPlayer.clearMediaItems()
-                                    hidePlayer()
-                                    runCatching {
-                                        context.stopService(context.intent<PlayerService>())
-                                    }
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                } else
-                                    SmartMessage(
-                                        context.resources.getString(R.string.player_swiping_down_is_disabled),
-                                        context = context
-                                    )
-                            }
+        Column {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.Top,
+                modifier = Modifier
+                    .combinedClickable(
+                        onLongClick = {
+                            navController?.navigate(NavRoutes.queue.name);
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                        },
+                        onClick = {
+                            if (sharedTransitionScope?.isTransitionActive != true) showPlayer()
                         }
                     )
-                }
-                .background(colorPalette().background2)
-                .fillMaxWidth()
-                .drawBehind {
-                    if (backgroundProgress == BackgroundProgress.Both || backgroundProgress == BackgroundProgress.MiniPlayer) {
-                        drawRect(
-                            color = colorPalette.favoritesOverlay,
-                            topLeft = Offset.Zero,
-                            size = Size(
-                                width = positionAndDurationState.value.first.toFloat() /
-                                        positionAndDurationState.value.second.absoluteValue * size.width,
-                                height = size.maxDimension
-                            )
+                    .pointerInput(Unit) {
+                        detectVerticalDragGestures(
+                            onVerticalDrag = { _, dragAmount ->
+                                if (dragAmount < 0) showPlayer()
+                                else if (dragAmount > 20) {
+                                    if (!disableClosingPlayerSwipingDown) {
+                                        if (!GlobalSharedData.riTuneCastActive)
+                                            binder.hybridPlayer.pause()
+                                        else
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                binder.riTuneCastClient.sendCommand(
+                                                    RiTuneRemoteCommand(
+                                                        "play"
+                                                    )
+                                                )
+                                            }
+                                        binder.hybridPlayer.clearMediaItems()
+                                        hidePlayer()
+                                        runCatching {
+                                            context.stopService(context.intent<PlayerService>())
+                                        }
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    } else
+                                        SmartMessage(
+                                            context.resources.getString(R.string.player_swiping_down_is_disabled),
+                                            context = context
+                                        )
+                                }
+                            }
                         )
                     }
-                }
-        ) {
-            Spacer(
-                modifier = Modifier
-                    .width(2.dp)
-            )
-
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .height(Dimensions.miniPlayerHeight)
+                    .background(colorPalette().background2)
+                    .fillMaxWidth()
+                    .drawBehind {
+                        if (backgroundProgress == BackgroundProgress.Both || backgroundProgress == BackgroundProgress.MiniPlayer) {
+                            drawRect(
+                                color = colorPalette.favoritesOverlay,
+                                topLeft = Offset.Zero,
+                                size = Size(
+                                    width = positionAndDurationState.value.first.toFloat() /
+                                            positionAndDurationState.value.second.absoluteValue * size.width,
+                                    height = size.maxDimension
+                                )
+                            )
+                        }
+                    }
             ) {
-                AsyncImage(
-                    model = mediaItem.mediaMetadata.artworkUri.toString()
-                        .toThumbnail(Dimensions.thumbnails.song.px),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
+                Spacer(
                     modifier = Modifier
-                        .then(artworkModifier)
-                        .clip(thumbnailShape())
-                        .size(48.dp)
+                        .width(2.dp)
                 )
-                NowPlayingSongIndicator(mediaItem.mediaId, binder.hybridPlayer)
-            }
 
-            Column(
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier
-                    .height(Dimensions.miniPlayerHeight)
-                    .weight(1f)
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .height(Dimensions.miniPlayerHeight)
                 ) {
-                    if ( mediaItem.isExplicit )
-                        IconButton(
-                            icon = R.drawable.explicit,
-                            color = colorPalette().text,
-                            enabled = true,
-                            onClick = {},
+                    AsyncImage(
+                        model = mediaItem.mediaMetadata.artworkUri.toString()
+                            .toThumbnail(Dimensions.thumbnails.song.px),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .then(artworkModifier)
+                            .clip(thumbnailShape())
+                            .size(48.dp)
+                    )
+                    NowPlayingSongIndicator(mediaItem.mediaId, binder.hybridPlayer)
+                }
+
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .height(Dimensions.miniPlayerHeight)
+                        .weight(1f)
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (mediaItem.isExplicit)
+                            IconButton(
+                                icon = R.drawable.explicit,
+                                color = colorPalette().text,
+                                enabled = true,
+                                onClick = {},
+                                modifier = Modifier
+                                    .size(14.dp)
+                            )
+                        BasicText(
+                            text = cleanPrefix(mediaItem.mediaMetadata.title?.toString() ?: ""),
+                            style = typography().xxs.semiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
-                                .size(14.dp)
+                                .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
                         )
+                    }
+
                     BasicText(
-                        text = cleanPrefix(mediaItem.mediaMetadata.title?.toString() ?: ""),
+                        text = mediaItem.mediaMetadata.artist?.toString() ?: "",
                         style = typography().xxs.semiBold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -421,128 +427,140 @@ fun UnifiedMiniPlayer(
                     )
                 }
 
+                Spacer(
+                    modifier = Modifier
+                        .width(2.dp)
+                )
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .height(Dimensions.miniPlayerHeight)
+                ) {
+                    if (miniPlayerType == MiniPlayerType.Essential)
+                        IconButton(
+                            icon = R.drawable.play_skip_back,
+                            color = colorPalette().iconButtonPlayer,
+                            onClick = {
+                                binder.hybridPlayer.playPrevious()
+                            },
+                            modifier = Modifier
+                                .rotate(rotationAngle)
+                                .padding(horizontal = 2.dp, vertical = 8.dp)
+                                .size(24.dp)
+                        )
+
+                    if (!playerState.loadPending.isPending) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(playPauseRoundness))
+                                .clickable {
+                                    if (shouldBePlaying) {
+                                        if (!GlobalSharedData.riTuneCastActive)
+                                            binder.hybridPlayer.pause()
+                                        else
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                binder.riTuneCastClient.sendCommand(
+                                                    RiTuneRemoteCommand(
+                                                        "pause"
+                                                    )
+                                                )
+                                            }
+
+                                    } else {
+                                        if (!GlobalSharedData.riTuneCastActive)
+                                            binder.hybridPlayer.play()
+                                        else
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                binder.riTuneCastClient.sendCommand(
+                                                    RiTuneRemoteCommand(
+                                                        "play", mediaId = mediaItem.mediaId
+                                                    )
+                                                )
+                                            }
+
+                                    }
+                                }
+                                .background(colorPalette().background2)
+                                .size(42.dp)
+                        ) {
+                            Image(
+                                painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
+                                contentDescription = null,
+                                colorFilter = ColorFilter.tint(colorPalette().iconButtonPlayer),
+                                modifier = Modifier
+                                    .rotate(rotationAngle)
+                                    .align(Alignment.Center)
+                                    .size(24.dp)
+                            )
+                        }
+                    } else AnimatedVisibility(
+                        visible = true,
+                        enter = fadeIn(tween(300, delayMillis = 350)),
+                        exit = fadeOut(tween(150))
+                    ) {
+                        Loader(size = 42.dp, expandWidth = false)
+                    }
+
+                    if (miniPlayerType == MiniPlayerType.Essential)
+                        IconButton(
+                            icon = R.drawable.play_skip_forward,
+                            color = colorPalette().iconButtonPlayer,
+                            onClick = {
+                                binder.hybridPlayer.playNext()
+                            },
+                            modifier = Modifier
+                                .rotate(rotationAngle)
+                                .padding(horizontal = 2.dp, vertical = 8.dp)
+                                .size(24.dp)
+                        )
+                    if (miniPlayerType == MiniPlayerType.Modern)
+                        IconButton(
+                            icon = getLikeState(mediaItem.mediaId),
+                            color = colorPalette().favoritesIcon,
+                            onClick = {
+                                updateLike = true
+                            },
+                            onLongClick = {
+                                updateDislike = true
+                            },
+                            modifier = Modifier
+                                .rotate(rotationAngle)
+                                .padding(horizontal = 2.dp, vertical = 8.dp)
+                                .size(24.dp)
+                        )
+
+                }
+
+                Spacer(
+                    modifier = Modifier
+                        .width(2.dp)
+                )
+
+            }
+
+
+            Box(
+                modifier = Modifier
+                    .background(colorPalette().background1)
+                    .fillMaxWidth()
+            ) {
                 BasicText(
-                    text = mediaItem.mediaMetadata.artist?.toString() ?: "",
-                    style = typography().xxs.semiBold,
+                    text = "${stringResource(R.string.queue_up_next).uppercase()} > ${upNextMediaItem.mediaMetadata.title}",
+                    style = typography().xxs.semiBold.copy(
+                        color = colorPalette().accent,
+                        letterSpacing = 1.5.sp
+                    ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
-                        .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                        .padding(start = 16.dp, bottom = 2.dp)
                 )
             }
 
-            Spacer(
-                modifier = Modifier
-                    .width(2.dp)
-            )
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .height(Dimensions.miniPlayerHeight)
-            ) {
-                if (miniPlayerType == MiniPlayerType.Essential)
-                    IconButton(
-                        icon = R.drawable.play_skip_back,
-                        color = colorPalette().iconButtonPlayer,
-                        onClick = {
-                            binder.hybridPlayer.playPrevious()
-                        },
-                        modifier = Modifier
-                            .rotate(rotationAngle)
-                            .padding(horizontal = 2.dp, vertical = 8.dp)
-                            .size(24.dp)
-                    )
-
-                if (!playerState.loadPending.isPending) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(playPauseRoundness))
-                            .clickable {
-                                if (shouldBePlaying) {
-                                    if (!GlobalSharedData.riTuneCastActive)
-                                        binder.hybridPlayer.pause()
-                                    else
-                                        CoroutineScope(Dispatchers.IO).launch {
-                                            binder.riTuneCastClient.sendCommand(
-                                                RiTuneRemoteCommand(
-                                                    "pause"
-                                                )
-                                            )
-                                        }
-
-                                } else {
-                                    if (!GlobalSharedData.riTuneCastActive)
-                                        binder.hybridPlayer.play()
-                                    else
-                                        CoroutineScope(Dispatchers.IO).launch {
-                                            binder.riTuneCastClient.sendCommand(
-                                                RiTuneRemoteCommand(
-                                                    "play", mediaId = mediaItem.mediaId
-                                                )
-                                            )
-                                        }
-
-                                }
-                            }
-                            .background(colorPalette().background2)
-                            .size(42.dp)
-                    ) {
-                        Image(
-                            painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(colorPalette().iconButtonPlayer),
-                            modifier = Modifier
-                                .rotate(rotationAngle)
-                                .align(Alignment.Center)
-                                .size(24.dp)
-                        )
-                    }
-                } else AnimatedVisibility(
-                    visible = true,
-                    enter = fadeIn(tween(300, delayMillis = 350)),
-                    exit = fadeOut(tween(150))
-                ) {
-                    Loader(size = 42.dp, expandWidth = false)
-                }
-
-                if (miniPlayerType == MiniPlayerType.Essential)
-                    IconButton(
-                        icon = R.drawable.play_skip_forward,
-                        color = colorPalette().iconButtonPlayer,
-                        onClick = {
-                            binder.hybridPlayer.playNext()
-                        },
-                        modifier = Modifier
-                            .rotate(rotationAngle)
-                            .padding(horizontal = 2.dp, vertical = 8.dp)
-                            .size(24.dp)
-                    )
-                if (miniPlayerType == MiniPlayerType.Modern)
-                    IconButton(
-                        icon = getLikeState(mediaItem.mediaId),
-                        color = colorPalette().favoritesIcon,
-                        onClick = {
-                            updateLike = true
-                        },
-                        onLongClick = {
-                            updateDislike = true
-                        },
-                        modifier = Modifier
-                            .rotate(rotationAngle)
-                            .padding(horizontal = 2.dp, vertical = 8.dp)
-                            .size(24.dp)
-                    )
-
-            }
-
-            Spacer(
-                modifier = Modifier
-                    .width(2.dp)
-            )
-
         }
+
     }
 
 }
