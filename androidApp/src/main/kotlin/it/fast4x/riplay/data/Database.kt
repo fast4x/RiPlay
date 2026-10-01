@@ -112,6 +112,7 @@ import kotlinx.serialization.json.Json
 import org.intellij.lang.annotations.MagicConstant
 import kotlin.collections.sortedBy
 
+@TypeConverters(Converters::class)
 @Dao
 interface Database {
     private val _internal: RoomDatabase
@@ -123,8 +124,9 @@ interface Database {
     val getDatabaseName: String?
         get() = getInstance.openHelper.databaseName
 
-    // Proxy
-    companion object : Database by DatabaseInitializer.createProxy() {
+
+    @Dao
+    companion object : Database by DatabaseInitializer.dao {
 
         // Lista Dao esposti
         fun songArtistCrossRefDao(): SongArtistCrossRefDao {
@@ -3609,6 +3611,158 @@ interface Database {
     fun close() = _internal.close()
 }
 
+
+@TypeConverters(Converters::class)
+object Converters {
+
+    @TypeConverter
+    @JvmStatic
+    fun fromStringList(value: List<String>?): String? {
+        return value?.joinToString(",")
+    }
+
+    @TypeConverter
+    @JvmStatic
+    fun toStringList(value: String?): List<String>? {
+        return value?.split(",")?.filter { it.isNotBlank() }
+    }
+
+    @TypeConverter
+    @JvmStatic
+    fun fromString(stringListString: String): List<String> {
+        return stringListString.split(",").map { it }
+    }
+
+    @TypeConverter
+    @JvmStatic
+    fun toString(stringList: List<String>): String {
+        return stringList.joinToString(separator = ",")
+    }
+
+    @TypeConverter
+    @JvmStatic
+    @UnstableApi
+    fun mediaItemToByteArray(mediaItem: MediaItem?): ByteArray? {
+        if (mediaItem == null) return null
+
+        val parcel = Parcel.obtain()
+        return try {
+            @Suppress("DEPRECATION") // Necessario finché Media3 non fornisce un'alternativa a toBundle
+            val bundle = mediaItem.toBundle()
+
+            parcel.writeBundle(bundle)
+            parcel.marshall()
+        } catch (e: Exception) {
+            //Timber.e("TypeConverter Errore serializzazione MediaItem ${e.message}")
+            null
+        } finally {
+            parcel.recycle() // Fondamentale!
+        }
+    }
+
+    @TypeConverter
+    @JvmStatic
+    @UnstableApi
+    fun mediaItemFromByteArray(value: ByteArray?): MediaItem? {
+        if (value == null) return null
+
+        val parcel = Parcel.obtain()
+        return try {
+            parcel.unmarshall(value, 0, value.size)
+            parcel.setDataPosition(0)
+
+            // ClassLoader sicuro con fallback
+            val classLoader = MediaItem::class.java.classLoader
+                ?: Thread.currentThread().contextClassLoader
+
+            val bundle = parcel.readBundle(classLoader)
+
+            @Suppress("DEPRECATION")
+            bundle?.let(MediaItem::fromBundle)
+        } catch (e: Exception) {
+            //Timber.e("TypeConverter Errore deserializzazione MediaItem ${e.message}")
+            null
+        } finally {
+            parcel.recycle()
+        }
+    }
+
+    @TypeConverter
+    @JvmStatic
+    fun fromMusicVaultState(state: MusicVaultState): String = state.name
+
+    @TypeConverter
+    @JvmStatic
+    fun toMusicVaultState(value: String): MusicVaultState =
+        MusicVaultState.valueOf(value)
+
+    // Configura Json per essere più flessibile e sicuro
+    val RoomJson = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+    }
+
+    @TypeConverter
+    @JvmStatic
+    fun fromAlbumList(value: List<Album>): String {
+        return RoomJson.encodeToString(value) // Serializza in JSON String
+    }
+
+    @TypeConverter
+    @JvmStatic
+    fun toAlbumList(value: String): List<Album> {
+        return RoomJson.decodeFromString(value) // Deserializza da JSON String a Lista
+    }
+
+    @TypeConverter
+    @JvmStatic
+    fun fromExternalLinkList(value: List<ExternalLink>?): String? {
+        return value?.let { RoomJson.encodeToString(it) }
+    }
+
+    @TypeConverter
+    @JvmStatic
+    fun toExternalLinkList(value: String?): List<ExternalLink>? {
+        return value?.let { RoomJson.decodeFromString<List<ExternalLink>>(it) }
+    }
+
+    @TypeConverter
+    @JvmStatic
+    fun artistNatureToString(nature: ArtistNature?): String? = nature?.name
+
+    @TypeConverter
+    @JvmStatic
+    fun stringToArtistNature(value: String?): ArtistNature? =
+        value?.let { try { ArtistNature.valueOf(it) } catch (e: IllegalArgumentException) { ArtistNature.UNKNOWN } }
+
+    @TypeConverter
+    @JvmStatic
+    fun albumNatureToString(nature: AlbumNature?): String? = nature?.name
+
+    @TypeConverter
+    @JvmStatic
+    fun stringToAlbumNature(value: String?): AlbumNature? =
+        value?.let { try { AlbumNature.valueOf(it) } catch (e: IllegalArgumentException) { AlbumNature.UNKNOWN } }
+
+    @TypeConverter
+    @JvmStatic
+    fun fromSettingsToString(settings: it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings): String {
+        // Usiamo il custom serializer che ignora i default!
+        return JsonManager.encodeToString(settings)
+    }
+
+    @TypeConverter
+    @JvmStatic
+    fun fromStringToSettings(json: String): it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings {
+        // Deserializza in modo sicuro. Se il JSON è vecchio e mancante di campi,
+        // usa i default di Kotlin. Zero crash.
+        return JsonManager.decodeFromString(json)
+    }
+
+}
+
+
+@TypeConverters(Converters::class)
 @androidx.room.Database(
     entities = [
         Song::class,
@@ -3687,24 +3841,23 @@ interface Database {
         AutoMigration(from = 51, to = 52),
         AutoMigration(from = 52, to = 53),
         AutoMigration(from = 53, to = 54),
-
     ],
 )
-@TypeConverters(Converters::class)
-abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
-    abstract val database: Database
+abstract class DatabaseInitializer : RoomDatabase() {
+    abstract fun databaseDao(): Database
 
     companion object {
 
-        lateinit var Instance: DatabaseInitializer
+        @Volatile private var raw: DatabaseInitializer? = null
         const val DB_NAME = "data.db"
 
-        fun createProxy(): Database = java.lang.reflect.Proxy.newProxyInstance(
-            Database::class.java.classLoader,
-            arrayOf(Database::class.java)
-        ) { _, method, args ->
-            method.invoke(Instance.database, *(args ?: arrayOf()))
-        } as Database
+        val Instance: DatabaseInitializer
+            get() = raw ?: synchronized(this) {
+                raw ?: getDatabase()
+                    .also { raw = it }
+            }
+
+        val dao: Database by lazy { Instance.databaseDao() }
 
         private fun getDatabase() = Room
             .databaseBuilder(appContext(), DatabaseInitializer::class.java, DB_NAME)
@@ -3758,14 +3911,6 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
             )
             .build()
 
-
-        operator fun invoke() {
-            if (!::Instance.isInitialized) reload()
-        }
-
-        fun reload() = synchronized(this) {
-            Instance = getDatabase()
-        }
     }
 
     // Lista Dao dichiarati
@@ -4449,142 +4594,3 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
 
 }
 
-
-@TypeConverters
-object Converters {
-
-    @TypeConverter
-    fun fromStringList(value: List<String>?): String? {
-        return value?.joinToString(",")
-    }
-
-    @TypeConverter
-    fun toStringList(value: String?): List<String>? {
-        return value?.split(",")?.filter { it.isNotBlank() }
-    }
-
-    @TypeConverter
-    @JvmStatic
-    fun fromString(stringListString: String): List<String> {
-        return stringListString.split(",").map { it }
-    }
-
-    @TypeConverter
-    @JvmStatic
-    fun toString(stringList: List<String>): String {
-        return stringList.joinToString(separator = ",")
-    }
-
-    @TypeConverter
-    @JvmStatic
-    @UnstableApi
-    fun mediaItemToByteArray(mediaItem: MediaItem?): ByteArray? {
-        if (mediaItem == null) return null
-
-        val parcel = Parcel.obtain()
-        return try {
-            @Suppress("DEPRECATION") // Necessario finché Media3 non fornisce un'alternativa a toBundle
-            val bundle = mediaItem.toBundle()
-
-            parcel.writeBundle(bundle)
-            parcel.marshall()
-        } catch (e: Exception) {
-            //Timber.e("TypeConverter Errore serializzazione MediaItem ${e.message}")
-            null
-        } finally {
-            parcel.recycle() // Fondamentale!
-        }
-    }
-
-    @TypeConverter
-    @JvmStatic
-    @UnstableApi
-    fun mediaItemFromByteArray(value: ByteArray?): MediaItem? {
-        if (value == null) return null
-
-        val parcel = Parcel.obtain()
-        return try {
-            parcel.unmarshall(value, 0, value.size)
-            parcel.setDataPosition(0)
-
-            // ClassLoader sicuro con fallback
-            val classLoader = MediaItem::class.java.classLoader
-                ?: Thread.currentThread().contextClassLoader
-
-            val bundle = parcel.readBundle(classLoader)
-
-            @Suppress("DEPRECATION")
-            bundle?.let(MediaItem::fromBundle)
-        } catch (e: Exception) {
-            //Timber.e("TypeConverter Errore deserializzazione MediaItem ${e.message}")
-            null
-        } finally {
-            parcel.recycle()
-        }
-    }
-
-    @TypeConverter
-    @JvmStatic
-    fun fromMusicVaultState(state: MusicVaultState): String = state.name
-
-    @TypeConverter
-    @JvmStatic
-    fun toMusicVaultState(value: String): MusicVaultState =
-        MusicVaultState.valueOf(value)
-
-    // Configura Json per essere più flessibile e sicuro
-    val RoomJson = Json {
-        ignoreUnknownKeys = true
-        isLenient = true
-    }
-
-    @TypeConverter
-    @JvmStatic
-    fun fromAlbumList(value: List<Album>): String {
-        return RoomJson.encodeToString(value) // Serializza in JSON String
-    }
-
-    @TypeConverter
-    @JvmStatic
-    fun toAlbumList(value: String): List<Album> {
-        return RoomJson.decodeFromString(value) // Deserializza da JSON String a Lista
-    }
-
-    @TypeConverter
-    fun fromExternalLinkList(value: List<ExternalLink>?): String? {
-        return value?.let { RoomJson.encodeToString(it) }
-    }
-
-    @TypeConverter
-    fun toExternalLinkList(value: String?): List<ExternalLink>? {
-        return value?.let { RoomJson.decodeFromString<List<ExternalLink>>(it) }
-    }
-
-    @TypeConverter
-    fun artistNatureToString(nature: ArtistNature?): String? = nature?.name
-
-    @TypeConverter
-    fun stringToArtistNature(value: String?): ArtistNature? =
-        value?.let { try { ArtistNature.valueOf(it) } catch (e: IllegalArgumentException) { ArtistNature.UNKNOWN } }
-
-    @TypeConverter
-    fun albumNatureToString(nature: AlbumNature?): String? = nature?.name
-
-    @TypeConverter
-    fun stringToAlbumNature(value: String?): AlbumNature? =
-        value?.let { try { AlbumNature.valueOf(it) } catch (e: IllegalArgumentException) { AlbumNature.UNKNOWN } }
-
-    @TypeConverter
-    fun fromSettingsToString(settings: it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings): String {
-        // Usiamo il custom serializer che ignora i default!
-        return JsonManager.encodeToString(settings)
-    }
-
-    @TypeConverter
-    fun fromStringToSettings(json: String): it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings {
-        // Deserializza in modo sicuro. Se il JSON è vecchio e mancante di campi,
-        // usa i default di Kotlin. Zero crash.
-        return JsonManager.decodeFromString(json)
-    }
-
-}

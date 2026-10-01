@@ -477,7 +477,7 @@ class WebDavLibraryViewModel () : ViewModel(), ViewModelProvider.Factory {
         context.stopService(Intent(context, PlayerService::class.java))
 
         try {
-            backupManager.smartRestoredatabase(tempDbFile.toUri(), RestoreMode.REPLACE)
+            backupManager.smartRestoreDatabase(tempDbFile.toUri(), RestoreMode.REPLACE)
             delay(1500.milliseconds)
             val packageManager = context.packageManager
             val launchIntent = packageManager.getLaunchIntentForPackage(context.packageName)

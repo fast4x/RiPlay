@@ -76,7 +76,7 @@ class BackupViewModel(
             context.stopService(Intent(context, PlayerService::class.java))
             delay(1500.milliseconds)
             try {
-                backupManager.smartRestoredatabase(restoreUri, mode)
+                backupManager.smartRestoreDatabase(restoreUri, mode)
                 _uiState.value = BackupUiState.Success("Database restored, wait app will restart...")
                 delay(1500.milliseconds)
             } catch (e: IOException) {
