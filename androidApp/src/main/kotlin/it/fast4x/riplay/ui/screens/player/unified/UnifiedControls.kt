@@ -39,6 +39,7 @@ import it.fast4x.riplay.ui.screens.player.unified.components.controls.UnifiedInf
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.isLandscape
 import kotlinx.coroutines.flow.distinctUntilChanged
+import timber.log.Timber
 
 @ExperimentalMaterial3Api
 @ExperimentalTextApi
@@ -104,11 +105,12 @@ fun UnifiedControls(
     val playerType = appearanceSettings.playerType
     val expandedlandscape = (isLandscape && playerType == PlayerType.Modern) || (expandedplayer && !showthumbnail)
 
+
     Box(
         modifier = Modifier
             .animateContentSize()
     ) {
-        if ((!isLandscape) and ((expandedplayer || isShowingLyrics) && !showlyricsthumbnail))
+        if ((!isLandscape) and ((expandedplayer || isShowingLyrics) && !showlyricsthumbnail)) {
             Column(
                 horizontalAlignment = Alignment.Start,
                 verticalArrangement = Arrangement.Top,
@@ -150,36 +152,71 @@ fun UnifiedControls(
                             .height(10.dp)
                     )
                 }
-                if (!isShowingLyrics || timelineExpanded) {
-                    UnifiedGetSeekBar(
-                        mediaId = mediaItem.mediaId,
-                        onSeekTo = onSeekTo,
-                        onPlay = onPlay,
-                        onPause = onPause,
-                    )
-                    Spacer(
-                        modifier = Modifier
-                            .height(if (playerPlayButtonType != PlayerPlayButtonType.Disabled) 10.dp else 5.dp)
-                    )
+
+                if (!playerSwapControlsWithTimeline) {
+                    if (!isShowingLyrics || timelineExpanded) {
+                        UnifiedGetSeekBar(
+                            mediaId = mediaItem.mediaId,
+                            onSeekTo = onSeekTo,
+                            onPlay = onPlay,
+                            onPause = onPause,
+                        )
+                        Spacer(
+                            modifier = Modifier
+                                .height(if (playerPlayButtonType != PlayerPlayButtonType.Disabled) 10.dp else 5.dp)
+                        )
+                    }
+                    if (!isShowingLyrics || controlsExpanded) {
+                        UnifiedGetControls(
+                            likedAt = likedAt,
+                            onBlurScaleChange = onBlurScaleChange,
+                            onPlay = onPlay,
+                            onPause = onPause,
+                            onSeekTo = onSeekTo,
+                            onNext = onNext,
+                            onPrevious = onPrevious,
+                            onToggleRepeatMode = onToggleRepeatMode,
+                            onToggleShuffleMode = onToggleShuffleMode,
+                            playerState = playerState
+                        )
+                        Spacer(
+                            modifier = Modifier
+                                .height(5.dp)
+                        )
+                    }
+                } else {
+                    if (!isShowingLyrics || controlsExpanded) {
+                        UnifiedGetControls(
+                            likedAt = likedAt,
+                            onBlurScaleChange = onBlurScaleChange,
+                            onPlay = onPlay,
+                            onPause = onPause,
+                            onSeekTo = onSeekTo,
+                            onNext = onNext,
+                            onPrevious = onPrevious,
+                            onToggleRepeatMode = onToggleRepeatMode,
+                            onToggleShuffleMode = onToggleShuffleMode,
+                            playerState = playerState
+                        )
+                        Spacer(
+                            modifier = Modifier
+                                .height(5.dp)
+                        )
+                    }
+                    if (!isShowingLyrics || timelineExpanded) {
+                        UnifiedGetSeekBar(
+                            mediaId = mediaItem.mediaId,
+                            onSeekTo = onSeekTo,
+                            onPlay = onPlay,
+                            onPause = onPause,
+                        )
+                        Spacer(
+                            modifier = Modifier
+                                .height(if (playerPlayButtonType != PlayerPlayButtonType.Disabled) 10.dp else 5.dp)
+                        )
+                    }
                 }
-                if (!isShowingLyrics || controlsExpanded) {
-                    UnifiedGetControls(
-                        likedAt = likedAt,
-                        onBlurScaleChange = onBlurScaleChange,
-                        onPlay = onPlay,
-                        onPause = onPause,
-                        onSeekTo = onSeekTo,
-                        onNext = onNext,
-                        onPrevious = onPrevious,
-                        onToggleRepeatMode = onToggleRepeatMode,
-                        onToggleShuffleMode = onToggleShuffleMode,
-                        playerState = playerState
-                    )
-                    Spacer(
-                        modifier = Modifier
-                            .height(5.dp)
-                    )
-                }
+
                 if (((playerControlsType == PlayerControlsType.Modern) || (!transparentBackgroundActionBarPlayer)) && (playerPlayButtonType != PlayerPlayButtonType.Disabled)) {
                     Spacer(
                         modifier = Modifier
@@ -187,7 +224,8 @@ fun UnifiedControls(
                     )
                 }
             }
-        else if (!isLandscape)
+        }
+        else if (!isLandscape) {
             Column(
                 horizontalAlignment = Alignment.Start,
                 verticalArrangement = Arrangement.Top,
@@ -230,6 +268,7 @@ fun UnifiedControls(
                     modifier = Modifier
                         .height(25.dp)
                 )
+
 
                 if (!playerSwapControlsWithTimeline) {
                     UnifiedGetSeekBar(
@@ -288,10 +327,11 @@ fun UnifiedControls(
                 }
 
             }
+        }
 
     }
 
-    if (isLandscape)
+    if (isLandscape) {
         Column(
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.Bottom,
@@ -398,4 +438,5 @@ fun UnifiedControls(
                 )
             }
         }
+    }
 }

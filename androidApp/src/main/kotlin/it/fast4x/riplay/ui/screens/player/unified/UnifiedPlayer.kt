@@ -3298,9 +3298,9 @@ fun UnifiedPlayer(
                             }
                         //.border(BorderStroke(2.dp, colorPalette().collapsedPlayerProgressBar))
                     ) {
-                        Timber.d("PlayerCover showthumbnail=$showthumbnail playerType=$playerType " +
-                                "forceVideo=${appSettings.forceUserVideoPlayback} vcm=${appSettings.videoContentMode} " +
-                                "isVideo=${mediaItem.isVideo} lyrics=$isShowingLyrics vis=$isShowingVisualizer")
+//                        Timber.d("PlayerCover showthumbnail=$showthumbnail playerType=$playerType " +
+//                                "forceVideo=${appSettings.forceUserVideoPlayback} vcm=${appSettings.videoContentMode} " +
+//                                "isVideo=${mediaItem.isVideo} lyrics=$isShowingLyrics vis=$isShowingVisualizer")
 
                         // PORTRAIT MODE CON VISUALIZZAZIONE COVER
                         if (showthumbnail

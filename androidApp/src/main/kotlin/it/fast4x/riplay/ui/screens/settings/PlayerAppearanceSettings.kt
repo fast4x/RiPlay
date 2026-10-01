@@ -163,7 +163,7 @@ fun PlayerAppearanceSettings(
     val transparentBackgroundActionBarPlayer = appearanceSettings.transparentBackgroundActionBarPlayer
     val iconLikeType = appearanceSettings.iconLikeType
 
-    val playerSwapControlsWithTimeline = false
+    val playerSwapControlsWithTimeline = appearanceSettings.playerSwapControlsWithTimeline
 
     val playerEnableLyricsPopupMessage = appearanceSettings.playerEnableLyricsPopupMessage
     val actionspacedevenly = appearanceSettings.actionsSpacedEvenly
