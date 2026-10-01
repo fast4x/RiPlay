@@ -3458,7 +3458,7 @@ interface Database {
     fun upsert(blacklist: Blacklist)
 
     @Upsert
-    fun upsert(lyrics: Lyrics)
+    suspend fun upsert(lyrics: Lyrics)
 
     @Upsert
     @Transaction

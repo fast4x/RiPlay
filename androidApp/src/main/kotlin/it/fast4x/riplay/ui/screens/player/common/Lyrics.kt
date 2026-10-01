@@ -416,9 +416,9 @@ fun Lyrics(
             value = lyricsText ?: "",
             placeholder = stringResource(R.string.enter_the_lyrics),
             setValue = {
-                Database.asyncTransaction {
+                coroutineScope.launch {
                     ensureSongInserted()
-                    upsert(
+                    Database.upsert(
                         Lyrics(
                             songId = mediaId,
                             fixed = if (isShowingSynchronizedLyrics) currentLyrics?.fixed else it,
@@ -452,7 +452,6 @@ fun Lyrics(
                 }
                 tracks.forEach {
                     MenuEntry(icon = R.drawable.text, text = "${it.artistName} - ${it.trackName}", secondaryText = "${stringResource(R.string.sort_duration)} ${it.duration.seconds.toComponents { m, s, _ -> "$m:${s.toString().padStart(2, '0')}" }} ${stringResource(R.string.id)} ${it.id}", onClick = {
-                        menuState.hide()
                         coroutineScope.launch {
                             Database.upsert(
                                 Lyrics(
@@ -461,6 +460,7 @@ fun Lyrics(
                                     synced = it.syncedLyrics.orEmpty()
                                 )
                             )
+                            menuState.hide()
                         }
                     })
                 }
@@ -2037,12 +2037,11 @@ private suspend fun fetchLyricsIfNeeded(
                         lrcSynced = lyricsData.richSyncLyrics
                     )
 
-                    CoroutineScope(Dispatchers.IO).launch {
-                        Timber.d("fetchLyricsIfNeeded upsert lyricsToUpdate $lyricsToUpdate")
-                        lyricsToUpdate.let {
-                            Database.upsert(it)
-                        }
+                    Timber.d("fetchLyricsIfNeeded upsert lyricsToUpdate $lyricsToUpdate")
+                    lyricsToUpdate.let {
+                        Database.upsert(it)
                     }
+
                     onCheckedSimpLrc(true)
                 }?.onFailure {
                     Timber.d("fetchLyricsIfNeeded error $it")
