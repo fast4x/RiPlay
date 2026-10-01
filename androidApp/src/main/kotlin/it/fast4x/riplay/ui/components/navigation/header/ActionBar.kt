@@ -79,7 +79,6 @@ private fun HamburgerMenu(
     val equalizerType = appSettings.equalizerType
     val internalEqualizer = LocalPlayerServiceBinder.current?.equalizer
     val launchSystemEqualizer by rememberSystemEqualizerLauncher(audioSessionId = {0})
-    val showListenerLevels = appSettings.showListenerLevels
     val offlineModeEnabled = appSettings.offlineModeEnabled
     val lockOrientation = appSettings.lockOrientation
     val scope = rememberCoroutineScope()
@@ -105,6 +104,7 @@ private fun HamburgerMenu(
         ) {
             Column(modifier = Modifier.padding(horizontal = 8.dp)) {
 
+                /*
                 ModernMenuItem(
                     index = menuIndex++,
                     iconRes = R.drawable.music_equalizer,
@@ -122,6 +122,8 @@ private fun HamburgerMenu(
                         onDismissRequest()
                     }
                 )
+
+                 */
 
 
                 ModernMenuItem(
@@ -575,23 +577,23 @@ fun ActionBar(
     }
 
 
-    /* todo maybe nor right place
+    // todo maybe nor right place
     val equalizer = LocalPlayerServiceBinder.current?.equalizer
     equalizer?.let {
-        HeaderIcon(R.drawable.equalizer) {
+        HeaderIcon(R.drawable.music_equalizer, tint = colorPalette().accent) {
             sheet.display {
                 SheetBody {
-                    EqualizerScreen(it)
+                    InternalEqualizerScreen(it)
                 }
             }
         }
     }
-     */
+
 
 
     val isEnabledMusicIdentifier = appSettings.enableMusicIdentifier
     if (isEnabledMusicIdentifier) {
-        HeaderIcon(R.drawable.soundwave) {
+        HeaderIcon(R.drawable.soundwave, tint = colorPalette().accent) {
             sheet.display {
                 SheetBody {
                     MusicIdentifier(navController)
