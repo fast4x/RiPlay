@@ -117,6 +117,7 @@
   // WatchDog per UNSTARTED
   var lastLoadRequest = null;
   var unstartedRetryDone = false;
+  var lastCueRequest = null;   // {videoId, startSeconds} settato in cueVideo()
 
   // Funzione AdBlock protetta da eccezioni Cross-Origin
   function initializeAdBlock() {
@@ -212,12 +213,23 @@
               if (!player || !lastLoadRequest) return;
               if (player.getPlayerState() !== -1) return;          // solo UNSTARTED appeso
               var stuckFor = performance.now() - lastLoadRequest.at;
+              var st = player.getPlayerState();
               if (stuckFor > 2000 && !unstartedRetryDone) {
                   unstartedRetryDone = true; // max 1 retry: poi passano i livelli Kotlin
-                  console.log("[JS] UNSTARTED persistente " + stuckFor.toFixed(0) + "ms → re-issue loadVideo");
+                  console.log("AYP JS YT-BRIDGE [RESCUE] state=" + st + " stuck=" + (stuckFor|0) + "ms → re-issue " + lastLoadRequest.videoId);
+                  //console.log("[JS] UNSTARTED persistente " + stuckFor.toFixed(0) + "ms → re-issue loadVideo");
                   loadVideo(lastLoadRequest.videoId, lastLoadRequest.startSeconds);
               }
           }, 500);
+
+
+<!--          setInterval(function() {-->
+<!--              if (typeof player === 'undefined' || !player.getPlayerState) return;-->
+<!--              console.log("AYP JS YT-BRIDGE [GHOST] state=" + player.getPlayerState()-->
+<!--                  + " time=" + (player.getCurrentTime()||0).toFixed(2)-->
+<!--                  + " muted=" + player.isMuted());-->
+<!--          }, 200);-->
+
 
         },
         onStateChange: function(event) { sendPlayerStateChange(event.data) },
@@ -344,9 +356,22 @@
 
   // Interfaccia di comunicazione: invocata nativamente da KOTLIN
 
-  function seekTo(startSeconds) { if(player) player.seekTo(startSeconds, true); }
-  function pauseVideo() { if(player) player.pauseVideo(); }
-  function playVideo() { if(player) player.playVideo(); }
+  function seekTo(startSeconds) {
+    if(player) player.seekTo(startSeconds, true);
+    console.log("AYP JS YT-BRIDGE: seekTo(" + startSeconds + ")");}
+  function pauseVideo() {
+    if(player) player.pauseVideo();
+    console.log("AYP JS YT-BRIDGE: pauseVideo");
+  }
+  function playVideo() {
+    if (player && player.getPlayerState() === 5 && lastCueRequest) {
+        console.log("AYP JS YT-BRIDGE: play su CUED → load deterministico " + lastCueRequest.videoId);
+        player.loadVideoById(lastCueRequest.videoId, lastCueRequest.startSeconds);  // auto-playa
+        return;
+    }
+    player.playVideo();
+    console.log("AYP JS YT-BRIDGE: playVideo");
+  }
 
   function loadVideo(videoId, startSeconds) {
     if (!player) return;
@@ -354,14 +379,20 @@
     unstartedRetryDone = false;
     player.loadVideoById(videoId, startSeconds);
     if (YouTubePlayerBridge) YouTubePlayerBridge.sendVideoId(videoId);
+
+    console.log("AYP JS YT-BRIDGE: loadVideo id=" + videoId + " start=" + startSeconds)
+<!--    console.log("AYP JS YT-BRIDGE [GHOST] state=" + player.getPlayerState()-->
+<!--    + " time=" + (player.getCurrentTime()||0).toFixed(2)-->
+<!--    + " muted=" + player.isMuted());-->
   }
 
   function cueVideo(videoId, startSeconds) {
     if (!player) return;
-    lastLoadRequest = { videoId: videoId, startSeconds: startSeconds, at: performance.now() };
+    lastCueRequest = { videoId: videoId, startSeconds: startSeconds };
     unstartedRetryDone = false;
     player.cueVideoById(videoId, startSeconds);
     if (YouTubePlayerBridge) YouTubePlayerBridge.sendVideoId(videoId);
+    console.log("AYP JS YT-BRIDGE: cueVideo id=" + videoId + " start=" + startSeconds);
   }
 
   function mute() { if(player) player.mute(); }

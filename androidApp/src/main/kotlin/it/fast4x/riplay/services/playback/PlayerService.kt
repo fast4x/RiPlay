@@ -636,7 +636,7 @@ class PlayerService : MediaLibraryService(),
                     incrementOnlineListenedPlaytimeMs()
                     delay(200.milliseconds)
                     onlineListenedDurationMs = 0L
-                    lastOnlineMediaId = currentMediaId
+                    //lastOnlineMediaId = currentMediaId // non qui
                 }
 
                 // Recuperiamo alcuni metadata utili per la riproduzione
@@ -1443,7 +1443,8 @@ class PlayerService : MediaLibraryService(),
                         lastError = null  // reset errore dopo riproduzione riuscita
                         onlineNearEndTicks = 0
                         Timber.d("PlayerService YT: Evento PLAYING")
-                        hybridPlayer.playWhenReady = true
+
+                        hybridPlayer.youtubePlayWhenReady = true// Non invia a AYP il comando di play perchè il load invoca già il play
 
 
                         if (::hybridPlayer.isInitialized) {
@@ -1458,7 +1459,8 @@ class PlayerService : MediaLibraryService(),
                         }
                         userInitiatedPause = false
                         Timber.d("PlayerService YT: Evento PAUSED (inCall = $inCall audioManager.mode=${audioManager.mode})")
-                        hybridPlayer.playWhenReady = false
+
+                        hybridPlayer.youtubePlayWhenReady = false // Non invia a AYP il comando di pause, in questo modo il ciclo di riproduzione continua al ricevimento del focus
 
                         onlineNearEndTicks = 0
 
@@ -2084,11 +2086,15 @@ class PlayerService : MediaLibraryService(),
 
         if (lastOnlineMediaId == newMediaId) {
             Timber.d("PlayerService: onMediaItemTransition Transition ignored, same MediaID ($newMediaId) skipped")
-            handlePlayNext("onMediaTransition Transition ignored same id")
+            updatePlayerState(PlayerConstants.PlayerState.PAUSED)
+            //handlePlayNext("onMediaTransition Transition ignored same id") // non è necessario
             return
         }
 
-        Timber.d("PlayerService onMediaItemTransition mediaItem ${mediaItem.mediaId} reason $reason")
+        // Aggiorniamo l'ultimo mediaId caricato
+        lastOnlineMediaId = newMediaId
+
+            Timber.d("PlayerService onMediaItemTransition mediaItem ${mediaItem.mediaId} reason $reason")
 
         currentQueuePosition = exoPlayer.currentMediaItemIndex
 
@@ -2143,6 +2149,7 @@ class PlayerService : MediaLibraryService(),
                 hybridPlayer.switchToYoutube()
 
                 if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
+                    Timber.d("PlayerService [AYP JS YT-BRIDGE] onMediaItemTransition mediaItem not local video cued id = ${it.mediaId} playFromSecond $playFromSecond")
                     _internalYouTubePlayer.value?.loadVideo(it.mediaId, playFromSecond)
                     // Avvia il fade in per il nuovo brano appena parte il play
                     startFadeIn()
@@ -3486,6 +3493,9 @@ class PlayerService : MediaLibraryService(),
             exoPlayer.setMediaItems(mappedItems, index, if (queuedSong.mediaItem.isLocal) position else 0)
             exoPlayer.prepare()
 
+            // valorizza la variabile globale lastOnlineMediaId in modo da non riprodurre la stessa canzone
+            lastOnlineMediaId = queuedSong.mediaId
+
             if (!queuedSong.mediaItem.isLocal) {
                 val duration = try { appSettings.stateDuration } catch (e: Exception) { 0f }
                 val mId = appSettings.stateMediaId
@@ -3493,7 +3503,6 @@ class PlayerService : MediaLibraryService(),
                 playFromSecond = position.toFloat()
                 _currentSecond.value = playFromSecond
                 _currentDuration.value = if (queuedSong.mediaId == mId) duration else 0f
-                //_internalYouTubePlayer.value?.pause()
                 hybridPlayer.pause()
             }
 

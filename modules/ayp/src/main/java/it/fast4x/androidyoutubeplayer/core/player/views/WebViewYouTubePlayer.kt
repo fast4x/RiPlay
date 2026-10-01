@@ -38,10 +38,21 @@ private class YouTubePlayerImpl(
   @GuardedBy("lock")
   private val listeners = mutableSetOf<YouTubePlayerListener>()
 
-  override fun loadVideo(videoId: String, startSeconds: Float) = webView.invoke("loadVideo", videoId, startSeconds)
+  override fun loadVideo(videoId: String, startSeconds: Float) {
+    //println("YT-BRIDGE loadVideo id=$videoId start=$startSeconds")
+    webView.invoke("loadVideo", videoId, startSeconds)
+  }
   override fun cueVideo(videoId: String, startSeconds: Float) = webView.invoke("cueVideo", videoId, startSeconds)
   override fun play() = webView.invoke("playVideo")
-  override fun pause() = webView.invoke("pauseVideo")
+  override fun pause() {
+//    val caller = Exception().stackTraceToString()
+//      .lineSequence()
+//      .filter { "it.fast4x" in it }      // solo i frame dell'app: i framework spariscono
+//      .take(5)
+//      .joinToString(" | ")
+//    println("YT-BRIDGE pauseVideo by: $caller")
+    webView.invoke("pauseVideo")
+  }
   override fun nextVideo() = webView.invoke("nextVideo")
   override fun previousVideo() = webView.invoke("previousVideo")
   override fun playVideoAt(index: Int) = webView.invoke("playVideoAt", index)
@@ -61,7 +72,10 @@ private class YouTubePlayerImpl(
     require(volumePercent in 0..100) { "Volume must be between 0 and 100" }
     webView.invoke("setVolume", volumePercent)
   }
-  override fun seekTo(time: Float) = webView.invoke("seekTo", time)
+  override fun seekTo(time: Float) {
+    //println("YT-BRIDGE seekTo($time) — stack:  ${Exception()}")
+    webView.invoke("seekTo", time)
+  }
   override fun setPlaybackRate(playbackRate: PlayerConstants.PlaybackRate) = webView.invoke("setPlaybackRate", playbackRate.toFloat())
   override fun addListener(listener: YouTubePlayerListener) = synchronized(lock) { listeners.add(listener) }
   override fun removeListener(listener: YouTubePlayerListener) = synchronized(lock) { listeners.remove(listener) }
@@ -169,7 +183,7 @@ internal class WebViewYouTubePlayer (
     val injectedVideoId = if (videoId != null) { "'$videoId'" } else { "undefined" } //videoId?.takeIf { it.isNotBlank() }?.let { "'$it'" } ?: "undefined"
     val injectedPlayerVars = playerOptions.toString()
 
-    println("AYPFORK-initWebView videoId originale=$videoId videoId=$injectedVideoId playerVars=$injectedPlayerVars")
+    //println("AYPFORK-initWebView videoId originale=$videoId videoId=$injectedVideoId playerVars=$injectedPlayerVars")
 
     // Generazione e Iniezione dell'HTML
     val htmlPage = readHTMLFromUTF8File(resources.openRawResource(R.raw.ayp_youtube_player))
@@ -182,7 +196,7 @@ internal class WebViewYouTubePlayer (
   }
 
   override fun onWindowVisibilityChanged(visibility: Int) {
-    println("AYPFORK-onWindowVisibilityChanged visibility=$visibility")   // 0=GONE 4=INVISIBLE 0? 8=VISIBLE... usa i valori grezzi
+    //println("AYPFORK-onWindowVisibilityChanged visibility=$visibility")   // 0=GONE 4=INVISIBLE 0? 8=VISIBLE... usa i valori grezzi
     if (visibility == View.INVISIBLE || visibility == View.GONE) {
       super.onWindowVisibilityChanged(View.VISIBLE)
     } else {
@@ -191,7 +205,7 @@ internal class WebViewYouTubePlayer (
   }
 
   override fun onVisibilityChanged(changedView: View, visibility: Int) {
-    println("AYPFORK-onVisibilityChanged changedView=${changedView::class.simpleName} vis=$visibility")
+    //println("AYPFORK-onVisibilityChanged changedView=${changedView::class.simpleName} vis=$visibility")
     if (visibility == View.INVISIBLE || visibility == View.GONE) {
       super.onVisibilityChanged(changedView, View.VISIBLE)
     } else {
@@ -200,7 +214,7 @@ internal class WebViewYouTubePlayer (
   }
 
   override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
-    println("AYPFORK-onWindowFocusChanged hasWindowFocus=${hasWindowFocus::class.simpleName} vis=$visibility")
+    //println("AYPFORK-onWindowFocusChanged hasWindowFocus=${hasWindowFocus::class.simpleName} vis=$visibility")
     // Impedisce a Chromium di marcare la pagina come "hidden" (Page Visibility API)
     // quando la finestra perde il focus (schermo spento, tendina notifiche, app in
     // background). Altrimenti lo script IFrame di YouTube reagisce all'evento
@@ -209,7 +223,7 @@ internal class WebViewYouTubePlayer (
   }
 
   override fun onVisibilityAggregated(isVisible: Boolean) {
-    println("AYPFORK-onVisibilityAggregated isVisible=${isVisible::class.simpleName} vis=$visibility")
+    //println("AYPFORK-onVisibilityAggregated isVisible=${isVisible::class.simpleName} vis=$visibility")
     // Segnale "definitivo" (API 24+) che Chromium usa per decidere se
     // sospendere rendering/JS timers, indipendentemente da window focus
     // e dai singoli visibility change già gestiti sopra. Forziamo sempre
@@ -220,12 +234,12 @@ internal class WebViewYouTubePlayer (
 
   override fun onDetachedFromWindow() {
     super.onDetachedFromWindow()
-    println("AYPFORK-onDetachedFromWindow DETACHED ")
+    //println("AYPFORK-onDetachedFromWindow DETACHED ")
   }
 
   override fun onAttachedToWindow() {
     super.onAttachedToWindow()
-    println("AYPFORK-onAttachedToWindow ATTACHED")
+    //println("AYPFORK-onAttachedToWindow ATTACHED")
   }
 
   /**
@@ -233,7 +247,7 @@ internal class WebViewYouTubePlayer (
    * come poster grafico durante il caricamento iniziale della WebView.
    */
   fun setCustomVideoPoster(bitmap: Bitmap?) {
-    Log.d("WebViewYouTubePlayer", "setCustomVideoPoster called with bitmap: $bitmap")
+    //Log.d("WebViewYouTubePlayer", "setCustomVideoPoster called with bitmap: $bitmap")
     //this.customVideoPoster = bitmap
     setRawLogoBitmap(bitmap)
   }

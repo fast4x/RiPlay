@@ -46,7 +46,7 @@ class HybridPlayer (
     var onRefreshCustomLayoutListener: (() -> Unit)? = null
 
     private val mainHandler = Handler(Looper.getMainLooper())
-    private var youtubePlayWhenReady = false
+    var youtubePlayWhenReady = false
 
     var activeEngine: ActiveEngine = ActiveEngine.EXOPLAYER
         private set
