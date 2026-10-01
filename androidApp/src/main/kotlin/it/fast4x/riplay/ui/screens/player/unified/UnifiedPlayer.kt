@@ -3298,10 +3298,11 @@ fun UnifiedPlayer(
                             }
                         //.border(BorderStroke(2.dp, colorPalette().collapsedPlayerProgressBar))
                     ) {
-//                        Timber.d("PlayerCover showthumbnail=$showthumbnail playerType=$playerType " +
-//                                "forceVideo=${appSettings.forceUserVideoPlayback} vcm=${appSettings.videoContentMode} " +
-//                                "isVideo=${mediaItem.isVideo} lyrics=$isShowingLyrics vis=$isShowingVisualizer")
+                        Timber.d("PlayerCover showthumbnail=$showthumbnail playerType=$playerType " +
+                                "forceVideo=${appSettings.forceUserVideoPlayback} vcm=${appSettings.videoContentMode} " +
+                                "isVideo=${mediaItem.isVideo} lyrics=$isShowingLyrics vis=$isShowingVisualizer")
 
+                        // PORTRAIT MODE CON VISUALIZZAZIONE COVER
                         if (showthumbnail
                             && ((!appSettings.forceUserVideoPlayback && appSettings.videoContentMode.audioOnly)
                                     || (appSettings.videoContentMode.normal && !mediaItem.isVideo))
@@ -3588,6 +3589,7 @@ fun UnifiedPlayer(
                                     }
 
                                 } else {
+                                    // playerType=Essential in PORTRAIT MODE
 
                                     val request = remember(mediaItem.mediaId) {
                                         ImageRequest.Builder(context)
@@ -3619,7 +3621,8 @@ fun UnifiedPlayer(
                                         .clip(shadowShape)
                                         .graphicsLayer { alpha = contentAlpha }
 
-                                    if (!mediaItem.isVideo)
+
+                                    //if (!mediaItem.isVideo)
                                         Image(
                                             painter = coverPainter,
                                             contentDescription = "",
@@ -3695,15 +3698,15 @@ fun UnifiedPlayer(
                                 padding(all = animatePadding)
                             }
                             //.padding(all = animatePadding)
-                            .conditional(thumbnailType == ThumbnailType.Modern && !isShowingLyrics) {
+                            .conditional(playerType == PlayerType.Modern && thumbnailType == ThumbnailType.Modern && !isShowingLyrics) {
                                 padding(
                                     all = 14.dp
                                 )
-                                doubleShadowDrop(
-                                    if (showCoverThumbnailAnimation && !mediaItem.isVideo) CircleShape else thumbnailRoundness.shape(),
-                                    4.dp,
-                                    8.dp
-                                )
+//                                doubleShadowDrop(
+//                                    if (showCoverThumbnailAnimation && !mediaItem.isVideo) CircleShape else thumbnailRoundness.shape(),
+//                                    4.dp,
+//                                    8.dp
+//                                )
                             }
                             .clip(thumbnailRoundness.shape())
 
