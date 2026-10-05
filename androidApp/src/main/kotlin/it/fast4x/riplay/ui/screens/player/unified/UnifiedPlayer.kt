@@ -11,7 +11,6 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -28,6 +27,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.AnchoredDraggableState
@@ -251,7 +251,7 @@ import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.utils.conditional
+import it.fast4x.riplay.utils.applyIfWhenComposable
 import it.fast4x.riplay.utils.currentWindow
 import it.fast4x.riplay.utils.detectGestures
 import it.fast4x.riplay.utils.doubleShadowDrop
@@ -1215,7 +1215,7 @@ fun UnifiedPlayer(
                         .onSizeChanged {
                             sizeShader = Size(it.width.toFloat(), it.height.toFloat())
                         }
-                        .conditional(!appRunningInBackground) {
+                        .applyIfWhenComposable(!appRunningInBackground) {
                             shaderBackground(
                                 MeshGradient(
                                     arrayOf(
@@ -1607,7 +1607,7 @@ fun UnifiedPlayer(
                         .height(Dimensions.navigationBarHeight + bottomInset + 20.dp)
                         .padding(contentPadding)
                         .fillMaxWidth(if (isLandscape) 0.8f else 1f)
-                        .conditional(tapqueue) { clickable { showQueue = true } }
+                        .applyIfWhenComposable(tapqueue) { clickable { showQueue = true } }
                         .background(
                             colorPalette().background2.copy(
                                 alpha = if ((transparentBackgroundActionBarPlayer) || ((playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient) || (playerBackgroundColors == PlayerBackgroundColors.ThemeColorGradient)) && blackgradient) 0.0f else 0.7f // 0.0 > 0.1
@@ -1789,13 +1789,13 @@ fun UnifiedPlayer(
                                 },
                                 modifier = Modifier
                                     .size(28.dp)
-                                    .conditional(songPlaylist > 0 && playlistindicator) {
+                                    .applyIfWhenComposable(songPlaylist > 0 && playlistindicator) {
                                         background(
                                             color.accent,
                                             CircleShape
                                         )
                                     }
-                                    .conditional(songPlaylist > 0 && playlistindicator) {
+                                    .applyIfWhenComposable(songPlaylist > 0 && playlistindicator) {
                                         padding(
                                             all = 5.dp
                                         )
@@ -1904,9 +1904,9 @@ fun UnifiedPlayer(
 
         val swipeAnimationNoThumbnail = appearanceSettings.swipeAnimationNoThumbnail
 
-        val collapseOffset = remember { Animatable(0f) }
-        val collapseThresholdPx = with(LocalDensity.current) { 140.dp.toPx() }
-        val dragProgress = (collapseOffset.value / collapseThresholdPx).coerceIn(0f, 1f)
+//        val collapseOffset = remember { Animatable(0f) }
+//        val collapseThresholdPx = with(LocalDensity.current) { 140.dp.toPx() }
+//        val dragProgress = (collapseOffset.value / collapseThresholdPx).coerceIn(0f, 1f)
 
         if ( isLandscape ) {
 
@@ -1974,45 +1974,7 @@ fun UnifiedPlayer(
                             shape = RoundedCornerShape(24.dp * progress)
                             clip = true
                         }
-                        //.offset { IntOffset(0, collapseOffset.value.roundToInt()) } // modalità senza anchorable
-                        //.fillMaxSize()
-                        // gesture per chiudere il box in landscape mode
-                        /*
-                        .pointerInput(Unit) {
-                            detectVerticalDragGestures(
-                                onVerticalDrag = { _, dragAmount ->
-                                    val inTransition = sharedTransitionScope?.isTransitionActive == true
-                                    //Timber.d("UnifiedPlayer LANDSCAPE COLLAPSE drag=$dragAmount inTransition=$inTransition")
-                                    if (inTransition || isExiting || dragBlocked) return@detectVerticalDragGestures
-                                    coroutineScope.launch {
-                                        collapseOffset.snapTo(
-                                            (collapseOffset.value + dragAmount).coerceAtLeast(0f)
-                                        )
-                                    }
-                                },
-                                onDragEnd = {
-                                    if (isExiting) return@detectVerticalDragGestures
-                                    if (!isExiting && collapseOffset.value > collapseThresholdPx) {
-                                        coroutineScope.launch {
-                                            isExiting = true
-                                            collapseOffset.stop()
-                                            onDismiss()
-                                        }
-                                    }
-                                    else coroutineScope.launch {
-                                        collapseOffset.animateTo(0f, spring(stiffness = Spring.StiffnessMediumLow))
-                                    }
-                                },
-                                onDragCancel = {
-                                    coroutineScope.launch {
-                                        collapseOffset.animateTo(0f, spring(stiffness = Spring.StiffnessMediumLow))
-                                    }
-                                }
-                            )
-                        }
-
-                         */
-                        .conditional(queueType == QueueType.Modern) {
+                        .applyIfWhenComposable(queueType == QueueType.Modern) {
                             hazeEffect(
                                 state = hazeState,
                                 style = HazeDefaults.style(
@@ -2034,6 +1996,7 @@ fun UnifiedPlayer(
                         modifier = containerModifier
                             .padding(top = if (playerType == PlayerType.Essential) 40.dp else 20.dp)
                             .padding(top = if (extraspace) 10.dp else 0.dp)
+                            .fillMaxSize()
                             .drawBehind {
                                 if (backgroundProgress == BackgroundProgress.Both || backgroundProgress == BackgroundProgress.Player) {
                                     drawRect(
@@ -2054,7 +2017,6 @@ fun UnifiedPlayer(
                                 .fillMaxHeight(.7f)
                                 .fillMaxWidth(.4f)
                                 .animateContentSize()
-                            // .border(BorderStroke(1.dp, Color.Blue))
                         ) {
 
                             if ((playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor && playerType == PlayerType.Modern && (!showthumbnail || albumCoverRotation)) || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) {
@@ -2145,7 +2107,7 @@ fun UnifiedPlayer(
                                         contentScale = if ((albumCoverRotation || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) && (isShowingLyrics || showthumbnail)) ContentScale.Fit else ContentScale.Crop,
                                         modifier = Modifier
                                             .zIndex(if (index == pagerStateFS.currentPage) 1f else 0.9f)
-                                            .conditional(albumCoverRotation || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) {
+                                            .applyIfWhenComposable(albumCoverRotation || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) {
                                                 graphicsLayer {
                                                     scaleX =
                                                         if (isShowingLyrics || showthumbnail) (screenWidth / screenHeight) + 0.5f else 1f
@@ -2286,8 +2248,8 @@ fun UnifiedPlayer(
                             if (playerType == PlayerType.Modern) {
                                 BoxWithConstraints(
                                     contentAlignment = Alignment.Center,
-                                    //modifier = Modifier
                                 ) {
+
                                     if (showthumbnail) {
                                         if (!isShowingVisualizer) {
                                             val fling = PagerDefaults.flingBehavior(
@@ -2357,7 +2319,7 @@ fun UnifiedPlayer(
                                                             0.dp
                                                         )
                                                     )
-                                                    .conditional(fadingedge) { horizontalFadingEdge() }
+                                                    .applyIfWhenComposable(fadingedge) { horizontalFadingEdge() }
                                             ) { index ->
                                                 if (!(index < (binder.hybridPlayer.mediaItemCount ?: 0) && index >= 0)) return@HorizontalPager
 
@@ -2378,12 +2340,12 @@ fun UnifiedPlayer(
                                                     .fillMaxSize()
                                                     .aspectRatio(1f)
                                                     .padding(all = playerThumbnailSizeL.padding.dp)
-                                                    .conditional(thumbnailType == ThumbnailType.Modern) {
+                                                    .applyIfWhenComposable(thumbnailType == ThumbnailType.Modern) {
                                                         padding(
                                                             all = 14.dp
                                                         )
                                                     }
-                                                    .conditional(
+                                                    .applyIfWhenComposable(
                                                         thumbnailType == ThumbnailType.Modern
                                                                 && coverThumbnailAnimation != ThumbnailCoverType.AudioCassette
                                                                 && coverThumbnailAnimation != ThumbnailCoverType.AudioCassetteWithCover
@@ -2616,12 +2578,12 @@ fun UnifiedPlayer(
                                 val shadowShape = if (showCoverThumbnailAnimation && !mediaItem.isVideo)
                                     CircleShape else thumbnailRoundness.shape()
                                 val coverModifier = Modifier
-                                    .conditional(thumbnailType == ThumbnailType.Modern) {
+                                    .applyIfWhenComposable(thumbnailType == ThumbnailType.Modern) {
                                         padding(
                                             all = 14.dp
                                         )
                                     }
-                                    .conditional(thumbnailType == ThumbnailType.Modern && !isShowingLyrics) {
+                                    .applyIfWhenComposable(thumbnailType == ThumbnailType.Modern && !isShowingLyrics) {
                                         doubleShadowDrop(
                                             shadowShape,
                                             8.dp,
@@ -2642,16 +2604,16 @@ fun UnifiedPlayer(
 
                         }
                         Column(
-                            verticalArrangement = Arrangement.Center,
+                            verticalArrangement = Arrangement.SpaceEvenly,
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxSize()
                         ) {
                             if (playerType == PlayerType.Essential || isShowingVisualizer) {
                                 controlsContent(
                                     Modifier
-                                        .padding(vertical = 8.dp)
-                                        .conditional(playerType == PlayerType.Essential) { fillMaxHeight() }
-                                        .conditional(playerType == PlayerType.Essential) { weight(1f) }
+                                        .applyIfWhenComposable(playerType == PlayerType.Essential) {
+                                            fillMaxHeight(.6f)
+                                        }
 
                                 )
                             } else {
@@ -2846,7 +2808,7 @@ fun UnifiedPlayer(
                     }
 
                      */
-                    .conditional(queueType == QueueType.Modern) {
+                    .applyIfWhenComposable(queueType == QueueType.Modern) {
                         hazeEffect(
                             state = hazeState,
                             style = HazeDefaults.style(
@@ -2924,10 +2886,10 @@ fun UnifiedPlayer(
 
                         Box(
                             modifier = Modifier
-                                .conditional((albumCoverRotation || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) && (isShowingLyrics || showthumbnail)) {
+                                .applyIfWhenComposable((albumCoverRotation || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) && (isShowingLyrics || showthumbnail)) {
                                     zIndex(if (index == pagerStateFS.currentPage) 1f else 0.9f)
                                 }
-                                .conditional(swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Scale && isDraggedFS) {
+                                .applyIfWhenComposable(swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Scale && isDraggedFS) {
                                     graphicsLayer {
                                         scaleY = scaleAnimationFloat
                                         scaleX = scaleAnimationFloat
@@ -2964,7 +2926,7 @@ fun UnifiedPlayer(
                                 contentScale = if ((albumCoverRotation || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) && (isShowingLyrics || showthumbnail)) ContentScale.Fit else ContentScale.Crop,
                                 modifier = Modifier
                                     .fillMaxHeight()
-                                    .conditional(albumCoverRotation || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) {
+                                    .applyIfWhenComposable(albumCoverRotation || (animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14])) {
                                         graphicsLayer {
                                             scaleX =
                                                 if (isShowingLyrics || showthumbnail) (screenHeight / screenWidth) + 0.5f else 1f
@@ -2974,14 +2936,14 @@ fun UnifiedPlayer(
                                                 if ((index == pagerStateFS.settledPage) && (isShowingLyrics || showthumbnail)) rotation.value else 0f
                                         }
                                     }
-                                    .conditional(swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Fade && !showthumbnail) {
+                                    .applyIfWhenComposable(swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Fade && !showthumbnail) {
                                         graphicsLayer {
                                             val pageOffset = pagerStateFS.currentPageOffsetFraction
                                             translationX = pageOffset * size.width
                                             alpha = 1 - pageOffset.absoluteValue
                                         }
                                     }
-                                    .conditional(swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Carousel && isDraggedFS) { //by sinasamaki
+                                    .applyIfWhenComposable(swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Carousel && isDraggedFS) { //by sinasamaki
                                         graphicsLayer {
                                             val startOffset = pagerStateFS.startOffsetForPage(index)
                                             translationX = size.width * (startOffset * .99f)
@@ -2996,7 +2958,7 @@ fun UnifiedPlayer(
                                             scaleY = scale
                                         }
                                     }
-                                    .conditional(swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Circle && !showthumbnail) { //by sinasamaki
+                                    .applyIfWhenComposable(swipeAnimationNoThumbnail == SwipeAnimationNoThumbnail.Circle && !showthumbnail) { //by sinasamaki
                                         graphicsLayer {
                                             val pageOffset = pagerStateFS.offsetForPage(index)
                                             translationX = size.width * pageOffset
@@ -3054,10 +3016,10 @@ fun UnifiedPlayer(
                                 Column {
                                     Spacer(
                                         modifier = Modifier
-                                            .conditional((screenWidth <= (screenHeight / 2)) && (showlyricsthumbnail || (!expandedplayer && !isShowingLyrics))) {
+                                            .applyIfWhenComposable((screenWidth <= (screenHeight / 2)) && (showlyricsthumbnail || (!expandedplayer && !isShowingLyrics))) {
                                                 height(screenWidth)
                                             }
-                                            .conditional((screenWidth > (screenHeight / 2)) || expandedplayer || (isShowingLyrics && !showlyricsthumbnail)) {
+                                            .applyIfWhenComposable((screenWidth > (screenHeight / 2)) || expandedplayer || (isShowingLyrics && !showlyricsthumbnail)) {
                                                 weight(
                                                     1f
                                                 )
@@ -3065,7 +3027,7 @@ fun UnifiedPlayer(
 
                                     Box(
                                         modifier = Modifier
-                                            .conditional(!expandedplayer && (!isShowingLyrics || showlyricsthumbnail)) {
+                                            .applyIfWhenComposable(!expandedplayer && (!isShowingLyrics || showlyricsthumbnail)) {
                                                 weight(
                                                     1f
                                                 )
@@ -3270,7 +3232,7 @@ fun UnifiedPlayer(
                     BoxWithConstraints(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
-                            .conditional(
+                            .applyIfWhenComposable(
                                 !it.fast4x.riplay.utils.isLandscape &&
                                         (screenWidth <= (screenHeight / 2)) && (showlyricsthumbnail || (!expandedplayer && !isShowingLyrics))
                             ) {
@@ -3278,7 +3240,7 @@ fun UnifiedPlayer(
                                     screenWidth
                                 )
                             }
-                            .conditional(
+                            .applyIfWhenComposable(
                                 !it.fast4x.riplay.utils.isLandscape &&
                                         (screenWidth > (screenHeight / 2)) || expandedplayer || (isShowingLyrics && !showlyricsthumbnail)
                             ) {
@@ -3286,11 +3248,10 @@ fun UnifiedPlayer(
                                     1f
                                 )
                             }
-                            .conditional(it.fast4x.riplay.utils.isLandscape && mediaItem.isVideo) {
+                            .applyIfWhenComposable(it.fast4x.riplay.utils.isLandscape && mediaItem.isVideo) {
                                 height(screenHeight)
                                 width(screenWidth)
                             }
-                        //.border(BorderStroke(2.dp, colorPalette().collapsedPlayerProgressBar))
                     ) {
 //                        Timber.d("PlayerCover showthumbnail=$showthumbnail playerType=$playerType " +
 //                                "forceVideo=${appSettings.forceUserVideoPlayback} vcm=${appSettings.videoContentMode} " +
@@ -3351,7 +3312,7 @@ fun UnifiedPlayer(
                                                     0.dp
                                                 )
                                             )
-                                            .conditional(fadingedge) {
+                                            .applyIfWhenComposable(fadingedge) {
                                                 verticalfadingEdge2(
                                                     fade = (if (expandedplayer) thumbnailFadeEx else thumbnailFade) * 0.05f,
                                                     showTopActionsBar,
@@ -3383,12 +3344,12 @@ fun UnifiedPlayer(
                                             .fillMaxSize()
                                             .aspectRatio(1f)
                                             .padding(all = animatePadding)
-                                            .conditional(thumbnailType == ThumbnailType.Modern) {
+                                            .applyIfWhenComposable(thumbnailType == ThumbnailType.Modern) {
                                                 padding(
                                                     all = 14.dp
                                                 )
                                             }
-                                            .conditional(
+                                            .applyIfWhenComposable(
                                                 thumbnailType == ThumbnailType.Modern
                                                         && coverThumbnailAnimation != ThumbnailCoverType.AudioCassette
                                                         && coverThumbnailAnimation != ThumbnailCoverType.AudioCassetteWithCover
@@ -3404,7 +3365,7 @@ fun UnifiedPlayer(
                                                 )
                                             }
                                             .clip(thumbnailRoundness.shape())
-                                            .conditional(carousel) {
+                                            .applyIfWhenComposable(carousel) {
                                                 graphicsLayer {
                                                     val pageOffSet =
                                                         ((pagerState.currentPage - index) + pagerState.currentPageOffsetFraction).absoluteValue
@@ -3600,12 +3561,12 @@ fun UnifiedPlayer(
 //                                        .applyIf(!it.fast4x.riplay.utils.isLandscape) {
 //                                            fillMaxSize()
 //                                        }
-                                        .conditional(thumbnailType == ThumbnailType.Modern) {
+                                        .applyIfWhenComposable(thumbnailType == ThumbnailType.Modern) {
                                             padding(
                                                 all = 14.dp
                                             )
                                         }
-                                        .conditional(thumbnailType == ThumbnailType.Modern && !isShowingLyrics) {
+                                        .applyIfWhenComposable(thumbnailType == ThumbnailType.Modern && !isShowingLyrics) {
                                             doubleShadowDrop(
                                                 shadowShape,
                                                 8.dp,
@@ -3685,14 +3646,14 @@ fun UnifiedPlayer(
                             .applyIf(!it.fast4x.riplay.utils.isLandscape) {
                                 fillMaxSize()
                             }
-                            .conditional(!it.fast4x.riplay.utils.isLandscape && !mediaItem.isVideo) {
+                            .applyIfWhenComposable(!it.fast4x.riplay.utils.isLandscape && !mediaItem.isVideo) {
                                 aspectRatio(1f)
                             }
-                            .conditional(!it.fast4x.riplay.utils.isLandscape) {
+                            .applyIfWhenComposable(!it.fast4x.riplay.utils.isLandscape) {
                                 padding(all = animatePadding)
                             }
                             //.padding(all = animatePadding)
-                            .conditional(playerType == PlayerType.Modern && thumbnailType == ThumbnailType.Modern && !isShowingLyrics) {
+                            .applyIfWhenComposable(playerType == PlayerType.Modern && thumbnailType == ThumbnailType.Modern && !isShowingLyrics) {
                                 padding(
                                     all = 14.dp
                                 )
@@ -3726,12 +3687,12 @@ fun UnifiedPlayer(
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
-                            .conditional(!expandedplayer && (!isShowingLyrics || showlyricsthumbnail)) {
+                            .applyIfWhenComposable(!expandedplayer && (!isShowingLyrics || showlyricsthumbnail)) {
                                 weight(
                                     1f
                                 )
                             }
-                            .conditional(playerBackgroundColors == PlayerBackgroundColors.MidnightOdyssey) {
+                            .applyIfWhenComposable(playerBackgroundColors == PlayerBackgroundColors.MidnightOdyssey) {
                                 background(
                                     Brush.verticalGradient(
                                         0.0f to Color(0xff141414),
@@ -3875,7 +3836,7 @@ fun UnifiedPlayer(
                         }
                         Box(
                             modifier = Modifier
-                                .conditional(!expandedplayer && (!isShowingLyrics || showlyricsthumbnail)) {
+                                .applyIfWhenComposable(!expandedplayer && (!isShowingLyrics || showlyricsthumbnail)) {
                                     weight(
                                         1f
                                     )
@@ -4121,14 +4082,14 @@ fun OutlineText(
                 )
             ),
             maxLines = 1,
-            modifier = Modifier.conditional(!disableScrollingText) { basicMarquee() }
+            modifier = Modifier.applyIfWhenComposable(!disableScrollingText) { basicMarquee() }
         )
         // Livello Principale (Testo riempito)
         BasicText(
             text = text,
             style = style,
             maxLines = 1,
-            modifier = Modifier.conditional(!disableScrollingText) { basicMarquee() }
+            modifier = Modifier.applyIfWhenComposable(!disableScrollingText) { basicMarquee() }
         )
     }
 }

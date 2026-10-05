@@ -538,7 +538,7 @@ fun Modifier.pulsatingEffect(
 }
 
 @Composable
-fun Modifier.conditional(
+fun Modifier.applyIfWhenComposable(
     condition: Boolean,
     modifier: @Composable Modifier.() -> Modifier
 ): Modifier {

@@ -149,7 +149,7 @@ import it.fast4x.riplay.utils.addNext
 import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.utils.conditional
+import it.fast4x.riplay.utils.applyIfWhenComposable
 import it.fast4x.riplay.utils.currentWindow
 import it.fast4x.riplay.utils.enqueue
 import it.fast4x.riplay.utils.getIconQueueLoopState
@@ -412,7 +412,7 @@ fun Queue(
         contentColor = if (queueType == QueueType.Modern) colorPalette().background2.copy(alpha = 0.5f) else colorPalette().background2,
         modifier = Modifier
             .fillMaxWidth()
-            .conditional(queueType == QueueType.Modern) { hazeEffect(state = hazeState) },
+            .applyIfWhenComposable(queueType == QueueType.Modern) { hazeEffect(state = hazeState) },
         dragHandle = {
             Surface(
                 modifier = Modifier.padding(vertical = 0.dp),

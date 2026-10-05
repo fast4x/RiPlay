@@ -79,7 +79,6 @@ import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import dev.chrisbanes.haze.HazeState
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -98,7 +97,6 @@ import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.services.playback.common.PlayerState
-import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.themed.PlayerMenu
 import it.fast4x.riplay.ui.components.themed.Turntable
@@ -114,7 +112,7 @@ import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.LandscapeToSquareTransformation
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.utils.conditional
+import it.fast4x.riplay.utils.applyIfWhenComposable
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.getBitmapFromUrl
 import it.fast4x.riplay.utils.getIconQueueLoopState
@@ -652,7 +650,7 @@ private fun TrackInfoSection(
                 style = typography().l.semiBold.merge(TextStyle(color = titleColor)),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.conditional(!disableScrollingText) { basicMarquee() }
+                modifier = Modifier.applyIfWhenComposable(!disableScrollingText) { basicMarquee() }
             )
             if (textoutline) {
                 BasicText(
@@ -666,7 +664,7 @@ private fun TrackInfoSection(
                     ),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.conditional(!disableScrollingText) { basicMarquee() }
+                    modifier = Modifier.applyIfWhenComposable(!disableScrollingText) { basicMarquee() }
                 )
             }
         }
@@ -682,7 +680,7 @@ private fun TrackInfoSection(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
-                    .conditional(!disableScrollingText) { basicMarquee() }
+                    .applyIfWhenComposable(!disableScrollingText) { basicMarquee() }
                     .clickable {
                         // Navigate to artist
                         artistIds?.firstOrNull()?.id?.let { artistId ->
@@ -702,7 +700,7 @@ private fun TrackInfoSection(
                     ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.conditional(!disableScrollingText) { basicMarquee() }
+                    modifier = Modifier.applyIfWhenComposable(!disableScrollingText) { basicMarquee() }
                 )
             }
         }
