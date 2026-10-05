@@ -824,12 +824,12 @@ fun LocalPlaylistSongs(
     LaunchedEffect(getAlbumVersion) {
         withContext(Dispatchers.IO) {
             totalSongsToMatch = playlistSongsSortByPosition
-                .filter {(it.song.thumbnailUrl?.startsWith("https://lh3.googleusercontent.com") == false) && !(it.song.id.startsWith(LOCAL_KEY_PREFIX))}.size
+                .filter {!(it.song.id.startsWith(LOCAL_KEY_PREFIX))}.size
             songsMatched = 0
 
             val jobs = mutableListOf<Job>()
             playlistSongsSortByPosition.forEachIndexed { index, video ->
-                if ((video.song.thumbnailUrl?.startsWith("https://lh3.googleusercontent.com") == false) && !(video.song.id.startsWith(LOCAL_KEY_PREFIX))) {
+                if (!(video.song.id.startsWith(LOCAL_KEY_PREFIX))) {
                     jobs.add(coroutineScope.launch(Dispatchers.IO) {
                         matchSongInPlaylist(
                             song = video.song,
@@ -1229,25 +1229,22 @@ fun LocalPlaylistSongs(
                             if ((playlistPreview?.playlist?.isYoutubePlaylist) == false && unmatchedSongsCount>0) {
                                 HeaderIconButton(
                                     icon = R.drawable.alert,
-                                    enabled = playlistSongs.any {
-                                        (it.song.thumbnailUrl?.startsWith("https://lh3.googleusercontent.com") == false) && !(it.song.id.startsWith(
+                                    enabled = playlistSongs.any { !(it.song.id.startsWith(
                                             LOCAL_KEY_PREFIX
                                         ))
                                     },
-                                    color = if (playlistSongs.any {
-                                            (it.song.thumbnailUrl?.startsWith("https://lh3.googleusercontent.com") == false) && !(it.song.id.startsWith(
+                                    color = if (playlistSongs.any { !(it.song.id.startsWith(
                                                 LOCAL_KEY_PREFIX
                                             ))
                                         }) colorPalette.text else colorPalette.textDisabled,
                                     onClick = {
-                                        if (!isNetworkConnected && playlistPreview?.playlist?.isYoutubePlaylist == true && (playlistPreview?.playlist?.isEditable == true) && isYtSyncEnabled()) {
+                                        if (!isNetworkConnected) {
                                             SmartMessage(
                                                 context.resources.getString(R.string.no_connection),
                                                 context = context,
                                                 type = PopupType.Error
                                             )
-                                        } else if (playlistSongs.any {
-                                                (it.song.thumbnailUrl?.startsWith("https://lh3.googleusercontent.com") == false) && !(it.song.id.startsWith(
+                                        } else if (playlistSongs.any { !(it.song.id.startsWith(
                                                     LOCAL_KEY_PREFIX
                                                 ))
                                             }) {
@@ -1876,8 +1873,8 @@ fun LocalPlaylistSongs(
                                                     coroutineScope.launch {
                                                         appSettingsManager.updateSettings(
                                                             appSettings.copy(
-                                                            playlistSongsTypeFilter =
-                                                                PlaylistSongsTypeFilter.Favorites
+                                                                playlistSongsTypeFilter =
+                                                                    PlaylistSongsTypeFilter.Favorites
                                                             )
                                                         )
                                                     }
