@@ -76,8 +76,6 @@ fun HomeScreen(
 
     val checkUpdateState = appSettings.checkUpdateState
 
-    val saveableStateHolder = rememberSaveableStateHolder()
-
     val isNetworkConnected = rememberIsNetworkConnected()
 
     val coroutineScope = rememberCoroutineScope()

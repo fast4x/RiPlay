@@ -580,7 +580,7 @@ fun ActionBar(
     // todo maybe nor right place
     val equalizer = LocalPlayerServiceBinder.current?.equalizer
     equalizer?.let {
-        HeaderIcon(R.drawable.music_equalizer, tint = colorPalette().accent) {
+        HeaderIcon(R.drawable.equalizer, tint = colorPalette().accent) {
             sheet.display {
                 SheetBody {
                     InternalEqualizerScreen(it)

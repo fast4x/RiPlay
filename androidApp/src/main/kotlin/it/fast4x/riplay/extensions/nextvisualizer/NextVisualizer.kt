@@ -46,27 +46,30 @@ import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.toThumbnail
-import it.fast4x.riplay.extensions.nextvisualizer.painters.Painter
-import it.fast4x.riplay.extensions.nextvisualizer.painters.fft.FftBar
-import it.fast4x.riplay.extensions.nextvisualizer.painters.fft.FftCBar
-import it.fast4x.riplay.extensions.nextvisualizer.painters.fft.FftCLine
-import it.fast4x.riplay.extensions.nextvisualizer.painters.fft.FftCWave
-import it.fast4x.riplay.extensions.nextvisualizer.painters.fft.FftCWaveRgb
-import it.fast4x.riplay.extensions.nextvisualizer.painters.fft.FftLine
-import it.fast4x.riplay.extensions.nextvisualizer.painters.fft.FftWave
-import it.fast4x.riplay.extensions.nextvisualizer.painters.fft.FftWaveRgb
-import it.fast4x.riplay.extensions.nextvisualizer.painters.misc.Gradient
-import it.fast4x.riplay.extensions.nextvisualizer.painters.misc.Icon
-import it.fast4x.riplay.extensions.nextvisualizer.painters.modifier.Beat
-import it.fast4x.riplay.extensions.nextvisualizer.painters.modifier.Blend
-import it.fast4x.riplay.extensions.nextvisualizer.painters.modifier.Compose
-import it.fast4x.riplay.extensions.nextvisualizer.painters.modifier.Glitch
-import it.fast4x.riplay.extensions.nextvisualizer.painters.modifier.Move
-import it.fast4x.riplay.extensions.nextvisualizer.painters.modifier.Shake
-import it.fast4x.riplay.extensions.nextvisualizer.painters.waveform.WfmAnalog
-import it.fast4x.riplay.extensions.nextvisualizer.utils.Preset
-import it.fast4x.riplay.extensions.nextvisualizer.utils.VisualizerHelper
-import it.fast4x.riplay.extensions.nextvisualizer.views.VisualizerView
+import it.fast4x.riplay.enums.AudioVisualizerStyle
+import it.fast4x.riplay.extensions.nextvisualizer.modern.PlayerEqualizerSpectrum
+import it.fast4x.riplay.extensions.nextvisualizer.modern.PlayerEqualizerLevel
+import it.fast4x.riplay.extensions.nextvisualizer.legacy.painters.Painter
+import it.fast4x.riplay.extensions.nextvisualizer.legacy.painters.fft.FftBar
+import it.fast4x.riplay.extensions.nextvisualizer.legacy.painters.fft.FftCBar
+import it.fast4x.riplay.extensions.nextvisualizer.legacy.painters.fft.FftCLine
+import it.fast4x.riplay.extensions.nextvisualizer.legacy.painters.fft.FftCWave
+import it.fast4x.riplay.extensions.nextvisualizer.legacy.painters.fft.FftCWaveRgb
+import it.fast4x.riplay.extensions.nextvisualizer.legacy.painters.fft.FftLine
+import it.fast4x.riplay.extensions.nextvisualizer.legacy.painters.fft.FftWave
+import it.fast4x.riplay.extensions.nextvisualizer.legacy.painters.fft.FftWaveRgb
+import it.fast4x.riplay.extensions.nextvisualizer.legacy.painters.misc.Gradient
+import it.fast4x.riplay.extensions.nextvisualizer.legacy.painters.misc.Icon
+import it.fast4x.riplay.extensions.nextvisualizer.legacy.painters.modifier.Beat
+import it.fast4x.riplay.extensions.nextvisualizer.legacy.painters.modifier.Blend
+import it.fast4x.riplay.extensions.nextvisualizer.legacy.painters.modifier.Compose
+import it.fast4x.riplay.extensions.nextvisualizer.legacy.painters.modifier.Glitch
+import it.fast4x.riplay.extensions.nextvisualizer.legacy.painters.modifier.Move
+import it.fast4x.riplay.extensions.nextvisualizer.legacy.painters.modifier.Shake
+import it.fast4x.riplay.extensions.nextvisualizer.legacy.painters.waveform.WfmAnalog
+import it.fast4x.riplay.extensions.nextvisualizer.legacy.utils.Preset
+import it.fast4x.riplay.extensions.nextvisualizer.legacy.utils.rememberVisualizerHelper
+import it.fast4x.riplay.extensions.nextvisualizer.legacy.views.VisualizerView
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.utils.DisposableListener
 import it.fast4x.riplay.utils.currentWindow
@@ -103,113 +106,53 @@ fun NextVisualizer() {
     val coroutineScope = rememberCoroutineScope()
 
     val context = LocalContext.current
-    //val visualizerEnabled by rememberPreference(VISUALIZER_ENABLED.key, false)
-    val visualizerEnabled = appearanceSettings.visualizerEnabled
+    val visualizerEnabled = appearanceSettings.audioVisualizerStyleInPlayer != AudioVisualizerStyle.NONE
 
     if (visualizerEnabled && permission.status.isGranted) {
 
+        when (appearanceSettings.audioVisualizerStyleInPlayer){
+            AudioVisualizerStyle.SPECTRUM -> PlayerEqualizerSpectrum(
+                modifier = Modifier
+                    .fillMaxSize()
+            )
 
-//        val permission = Manifest.permission.RECORD_AUDIO
-//
-//        var relaunchPermission by remember {
-//            mutableStateOf(false)
-//        }
-//
-//        var hasPermission by remember(isCompositionLaunched()) {
-//            mutableStateOf(context.applicationContext.hasPermission(permission))
-//        }
-//
-//        val launcher = rememberLauncherForActivityResult(
-//            contract = ActivityResultContracts.RequestPermission(),
-//            onResult = { hasPermission = it }
-//        )
+            AudioVisualizerStyle.LEVEL -> PlayerEqualizerLevel(height = 50.dp)
 
-        //if (!hasPermission) {
+            AudioVisualizerStyle.ANIMATIONS -> {
+                val visualizerView = remember { VisualizerView(context) }
 
-//            LaunchedEffect(Unit, relaunchPermission) { launcher.launch(permission) }
-//
-//            Column(
-//                modifier = Modifier.fillMaxSize(),
-//                verticalArrangement = Arrangement.spacedBy(
-//                    2.dp,
-//                    Alignment.CenterVertically
-//                ),
-//                horizontalAlignment = Alignment.CenterHorizontally
-//            ) {
-//                BasicText(
-//                    text = stringResource(R.string.require_mic_permission),
-//                    modifier = Modifier.fillMaxWidth(0.75f),
-//                    style = typography().xs.semiBold
-//                )
-//                /*
-//                Spacer(modifier = Modifier.height(12.dp))
-//                SecondaryTextButton(
-//                    text = stringResource(R.string.grant_permission),
-//                    onClick = {
-//                        relaunchPermission = !relaunchPermission
-//                    }
-//                )
-//                 */
-//                Spacer(modifier = Modifier.height(20.dp))
-//                SecondaryTextButton(
-//                    text = stringResource(R.string.open_permission_settings),
-//                    onClick = {
-//                        context.startActivity(
-//                            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-//                                setData(Uri.fromParts("package", context.packageName, null))
-//                            }
-//                        )
-//                    }
-//                )
-//
-//            }
+                val helper = rememberVisualizerHelper()
 
-        //} else {
+                val visualizersList = getVisualizers()
+                val currentVisualizer = appSettings.currentVisualizer
+                val safeVisualizerIndex = currentVisualizer.coerceIn(0, visualizersList.lastIndex)
+                LaunchedEffect(currentVisualizer) {
+                    Timber.d("NextVisualizer LaunchedEffect currentVisualizer: $currentVisualizer visualizerList size: ${visualizersList.size}")
+                    if (currentVisualizer in visualizersList.indices) return@LaunchedEffect
 
-            val visualizerView = VisualizerView(context)
-            val audioSessionId = remember {
-                0
-                /*
-                if (binder?.player?.currentMediaItem?.isLocal == true)
-                    binder.player.audioSessionId
-                else 0
+                    appSettingsManager.updateSettings(
+                        appSettingsManager.activeSettings.value.copy(currentVisualizer = 0)
+                    )
+                }
 
-                 */
-            }
-            val helper = VisualizerHelper(audioSessionId)
+                val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
-            println("NextVisualizer View created audioSessionId: $audioSessionId")
+                var showControls by remember { mutableStateOf(true) }
+                DelayedControls(delayControls = showControls) {
+                    showControls = false
+                }
 
-            val visualizersList = getVisualizers()
-            val currentVisualizer = appSettings.currentVisualizer
-            val safeVisualizerIndex = currentVisualizer.coerceIn(0, visualizersList.lastIndex)
-            LaunchedEffect(currentVisualizer) {
-                Timber.d("NextVisualizer LaunchedEffect currentVisualizer: $currentVisualizer visualizerList size: ${visualizersList.size}")
-                if (currentVisualizer in visualizersList.indices) return@LaunchedEffect
+                Box(
+                    modifier = Modifier.fillMaxSize()
+                ) {
 
-                appSettingsManager.updateSettings(
-                    appSettingsManager.activeSettings.value.copy(currentVisualizer = 0)
-                )
-            }
-
-            val thumbnailRoundness = appearanceSettings.thumbnailRoundness
-
-            var showControls by remember { mutableStateOf(true) }
-            DelayedControls(delayControls = showControls) {
-                showControls = false
-            }
-
-            Box(
-                modifier = Modifier.fillMaxSize()
-            ) {
-
-                AndroidView(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight()
-                        .clickable {
-                            showControls = !showControls
-                        },
+                    AndroidView(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight()
+                            .clickable {
+                                showControls = !showControls
+                            },
                         /*
                         .border(
                             BorderStroke(
@@ -218,89 +161,93 @@ fun NextVisualizer() {
                             )
                         ),
                          */
-                    factory = {
-                        visualizerView
-                        /*
-                        visualizerView.apply {
-                            helper.let {
-                                println("VisualizerView inside")
-                                setup(helper, visualizersList[currentVisualizer])
-                                setOnClickListener {
-                                    if (current < list.lastIndex) current++ else current = 0
-                                    //visualizerView.setup(helper, visualizersList[currentVisualizer])
+                        factory = {
+                            visualizerView
+                            /*
+                            visualizerView.apply {
+                                helper.let {
+                                    println("VisualizerView inside")
+                                    setup(helper, visualizersList[currentVisualizer])
+                                    setOnClickListener {
+                                        if (current < list.lastIndex) current++ else current = 0
+                                        //visualizerView.setup(helper, visualizersList[currentVisualizer])
+                                    }
                                 }
                             }
+
+                             */
+                        },
+                        update = {
+                            it.setup(helper, visualizersList[safeVisualizerIndex])
                         }
 
-                         */
-                    },
-                    update = {
-                        it.setup(helper, visualizersList[safeVisualizerIndex])
-                    }
-
-                )
+                    )
 
 
 
-                AnimatedVisibility(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 5.dp),
-                    visible = showControls,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically,
+                    AnimatedVisibility(
                         modifier = Modifier
-                            .fillMaxWidth(.9f)
                             .align(Alignment.BottomCenter)
-                            .height(50.dp)
-                            .background(Color.Gray.copy(alpha = .4f), thumbnailRoundness.shape())
-
+                            .padding(bottom = 5.dp),
+                        visible = showControls,
+                        enter = fadeIn(),
+                        exit = fadeOut()
                     ) {
-                        IconButton(
-                            onClick = {
-                                coroutineScope.launch {
-                                    appSettingsManager.updateSettings(
-                                        appSettingsManager.activeSettings.value.copy(
-                                            currentVisualizer = if (safeVisualizerIndex > 0) safeVisualizerIndex - 1 else visualizersList.lastIndex
-                                        )
-                                    )
-                                }
-                            },
-                            icon = R.drawable.arrow_left,
-                            color = colorPalette().text,
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
-                                .size(32.dp)
-                        )
+                                .fillMaxWidth(.9f)
+                                .align(Alignment.BottomCenter)
+                                .height(50.dp)
+                                .background(Color.Gray.copy(alpha = .4f), thumbnailRoundness.shape())
 
-                        BasicText(
-                            text = "${safeVisualizerIndex + 1}/${visualizersList.size}",
-                            style = typography().xs.semiBold.copy(color = colorPalette().text),
-                        )
-
-                        IconButton(
-                            onClick = {
-                                coroutineScope.launch {
-                                    appSettingsManager.updateSettings(
-                                        appSettingsManager.activeSettings.value.copy(
-                                            currentVisualizer = if (safeVisualizerIndex < visualizersList.lastIndex) safeVisualizerIndex + 1 else 0
+                        ) {
+                            IconButton(
+                                onClick = {
+                                    coroutineScope.launch {
+                                        appSettingsManager.updateSettings(
+                                            appSettingsManager.activeSettings.value.copy(
+                                                currentVisualizer = if (safeVisualizerIndex > 0) safeVisualizerIndex - 1 else visualizersList.lastIndex
+                                            )
                                         )
-                                    )
-                                }
-                            },
-                            icon = R.drawable.arrow_right,
-                            color = colorPalette().text,
-                            modifier = Modifier
-                                .size(32.dp)
-                        )
+                                    }
+                                },
+                                icon = R.drawable.arrow_left,
+                                color = colorPalette().text,
+                                modifier = Modifier
+                                    .size(32.dp)
+                            )
+
+                            BasicText(
+                                text = "${safeVisualizerIndex + 1}/${visualizersList.size}",
+                                style = typography().xs.semiBold.copy(color = colorPalette().text),
+                            )
+
+                            IconButton(
+                                onClick = {
+                                    coroutineScope.launch {
+                                        appSettingsManager.updateSettings(
+                                            appSettingsManager.activeSettings.value.copy(
+                                                currentVisualizer = if (safeVisualizerIndex < visualizersList.lastIndex) safeVisualizerIndex + 1 else 0
+                                            )
+                                        )
+                                    }
+                                },
+                                icon = R.drawable.arrow_right,
+                                color = colorPalette().text,
+                                modifier = Modifier
+                                    .size(32.dp)
+                            )
+                        }
                     }
-                }
 
+                }
             }
-        //}
+        }
+
+
+
     }
 }
 
@@ -328,18 +275,6 @@ fun getVisualizers(): List<Painter> {
                 Timber.e("Failed to get bitmap in NextVisualizer ${e.stackTraceToString()}")
             }
     }
-    /*
-    LaunchedEffect(Unit, binder?.player?.currentWindow?.mediaItem?.mediaId) {
-        try {
-            bitmapCover = getBitmapFromUrl(
-                context,
-                binder?.player?.currentWindow?.mediaItem?.mediaMetadata?.artworkUri.toString().resize(1200, 1200)
-            )
-        } catch (e: Exception) {
-            Timber.e("Failed get bitmap in NextVisualizer ${e.stackTraceToString()}")
-        }
-    }
-     */
 
     binder?.hybridPlayer?.DisposableListener {
         object : Player.Listener {
@@ -363,7 +298,7 @@ fun getVisualizers(): List<Painter> {
     val background: Bitmap = bitmapCover
     val bitmap: Bitmap = bitmapCover
     circleBitmap = bitmap.let { Icon.getCircledBitmap(it) }
-    return listOf(
+    return remember { listOf(
         // Basic components
         Move(WfmAnalog(colorPaint = color, ampR = ampR)),
         Move(FftBar(colorPaint = color, ampR = ampR), yR = yR),
@@ -467,97 +402,6 @@ fun getVisualizers(): List<Painter> {
                 paint.strokeWidth = 8f;paint.strokeCap = Paint.Cap.ROUND
             }
         )
-    )
-    /*
-    return listOf(
-        // Basic components
-        Compose(
-            Move(WfmAnalog(ampR = 2f)),
-            Move(FftBar(ampR = 2f), yR = -.1f),
-            //Move(FftLine(), yR = .1f),
-            //Move(FftWave(), yR = .3f),
-            //Move(FftWaveRgb(), yR = .5f)
-        ),
-        Compose(
-            Move(WfmAnalog(), yR = -.3f),
-            Move(FftBar(), yR = -.1f),
-            Move(FftLine(), yR = .1f),
-            Move(FftWave(), yR = .3f),
-            Move(FftWaveRgb(), yR = .5f)
-        ),
-        Compose(
-            Move(FftBar(side = "b"), yR = -.3f),
-            Move(FftLine(side = "b"), yR = -.1f),
-            Move(FftWave(side = "b"), yR = .1f),
-            Move(FftWaveRgb(side = "b"), yR = .3f)
-        ),
-        Compose(
-            Move(FftBar(side = "ab"), yR = -.3f),
-            Move(FftLine(side = "ab"), yR = -.1f),
-            Move(FftWave(side = "ab"), yR = .1f),
-            Move(FftWaveRgb(side = "ab"), yR = .3f)
-        ),
-        // Basic components (Circle)
-        Compose(
-            Move(FftCLine(), xR = -.3f),
-            FftCWave(),
-            Move(FftCWaveRgb(), xR = .3f)
-        ),
-        Compose(
-            Move(FftCLine(side = "b"), xR = -.3f),
-            FftCWave(side = "b"),
-            Move(FftCWaveRgb(side = "b"), xR = .3f)
-        ),
-        Compose(
-            Move(FftCLine(side = "ab"), xR = -.3f),
-            FftCWave(side = "ab"),
-            Move(FftCWaveRgb(side = "ab"), xR = .3f)
-        ),
-        //Blend
-        Blend(
-            FftLine().apply {
-                paint.strokeWidth = 8f;paint.strokeCap = Paint.Cap.ROUND
-            },
-            Gradient(preset = Gradient.LINEAR_HORIZONTAL)
-        ),
-        Blend(
-            FftLine().apply {
-                paint.strokeWidth = 8f;paint.strokeCap = Paint.Cap.ROUND
-            },
-            Gradient(preset = Gradient.LINEAR_VERTICAL, hsv = true)
-        ),
-        Blend(
-            FftLine().apply {
-                paint.strokeWidth = 8f;paint.strokeCap = Paint.Cap.ROUND
-            },
-            Gradient(preset = Gradient.LINEAR_VERTICAL_MIRROR, hsv = true)
-        ),
-        Blend(
-            FftCLine().apply {
-                paint.strokeWidth = 8f;paint.strokeCap = Paint.Cap.ROUND
-            },
-            Gradient(preset = Gradient.RADIAL)
-        ),
-        Blend(
-            FftCBar(side = "ab", gapX = 8f).apply {
-                paint.style = Paint.Style.FILL
-            },
-            Gradient(preset = Gradient.SWEEP, hsv = true)
-        ),
-        // Composition
-        Glitch(Beat(Preset.getPresetWithBitmap("cIcon", circleBitmap))),
-        Compose(
-            WfmAnalog().apply { paint.alpha = 150 },
-            Shake(Preset.getPresetWithBitmap("cWaveRgbIcon", circleBitmap)).apply {
-                animX.duration = 1000
-                animY.duration = 2000
-            }),
-        Compose(
-            Preset.getPresetWithBitmap("liveBg", background),
-            FftCLine().apply {
-                paint.strokeWidth = 8f;paint.strokeCap = Paint.Cap.ROUND
-            }
-        )
-    )
-     */
+    )}
+
 }

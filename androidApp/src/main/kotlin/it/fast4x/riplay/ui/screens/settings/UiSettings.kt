@@ -287,7 +287,6 @@ fun UiSettings(
                                 coroutineScope.launch {
                                     val new = appearanceSettingsManager.activeSettings.value.copy(
                                         showTopActionsBar = false,
-                                        visualizerEnabled = false,
                                         showThumbnail = true,
                                         playerBackgroundColors = PlayerBackgroundColors.CoverColorGradient,
                                         playerTimelineType = PlayerTimelineType.Default,

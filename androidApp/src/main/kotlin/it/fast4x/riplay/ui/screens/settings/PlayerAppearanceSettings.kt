@@ -1,5 +1,6 @@
 package it.fast4x.riplay.ui.screens.settings
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -34,6 +35,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.R
@@ -60,6 +64,7 @@ import it.fast4x.riplay.utils.isAtLeastAndroid7
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.AnimatedGradient
+import it.fast4x.riplay.enums.AudioVisualizerStyle
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.enums.SwipeAnimationNoThumbnail
 import it.fast4x.riplay.extensions.appearancesettings.AppearancePreferences
@@ -78,6 +83,7 @@ import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Date
 
+@OptIn(ExperimentalPermissionsApi::class)
 @ExperimentalAnimationApi
 @UnstableApi
 @Composable
@@ -107,7 +113,6 @@ fun PlayerAppearanceSettings(
     val disableScrollingText = appearanceSettings.disableScrollingText
 
     val showLikeButtonBackgroundPlayer = appearanceSettings.showLikeButtonBackgroundPlayer
-    val visualizerEnabled = appearanceSettings.visualizerEnabled
 
     val playerTimelineType = appearanceSettings.playerTimelineType
 
@@ -218,6 +223,16 @@ fun PlayerAppearanceSettings(
     val playerTransitionsEnabled = appearanceSettings.playerTransitionsEnabled
     val playerTransitionAnimation = appearanceSettings.playerTransitionAnimation
 
+    val audioVisualizerStyleInPlayer = appearanceSettings.audioVisualizerStyleInPlayer
+    val audioVisualizerStyleInMiniPlayer = appearanceSettings.audioVisualizerStyleInMiniPlayer
+
+    val micPermission = rememberPermissionState(
+        Manifest.permission.RECORD_AUDIO,
+        onPermissionResult = { isGranted ->
+            if (!isGranted) return@rememberPermissionState
+        }
+    )
+
     var appearanceFilename by remember {
         mutableStateOf("")
     }
@@ -317,7 +332,6 @@ fun PlayerAppearanceSettings(
                         writeRow("Appearance", appearanceFilename, "colorPaletteMode", colorPaletteMode.ordinal)
                         writeRow("Appearance", appearanceFilename, "swipeAnimationNoThumbnail", swipeAnimationNoThumbnail.ordinal)
                         writeRow("Appearance", appearanceFilename, "showLikeButtonBackgroundPlayer", showLikeButtonBackgroundPlayer)
-                        writeRow("Appearance", appearanceFilename, "visualizerEnabled", visualizerEnabled)
                     }
 
                 }
@@ -398,13 +412,13 @@ fun PlayerAppearanceSettings(
          */
     ) {
 
-        LaunchedEffect(Unit, playerBackgroundColors, visualizerEnabled, showthumbnail, playerType) {
+        LaunchedEffect(Unit, playerBackgroundColors, audioVisualizerStyleInPlayer, showthumbnail, playerType) {
             if (playerBackgroundColors != PlayerBackgroundColors.BlurredCoverColor) {
                 val new = appearanceSettingsManager.activeSettings.value.copy(showThumbnail = true)
                 appearanceSettingsManager.updatePreset(new)
             }
 
-            if (!visualizerEnabled) {
+            if (audioVisualizerStyleInPlayer == AudioVisualizerStyle.NONE) {
                 val new = appearanceSettingsManager.activeSettings.value.copy(showvisthumbnail = false)
                 appearanceSettingsManager.updatePreset(new)
             }
@@ -528,41 +542,46 @@ fun PlayerAppearanceSettings(
                     }
 
 
-                        if (search.input.isBlank() || stringResource(R.string.show_player_top_actions_bar).contains(
+                    if (search.input.isBlank() || stringResource(R.string.show_player_top_actions_bar).contains(
+                            search.input,
+                            true
+                        )
+                    )
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.show_player_top_actions_bar),
+                            text = "",
+                            isChecked = showTopActionsBar,
+                            onCheckedChange = {
+                                coroutineScope.launch {
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        showTopActionsBar = it
+                                    )
+                                    appearanceSettingsManager.updatePreset(new)
+                                }
+                            }
+                        )
+
+                    if (!showTopActionsBar) {
+                        if (search.input.isBlank() || stringResource(R.string.blankspace).contains(
                                 search.input,
                                 true
                             )
                         )
                             SwitchSettingEntry(
-                                title = stringResource(R.string.show_player_top_actions_bar),
+                                title = stringResource(R.string.blankspace),
                                 text = "",
-                                isChecked = showTopActionsBar,
+                                isChecked = topPadding,
                                 onCheckedChange = {
                                     coroutineScope.launch {
-                                        val new = appearanceSettingsManager.activeSettings.value.copy(showTopActionsBar = it)
+                                        val new =
+                                            appearanceSettingsManager.activeSettings.value.copy(
+                                                topPadding = it
+                                            )
                                         appearanceSettingsManager.updatePreset(new)
                                     }
                                 }
                             )
-
-                        if (!showTopActionsBar) {
-                            if (search.input.isBlank() || stringResource(R.string.blankspace).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
-                                SwitchSettingEntry(
-                                    title = stringResource(R.string.blankspace),
-                                    text = "",
-                                    isChecked = topPadding,
-                                    onCheckedChange = {
-                                        coroutineScope.launch {
-                                            val new = appearanceSettingsManager.activeSettings.value.copy(topPadding = it)
-                                            appearanceSettingsManager.updatePreset(new)
-                                        }
-                                    }
-                                )
-                        }
+                    }
                     //}
 
                     if (search.input.isBlank() || stringResource(R.string.playertype).contains(
@@ -575,7 +594,9 @@ fun PlayerAppearanceSettings(
                             selectedValue = playerType,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(playerType = it)
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        playerType = it
+                                    )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             },
@@ -592,7 +613,9 @@ fun PlayerAppearanceSettings(
                             selectedValue = queueType,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(queueType = it)
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        queueType = it
+                                    )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             },
@@ -611,7 +634,10 @@ fun PlayerAppearanceSettings(
                                 isChecked = showthumbnail,
                                 onCheckedChange = {
                                     coroutineScope.launch {
-                                        val new = appearanceSettingsManager.activeSettings.value.copy(showThumbnail = it)
+                                        val new =
+                                            appearanceSettingsManager.activeSettings.value.copy(
+                                                showThumbnail = it
+                                            )
                                         appearanceSettingsManager.updatePreset(new)
                                     }
                                 },
@@ -629,7 +655,9 @@ fun PlayerAppearanceSettings(
                                 onValueSelected = {
                                     coroutineScope.launch {
                                         val new =
-                                            appearanceSettingsManager.activeSettings.value.copy(swipeAnimationNoThumbnail = it)
+                                            appearanceSettingsManager.activeSettings.value.copy(
+                                                swipeAnimationNoThumbnail = it
+                                            )
                                         appearanceSettingsManager.updatePreset(new)
                                     }
                                 },
@@ -651,7 +679,10 @@ fun PlayerAppearanceSettings(
                                         isChecked = fadingedge,
                                         onCheckedChange = {
                                             coroutineScope.launch {
-                                                val new = appearanceSettingsManager.activeSettings.value.copy(fadingedge = it)
+                                                val new =
+                                                    appearanceSettingsManager.activeSettings.value.copy(
+                                                        fadingedge = it
+                                                    )
                                                 appearanceSettingsManager.updatePreset(new)
                                             }
                                         },
@@ -671,7 +702,10 @@ fun PlayerAppearanceSettings(
                                         isChecked = carousel,
                                         onCheckedChange = {
                                             coroutineScope.launch {
-                                                val new = appearanceSettingsManager.activeSettings.value.copy(carousel = it)
+                                                val new =
+                                                    appearanceSettingsManager.activeSettings.value.copy(
+                                                        carousel = it
+                                                    )
                                                 appearanceSettingsManager.updatePreset(new)
                                             }
                                         },
@@ -688,7 +722,10 @@ fun PlayerAppearanceSettings(
                                         selectedValue = carouselSize,
                                         onValueSelected = {
                                             coroutineScope.launch {
-                                                val new = appearanceSettingsManager.activeSettings.value.copy(carouselSize = it)
+                                                val new =
+                                                    appearanceSettingsManager.activeSettings.value.copy(
+                                                        carouselSize = it
+                                                    )
                                                 appearanceSettingsManager.updatePreset(new)
                                             }
                                         },
@@ -710,7 +747,9 @@ fun PlayerAppearanceSettings(
                                         onCheckedChange = {
                                             coroutineScope.launch {
                                                 val new =
-                                                    appearanceSettingsManager.activeSettings.value.copy(thumbnailpause = it)
+                                                    appearanceSettingsManager.activeSettings.value.copy(
+                                                        thumbnailpause = it
+                                                    )
                                                 appearanceSettingsManager.updatePreset(new)
                                             }
                                         },
@@ -729,13 +768,15 @@ fun PlayerAppearanceSettings(
                                         onCheckedChange = {
                                             coroutineScope.launch {
                                                 val new =
-                                                    appearanceSettingsManager.activeSettings.value.copy(showLyricsThumbnail = it)
+                                                    appearanceSettingsManager.activeSettings.value.copy(
+                                                        showLyricsThumbnail = it
+                                                    )
                                                 appearanceSettingsManager.updatePreset(new)
                                             }
                                         },
                                         modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
                                     )
-                                if (visualizerEnabled) {
+                                if (audioVisualizerStyleInPlayer != AudioVisualizerStyle.NONE) {
                                     if (search.input.isBlank() || stringResource(R.string.showvisthumbnail).contains(
                                             search.input,
                                             true
@@ -748,7 +789,9 @@ fun PlayerAppearanceSettings(
                                             onCheckedChange = {
                                                 coroutineScope.launch {
                                                     val new =
-                                                        appearanceSettingsManager.activeSettings.value.copy(showvisthumbnail = it)
+                                                        appearanceSettingsManager.activeSettings.value.copy(
+                                                            showvisthumbnail = it
+                                                        )
                                                     appearanceSettingsManager.updatePreset(new)
                                                 }
                                             },
@@ -769,7 +812,9 @@ fun PlayerAppearanceSettings(
                                     onCheckedChange = {
                                         coroutineScope.launch {
                                             val new =
-                                                appearanceSettingsManager.activeSettings.value.copy(showCoverThumbnailAnimation = it)
+                                                appearanceSettingsManager.activeSettings.value.copy(
+                                                    showCoverThumbnailAnimation = it
+                                                )
                                             appearanceSettingsManager.updatePreset(new)
                                         }
                                     },
@@ -782,9 +827,10 @@ fun PlayerAppearanceSettings(
                                             selectedValue = coverThumbnailAnimation,
                                             onValueSelected = {
                                                 coroutineScope.launch {
-                                                    val new = appearanceSettingsManager.activeSettings.value.copy(
-                                                        coverThumbnailAnimation = it
-                                                    )
+                                                    val new =
+                                                        appearanceSettingsManager.activeSettings.value.copy(
+                                                            coverThumbnailAnimation = it
+                                                        )
                                                     appearanceSettingsManager.updatePreset(new)
                                                 }
                                             },
@@ -807,7 +853,9 @@ fun PlayerAppearanceSettings(
                                         onValueSelected = {
                                             coroutineScope.launch {
                                                 val new =
-                                                    appearanceSettingsManager.activeSettings.value.copy(playerThumbnailSizeL = it)
+                                                    appearanceSettingsManager.activeSettings.value.copy(
+                                                        playerThumbnailSizeL = it
+                                                    )
                                                 appearanceSettingsManager.updatePreset(new)
                                             }
                                         },
@@ -826,7 +874,9 @@ fun PlayerAppearanceSettings(
                                         onValueSelected = {
                                             coroutineScope.launch {
                                                 val new =
-                                                    appearanceSettingsManager.activeSettings.value.copy(playerThumbnailSize = it)
+                                                    appearanceSettingsManager.activeSettings.value.copy(
+                                                        playerThumbnailSize = it
+                                                    )
                                                 appearanceSettingsManager.updatePreset(new)
                                             }
                                         },
@@ -844,7 +894,10 @@ fun PlayerAppearanceSettings(
                                     selectedValue = thumbnailType,
                                     onValueSelected = {
                                         coroutineScope.launch {
-                                            val new = appearanceSettingsManager.activeSettings.value.copy(thumbnailType = it)
+                                            val new =
+                                                appearanceSettingsManager.activeSettings.value.copy(
+                                                    thumbnailType = it
+                                                )
                                             appearanceSettingsManager.updatePreset(new)
                                         }
                                     },
@@ -863,7 +916,9 @@ fun PlayerAppearanceSettings(
                                     onValueSelected = {
                                         coroutineScope.launch {
                                             val new =
-                                                appearanceSettingsManager.activeSettings.value.copy(thumbnailRoundness = it)
+                                                appearanceSettingsManager.activeSettings.value.copy(
+                                                    thumbnailRoundness = it
+                                                )
                                             appearanceSettingsManager.updatePreset(new)
                                         }
                                     },
@@ -900,7 +955,10 @@ fun PlayerAppearanceSettings(
                                 isChecked = noblur,
                                 onCheckedChange = {
                                     coroutineScope.launch {
-                                        val new = appearanceSettingsManager.activeSettings.value.copy(noblur = it)
+                                        val new =
+                                            appearanceSettingsManager.activeSettings.value.copy(
+                                                noblur = it
+                                            )
                                         appearanceSettingsManager.updatePreset(new)
                                     }
                                 }
@@ -921,7 +979,10 @@ fun PlayerAppearanceSettings(
                                 isChecked = statsfornerds,
                                 onCheckedChange = {
                                     coroutineScope.launch {
-                                        val new = appearanceSettingsManager.activeSettings.value.copy(statsfornerds = it)
+                                        val new =
+                                            appearanceSettingsManager.activeSettings.value.copy(
+                                                statsfornerds = it
+                                            )
                                         appearanceSettingsManager.updatePreset(new)
                                     }
                                 }
@@ -938,7 +999,9 @@ fun PlayerAppearanceSettings(
                             selectedValue = playerInfoType,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(playerInfoType = it)
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        playerInfoType = it
+                                    )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             },
@@ -960,7 +1023,9 @@ fun PlayerAppearanceSettings(
                                         onCheckedChange = {
                                             coroutineScope.launch {
                                                 val new =
-                                                    appearanceSettingsManager.activeSettings.value.copy(playerInfoShowIcons = it)
+                                                    appearanceSettingsManager.activeSettings.value.copy(
+                                                        playerInfoShowIcons = it
+                                                    )
                                                 appearanceSettingsManager.updatePreset(new)
                                             }
                                         },
@@ -984,7 +1049,9 @@ fun PlayerAppearanceSettings(
                             selectedValue = miniPlayerType,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(miniPlayerType = it)
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        miniPlayerType = it
+                                    )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             },
@@ -1003,7 +1070,9 @@ fun PlayerAppearanceSettings(
                             onCheckedChange = {
                                 coroutineScope.launch {
                                     val new =
-                                        appearanceSettingsManager.activeSettings.value.copy(playerSwapControlsWithTimeline = it)
+                                        appearanceSettingsManager.activeSettings.value.copy(
+                                            playerSwapControlsWithTimeline = it
+                                        )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             }
@@ -1019,7 +1088,9 @@ fun PlayerAppearanceSettings(
                             selectedValue = playerTimelineType,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(playerTimelineType = it)
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        playerTimelineType = it
+                                    )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
 
@@ -1041,7 +1112,9 @@ fun PlayerAppearanceSettings(
                             isChecked = transparentbar,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(transparentBar = it)
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        transparentBar = it
+                                    )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             }
@@ -1057,7 +1130,9 @@ fun PlayerAppearanceSettings(
                             selectedValue = playerTimelineSize,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(playerTimelineSize = it)
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        playerTimelineSize = it
+                                    )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             },
@@ -1075,7 +1150,9 @@ fun PlayerAppearanceSettings(
                             isChecked = seekWithTap,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(seekWithTap = it)
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        seekWithTap = it
+                                    )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             }
@@ -1091,7 +1168,9 @@ fun PlayerAppearanceSettings(
                             selectedValue = playerControlsType,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(playerControlsType = it)
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        playerControlsType = it
+                                    )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             },
@@ -1130,7 +1209,9 @@ fun PlayerAppearanceSettings(
                             isChecked = buttonzoomout,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(buttonzoomout = it)
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        buttonzoomout = it
+                                    )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             }
@@ -1147,7 +1228,9 @@ fun PlayerAppearanceSettings(
                             selectedValue = iconLikeType,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(iconLikeType = it)
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        iconLikeType = it
+                                    )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             },
@@ -1175,7 +1258,9 @@ fun PlayerAppearanceSettings(
                             selectedValue = playerBackgroundColors,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(playerBackgroundColors = it)
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        playerBackgroundColors = it
+                                    )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             },
@@ -1193,7 +1278,10 @@ fun PlayerAppearanceSettings(
                                 selectedValue = animatedGradient,
                                 onValueSelected = {
                                     coroutineScope.launch {
-                                        val new = appearanceSettingsManager.activeSettings.value.copy(animatedGradient = it)
+                                        val new =
+                                            appearanceSettingsManager.activeSettings.value.copy(
+                                                animatedGradient = it
+                                            )
                                         appearanceSettingsManager.updatePreset(new)
                                     }
                                 },
@@ -1214,7 +1302,10 @@ fun PlayerAppearanceSettings(
                                 isChecked = blackgradient,
                                 onCheckedChange = {
                                     coroutineScope.launch {
-                                        val new = appearanceSettingsManager.activeSettings.value.copy(blackgradient = it)
+                                        val new =
+                                            appearanceSettingsManager.activeSettings.value.copy(
+                                                blackgradient = it
+                                            )
                                         appearanceSettingsManager.updatePreset(new)
                                     }
                                 }
@@ -1232,7 +1323,10 @@ fun PlayerAppearanceSettings(
                                 isChecked = albumCoverRotation,
                                 onCheckedChange = {
                                     coroutineScope.launch {
-                                        val new = appearanceSettingsManager.activeSettings.value.copy(albumCoverRotation = it)
+                                        val new =
+                                            appearanceSettingsManager.activeSettings.value.copy(
+                                                albumCoverRotation = it
+                                            )
                                         appearanceSettingsManager.updatePreset(new)
                                     }
                                 },
@@ -1252,7 +1346,10 @@ fun PlayerAppearanceSettings(
                                 isChecked = bottomgradient,
                                 onCheckedChange = {
                                     coroutineScope.launch {
-                                        val new = appearanceSettingsManager.activeSettings.value.copy(bottomGradient = it)
+                                        val new =
+                                            appearanceSettingsManager.activeSettings.value.copy(
+                                                bottomGradient = it
+                                            )
                                         appearanceSettingsManager.updatePreset(new)
                                     }
                                 }
@@ -1268,7 +1365,9 @@ fun PlayerAppearanceSettings(
                             isChecked = textoutline,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(textoutline = it)
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        textoutline = it
+                                    )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             }
@@ -1285,7 +1384,9 @@ fun PlayerAppearanceSettings(
                             isChecked = showTotalTimeQueue,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(showTotalTimeQueue = it)
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        showTotalTimeQueue = it
+                                    )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             }
@@ -1302,7 +1403,9 @@ fun PlayerAppearanceSettings(
                             isChecked = showRemainingSongTime,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(showRemainingSongTime = it)
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        showRemainingSongTime = it
+                                    )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             }
@@ -1319,7 +1422,9 @@ fun PlayerAppearanceSettings(
                             isChecked = showNextSongsInPlayer,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(showNextSongsInPlayer = it)
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        showNextSongsInPlayer = it
+                                    )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             }
@@ -1336,7 +1441,10 @@ fun PlayerAppearanceSettings(
                                     selectedValue = showsongs,
                                     onValueSelected = {
                                         coroutineScope.launch {
-                                            val new = appearanceSettingsManager.activeSettings.value.copy(showsongs = it)
+                                            val new =
+                                                appearanceSettingsManager.activeSettings.value.copy(
+                                                    showsongs = it
+                                                )
                                             appearanceSettingsManager.updatePreset(new)
                                         }
                                     },
@@ -1359,7 +1467,10 @@ fun PlayerAppearanceSettings(
                                     isChecked = showalbumcover,
                                     onCheckedChange = {
                                         coroutineScope.launch {
-                                            val new = appearanceSettingsManager.activeSettings.value.copy(showalbumcover = it)
+                                            val new =
+                                                appearanceSettingsManager.activeSettings.value.copy(
+                                                    showalbumcover = it
+                                                )
                                             appearanceSettingsManager.updatePreset(new)
                                         }
                                     },
@@ -1379,7 +1490,9 @@ fun PlayerAppearanceSettings(
                             isChecked = disableScrollingText,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(disableScrollingText = it)
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        disableScrollingText = it
+                                    )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             }
@@ -1397,7 +1510,9 @@ fun PlayerAppearanceSettings(
                             onCheckedChange = {
                                 coroutineScope.launch {
                                     val new =
-                                        appearanceSettingsManager.activeSettings.value.copy(disablePlayerHorizontalSwipe = it)
+                                        appearanceSettingsManager.activeSettings.value.copy(
+                                            disablePlayerHorizontalSwipe = it
+                                        )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             }
@@ -1414,7 +1529,9 @@ fun PlayerAppearanceSettings(
                             isChecked = thumbnailTapEnabled,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(thumbnailTapEnabled = it)
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        thumbnailTapEnabled = it
+                                    )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             }
@@ -1431,7 +1548,9 @@ fun PlayerAppearanceSettings(
                             isChecked = clickLyricsText,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(clickLyricsText = it)
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        clickLyricsText = it
+                                    )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             }
@@ -1448,7 +1567,10 @@ fun PlayerAppearanceSettings(
                                 isChecked = showBackgroundLyrics,
                                 onCheckedChange = {
                                     coroutineScope.launch {
-                                        val new = appearanceSettingsManager.activeSettings.value.copy(showBackgroundLyrics = it)
+                                        val new =
+                                            appearanceSettingsManager.activeSettings.value.copy(
+                                                showBackgroundLyrics = it
+                                            )
                                         appearanceSettingsManager.updatePreset(new)
                                     }
                                 }
@@ -1466,7 +1588,9 @@ fun PlayerAppearanceSettings(
                             onCheckedChange = {
                                 coroutineScope.launch {
                                     val new =
-                                        appearanceSettingsManager.activeSettings.value.copy(playerEnableLyricsPopupMessage = it)
+                                        appearanceSettingsManager.activeSettings.value.copy(
+                                            playerEnableLyricsPopupMessage = it
+                                        )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             }
@@ -1482,53 +1606,76 @@ fun PlayerAppearanceSettings(
                             selectedValue = backgroundProgress,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(backgroundProgress = it)
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        backgroundProgress = it
+                                    )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             },
                             valueText = { it.displayName },
                         )
-
-
-                    if (search.input.isBlank() || stringResource(R.string.visualizer).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.visualizer),
-                            text = "",
-                            isChecked = visualizerEnabled,
-                            onCheckedChange = {
-                                coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(visualizerEnabled = it)
-                                    appearanceSettingsManager.updatePreset(new)
-                                }
-                            }
-                        )
-                        /*
-                EnumValueSelectorSettingsEntry(
-                    title = stringResource(R.string.visualizer),
-                    selectedValue = playerVisualizerType,
-                    onValueSelected = { playerVisualizerType = it },
-                    valueText = {
-                        when (it) {
-                            PlayerVisualizerType.Fancy -> stringResource(R.string.vt_fancy)
-                            PlayerVisualizerType.Circular -> stringResource(R.string.vt_circular)
-                            PlayerVisualizerType.Disabled -> stringResource(R.string.vt_disabled)
-                            PlayerVisualizerType.Stacked -> stringResource(R.string.vt_stacked)
-                            PlayerVisualizerType.Oneside -> stringResource(R.string.vt_one_side)
-                            PlayerVisualizerType.Doubleside -> stringResource(R.string.vt_double_side)
-                            PlayerVisualizerType.DoublesideCircular -> stringResource(R.string.vt_double_side_circular)
-                            PlayerVisualizerType.Full -> stringResource(R.string.vt_full)
-                        }
-                    }
-                )
-                */
-                        ImportantSettingsDescription(text = stringResource(R.string.visualizer_require_mic_permission))
-                    }
-
                 }
+
+                    settingsItem(
+                        isHeader = true
+                    ) {
+                        SettingsGroupSpacer()
+                        SettingsEntryGroupText(title = stringResource(R.string.visualizer))
+                    }
+                    settingsItem {
+                        if (search.input.isBlank() || stringResource(R.string.visualizer).contains(
+                                search.input,
+                                true
+                            )
+                        ) {
+                            EnumValueSelectorSettingsEntry(
+                                title = "Player style",
+                                selectedValue = audioVisualizerStyleInPlayer,
+                                onValueSelected = {
+                                    if (!micPermission.status.isGranted) {
+                                        micPermission.launchPermissionRequest()
+                                    } else {
+                                        coroutineScope.launch {
+                                            val new =
+                                                appearanceSettingsManager.activeSettings.value.copy(
+                                                    audioVisualizerStyleInPlayer = it
+                                                )
+                                            appearanceSettingsManager.updatePreset(new)
+                                        }
+                                    }
+                                },
+                                valueText = {
+                                    it.displayName
+                                },
+                            )
+                            EnumValueSelectorSettingsEntry(
+                                title = "Mini Player style",
+                                selectedValue = audioVisualizerStyleInMiniPlayer,
+                                onValueSelected = {
+                                    if (!micPermission.status.isGranted) {
+                                        micPermission.launchPermissionRequest()
+                                    } else {
+                                        coroutineScope.launch {
+                                            val new = appearanceSettingsManager
+                                                .activeSettings.value
+                                                .copy(
+                                                    audioVisualizerStyleInMiniPlayer =
+                                                        if (it == AudioVisualizerStyle.ANIMATIONS)
+                                                            AudioVisualizerStyle.LEVEL else it
+                                                )
+                                            appearanceSettingsManager.updatePreset(new)
+                                        }
+                                    }
+                                },
+                                valueText = {
+                                    it.displayName
+                                },
+                            )
+
+                            ImportantSettingsDescription(text = stringResource(R.string.visualizer_require_mic_permission))
+                        }
+
+                    }
 
                 settingsItem(
                     isHeader = true

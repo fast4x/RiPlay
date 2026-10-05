@@ -80,7 +80,6 @@ import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.MultiFloatingActionsContainer
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
-import it.fast4x.riplay.ui.screens.welcome.WelcomeMessage
 import it.fast4x.riplay.utils.isLandscape
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -453,8 +452,6 @@ fun HomePage(
                         onClick = onSearchClick,
                         navController = navController
                     )
-
-                WelcomeMessage()
 
                 if (showListenerLevels)
                     HomepageListenerLevelBadges(navController)

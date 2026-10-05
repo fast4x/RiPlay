@@ -199,6 +199,7 @@ import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailType
 import it.fast4x.riplay.extensions.equalizer.InternalEqualizerScreen
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
+import it.fast4x.riplay.enums.AudioVisualizerStyle
 import it.fast4x.riplay.enums.CollapseValue
 import it.fast4x.riplay.enums.PlayerTransitionAnimation
 import it.fast4x.riplay.enums.QrType
@@ -391,13 +392,6 @@ fun UnifiedPlayer(
     if (binder.hybridPlayer.currentTimeline.windowCount == 0) return
 
     val playerState = LocalPlayerServiceState.current
-//
-//    val mediaItemPolicy = object : SnapshotMutationPolicy<MediaItem?> {
-//        override fun equivalent(a: MediaItem?, b: MediaItem?): Boolean {
-//            return a?.mediaId == b?.mediaId // ricompone solo se cambia la traccia
-//        }
-//    }
-
 
     var isRotated by rememberSaveable { mutableStateOf(false) }
     val rotationAngle by animateFloatAsState(
@@ -405,7 +399,7 @@ fun UnifiedPlayer(
         animationSpec = tween(durationMillis = 200), label = ""
     )
 
-    val visualizerEnabled = appearanceSettings.visualizerEnabled
+    val visualizerEnabled = appearanceSettings.audioVisualizerStyleInPlayer != AudioVisualizerStyle.NONE
 
     val blurStrength = appearanceSettings.blurStrength
     val thumbnailSpacing = appearanceSettings.thumbnailSpacing

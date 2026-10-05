@@ -89,6 +89,7 @@ import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
 import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Info
+import it.fast4x.riplay.enums.AudioVisualizerStyle
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PlayerBackgroundColors
@@ -183,7 +184,7 @@ fun TvUnifiedPlayer(
     val colorPaletteMode = appearanceSettings.colorPaletteMode
     val textoutline = appearanceSettings.textoutline
 
-    val visualizerEnabled = appearanceSettings.visualizerEnabled
+    val visualizerEnabled = appearanceSettings.audioVisualizerStyleInPlayer != AudioVisualizerStyle.NONE
     val showthumbnail = appearanceSettings.showThumbnail
 
     val thumbnailRoundness = appearanceSettings.thumbnailRoundness

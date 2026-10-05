@@ -123,7 +123,6 @@ class AppearancePreferences(context: Context) {
                 putBoolean(SHOW_BUTTON_PLAYER_LYRICS.key,          showButtonPlayerLyrics)
                 putBoolean(EXPANDED_PLAYER_TOGGLE.key,            expandedPlayerToggle)
                 putBoolean(SHOW_BUTTON_PLAYER_SLEEP_TIMER.key,      showButtonPlayerSleepTimer)
-                putBoolean(VISUALIZER_ENABLED.key,               visualizerEnabled)
                 putBoolean(SHOW_BUTTON_PLAYER_ARROW.key,           showButtonPlayerArrow)
                 putBoolean(SHOW_BUTTON_PLAYER_START_RADIO.key,      showButtonPlayerStartRadio)
                 putBoolean(SHOW_BUTTON_PLAYER_MENU.key,            showButtonPlayerMenu)

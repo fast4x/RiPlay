@@ -1,5 +1,6 @@
 package it.fast4x.riplay.ui.screens.player.unified
 
+import android.Manifest
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionScope
@@ -63,6 +64,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -78,8 +82,11 @@ import it.fast4x.riplay.enums.MiniPlayerType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
+import it.fast4x.riplay.enums.AudioVisualizerStyle
 import it.fast4x.riplay.enums.PlayerTransitionAnimation
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
+import it.fast4x.riplay.extensions.nextvisualizer.modern.PlayerEqualizerSpectrum
+import it.fast4x.riplay.extensions.nextvisualizer.modern.PlayerEqualizerLevel
 import it.fast4x.riplay.extensions.smoothloader.Loader
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.themed.IconButton
@@ -116,6 +123,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlin.math.absoluteValue
 
+@OptIn(ExperimentalPermissionsApi::class)
 @UnstableApi
 @ExperimentalSerializationApi
 @Composable
@@ -266,6 +274,13 @@ fun UnifiedMiniPlayer(
     val hasNextMediaItem = binder.hybridPlayer.hasNextMediaItem()
     val nextMediaItemIndex = if (hasNextMediaItem) binder.hybridPlayer.nextMediaItemIndex else -1
     val upNextMediaItem = if (nextMediaItemIndex != -1) binder.hybridPlayer.getMediaItemAt(nextMediaItemIndex) else emptyMediaItem("End")
+
+    val micPermission = rememberPermissionState(
+        Manifest.permission.RECORD_AUDIO,
+        onPermissionResult = { isGranted ->
+            if (!isGranted) return@rememberPermissionState
+        }
+    )
 
     SwipeToDismissBox(
         modifier = Modifier
@@ -558,6 +573,21 @@ fun UnifiedMiniPlayer(
                         .padding(start = 16.dp, bottom = 2.dp)
                 )
             }
+
+            if (micPermission.status.isGranted) {
+                when (appearanceSettings.audioVisualizerStyleInMiniPlayer) {
+                    AudioVisualizerStyle.SPECTRUM -> PlayerEqualizerSpectrum(
+                        modifier = Modifier
+                            .height(20.dp)
+                            .fillMaxWidth()
+                    )
+
+                    AudioVisualizerStyle.LEVEL, AudioVisualizerStyle.ANIMATIONS -> PlayerEqualizerLevel()
+                    else -> {}
+                }
+            }
+
+
 
         }
 

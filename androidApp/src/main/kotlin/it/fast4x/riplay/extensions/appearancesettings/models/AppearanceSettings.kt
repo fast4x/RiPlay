@@ -2,6 +2,7 @@ package it.fast4x.riplay.extensions.appearancesettings.models
 
 import androidx.compose.ui.graphics.Color
 import it.fast4x.riplay.enums.AnimatedGradient
+import it.fast4x.riplay.enums.AudioVisualizerStyle
 import it.fast4x.riplay.enums.BackgroundProgress
 import it.fast4x.riplay.enums.CarouselSize
 import it.fast4x.riplay.enums.ColorPaletteMode
@@ -73,7 +74,6 @@ data class AppearanceSettings(
     val showButtonPlayerLyrics: Boolean        = true,
     val expandedPlayerToggle: Boolean          = false,
     val showButtonPlayerSleepTimer: Boolean    = false,
-    val visualizerEnabled: Boolean             = false,
     val showButtonPlayerArrow: Boolean         = false,
     val showButtonPlayerStartRadio: Boolean    = false,
     val showButtonPlayerMenu: Boolean          = true,
@@ -173,6 +173,8 @@ data class AppearanceSettings(
     val customThemeDark_Accent: Int                 = DefaultDarkColorPalette.accent.hashCode(),
     val playerTransitionsEnabled: Boolean           = true,
     val playerTransitionAnimation: PlayerTransitionAnimation = PlayerTransitionAnimation.Smooth,
+    val audioVisualizerStyleInPlayer: AudioVisualizerStyle = AudioVisualizerStyle.NONE,
+    val audioVisualizerStyleInMiniPlayer: AudioVisualizerStyle = AudioVisualizerStyle.NONE,
     ) {
     companion object {
 
@@ -209,7 +211,6 @@ data class AppearanceSettings(
             showButtonPlayerLyrics = false,
             expandedPlayerToggle = false,
             showButtonPlayerSleepTimer = false,
-            visualizerEnabled = false,
             showButtonPlayerArrow = false,
             showButtonPlayerStartRadio = false,
             showButtonPlayerMenu = true,
@@ -250,7 +251,6 @@ data class AppearanceSettings(
             showButtonPlayerLyrics = false,
             expandedPlayerToggle = true,
             showButtonPlayerSleepTimer = false,
-            visualizerEnabled = false,
             showButtonPlayerArrow = false,
             showButtonPlayerStartRadio = false,
             showButtonPlayerMenu = true,
@@ -288,7 +288,6 @@ data class AppearanceSettings(
             showButtonPlayerLyrics = false,
             expandedPlayerToggle = false,
             showButtonPlayerSleepTimer = false,
-            visualizerEnabled = false,
             showButtonPlayerArrow = false,
             showButtonPlayerStartRadio = false,
             showButtonPlayerMenu = true,
@@ -330,7 +329,6 @@ data class AppearanceSettings(
             showButtonPlayerLyrics = false,
             expandedPlayerToggle = false,
             showButtonPlayerSleepTimer = false,
-            visualizerEnabled = false,
             showButtonPlayerArrow = true,
             showButtonPlayerStartRadio = false,
             showButtonPlayerMenu = true,
@@ -373,7 +371,6 @@ data class AppearanceSettings(
             showButtonPlayerLyrics = false,
             expandedPlayerToggle = true,
             showButtonPlayerSleepTimer = false,
-            visualizerEnabled = false,
             showButtonPlayerArrow = false,
             showButtonPlayerStartRadio = false,
             showButtonPlayerMenu = true,
@@ -410,7 +407,6 @@ data class AppearanceSettings(
             showButtonPlayerLyrics = true,
             expandedPlayerToggle = false,
             showButtonPlayerSleepTimer = false,
-            visualizerEnabled = false,
             showButtonPlayerArrow = false,
             showButtonPlayerStartRadio = false,
             showButtonPlayerMenu = true,
