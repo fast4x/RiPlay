@@ -3441,17 +3441,21 @@ class PlayerService : MediaLibraryService(),
 
     @OptIn(UnstableApi::class)
     suspend fun loadQueue() {
-        Timber.d("PlayerService LoadQueue: Avvio caricamento coda persistente asincrona")
+        withContext(Dispatchers.Main) {
+            Timber.d("PlayerService LoadQueue: Avvio caricamento coda persistente asincrona")
+        }
         if (!appSettings.persistentQueue) return
 
         // 1. Eseguiamo la query pesante nel thread IO
         val queuedSongs = withContext(Dispatchers.IO) {
-            clearOldEmptyQueuedMediaItems()
-            try { queuedMediaItems() } catch (e: Exception) { emptyList() }
+            Database.clearOldEmptyQueuedMediaItems()
+            try { Database.queuedMediaItems() } catch (e: Exception) { emptyList() }
         }
 
         if (queuedSongs.isEmpty()) {
-            Timber.d("PlayerService LoadQueue: Nessun brano salvato nel database.")
+            withContext(Dispatchers.Main) {
+                Timber.d("PlayerService LoadQueue: Nessun brano salvato nel database.")
+            }
             return
         }
 
@@ -3463,9 +3467,10 @@ class PlayerService : MediaLibraryService(),
             (queuedSong.position ?: 0L) / 1000
         }
 
-        Timber.d("PlayerService LoadQueue: Dati DB pronti. Ripristino indice: $index, Posizione: $position")
+
 
         withContext(Dispatchers.Main) {
+            Timber.d("PlayerService LoadQueue: Dati DB pronti. Ripristino indice: $index, Posizione: $position")
             val mappedItems = queuedSongs.map { mediaItem ->
                 val song = mediaItem.mediaItem
                 val isMusicVault = song.mediaMetadata.extras
@@ -3506,7 +3511,7 @@ class PlayerService : MediaLibraryService(),
                 hybridPlayer.pause()
             }
 
-            Timber.d("PlayerService LoadQueue: Ripristino della coda in ExoPlayer completato con successo.")
+            Timber.d("PlayerService LoadQueue: Ripristino della coda completato con successo.")
         }
     }
 
