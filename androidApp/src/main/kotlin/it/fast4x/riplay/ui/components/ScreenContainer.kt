@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material.BottomNavigationDefaults.windowInsets
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -167,7 +168,17 @@ fun ScreenContainer(
         else
             Modifier.nestedScroll(nestedScrollConnection)
 
-    val bottomInset = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
+    val navigationBarInsetPx = WindowInsets.navigationBars.getBottom(density)
+    // 0f = barra completamente visibile, 1f = barra fuori dallo schermo
+    val bottomBarHideFraction =
+        if (NavigationBarPosition.Bottom.isCurrent() && bottomBarHeightPx > 0f)
+            (toolbarOffset / bottomBarHeightPx).coerceIn(0f, 1f)
+        else
+            1f
+
+    val bottomInset = with(density) {
+        (navigationBarInsetPx * bottomBarHideFraction).toDp()
+    }
 
     Scaffold(
         modifier = modifier,
@@ -240,7 +251,7 @@ fun ScreenContainer(
 
             Box(
                 Modifier
-                    .padding( vertical = 5.dp )
+                    //.padding( vertical = 5.dp )
                     .padding(bottom = bottomInset)
                     .align( playerAlignment ),
                 content = { miniPlayer?.invoke() }
