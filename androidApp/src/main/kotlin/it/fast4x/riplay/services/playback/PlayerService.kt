@@ -308,7 +308,7 @@ class PlayerService : MediaLibraryService(),
     private val _internalYouTubePlayerView = MutableStateFlow<YouTubePlayerView?>(null)
     val internalYoutubePlayerView: StateFlow<YouTubePlayerView?> = _internalYouTubePlayerView
 
-    private val _internalYouTubePlayer = MutableStateFlow<YouTubePlayer?>(null)
+    val _internalYouTubePlayer = MutableStateFlow<YouTubePlayer?>(null)
 
     private val _internalBufferedFraction = MutableStateFlow(0f)
     val internalYoutubeBufferedFraction: StateFlow<Float> = _internalBufferedFraction

@@ -399,9 +399,16 @@ class HybridPlayer (
     // ── L'ESECUZIONE REALE DEL COMANDO IN ARRIVO DA PLAYERSERVICE EVITA IL LOOP  ────────
     fun executeActualPlay() {
         if (activeEngine == ActiveEngine.YOUTUBE) {
-            youtubeControl.play()
+            //Timber.d("HybridPlayer executeActualPlay() called currentDuration is ${playerService._currentDuration.value}")
+            val mediaId = playerService.exoPlayer.currentMediaItem?.mediaId
+            if (playerService._currentDuration.value == 0f && mediaId != null) {
+                Timber.d("HybridPlayer executeActualPlay() called mediaId is $mediaId but not loaded, now loading and playing")
+                playerService._internalYouTubePlayer.value?.loadVideo(mediaId, 0f)
+            } else {
+                Timber.d("HybridPlayer executeActualPlay() called mediaId is $mediaId and loaded, now playing")
+                youtubeControl.play()
+            }
             youtubePlayWhenReady = true
-
             invalidateYouTubePlayPause()
 
             mainHandler.postDelayed({
