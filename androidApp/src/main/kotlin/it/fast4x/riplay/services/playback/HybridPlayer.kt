@@ -118,22 +118,34 @@ class HybridPlayer (
         exoPlayer.volume = userVolume
 
         // Registriamo il listener delle statistiche solo quando yt è il motore attivo
+        // Lo inseriamo in un try catch perchè potrebbe creare un crash
         if (!analyticsAttached) {
-            exoPlayer.addAnalyticsListener(playbackStatsListener)
+            try {
+                exoPlayer.addAnalyticsListener(playbackStatsListener)
+            } catch (e: Exception) { Timber.e("HybridPlayer PlaybackStatsListener failed to attach to ExoPlayer: ${e.message}")}
+
             analyticsAttached = true
         }
 
-        hybridListeners.forEach { listener ->
-            listener.onTimelineChanged(currentTimeline, Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED)
-        }
+        // Lo inseriamo in un try catch perchè potrebbe creare un crash di ritorno
+        try {
+            hybridListeners.forEach { listener ->
+                listener.onTimelineChanged(currentTimeline, Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED)
+            }
+        } catch (e: Exception) { Timber.e("HybridPlayer listener failed to update timeline: ${e.message}")}
+
     }
 
     fun switchToYoutube() {
         activeEngine = ActiveEngine.YOUTUBE
 
         // Rimuoviamo il listener delle statistiche non ci serve per l'online
+        // Lo inseriamo in un try catch perchè potrebbe creare un crash
         if (analyticsAttached) {
-            exoPlayer.removeAnalyticsListener(playbackStatsListener)
+            try {
+                exoPlayer.removeAnalyticsListener(playbackStatsListener)
+            } catch (e: Exception) { Timber.e("HybridPlayer PlaybackStatsListener failed to detach from ExoPlayer: ${e.message}")}
+
             analyticsAttached = false
         }
 
