@@ -82,6 +82,7 @@ import it.fast4x.riplay.enums.MiniPlayerType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
+import it.fast4x.riplay.enums.AudioVisualizerBaseStyle
 import it.fast4x.riplay.enums.AudioVisualizerStyle
 import it.fast4x.riplay.enums.PlayerTransitionAnimation
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
@@ -576,13 +577,13 @@ fun UnifiedMiniPlayer(
 
             if (micPermission.status.isGranted) {
                 when (appearanceSettings.audioVisualizerStyleInMiniPlayer) {
-                    AudioVisualizerStyle.SPECTRUM -> PlayerEqualizerSpectrum(
+                    AudioVisualizerBaseStyle.SPECTRUM -> PlayerEqualizerSpectrum(
                         modifier = Modifier
                             .height(20.dp)
                             .fillMaxWidth()
                     )
 
-                    AudioVisualizerStyle.LEVEL, AudioVisualizerStyle.ANIMATIONS -> PlayerEqualizerLevel()
+                    AudioVisualizerBaseStyle.LEVEL -> PlayerEqualizerLevel()
                     else -> {}
                 }
             }

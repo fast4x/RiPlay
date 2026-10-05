@@ -23,6 +23,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.services.helpers.BandConfig
 import it.fast4x.riplay.services.helpers.EqualizerConfig
 import it.fast4x.riplay.services.helpers.EqualizerHelper
@@ -32,7 +35,10 @@ import it.fast4x.riplay.utils.typography
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import it.fast4x.riplay.R
+import it.fast4x.riplay.enums.AudioVisualizerBaseStyle
 import it.fast4x.riplay.enums.EqualizerPreset
+import it.fast4x.riplay.extensions.nextvisualizer.modern.PlayerEqualizerLevel
+import it.fast4x.riplay.extensions.nextvisualizer.modern.PlayerEqualizerSpectrum
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.time.Duration.Companion.milliseconds
@@ -48,6 +54,9 @@ fun InternalEqualizerScreen(equalizerHelper: EqualizerHelper) {
     var isEqEnabled by remember { mutableStateOf(false) }
 
     val preampDb by equalizerHelper.preampDb.collectAsState()
+
+    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     LaunchedEffect(Unit) {
         withTimeoutOrNull(5000.milliseconds) { equalizerHelper.eqReady.first { it } }
@@ -121,14 +130,24 @@ fun InternalEqualizerScreen(equalizerHelper: EqualizerHelper) {
                     }
                     .fillMaxWidth()
             ) {
-
-                InternalEqualizerCurve(
-                    bandLevels = bandLevels,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp)
-                        .padding(horizontal = 8.dp)
-                )
+                val curve : @Composable () -> Unit = {
+                    InternalEqualizerCurve(
+                        bandLevels = bandLevels,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp)
+                            .padding(horizontal = 8.dp)
+                            .zIndex(-1f)
+                    )
+                }
+                when (appearanceSettings.audioVisualizerStyleInEqualizer) {
+                    AudioVisualizerBaseStyle.SPECTRUM -> PlayerEqualizerSpectrum { curve() }
+                    AudioVisualizerBaseStyle.LEVEL -> {
+                        curve()
+                        PlayerEqualizerLevel()
+                    }
+                    else -> curve()
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 

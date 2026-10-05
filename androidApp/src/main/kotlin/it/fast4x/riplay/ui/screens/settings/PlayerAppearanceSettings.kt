@@ -225,6 +225,8 @@ fun PlayerAppearanceSettings(
 
     val audioVisualizerStyleInPlayer = appearanceSettings.audioVisualizerStyleInPlayer
     val audioVisualizerStyleInMiniPlayer = appearanceSettings.audioVisualizerStyleInMiniPlayer
+    val audioVisualizerStyleInEqualizer = appearanceSettings.audioVisualizerStyleInEqualizer
+
 
     val micPermission = rememberPermissionState(
         Manifest.permission.RECORD_AUDIO,
@@ -1620,16 +1622,16 @@ fun PlayerAppearanceSettings(
                         isHeader = true
                     ) {
                         SettingsGroupSpacer()
-                        SettingsEntryGroupText(title = stringResource(R.string.visualizer))
+                        SettingsEntryGroupText(title = stringResource(R.string.audio_visualizer))
                     }
                     settingsItem {
-                        if (search.input.isBlank() || stringResource(R.string.visualizer).contains(
+                        if (search.input.isBlank() || stringResource(R.string.audio_visualizer).contains(
                                 search.input,
                                 true
                             )
                         ) {
                             EnumValueSelectorSettingsEntry(
-                                title = "Player style",
+                                title = stringResource(R.string.audio_visualizer_title_player_style),
                                 selectedValue = audioVisualizerStyleInPlayer,
                                 onValueSelected = {
                                     if (!micPermission.status.isGranted) {
@@ -1649,7 +1651,7 @@ fun PlayerAppearanceSettings(
                                 },
                             )
                             EnumValueSelectorSettingsEntry(
-                                title = "Mini Player style",
+                                title = stringResource(R.string.audio_visualizer_title_mini_player_style),
                                 selectedValue = audioVisualizerStyleInMiniPlayer,
                                 onValueSelected = {
                                     if (!micPermission.status.isGranted) {
@@ -1659,9 +1661,29 @@ fun PlayerAppearanceSettings(
                                             val new = appearanceSettingsManager
                                                 .activeSettings.value
                                                 .copy(
-                                                    audioVisualizerStyleInMiniPlayer =
-                                                        if (it == AudioVisualizerStyle.ANIMATIONS)
-                                                            AudioVisualizerStyle.LEVEL else it
+                                                    audioVisualizerStyleInMiniPlayer = it
+                                                )
+                                            appearanceSettingsManager.updatePreset(new)
+                                        }
+                                    }
+                                },
+                                valueText = {
+                                    it.displayName
+                                },
+                            )
+
+                            EnumValueSelectorSettingsEntry(
+                                title = stringResource(R.string.audio_visualizer_title_equalizer_style),
+                                selectedValue = audioVisualizerStyleInEqualizer,
+                                onValueSelected = {
+                                    if (!micPermission.status.isGranted) {
+                                        micPermission.launchPermissionRequest()
+                                    } else {
+                                        coroutineScope.launch {
+                                            val new = appearanceSettingsManager
+                                                .activeSettings.value
+                                                .copy(
+                                                    audioVisualizerStyleInEqualizer = it
                                                 )
                                             appearanceSettingsManager.updatePreset(new)
                                         }

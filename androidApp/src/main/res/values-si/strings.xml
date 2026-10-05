@@ -1490,4 +1490,12 @@ CC-BY-SA 3.0</string>
 
     <string name="lock_orientation">Lock orientation</string>
     <string name="equalizer_pre_amp_title_pre_amp_1f_db">Pre-amp: %.1f dB</string>
+    <string name="audio_visualizer">Audio visualizer</string>
+    <string name="audio_visualizer_title_player_style">Player style</string>
+    <string name="audio_visualizer_title_mini_player_style">Mini Player style</string>
+    <string name="audio_visualizer_title_equalizer_style">Equalizer style</string>
+    <string name="audio_visualizer_style_none">None</string>
+    <string name="audio_visualizer_style_spectrum">Spectrum</string>
+    <string name="audio_visualizer_style_level">Level</string>
+    <string name="audio_visualizer_style_animations">Animations</string>
 </resources>

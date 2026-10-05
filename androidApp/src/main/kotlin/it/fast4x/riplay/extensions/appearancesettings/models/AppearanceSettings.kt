@@ -2,6 +2,7 @@ package it.fast4x.riplay.extensions.appearancesettings.models
 
 import androidx.compose.ui.graphics.Color
 import it.fast4x.riplay.enums.AnimatedGradient
+import it.fast4x.riplay.enums.AudioVisualizerBaseStyle
 import it.fast4x.riplay.enums.AudioVisualizerStyle
 import it.fast4x.riplay.enums.BackgroundProgress
 import it.fast4x.riplay.enums.CarouselSize
@@ -174,7 +175,8 @@ data class AppearanceSettings(
     val playerTransitionsEnabled: Boolean           = true,
     val playerTransitionAnimation: PlayerTransitionAnimation = PlayerTransitionAnimation.Smooth,
     val audioVisualizerStyleInPlayer: AudioVisualizerStyle = AudioVisualizerStyle.NONE,
-    val audioVisualizerStyleInMiniPlayer: AudioVisualizerStyle = AudioVisualizerStyle.NONE,
+    val audioVisualizerStyleInMiniPlayer: AudioVisualizerBaseStyle = AudioVisualizerBaseStyle.NONE,
+    val audioVisualizerStyleInEqualizer: AudioVisualizerBaseStyle = AudioVisualizerBaseStyle.NONE,
     ) {
     companion object {
 
