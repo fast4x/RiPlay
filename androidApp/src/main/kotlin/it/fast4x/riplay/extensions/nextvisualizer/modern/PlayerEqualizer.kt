@@ -39,7 +39,7 @@ fun PlayerEqualizerLevel(
     height: Dp = 5.dp,
     content: @Composable () -> Unit = {},
 ) {
-    val meterState = rememberLevelMeterState(simulationEnabled = false)
+    val meterState = rememberLevelMeterState(peakHoldMs = 100f, simulationEnabled = false)
 
     Box {
         HorizontalLevelBar(
@@ -49,10 +49,10 @@ fun PlayerEqualizerLevel(
             cornerRadius = 0.dp,
             state = meterState,
             colors = listOf(
-                colorPalette().textDisabled,
+                colorPalette().textSecondary.copy(alpha = .8f),
                 colorPalette().textSecondary,
-                colorPalette().text,
-                colorPalette().accent,
+                colorPalette().text.copy(alpha = .8f),
+                colorPalette().red,
 
             )
         )
