@@ -1211,6 +1211,10 @@ class PlayerService : MediaLibraryService(),
 
         mediaLibrarySessionCallback = MediaLibraryServiceCallback(binder, this)
 
+        val sessionActivityIntent = Intent(this, MainActivity::class.java).apply {
+            putExtra("fromNotification", true)
+        }
+
         mediaLibrarySession = MediaLibrarySession
             .Builder(this@PlayerService, hybridPlayer, mediaLibrarySessionCallback)
             .setId("${packageName}.MEDIA_SESSION_ID")
@@ -1218,10 +1222,11 @@ class PlayerService : MediaLibraryService(),
                 PendingIntent.getActivity(
                     this,
                     0,
-                    Intent(this, MainActivity::class.java),
+                    sessionActivityIntent,
                     PendingIntent.FLAG_IMMUTABLE,
                 ),
-            ).setBitmapLoader( customBitmapLoader )
+            )
+            .setBitmapLoader(customBitmapLoader)
             .build()
 
         // Keep a connected controller so maybe that notification works
@@ -2094,7 +2099,7 @@ class PlayerService : MediaLibraryService(),
         // Aggiorniamo l'ultimo mediaId caricato
         lastOnlineMediaId = newMediaId
 
-            Timber.d("PlayerService onMediaItemTransition mediaItem ${mediaItem.mediaId} reason $reason")
+        Timber.d("PlayerService onMediaItemTransition mediaItem ${mediaItem.mediaId} reason $reason")
 
         currentQueuePosition = exoPlayer.currentMediaItemIndex
 

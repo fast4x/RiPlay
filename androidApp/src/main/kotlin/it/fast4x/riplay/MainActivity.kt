@@ -154,8 +154,6 @@ import it.fast4x.riplay.ui.styling.dynamicColorPaletteOf
 import it.fast4x.riplay.ui.styling.typographyOf
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.forcePlay
-import it.fast4x.riplay.utils.getDnsOverHttpsType
-import it.fast4x.riplay.utils.getKeepPlayerMinimized
 import it.fast4x.riplay.utils.invokeOnReady
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isAtLeastAndroid8
@@ -220,6 +218,7 @@ import it.fast4x.riplay.ui.screens.player.unified.TvUnifiedPlayer
 import it.fast4x.riplay.ui.screens.player.unified.components.LocalSharedTransitionScope
 import it.fast4x.riplay.utils.OrientationLock
 import it.fast4x.riplay.utils.VideoParkingLot
+import it.fast4x.riplay.utils.getAppSettings
 import it.fast4x.riplay.utils.isTVDevice
 import it.fast4x.riplay.utils.isTvMode
 import it.fast4x.spotifymeta.SpotifyAlbumMeta
@@ -575,7 +574,7 @@ class MainActivity : AppCompatActivity() {
 
         val launchedFromNotification: Boolean =
             intent?.extras?.let {
-                it.getBoolean("expandPlayerBottomSheet") || it.getBoolean("fromWidget")
+                it.getBoolean("fromNotification") || it.getBoolean("fromWidget")
             } ?: false
 
         Timber.d("MainActivity.onCreate launchedFromNotification: $launchedFromNotification intent $intent.action")
@@ -814,7 +813,7 @@ class MainActivity : AppCompatActivity() {
                 //preferences.getString(CUSTOM_DNS_OVER_HTTPS_SERVER.key, "")
 
             val customDnsIsOk = customDnsOverHttpsServer?.let { isValidHttpUrl(it) }
-            if (customDnsIsOk == false && getDnsOverHttpsType() == DnsOverHttpsType.Custom)
+            if (customDnsIsOk == false && appSettings.dnsOverHttpsType == DnsOverHttpsType.Custom)
                 SmartMessage(
                     stringResource(R.string.custom_dns_is_invalid),
                     PopupType.Error,
@@ -823,7 +822,7 @@ class MainActivity : AppCompatActivity() {
 
             val customDnsUrl = if (customDnsIsOk == true) customDnsOverHttpsServer else null
             Environment.customDnsToUse = customDnsUrl
-            Environment.dnsToUse = getDnsOverHttpsType().type
+            Environment.dnsToUse = appSettings.dnsOverHttpsType.type
 
             //val pageId = preferences.getString(PreferenceKey.YT_PAGEID.key, "")
             val pageId = appSettings.ytPageId
@@ -1497,9 +1496,11 @@ class MainActivity : AppCompatActivity() {
                             isPlayerExpanded.value = false
                         }
                     } else {
+                        Timber.d("MainActivity DisposableEffect launchedFromNotification keepPlayerMinimized = ${appSettings.keepPlayerMinimized}")
                         if (launchedFromNotification) {
+
                             intent.replaceExtras(Bundle())
-                            if (getKeepPlayerMinimized()) {
+                            if (appSettings.keepPlayerMinimized) {
                                 localPlayerSheetState.collapseSoft()
                                 isPlayerExpanded.value = false
                             } else {
@@ -1523,31 +1524,11 @@ class MainActivity : AppCompatActivity() {
                                 return
                             }
 
-                            mediaItem.let {
-
-                                if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
-                                    if (it.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
-                                        if (getKeepPlayerMinimized()) {
-                                            localPlayerSheetState.collapseSoft()
-                                            isPlayerExpanded.value = false
-                                        }
-                                        else {
-                                            localPlayerSheetState.expandSoft()
-                                            isPlayerExpanded.value = true
-                                        }
-                                    } else {
-                                        localPlayerSheetState.collapseSoft()
-                                        isPlayerExpanded.value = false
-                                    }
-                                }
-
-                                setDynamicPalette(
-                                    it.mediaMetadata.artworkUri.toString().toThumbnail(
-                                        1200
-                                    ).toString()
-                                )
-
-                            }
+                            setDynamicPalette(
+                                mediaItem.mediaMetadata.artworkUri.toString().toThumbnail(
+                                    1200
+                                ).toString()
+                            )
 
                         }
 
