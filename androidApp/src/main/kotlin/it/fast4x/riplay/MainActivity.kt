@@ -1502,16 +1502,13 @@ class MainActivity : AppCompatActivity() {
                             if (getKeepPlayerMinimized()) {
                                 localPlayerSheetState.collapseSoft()
                                 isPlayerExpanded.value = false
+                            } else {
+                                if (!isPlayerExpanded.value){
+                                    isPlayerExpanded.value = true
+                                    localPlayerSheetState.expandSoft()
+                                }
                             }
-                            else {
-                                isPlayerExpanded.value = true
-                                localPlayerSheetState.expandSoft()
-                            }
-                        } else {
-                            localPlayerSheetState.collapseSoft()
-                            isPlayerExpanded.value = false
                         }
-
                     }
 
                     val listener = object : Player.Listener {
