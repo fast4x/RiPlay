@@ -99,7 +99,6 @@ import it.fast4x.riplay.utils.asMediaItem
 import kotlinx.coroutines.flow.map
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ViewType
-import it.fast4x.riplay.utils.getViewType
 import it.fast4x.riplay.data.models.SongAlbumMap
 import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.data.models.SongEntity
@@ -737,7 +736,7 @@ fun HomePlaylists(
                         }
                     }
                 } else {
-                    if (getViewType() == ViewType.List) {
+                    if (appSettings.viewType == ViewType.List) {
                         LazyListContainer(state = lazyListState) {
                             LazyColumn(
                                 state = lazyListState,

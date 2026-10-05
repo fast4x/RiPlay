@@ -87,7 +87,6 @@ import kotlinx.coroutines.flow.map
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ViewType
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
-import it.fast4x.riplay.utils.getViewType
 import it.fast4x.riplay.ui.components.PullToRefreshBox
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.navigation.header.TabToolBar
@@ -415,7 +414,7 @@ fun HomeArtists(
                         }
                     }
                 } else {
-                    if (getViewType() == ViewType.List) {
+                    if (appSettings.viewType == ViewType.List) {
                         LazyListContainer(state = lazyListState) {
                             LazyColumn(
                                 state = lazyListState,

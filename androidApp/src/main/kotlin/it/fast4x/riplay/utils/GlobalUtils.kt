@@ -36,15 +36,8 @@ fun showSearchIconInNav() = getAppSettingsForComposable().showSearchTab
 @Composable
 fun showStatsIconInNav() = getAppSettingsForComposable().showStatsInNavbar
 
-@Composable
-fun binder() = LocalPlayerServiceBinder.current
-
 fun appContext(): Context = Dependencies.application.applicationContext
 fun globalContext(): Context = Dependencies.application
-
-fun getViewType() = getAppSettings().viewType
-fun getDnsOverHttpsType() = getAppSettings().dnsOverHttpsType
-fun getKeepPlayerMinimized() = getAppSettings().keepPlayerMinimized
 fun getlastFmSessionKey() = getAppSettings().lastFMSessionToken
 
 @Composable
