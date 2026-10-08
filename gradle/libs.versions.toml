@@ -7,31 +7,29 @@ kotlin-coroutine = "1.11.0"
 concurrentFutures = "1.3.0"
 compose = "1.11.2"
 compose-activity = "1.13.0"
-shimmer = "1.4.0"
+shimmer = "1.5.0"
 coil = "2.7.0"
-coil3 = "3.4.0"
-room = "2.8.4"
-sqlite = "2.6.2"
-media3 = "1.10.1"
-ktor = "3.5.0"
+coil3 = "3.6.3"
+room = "2.8.5"
+sqlite = "2.7.1"
+media3 = "1.10.1" #1.10.1 ultima versione con webview in background
+ktor = "3.6.0"
 brotli = "0.1.2"
 palette = "1.0.0"
 desugaring = "2.1.5"
-appcompat = "1.7.1"
+appcompat = "1.8.0"
 support = "1.0.0"
-media = "1.7.1"
 material = "1.11.2"
 materialdesktop = "1.7.3"
 material3 = "1.4.0"
 androidmaterial = "1.14.0"
-constraintlayout = "1.1.1"
+constraintlayout = "1.1.2"
 translator = "1.1.2"
 kotlin-csv = "1.10.0"
 monetcompat = "0.4.1"
-navigation = "2.9.8"
 timber = "5.0.1"
 crypto = "1.1.0"
-loggingInterceptor = "5.3.2"
+loggingInterceptor = "5.5.0"
 math3 = "3.6.1"
 toasty = "1.5.2"
 haze = "1.7.2"
@@ -42,26 +40,28 @@ gson = "2.14.0"
 mediaPlayerKMP = "2.1.0"
 navigationKMP = "2.9.2"
 vlcj = "4.12.1"
-kotlinxCoroutinesSwing = "1.10.2"
-hypnoticcanvas = "0.4.1"
-okhttpDnsOverHttps = "5.3.2"
+kotlinxCoroutinesSwing = "1.11.0"
+hypnoticcanvas = "0.6.0"
+okhttpDnsOverHttps = "5.5.0"
 reorderable = "3.1.0"
 fastscroller = "0.3.2"
-workmanager = "2.11.2"
 accompanist = "0.37.3"
-jsoup = "1.22.2"
+jsoup = "1.23.2"
 newpipeExt = "v0.26.0"
-webkit = "1.15.0" #Compatibile con sdk 23 > versione foss
 recyclerview = "1.4.0"
 jaudiotagger = "3.0.1"
-geckoview = "136.0.20250317200840" # Compatible with sdk 24
 chaquopy = "17.0.0"
-runtime = "1.11.3"
-camerax = "1.6.1"
+camerax = "1.6.2"
 zxing = "3.5.4"
 splashscreen = "1.2.0"
+lifecycle-process = "2.11.0"
 runtimeVersion = "1.12.0"
-lifecycle-process = "2.8.0"
+geckoview = "136.0.20250317200840" # Compatible with sdk 24
+
+#Lista delle dipendenze necessarie per mantenere la versione FOSS compatibile con sdk 23
+webkit = "1.15.0" #Compatibile con sdk 23 > versione foss
+workmanager = "2.11.2" #Compatibile con sdk 23 > versione foss
+navigation = "2.9.8" #Compatibile con sdk 23 > versione foss
 
 
 [libraries]
@@ -99,11 +99,9 @@ ktor-serialization-kotlinx-protobuf = { group = "io.ktor", name = "ktor-serializ
 brotli = {group = "org.brotli", name = "dec", version.ref = "brotli"}
 palette = {group = "androidx.palette", name = "palette", version.ref = "palette"}
 desugaring = {group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugaring"}
-desugaring-nio = {group = "com.android.tools", name = "desugar_jdk_libs_nio", version.ref = "desugaring"}
 appcompat = {group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat"}
 appcompat-resources = {group = "androidx.appcompat", name = "appcompat-resources", version.ref = "appcompat"}
 support = {group = "androidx.legacy", name = "legacy-support-v4", version.ref = "support"}
-#media = {group = "androidx.media", name = "media", version.ref = "media"}
 material = {group = "androidx.compose.material", name = "material", version.ref = "material"}
 material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "material3" }
 material-icon-desktop = {group = "org.jetbrains.compose.material", name = "material-icons-extended-desktop", version.ref = "materialdesktop"}
@@ -138,7 +136,6 @@ hypnoticcanvas = {group = "com.mikepenz.hypnoticcanvas", name = "hypnoticcanvas"
 hypnoticcanvas-shaders = {group = "com.mikepenz.hypnoticcanvas", name = "hypnoticcanvas-shaders", version.ref = "hypnoticcanvas"}
 androidx-webkit = { group = "androidx.webkit", name = "webkit", version.ref = "webkit" }
 okhttp-dnsoverhttps = { group = "com.squareup.okhttp3", name = "okhttp-dnsoverhttps", version.ref = "okhttpDnsOverHttps" }
-#room-backup = { group = "de.raphaelebner", name = "roomdatabasebackup", version = "1.1.0" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 fastscroller = { group = "io.github.oikvpqya.compose.fastscroller", name = "fastscroller-core", version.ref = "fastscroller" }
 fastscroller-material3 = { group = "io.github.oikvpqya.compose.fastscroller", name = "fastscroller-material3", version.ref = "fastscroller" }
