@@ -47,6 +47,7 @@ import it.fast4x.environment.Environment
 import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.LocalUnplayableTracks
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.utils.colorPalette
@@ -71,7 +72,6 @@ import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.ui.styling.medium
-import it.fast4x.riplay.utils.isNowPlaying
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.shimmerEffect
@@ -81,6 +81,7 @@ import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.isDeezerTrack
 import it.fast4x.riplay.utils.isExclusivelyLocal
+import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.isRelated
 import it.fast4x.riplay.utils.isSpotifyTrack
 import it.fast4x.riplay.utils.isWebDav
@@ -263,7 +264,7 @@ fun SongItem(
     val appearanceSettingsManager = LocalAppearanceSettingsManager.current
     val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
-    val title = remember(mediaItem) { mediaItem.mediaMetadata.title.toString() }
+    val title = remember(mediaItem) { cleanPrefix(mediaItem.mediaMetadata.title.toString()) }
     val authors = remember(mediaItem) { mediaItem.mediaMetadata.artist.toString() }
     val duration = remember(mediaItem) { mediaItem.mediaMetadata.extras?.getString("durationText") }
 
@@ -275,8 +276,13 @@ fun SongItem(
         remember { mutableIntStateOf(0) }
 
     val binder = LocalPlayerServiceBinder.current
-    val isNowPlaying = binder?.hybridPlayer?.isNowPlaying(mediaItem.mediaId)
+    val isNowPlaying = mediaItem.mediaId == binder?.hybridPlayer?.currentMediaItem?.mediaId
     val disableScrollingText = appearanceSettings.disableScrollingText
+
+    val unplayableTracks = LocalUnplayableTracks.current
+    val isUnplayableTrack = remember(mediaItem.mediaId, unplayableTracks) {
+        mediaItem.mediaId in unplayableTracks && !mediaItem.isLocal
+    }
 
     val context = LocalContext.current
     val colorPalette = LocalAppearance.current.colorPalette
@@ -289,13 +295,14 @@ fun SongItem(
 
     // Stato e navigazione condivisi (non duplicati nei branch)
     val menuState = LocalGlobalSheetState.current
-    val navController = rememberNavController()
+
 
     // Callback per aprire il menu playlist, stabile tramite remember
-    val onPlaylistIconClick = remember(mediaItem, binder, menuState, navController) {
+    val onPlaylistIconClick = remember(mediaItem, binder, menuState) {
         {
             menuState.display {
                 if (binder != null) {
+                    val navController = rememberNavController()
                     AddToPlaylistPlayerMenu(
                         navController = navController,
                         onDismiss = { menuState.hide() },
@@ -317,15 +324,20 @@ fun SongItem(
         }
     }
 
+    val shape = getRoundnessShape()
+
     ItemContainer(
         alternative = false,
         thumbnailSizeDp = thumbnailSizeDp,
         modifier = modifier
             .padding(end = 8.dp)
-            .clip(getRoundnessShape())
-            .applyIf(isNowPlaying == true) {
-                background(colorPalette.favoritesOverlay)
+            .applyIf(isUnplayableTrack){
+                background(colorPalette.red.copy(alpha = 0.55f), shape) // Rosso tenue non stancante
             }
+            .applyIf(isNowPlaying) {
+                background(colorPalette.favoritesOverlay, shape)
+            }
+            .clip(shape)
     ) {
         Box(modifier = Modifier.size(thumbnailSizeDp)) {
             thumbnailContent()
@@ -356,6 +368,7 @@ fun SongItem(
         ItemInfoContainer {
             // Riga titolo
             Row(verticalAlignment = Alignment.CenterVertically) {
+
                 if (isRecommended)
                     IconButton(
                         icon = R.drawable.smart_shuffle,
@@ -406,7 +419,7 @@ fun SongItem(
                     )
 
                 BasicText(
-                    text = cleanPrefix(title),
+                    text = title,
                     style = typography().xs.semiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -450,6 +463,12 @@ fun SongItem(
                 ) {
                     val song = mediaItem.asSong
                     when {
+                        isUnplayableTrack -> IconButton(
+                            icon = R.drawable.alert_circle,
+                            color = colorPalette.red.copy(alpha = 0.55f),
+                            enabled = true,
+                            onClick = noOp,
+                        )
                         song.isExclusivelyLocal && !song.isSpotifyTrack && !song.isDeezerTrack -> IconButton(
                             icon = R.drawable.folder,
                             color = colorPalette.accent,

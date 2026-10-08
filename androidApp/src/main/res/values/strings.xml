@@ -1497,4 +1497,11 @@
     <string name="audio_visualizer_style_spectrum">Spectrum</string>
     <string name="audio_visualizer_style_level">Level</string>
     <string name="audio_visualizer_style_animations">Animations</string>
+    <string name="no_playable_tracks_message">None of the following tracks are playable</string>
+    <string name="skip_unplayable_track_message">%1$s is unavailable or not playable, skipping ahead</string>
+    <string name="reset_unplayable_tracks">Reset unplayable tracks</string>
+    <string name="clear_unplayable_tracks">Clear %1$d unplayable tracks</string>
+    <string name="do_you_really_want_to_clear_all_unplayable_tracks">Do you really want to clear all unplayable tracks?</string>
+    <string name="no_unplayable_tracks">No unplayable tracks</string>
+    <string name="clear_unplayable_tracks_summary">Tracks stay in your library and playlists — only the markers are removed. Marked tracks will be retried during playback and marked again if still unavailable.</string>
 </resources>

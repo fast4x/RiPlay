@@ -62,10 +62,7 @@ fun AccountLogin(
 
     val scope = rememberCoroutineScope()
     var webView: WebView? = null
-    //var showConfirmButton by remember { mutableStateOf(false) }
-    //var restartAction by remember { mutableStateOf<(() -> Unit)?>(null) }
     var loadSessionAction by remember { mutableStateOf<(() -> Unit)?>(null) }
-    val localContext = LocalContext.current
 
     val appSettingsManager = LocalAppSettingsManager.current
     val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
@@ -105,7 +102,7 @@ fun AccountLogin(
                 onValueSelected = { account ->
                     Timber.d("AccountLogin selected account $account")
                     scope.launch {
-                        delay(200)
+                        delay(200.milliseconds)
 
                         Timber.d("AccountLogin: save login preferences")
                         appSettingsManager.updateSettings(
@@ -118,13 +115,7 @@ fun AccountLogin(
                                 ytAccountThumbnail = account.thumbnailUrl.toString(),
                             )
                         )
-//                        localContext.preferences.edit {putString(PreferenceKey.YT_PAGEID.key, account.pageId)}
-//                        localContext.preferences.edit {putString(PreferenceKey.YT_AUTHUSER.key, account.authUser)}
-//                        localContext.preferences.edit {putString(PreferenceKey.YT_ACCOUNT_NAME.key, account.name)}
-//                        localContext.preferences.edit {putString(PreferenceKey.YT_ACCOUNT_EMAIL.key, account.email)}
-//                        localContext.preferences.edit {putString(PreferenceKey.YT_ACCOUNT_CHANNEL_HANDLE.key, account.channelHandle)}
-//                        localContext.preferences.edit {putString(PreferenceKey.YT_ACCOUNT_THUMBNAIL.key, account.thumbnailUrl)}
-                        delay(200)
+                        delay(200.milliseconds)
 
                         signinUrl = "https://music.youtube.com${account.signinUrl.toString()}"
 
@@ -133,7 +124,7 @@ fun AccountLogin(
 
                         showSelectorDialog = false
                         onLogin("")
-                        //restartAction?.invoke()
+
                     }
                 }
             )
@@ -191,10 +182,6 @@ fun AccountLogin(
 
                             showSelectorDialog = true
 
-//                            if (signinUrl.isNotEmpty()) // account switched, restart
-//                                restartAction?.invoke()
-
-                            //showConfirmButton = url?.startsWith("https://music.youtube.com") == true
                         }
 
                         override fun doUpdateVisitedHistory(
@@ -324,20 +311,6 @@ fun AccountLogin(
                         }
                     }
 
-                    /*
-                    restartAction = {
-                        webView.apply {
-                            stopLoading()
-                            clearHistory()
-                            clearCache(true)
-                            clearFormData()
-                        }
-
-                        Timber.d("AccountLogin: Restart app")
-                        restartApp(context)
-                    }
-                     */
-
                 }
             },
             update = { webView ->
@@ -351,27 +324,6 @@ fun AccountLogin(
             }
         )
 
-        /*
-        if (showConfirmButton && restartAction != null) {
-            Button(
-                shape = getRoundnessShape(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colorPalette().accent,
-                    contentColor = colorPalette().onAccent
-                ),
-                onClick = { restartAction?.invoke() },
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(24.dp)
-            ) {
-                Text(
-                    stringResource(R.string.login_select_your_preferred_account_or_profile_and_click_here_to_confirm_access),
-                    fontSize = typography().l.fontSize
-                )
-            }
-        }
-
-         */
     }
 
 

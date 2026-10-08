@@ -57,6 +57,7 @@ import it.fast4x.riplay.LocalAudioTagger
 import it.fast4x.riplay.LocalWebDavLibrary
 import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.R
+import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.webDavAccountEmpty
 import it.fast4x.riplay.enums.MusicIdentifierProvider
 import it.fast4x.riplay.utils.appContext
@@ -428,14 +429,24 @@ fun AccountsSettings(
                                             appSettingsManager.updateSettings(new)
                                         }
 
+                                        coroutineScope.launch {
+                                            // Eliminiamo i non riproducibili contrassegnati quando l'utente era autenticato
+                                            Database.unplayableTracksDao().revokeForLoginState(true)
+                                        }
+
                                         cachedAccounts = emptyList()
                                         loginYouTube = false
                                         val cookieManager = CookieManager.getInstance()
                                         cookieManager.removeAllCookies(null)
                                         cookieManager.flush()
                                         WebStorage.getInstance().deleteAllData()
-                                    } else
+                                    } else {
+                                        coroutineScope.launch {
+                                            // Eliminiamo i non riproducibili contrassegnati quando l'utente NON era autenticato
+                                            Database.unplayableTracksDao().revokeForLoginState(false)
+                                        }
                                         loginYouTube = true
+                                    }
                                 }
                             )
 

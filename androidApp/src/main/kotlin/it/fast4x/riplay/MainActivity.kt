@@ -317,6 +317,8 @@ class MainActivity : AppCompatActivity() {
 
     private var showAutostartPermissionDialog = false
 
+    var unplayableTracks: Set<String> = emptySet()
+
     override fun onStart() {
         super.onStart()
 
@@ -1099,6 +1101,8 @@ class MainActivity : AppCompatActivity() {
                 val playerView = binder?.youtubePlayerView?.collectAsState()
                 videoPlayerView = playerView?.value
 
+                unplayableTracks = binder?.unplayableTracks?.collectAsState()?.value ?: emptySet()
+
                 val castSheetState = rememberBottomSheetState(
                     dismissedBound = 0.dp,
                     collapsedBound = 5.dp,
@@ -1177,7 +1181,7 @@ class MainActivity : AppCompatActivity() {
                                     LocalWebDavLibrary provides webDavLibraryViewModel,
                                     LocalAppearanceSettingsManager provides appearanceSettingsManager,
                                     LocalAppSettingsManager provides appSettingsManager,
-                                    //LocalOnlinePlayerPlayingState provides onlinePlayerPlayingState,
+                                    LocalUnplayableTracks provides unplayableTracks,
                                     //LocalGlobalQueue provides globalQueueViewModel,
                                     //LocalInternetAvailable provides isInternetAvailable
                                 ) {
@@ -1916,3 +1920,4 @@ val LocalWebDavLibrary = staticCompositionLocalOf<WebDavLibraryViewModel> { erro
 val LocalAppearanceSettingsManager = staticCompositionLocalOf<AppearanceSettingsManager> { error("No appearance settings provided")}
 
 val LocalAppSettingsManager = staticCompositionLocalOf<AppSettingsManager> { error("No app settings provided") }
+val LocalUnplayableTracks = staticCompositionLocalOf<Set<String>> { emptySet() }

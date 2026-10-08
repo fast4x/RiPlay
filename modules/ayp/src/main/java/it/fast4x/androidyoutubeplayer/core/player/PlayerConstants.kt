@@ -16,8 +16,21 @@ class PlayerConstants {
     HTML_5_PLAYER,
     VIDEO_NOT_FOUND,
     VIDEO_NOT_PLAYABLE_IN_EMBEDDED_PLAYER,
-    REQUEST_MISSING_HTTP_REFERER
+    REQUEST_MISSING_HTTP_REFERER;
+
+    val code: Int
+      get() = when (this) {
+        UNKNOWN -> 0
+        INVALID_PARAMETER_IN_REQUEST -> 2
+        HTML_5_PLAYER -> 5
+        VIDEO_NOT_FOUND -> 100
+        VIDEO_NOT_PLAYABLE_IN_EMBEDDED_PLAYER -> 101
+        REQUEST_MISSING_HTTP_REFERER -> 153
+      }
+
   }
+
+
 
   enum class PlaybackRate {
     UNKNOWN, RATE_0_25, RATE_0_5, RATE_0_75, RATE_1, RATE_1_25, RATE_1_5, RATE_1_75, RATE_2

@@ -100,10 +100,6 @@ val String.isLocal get() = this.startsWith(LOCAL_KEY_PREFIX)
 
 val Song.isWebDav get() = this.id.startsWith(WEBDAV_KEY_PREFIX)
 
-fun Player.isNowPlaying(mediaId: String): Boolean {
-    return mediaId == currentMediaItem?.mediaId
-}
-
 val Player.currentWindow: Timeline.Window?
     get() = if (mediaItemCount == 0) null else currentTimeline.getWindow(currentMediaItemIndex, Timeline.Window())
 

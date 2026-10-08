@@ -1231,7 +1231,7 @@
     <string name="formattedtime_soon">A breve</string>
     <string name="genres">Genres</string>
     <string name="reset_playback_events">Reset playback events</string>
-    <string name="no_playback_events">No playback events</string>
+    <string name="no_playback_events">Nessun evento di riproduzione</string>
     <string name="playback_events">Playback events</string>
     <string name="event_enable_auto_backup">Abilita backup automatico</string>
     <string name="event_no_folder_selected_click_here_to_select_a_folder">Nessuna cartella selezionata, fare clic qui per selezionare una cartella</string>
@@ -1486,7 +1486,6 @@
     <string name="loader_style_bounce">Rimbalzo</string>
     <string name="loader_style_polygons">Poligoni</string>
     <string name="android_auto_is_disabled">AA is disabled</string>
-
     <string name="lock_orientation">Lock orientation</string>
     <string name="equalizer_pre_amp_title_pre_amp_1f_db">Pre-amp: %.1f dB</string>
     <string name="audio_visualizer">Audio visualizer</string>
@@ -1497,4 +1496,11 @@
     <string name="audio_visualizer_style_spectrum">Spectrum</string>
     <string name="audio_visualizer_style_level">Level</string>
     <string name="audio_visualizer_style_animations">Animations</string>
+    <string name="no_playable_tracks_message">Tutte le tracce successive non sono riproducibili</string>
+    <string name="skip_unplayable_track_message">%1$s non è disponibile o non è riproducibile, salto avanti</string>
+    <string name="reset_unplayable_tracks">Reset tracce non riproducibili</string>
+    <string name="clear_unplayable_tracks">Pulisci %1$d tracce non riproducibili</string>
+    <string name="do_you_really_want_to_clear_all_unplayable_tracks">Vuoi realmente pulire tutte le tracce non riproducibili?</string>
+    <string name="no_unplayable_tracks">Nessuna traccia marcata come non riproducibile</string>
+    <string name="clear_unplayable_tracks_summary">Le tracce restano nella libreria e nelle playlist: vengono rimossi solo i contrassegni. Le tracce contrassegnate verranno ritentate durante la riproduzione e riccontrassegnate automaticamente se risultano ancora non disponibili.</string>
 </resources>

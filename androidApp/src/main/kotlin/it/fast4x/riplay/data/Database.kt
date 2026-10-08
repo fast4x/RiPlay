@@ -47,6 +47,7 @@ import it.fast4x.riplay.data.dao.RecommendationDao
 import it.fast4x.riplay.data.dao.RelationDao
 import it.fast4x.riplay.data.dao.SongArtistCrossRefDao
 import it.fast4x.riplay.data.dao.SongDao
+import it.fast4x.riplay.data.dao.UnplayableTracksDao
 import it.fast4x.riplay.data.dao.WebDavAccountDao
 import it.fast4x.riplay.enums.AlbumSortBy
 import it.fast4x.riplay.enums.ArtistSortBy
@@ -85,6 +86,7 @@ import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.data.models.SongWithContentLength
 import it.fast4x.riplay.data.models.SortedSongPlaylistMap
+import it.fast4x.riplay.data.models.UnplayableTrack
 import it.fast4x.riplay.data.models.UserArtistAffinity
 import it.fast4x.riplay.data.models.UserEraAffinity
 import it.fast4x.riplay.data.models.UserKeywordAffinity
@@ -161,6 +163,9 @@ interface Database {
         }
         fun webDavAccountDao(): WebDavAccountDao {
             return (DatabaseInitializer.Instance).webDavAccountDao()
+        }
+        fun unplayableTracksDao(): UnplayableTracksDao {
+            return (DatabaseInitializer.Instance).unplayableTracksDao()
         }
     }
 
@@ -3790,12 +3795,13 @@ object Converters {
         SongArtistCrossRef::class,
         AppearancePresetEntity::class,
         AppSettingsEntity::class,
-        WebDavAccount::class
+        WebDavAccount::class,
+        UnplayableTrack::class
     ],
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 67,
+    version = 68,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -3887,7 +3893,8 @@ abstract class DatabaseInitializer : RoomDatabase() {
                 From63To64Migration(),
                 From64To65Migration(),
                 From65To66Migration(),
-                From66To67Migration()
+                From66To67Migration(),
+                From67To68Migration(),
             )
             //.fallbackToDestructiveMigration(false)
             .addCallback(object : Callback() {
@@ -3925,6 +3932,7 @@ abstract class DatabaseInitializer : RoomDatabase() {
     abstract fun appearancePresetDao(): AppearancePresetDao
     abstract fun appSettingsDao(): AppSettingsDao
     abstract fun webDavAccountDao(): WebDavAccountDao
+    abstract fun unplayableTracksDao(): UnplayableTracksDao
 
 
     // Crud da migrare in dao
@@ -4588,6 +4596,26 @@ abstract class DatabaseInitializer : RoomDatabase() {
 
             } catch (e: Exception) {
                 println("Database From66To67Migration error ${e.stackTraceToString()}")
+            }
+        }
+    }
+
+    class From67To68Migration : Migration(67, 68) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            try {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `unplayable_tracks` (
+                        `videoId` TEXT NOT NULL,
+                        `reason` INTEGER NOT NULL,
+                        `markedAt` INTEGER NOT NULL,
+                        `markedWhileLoggedIn` INTEGER NOT NULL,
+                        PRIMARY KEY(`videoId`)
+                    )
+                """
+                )
+            } catch (e: Exception) {
+                println("Database From67To68Migration error ${e.stackTraceToString()}")
             }
         }
     }

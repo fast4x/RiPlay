@@ -227,7 +227,18 @@ fun GeneralSettings(
         ConfirmationDialog(
             text = stringResource(R.string.do_you_really_want_to_delete_all_playback_events),
             onDismiss = { clearEvents = false },
-            onConfirm = { Database.asyncTransaction( Database::clearEvents ) }
+            onConfirm = { coroutineScope.launch {  Database.clearEvents() }  }
+        )
+    }
+    val unplayableTracksCount by remember {
+        Database.unplayableTracksDao().countAll().distinctUntilChanged()
+    }.collectAsState(initial = 0)
+    var clearUnplayableTracks by remember { mutableStateOf(false) }
+    if (clearUnplayableTracks) {
+        ConfirmationDialog(
+            text = stringResource(R.string.do_you_really_want_to_clear_all_unplayable_tracks),
+            onDismiss = { clearUnplayableTracks = false },
+            onConfirm = { coroutineScope.launch {  Database.unplayableTracksDao().clearAll() }  }
         )
     }
 
@@ -1606,6 +1617,18 @@ fun GeneralSettings(
                             },
                             isEnabled = eventsCount > 0,
                             onClick = { clearEvents = true }
+                        )
+
+                        SettingsEntry(
+                            title = stringResource(R.string.reset_unplayable_tracks),
+                            titleSecondary = stringResource(R.string.clear_unplayable_tracks_summary),
+                            text = if (unplayableTracksCount > 0) {
+                                stringResource(R.string.clear_unplayable_tracks, unplayableTracksCount)
+                            } else {
+                                stringResource(R.string.no_unplayable_tracks)
+                            },
+                            isEnabled = unplayableTracksCount > 0,
+                            onClick = { clearUnplayableTracks = true }
                         )
                     }
                 }

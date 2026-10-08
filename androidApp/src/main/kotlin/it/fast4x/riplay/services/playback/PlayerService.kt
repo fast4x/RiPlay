@@ -130,7 +130,6 @@ import it.fast4x.riplay.utils.SleepTimerListener
 import it.fast4x.riplay.utils.TimerJob
 import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.asMediaItem
-import it.fast4x.riplay.utils.clearWebViewData
 import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.isOfficialContent
@@ -147,9 +146,8 @@ import it.fast4x.riplay.extensions.players.getOnlineMetadata
 import it.fast4x.riplay.cast.ritune.RiTuneCastClient
 import it.fast4x.riplay.cast.ritune.models.RiTuneConnectionStatus
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
-import it.fast4x.riplay.data.Database.Companion.clearOldEmptyQueuedMediaItems
-import it.fast4x.riplay.data.Database.Companion.queuedMediaItems
 import it.fast4x.riplay.data.models.QueuedMediaItem
+import it.fast4x.riplay.data.models.UnplayableTrack
 import it.fast4x.riplay.data.models.defaultQueueId
 import it.fast4x.riplay.enums.AlbumSortBy
 import it.fast4x.riplay.enums.ArtistSortBy
@@ -172,7 +170,6 @@ import it.fast4x.riplay.musicvault.MusicVaultRepository
 import it.fast4x.riplay.musicvault.MusicVaultState
 import it.fast4x.riplay.services.helpers.AudioDRCHelper
 import it.fast4x.riplay.services.helpers.EqualizerHelper
-import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.ui.widgets.PlayerHorizontalWidget
 import it.fast4x.riplay.ui.widgets.PlayerVerticalWidget
 import it.fast4x.riplay.ui.widgets.updateState
@@ -219,6 +216,7 @@ import it.fast4x.riplay.extensions.webdavlibrary.DynamicWebDavAuthInterceptor
 import it.fast4x.riplay.services.playback.common.PlaybackContext
 import it.fast4x.riplay.services.playback.common.PlaybackState
 import it.fast4x.riplay.services.playback.common.PlayerState
+import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.utils.BitmapLoader
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.utils.getDeviceVolume
@@ -321,7 +319,7 @@ class PlayerService : MediaLibraryService(),
 
     var load = true
     @Volatile private var playFromSecond = 0f
-    var lastError: PlayerConstants.PlayerError? = null
+    //var lastError: PlayerConstants.PlayerError? = null
 
     private var onlineListenedDurationMs = 0L
     private var lastOnlineMediaId: String? = null
@@ -469,6 +467,16 @@ class PlayerService : MediaLibraryService(),
     @Volatile var userInitiatedPause = false
 
     private var eqSetupDone = false
+
+    private var consecutivePermanentErrors = 0
+
+    val unplayableIds: StateFlow<Set<String>> =
+        Database.unplayableTracksDao().observeAllIds()
+            .map { it.toSet() }
+            .stateIn(serviceScope, SharingStarted.Eagerly, emptySet())
+
+
+
 
     override fun onBind(intent: Intent?): IBinder {
         return super.onBind(intent) ?: binder
@@ -1244,6 +1252,29 @@ class PlayerService : MediaLibraryService(),
 
     }
 
+    fun nextPlayableIndexAfter(current: Int): Int? {
+        val timeline = hybridPlayer.currentTimeline
+        if (timeline.isEmpty) return null
+
+        val marked = unplayableIds.value
+
+        // REPEAT_MODE_OFF forzato: la ricerca del target-skip deve replicare
+        // esattamente la semantica di seekToNextMediaItem(),
+        // che a sua volta tratta REPEAT_MODE_ONE come se fosse OFF.
+        val shuffled = hybridPlayer.shuffleModeEnabled
+
+        val window = Timeline.Window()
+        var idx = timeline.getNextWindowIndex(current, Player.REPEAT_MODE_OFF, shuffled)
+        var hops = 0
+        while (idx != C.INDEX_UNSET && hops < timeline.windowCount) {
+            timeline.getWindow(idx, window)
+            if (window.mediaItem.mediaId !in marked) return idx
+            idx = timeline.getNextWindowIndex(idx, Player.REPEAT_MODE_OFF, shuffled)
+            hops++
+        }
+        return null   // fine coda, oppure tutte le successive sono marcate
+    }
+
     @ExperimentalCoroutinesApi
     private fun initializeOnlinePlayer(skipAutoload: Boolean = false) {
 
@@ -1315,8 +1346,10 @@ class PlayerService : MediaLibraryService(),
             override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
 
                 //Timber.d("PlayerService LOAD-PENDING onCurrentSecond sec=$second isPlaying = ${_playerState.value.isPlaying} playerState = ${_playerState.value.playbackState}")
-                if(_playerState.value.loadPending.isPending && _playerState.value.isPlaying && (second in  1f..4f )) {
-                  //  Timber.d("PlayerService LOAD-PENDING OnCurrentSecond sec=$second >> firstTimeStarted = $firstTimeStarted << ")
+                //val limit = if (firstTimeStarted) (playFromSecond..playFromSecond + 4f) else (1f..4f)
+                val limit = playFromSecond + 1f..playFromSecond + 4f
+                if(_playerState.value.loadPending.isPending && _playerState.value.isPlaying && (second in limit)) {
+                    Timber.d("PlayerService LOAD-PENDING OnCurrentSecond limit = $limit sec=$second >> firstTimeStarted = $firstTimeStarted << ")
                     setLoadPending(LoadPhase.NONE, "onCurrentSecond")
                 }
 
@@ -1445,7 +1478,7 @@ class PlayerService : MediaLibraryService(),
                     PlayerConstants.PlayerState.PLAYING -> {
                         resumePending = false
 
-                        lastError = null  // reset errore dopo riproduzione riuscita
+                        //lastError = null  // reset errore dopo riproduzione riuscita
                         onlineNearEndTicks = 0
                         Timber.d("PlayerService YT: Evento PLAYING")
 
@@ -1491,6 +1524,9 @@ class PlayerService : MediaLibraryService(),
                 youTubePlayer: YouTubePlayer,
                 error: PlayerConstants.PlayerError
             ) {
+                // Nessun errore può lasciare la sessione "playing"
+                hybridPlayer.youtubePlayWhenReady = false
+                hybridPlayer.invalidateYouTubePlayPause()
 
                 val currentState = _playerState.value
                 _playerState.value = currentState.copy(
@@ -1515,7 +1551,57 @@ class PlayerService : MediaLibraryService(),
                         )
                     }
 
-                clearWebViewData()
+                //clearWebViewData()
+
+                val isNotPlaybalePermanent = error == PlayerConstants.PlayerError.VIDEO_NOT_PLAYABLE_IN_EMBEDDED_PLAYER
+                        || error == PlayerConstants.PlayerError.VIDEO_NOT_FOUND
+
+                if (isNotPlaybalePermanent) {
+                    consecutivePermanentErrors++
+                    if (consecutivePermanentErrors <= 2) {
+
+                        // Marchiamo la traccia come non riproducibile perchè l'errore not playable è permanente
+                        serviceScope.launch {
+                            currentSong.value?.id?.let {
+                                val unplayableTrack = UnplayableTrack(
+                                    videoId = it,
+                                    reason = error.code,
+                                    markedAt = System.currentTimeMillis(),
+                                    markedWhileLoggedIn = isYtLoggedIn()
+                                )
+                                Database.unplayableTracksDao().upsert(unplayableTrack)
+                            }
+                        }
+
+                        Timber.e("PlayerService: permanent error = $error on id = ${currentSong.value?.id}, marked as unplayable")
+
+                        consecutivePermanentErrors = 0  // azzero prima di lanciare la prossima traccia
+                        val title = currentSong.value?.title
+                        SmartMessage(
+                            getString(R.string.skip_unplayable_track_message, title),
+                            PopupType.Warning,
+                            context = this@PlayerService
+                        )
+                        handlePlayNext("onError permanent error = $error")
+                        return
+                    } else {
+                        // Coda interamente non riproducibile?
+                        val nextPlayable = nextPlayableIndexAfter(hybridPlayer.currentMediaItemIndex)
+                        if (nextPlayable == null) {
+                            consecutivePermanentErrors = 0  // non ci sono altre tracce riproducibili azzero
+                            SmartMessage(this@PlayerService.getString(R.string.no_playable_tracks_message),
+                                PopupType.Error,
+                                context = this@PlayerService
+
+                            )
+                            return // Ritorna solo se tutte le tracce successive sono marcate come non riproducibili
+                        }
+                    }
+                }
+
+
+
+                /*
 
                 Timber.e("PlayerService: onError $error")
                 val errorString = when (error) {
@@ -1567,7 +1653,9 @@ class PlayerService : MediaLibraryService(),
                     return
                 }
 
-                lastError = error
+                 */
+
+                //lastError = error
 
                 if (!appSettings.skipMediaOnError) return
                 val prev = hybridPlayer.currentMediaItem ?: return
@@ -1578,7 +1666,9 @@ class PlayerService : MediaLibraryService(),
 //                    exoPlayer.stop()
 //                }
 
-                handlePlayNext("initializeOnlinePlayer.onError")
+                handlePlayNext(
+                    "initializeOnlinePlayer.onError with skip on errore enabled"
+                )
 
                 SmartMessage(
                     message = this@PlayerService.getString(
@@ -2146,16 +2236,16 @@ class PlayerService : MediaLibraryService(),
         mediaItem.let {
 
             if (!it.isLocal){
-                if (!firstTimeStarted) // Non mostro il loader se è il primo avvio, serve solo a precaricare il player online
+                if (!firstTimeStarted) // Ci assicuriamo di Non mostro il loader se è il primo avvio, serve solo a precaricare il player online
                     setLoadPending(LoadPhase.PENDING, "onMediaItemTsransition >> firstTimeStarted = $firstTimeStarted << ")
-                // (forse non è necessario) Ferma ExoPlayer prima di avviare il player online
-                //hybridPlayer.pause()
+
                 exoPlayer.pause()
                 hybridPlayer.switchToYoutube()
+                playFromSecond = 0f // Resettiamo la posizione iniziale perchè passiamo al successivo
 
                 if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                     Timber.d("PlayerService [AYP JS YT-BRIDGE] onMediaItemTransition mediaItem not local video cued id = ${it.mediaId} playFromSecond $playFromSecond")
-                    _internalYouTubePlayer.value?.loadVideo(it.mediaId, playFromSecond)
+                    _internalYouTubePlayer.value?.loadVideo(it.mediaId, 0f) // Si parte sempre dall'inizio perchè è il successivo
                     // Avvia il fade in per il nuovo brano appena parte il play
                     startFadeIn()
                     Timber.d("PlayerService onMediaItemTransition mediaItem not local video cued id = ${it.mediaId} playFromSecond $playFromSecond")
@@ -2969,6 +3059,7 @@ class PlayerService : MediaLibraryService(),
         }
     }
 
+    /*
     suspend fun handleEndOfSong(source: String) {
         isFading = true // blocchiamo il watchdog per il controllo dello stallo per perdita focus
 
@@ -2988,6 +3079,45 @@ class PlayerService : MediaLibraryService(),
             if (isNextLocal) startExoToExoCrossfade() else startWebViewFadeOut()
         } else {
             handlePlayNext("handleEndOfSong chiamato da $source")
+        }
+    }
+     */
+
+    suspend fun handleEndOfSong(source: String) {
+        isFading = true
+        lastWatchdogPosition = -1L
+
+        // I/O fuori dalla finestra (già concordato): fire-and-forget, non blocca il next
+        if (appSettings.forceUserVideoPlayback) {
+            serviceScope.launch {
+                appSettingsManager.updateSettings(appSettings.copy(forceUserVideoPlayback = false))
+            }
+        }
+        if (processQueueRepeat()) return
+
+        // Calcoliamo il prossimo riproducibile controllando tra i non riproducibili
+        val targetIndex = nextPlayableIndexAfter(hybridPlayer.currentMediaItemIndex)
+        if (targetIndex == null) {
+            // Fine coda reale OPPURE tutte le successive marcate, stop onesto non c'è altro da riprodurre
+            if (hybridPlayer.activeEngine == ActiveEngine.YOUTUBE) {
+                hybridPlayer.youtubePlayWhenReady = false
+                hybridPlayer.invalidateYouTubePlayPause()
+            } else {
+                exoPlayer.pause()  // Exo è nativamente in ENDED: basta fermare
+            }
+            isFading = false   // Sblocchiamo il watchdog in modo da non tenerlo disattivato per sempre
+            SmartMessage(getString(R.string.no_playable_tracks_message), PopupType.Warning, context = this@PlayerService)
+            return
+        }
+
+        if (appSettings.crossfadeDuration != CrossfadeDuration.Off) {
+            val isNextLocal = hybridPlayer.getMediaItemAt(targetIndex).isLocal
+            if (isNextLocal) startExoToExoCrossfade(targetIndex) else startWebViewFadeOut(targetIndex)
+        } else {
+            handlePlayNext(
+                "handleEndOfSong chiamato da $source targetIndex = $targetIndex",
+                targetIndex
+            )
         }
     }
 
@@ -3046,7 +3176,7 @@ class PlayerService : MediaLibraryService(),
     }
 
 
-    private fun startExoToExoCrossfade() {
+    private fun startExoToExoCrossfade(targetIndex: Int) {
         fadeInJob?.cancel() // Cancelliamo eventuali fade-in residui
 
         this@PlayerService.serviceScope.launch(Dispatchers.Main) {
@@ -3074,11 +3204,11 @@ class PlayerService : MediaLibraryService(),
             hybridPlayer.setFadeVolume(0f)
 
             Timber.d("PlayerService: Fade Out Exo completato, lancio handlePlayNext()")
-            handlePlayNext("startExoToExoCrossfade")
+            handlePlayNext("startExoToExoCrossfade", targetIndex)
         }
     }
 
-    private fun startWebViewFadeOut() {
+    private fun startWebViewFadeOut(targetIndex: Int) {
         fadeInJob?.cancel()
 
         this@PlayerService.serviceScope.launch(Dispatchers.Main) {
@@ -3097,7 +3227,7 @@ class PlayerService : MediaLibraryService(),
             hybridPlayer.setFadeVolume(0f)
 
             Timber.d("PlayerService: Fade Out WebView completato, lancio handlePlayNext()")
-            handlePlayNext("startWebViewFadeOut")
+            handlePlayNext("startWebViewFadeOut", targetIndex)
         }
     }
 
@@ -3638,6 +3768,8 @@ class PlayerService : MediaLibraryService(),
         val cache: Cache
             get() = this@PlayerService.cache
 
+        val unplayableTracks: StateFlow<Set<String>>
+            get() = this@PlayerService.unplayableIds
 
         val currentMediaItemAsSong: Song?
             get() = this@PlayerService.currentSong.value
@@ -3930,7 +4062,7 @@ class PlayerService : MediaLibraryService(),
         }
     }
 
-    fun handlePlayNext(origine: String? = null) {
+    fun handlePlayNext(origine: String? = null, targetIndex: Int? = null) {
         Timber.d("PlayerService PlaybackWatchdog: handlePlayNext cambio brano richiesto da $origine")
 
         // Se l'utente aveva richiesto la visualizzazione di un video, quando passiamo avanti lo resettiamo
@@ -3946,9 +4078,12 @@ class PlayerService : MediaLibraryService(),
 
         val now = System.currentTimeMillis()
         if (now - lastPlayNextTime < debounceDelayMs) {
-            Timber.d("PlayerService handlePlayNext ignored (too fast) play current")
             isFading = false
-            hybridPlayer.play()
+            Timber.d("PlayerService handlePlayNext ignored (too fast) play current")
+            // play() SOLO se il player è fermo su READY: nessuna transizione in volo
+            if (hybridPlayer.playbackState == Player.STATE_READY && !hybridPlayer.isPlaying) {
+                hybridPlayer.play()
+            }
             return
         }
         lastPlayNextTime = now
@@ -3965,7 +4100,13 @@ class PlayerService : MediaLibraryService(),
                 // USO IL PLAYER REALE SOTTOSTANTE (exoPlayer)
                 // per eseguire il vero salto atomico nella timeline di Media3,
                 // bypassando l'override di HybridPlayer ed evitando il loop!
-                exoPlayer.seekToNextMediaItem()
+                // Va considerato l'eventuale index specificato dall'eventuale errore permanente di unplayable
+                // Se l'index non viene passato, si va al successivo mediaitem
+                if (targetIndex != null) {
+                    exoPlayer.seekToDefaultPosition(targetIndex)   // salta DOVE viene indicato come riproducibile
+                } else {
+                    exoPlayer.seekToNextMediaItem()
+                }
             }
         }
     }
