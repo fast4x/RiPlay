@@ -20,6 +20,7 @@ import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
 import androidx.media3.session.SessionCommand
+import androidx.media3.session.SessionCommands
 import androidx.media3.session.SessionResult
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
@@ -115,56 +116,74 @@ class MediaLibraryServiceCallback(
 
         HybridPlayer.CommandTracker.set(controller) // Tracciamo il controller
 
-        val connectionResult = super.onConnect(session, controller)
+        // intercettiamo il controller delle notifiche di sistema.
+        val baseSessionCommands: SessionCommands
+        val basePlayerCommands: Player.Commands
 
+        if (session.isMediaNotificationController(controller)) {
+            // Se è il controller della notifica, diamo i comandi predefiniti completi per sbloccarlo
+            baseSessionCommands = MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS
+            basePlayerCommands = MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS
+        } else {
+            // Per tutti gli altri (UI, Android Auto, ecc.) usiamo la logica standard
+            val connectionResult = super.onConnect(session, controller)
+            baseSessionCommands = connectionResult.availableSessionCommands
+            basePlayerCommands = connectionResult.availablePlayerCommands
+        }
+
+        // Costruiamo i Session Commands estendendo la base identificata sopra
+        // Il layout lo passiamo in onPostConnect
         val availableCustomSessionCommands = NotificationButtons.entries.map { it.sessionCommand }
-        val availableSessionCommands = connectionResult.availableSessionCommands.buildUpon()
+        val availableSessionCommands = baseSessionCommands.buildUpon()
             // Abilitiamo esplicitamente il comando di ricerca per Android Auto
             .add(SessionCommand.COMMAND_CODE_LIBRARY_SEARCH)
             // Abilitiamo i comandi custom per Android Auto
             .addSessionCommands(availableCustomSessionCommands)
             .build()
 
-        // Creiamo la configurazione dei pulsanti grafici (Custom Layout) per Android Auto
-        val customLayout =
-            NotificationButtons.entries
-                .map {
-                    // Recuperiamo l'ID risorsa drawable corretto (es. R.drawable.my_icon)
-                    val iconResId = it.getStateIcon(
-                        it,
-                        session.player.currentMediaItem?.asSong?.likedAt,
-                        session.player.repeatMode,
-                        session.player.shuffleModeEnabled
-                    )
-                    CommandButton.Builder(CommandButton.ICON_UNDEFINED)
-                        .setSessionCommand(it.sessionCommand)
-                        .setDisplayName(it.name)
-                        .setCustomIconResId(iconResId)
-                        .setEnabled(true)
-                        .build()
-                }
-
-
-        val availablePlayerCommands = connectionResult.availablePlayerCommands.buildUpon()
+        // Costruiamo i Player Commands estendendo la base identificata sopra
+        val availablePlayerCommands = basePlayerCommands.buildUpon()
             .add(Player.COMMAND_SET_MEDIA_ITEM)
             .add(Player.COMMAND_CHANGE_MEDIA_ITEMS)
             .add(Player.COMMAND_PLAY_PAUSE)
             .add(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM)
             .build()
 
-
-
-        val result = MediaSession.ConnectionResult.AcceptedResultBuilder(session)
-            .setAvailableSessionCommands(availableSessionCommands)
-            .setAvailablePlayerCommands(availablePlayerCommands)
-            .setCustomLayout(customLayout)
-            .build()
+        // Usiamo il nuovo approccio introdotto nelle ultime release di Media3
+        val result = MediaSession.ConnectionResult.accept(
+            availableSessionCommands,
+            availablePlayerCommands
+        )
 
         HybridPlayer.CommandTracker.clear()
 
         return result
+    }
 
+    override fun onPostConnect(session: MediaSession, controller: MediaSession.ControllerInfo) {
+        super.onPostConnect(session, controller)
 
+        // Creiamo il Custom Layout leggendo i pulsanti grafici
+        // dopo la connessione al controller in onConnect
+        val customLayout = NotificationButtons.entries.map {
+            val iconResId = it.getStateIcon(
+                it,
+                session.player.currentMediaItem?.asSong?.likedAt,
+                session.player.repeatMode,
+                session.player.shuffleModeEnabled
+            )
+            CommandButton.Builder(CommandButton.ICON_UNDEFINED)
+                .setSessionCommand(it.sessionCommand)
+                .setDisplayName(it.name)
+                .setCustomIconResId(iconResId)
+                .setEnabled(true)
+                .build()
+        }
+
+        // Inviamo il layout grafico personalizzato al controller appena connesso
+        if (customLayout.isNotEmpty()) {
+            session.setCustomLayout(controller, customLayout)
+        }
     }
 
 

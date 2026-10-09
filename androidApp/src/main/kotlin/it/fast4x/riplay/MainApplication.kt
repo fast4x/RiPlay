@@ -11,8 +11,8 @@ import coil.disk.DiskCache
 import coil.memory.MemoryCache
 import coil.request.CachePolicy
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.data.DatabaseInitializer
 import it.fast4x.riplay.enums.CoilDiskCacheMaxSize
+import it.fast4x.riplay.extensions.appforegroundtracker.AppForegroundTracker
 import it.fast4x.riplay.extensions.appviewmodel.AppViewModel
 import it.fast4x.riplay.extensions.appviewmodel.models.NetworkConnectivity
 import it.fast4x.riplay.extensions.appviewmodel.observeNetworkType
@@ -104,6 +104,7 @@ class MainApplication : Application(), ImageLoaderFactory {
         )
 
         Dependencies.init(this)
+        AppForegroundTracker.init(this)
 
         // Inizializza le impostazioni di app ed aspetto
         runBlocking {

@@ -319,6 +319,20 @@ class HybridPlayer (
 
     override fun setPlayWhenReady(playWhenReady: Boolean) {
         val azione = if (playWhenReady) "PLAY" else "PAUSA"
+        tracciaSorgenteComando("HybridPlayer setPlayWhenReady <- $azione")
+
+        when (activeEngine) {
+            ActiveEngine.YOUTUBE -> {
+                if (playWhenReady) youtubeControl.play() else youtubeControl.pause()
+            }
+            ActiveEngine.EXOPLAYER -> super.setPlayWhenReady(playWhenReady)
+        }
+
+    }
+
+    /*
+    override fun setPlayWhenReady(playWhenReady: Boolean) {
+        val azione = if (playWhenReady) "PLAY" else "PAUSA"
         tracciaSorgenteComando("HybridPlayer setPlayWhenReady -> $azione")
 
         if (activeEngine == ActiveEngine.YOUTUBE) {
@@ -350,6 +364,9 @@ class HybridPlayer (
             super.setPlayWhenReady(playWhenReady)
         }
     }
+
+     */
+
 
 
     override fun getAvailableCommands(): Player.Commands {

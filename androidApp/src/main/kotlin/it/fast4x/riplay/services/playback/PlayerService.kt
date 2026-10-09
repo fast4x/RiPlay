@@ -13,6 +13,7 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.IntentFilter
+import android.content.pm.ServiceInfo
 import android.database.SQLException
 import android.graphics.Bitmap
 import android.graphics.Color
@@ -159,6 +160,7 @@ import it.fast4x.riplay.enums.PlaylistSongSortBy
 import it.fast4x.riplay.enums.PlaylistSortBy
 import it.fast4x.riplay.enums.SongSortBy
 import it.fast4x.riplay.enums.SortOrder
+import it.fast4x.riplay.extensions.appforegroundtracker.AppForegroundTracker
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.models.DiscoveryInfo
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.service.RelatedItemsService
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.service.SongEnricherService
@@ -593,6 +595,30 @@ class PlayerService : MediaLibraryService(),
         }
     }
 
+    private fun startForegroundPlaceholder() {
+        // Se l'app è già in foreground non facciamo nulla
+        if (AppForegroundTracker.isAppInForeground) return
+
+        // Media3 dalla versione 1.11.1 ha probabilmente un bug con il foreground service automatico
+        // gestito dal suo default notification media provider
+        // Molto spesso non richiede il permesso di foreground service per far funzionare correttamente il playback
+        // Con questo metodo ci assicuriamo che venga richiesto il permesso di foreground service
+        val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+            .setContentTitle(getString(R.string.riplay_app_name))
+            .setSmallIcon(R.drawable.app_icon)
+            .setOngoing(true)
+            .build()
+        if (isAtLeastAndroid10) {
+            startForeground(
+                NOTIFICATION_ID, notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+            )
+        } else {
+            startForeground(NOTIFICATION_ID, notification)
+        }
+
+        Timber.d("PlayerService FGS placeholder avviato prima del playback")
+    }
 
     @kotlin.OptIn(ExperimentalSerializationApi::class, ExperimentalCoroutinesApi::class)
     private fun setupPersistentQueueAndObservers() {
@@ -737,14 +763,27 @@ class PlayerService : MediaLibraryService(),
     }
 
 
-
     @UnstableApi
     override fun onUpdateNotification(session: MediaSession, startInForegroundRequired: Boolean) {
-        // Forziamo startInForegroundRequired a true quando il player è effettivamente in riproduzione
-        // Questo risolve i bug legati alle notifiche invisibili o "congelate" nel system_server
-        val forceForeground = hybridPlayer.isPlaying || startInForegroundRequired
-        super.onUpdateNotification(session, forceForeground)
+        // MAI degradare ciò che media3 richiede; solo potenziare.
+        // Il foreground serve anche DURANTE il load, se l'intento è di suonare:
+        val state = _playerState.value.playbackState
+        val wantsForeground = hybridPlayer.playWhenReady &&
+                state != PlaybackState.IDLE &&
+                state != PlaybackState.ENDED
+//                hybridPlayer.playbackState != Player.STATE_IDLE &&
+//                hybridPlayer.playbackState != Player.STATE_ENDED
+
+        super.onUpdateNotification(session, startInForegroundRequired || wantsForeground)
     }
+
+//    @UnstableApi
+//    override fun onUpdateNotification(session: MediaSession, startInForegroundRequired: Boolean) {
+//        // Forziamo startInForegroundRequired a true quando il player è effettivamente in riproduzione
+//        // Questo risolve i bug legati alle notifiche invisibili o "congelate" nel system_server
+//        val forceForeground = hybridPlayer.isPlaying || startInForegroundRequired
+//        super.onUpdateNotification(session, forceForeground)
+//    }
 
 
     fun loadInitialSettingsFromDatabase(){
@@ -827,7 +866,11 @@ class PlayerService : MediaLibraryService(),
         }
     }
 
-    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo) = mediaLibrarySession
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? {
+        Timber.d("PlayerService onGetSession controllerInfo = $controllerInfo mediaLibrarySession = $mediaLibrarySession")
+
+        return mediaLibrarySession
+    }
 
     @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -2242,6 +2285,8 @@ class PlayerService : MediaLibraryService(),
                 exoPlayer.pause()
                 hybridPlayer.switchToYoutube()
                 playFromSecond = 0f // Resettiamo la posizione iniziale perchè passiamo al successivo
+
+                startForegroundPlaceholder()
 
                 if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
                     Timber.d("PlayerService [AYP JS YT-BRIDGE] onMediaItemTransition mediaItem not local video cued id = ${it.mediaId} playFromSecond $playFromSecond")
