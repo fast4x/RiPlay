@@ -2397,12 +2397,6 @@ class PlayerService : MediaLibraryService(),
 
     }
 
-    override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-//        if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) {
-//            updateMediaSessionQueue(timeline, exoPlayer.currentMediaItemIndex)
-//        }
-    }
-
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
         super.onPlayWhenReadyChanged(playWhenReady, reason)
 
@@ -2433,24 +2427,6 @@ class PlayerService : MediaLibraryService(),
         } catch (e: Exception) {
             Timber.w("PlayerEvent Failed to record event: ${e.message}")
         }
-    }
-
-    private fun updateMediaSessionQueue(timeline: Timeline, activeIndex: Int) {
-        val queueItems = mutableListOf<MediaSessionCompat.QueueItem>()
-        val window = Timeline.Window()
-
-        for (i in 0 until timeline.windowCount) {
-            timeline.getWindow(i, window)
-            val mediaItem = window.mediaItem
-            val description = MediaDescriptionCompat.Builder()
-                .setMediaId(mediaItem.mediaId)
-                .setTitle(mediaItem.mediaMetadata.title)
-                .setSubtitle(mediaItem.mediaMetadata.artist)
-                .build()
-
-            queueItems.add(MediaSessionCompat.QueueItem(description, i.toLong()))
-        }
-
     }
 
     private fun maybeProcessRadio(reason: Int) {
