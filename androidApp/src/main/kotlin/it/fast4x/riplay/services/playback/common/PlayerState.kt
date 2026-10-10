@@ -5,7 +5,7 @@ import it.fast4x.riplay.enums.LoadPhase
 import it.fast4x.riplay.enums.QueueLoopType
 
 data class PlayerState(
-    val playbackState: PlaybackState = PlaybackState.IDLE,
+    val playbackState: PlaybackState = PlaybackState.PAUSED,
     val mediaInfo: MediaInfo? = null,
     val settings: PlayerSettings = PlayerSettings(),
     val errorMessage: String? = null,

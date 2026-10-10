@@ -769,8 +769,7 @@ class PlayerService : MediaLibraryService(),
         // Il foreground serve anche DURANTE il load, se l'intento è di suonare:
         val state = _playerState.value.playbackState
         val wantsForeground = hybridPlayer.playWhenReady &&
-                state != PlaybackState.IDLE &&
-                state != PlaybackState.ENDED
+                state != PlaybackState.IDLE //&& state != PlaybackState.ENDED
 //                hybridPlayer.playbackState != Player.STATE_IDLE &&
 //                hybridPlayer.playbackState != Player.STATE_ENDED
 
@@ -1278,6 +1277,9 @@ class PlayerService : MediaLibraryService(),
                 ),
             )
             .setBitmapLoader(customBitmapLoader)
+            // DISABILITA gli aggiornamenti di posizione automatici troppo frequenti
+            // che causano il freeze della coda su Android Auto nelle ultime release
+            .setPeriodicPositionUpdateEnabled(false)
             .build()
 
         // Keep a connected controller so maybe that notification works
@@ -1798,10 +1800,10 @@ class PlayerService : MediaLibraryService(),
             PlayerConstants.PlayerState.PLAYING -> currentState.copy(playbackState = PlaybackState.PLAYING)
             PlayerConstants.PlayerState.UNSTARTED -> currentState.copy(playbackState = PlaybackState.UNSTARTED)
             PlayerConstants.PlayerState.PAUSED,
-            PlayerConstants.PlayerState.VIDEO_CUED -> currentState.copy(playbackState = PlaybackState.PAUSED)
+            PlayerConstants.PlayerState.VIDEO_CUED,
+            PlayerConstants.PlayerState.UNKNOWN -> currentState.copy(playbackState = PlaybackState.PAUSED)
             PlayerConstants.PlayerState.ENDED -> currentState.copy(playbackState = PlaybackState.ENDED)
             PlayerConstants.PlayerState.BUFFERING -> currentState.copy(playbackState = PlaybackState.BUFFERING)
-            PlayerConstants.PlayerState.UNKNOWN -> currentState.copy(playbackState = PlaybackState.IDLE)
         }
 
         updateWidgetState()
@@ -2396,9 +2398,9 @@ class PlayerService : MediaLibraryService(),
     }
 
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-        if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) {
-            updateMediaSessionQueue(timeline, exoPlayer.currentMediaItemIndex)
-        }
+//        if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) {
+//            updateMediaSessionQueue(timeline, exoPlayer.currentMediaItemIndex)
+//        }
     }
 
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {

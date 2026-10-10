@@ -120,8 +120,8 @@ class MediaLibraryServiceCallback(
         val baseSessionCommands: SessionCommands
         val basePlayerCommands: Player.Commands
 
-        if (session.isMediaNotificationController(controller)) {
-            // Se è il controller della notifica, diamo i comandi predefiniti completi per sbloccarlo
+        if (session.isMediaNotificationController(controller) || controller.isTrusted) {
+            // Assegniamo i set completi comprensivi dei comandi per la Library (essenziali per il Root di Android Auto)
             baseSessionCommands = MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS
             basePlayerCommands = MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS
         } else {
@@ -147,6 +147,8 @@ class MediaLibraryServiceCallback(
             .add(Player.COMMAND_CHANGE_MEDIA_ITEMS)
             .add(Player.COMMAND_PLAY_PAUSE)
             .add(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM)
+            // FONDAMENTALE PER ANDROID AUTO: Consente l'accesso e la lettura della coda
+            .add(Player.COMMAND_GET_TIMELINE)
             .build()
 
         // Usiamo il nuovo approccio introdotto nelle ultime release di Media3
@@ -160,6 +162,7 @@ class MediaLibraryServiceCallback(
         return result
     }
 
+    /* Frizza AA non è indicato almeno per ora
     override fun onPostConnect(session: MediaSession, controller: MediaSession.ControllerInfo) {
         super.onPostConnect(session, controller)
 
@@ -184,7 +187,11 @@ class MediaLibraryServiceCallback(
         if (customLayout.isNotEmpty()) {
             session.setCustomLayout(controller, customLayout)
         }
+
+
     }
+
+     */
 
 
     override fun onGetLibraryRoot(
@@ -778,14 +785,12 @@ class MediaLibraryServiceCallback(
     ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> =
         playerService.serviceScope.future {
             Timber.d("MediaLibraryCallback onSetMediaItems")
-            // 1. Verifichiamo se la richiesta proviene da una ricerca vocale (Google Assistant)
-            // Se c'è una searchQuery, significa che l'utente ha pronunciato un testo
+
+            // Verifichiamo se la richiesta proviene da una ricerca vocale (Google Assistant)
             val firstItem = mediaItems.firstOrNull()
-            //val searchQuery = firstItem?.requestMetadata?.searchQuery
             val extras = firstItem?.requestMetadata?.extras
 
-            val defaultResult =
-                MediaItemsWithStartPosition(emptyList(), startIndex, startPositionMs)
+            val defaultResult = MediaItemsWithStartPosition(emptyList(), startIndex, startPositionMs)
             val voiceAssistantQuery = mediaItems.firstOrNull()?.requestMetadata?.searchQuery
 
             val data = if (!voiceAssistantQuery.isNullOrBlank()) {
@@ -796,15 +801,11 @@ class MediaLibraryServiceCallback(
 
             val idToPlay = data.getOrNull(1) ?: ""
 
-
-
-
             when (data.firstOrNull()) {
                 MediaId.SEARCHED -> {
                     val cleanQuery = voiceAssistantQuery?.trim()
 
                     if (cleanQuery?.isNotBlank() == true) {
-
                         if (extras != null) {
                             val isArtistRequest = extras.containsKey(android.provider.MediaStore.EXTRA_MEDIA_ARTIST)
                             val isAlbumRequest = extras.containsKey(android.provider.MediaStore.EXTRA_MEDIA_ALBUM)
@@ -812,40 +813,63 @@ class MediaLibraryServiceCallback(
                             when {
                                 isArtistRequest -> {
                                     val artistName = extras.getString(android.provider.MediaStore.EXTRA_MEDIA_ARTIST)
-                                    // Esegui una query mirata solo sulla colonna degli Artisti
                                     Timber.d("MediaLibraryCallback onSetMediaItems from voice artistName $artistName")
                                 }
                                 isAlbumRequest -> {
                                     val albumTitle = extras.getString(android.provider.MediaStore.EXTRA_MEDIA_ALBUM)
-                                    // Esegui una query mirata solo sulla colonna degli Album
                                     Timber.d("MediaLibraryCallback onSetMediaItems from voice albumTitle $albumTitle")
                                 }
                             }
                         }
-                        // 2. L'utente ha cercato un brano specifico (es: "Riproduci brano X")
+                        // L'utente ha cercato un brano specifico
                         val songs = Database.songDao().getSongsByTitleLike(cleanQuery, limit = 50)
                         Timber.d("MediaLibraryCallback onSetMediaItems from voice songs ${songs.size}")
                         if (songs.isNotEmpty()) {
-                            // Restituiamo i brani trovati convertiti in MediaItem
                             return@future MediaItemsWithStartPosition(songs.map { it.asMediaItem }, startIndex, startPositionMs)
                         }
                     }
 
-                    // 3. FALLBACK CASUALE (Se la ricerca non produce risultati o la query è vuota / "metti musica")
-                    // Recuperiamo i brani locali/casuali per non lasciare l'auto in silenzio totale
+                    // FALLBACK CASUALE
                     val fallbackSongs = Database.songDao().getSongsWithGenres(50)
                     return@future MediaItemsWithStartPosition(fallbackSongs.map { it.asMediaItem }.toMutableList(), startIndex, startPositionMs)
                 }
             }
 
-            val safeStartIndex = currentSongsListContext.indexOfFirst { it.id == idToPlay }.takeIf { it != -1 } ?: 0
+            // Calcoliamo l'indice di partenza iniziale basato sul contesto attuale dei brani
+            var safeStartIndex = currentSongsListContext.indexOfFirst { it.id == idToPlay }.takeIf { it != -1 } ?: 0
 
             Timber.d("MediaLibraryCallback onSetMediaItems data = $data idToPlay = $idToPlay currentBrowseContext ${currentSongsListContext.map { it.id }} safeStartIndex = $safeStartIndex startIndex = $startIndex startPositionMs = $startPositionMs")
 
-            return@future MediaItemsWithStartPosition(currentSongsListContext.map { it.asMediaItem }, safeStartIndex, startPositionMs)
+            // Mappiamo l'intera lista iniziale in oggetti MediaItem
+            var finalMediaItems = currentSongsListContext.map { it.asMediaItem }
 
+            // --- INIZIO INTEGRAZIONE GESTIONE CODA ANDROID AUTO DA MEDIA3 1.11.1 ---
+            if (controller.isTrusted) {
+                val maxItemsAllowed = 50 // Limite ideale per evitare il lag IPC
+                val totalItems = finalMediaItems.size
 
+                if (totalItems > maxItemsAllowed) {
+                    // Teniamo una finestra di 15 brani passati per consentire lo skip all'indietro
+                    val itemsBefore = 15
+
+                    // Calcoliamo la sotto-finestra senza uscire dai confini della lista
+                    val newStart = (safeStartIndex - itemsBefore).coerceIn(0, totalItems - maxItemsAllowed)
+                    val newEnd = newStart + maxItemsAllowed
+
+                    // Ritagliamo fisicamente la lista per liberare il thread principale dell'emulatore/dispositivo
+                    finalMediaItems = finalMediaItems.subList(newStart, newEnd)
+
+                    // Sincronizziamo il safeStartIndex riposizionandolo all'interno della nuova sotto-lista
+                    safeStartIndex -= newStart
+
+                    Timber.d("Android Auto intercettato: Coda ridotta a ${finalMediaItems.size} elementi. Nuovo safeStartIndex = $safeStartIndex")
+                }
+            }
+            // --- FINE INTEGRAZIONE GESTIONE CODA ANDROID AUTO ---
+
+            return@future MediaItemsWithStartPosition(finalMediaItems, safeStartIndex, startPositionMs)
         }
+
 
     override fun onSearch(
         session: MediaLibrarySession,
