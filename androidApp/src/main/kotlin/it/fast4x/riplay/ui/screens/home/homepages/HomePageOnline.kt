@@ -79,6 +79,7 @@ import kotlinx.coroutines.launch
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.extensions.rewind.HomepageRewind
+import it.fast4x.riplay.extensions.smoothloader.Loader
 import it.fast4x.riplay.ui.components.themed.ChipItemColored
 import it.fast4x.riplay.ui.components.themed.MoodItemColored
 import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenu
@@ -655,7 +656,7 @@ fun HomePageOnline(
 
                         }
                     }
-                }
+                } ?: Loader() // Se homepage è vuota visualizziamo il loader
 
                 /****** END HOMEPAGE CONTENT *******/
 
