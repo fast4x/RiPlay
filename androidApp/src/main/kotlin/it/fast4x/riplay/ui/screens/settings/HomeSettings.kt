@@ -20,7 +20,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
-import it.fast4x.riplay.enums.HomePagetype
+import it.fast4x.riplay.enums.HomePageMode
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.styling.Dimensions
@@ -96,6 +96,8 @@ fun  HomeSettings(
 
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.homepage_type),
+                            titleSecondary = homePageType.summaryText,
+                            text = homePageType.descriptionText,
                             selectedValue = homePageType,
                             onValueSelected = {
                                 coroutineScope.launch {
@@ -119,66 +121,84 @@ fun  HomeSettings(
                         )
                          */
 
-                        SwitchSettingEntry(
-                            title = "${stringResource(R.string.show)} ${stringResource(R.string.quick_picks)}",
-                            text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
-                                R.string.tips
-                            ),
-                            isChecked = showTips,
-                            onCheckedChange = {
-                                coroutineScope.launch {
-                                    val new = appSettingsManager.activeSettings.value.copy(showTips = it)
-                                    appSettingsManager.updateSettings(new)
-                                }
-                            }
-                        )
-
-                        SwitchSettingEntry(
-                            title = "${stringResource(R.string.show)} ${stringResource(R.string.new_albums_of_your_artists)}",
-                            text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
-                                R.string.new_albums_of_your_artists
-                            ),
-                            isChecked = showNewAlbumsArtists,
-                            onCheckedChange = {
-                                coroutineScope.launch {
-                                    val new = appSettingsManager.activeSettings.value.copy(showNewAlbumsArtists = it)
-                                    appSettingsManager.updateSettings(new)
-                                }
-                            }
-                        )
-
-                        SwitchSettingEntry(
-                            title = "${stringResource(R.string.show)} ${stringResource(R.string.new_albums)}",
-                            text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
-                                R.string.new_albums
-                            ),
-                            isChecked = showNewAlbums,
-                            onCheckedChange = {
-                                coroutineScope.launch {
-                                    val new = appSettingsManager.activeSettings.value.copy(showNewAlbums = it)
-                                    appSettingsManager.updateSettings(new)
-                                }
-                            }
-                        )
-
-                        SwitchSettingEntry(
-                            title = "${stringResource(R.string.show)} ${stringResource(R.string.moods_and_genres)}",
-                            text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
-                                R.string.moods_and_genres
-                            ),
-                            isChecked = showMoodsAndGenres,
-                            onCheckedChange = {
-                                coroutineScope.launch {
-                                    val new = appSettingsManager.activeSettings.value.copy(showMoodAndGenres = it)
-                                    appSettingsManager.updateSettings(new)
-                                }
-                            }
-                        )
-
+                        /*
                         AnimatedVisibility(
-                            visible = homePageType == HomePagetype.Extended,
+                            visible = homePageType == HomePageMode.Local,
                         ) {
                             Column {
+                                SettingsDescription(stringResource(R.string.homepage_local_hint))
+                            }
+                        }
+
+                         */
+
+                        AnimatedVisibility(
+                            visible = homePageType == HomePageMode.Mixed,
+                        ) {
+                            Column {
+
+                                SwitchSettingEntry(
+                                    title = "${stringResource(R.string.show)} ${stringResource(R.string.quick_picks)}",
+                                    text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
+                                        R.string.tips
+                                    ),
+                                    isChecked = showTips,
+                                    onCheckedChange = {
+                                        coroutineScope.launch {
+                                            val new = appSettingsManager.activeSettings.value.copy(showTips = it)
+                                            appSettingsManager.updateSettings(new)
+                                        }
+                                    }
+                                )
+
+
+
+                                SwitchSettingEntry(
+                                    title = "${stringResource(R.string.show)} ${stringResource(R.string.new_albums_of_your_artists)}",
+                                    text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
+                                        R.string.new_albums_of_your_artists
+                                    ),
+                                    isChecked = showNewAlbumsArtists,
+                                    onCheckedChange = {
+                                        coroutineScope.launch {
+                                            val new = appSettingsManager.activeSettings.value.copy(showNewAlbumsArtists = it)
+                                            appSettingsManager.updateSettings(new)
+                                        }
+                                    }
+                                )
+
+                                SwitchSettingEntry(
+                                    title = "${stringResource(R.string.show)} ${stringResource(R.string.new_albums)}",
+                                    text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
+                                        R.string.new_albums
+                                    ),
+                                    isChecked = showNewAlbums,
+                                    onCheckedChange = {
+                                        coroutineScope.launch {
+                                            val new = appSettingsManager.activeSettings.value.copy(showNewAlbums = it)
+                                            appSettingsManager.updateSettings(new)
+                                        }
+                                    }
+                                )
+
+
+                                SwitchSettingEntry(
+                                    title = "${stringResource(R.string.show)} ${stringResource(R.string.moods_and_genres)}",
+                                    text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
+                                        R.string.moods_and_genres
+                                    ),
+                                    isChecked = showMoodsAndGenres,
+                                    onCheckedChange = {
+                                        coroutineScope.launch {
+                                            val new = appSettingsManager.activeSettings.value.copy(showMoodAndGenres = it)
+                                            appSettingsManager.updateSettings(new)
+                                        }
+                                    }
+                                )
+
+
+
+
                                 SwitchSettingEntry(
                                     title = "${stringResource(R.string.show)} ${stringResource(R.string.charts)}",
                                     text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(

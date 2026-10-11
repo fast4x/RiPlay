@@ -94,7 +94,7 @@ import timber.log.Timber
 @kotlin.OptIn(ExperimentalAnimationApi::class, ExperimentalTextApi::class)
 @ExperimentalSerializationApi
 @Composable
-fun HomePageExtendedSections(
+fun HomePageMixedSections(
     navController: NavController,
     showListenerLevels: Boolean,
     showTips: Boolean,

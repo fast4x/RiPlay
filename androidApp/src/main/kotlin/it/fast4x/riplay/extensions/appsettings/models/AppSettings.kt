@@ -20,7 +20,7 @@ import it.fast4x.riplay.enums.EqualizerType
 import it.fast4x.riplay.enums.FontType
 import it.fast4x.riplay.enums.HistoryType
 import it.fast4x.riplay.enums.HomeItemSize
-import it.fast4x.riplay.enums.HomePagetype
+import it.fast4x.riplay.enums.HomePageMode
 import it.fast4x.riplay.enums.HomeType
 import it.fast4x.riplay.enums.ImportPlaylistType
 import it.fast4x.riplay.enums.Languages
@@ -157,7 +157,7 @@ data class AppSettings(
     val showMoodAndGenres: Boolean = true,
     val showMonthlyPlaylistInQuickPicks: Boolean = true,
     val showCharts: Boolean = true,
-    val homePageType: HomePagetype = HomePagetype.Classic,
+    val homePageType: HomePageMode = HomePageMode.Online,
     val logDebugEnabled: Boolean = false,
     val musicVaultEnabled: Boolean = false,
     val musicVaultDisclaimerAccepted: Boolean = false,

@@ -86,6 +86,7 @@ import it.fast4x.riplay.utils.isRelated
 import it.fast4x.riplay.utils.isSpotifyTrack
 import it.fast4x.riplay.utils.isWebDav
 import kotlinx.serialization.ExperimentalSerializationApi
+import timber.log.Timber
 
 
 @UnstableApi
@@ -97,11 +98,13 @@ fun SongItem(
     modifier: Modifier = Modifier,
     thumbnailContent: (@Composable BoxScope.() -> Unit)? = null,
 ) {
+    val mediaItem = song.asMediaItem
+    //Timber.d("SongItem: ${mediaItem.asSong}")
     SongItem(
         thumbnailUrl = song.thumbnail?.size(thumbnailSizePx),
         thumbnailSizeDp = thumbnailSizeDp,
         modifier = modifier,
-        mediaItem = song.asMediaItem,
+        mediaItem = mediaItem,
         onThumbnailContent = thumbnailContent,
     )
 }
@@ -331,7 +334,7 @@ fun SongItem(
         thumbnailSizeDp = thumbnailSizeDp,
         modifier = modifier
             .padding(end = 8.dp)
-            .applyIf(isUnplayableTrack){
+            .applyIf(isUnplayableTrack) {
                 background(colorPalette.red.copy(alpha = 0.55f), shape) // Rosso tenue non stancante
             }
             .applyIf(isNowPlaying) {
@@ -905,9 +908,10 @@ fun SongItemPlaceholder( thumbnailSizeDp: Dp ) {
             )
     ) {
         Box(
-            Modifier.size( thumbnailSizeDp )
-                    .clip( getRoundnessShape() )
-                    .shimmerEffect()
+            Modifier
+                .size(thumbnailSizeDp)
+                .clip(getRoundnessShape())
+                .shimmerEffect()
         )
 
         Column(
@@ -923,20 +927,26 @@ fun SongItemPlaceholder( thumbnailSizeDp: Dp ) {
                     style = typography().xs.semiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight( 1f ).shimmerEffect()
+                    modifier = Modifier
+                        .weight(1f)
+                        .shimmerEffect()
                 )
             }
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Box( Modifier.weight( 1f ).fillMaxWidth() ) {
+                Box( Modifier
+                    .weight(1f)
+                    .fillMaxWidth() ) {
                     BasicText(
                         text = "",
                         style = typography().xs.semiBold.secondary,
                         maxLines = 1,
                         overflow = TextOverflow.Clip,
-                        modifier = Modifier.fillMaxWidth( .3f ).shimmerEffect()
+                        modifier = Modifier
+                            .fillMaxWidth(.3f)
+                            .shimmerEffect()
                     )
                 }
 

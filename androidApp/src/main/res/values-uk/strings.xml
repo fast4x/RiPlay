@@ -1504,4 +1504,14 @@
     <string name="do_you_really_want_to_clear_all_unplayable_tracks">Do you really want to clear all unplayable tracks?</string>
     <string name="no_unplayable_tracks">No unplayable tracks</string>
     <string name="clear_unplayable_tracks_summary">Tracks stay in your library and playlists — only the markers are removed. Marked tracks will be retried during playback and marked again if still unavailable.</string>
+    <string name="homepage_online">Online</string>
+    <string name="homepage_mixed">Mixed</string>
+    <string name="homepage_local">Local</string>
+    <string name="homepage_online_summary">The same sections as the YouTube Music home</string>
+    <string name="homepage_mixed_summary">A mix of online and local sections, customizable</string>
+    <string name="homepage_local_summary">Your library only, no remote content</string>
+    <string name="homepage_online_description">The home feed is generated entirely from YouTube Music data: sections, content, and order match the official app. Sections cannot be customized.</string>
+    <string name="homepage_mixed_description">The home feed combines YouTube Music sections with blocks built from your local content. Any section can be removed, leaving only what you actually use.</string>
+    <string name="homepage_local_description">The home feed is built exclusively from your library: songs, albums, and playlists stored on your device. No section comes from YouTube Music.</string>
+    <string name="homepage_local_hint">Tip: pair with Offline mode for a fully disconnected experience</string>
 </resources>

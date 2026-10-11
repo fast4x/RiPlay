@@ -1503,4 +1503,15 @@
     <string name="do_you_really_want_to_clear_all_unplayable_tracks">Vuoi realmente pulire tutte le tracce non riproducibili?</string>
     <string name="no_unplayable_tracks">Nessuna traccia marcata come non riproducibile</string>
     <string name="clear_unplayable_tracks_summary">Le tracce restano nella libreria e nelle playlist: vengono rimossi solo i contrassegni. Le tracce contrassegnate verranno ritentate durante la riproduzione e riccontrassegnate automaticamente se risultano ancora non disponibili.</string>
+    <string name="homepage_online">Online</string>
+    <string name="homepage_mixed">Mixed</string>
+    <string name="homepage_local">Local</string>
+    <string name="homepage_online_summary">Le stesse sezioni della home di YouTube Music</string>
+    <string name="homepage_mixed_summary">Mix di sezioni online e locali, personalizzabile</string>
+    <string name="homepage_local_summary">Solo la tua libreria, nessun contenuto remoto</string>
+    <string name="homepage_online_description">La home è generata interamente dai dati di YouTube Music: sezioni, contenuto e ordine coincidono con quelli dell\'app ufficiale. Le sezioni non sono personalizzabili.</string>
+    <string name="homepage_mixed_description">La home combina le sezioni di YouTube Music con blocchi costruiti sui tuoi contenuti locali. Ogni sezione può essere rimossa, per lasciare solo ciò che usi davvero.</string>
+    <string name="homepage_local_description">La home è costruita esclusivamente con i contenuti della tua libreria: brani, album e playlist salvati sul dispositivo. Nessuna sezione proviene da YouTube Music.</string>
+    <string name="homepage_local_hint">Suggerimento: abbina la modalità Offline per un\'esperienza completamente senza connessione</string>
+
 </resources>

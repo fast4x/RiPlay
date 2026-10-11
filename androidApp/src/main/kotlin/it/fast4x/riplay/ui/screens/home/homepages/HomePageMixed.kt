@@ -5,7 +5,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -98,7 +100,7 @@ import timber.log.Timber
 @ExperimentalComposeUiApi
 @UnstableApi
 @Composable
-fun HomePageExtended(
+fun HomePageMixed(
     navController: NavController,
     onAlbumClick: (String) -> Unit,
     onArtistClick: (String) -> Unit,
@@ -395,13 +397,16 @@ fun HomePageExtended(
                 Row (
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(end = 12.dp),
+                        .padding(top = 12.dp, end = 12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    WelcomeMessage()
+                    Box(modifier = Modifier.weight(1f)) {
+                        WelcomeMessage()
+                    }
 
                     IconButton(
-                        modifier = Modifier.size(24.dp),
+                        modifier = Modifier
+                            .size(24.dp),
                         icon = when (homeType) {
                             HomeType.Tabbed -> R.drawable.singlepage
                             else -> R.drawable.multipage
@@ -416,7 +421,7 @@ fun HomePageExtended(
                                 )
                             }
                         },
-                        color = colorPalette().accent,
+                        color = colorPalette().text,
                     )
                 }
 
@@ -438,7 +443,7 @@ fun HomePageExtended(
     AnimatedVisibility(
         visible = homePageSection == HomePageSection.Home || homeType == HomeType.Classic
     ) {
-        HomePageExtendedSections(
+        HomePageMixedSections(
             navController = navController,
             showListenerLevels = showListenerLevels,
             showTips = showTips,

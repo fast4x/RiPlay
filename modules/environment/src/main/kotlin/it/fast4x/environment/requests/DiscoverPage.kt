@@ -16,10 +16,10 @@ suspend fun Environment.discoverPage(language: String, country: String) = runCat
 
     val response = client.post(_3djbhqyLpE) {
         setBody(
-            BrowseBody(
-                context = DefaultWeb.copy(
-                    client = DefaultWeb.client.setLocale(language, country)
-                ),
+            BrowseBodyWithLocale(
+//                context = DefaultWeb.copy(
+//                    client = DefaultWeb.client.setLocale(language, country)
+//                ),
                 browseId = "FEmusic_explore"
             )
         )

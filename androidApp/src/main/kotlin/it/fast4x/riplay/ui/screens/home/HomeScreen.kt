@@ -15,13 +15,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.lifecycle.Lifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.riplay.BuildConfig
@@ -34,7 +32,7 @@ import it.fast4x.riplay.data.models.toUiChip
 import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.data.models.toUiMood
-import it.fast4x.riplay.enums.HomePagetype
+import it.fast4x.riplay.enums.HomePageMode
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.extensions.updater.UpdateDialog
@@ -43,8 +41,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.ui.components.ScreenContainer
-import it.fast4x.riplay.ui.screens.home.homepages.HomePage
-import it.fast4x.riplay.ui.screens.home.homepages.HomePageExtended
+import it.fast4x.riplay.ui.screens.home.homepages.HomePageLocal
+import it.fast4x.riplay.ui.screens.home.homepages.HomePageOnline
+import it.fast4x.riplay.ui.screens.home.homepages.HomePageMixed
 import it.fast4x.riplay.utils.CheckForNewVersion
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
@@ -145,7 +144,7 @@ fun HomeScreen(
         //saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
             when (currentTabIndex) {
                 0 -> when(homePageType) {
-                    HomePagetype.Extended -> HomePageExtended(
+                    HomePageMode.Mixed -> HomePageMixed(
                         onAlbumClick = {
                             navController.navigate(route = "${NavRoutes.album.name}/$it")
                         },
@@ -178,7 +177,7 @@ fun HomeScreen(
                         navController = navController
                     )
 
-                    HomePagetype.Classic -> HomePage(
+                    HomePageMode.Online -> HomePageOnline(
                         recommendationService = recommendationService,
                         onAlbumClick = {
                             navController.navigate(route = "${NavRoutes.album.name}/$it")
@@ -213,7 +212,7 @@ fun HomeScreen(
                     )
 
                     /*
-                    HomePagetype.Atlas -> HomePageAtlas(
+                    HomePageMode.Local -> HomePageLocal(
                             recommendationService = recommendationService,
                             onAlbumClick = {
                                 navController.navigate(route = "${NavRoutes.album.name}/$it")
@@ -246,9 +245,12 @@ fun HomeScreen(
                             },
                             navController = navController
                         )
-                        */
+
+                     */
 
                 }
+
+
 
                 1 -> HomeSongs(
                     navController = navController,

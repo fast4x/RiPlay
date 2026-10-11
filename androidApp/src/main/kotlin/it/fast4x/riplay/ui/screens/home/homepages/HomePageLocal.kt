@@ -50,7 +50,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import it.fast4x.environment.Environment
@@ -59,12 +59,11 @@ import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.bodies.NextBody
 import it.fast4x.environment.requests.discoverPage
 import it.fast4x.environment.requests.relatedPage
-import it.fast4x.riplay.LocalAppSettingsManager
-import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.R
+import it.fast4x.riplay.enums.Countries
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PlayEventsType
 import it.fast4x.riplay.enums.UiType
@@ -73,6 +72,7 @@ import it.fast4x.riplay.data.models.Blacklist
 import it.fast4x.riplay.enums.BlacklistType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.service.RecommendationService
+import it.fast4x.riplay.extensions.experimental.recommendationstrategy.ui.RecommendationsBlock
 import it.fast4x.riplay.extensions.listenerlevel.HomepageListenerLevelBadges
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.PullToRefreshBox
@@ -80,13 +80,25 @@ import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.MultiFloatingActionsContainer
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
+import it.fast4x.riplay.ui.screens.welcome.WelcomeMessage
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.DISABLE_SCROLLING_TEXT
 import it.fast4x.riplay.utils.isLandscape
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.PLAY_EVENTS_TYPE
+import it.fast4x.riplay.extensions.preferences.rememberPreference
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SELECTED_COUNTRY_CODE
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_FLOATING_ICON
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_MOODS_AND_GENRES
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_NEW_ALBUMS_ARTISTS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_NEW_ALBUMS
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_SEARCH_TAB
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_TIPS
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
+import it.fast4x.riplay.extensions.preferences.PreferenceKey.SHOW_LISTENER_LEVELS
 import it.fast4x.riplay.extensions.rewind.HomepageRewind
 import it.fast4x.riplay.ui.components.themed.ChipItemColored
 import it.fast4x.riplay.utils.isLocal
@@ -111,23 +123,17 @@ import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.asVideoMediaItem
 import it.fast4x.riplay.utils.forcePlay
-import it.fast4x.riplay.utils.getForgottenSongs
-import it.fast4x.riplay.utils.getUnplayedSongs
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 import it.fast4x.riplay.utils.toMediaItem
 import it.fast4x.riplay.utils.typography
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
-import kotlin.time.Duration.Companion.milliseconds
+import java.net.URLEncoder
 
 @ExperimentalSerializationApi
 @OptIn(ExperimentalMaterial3Api::class)
@@ -139,7 +145,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @ExperimentalComposeUiApi
 @UnstableApi
 @Composable
-fun HomePage(
+fun HomePageLocal(
     navController: NavController,
     onAlbumClick: (String) -> Unit,
     onArtistClick: (String) -> Unit,
@@ -150,16 +156,10 @@ fun HomePage(
     onSettingsClick: () -> Unit,
     recommendationService: RecommendationService
 ) {
-    val appearanceSettingsManager = LocalAppearanceSettingsManager.current
-    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
-    val appSettingsManager = LocalAppSettingsManager.current
-    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
-    val appSettingsIsInitialized = appSettingsManager.isInitialized
-    Timber.d("HOME-GATE loaded=${appSettingsIsInitialized}")
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalGlobalSheetState.current
     val windowInsets = LocalPlayerAwareWindowInsets.current
-    val playEventType = appSettings.playEventsType
+    var playEventType by rememberPreference(PLAY_EVENTS_TYPE.key, PlayEventsType.MostPlayed)
 
     val scope = rememberCoroutineScope()
 
@@ -170,15 +170,15 @@ fun HomePage(
 
     var preferitesArtists by remember { mutableStateOf<List<Artist>>(emptyList()) }
 
-    val showNewAlbumsArtists = appSettings.showNewAlbumsArtists
-    val showMoodsAndGenres = appSettings.showMoodsAndGenres
-    val showNewAlbums = appSettings.showNewAlbums
+    val showNewAlbumsArtists by rememberPreference(SHOW_NEW_ALBUMS_ARTISTS.key, true)
+    val showMoodsAndGenres by rememberPreference(SHOW_MOODS_AND_GENRES.key, true)
+    val showNewAlbums by rememberPreference(SHOW_NEW_ALBUMS.key, true)
 
-    val showTips = appSettings.showTips
-    val showListenerLevels = appSettings.showListenerLevels
+    val showTips by rememberPreference(SHOW_TIPS.key, true)
+    val showListenerLevels by rememberPreference(SHOW_LISTENER_LEVELS.key, true)
     val refreshScope = rememberCoroutineScope()
 
-    val selectedCountryCode = appSettings.selectedCountryCode
+    var selectedCountryCode by rememberPreference(SELECTED_COUNTRY_CODE.key, Countries.ZZ)
 
     val blacklisted = remember {
         Database.blacklisted(listOf(BlacklistType.Song.name, BlacklistType.Video.name))
@@ -198,7 +198,6 @@ fun HomePage(
 
     suspend fun loadData() {
         loadDataMutex.withLock {
-            Timber.d("HOME-LOAD start: cache home=${HomeDataCache.homePage != null} discover=${HomeDataCache.discoverPage != null}")
             try {
                 withContext(Dispatchers.IO) {
 
@@ -206,41 +205,10 @@ fun HomePage(
                     if (homePage == null && HomeDataCache.homePage != null) {
                         homePage = HomeDataCache.homePage
                     }
-
                     if (homePage == null) {
-
-                        var attempt = 0
-                        while (homePage == null && attempt < 3) {
-                            Timber.d(
-                                "HOME-ATTEMPT scope=${coroutineContext[CoroutineName]?.name} " +
-                                        "active=${coroutineContext[Job]?.isActive}"
-                            )
-                            try {
-                                homePage = EnvironmentExt.getHomePage(setLogin = isYtLoggedIn())
-//                                .onFailure {
-//                                    Timber.e(it, "HOME-LOAD homePage attempt $attempt failed")
-//                                }
-                                    .getOrNull()
-                            } catch (e: CancellationException) {
-                                // SE questo scope era serviceScope e il service è stato ricreato nel frattempo,
-                                // IL SERVIZIO NUOVO ha uno scope nuovo: logga l'identità del service corrente:
-                                Timber.d("HOME-CANCELLATION — serviceScope.isActive=${binder?.serviceScope?.coroutineContext?.isActive}")
-                                throw e
-                            }
-                            attempt++
-                            if (homePage == null && attempt < 3) {
-                                Timber.d("HOME-LOAD empty (attempt $attempt), retrying")
-                                delay((500L * attempt).milliseconds)   // backoff: 500, 1000, 2000ms
-                            }
-                        }
-                        HomeDataCache.homePage = homePage
-
-
-//                        Timber.d("HOME-LOAD isYtLoggedIn=${isYtLoggedIn()}")
-//                        val result = EnvironmentExt.getHomePage(setLogin = isYtLoggedIn()).getOrNull()
-//                        homePage = result
-//                        HomeDataCache.homePage = result
-//                        Timber.d("HOME-LOAD api result: ${result != null}, err=${EnvironmentExt.getHomePage(setLogin = isYtLoggedIn()).exceptionOrNull()?.message}")
+                        val result = EnvironmentExt.getHomePage(setLogin = isYtLoggedIn()).getOrNull()
+                        homePage = result
+                        HomeDataCache.homePage = result
                     }
 
                     if (showNewAlbums || showNewAlbumsArtists || showMoodsAndGenres) {
@@ -248,7 +216,7 @@ fun HomePage(
                             discoverPage = HomeDataCache.discoverPage
                         }
                         if (discoverPage == null) {
-                            val result = Environment.discoverPage(appSettings.languageApp.code, selectedCountryCode.code).getOrNull()
+                            val result = Environment.discoverPage("","").getOrNull()
                             discoverPage = result
                             HomeDataCache.discoverPage = result
                         }
@@ -260,23 +228,20 @@ fun HomePage(
                             val song = songs.firstOrNull { item ->
                                 blacklisted.value?.map { it.path }?.contains(item.id) == false
                             }
-                            val songId = if (song?.isLocal == true) {
-                                song.mediaId ?: song.id
-                            } else song?.id
+                            val songId = if (song?.isLocal == true) song.mediaId else song?.id
 
-                            if (relatedPage == null) {
+                            if (relatedPage == null || trending?.id != song?.id || trending?.mediaId != song?.id) {
                                 // Leggo relatedPage dalla cache se disponibile
-                                if (HomeDataCache.relatedPage != null) {
+                                if (relatedPage == null && HomeDataCache.relatedPage != null
+                                    && trending?.id == HomeDataCache.trending?.id) {
                                     relatedPage = HomeDataCache.relatedPage
                                     trending = HomeDataCache.trending
                                 } else {
-                                    relatedPage = Environment.relatedPage(NextBody(videoId = songId))
-                                        ?.getOrNull()
-                                        ?.copyFiltered(blacklisted.value)
-                                        ?.takeIf { it.songs?.isNotEmpty() == true }
-                                        ?: getForgottenSongs().copyFiltered(blacklisted.value)
-                                        ?: getUnplayedSongs().copyFiltered(blacklisted.value)
-
+                                    relatedPage = Environment.relatedPage(
+                                        NextBody(videoId = (songId ?: "HZnNt9nnEhw"))
+                                    )?.getOrNull().let { result ->
+                                        result?.copyFiltered(blacklisted.value)
+                                    }
                                     HomeDataCache.relatedPage = relatedPage
                                 }
                             }
@@ -291,22 +256,19 @@ fun HomePage(
                             else songs.shuffled()).firstOrNull { item ->
                                 blacklisted.value?.map { it.path }?.contains(item.id) == false
                             }
-                            val songId = if (song?.isLocal == true) {
-                                song.mediaId ?: song.id
-                            } else song?.id
+                            val songId = if (song?.isLocal == true) song.mediaId else song?.id
 
-                            if (relatedPage == null) {
-                                if (HomeDataCache.relatedPage != null) {
+                            if (relatedPage == null || trending?.id != song?.id || trending?.mediaId != song?.id) {
+                                if (relatedPage == null && HomeDataCache.relatedPage != null
+                                    && trending?.id == HomeDataCache.trending?.id) {
                                     relatedPage = HomeDataCache.relatedPage
                                     trending = HomeDataCache.trending
                                 } else {
-                                    relatedPage = Environment.relatedPage(NextBody(videoId = songId))
-                                        ?.getOrNull()
-                                        ?.copyFiltered(blacklisted.value)
-                                        ?.takeIf { it.songs?.isNotEmpty() == true }
-                                        ?: getForgottenSongs().copyFiltered(blacklisted.value)
-                                        ?: getUnplayedSongs().copyFiltered(blacklisted.value)
-
+                                    relatedPage = Environment.relatedPage(
+                                        NextBody(videoId = (songId ?: "HZnNt9nnEhw"))
+                                    )?.getOrNull().let { result ->
+                                        result?.copyFiltered(blacklisted.value)
+                                    }
                                     HomeDataCache.relatedPage = relatedPage
                                 }
                             }
@@ -315,10 +277,9 @@ fun HomePage(
                         }
                     }
                 }
-            } catch (e: Exception ) {
-                Timber.e(e, "HOME-LOAD FAILED")   // ← l'eccezione INTERA, non solo il messaggio!
+            } catch (e: Exception) {
+                Timber.e("HomePage loadData failed: ${e.message}")
             }
-            Timber.d("HOME-LOAD end: home=${homePage != null} discover=${discoverPage != null} related=${relatedPage != null} trending=${trending != null}")
         }
     }
 
@@ -337,14 +298,12 @@ fun HomePage(
         refreshScope.launch(Dispatchers.IO) {
             refreshing = true
             loadData()
-            delay(500.milliseconds)
+            delay(500)
             refreshing = false
         }
     }
 
-    LaunchedEffect( appSettingsIsInitialized, playEventType, selectedCountryCode) {
-        Timber.d("HOME-EFFECT start loaded=$appSettingsIsInitialized")
-        if (!appSettingsIsInitialized) return@LaunchedEffect
+    LaunchedEffect(Unit, playEventType, selectedCountryCode) {
 
         val countryChanged = HomeDataCache.lastCountryCode != selectedCountryCode.name
         val playEventChanged = HomeDataCache.lastPlayEventType != playEventType
@@ -401,11 +360,11 @@ fun HomePage(
         .padding(top = 24.dp, bottom = 8.dp)
         .padding(endPaddingValues)
 
-    val showSearchTab = appSettings.showSearchTab
+    val showSearchTab by rememberPreference(SHOW_SEARCH_TAB.key, false)
 
     val hapticFeedback = LocalHapticFeedback.current
 
-    val disableScrollingText = appearanceSettings.disableScrollingText
+    val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
 
 
     PullToRefreshBox(
@@ -453,6 +412,8 @@ fun HomePage(
                         navController = navController
                     )
 
+                WelcomeMessage()
+
                 if (showListenerLevels)
                     HomepageListenerLevelBadges(navController)
 
@@ -464,7 +425,7 @@ fun HomePage(
                     disableScrollingText = disableScrollingText
                 )
 
-                /* todo to implement new suggestions
+                // todo to implement new suggestions
                 BasicText(
                     text = "Recommendations",
                     style = typography().l.bold,
@@ -487,7 +448,7 @@ fun HomePage(
                             when {
                                 // Brano riproducibile diretto
                                 item.song != null -> {
-                                    binder?.player?.forcePlay(item.song.asMediaItem)
+                                    binder?.hybridPlayer?.forcePlay(item.song.asMediaItem)
                                     Log.d("REC_DEBUG", "Marking consumed: strategy=${item.strategyId}, itemId=$itemId")
                                     recommendationService.markConsumed(item.strategyId, item.song.id)
                                 }
@@ -514,7 +475,7 @@ fun HomePage(
                     }
                 )
 
-                 */
+
 
 
                 if (showTips) {
@@ -527,13 +488,7 @@ fun HomePage(
                                         icon = R.drawable.chevron_up,
                                         text = stringResource(R.string.by_most_played_song),
                                         onClick = {
-                                            scope.launch {
-                                                appSettingsManager.updateSettings(
-                                                    appSettingsManager.activeSettings.value.copy(
-                                                        playEventsType = PlayEventsType.MostPlayed
-                                                    )
-                                                )
-                                            }
+                                            playEventType = PlayEventsType.MostPlayed
                                             menuState.hide()
                                         }
                                     )
@@ -541,13 +496,7 @@ fun HomePage(
                                         icon = R.drawable.chevron_down,
                                         text = stringResource(R.string.by_last_played_song),
                                         onClick = {
-                                            scope.launch {
-                                                appSettingsManager.updateSettings(
-                                                    appSettingsManager.activeSettings.value.copy(
-                                                        playEventsType = PlayEventsType.LastPlayed
-                                                    )
-                                                )
-                                            }
+                                            playEventType = PlayEventsType.LastPlayed
                                             menuState.hide()
                                         }
                                     )
@@ -555,13 +504,7 @@ fun HomePage(
                                         icon = R.drawable.random,
                                         text = stringResource(R.string.by_casual_played_song),
                                         onClick = {
-                                            scope.launch {
-                                                appSettingsManager.updateSettings(
-                                                    appSettingsManager.activeSettings.value.copy(
-                                                        playEventsType = PlayEventsType.CasualPlayed
-                                                    )
-                                                )
-                                            }
+                                            playEventType = PlayEventsType.CasualPlayed
                                             menuState.hide()
                                         }
                                     )
@@ -685,7 +628,7 @@ fun HomePage(
                                 ?: emptyList(),
                             key = Environment.SongItem::key
                         ) { song ->
-                            //Timber.d("HomePage RELATED Environment.SongItem duration ${song.durationText}")
+                            Timber.d("HomePage RELATED Environment.SongItem duration ${song.durationText}")
                             SongItem(
                                 song = song,
                                 thumbnailSizePx = songThumbnailSizePx,
@@ -721,7 +664,7 @@ fun HomePage(
                                         },
                                         onClick = {
                                             CoroutineScope(Dispatchers.IO).launch {
-                                                //Timber.d("HomePage Clicked on song")
+                                                Timber.d("HomePage Clicked on song")
                                                 val mediaItem = if (song.isAudioOnly)
                                                 //song.asMediaItem
                                                     song.toMediaItem()
@@ -749,7 +692,6 @@ fun HomePage(
 
                 }
 
-
                 discoverPage?.let { page ->
 
                     if (showNewAlbumsArtists) {
@@ -759,7 +701,7 @@ fun HomePage(
                         LaunchedEffect(Unit, preferredNames) {
                             page.newReleaseAlbums.forEach { album ->
                                 val apiAuthorsNames = album.authors?.map { it.name } ?: emptyList()
-                                //Timber.d("HomePage newReleaseAlbums Author ${album.title} $apiAuthorsNames")
+                                Timber.d("HomePage newReleaseAlbums Author ${album.title} $apiAuthorsNames")
                                 val match = apiAuthorsNames.any { apiName ->
 
                                     preferredNames.any { dbName ->
@@ -772,8 +714,8 @@ fun HomePage(
                                 if (match) newReleaseAlbumsFiltered.add(album)
                             }
 
-                            //Timber.d("HomePage newReleaseAlbums preferredNames $preferredNames")
-                            //Timber.d("HomePage newReleaseAlbums newReleaseAlbumsFiltered $newReleaseAlbumsFiltered")
+                            Timber.d("HomePage newReleaseAlbums preferredNames $preferredNames")
+                            Timber.d("HomePage newReleaseAlbums newReleaseAlbumsFiltered $newReleaseAlbumsFiltered")
                         }
 
 
@@ -856,22 +798,19 @@ fun HomePage(
                             items(it.items.filter {item -> blacklisted.value?.map { it.path }?.contains(item?.key) == false }) { item ->
                                 when (item) {
                                     is Environment.SongItem -> {
-                                        //Timber.d("Environment homePage SongItem: ${item.info?.name}")
+                                        Timber.d("Environment homePage SongItem: ${item.info?.name}")
                                         SongItem(
                                             song = item,
                                             thumbnailSizePx = albumThumbnailSizePx,
                                             thumbnailSizeDp = albumThumbnailSizeDp,
-                                            //disableScrollingText = disableScrollingText,
-                                            //isNowPlaying = false,
                                             modifier = Modifier.clickable(onClick = {
                                                 binder?.hybridPlayer?.forcePlay(item.asMediaItem)
-                                                //fastPlay(item.asMediaItem, binder)
                                             })
                                         )
                                     }
 
                                     is Environment.AlbumItem -> {
-                                        //Timber.d("Environment homePage AlbumItem: ${item.info?.name}")
+                                        Timber.d("Environment homePage AlbumItem: ${item.info?.name}")
                                         AlbumItem(
                                             album = item,
                                             alternative = true,
@@ -886,7 +825,7 @@ fun HomePage(
                                     }
 
                                     is Environment.ArtistItem -> {
-                                        //Timber.d("Environment homePage ArtistItem: ${item.info?.name}")
+                                        Timber.d("Environment homePage ArtistItem: ${item.info?.name}")
                                         ArtistItem(
                                             artist = item,
                                             thumbnailSizePx = artistThumbnailSizePx,
@@ -899,7 +838,7 @@ fun HomePage(
                                     }
 
                                     is Environment.PlaylistItem -> {
-                                        //Timber.d("Environment homePage PlaylistItem: ${item.info?.name}")
+                                        Timber.d("Environment homePage PlaylistItem: ${item.info?.name}")
                                         PlaylistItem(
                                             playlist = item,
                                             alternative = true,
@@ -913,7 +852,7 @@ fun HomePage(
                                     }
 
                                     is Environment.VideoItem -> {
-                                        //Timber.d("Environment homePage VideoItem: ${item.info?.name}")
+                                        Timber.d("Environment homePage VideoItem: ${item.info?.name}")
                                         VideoItem(
                                             video = item,
                                             thumbnailHeightDp = playlistThumbnailSizeDp,
@@ -1019,7 +958,7 @@ fun HomePage(
 
 
 
-            val showFloatingIcon = appSettings.showFloatingIcon
+            val showFloatingIcon by rememberPreference(SHOW_FLOATING_ICON.key, false)
             if (UiType.ViMusic.isCurrent() && showFloatingIcon)
                 MultiFloatingActionsContainer(
                     iconId = R.drawable.search,
