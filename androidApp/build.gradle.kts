@@ -1,19 +1,13 @@
 import com.android.build.api.dsl.ApplicationExtension
 import org.gradle.kotlin.dsl.implementation
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
-    //alias(libs.plugins.kotlin)
-    //alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.compose)
-    //alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.room)
     alias(libs.plugins.kotlin.serialization)
-    //alias(libs.plugins.chaquopy)
 }
 
 val localProperties = Properties()
@@ -52,8 +46,8 @@ extensions.configure<ApplicationExtension> {
         applicationId = "it.fast4x.riplay"
         targetSdk = 37
 
-        versionCode = 98
-        versionName = "0.7.97"
+        versionCode = 99
+        versionName = "0.7.98"
 
 
         // INIT ENVIRONMENT
@@ -285,21 +279,7 @@ extensions.configure<ApplicationExtension> {
         resValue("string", "RiPlay_LASTFM_SECRET", propertyOrEmpty("RiPlay_LASTFM_SECRET"))
         resValue("string", "RiPlay_DISCORD_APPLICATION_ID", propertyOrEmpty("RiPlay_DISCORD_APPLICATION_ID"))
 
-
-//        ndk {
-//            abiFilters += listOf("arm64-v8a", "x86_64")
-//        }
-
     }
-
-//    chaquopy {
-//        defaultConfig {
-//            version = "3.13"
-//            pip {
-//                install("yt-dlp")
-//            }
-//        }
-//    }
 
     packaging {
         jniLibs.keepDebugSymbols.add("**/*.so")
@@ -415,10 +395,6 @@ extensions.configure<ApplicationExtension> {
         targetCompatibility = JavaVersion.VERSION_21
     }
 
-//    composeOptions {
-//        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
-//    }
-
     androidResources {
         generateLocaleConfig = true
     }
@@ -485,7 +461,6 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.hypnoticcanvas)
     implementation(libs.hypnoticcanvas.shaders)
-    //implementation(libs.multidex)
     implementation(libs.jsoup)
 
     implementation(libs.ktor.client.core)

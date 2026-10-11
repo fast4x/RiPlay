@@ -1,9 +1,5 @@
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.kmp.library)
@@ -111,16 +107,6 @@ val generateEnvironmentConfig by tasks.registering {
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     dependsOn(generateEnvironmentConfig)
 }
-
-/*
-repositories {
-    google()
-    mavenCentral()
-    maven { url = uri("https://jitpack.io") }
-    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
-}
- */
-
 
 java {
     toolchain {
@@ -245,14 +231,6 @@ kotlin {
             implementation(libs.coil.network.okhttp)
             runtimeOnly(libs.kotlinx.coroutines.swing)
 
-            /*
-            // Uncomment only for build jvm desktop version
-            // Comment before build android version
-            configurations.commonMainApi {
-                exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-android")
-            }
-            */
-
         }
 
         androidMain.dependencies {
@@ -265,60 +243,7 @@ kotlin {
                     )
                 )
             )
-            /*
-            implementation(libs.navigation)
-            implementation(libs.media3.session)
-            //implementation(libs.media3.ui)
-            implementation(libs.kotlin.coroutines.guava)
-            implementation(libs.kotlin.concurrent.futures)
-            implementation(libs.androidx.webkit)
-            //implementation(libs.room.backup)
-            implementation(libs.workmanager)
-            implementation(libs.accompanist)
 
-            implementation(libs.compose.activity)
-            implementation(libs.compose.foundation)
-            implementation(libs.compose.ui)
-            implementation(libs.compose.ui.util)
-            implementation(libs.compose.ripple)
-            implementation(libs.compose.shimmer)
-            implementation(libs.compose.coil)
-            implementation(libs.palette)
-            implementation(libs.media3.exoplayer)
-            implementation(libs.media3.datasource.okhttp)
-            implementation(libs.appcompat)
-            implementation(libs.appcompat.resources)
-            implementation(libs.support)
-            implementation(libs.media)
-            implementation(libs.material)
-            implementation(libs.material3)
-            implementation(libs.compose.ui.graphics.android)
-            implementation(libs.constraintlayout)
-            implementation(libs.compose.runtime.livedata)
-            implementation(libs.compose.animation)
-            implementation(libs.kotlin.csv)
-            implementation(libs.monetcompat)
-            implementation(libs.androidmaterial)
-            implementation(libs.timber)
-            implementation(libs.crypto)
-            implementation(libs.logging.interceptor)
-            implementation(libs.math3)
-            implementation(libs.toasty)
-            implementation(libs.haze)
-            //implementation(libs.androidyoutubeplayer) // replaced by project ayp
-            //implementation(libs.androidyoutubeplayer.custom.ui) // replaced by project aypui
-            implementation(project(":ayp"))
-            implementation(project(":aypui"))
-            implementation(libs.glance.widgets)
-            implementation(libs.kizzy.rpc)
-            implementation(libs.gson)
-            implementation(libs.hypnoticcanvas)
-            implementation(libs.hypnoticcanvas.shaders)
-            implementation(libs.multidex)
-            implementation(libs.jsoup)
-            //implementation(libs.mediarouter)
-
-             */
         }
 
     }
@@ -329,20 +254,5 @@ room {
     schemaDirectory("$projectDir/schemas")
     generateKotlin = true
 }
-
-/*
-dependencies {
-
-    "fullImplementation"(libs.media3.ui)
-    "fullImplementation"(libs.media3.cast)
-    "fullImplementation"(project(":aypcast"))
-
-    add("kspAndroid", libs.room.compiler)
-    add("kspDesktop", libs.room.compiler)
-
-    coreLibraryDesugaring(libs.desugaring)
-}
-
- */
 
 
