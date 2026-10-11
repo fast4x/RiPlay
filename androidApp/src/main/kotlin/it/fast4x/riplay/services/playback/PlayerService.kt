@@ -542,9 +542,7 @@ class PlayerService : MediaLibraryService(),
         // Lancio tutto il resto delle configurazioni in background senza bloccare l'avvio nativo
         this@PlayerService.serviceScope.launch(Dispatchers.Main) {
 
-            withContext(Dispatchers.IO) {
-                startObservingSettings()
-            }
+            startObservingSettings()
 
             startPlaybackWatchdog()
 
@@ -793,7 +791,7 @@ class PlayerService : MediaLibraryService(),
     }
 
     private fun startObservingSettings() {
-        settingsObserverJob = this@PlayerService.serviceScope.launch {
+        settingsObserverJob = this@PlayerService.serviceScope.launch(Dispatchers.Main) {
             appSettingsManager.activeSettings      
                 .collect { settings -> 
                     //Timber.d("PlayerService: impostazioni cambiate $settings")
