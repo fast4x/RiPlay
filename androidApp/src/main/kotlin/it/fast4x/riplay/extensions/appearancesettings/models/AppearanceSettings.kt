@@ -16,7 +16,6 @@ import it.fast4x.riplay.enums.LyricsFontSize
 import it.fast4x.riplay.enums.LyricsHighlight
 import it.fast4x.riplay.enums.LyricsOutline
 import it.fast4x.riplay.enums.MiniPlayerType
-import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PlayerControlsType
 import it.fast4x.riplay.enums.PlayerInfoType
@@ -125,7 +124,6 @@ data class AppearanceSettings(
     val disableScrollingText: Boolean           = false,
     val seekWithTap: Boolean                   = false,
     val thumbnailTapEnabled: Boolean            = true,
-    val navigationBarPosition: NavigationBarPosition = NavigationBarPosition.Bottom,
     val isGradientBackgroundEnabled: Boolean   = false,
     val backgroundProgress: BackgroundProgress = BackgroundProgress.MiniPlayer,
     val clickLyricsText: Boolean               = true,

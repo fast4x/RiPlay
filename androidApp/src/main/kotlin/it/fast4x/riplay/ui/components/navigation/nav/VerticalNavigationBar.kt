@@ -40,21 +40,25 @@ import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.showSearchIconInNav
 import it.fast4x.riplay.utils.typography
 
-// TODO: Move this to where it belongs. Currently, UNKNOWN
-fun Modifier.vertical( enabled: Boolean = true ) =
-    if ( enabled )
-        layout { measurable, constraints ->
-            val c: Constraints = constraints.copy( maxWidth = Int.MAX_VALUE )
-            val placeable = measurable.measure( c )
+fun Modifier.vertical(enabled: Boolean = true) =
+    if (!enabled) this
+    else layout { measurable, constraints ->
+        // dopo la rotazione la larghezza del testo diventa altezza:
+        // la riga non può essere più lunga dello spazio verticale
+        val lineConstraints = if (constraints.hasBoundedHeight)
+            constraints.copy(maxWidth = constraints.maxHeight)
+        else
+            constraints.copy(maxWidth = Constraints.Infinity)
 
-            layout( placeable.height, placeable.width ) {
-                placeable.place(
-                    x = -(placeable.width / 2 - placeable.height / 2),
-                    y = -(placeable.height / 2 - placeable.width / 2)
-                )
-            }
+        val placeable = measurable.measure(lineConstraints)
+
+        layout(placeable.height, placeable.width) {
+            placeable.place(
+                x = (placeable.height - placeable.width) / 2,
+                y = (placeable.width - placeable.height) / 2
+            )
         }
-    else this
+    }
 
 // Shown when "Navigation bar position" is set to "left" or "right"
 class VerticalNavigationBar(
@@ -97,14 +101,17 @@ class VerticalNavigationBar(
                 if ( NavigationBarType.IconAndText.isCurrent() )
                     BasicText(
                         text = text,
+                        maxLines = 1,
+                        softWrap = !isLandscape,
                         style = TextStyle(
                             fontSize = typography().xs.semiBold.fontSize,
                             fontWeight = typography().xs.semiBold.fontWeight,
                             color = colorPalette().text,
                         ),
-                        modifier = Modifier.vertical( enabled = !isLandscape )
-                                    .rotate(if (isLandscape) 0f else -90f)
-                                    .padding(horizontal = 16.dp)
+                        modifier = Modifier
+                            .vertical()
+                            .rotate(-90f)
+                            .padding(horizontal = 16.dp)
                     )
             }
 
@@ -119,7 +126,7 @@ class VerticalNavigationBar(
                             .graphicsLayer {
                                 alpha = dothAlpha
                                 translationX = (1f - dothAlpha) * -48.dp.toPx()
-                                rotationZ = if (isLandscape) 0f else -90f
+                                rotationZ = -90f
                             }
                 }
             val button = Button( iconId, textColor, 0.dp, 0.dp, Dp.Unspecified, buttonModifier )
@@ -127,15 +134,6 @@ class VerticalNavigationBar(
                                           .clickable( onClick = { onTabChanged(index) } )
                                           .padding( vertical = 8.dp )
             val result: @Composable () -> Unit = {
-                if( isLandscape )
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = contentModifier
-                    ) {
-                        button.Draw()
-                        textContent()
-                    }
-                else
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = contentModifier

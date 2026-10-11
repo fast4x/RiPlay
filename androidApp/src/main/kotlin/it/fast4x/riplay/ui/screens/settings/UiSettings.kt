@@ -735,13 +735,13 @@ fun UiSettings(
                         selectedValue = navigationBarPosition,
                         onValueSelected = {
                             coroutineScope.launch {
-                                val new = appearanceSettingsManager.activeSettings.value.copy(navigationBarPosition = it)
-                                appearanceSettingsManager.updatePreset(new)
+                                val new = appSettings.copy(navigationBarPosition = it)
+                                appSettingsManager.updateSettings(new)
                             }
                         },
                         // As of version 0.6.53, changing navigation bar to top or bottom
                         // while using ViMusic theme breaks the UI
-                        isEnabled = uiType != UiType.ViMusic,
+                        //isEnabled = uiType != UiType.ViMusic,
                         valueText = { it.displayName }
                     )
 
