@@ -52,16 +52,15 @@ jobs:
           STARS_FMT=$(format_number $STARS)
           FORKS_FMT=$(format_number $FORKS)
           
-          # 4. Gestione Storico (history.json)
-          LAST_SAVED=$(jq '.[-1].downloads // empty' history.json)
-          
-          # Salva il nuovo punto SOLO se il numero è cambiato rispetto all'ultima volta
-          if [ "$LAST_SAVED" > "$TOTAL_DOWNLOADS" ]; then
+          LAST_SAVED=$(jq '.[-1].downloads // 0' history.json)
+
+          if [ "$TOTAL_DOWNLOADS" -gt "$LAST_SAVED" ]; then
             TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M")
-            jq --arg time "$TIMESTAMP" --argjson dl "$TOTAL_DOWNLOADS" '. += [{"time": $time, "downloads": $dl}]' history.json > tmp.json && mv tmp.json history.json
-            echo "UPDATE_NEEDED=true" >> $GITHUB_ENV
+            jq --arg time "$TIMESTAMP" --argjson dl "$TOTAL_DOWNLOADS" \
+               '. += [{"time": $time, "downloads": $dl}]' history.json > tmp.json && mv tmp.json history.json
+            echo "UPDATE_NEEDED=true" >> "$GITHUB_ENV"
           else
-            echo "UPDATE_NEEDED=false" >> $GITHUB_ENV
+            echo "UPDATE_NEEDED=false" >> "$GITHUB_ENV"
           fi
           
           # 5. Genera la Card principale (sempre aggiornata per sicurezza)
