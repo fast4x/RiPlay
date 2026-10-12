@@ -1,5 +1,6 @@
 package it.fast4x.riplay.utils
 
+import android.os.Looper
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -11,6 +12,7 @@ import kotlinx.io.IOException
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
+import timber.log.Timber
 import kotlin.coroutines.resumeWithException
 
 
@@ -50,3 +52,10 @@ fun <T> Flow<T>.collectLatest(scope: CoroutineScope, action: suspend (value: T) 
 }
 
 val SilentHandler = CoroutineExceptionHandler { _, _ -> }
+
+
+fun coroutineDispatcherInfo(scope: CoroutineScope) =
+    scope.launch {
+        Timber.d("coroutineDispatcherInfo: Threading thread=${Thread.currentThread().name}, " +
+                "isMain=${Looper.myLooper() == Looper.getMainLooper()}")
+    }

@@ -311,9 +311,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @Composable
 fun UnifiedPlayer(
     navController: NavController,
-    playFromSecond: Float = 0f,
     videoPlayerView: @Composable () -> Unit,
-    //playerSheetState: BottomSheetState,
     onDismiss: () -> Unit,
     sharedTransitionScope: SharedTransitionScope? = null,
     animatedVisibilityScope: AnimatedVisibilityScope? = null,
@@ -325,6 +323,9 @@ fun UnifiedPlayer(
 
     val appSettingsManager = LocalAppSettingsManager.current
     val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+
+    // Se le impostazioni app e/o appearance non sono pronte, torniamo indietro in attesa che siano pronte
+    if (!appSettingsManager.isInitialized || !appearanceSettingsManager.isInitialized) return
 
     val menuState = LocalGlobalSheetState.current
 

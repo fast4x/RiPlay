@@ -6,6 +6,7 @@ import it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings
 import it.fast4x.riplay.extensions.appearancesettings.repository.AppearancePresetRepository
 import it.fast4x.riplay.extensions.appearancesettings.repository.AppearancePresetRepositoryImpl
 import it.fast4x.riplay.extensions.appearancesettings.utils.toEntity
+import it.fast4x.riplay.extensions.appsettings.models.AppSettings
 import it.fast4x.riplay.utils.JsonManager
 import it.fast4x.riplay.utils.appContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +28,9 @@ class AppearanceSettingsManager {
 
     private val _activeSettings = MutableStateFlow(AppearanceSettings())
     val activeSettings: StateFlow<AppearanceSettings> = _activeSettings.asStateFlow()
+
+    @Volatile
+    var isInitialized = false
 
     private val _activeId = MutableStateFlow("aura")
     val activeId: StateFlow<String> = _activeId.asStateFlow()
@@ -73,7 +77,19 @@ class AppearanceSettingsManager {
 
         } catch (e: Exception) {
             Timber.e(e, "AppearanceSettingsManager init: Error loading appearance settings from DB")
+        } finally {
+            isInitialized = true
         }
+    }
+
+    suspend fun waitForInitialization(): AppearanceSettings {
+        // Se l'Application ha già finito, ritorna subito i dati
+        if (isInitialized) {
+            return _activeSettings.value
+        }
+
+        // Se l'Application è ancora in esecuzione, aspettiamo il primo aggiornamento del Flow
+        return _activeSettings.first { isInitialized }
     }
 
     suspend fun applyPreset(preset: AppearancePreset) {

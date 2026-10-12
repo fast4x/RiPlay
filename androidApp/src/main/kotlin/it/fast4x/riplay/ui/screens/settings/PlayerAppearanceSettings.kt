@@ -102,7 +102,7 @@ fun PlayerAppearanceSettings(
     val transparentbar = appearanceSettings.transparentBar
     val blackgradient = appearanceSettings.blackgradient
     val showlyricsthumbnail = appearanceSettings.showLyricsThumbnail
-    val expandedplayer = appearanceSettings.expandedPlayer
+    //val expandedplayer = appearanceSettings.expandedPlayer
 
     val playerPlayButtonType = appearanceSettings.playerPlayButtonType
     val bottomgradient = appearanceSettings.bottomGradient
@@ -286,7 +286,7 @@ fun PlayerAppearanceSettings(
                         writeRow("Appearance", appearanceFilename, "transparentbar", transparentbar)
                         writeRow("Appearance", appearanceFilename, "blackgradient", blackgradient)
                         writeRow("Appearance", appearanceFilename, "showlyricsthumbnail", showlyricsthumbnail)
-                        writeRow("Appearance", appearanceFilename, "expandedplayer", expandedplayer)
+                        //writeRow("Appearance", appearanceFilename, "expandedplayer", expandedplayer)
                         writeRow("Appearance", appearanceFilename, "playerPlayButtonType", playerPlayButtonType.ordinal)
                         writeRow("Appearance", appearanceFilename, "bottomgradient", bottomgradient)
                         writeRow("Appearance", appearanceFilename, "textoutline", textoutline)
@@ -692,7 +692,10 @@ fun PlayerAppearanceSettings(
                                     )
                             }
 
-                            if (playerType == PlayerType.Modern && !isLandscape && (expandedplayertoggle || expandedplayer)) {
+                            if (playerType == PlayerType.Modern && !isLandscape
+                                //&& (expandedplayertoggle || expandedplayer)
+                                )
+                            {
                                 if (search.input.isBlank() || stringResource(R.string.carousel).contains(
                                         search.input,
                                         true
@@ -1920,7 +1923,8 @@ fun PlayerAppearanceSettings(
                                         }
                                     }
                                 )
-                            if (!isLandscape || !showthumbnail) {
+                            if (!isLandscape // || !showthumbnail
+                                ) {
                                 if (!showlyricsthumbnail) {
                                     if (search.input.isBlank() || stringResource(R.string.expandedplayer).contains(
                                             search.input,
