@@ -54,6 +54,7 @@ import timber.log.Timber
 import java.io.File
 import kotlin.math.absoluteValue
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.milliseconds
 
 val Environment.AlbumItem.asAlbum: Album
     get() = Album (
@@ -763,7 +764,7 @@ suspend fun removeFromOnlineLikedSong(mediaItem: MediaItem){
 suspend fun addToYtLikedSongs(mediaItems: List<MediaItem>){
     if (isYtSyncEnabled()) {
         mediaItems.forEachIndexed { index, item ->
-            delay(1000)
+            delay(1000.milliseconds)
             likeVideoOrSong(item.mediaId).onSuccess {
                 Database.asyncTransaction {
                     if (songExist(item.mediaId) == 0) {

@@ -684,7 +684,9 @@ fun UnifiedPlayer(
     }
 
     LaunchedEffect(mediaItem.mediaId) {
-        Database.likedAt(mediaItem.mediaId).distinctUntilChanged().collect { likedAt = it }
+        withContext(Dispatchers.IO) {
+            Database.likedAt(mediaItem.mediaId).distinctUntilChanged().collect { likedAt = it }
+        }
         updateBrush = true
     }
 
@@ -1351,15 +1353,11 @@ fun UnifiedPlayer(
     LaunchedEffect(mediaItem) {
 
         // Ensure that the song is in database
-        CoroutineScope(Dispatchers.IO).launch {
-            Database.asyncTransaction {
-                insert(mediaItem.asSong)
-            }
+        withContext(Dispatchers.IO) {
+            Database.insert(mediaItem.asSong)
 
             Database.likedAt(mediaItem.mediaId).distinctUntilChanged().collect { likedAt = it }
 
-        }
-        withContext(Dispatchers.IO) {
             albumInfo = Database.songAlbumInfo(mediaItem.mediaId)
             artistsInfo = Database.songArtistInfo(mediaItem.mediaId)
         }
@@ -1657,9 +1655,13 @@ fun UnifiedPlayer(
                                             interactionSource = remember { MutableInteractionSource() }) {
                                             scope.launch {
                                                 if (!appRunningInBackground) pagerStateQueue.animateScrollToPage(
-                                                    (binder.hybridPlayer?.currentMediaItemIndex ?: 0) + 1
+                                                    (binder.hybridPlayer?.currentMediaItemIndex
+                                                        ?: 0) + 1
                                                 )
-                                                else pagerStateQueue.scrollToPage((binder.hybridPlayer?.currentMediaItemIndex ?: 0) + 1)
+                                                else pagerStateQueue.scrollToPage(
+                                                    (binder.hybridPlayer?.currentMediaItemIndex
+                                                        ?: 0) + 1
+                                                )
                                             }
                                         },
                                     tint = colorPalette().accent
@@ -1740,9 +1742,9 @@ fun UnifiedPlayer(
                                             nextMediaItemIndex?.let {binder.hybridPlayer?.removeMediaItem(it) }
                                         },
                                         modifier = Modifier
-                                        .weight(0.07f)
-                                        .size(40.dp)
-                                        .padding(vertical = 7.5.dp))
+                                            .weight(0.07f)
+                                            .size(40.dp)
+                                            .padding(vertical = 7.5.dp))
                                 }
                             }
                         }
@@ -1784,7 +1786,11 @@ fun UnifiedPlayer(
                                 color = if (songPlaylist > 0 && playlistindicator) if (colorPaletteName == ColorPaletteName.PureBlack) Color.Black else colorPalette().text else colorPalette().accent,
                                 onClick = {
                                     menuState.display {
-                                        AddToPlaylistPlayerMenu(navController = navController, onDismiss = { menuState.hide(); Database.asyncTransaction { songPlaylist = songUsedInPlaylists(mediaItem.mediaId) } }, mediaItem = mediaItem, binder = binder, onClosePlayer = { onDismiss() })
+                                        AddToPlaylistPlayerMenu(navController = navController,
+                                            onDismiss = {
+                                                menuState.hide()
+                                                coroutineScope.launch(Dispatchers.IO) { songPlaylist = Database.songUsedInPlaylists(mediaItem.mediaId) } },
+                                            mediaItem = mediaItem, binder = binder, onClosePlayer = { onDismiss() })
                                     }
                                 },
                                 modifier = Modifier
@@ -1968,7 +1974,8 @@ fun UnifiedPlayer(
                             enabled = !isExiting && sharedTransitionScope?.isTransitionActive == false,
                         )
                         .graphicsLayer {
-                            val progress = (collapseState.offset / collapseDistance).coerceIn(0f, 1f)
+                            val progress =
+                                (collapseState.offset / collapseDistance).coerceIn(0f, 1f)
                             val s = 1f - 0.04f * progress
                             scaleX = s; scaleY = s
                             shape = RoundedCornerShape(24.dp * progress)
@@ -2211,7 +2218,11 @@ fun UnifiedPlayer(
                                         onDismiss = {
                                             isShowingLyrics = false
                                         },
-                                        ensureSongInserted = { Database.insert(mediaItem) },
+                                        ensureSongInserted = {
+                                            coroutineScope.launch(Dispatchers.IO) {
+                                                Database.insert(mediaItem)
+                                            }
+                                        },
                                         size = 1000.dp,
                                         mediaMetadataProvider = mediaItem::mediaMetadata,
                                         durationProvider = { durationState.value },
@@ -2290,7 +2301,11 @@ fun UnifiedPlayer(
                                                     onDismiss = {
                                                         isShowingLyrics = false
                                                     },
-                                                    ensureSongInserted = { Database.insert(mediaItem) },
+                                                    ensureSongInserted = {
+                                                        coroutineScope.launch(Dispatchers.IO) {
+                                                            Database.insert(mediaItem)
+                                                        }
+                                                    },
                                                     size = 1000.dp,
                                                     mediaMetadataProvider = mediaItem::mediaMetadata,
                                                     durationProvider = { durationState.value },
@@ -2400,7 +2415,9 @@ fun UnifiedPlayer(
                                                                 isShowingLyrics = !isShowingLyrics
                                                             }
                                                             if (index != pagerState.settledPage) {
-                                                                binder.hybridPlayer?.playAtIndex(index)
+                                                                binder.hybridPlayer?.playAtIndex(
+                                                                    index
+                                                                )
                                                             }
                                                         },
                                                         onLongClick = {
@@ -2813,7 +2830,11 @@ fun UnifiedPlayer(
                             state = hazeState,
                             style = HazeDefaults.style(
                                 backgroundColor = Color.Transparent,
-                                tint = HazeTint(if (lightTheme) Color.White.copy(0.5f) else Color.Black.copy(0.5f)),
+                                tint = HazeTint(
+                                    if (lightTheme) Color.White.copy(0.5f) else Color.Black.copy(
+                                        0.5f
+                                    )
+                                ),
                                 blurRadius = 8.dp
                             )
                         )
@@ -3001,7 +3022,9 @@ fun UnifiedPlayer(
                                             if (!showlyricsthumbnail && !showvisthumbnail) {
                                                 coroutineScope.launch {
                                                     val new =
-                                                        appearanceSettingsManager.activeSettings.value.copy(showThumbnail = !showthumbnail)
+                                                        appearanceSettingsManager.activeSettings.value.copy(
+                                                            showThumbnail = !showthumbnail
+                                                        )
                                                     appearanceSettingsManager.updatePreset(new)
                                                 }
                                             }
@@ -3338,7 +3361,9 @@ fun UnifiedPlayer(
 
                                         val coverModifier = Modifier
                                             .then(
-                                                if (index == mediaItemIndex) artworkShared(artworkKey)
+                                                if (index == mediaItemIndex) artworkShared(
+                                                    artworkKey
+                                                )
                                                 else Modifier
                                             )
                                             .fillMaxSize()
@@ -3625,7 +3650,11 @@ fun UnifiedPlayer(
                                     onDismiss = {
                                         isShowingLyrics = false
                                     },
-                                    ensureSongInserted = { Database.insert(mediaItem) },
+                                    ensureSongInserted = {
+                                        coroutineScope.launch(Dispatchers.IO) {
+                                            Database.insert(mediaItem)
+                                        }
+                                    },
                                     size = 1000.dp,
                                     mediaMetadataProvider = mediaItem::mediaMetadata,
                                     durationProvider = { durationState.value },
@@ -3724,16 +3753,14 @@ fun UnifiedPlayer(
                                                     type = PopupType.Error
                                                 )
                                             } else if (!isYtSyncEnabled()) {
-                                                Database.asyncTransaction {
-                                                    CoroutineScope(Dispatchers.IO).launch {
-                                                        mediaItem.takeIf { it.mediaId == mediaItem.mediaId }
-                                                            ?.let { mediaItem ->
-                                                                mediaItemToggleLike(mediaItem)
-                                                            }
-                                                    }
+                                                coroutineScope.launch(Dispatchers.IO){
+                                                    mediaItem.takeIf { it.mediaId == mediaItem.mediaId }
+                                                        ?.let { mediaItem ->
+                                                            mediaItemToggleLike(mediaItem)
+                                                        }
                                                 }
                                             } else {
-                                                CoroutineScope(Dispatchers.IO).launch {
+                                                coroutineScope.launch(Dispatchers.IO) {
                                                     addToOnlineLikedSong(mediaItem)
                                                 }
                                             }
@@ -3746,25 +3773,24 @@ fun UnifiedPlayer(
                                                     type = PopupType.Error
                                                 )
                                             } else if (!isYtSyncEnabled()) {
-                                                Database.asyncTransaction {
-                                                    CoroutineScope(Dispatchers.IO).launch {
+                                                    coroutineScope.launch(Dispatchers.IO) {
                                                         mediaItem.takeIf { it.mediaId == mediaItem.mediaId }
                                                             ?.let { mediaItem ->
-                                                                if (like(
+                                                                if (Database.like(
                                                                         mediaItem.mediaId,
                                                                         setDisLikeState(likedAt)
                                                                     ) == 0
                                                                 ) {
-                                                                    insert(
+                                                                    Database.insert(
                                                                         mediaItem,
                                                                         Song::toggleDislike
                                                                     )
                                                                 }
                                                             }
                                                     }
-                                                }
+
                                             } else {
-                                                CoroutineScope(Dispatchers.IO).launch {
+                                                coroutineScope.launch(Dispatchers.IO) {
                                                     removeFromOnlineLikedSong(mediaItem)
                                                 }
                                             }
