@@ -10,6 +10,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: update-stats
+  cancel-in-progress: true  
+
 jobs:
   update-card:
     runs-on: ubuntu-latest
@@ -19,20 +23,20 @@ jobs:
 
       - name: Fetch Data and Update History
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # 1. Scarica dati generali
-          REPO_DATA=$(curl -s -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/fast4x/RiPlay")
-          STARS=$(echo "$REPO_DATA" | jq '.stargazers_count')
-          FORKS=$(echo "$REPO_DATA" | jq '.forks_count')
-          
-          # 2. Scarica dati ultima release
-          LATEST_DATA=$(curl -s -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/fast4x/RiPlay/releases/latest")
-          LATEST_VERSION=$(echo "$LATEST_DATA" | jq -r '.tag_name')
-          LATEST_DOWNLOADS=$(echo "$LATEST_DATA" | jq '[.assets[].download_count] | add // 0')
-          
-          # 3. Scarica download totali
-          TOTAL_DOWNLOADS=$(curl -s -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/fast4x/RiPlay/releases" | jq '[.[].assets[].download_count] | add // 0')
+          REPO="repos/fast4x/RiPlay"
+
+          STARS=$(gh api "$REPO" --jq '.stargazers_count')
+          FORKS=$(gh api "$REPO" --jq '.forks_count')
+
+          LATEST_VERSION=$(gh api "$REPO/releases/latest" --jq '.tag_name')
+          LATEST_DOWNLOADS=$(gh api "$REPO/releases/latest" --jq '[.assets[].download_count] | add // 0')
+
+          # Totale: somma su TUTTE le release, di TUTTE le pagine
+          TOTAL_DOWNLOADS=$(gh api --paginate "$REPO/releases" \
+              --jq '.[].assets[]?.download_count // 0' \
+              | jq -s 'add // 0')
           
           # Formatta numeri per la Card
           format_number() {
@@ -52,7 +56,7 @@ jobs:
           LAST_SAVED=$(jq '.[-1].downloads // empty' history.json)
           
           # Salva il nuovo punto SOLO se il numero è cambiato rispetto all'ultima volta
-          if [ "$LAST_SAVED" != "$TOTAL_DOWNLOADS" ]; then
+          if [ "$LAST_SAVED" > "$TOTAL_DOWNLOADS" ]; then
             TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M")
             jq --arg time "$TIMESTAMP" --argjson dl "$TOTAL_DOWNLOADS" '. += [{"time": $time, "downloads": $dl}]' history.json > tmp.json && mv tmp.json history.json
             echo "UPDATE_NEEDED=true" >> $GITHUB_ENV
@@ -136,7 +140,7 @@ jobs:
               </linearGradient>
             </defs>
             <rect width="{width}" height="{height}" rx="12" fill="#ffffff" filter="url(#shadow2)" stroke="#e1e4e8" stroke-width="1"/>
-            <text x="20" y="24" fill="#2b3137" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" font-weight="600">📈 Download Growth (Actual: {fmt(max_v)})</text>
+            <text x="20" y="24" fill="#2b3137" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" font-weight="600">📈 Download Growth (Actual: {fmt(values[-1])})</text>
             
             <!-- Area sotto la linea -->
             <polygon fill="url(#fillGrad)" points="{points[0]},{height - padding} {' '.join(points)} {points[-1]},{height - padding}" />
