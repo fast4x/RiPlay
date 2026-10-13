@@ -27,7 +27,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.AnchoredDraggableState
@@ -291,6 +290,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 import kotlin.Float.Companion.POSITIVE_INFINITY
+import kotlin.enums.enumEntries
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
@@ -343,7 +343,6 @@ fun UnifiedPlayer(
         openingFlight = false
     }
 
-    val dragBlocked = openingFlight               // il guard del drag per non bloccare lo swipe down
     val transitionActive = sharedTransitionScope?.isTransitionActive == true
     val dragEnabled = !isExiting && !transitionActive
 
@@ -563,23 +562,6 @@ fun UnifiedPlayer(
     }
 
     val mediaItem = playerState.mediaInfo?.mediaItem ?: return
-
-    /*
-    val requestLog = remember(mediaItem.mediaId) {
-        Timber.d("CoilDebug Rebuilding request for mediaId: ${mediaItem.mediaId}")
-        ImageRequest.Builder(context)
-            .data(mediaItem.mediaMetadata.artworkUri.toString().toThumbnail(1200))
-            .size(1200, 1200)
-            .transformations(LandscapeToSquareTransformation(1200))
-            .listener(
-                onStart = { Timber.d("CoilDebug Request STARTED: ${it.data}") },
-                onSuccess = { _, result ->
-                    Timber.d("CoilDebugRequest SUCCESS - dataSource: ${result.dataSource}")
-                }
-            )
-            .build()
-    }
-     */
 
     val pagerState = rememberPagerState(pageCount = { mediaItems?.size ?: 0}, initialPage = mediaItemIndex,)
     val pagerStateFS = rememberPagerState(pageCount = { mediaItems?.size ?: 0 }, initialPage = mediaItemIndex,)
@@ -1063,12 +1045,21 @@ fun UnifiedPlayer(
     val showCoverThumbnailAnimation = appearanceSettings.showCoverThumbnailAnimation
     val coverThumbnailAnimation = appearanceSettings.coverThumbnailAnimation
 
-    var valueGrad by rememberSaveable { mutableStateOf(2) }
-    val gradients = enumValues<AnimatedGradient>()
+    var valueGrad by rememberSaveable { mutableIntStateOf(2) }
+    val gradients = enumEntries<AnimatedGradient>().toTypedArray()
     var tempGradient by rememberSaveable { mutableStateOf(AnimatedGradient.Linear) }
-    //var albumCoverRotation by rememberPreference(ALBUM_COVER_ROTATION.key, false)
+
     val albumCoverRotation = appearanceSettings.albumCoverRotation
-    var circleOffsetY by rememberSaveable { mutableStateOf(0f) }
+    var circleOffsetY by rememberSaveable { mutableFloatStateOf(0f) }
+
+    // Animiamo lo sfondo dello shader per tutti i background animati in base allo stato del player, si muove quando è in play
+    var targetShaderSpeed by remember(playerState.isPlaying) { mutableFloatStateOf(if (playerState.isPlaying) .5f else 0f) }
+    val animatedTargetShaderValue by animateFloatAsState(
+        targetValue = targetShaderSpeed,
+        animationSpec = tween(durationMillis = 250),
+        label = "progress"
+    )
+
 
     if (animatedGradient == AnimatedGradient.Random) {
         LaunchedEffect(mediaItem.mediaId) {
@@ -1183,6 +1174,9 @@ fun UnifiedPlayer(
                 .background(color.background1)
         }
     } else {
+        // Aggiungiamo un background generale in modo da non rendere il background invisibile
+        containerModifier = containerModifier.background(dynamicColorPalette.background0)
+
         when (playerBackgroundColors) {
 
             PlayerBackgroundColors.AnimatedGradient -> {
@@ -1240,7 +1234,8 @@ fun UnifiedPlayer(
                             sizeShader = Size(it.width.toFloat(), it.height.toFloat())
                         }
                         .shaderBackground(
-                            MesmerizingLens
+                            MesmerizingLens,
+                            speed = animatedTargetShaderValue
                         )
                 } else if ((animatedGradient == AnimatedGradient.Random && tempGradient == gradients[5]) || animatedGradient == AnimatedGradient.GlossyGradients) {
                     containerModifier = containerModifier
@@ -1248,7 +1243,8 @@ fun UnifiedPlayer(
                             sizeShader = Size(it.width.toFloat(), it.height.toFloat())
                         }
                         .shaderBackground(
-                            GlossyGradients
+                            GlossyGradients,
+                            speed = animatedTargetShaderValue
                         )
                         .background(if (!lightTheme) Color.Black.copy(0.2f) else Color.Transparent)
                 } else if ((animatedGradient == AnimatedGradient.Random && tempGradient == gradients[6]) || animatedGradient == AnimatedGradient.GradientFlow) {
@@ -1257,7 +1253,8 @@ fun UnifiedPlayer(
                             sizeShader = Size(it.width.toFloat(), it.height.toFloat())
                         }
                         .shaderBackground(
-                            GradientFlow
+                            GradientFlow,
+                            speed = animatedTargetShaderValue
                         )
                         .background(if (!lightTheme) Color.Black.copy(0.2f) else Color.Transparent)
                 } else if ((animatedGradient == AnimatedGradient.Random && tempGradient == gradients[7]) || animatedGradient == AnimatedGradient.PurpleLiquid) {
@@ -1266,7 +1263,8 @@ fun UnifiedPlayer(
                             sizeShader = Size(it.width.toFloat(), it.height.toFloat())
                         }
                         .shaderBackground(
-                            PurpleLiquid
+                            PurpleLiquid,
+                            speed = animatedTargetShaderValue
                         )
                 } else if ((animatedGradient == AnimatedGradient.Random && tempGradient == gradients[8]) || animatedGradient == AnimatedGradient.InkFlow) {
                     containerModifier = containerModifier
@@ -1274,7 +1272,8 @@ fun UnifiedPlayer(
                             sizeShader = Size(it.width.toFloat(), it.height.toFloat())
                         }
                         .shaderBackground(
-                            InkFlow
+                            InkFlow,
+                            speed = animatedTargetShaderValue
                         )
                         .background(if (lightTheme) Color.White.copy(0.4f) else Color.Transparent)
                 } else if ((animatedGradient == AnimatedGradient.Random && tempGradient == gradients[9]) || animatedGradient == AnimatedGradient.OilFlow) {
@@ -1283,7 +1282,8 @@ fun UnifiedPlayer(
                             sizeShader = Size(it.width.toFloat(), it.height.toFloat())
                         }
                         .shaderBackground(
-                            OilFlow
+                            OilFlow,
+                            speed = animatedTargetShaderValue
                         )
                         .background(if (lightTheme) Color.White.copy(0.4f) else Color.Transparent)
                 } else if ((animatedGradient == AnimatedGradient.Random && tempGradient == gradients[10]) || animatedGradient == AnimatedGradient.IceReflection) {
@@ -1292,7 +1292,8 @@ fun UnifiedPlayer(
                             sizeShader = Size(it.width.toFloat(), it.height.toFloat())
                         }
                         .shaderBackground(
-                            IceReflection
+                            IceReflection,
+                            speed = animatedTargetShaderValue
                         )
                         .background(if (!lightTheme) Color.Black.copy(0.3f) else Color.Transparent)
                         .background(if (lightTheme) Color.White.copy(0.4f) else Color.Transparent)
@@ -1302,7 +1303,8 @@ fun UnifiedPlayer(
                             sizeShader = Size(it.width.toFloat(), it.height.toFloat())
                         }
                         .shaderBackground(
-                            Stage
+                            Stage,
+                            speed = animatedTargetShaderValue
                         )
                         .background(if (!lightTheme) Color.Black.copy(0.3f) else Color.Transparent)
                 } else if ((animatedGradient == AnimatedGradient.Random && tempGradient == gradients[12]) || animatedGradient == AnimatedGradient.GoldenMagma) {
@@ -1311,7 +1313,8 @@ fun UnifiedPlayer(
                             sizeShader = Size(it.width.toFloat(), it.height.toFloat())
                         }
                         .shaderBackground(
-                            GoldenMagma
+                            GoldenMagma,
+                            speed = animatedTargetShaderValue
                         )
                         .background(if (!lightTheme) Color.Black.copy(0.2f) else Color.Transparent)
                         .background(if (lightTheme) Color.White.copy(0.3f) else Color.Transparent)
@@ -1321,7 +1324,8 @@ fun UnifiedPlayer(
                             sizeShader = Size(it.width.toFloat(), it.height.toFloat())
                         }
                         .shaderBackground(
-                            BlackCherryCosmos
+                            BlackCherryCosmos,
+                            speed = animatedTargetShaderValue
                         )
                         .background(if (lightTheme) Color.White.copy(0.35f) else Color.Transparent)
                 }
