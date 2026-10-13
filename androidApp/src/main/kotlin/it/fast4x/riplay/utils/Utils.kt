@@ -305,15 +305,16 @@ val JsonManager = Json {
     // non crasha, ma usa i valori di default del costruttore Kotlin.
     ignoreUnknownKeys = true
 
-    // Magia pura: se un campo nel JSON corrisponde esattamente al valore
-    // di default nella data class, NON lo scrive nel file JSON.
-    // Questo ridurrà il JSON del preset "Zen" a poche decine di righe.
-    encodeDefaults = false
+    // Enum sconosciuto / null su non-null prende il default, senza eccezione
+    coerceInputValues = true
 
-    // Opzionale: utile per il debug e per file leggibili dagli utenti
-    prettyPrint = true
+    // Scrive comunque tutte le variabili di istanza, anche quelle identiche al default
+    encodeDefaults = true
 
     // Coerenza dei nomi (se hai usato camelCase in Kotlin,
     // lo mantiene in JSON invece di convertire in snake_case)
     namingStrategy = null
+
+    // Disabilita la formattazione
+    prettyPrint = false
 }
