@@ -58,50 +58,6 @@ class HybridPlayer (
         PlaybackStatsListener(false, playerService)
     private var analyticsAttached = false
 
-    /* // Non è necessario lo mantengo come eventuale workaround
-    private val positionUpdater = object : Runnable {
-        override fun run() {
-            if (activeEngine == ActiveEngine.YOUTUBE && isPlaying) { // Gira solo se YouTube sta SUONANDO davvero
-                val currentPos = getCurrentPosition()
-
-                // Costruiamo un PositionInfo minimale e leggerissimo senza calcolare la timeline ad ogni ciclo.
-                // A Media3, per aggiornare la barra di scorrimento visiva, servono solo l'indice e i millisecondi!
-                val positionInfo = Player.PositionInfo(
-                    null,                  // windowUid (null va benissimo per il refresh visivo)
-                    currentMediaItemIndex, // Indice corrente nella playlist
-                    currentMediaItem,      // Oggetto MediaItem corrente
-                    null,                  // periodUid
-                    0,                     // periodIndex
-                    currentPos,            // Posizione corrente estratta dai tuoi secondi di YouTube
-                    currentPos,            // contentPositionMs
-                    C.INDEX_UNSET,
-                    C.INDEX_UNSET
-                )
-
-                // Creiamo l'evento nativo per la barra di scorrimento
-                val events = Player.Events(
-                    FlagSet.Builder()
-                        .add(Player.EVENT_POSITION_DISCONTINUITY)
-                        .build()
-                )
-
-                // Spariamo l'evento a Media3 per muovere la linea del tempo visiva
-                hybridListeners.forEach { listener ->
-                    listener.onPositionDiscontinuity(
-                        positionInfo,
-                        positionInfo,
-                        Player.DISCONTINUITY_REASON_SKIP
-                    )
-                    listener.onEvents(this@HybridPlayer, events)
-                }
-
-                // Continua il monitoraggio a intervallo stabile (200ms va benissimo)
-                mainHandler.postDelayed(this, 200)
-            }
-        }
-    }
-     */
-
     override fun addListener(listener: Player.Listener) {
         super.addListener(listener)
         hybridListeners.add(listener)
@@ -114,7 +70,6 @@ class HybridPlayer (
 
     fun switchToExo() {
         activeEngine = ActiveEngine.EXOPLAYER
-        //mainHandler.removeCallbacks(positionUpdater)
 
         exoPlayer.volume = userVolume
 
@@ -152,18 +107,9 @@ class HybridPlayer (
 
         youtubePlayWhenReady = youtubeControl.isPlaying()
 
-        //mainHandler.removeCallbacks(positionUpdater)
         invalidateYouTubeTrackChanged()
 
-//        // Facciamo ripartire il monitoraggio della posizione solo dopo mezzo secondo
-//        mainHandler.postDelayed({
-//            if (activeEngine == ActiveEngine.YOUTUBE) {
-//                mainHandler.post(positionUpdater)
-//            }
-//        }, 200)
     }
-
-    // Dentro HybridPlayer.kt
 
     // Chiamare SOLO dentro Play(), Pause() o quando lo stato play/pausa cambia realmente su YouTube
     fun invalidateYouTubePlayPause() {
@@ -283,12 +229,6 @@ class HybridPlayer (
                 alternativeDuration
             } else {
                 C.TIME_UNSET
-
-                // FALLBACK: Se l'hybridPlayer è ancora in avvio, leggiamo la durata
-                // salvata negli extras del MediaItem che ExoPlayer ha già caricato!
-//                val currentItem = currentMediaItem // Riferimento al MediaItem corrente del ForwardingPlayer
-//                val durationText = currentItem?.mediaMetadata?.extras?.getString("durationText") ?: "04:00"
-//                durationTextToMillis(durationText)
             }
         }
 
@@ -309,8 +249,6 @@ class HybridPlayer (
             super.playerError
         }
     }
-
-
 
     override fun getPlayWhenReady(): Boolean {
         val result = if (activeEngine == ActiveEngine.YOUTUBE) {
@@ -339,48 +277,9 @@ class HybridPlayer (
 
     }
 
-    /*
-    override fun setPlayWhenReady(playWhenReady: Boolean) {
-        val azione = if (playWhenReady) "PLAY" else "PAUSA"
-        tracciaSorgenteComando("HybridPlayer setPlayWhenReady -> $azione")
-
-        if (activeEngine == ActiveEngine.YOUTUBE) {
-            Timber.d("HybridPlayer setPlayWhenReady() called: activeEngine = $activeEngine playWhenReady = $playWhenReady")
-            // 2. Controlliamo l'audio dell'hybridPlayer in base al comando di Android Auto
-            if (playWhenReady) {
-                youtubeControl.play()
-//                mainHandler.removeCallbacks(positionUpdater)
-//                mainHandler.post(positionUpdater)
-                youtubePlayWhenReady = true
-            } else {
-                youtubeControl.pause()
-                youtubePlayWhenReady = false
-                //mainHandler.removeCallbacks(positionUpdater) // Blocca la barra
-            }
-
-            // Inoltriamo il comando a ExoPlayer in background per tenere allineata la sessione
-            super.setPlayWhenReady(youtubePlayWhenReady)
-
-            // Spariamo la notifica in batch che ha reso reattiva l'applicazione
-            invalidateYouTubePlayPause()
-
-            // Ritardiamo di 50ms per dare tempo a Media3 di metabolizzare la pausa
-            mainHandler.postDelayed({
-                // Aggiorniamo il custom layout
-                onRefreshCustomLayoutListener?.invoke()
-            }, 50)
-        } else {
-            super.setPlayWhenReady(playWhenReady)
-        }
-    }
-
-     */
-
-
-
     override fun getAvailableCommands(): Player.Commands {
         val commands = super.getAvailableCommands()
-//        return commands
+
         return if (activeEngine == ActiveEngine.YOUTUBE) {
             // Garantisce che Android Auto veda SEMPRE i tasti Play/Pausa e Seek come attivi e cliccabili
             commands.buildUpon()

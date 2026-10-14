@@ -2976,57 +2976,12 @@ class PlayerService : MediaLibraryService(),
                 val duration = hybridPlayer.duration
                 val position = hybridPlayer.currentPosition
                 val isPlaying = _playerState.value.playbackState == PlaybackState.PLAYING
-                val isPaused = _playerState.value.playbackState == PlaybackState.PAUSED
 
                 // Il guardiano calcola i dati SOLO se c'è una canzone caricata nel player
                 if (duration > 0) {
 
                     val timeLeft = duration - position
                     val crossfadeDurationMs = appSettings.crossfadeDuration.milliseconds
-
-//                    if (BuildConfig.DEBUG)
-//                        Timber.d("PlayerService PlaybackWatchdog: isFading = $isFading isPlaying = $isPlaying isPaused = $isPaused timeleft $timeLeft duration=$duration ms, position=$position ms")
-
-                    // Maybe not needed remove when sure
-                    /*
-                    // ─── SENTINELLA AUDIO FOCUS PER YOUTUBE ONLINE (PERENNE) ───
-                    if (hybridPlayer.activeEngine == ActiveEngine.YOUTUBE) {
-
-                        // CASO A: Rilevamento perdita focus (Timeline si blocca mentre l'interfaccia è in PLAY)
-                        if (isPlaying && !isFading) {
-                            val isWebViewStalledByFocusLoss = position == lastWatchdogPosition &&
-                                    position > 5000 &&
-                                    timeLeft > 3500
-
-                            if (isWebViewStalledByFocusLoss) {
-                                Timber.w("PlayerService PlaybackWatchdog: RILEVATO STALLO TIMELINE (Focus Loss). Sincronizzo in PAUSA.")
-                                //Timber.d("AYPFORK-PlayerService PlaybackWatchdog: RILEVATO STALLO TIMELINE (Focus Loss). Sincronizzo in PAUSA.")
-                                hybridPlayer.executeActualPause() // non usare pausa con fade
-                                lastWatchdogPosition = position
-                                continue
-                            }
-                        }
-
-                        // CASO B: Rilevamento risveglio automatico (Timeline avanza mentre l'interfaccia è in PAUSA)
-                        // Ora funziona al 100% perché il Watchdog è vivo e vegeto!
-                        if (isPaused && lastWatchdogPosition > 0 && !isFading) {
-                            val isWebViewAwakenedByFocusGain = position > lastWatchdogPosition &&
-                                    position > 2000 &&
-                                    timeLeft > 3500
-
-                            if (isWebViewAwakenedByFocusGain) {
-                                Timber.d("PlayerService PlaybackWatchdog: RILEVATO AVANZAMENTO ANOMALO (Focus Gain). Sincronizzo in PLAY.")
-                                //Timber.d("AYPFORK-PlayerService PlaybackWatchdog: RILEVATO AVANZAMENTO ANOMALO (Focus Gain). Sincronizzo in PLAY.")
-                                hybridPlayer.executeActualPlay()
-                                lastWatchdogPosition = position
-                                continue
-                            }
-                        }
-                    }
-                    // ─────────────────────────────────────────────────────────────
-
-                     */
-
 
                     // LE LOGICHE DI FINE BRANO SCATTANO SOLO SE L'APP STA EFFETTIVAMENTE SUONANDO
                     // La logica di fine brano la limitiamo a EXOPLAYER perchè abbiamo mmesso la pausa tra i mediaitems per non creare doppi salti
@@ -3088,29 +3043,6 @@ class PlayerService : MediaLibraryService(),
         }
     }
 
-    /*
-    suspend fun handleEndOfSong(source: String) {
-        isFading = true // blocchiamo il watchdog per il controllo dello stallo per perdita focus
-
-        lastWatchdogPosition = -1L
-
-        if(appSettings.forceUserVideoPlayback){
-            withContext(Dispatchers.IO){
-                appSettingsManager.updateSettings(appSettings.copy(forceUserVideoPlayback = false))
-            }
-        }
-        if (processQueueRepeat()) return
-
-        if (appSettings.crossfadeDuration != CrossfadeDuration.Off) {
-            val nextMediaItemIndex = hybridPlayer.nextMediaItemIndex
-            if (nextMediaItemIndex == -1) return
-            val isNextLocal = hybridPlayer.getMediaItemAt(nextMediaItemIndex).isLocal
-            if (isNextLocal) startExoToExoCrossfade() else startWebViewFadeOut()
-        } else {
-            handlePlayNext("handleEndOfSong chiamato da $source")
-        }
-    }
-     */
 
     suspend fun handleEndOfSong(source: String) {
         isFading = true
@@ -3779,9 +3711,6 @@ class PlayerService : MediaLibraryService(),
         val playerState: StateFlow<PlayerState>
             get() = this@PlayerService.playerState
 
-//        val youtubePlayerPlayingState: Boolean
-//            get() = this@PlayerService.playerState.value.isPlaying
-
         val youtubePlayerBufferedFraction: StateFlow<Float>
             get() = this@PlayerService.internalYoutubeBufferedFraction
 
@@ -3802,15 +3731,6 @@ class PlayerService : MediaLibraryService(),
 
         val currentMediaItemAsSong: Song?
             get() = this@PlayerService.currentSong.value
-
-        fun restoreDefaultVolume() {
-            if (!_isServiceReady.value || !this@PlayerService::hybridPlayer.isInitialized) return
-            if (isFading) return // Se sta facendo il fade, non sovrascrivere l'audio
-
-            // Impostiamo il volume interno al massimo possibile,
-            // l'utente avrà gestito il volume con i tasti fisici, quindi lasciamo al sistema il da farsi
-            hybridPlayer.setVolume(1f)
-        }
 
         val riTuneCastClient: RiTuneCastClient
             @Synchronized
