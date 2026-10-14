@@ -150,16 +150,21 @@ import coil.request.ImageRequest
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.mikepenz.hypnoticcanvas.shaderBackground
 import com.mikepenz.hypnoticcanvas.shaders.BlackCherryCosmos
+import com.mikepenz.hypnoticcanvas.shaders.BubbleRings
 import com.mikepenz.hypnoticcanvas.shaders.GlossyGradients
 import com.mikepenz.hypnoticcanvas.shaders.GoldenMagma
 import com.mikepenz.hypnoticcanvas.shaders.GradientFlow
+import com.mikepenz.hypnoticcanvas.shaders.Heat
 import com.mikepenz.hypnoticcanvas.shaders.IceReflection
 import com.mikepenz.hypnoticcanvas.shaders.InkFlow
 import com.mikepenz.hypnoticcanvas.shaders.MeshGradient
 import com.mikepenz.hypnoticcanvas.shaders.MesmerizingLens
 import com.mikepenz.hypnoticcanvas.shaders.OilFlow
+import com.mikepenz.hypnoticcanvas.shaders.PrismGlass
 import com.mikepenz.hypnoticcanvas.shaders.PurpleLiquid
+import com.mikepenz.hypnoticcanvas.shaders.SpectralAurora
 import com.mikepenz.hypnoticcanvas.shaders.Stage
+import com.mikepenz.hypnoticcanvas.shaders.Stripy
 import dev.chrisbanes.haze.HazeDefaults
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeTint
@@ -205,6 +210,7 @@ import it.fast4x.riplay.enums.QrType
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.extensions.artworkcovermix.ArtworkRepository
 import it.fast4x.riplay.extensions.artworkcovermix.CoverMixBackground
+import it.fast4x.riplay.extensions.hypnoticcanvasshaderfallback.shaderBackgroundFallback
 import it.fast4x.riplay.extensions.qrcodeanalyzer.GenerateQrButton
 import it.fast4x.riplay.musicvault.MusicVaultButton
 import it.fast4x.riplay.ui.components.ActionPillButton
@@ -261,6 +267,7 @@ import it.fast4x.riplay.utils.getIconQueueLoopState
 import it.fast4x.riplay.utils.getLikeState
 import it.fast4x.riplay.utils.hide
 import it.fast4x.riplay.utils.horizontalFadingEdge
+import it.fast4x.riplay.utils.isAtLeastAndroid13
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.isVideo
@@ -1233,68 +1240,103 @@ fun UnifiedPlayer(
                         .onSizeChanged {
                             sizeShader = Size(it.width.toFloat(), it.height.toFloat())
                         }
-                        .shaderBackground(
-                            MesmerizingLens,
-                            speed = animatedTargetShaderValue
-                        )
+                        .applyIfWhenComposable(isAtLeastAndroid13) {
+                            shaderBackground(
+                                MesmerizingLens,
+                                speed = animatedTargetShaderValue
+                            )
+                        }
+                        .applyIfWhenComposable(!isAtLeastAndroid13) {
+                            shaderBackgroundFallback(AnimatedGradient.MesmerizingLens, speed = animatedTargetShaderValue)
+                        }
                 } else if ((animatedGradient == AnimatedGradient.Random && tempGradient == gradients[5]) || animatedGradient == AnimatedGradient.GlossyGradients) {
                     containerModifier = containerModifier
                         .onSizeChanged {
                             sizeShader = Size(it.width.toFloat(), it.height.toFloat())
                         }
-                        .shaderBackground(
-                            GlossyGradients,
-                            speed = animatedTargetShaderValue
-                        )
+                        .applyIfWhenComposable(isAtLeastAndroid13) {
+                            shaderBackground(
+                                GlossyGradients,
+                                speed = animatedTargetShaderValue
+                            )
+                        }
+                        .applyIfWhenComposable(!isAtLeastAndroid13) {
+                            shaderBackgroundFallback(AnimatedGradient.GlossyGradients, speed = animatedTargetShaderValue)
+                        }
                         .background(if (!lightTheme) Color.Black.copy(0.2f) else Color.Transparent)
                 } else if ((animatedGradient == AnimatedGradient.Random && tempGradient == gradients[6]) || animatedGradient == AnimatedGradient.GradientFlow) {
                     containerModifier = containerModifier
                         .onSizeChanged {
                             sizeShader = Size(it.width.toFloat(), it.height.toFloat())
                         }
-                        .shaderBackground(
-                            GradientFlow,
-                            speed = animatedTargetShaderValue
-                        )
+                        .applyIfWhenComposable(isAtLeastAndroid13) {
+                            shaderBackground(
+                                GradientFlow,
+                                speed = animatedTargetShaderValue
+                            )
+                        }
+                        .applyIfWhenComposable(!isAtLeastAndroid13) {
+                            shaderBackgroundFallback(AnimatedGradient.GradientFlow, speed = animatedTargetShaderValue)
+                        }
                         .background(if (!lightTheme) Color.Black.copy(0.2f) else Color.Transparent)
                 } else if ((animatedGradient == AnimatedGradient.Random && tempGradient == gradients[7]) || animatedGradient == AnimatedGradient.PurpleLiquid) {
                     containerModifier = containerModifier
                         .onSizeChanged {
                             sizeShader = Size(it.width.toFloat(), it.height.toFloat())
                         }
-                        .shaderBackground(
-                            PurpleLiquid,
-                            speed = animatedTargetShaderValue
-                        )
+                        .applyIfWhenComposable(isAtLeastAndroid13) {
+                            shaderBackground(
+                                PurpleLiquid,
+                                speed = animatedTargetShaderValue
+                            )
+                        }
+                        .applyIfWhenComposable(!isAtLeastAndroid13) {
+                            shaderBackgroundFallback(AnimatedGradient.PurpleLiquid, speed = animatedTargetShaderValue)
+                        }
                 } else if ((animatedGradient == AnimatedGradient.Random && tempGradient == gradients[8]) || animatedGradient == AnimatedGradient.InkFlow) {
                     containerModifier = containerModifier
                         .onSizeChanged {
                             sizeShader = Size(it.width.toFloat(), it.height.toFloat())
                         }
-                        .shaderBackground(
-                            InkFlow,
-                            speed = animatedTargetShaderValue
-                        )
+                        .applyIfWhenComposable(isAtLeastAndroid13) {
+                            shaderBackground(
+                                InkFlow,
+                                speed = animatedTargetShaderValue
+                            )
+                        }
+                        .applyIfWhenComposable(!isAtLeastAndroid13) {
+                            shaderBackgroundFallback(AnimatedGradient.InkFlow, speed = animatedTargetShaderValue)
+                        }
                         .background(if (lightTheme) Color.White.copy(0.4f) else Color.Transparent)
                 } else if ((animatedGradient == AnimatedGradient.Random && tempGradient == gradients[9]) || animatedGradient == AnimatedGradient.OilFlow) {
                     containerModifier = containerModifier
                         .onSizeChanged {
                             sizeShader = Size(it.width.toFloat(), it.height.toFloat())
                         }
-                        .shaderBackground(
-                            OilFlow,
-                            speed = animatedTargetShaderValue
-                        )
+                        .applyIfWhenComposable(isAtLeastAndroid13) {
+                            shaderBackground(
+                                OilFlow,
+                                speed = animatedTargetShaderValue
+                            )
+                        }
+                        .applyIfWhenComposable(!isAtLeastAndroid13) {
+                            shaderBackgroundFallback(AnimatedGradient.OilFlow, speed = animatedTargetShaderValue)
+                        }
                         .background(if (lightTheme) Color.White.copy(0.4f) else Color.Transparent)
                 } else if ((animatedGradient == AnimatedGradient.Random && tempGradient == gradients[10]) || animatedGradient == AnimatedGradient.IceReflection) {
                     containerModifier = containerModifier
                         .onSizeChanged {
                             sizeShader = Size(it.width.toFloat(), it.height.toFloat())
                         }
-                        .shaderBackground(
-                            IceReflection,
-                            speed = animatedTargetShaderValue
-                        )
+                        .applyIfWhenComposable(isAtLeastAndroid13) {
+                            shaderBackground(
+                                IceReflection,
+                                speed = animatedTargetShaderValue
+                            )
+                        }
+                        .applyIfWhenComposable(!isAtLeastAndroid13) {
+                            shaderBackgroundFallback(AnimatedGradient.IceReflection, speed = animatedTargetShaderValue)
+                        }
                         .background(if (!lightTheme) Color.Black.copy(0.3f) else Color.Transparent)
                         .background(if (lightTheme) Color.White.copy(0.4f) else Color.Transparent)
                 } else if ((animatedGradient == AnimatedGradient.Random && tempGradient == gradients[11]) || animatedGradient == AnimatedGradient.Stage) {
@@ -1302,20 +1344,30 @@ fun UnifiedPlayer(
                         .onSizeChanged {
                             sizeShader = Size(it.width.toFloat(), it.height.toFloat())
                         }
-                        .shaderBackground(
-                            Stage,
-                            speed = animatedTargetShaderValue
-                        )
+                        .applyIfWhenComposable(isAtLeastAndroid13) {
+                            shaderBackground(
+                                Stage,
+                                speed = animatedTargetShaderValue
+                            )
+                        }
+                        .applyIfWhenComposable(!isAtLeastAndroid13) {
+                            shaderBackgroundFallback(AnimatedGradient.Stage, speed = animatedTargetShaderValue)
+                        }
                         .background(if (!lightTheme) Color.Black.copy(0.3f) else Color.Transparent)
                 } else if ((animatedGradient == AnimatedGradient.Random && tempGradient == gradients[12]) || animatedGradient == AnimatedGradient.GoldenMagma) {
                     containerModifier = containerModifier
                         .onSizeChanged {
                             sizeShader = Size(it.width.toFloat(), it.height.toFloat())
                         }
-                        .shaderBackground(
-                            GoldenMagma,
-                            speed = animatedTargetShaderValue
-                        )
+                        .applyIfWhenComposable(isAtLeastAndroid13) {
+                            shaderBackground(
+                                GoldenMagma,
+                                speed = animatedTargetShaderValue
+                            )
+                        }
+                        .applyIfWhenComposable(!isAtLeastAndroid13) {
+                            shaderBackgroundFallback(AnimatedGradient.GoldenMagma, speed = animatedTargetShaderValue)
+                        }
                         .background(if (!lightTheme) Color.Black.copy(0.2f) else Color.Transparent)
                         .background(if (lightTheme) Color.White.copy(0.3f) else Color.Transparent)
                 } else if ((animatedGradient == AnimatedGradient.Random && tempGradient == gradients[13]) || animatedGradient == AnimatedGradient.BlackCherryCosmos) {
@@ -1323,11 +1375,86 @@ fun UnifiedPlayer(
                         .onSizeChanged {
                             sizeShader = Size(it.width.toFloat(), it.height.toFloat())
                         }
-                        .shaderBackground(
-                            BlackCherryCosmos,
-                            speed = animatedTargetShaderValue
-                        )
+                        .applyIfWhenComposable(isAtLeastAndroid13) {
+                            shaderBackground(
+                                BlackCherryCosmos,
+                                speed = animatedTargetShaderValue
+                            )
+                        }
+                        .applyIfWhenComposable(!isAtLeastAndroid13) {
+                            shaderBackgroundFallback(AnimatedGradient.BlackCherryCosmos, speed = animatedTargetShaderValue)
+                        }
                         .background(if (lightTheme) Color.White.copy(0.35f) else Color.Transparent)
+                } else if ((animatedGradient == AnimatedGradient.Random && tempGradient == gradients[14]) || animatedGradient == AnimatedGradient.SpectralAura) {
+                    containerModifier = containerModifier
+                        .onSizeChanged {
+                            sizeShader = Size(it.width.toFloat(), it.height.toFloat())
+                        }
+                        .applyIfWhenComposable(isAtLeastAndroid13) {
+                            shaderBackground(
+                                SpectralAurora(),
+                                speed = animatedTargetShaderValue
+                            )
+                        }
+                        .applyIfWhenComposable(!isAtLeastAndroid13) {
+                            shaderBackgroundFallback(AnimatedGradient.SpectralAura, speed = animatedTargetShaderValue)
+                        }
+                } else if ((animatedGradient == AnimatedGradient.Random && tempGradient == gradients[15]) || animatedGradient == AnimatedGradient.PrismGlass) {
+                    containerModifier = containerModifier
+                        .onSizeChanged {
+                            sizeShader = Size(it.width.toFloat(), it.height.toFloat())
+                        }
+                        .applyIfWhenComposable(isAtLeastAndroid13) {
+                            shaderBackground(
+                                PrismGlass(),
+                                speed = animatedTargetShaderValue
+                            )
+                        }
+                        .applyIfWhenComposable(!isAtLeastAndroid13) {
+                            shaderBackgroundFallback(AnimatedGradient.PrismGlass, speed = animatedTargetShaderValue)
+                        }
+                } else if ((animatedGradient == AnimatedGradient.Random && tempGradient == gradients[16]) || animatedGradient == AnimatedGradient.Heat) {
+                    containerModifier = containerModifier
+                        .onSizeChanged {
+                            sizeShader = Size(it.width.toFloat(), it.height.toFloat())
+                        }
+                        .applyIfWhenComposable(isAtLeastAndroid13) {
+                            shaderBackground(
+                                Heat(),
+                                speed = animatedTargetShaderValue
+                            )
+                        }
+                        .applyIfWhenComposable(!isAtLeastAndroid13) {
+                            shaderBackgroundFallback(AnimatedGradient.Heat, speed = animatedTargetShaderValue)
+                        }
+                } else if ((animatedGradient == AnimatedGradient.Random && tempGradient == gradients[17]) || animatedGradient == AnimatedGradient.Stripy) {
+                    containerModifier = containerModifier
+                        .onSizeChanged {
+                            sizeShader = Size(it.width.toFloat(), it.height.toFloat())
+                        }
+                        .applyIfWhenComposable(isAtLeastAndroid13) {
+                            shaderBackground(
+                                Stripy(),
+                                speed = animatedTargetShaderValue
+                            )
+                        }
+                        .applyIfWhenComposable(!isAtLeastAndroid13) {
+                            shaderBackgroundFallback(AnimatedGradient.Stripy, speed = animatedTargetShaderValue)
+                        }
+                } else if ((animatedGradient == AnimatedGradient.Random && tempGradient == gradients[18]) || animatedGradient == AnimatedGradient.BubbleRings) {
+                    containerModifier = containerModifier
+                        .onSizeChanged {
+                            sizeShader = Size(it.width.toFloat(), it.height.toFloat())
+                        }
+                        .applyIfWhenComposable(isAtLeastAndroid13) {
+                            shaderBackground(
+                                BubbleRings,
+                                speed = animatedTargetShaderValue
+                            )
+                        }
+                        .applyIfWhenComposable(!isAtLeastAndroid13) {
+                            shaderBackgroundFallback(AnimatedGradient.BubbleRings, speed = animatedTargetShaderValue)
+                        }
                 }
             }
 

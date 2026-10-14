@@ -19,6 +19,13 @@ enum class AnimatedGradient {
     Stage,
     GoldenMagma,
     BlackCherryCosmos,
+
+    SpectralAura,
+    PrismGlass,
+    Heat,
+    Stripy,
+    BubbleRings,
+
     Random;
 
     val displayName: String
@@ -39,5 +46,10 @@ enum class AnimatedGradient {
             AnimatedGradient.IceReflection -> stringResource(R.string.icereflection)
             AnimatedGradient.BlackCherryCosmos -> stringResource(R.string.blackcherrycosmos)
             AnimatedGradient.Random -> stringResource(R.string.random)
+            AnimatedGradient.SpectralAura -> "Spectral Aura" //stringResource(R.string.spectralaura)
+            AnimatedGradient.PrismGlass -> "Prism Glass" //stringResource(R.string.prismglass)
+            AnimatedGradient.Heat -> "Heat" //stringResource(R.string.heat)
+            AnimatedGradient.Stripy -> "Stripy" //stringResource(R.string.stripy)
+            AnimatedGradient.BubbleRings -> "Bubble Rings" //stringResource(R.string.bubblerings)
         }
 }
