@@ -56,18 +56,6 @@ fun UnifiedGetControls(
     if (showSpeedPlayerDialog) {
         PlaybackParamsDialog(
             onDismiss = { showSpeedPlayerDialog = false },
-            speedValue = {
-                scope.launch {
-                    appSettingsManager.updateSettings(
-                        appSettingsManager.activeSettings.value.copy(
-                            playbackSpeed = it
-                        )
-                    )
-                }
-            },
-            pitchValue = {},
-            durationValue = {},
-            scaleValue = onBlurScaleChange
         )
     }
 

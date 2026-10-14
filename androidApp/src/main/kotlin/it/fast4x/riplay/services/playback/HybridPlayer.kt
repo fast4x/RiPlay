@@ -6,6 +6,7 @@ import androidx.media3.common.C
 import androidx.media3.common.FlagSet
 import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.PlaybackException
+import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -237,6 +238,14 @@ class HybridPlayer (
     }
 
     // --- OVERRIDE CRITICI PER NEL DIALOGO CON MEDIA3 E GOOGLE ASSISTANT ---
+
+    override fun setPlaybackParameters(playbackParameters: PlaybackParameters) {
+        return if (activeEngine == ActiveEngine.YOUTUBE) {
+            youtubeControl.setPlaybackRate(playbackParameters.speed)
+        }
+        else super.setPlaybackParameters(playbackParameters)
+
+    }
 
     override fun isPlaying(): Boolean {
         //Timber.d("HybridPlayer isPlaying() called: activeEngine = $activeEngine isPlaying = ${super.isPlaying} youtubeControl.isPlaying() = ${youtubeControl.isPlaying()}")

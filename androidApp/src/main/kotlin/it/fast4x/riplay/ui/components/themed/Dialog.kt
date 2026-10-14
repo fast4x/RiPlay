@@ -2171,10 +2171,6 @@ fun SongMatchingDialog(
 @Composable
 fun PlaybackParamsDialog(
     onDismiss: () -> Unit,
-    speedValue: (Float) -> Unit,
-    pitchValue: (Float) -> Unit,
-    durationValue: (Float) -> Unit,
-    scaleValue: (Float) -> Unit,
 ) {
     val appearanceSettingsManager = LocalAppearanceSettingsManager.current
     val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
@@ -2183,32 +2179,21 @@ fun PlaybackParamsDialog(
     val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val binder = LocalPlayerServiceBinder.current
-    val context = LocalContext.current
-    val defaultSpeed = 1f
-    val defaultPitch = 1f
-    //val defaultVolume = 0.5f //binder?.player?.volume ?: 1f
-    //val defaultDeviceVolume = getDeviceVolume(context)
-    val defaultDuration = 0f
-    val defaultStrength = 25f
-    val defaultBassboost = 0.5f
-    var playbackSpeed = appSettings.playbackSpeed
-    var playbackPitch = appSettings.playbackPitch
-//    var playbackVolume = appSettings.playbackVolume
-//    var playbackDeviceVolume = appSettings.playbackDeviceVolume
-    var playbackDuration = appSettings.playbackDuration
+    val defaultSpeed = remember { 1f }
+    val defaultPitch = remember { 1f }
+    val defaultDuration = remember { 0f }
+    val defaultStrength = remember { 25f }
+    val defaultBassboost = remember { 0.5f }
+    val playbackSpeed = appSettings.playbackSpeed
+    val playbackPitch = appSettings.playbackPitch
+    val playbackDuration = appSettings.playbackDuration
     val blurStrength = appearanceSettings.blurStrength
-    var bassBoost = appSettings.bassBoostLevel
+    val bassBoost = appSettings.bassBoostLevel
 
     val coroutineScope = rememberCoroutineScope()
 
     DefaultDialog(
-        onDismiss = {
-            speedValue(playbackSpeed)
-            pitchValue(playbackPitch)
-            durationValue(playbackDuration)
-            scaleValue(blurStrength)
-            onDismiss()
-        }
+        onDismiss = onDismiss
     ) {
         TitleSection(stringResource(R.string.controls_header_customize))
 
@@ -2250,58 +2235,7 @@ fun PlaybackParamsDialog(
                 toDisplay = { "%.0f".format(it) },
                 range = 0f..50f
             )
-            /*
-            CustomSlider(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 5.dp),
-                value = blurStrength,
-                onValueChange = {
-                    blurStrength = it
-                },
-                valueRange = 0f..50f,
-                gap = 1,
-                //showIndicator = true,
-                thumb = { thumbValue ->
-                    CustomSliderDefaults.Thumb(
-                        thumbValue = "%.0f".format(blurStrength),
-                        color = Color.Transparent,
-                        size = 40.dp,
-                        modifier = Modifier.background(
-                            brush = Brush.linearGradient(listOf(colorPalette.background1, colorPalette.favoritesIcon)),
-                            shape = CircleShape
-                        )
-                    )
-                },
-                track = { sliderPositions ->
-                    Box(
-                        modifier = Modifier
-                            .track()
-                            .border(
-                                width = 1.dp,
-                                color = Color.LightGray.copy(alpha = 0.4f),
-                                shape = CircleShape
-                            )
-                            .background(Color.White)
-                            .padding(1.dp),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .progress(sliderPositions = sliderPositions)
-                                .background(
-                                    brush = Brush.linearGradient(
-                                        listOf(
-                                            colorPalette.favoritesIcon,
-                                            Color.Red
-                                        )
-                                    )
-                                )
-                        )
-                    }
-                }
-            )
-            */
+
         }
 
         Row(
@@ -2320,7 +2254,10 @@ fun PlaybackParamsDialog(
         ) {
             IconButton(
                 onClick = {
-                    playbackDuration = defaultDuration
+                    coroutineScope.launch {
+                        val new = appSettings.copy(playbackDuration = defaultDuration)
+                        appSettingsManager.updateSettings(new)
+                    }
                 },
                 icon = R.drawable.playbackduration,
                 color = colorPalette().favoritesIcon,
@@ -2330,70 +2267,17 @@ fun PlaybackParamsDialog(
 
             SliderControl(
                 state = playbackDuration,
-                onSlide = { playbackDuration = it },
+                onSlide = {
+                    coroutineScope.launch {
+                        val new = appSettings.copy(playbackDuration = it)
+                        appSettingsManager.updateSettings(new)
+                    }
+                },
                 onSlideComplete = {},
                 toDisplay = { "%.0f".format(playbackDuration) },
                 range = 0f..60f
             )
 
-            /*
-            CustomSlider(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    //.padding(top = 13.dp)
-                    .padding(horizontal = 5.dp),
-                value = playbackDuration,
-                onValueChange = {
-                    playbackDuration = it
-                },
-                valueRange = 1f..60f,
-                gap = 1,
-                //showIndicator = true,
-                thumb = { thumbValue ->
-                    CustomSliderDefaults.Thumb(
-                        thumbValue = "%.0f".format(playbackDuration),
-                        color = Color.Transparent,
-                        size = 40.dp,
-                        modifier = Modifier.background(
-                            brush = Brush.linearGradient(
-                                listOf(
-                                    colorPalette.background1,
-                                    colorPalette.favoritesIcon
-                                )
-                            ),
-                            shape = CircleShape
-                        )
-                    )
-                },
-                track = { sliderPositions ->
-                    Box(
-                        modifier = Modifier
-                            .track()
-                            .border(
-                                width = 1.dp,
-                                color = Color.LightGray.copy(alpha = 0.4f),
-                                shape = CircleShape
-                            )
-                            .background(Color.White)
-                            .padding(1.dp),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .progress(sliderPositions = sliderPositions)
-                                .background(
-                                    brush = Brush.linearGradient(
-                                        listOf(
-                                            colorPalette.favoritesIcon,
-                                            Color.Red
-                                        )
-                                    )
-                                )
-                        )
-                    }
-                }
-            )
-            */
         }
 
         Row(
@@ -2412,9 +2296,14 @@ fun PlaybackParamsDialog(
             ) {
                 IconButton(
                     onClick = {
-                        playbackSpeed = defaultSpeed
+                        coroutineScope.launch {
+                            val new = appSettings.copy(playbackSpeed = defaultSpeed)
+                            appSettingsManager.updateSettings(new)
+                        }
+
                         binder?.hybridPlayer?.playbackParameters =
-                            PlaybackParameters(playbackSpeed, playbackPitch)
+                            PlaybackParameters(defaultSpeed, playbackPitch)
+
                     },
                     icon = R.drawable.slow_motion,
                     color = colorPalette().favoritesIcon,
@@ -2425,75 +2314,19 @@ fun PlaybackParamsDialog(
                 SliderControl(
                     state = playbackSpeed,
                     onSlide = {
-                        playbackSpeed = it
                         binder?.hybridPlayer?.playbackParameters =
-                            PlaybackParameters(playbackSpeed, playbackPitch)
+                            PlaybackParameters(it, playbackPitch)
+
+                        coroutineScope.launch {
+                            val new = appSettings.copy(playbackSpeed = it)
+                            appSettingsManager.updateSettings(new)
+                        }
                     },
                     onSlideComplete = {},
                     toDisplay = { "%.1fx".format(playbackSpeed) },
                     range = 0.1f..5f
                 )
 
-                /*
-                CustomSlider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        //.padding(top = 13.dp)
-                        .padding(horizontal = 5.dp),
-                    value = playbackSpeed,
-                    onValueChange = {
-                        playbackSpeed = it
-                        binder?.player?.playbackParameters =
-                            PlaybackParameters(playbackSpeed, playbackPitch)
-                    },
-                    valueRange = 0.1f..5f,
-                    gap = 1,
-                    //showIndicator = true,
-                    thumb = { thumbValue ->
-                        CustomSliderDefaults.Thumb(
-                            thumbValue = "%.1fx".format(playbackSpeed),
-                            color = Color.Transparent,
-                            size = 40.dp,
-                            modifier = Modifier.background(
-                                brush = Brush.linearGradient(
-                                    listOf(
-                                        colorPalette.background1,
-                                        colorPalette.favoritesIcon
-                                    )
-                                ),
-                                shape = CircleShape
-                            )
-                        )
-                    },
-                    track = { sliderPositions ->
-                        Box(
-                            modifier = Modifier
-                                .track()
-                                .border(
-                                    width = 1.dp,
-                                    color = Color.LightGray.copy(alpha = 0.4f),
-                                    shape = CircleShape
-                                )
-                                .background(Color.White)
-                                .padding(1.dp),
-                            contentAlignment = Alignment.CenterStart
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .progress(sliderPositions = sliderPositions)
-                                    .background(
-                                        brush = Brush.linearGradient(
-                                            listOf(
-                                                colorPalette.favoritesIcon,
-                                                Color.Red
-                                            )
-                                        )
-                                    )
-                            )
-                        }
-                    }
-                )
-                 */
             }
 
         Row(
@@ -2512,9 +2345,13 @@ fun PlaybackParamsDialog(
             ) {
                 IconButton(
                     onClick = {
-                        playbackPitch = defaultPitch
                         binder?.hybridPlayer?.playbackParameters =
-                            PlaybackParameters(playbackSpeed, playbackPitch)
+                            PlaybackParameters(playbackSpeed, defaultPitch)
+
+                        coroutineScope.launch {
+                            val new = appSettings.copy(playbackPitch = defaultPitch)
+                            appSettingsManager.updateSettings(new)
+                        }
                     },
                     icon = R.drawable.equalizer,
                     color = colorPalette().favoritesIcon,
@@ -2525,9 +2362,13 @@ fun PlaybackParamsDialog(
                 SliderControl(
                     state = playbackPitch,
                     onSlide = {
-                        playbackPitch = it
                         binder?.hybridPlayer?.playbackParameters =
-                            PlaybackParameters(playbackSpeed, playbackPitch)
+                            PlaybackParameters(playbackSpeed, it)
+
+                        coroutineScope.launch {
+                            val new = appSettings.copy(playbackPitch = it)
+                            appSettingsManager.updateSettings(new)
+                        }
                     },
                     onSlideComplete = {},
                     toDisplay = { "%.1fx".format(playbackPitch) },
@@ -2535,204 +2376,7 @@ fun PlaybackParamsDialog(
                     isEnabled = binder?.currentMediaItemAsSong?.isLocal == true
                 )
 
-                /*
-                CustomSlider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        //.padding(top = 13.dp)
-                        .padding(horizontal = 5.dp),
-                    value = playbackPitch,
-                    onValueChange = {
-                        playbackPitch = it
-                        binder?.player?.playbackParameters =
-                            PlaybackParameters(playbackSpeed, playbackPitch)
-                    },
-                    valueRange = 0.1f..5f,
-                    gap = 1,
-                    //showIndicator = true,
-                    thumb = { thumbValue ->
-                        CustomSliderDefaults.Thumb(
-                            thumbValue = "%.1fx".format(playbackPitch),
-                            color = Color.Transparent,
-                            size = 40.dp,
-                            modifier = Modifier.background(
-                                brush = Brush.linearGradient(
-                                    listOf(
-                                        colorPalette.background1,
-                                        colorPalette.favoritesIcon
-                                    )
-                                ),
-                                shape = CircleShape
-                            )
-                        )
-                    },
-                    track = { sliderPositions ->
-                        Box(
-                            modifier = Modifier
-                                .track()
-                                .border(
-                                    width = 1.dp,
-                                    color = Color.LightGray.copy(alpha = 0.4f),
-                                    shape = CircleShape
-                                )
-                                .background(Color.White)
-                                .padding(1.dp),
-                            contentAlignment = Alignment.CenterStart
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .progress(sliderPositions = sliderPositions)
-                                    .background(
-                                        brush = Brush.linearGradient(
-                                            listOf(
-                                                colorPalette.favoritesIcon,
-                                                Color.Red
-                                            )
-                                        )
-                                    )
-                            )
-                        }
-                    }
-                )
-                 */
             }
-
-        /*
-        Row(
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            TitleMiniSection(stringResource(R.string.controls_title_playback_volume))
-        }
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                IconButton(
-                    onClick = {
-                        //playbackVolume = 0.5f
-                        binder?.hybridPlayer?.volume = playbackVolume
-                    },
-                    icon = R.drawable.volume_up,
-                    color = colorPalette().favoritesIcon,
-                    modifier = Modifier
-                        .size(20.dp)
-                )
-
-                SliderControl(
-                    state = playbackVolume,
-                    onSlide = {
-                        playbackVolume = it
-                        binder?.hybridPlayer?.volume = playbackVolume
-                    },
-                    onSlideComplete = {},
-                    toDisplay = { "%.1f".format(playbackVolume) },
-                    range = 0.0f..1.0f
-                )
-
-                /*
-                CustomSlider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        //.padding(top = 13.dp)
-                        .padding(horizontal = 5.dp),
-                    value = playbackVolume,
-                    onValueChange = {
-                        playbackVolume = it
-                        binder?.player?.volume = playbackVolume
-                    },
-                    valueRange = 0.0f..1.0f,
-                    gap = 1,
-                    //showIndicator = true,
-                    thumb = { thumbValue ->
-                        CustomSliderDefaults.Thumb(
-                            thumbValue = "%.1f".format(playbackVolume),
-                            color = Color.Transparent,
-                            size = 40.dp,
-                            modifier = Modifier.background(
-                                brush = Brush.linearGradient(
-                                    listOf(
-                                        colorPalette.background1,
-                                        colorPalette.favoritesIcon
-                                    )
-                                ),
-                                shape = CircleShape
-                            )
-                        )
-                    },
-                    track = { sliderPositions ->
-                        Box(
-                            modifier = Modifier
-                                .track()
-                                .border(
-                                    width = 1.dp,
-                                    color = Color.LightGray.copy(alpha = 0.4f),
-                                    shape = CircleShape
-                                )
-                                .background(Color.White)
-                                .padding(1.dp),
-                            contentAlignment = Alignment.CenterStart
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .progress(sliderPositions = sliderPositions)
-                                    .background(
-                                        brush = Brush.linearGradient(
-                                            listOf(
-                                                colorPalette.favoritesIcon,
-                                                Color.Red
-                                            )
-                                        )
-                                    )
-                            )
-                        }
-                    }
-                )
-                 */
-            }
-
-        Row(
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            TitleMiniSection(stringResource(R.string.controls_title_device_volume))
-        }
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                IconButton(
-                    onClick = {
-                        playbackDeviceVolume = getDeviceVolume(context)
-                        setDeviceVolume(context, playbackDeviceVolume)
-                    },
-                    icon = R.drawable.master_volume,
-                    color = colorPalette().favoritesIcon,
-                    modifier = Modifier
-                        .size(20.dp)
-                )
-
-                SliderControl(
-                    state = playbackDeviceVolume,
-                    onSlide = {
-                        playbackDeviceVolume = it
-                        setDeviceVolume(context, playbackDeviceVolume)
-                    },
-                    onSlideComplete = {},
-                    toDisplay = { "%.1f".format(playbackDeviceVolume) },
-                    range = 0.0f..1.0f
-                )
-
-            }
-        */
 
         Row(
             horizontalArrangement = Arrangement.Start,
@@ -2750,7 +2394,10 @@ fun PlaybackParamsDialog(
         ) {
             IconButton(
                 onClick = {
-                    bassBoost = defaultBassboost
+                    coroutineScope.launch {
+                        val new = appSettings.copy(bassBoostLevel = defaultBassboost)
+                        appSettingsManager.updateSettings(new)
+                    }
                 },
                 icon = R.drawable.musical_notes,
                 color = colorPalette().favoritesIcon,
@@ -2762,7 +2409,10 @@ fun PlaybackParamsDialog(
                 isEnabled = appSettings.bassBoostEnabled,
                 state = bassBoost,
                 onSlide = {
-                    bassBoost = it
+                    coroutineScope.launch {
+                        val new = appSettings.copy(bassBoostLevel = it)
+                        appSettingsManager.updateSettings(new)
+                    }
                 },
                 onSlideComplete = {},
                 toDisplay = { "%.1f".format(bassBoost) },
