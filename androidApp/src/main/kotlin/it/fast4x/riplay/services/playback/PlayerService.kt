@@ -1392,7 +1392,7 @@ class PlayerService : MediaLibraryService(),
                 //val limit = if (firstTimeStarted) (playFromSecond..playFromSecond + 4f) else (1f..4f)
                 val limit = playFromSecond + 1f..playFromSecond + 4f
                 if(_playerState.value.loadPending.isPending && _playerState.value.isPlaying && (second in limit)) {
-                    Timber.d("PlayerService LOAD-PENDING OnCurrentSecond limit = $limit sec=$second >> firstTimeStarted = $firstTimeStarted << ")
+                    //Timber.d("PlayerService LOAD-PENDING OnCurrentSecond limit = $limit sec=$second >> firstTimeStarted = $firstTimeStarted << ")
                     setLoadPending(LoadPhase.NONE, "onCurrentSecond")
                 }
 
@@ -1519,6 +1519,7 @@ class PlayerService : MediaLibraryService(),
                     }
                     */
                     PlayerConstants.PlayerState.PLAYING -> {
+                        setLoadPending(LoadPhase.NONE, "onStateChange PLAYING")
                         resumePending = false
 
                         //lastError = null  // reset errore dopo riproduzione riuscita
@@ -1554,6 +1555,13 @@ class PlayerService : MediaLibraryService(),
                         serviceScope.launch(Dispatchers.Main) {
                             handleEndOfSong("onStateChange ENDED")
                         }
+                    }
+                    PlayerConstants.PlayerState.BUFFERING,
+                    PlayerConstants.PlayerState.UNSTARTED -> {
+                        setLoadPending(LoadPhase.PENDING, "onStateChange BUFFERING OR UNSTARTED")
+                    }
+                    PlayerConstants.PlayerState.VIDEO_CUED -> {
+                        setLoadPending(LoadPhase.NONE, "onStateChange VIDEO_CUED")
                     }
 
                     else -> {}
