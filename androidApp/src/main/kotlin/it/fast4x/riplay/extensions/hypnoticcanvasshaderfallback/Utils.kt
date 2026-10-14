@@ -59,7 +59,7 @@ fun Modifier.shaderBackgroundFallback(
             AnimatedGradient.BubbleRings        -> paintBubbleRings(clock.value)
             AnimatedGradient.FluidCoverColorGradient,
             AnimatedGradient.FluidThemeColorGradient -> paintFluid(clock.value)
-            AnimatedGradient.Mesh               -> paintHypnotic(clock.value)
+            AnimatedGradient.Mesh               -> paintHypnoticSpiral(clock.value)
             AnimatedGradient.Linear             -> paintMesmerizing(clock.value)
             AnimatedGradient.Random             -> {}
         }

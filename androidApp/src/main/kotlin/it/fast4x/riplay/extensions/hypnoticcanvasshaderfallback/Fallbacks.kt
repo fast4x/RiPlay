@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.unit.dp
 import java.util.Objects.hash
 import kotlin.math.*
@@ -63,32 +64,62 @@ fun DrawScope.paintFluid(
 // --- Hypnotic: anelli b/n in contrazione + velo a vortice rotante ------------
 fun DrawScope.paintHypnotic(
     time: Float,
-    colorA: Color = Color.Black,
-    colorB: Color = Color.White,
+    colorA: Color = Color(0xFF06060C),
+    colorB: Color = Color(0xFFF4F4F8),
     rings: Int = 12,
-    contractionsPerSecond: Float = 1.2f,
-    rotationDegPerSecond: Float = 36f,
+    contractionsPerSecond: Float = 0.9f,
+    rotationDegPerSecond: Float = 24f,
 ) {
     val center = Offset(size.width / 2f, size.height / 2f)
     val maxR = hypot(size.width, size.height) * 0.62f
+    val step = maxR / rings
     val phase = (time * contractionsPerSecond) % 1f
 
-    // Colore legato allo "slot" di raggio → il loop è continuo, senza salti
-    for (k in rings downTo 0) {
-        val radius = ((k + 1f - phase) / rings) * maxR
-        val slot = (radius / maxR * rings).toInt().coerceIn(0, rings)
-        drawCircle(if (slot % 2 == 0) colorA else colorB, radius, center)
+    // Cerchi pieni, dal più grande al più piccolo.
+    // Colore = parità dell'indice j SOLO: nessun toInt(), nessun flip a phase = 0.
+    // Al wrap (phase 1→0) il cerchio j riprende esattamente raggio e colore
+    // che il cerchio j+1 aveva a phase → 1: loop seamless.
+    for (j in rings + 1 downTo 1) {
+        drawCircle(
+            color = if (j % 2 == 0) colorA else colorB,
+            radius = (j - phase) * step,
+            center = center,
+        )
     }
 
+    // Velo rotante (rinforzato: 0.07 → 0.12, era percettibile a malapena)
     val wedges = 8
-    val overlay: List<Pair<Float, Color>> = buildList {
+    val overlay = buildList {
         repeat(wedges) { i ->
-            val c = if (i % 2 == 0) colorB.copy(alpha = 0.07f) else Color.Transparent
-            add(i / wedges.toFloat() to c); add((i + 1f) / wedges - 0.001f to c)
+            val c = if (i % 2 == 0) colorB.copy(alpha = 0.12f) else Color.Transparent
+            add(i / wedges.toFloat() to c)
+            add((i + 1f) / wedges - 0.001f to c)
         }
     }
     rotate(degrees = time * rotationDegPerSecond) {
         drawRect(Brush.sweepGradient(*overlay.toTypedArray()))
+    }
+}
+
+// --- Hypnotic: versione a spirale
+fun DrawScope.paintHypnoticSpiral(
+    time: Float,
+    colorA: Color = Color(0xFF06060C),
+    colorB: Color = Color(0xFFF4F4F8),
+    sectors: Int = 16,
+    rotationDegPerSecond: Float = 40f,
+    breathe: Float = 0.06f, // respiro radiale del tunnel
+) {
+    val scale = 1f + breathe * sin(time * 2f)
+    val stops = buildList {
+        repeat(sectors) { i ->
+            val c = if (i % 2 == 0) colorA else colorB
+            add(i / sectors.toFloat() to c)
+            add((i + 1f) / sectors.toFloat() - 0.001f to c) // bordi netti
+        }
+    }
+    rotate(degrees = time * rotationDegPerSecond) {
+        scale(scale) { drawRect(Brush.sweepGradient(*stops.toTypedArray())) }
     }
 }
 
