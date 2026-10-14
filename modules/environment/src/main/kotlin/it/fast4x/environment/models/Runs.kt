@@ -36,11 +36,15 @@ data class Runs(
     )
 }
 
+private fun Runs.Run.isSeparator() = text == " • "
+
+private fun Runs.Run.startsWithDigit() = text?.trimStart()?.firstOrNull()?.isDigit()
+
 fun List<Runs.Run>.splitBySeparator(): List<List<Runs.Run>> {
     val res = mutableListOf<List<Runs.Run>>()
     var tmp = mutableListOf<Runs.Run>()
     forEach { run ->
-        if (run.text == " • ") {
+        if (run.isSeparator()) {
             res.add(tmp)
             tmp = mutableListOf()
         } else {
@@ -51,6 +55,16 @@ fun List<Runs.Run>.splitBySeparator(): List<List<Runs.Run>> {
     return res
 }
 
+fun List<Runs.Run>.withoutSeparators(): List<Runs.Run> =
+    filterNot { it.isSeparator() || it.startsWithDigit() == true }
+
 fun <T> List<T>.oddElements() = filterIndexed { index, _ ->
     index % 2 == 0
 }
+
+fun String.nonNumericPartsLazy(): Sequence<String> =
+    splitToSequence(',')
+        .map(String::trim)
+        .filterNot { it.firstOrNull()?.isDigit() == true }
+
+

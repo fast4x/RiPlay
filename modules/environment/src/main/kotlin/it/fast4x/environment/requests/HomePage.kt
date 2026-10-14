@@ -4,13 +4,10 @@ import it.fast4x.environment.Environment
 import it.fast4x.environment.Environment.getBestQuality
 import it.fast4x.environment.models.BrowseEndpoint
 import it.fast4x.environment.models.MusicCarouselShelfRenderer
-import it.fast4x.environment.models.MusicResponsiveListItemRenderer
 import it.fast4x.environment.models.MusicTwoRowItemRenderer
 import it.fast4x.environment.models.NavigationEndpoint
-import it.fast4x.environment.models.SectionListRenderer
-import it.fast4x.environment.models.Thumbnail
 import it.fast4x.environment.models.oddElements
-import it.fast4x.environment.utils.parseTime
+import it.fast4x.environment.models.withoutSeparators
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -31,7 +28,7 @@ data class HomePage(
         companion object {
             fun fromMusicCarouselShelfRenderer(renderer: MusicCarouselShelfRenderer): Section? {
 
-                val title = renderer.header?.musicCarouselShelfBasicHeaderRenderer?.title?.runs?.firstOrNull()?.text
+                val title = renderer.header?.musicCarouselShelfBasicHeaderRenderer?.title?.runs?.withoutSeparators()?.firstOrNull()?.text
 
                 val fromTwoRowItemRenderer = renderer.contents
                     .mapNotNull {
@@ -46,12 +43,12 @@ data class HomePage(
 
 
                 //println("getHomePage() fromMusicCarouselShelfRenderer sction title: $title items: ${renderer.contents.map { it.musicResponsiveListItemRenderer?.flexColumns?.map { it.musicResponsiveListItemFlexColumnRenderer }}}")
-                //println("getHomePage() fromMusicCarouselShelfRenderer sction title: $title fromTwoRowItemRenderer: $fromTwoRowItemRenderer fromMusicResponsiveListItemRenderer: $fromMusicResponsiveListItemRenderer")
+                println("getHomePage() fromMusicCarouselShelfRenderer sction title: $title fromTwoRowItemRenderer: $fromTwoRowItemRenderer fromMusicResponsiveListItemRenderer: $fromMusicResponsiveListItemRenderer")
 
                 return Section(
                     title = title
                         ?: "",
-                    label = renderer.header?.musicCarouselShelfBasicHeaderRenderer?.strapline?.runs?.firstOrNull()?.text,
+                    label = renderer.header?.musicCarouselShelfBasicHeaderRenderer?.strapline?.runs?.withoutSeparators()?.firstOrNull()?.text,
                     thumbnail = renderer.header?.musicCarouselShelfBasicHeaderRenderer?.thumbnail?.musicThumbnailRenderer?.getThumbnailUrl(),
 
                     endpoint = BrowseEndpoint(
@@ -69,15 +66,15 @@ data class HomePage(
 
                         Environment.SongItem(
                             info = Environment.Info(
-                                renderer.title?.runs?.firstOrNull()?.text,
+                                renderer.title?.runs?.withoutSeparators()?.firstOrNull()?.text,
                                 renderer.navigationEndpoint?.watchEndpoint
                             ),
-                            authors = renderer.subtitle?.runs?.map {
+                            authors = renderer.subtitle?.runs?.withoutSeparators()?.map {
                                 Environment.Info(
                                     name = it.text,
                                     endpoint = it.navigationEndpoint?.browseEndpoint
                                 )
-                            },
+                            }?.filterNot { it.endpoint == null },
                             album = null,
                             durationText = null,
                             thumbnail = renderer.thumbnailRenderer?.musicThumbnailRenderer?.thumbnail?.thumbnails?.getBestQuality(),
@@ -91,19 +88,19 @@ data class HomePage(
 
                         Environment.AlbumItem(
                             info = Environment.Info(
-                                renderer.title?.runs?.firstOrNull()?.text,
+                                renderer.title?.runs?.withoutSeparators()?.firstOrNull()?.text,
                                 renderer.navigationEndpoint?.browseEndpoint
                             ),
 //                            playlistId = renderer.thumbnailOverlay?.musicItemThumbnailOverlayRenderer?.content
 //                                ?.musicPlayButtonRenderer?.playNavigationEndpoint
 //                                ?.watchPlaylistEndpoint?.playlistId ?: return null,
 //                            title = renderer.title.runs?.firstOrNull()?.text ?: return null,
-                            authors = renderer.subtitle?.runs?.oddElements()?.drop(1)?.map {
+                            authors = renderer.subtitle?.runs?.withoutSeparators()?.drop(1)?.map {
                                 Environment.Info(
                                     name = it.text,
                                     endpoint = it.navigationEndpoint?.browseEndpoint
                                 )
-                            },
+                            }?.filterNot { it.endpoint == null },
                             year = renderer.subtitle?.runs?.lastOrNull()?.text,
                             thumbnail = renderer.thumbnailRenderer?.musicThumbnailRenderer?.thumbnail?.thumbnails?.getBestQuality(),
 //                            explicit = renderer.subtitleBadges?.find {
@@ -116,7 +113,7 @@ data class HomePage(
 
                         Environment.PlaylistItem(
                             info = Environment.Info(
-                                renderer.title?.runs?.firstOrNull()?.text,
+                                renderer.title?.runs?.withoutSeparators()?.firstOrNull()?.text,
                                 renderer.navigationEndpoint?.browseEndpoint
                             ),
                             songCount = null,
@@ -130,7 +127,7 @@ data class HomePage(
 
                         Environment.ArtistItem(
                             info = Environment.Info(
-                                renderer.title?.runs?.firstOrNull()?.text,
+                                renderer.title?.runs?.withoutSeparators()?.firstOrNull()?.text,
                                 renderer.navigationEndpoint?.browseEndpoint
                             ),
                             thumbnail = renderer.thumbnailRenderer?.musicThumbnailRenderer?.thumbnail?.thumbnails?.getBestQuality(),
@@ -142,15 +139,15 @@ data class HomePage(
 
                         Environment.VideoItem(
                             info = Environment.Info(
-                                renderer.title?.runs?.firstOrNull()?.text,
+                                renderer.title?.runs?.withoutSeparators()?.firstOrNull()?.text,
                                 renderer.navigationEndpoint?.watchEndpoint
                             ),
-                            authors = renderer.subtitle?.runs?.map {
+                            authors = renderer.subtitle?.runs?.withoutSeparators()?.map {
                                 Environment.Info(
                                     name = it.text,
                                     endpoint = it.navigationEndpoint?.browseEndpoint
                                 )
-                            },
+                            }?.filterNot { it.endpoint == null },
                             durationText = null,
                             thumbnail = renderer.thumbnailRenderer?.musicThumbnailRenderer?.thumbnail?.thumbnails?.getBestQuality(),
                             viewsText = null
@@ -173,17 +170,17 @@ data class HomePage(
                             renderer?.isSong == true -> {
                                 val content = renderer.flexColumns
                                 val artists =
-                                    content.getOrNull(1)?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.oddElements()
+                                    content.getOrNull(1)?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.withoutSeparators()
                                 val album =
-                                    content.getOrNull(2)?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()
+                                    content.getOrNull(2)?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.withoutSeparators()?.firstOrNull()
                                 val duration =
-                                    renderer.fixedColumns?.firstOrNull()?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()?.text
+                                    renderer.fixedColumns?.firstOrNull()?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.withoutSeparators()?.firstOrNull()?.text
                                 val thumbnail =
                                     renderer.thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails?.getBestQuality()
                                 val isExplicit =
                                     renderer.badges?.find { it.musicInlineBadgeRenderer?.icon?.iconType == "MUSIC_EXPLICIT_BADGE" } != null
                                 val title =
-                                    content.firstOrNull()?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()?.text
+                                    content.firstOrNull()?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.withoutSeparators()?.firstOrNull()?.text
 
                                 Environment.SongItem(
                                     info = Environment.Info(
@@ -197,7 +194,7 @@ data class HomePage(
                                             name = it.text,
                                             endpoint = it.navigationEndpoint?.browseEndpoint
                                         )
-                                    },
+                                    }?.filterNot { it.endpoint == null },
                                     album = Environment.Info(
                                         name = album?.text,
                                         endpoint = album?.navigationEndpoint?.browseEndpoint
@@ -208,37 +205,12 @@ data class HomePage(
                                 )
                             }
 
-                            /*
-                    renderer?.isAlbum == true -> {
-
-                        val title = renderer.flexColumns.firstOrNull()?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()?.text
-                        Environment.AlbumItem(
-                            info = Environment.Info(
-                                title,
-                                renderer.navigationEndpoint?.browseEndpoint
-                            ),
-                            authors = renderer.subtitle?.runs?.oddElements()?.drop(1)?.map {
-                                Environment.Info(
-                                    name = it.text,
-                                    endpoint = it.navigationEndpoint?.browseEndpoint
-                                )
-                            },
-                            year = renderer.subtitle?.runs?.lastOrNull()?.text,
-                            thumbnail = renderer.thumbnailRenderer?.musicThumbnailRenderer?.thumbnail?.thumbnails?.getBestQuality(),
-//                            explicit = renderer.subtitleBadges?.find {
-//                                it.musicInlineBadgeRenderer?.icon?.iconType == "MUSIC_EXPLICIT_BADGE"
-//                            } != null
-                        )
-                    }
-
-                     */
-
                             renderer?.isPlaylist == true || renderer?.isPodcast == true -> {
 
                                 val title =
-                                    renderer.flexColumns.firstOrNull()?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()?.text
+                                    renderer.flexColumns.firstOrNull()?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.withoutSeparators()?.firstOrNull()?.text
                                 val channel =
-                                    renderer.flexColumns.getOrNull(1)?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()
+                                    renderer.flexColumns.getOrNull(1)?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.withoutSeparators()?.firstOrNull()
                                 Environment.PlaylistItem(
                                     info = Environment.Info(
                                         title,
@@ -259,7 +231,7 @@ data class HomePage(
                             renderer?.isArtist == true -> {
 
                                 val title =
-                                    renderer.flexColumns.firstOrNull()?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()?.text
+                                    renderer.flexColumns.firstOrNull()?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.withoutSeparators()?.firstOrNull()?.text
                                 Environment.ArtistItem(
                                     info = Environment.Info(
                                         title,
@@ -272,13 +244,13 @@ data class HomePage(
 
                             renderer?.isVideo == true -> {
                                 val artists =
-                                    renderer.flexColumns.getOrNull(1)?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.oddElements()
+                                    renderer.flexColumns.getOrNull(1)?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.withoutSeparators()
                                 val duration =
-                                    renderer.fixedColumns?.firstOrNull()?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()?.text
+                                    renderer.fixedColumns?.firstOrNull()?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.withoutSeparators()?.firstOrNull()?.text
                                 val thumbnail =
                                     renderer.thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails?.getBestQuality()
                                 val title =
-                                    renderer.flexColumns.firstOrNull()?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.firstOrNull()?.text
+                                    renderer.flexColumns.firstOrNull()?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.withoutSeparators()?.firstOrNull()?.text
 
                                 Environment.VideoItem(
                                     info = Environment.Info(
@@ -290,7 +262,7 @@ data class HomePage(
                                             name = it.text,
                                             endpoint = it.navigationEndpoint?.browseEndpoint
                                         )
-                                    },
+                                    }?.filterNot { it.endpoint == null },
                                     durationText = duration,
                                     thumbnail = thumbnail,
                                     viewsText = null
