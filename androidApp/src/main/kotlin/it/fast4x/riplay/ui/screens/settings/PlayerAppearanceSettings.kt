@@ -41,21 +41,10 @@ import com.google.accompanist.permissions.rememberPermissionState
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.R
-import it.fast4x.riplay.enums.BackgroundProgress
-import it.fast4x.riplay.enums.CarouselSize
-import it.fast4x.riplay.enums.IconLikeType
-import it.fast4x.riplay.enums.MiniPlayerType
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.PlayerBackgroundColors
-import it.fast4x.riplay.enums.PlayerControlsType
 import it.fast4x.riplay.enums.PlayerInfoType
-import it.fast4x.riplay.enums.PlayerPlayButtonType
-import it.fast4x.riplay.enums.PlayerThumbnailSize
-import it.fast4x.riplay.enums.PlayerTimelineSize
 import it.fast4x.riplay.enums.PlayerType
-import it.fast4x.riplay.enums.QueueType
-import it.fast4x.riplay.enums.ThumbnailRoundness
-import it.fast4x.riplay.enums.ThumbnailType
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.styling.Dimensions
@@ -63,10 +52,8 @@ import it.fast4x.riplay.utils.RestartPlayerService
 import it.fast4x.riplay.utils.isAtLeastAndroid7
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.utils.colorPalette
-import it.fast4x.riplay.enums.AnimatedGradient
 import it.fast4x.riplay.enums.AudioVisualizerStyle
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.enums.SwipeAnimationNoThumbnail
 import it.fast4x.riplay.extensions.appearancesettings.AppearancePreferences
 import it.fast4x.riplay.extensions.appearancesettings.ui.AppearancePresetDialogHost
 import it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings
@@ -709,7 +696,9 @@ fun PlayerAppearanceSettings(
                                             coroutineScope.launch {
                                                 val new =
                                                     appearanceSettingsManager.activeSettings.value.copy(
-                                                        carousel = it
+                                                        carousel = it,
+                                                        expandedPlayerToggle = it,
+                                                        expandedPlayer = it
                                                     )
                                                 appearanceSettingsManager.updatePreset(new)
                                             }
