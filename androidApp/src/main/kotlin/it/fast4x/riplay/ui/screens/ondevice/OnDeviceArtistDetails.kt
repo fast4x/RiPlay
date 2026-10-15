@@ -269,23 +269,15 @@ fun OnDeviceArtistDetails(
 
                         HeaderIconButton(
                             icon = R.drawable.shuffle,
-                            enabled = topSongs.any { it.likedAt != -1L },
-                            color = if (topSongs.any { it.likedAt != -1L }) colorPalette().text else colorPalette().textDisabled,
+                            enabled = topSongs.isNotEmpty(),
+                            color = colorPalette().text,
                             onClick = {
-                                if (topSongs.any { it.likedAt != -1L }) {
-                                    binder?.stopRadio()
-                                    binder?.hybridPlayer?.forcePlayFromBeginning(
-                                        topSongs.filter { it.likedAt != -1L }
-                                            .shuffled()
-                                            .map(Song::asMediaItem)
-                                    )
-                                } else {
-                                    SmartMessage(
-                                        context.resources.getString(R.string.disliked_this_collection),
-                                        type = PopupType.Error,
-                                        context = context
-                                    )
-                                }
+                                binder?.stopRadio()
+                                binder?.hybridPlayer?.forcePlayFromBeginning(
+                                    topSongs
+                                        .shuffled()
+                                        .map(Song::asMediaItem)
+                                )
                             },
                             onLongClick = {
                                 SmartMessage(
@@ -298,24 +290,16 @@ fun OnDeviceArtistDetails(
                         HeaderIconButton(
                             icon = R.drawable.radio,
                             enabled = true,
-                            color = if (topSongs.any { it.likedAt != -1L }) colorPalette().text else colorPalette().textDisabled,
+                            color = colorPalette().text,
                             onClick = {
-                                if (topSongs.any { it.likedAt != -1L }) {
-                                    binder?.stopRadio()
-                                    binder?.hybridPlayer?.forcePlayFromBeginning(topSongs.filter { it.likedAt != -1L }
-                                        .map(Song::asMediaItem))
-                                    binder?.setupRadio(
-                                        NavigationEndpoint.Endpoint.Watch(
-                                            videoId = topSongs.first { it.likedAt != -1L }.id
-                                        )
+                                binder?.stopRadio()
+                                binder?.hybridPlayer?.forcePlayFromBeginning(topSongs
+                                    .map(Song::asMediaItem))
+                                binder?.setupRadio(
+                                    NavigationEndpoint.Endpoint.Watch(
+                                        videoId = topSongs.firstOrNull()?.id
                                     )
-                                } else {
-                                    SmartMessage(
-                                        context.resources.getString(R.string.disliked_this_collection),
-                                        type = PopupType.Error,
-                                        context = context
-                                    )
-                                }
+                                )
                             },
                             onLongClick = {
                                 SmartMessage(

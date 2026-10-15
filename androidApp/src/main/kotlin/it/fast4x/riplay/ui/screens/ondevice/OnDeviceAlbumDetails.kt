@@ -467,23 +467,16 @@ fun OnDeviceAlbumDetails(
 
                                 HeaderIconButton(
                                     icon = R.drawable.shuffle,
-                                    enabled = songs.any { it.likedAt != -1L },
-                                    color = if (songs.any { it.likedAt != -1L }) colorPalette().text else colorPalette().textDisabled,
+                                    enabled = songs.isNotEmpty(),
+                                    color = colorPalette().text,
                                     onClick = {
-                                        if (songs.any { it.likedAt != -1L }) {
                                             binder?.stopRadio()
                                             binder?.hybridPlayer?.forcePlayFromBeginning(
-                                                songs.filter { it.likedAt != -1L }
+                                                songs
                                                     .shuffled()
                                                     .map(Song::asMediaItem)
                                             )
-                                        } else {
-                                            SmartMessage(
-                                                context.resources.getString(R.string.disliked_this_collection),
-                                                type = PopupType.Error,
-                                                context = context
-                                            )
-                                        }
+
                                     },
                                     onLongClick = {
                                         SmartMessage(
@@ -496,24 +489,17 @@ fun OnDeviceAlbumDetails(
                                 HeaderIconButton(
                                     icon = R.drawable.radio,
                                     enabled = true,
-                                    color = if (songs.any { it.likedAt != -1L }) colorPalette().text else colorPalette().textDisabled,
+                                    color = colorPalette().text,
                                     onClick = {
-                                        if (songs.any { it.likedAt != -1L }) {
-                                            binder?.stopRadio()
-                                            binder?.hybridPlayer?.forcePlayFromBeginning(songs.filter { it.likedAt != -1L }
-                                                .map(Song::asMediaItem))
-                                            binder?.setupRadio(
-                                                NavigationEndpoint.Endpoint.Watch(
-                                                    videoId = songs.first { it.likedAt != -1L }.id
-                                                )
+                                        binder?.stopRadio()
+                                        binder?.hybridPlayer?.forcePlayFromBeginning(songs
+                                            .map(Song::asMediaItem))
+                                        binder?.setupRadio(
+                                            NavigationEndpoint.Endpoint.Watch(
+                                                videoId = songs.firstOrNull()?.id
                                             )
-                                        } else {
-                                            SmartMessage(
-                                                context.resources.getString(R.string.disliked_this_collection),
-                                                type = PopupType.Error,
-                                                context = context
-                                            )
-                                        }
+                                        )
+
                                     },
                                     onLongClick = {
                                         SmartMessage(
@@ -585,22 +571,13 @@ fun OnDeviceAlbumDetails(
                                                     album = it,
                                                     onPlayNext = {
                                                         if (listMediaItems.isEmpty()) {
-                                                            if (songs.any { it.likedAt != -1L }) {
                                                                 binder?.hybridPlayer?.addNext(
-                                                                    songs.filter { it.likedAt != -1L }
+                                                                    songs
                                                                         .map(Song::asMediaItem),
                                                                     context,
                                                                     selectedQueue ?: defaultQueue()
                                                                 )
-                                                            } else {
-                                                                SmartMessage(
-                                                                    context.resources.getString(
-                                                                        R.string.disliked_this_collection
-                                                                    ),
-                                                                    type = PopupType.Error,
-                                                                    context = context
-                                                                )
-                                                            }
+
                                                         } else {
                                                             binder?.hybridPlayer?.addNext(
                                                                 listMediaItems,
@@ -613,21 +590,12 @@ fun OnDeviceAlbumDetails(
                                                     },
                                                     onEnqueue = {
                                                         if (listMediaItems.isEmpty()) {
-                                                            if (songs.any { it.likedAt != -1L }) {
                                                                 binder?.hybridPlayer?.enqueue(
-                                                                    songs.filter { it.likedAt != -1L }
+                                                                    songs
                                                                         .map(Song::asMediaItem),
                                                                     context
                                                                 )
-                                                            } else {
-                                                                SmartMessage(
-                                                                    context.resources.getString(
-                                                                        R.string.disliked_this_collection
-                                                                    ),
-                                                                    type = PopupType.Error,
-                                                                    context = context
-                                                                )
-                                                            }
+
                                                         } else {
                                                             binder?.hybridPlayer?.enqueue(
                                                                 listMediaItems,
@@ -859,20 +827,13 @@ fun OnDeviceAlbumDetails(
                     MultiFloatingActionsContainer(
                         iconId = R.drawable.shuffle,
                         onClick = {
-                            if (songs.any { it.likedAt != -1L }) {
                                 binder?.stopRadio()
                                 binder?.hybridPlayer?.forcePlayFromBeginning(
-                                    songs.filter { it.likedAt != -1L }
+                                    songs
                                         .shuffled()
                                         .map(Song::asMediaItem)
                                 )
-                            } else {
-                                SmartMessage(
-                                    context.resources.getString(R.string.disliked_this_collection),
-                                    type = PopupType.Error,
-                                    context = context
-                                )
-                            }
+
                         },
                         onClickSettings = onSettingsClick,
                         onClickSearch = onSearchClick

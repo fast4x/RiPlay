@@ -337,6 +337,7 @@ fun HomeSongs(
     val buttonsList = (if (isNetworkConnected) listOf(BuiltInPlaylist.All to stringResource(R.string.all)) else emptyList()).toMutableList()
 
     if (showFavoritesPlaylist && isNetworkConnected) buttonsList += BuiltInPlaylist.Favorites to stringResource(R.string.favorites)
+    if (showDislikedPlaylist && isNetworkConnected) buttonsList += BuiltInPlaylist.Disliked to stringResource(R.string.disliked)
 
     if (showMyTopPlaylist && isNetworkConnected) buttonsList += BuiltInPlaylist.Top to String.format(stringResource(R.string.my_playlist_top), maxTopPlaylistItems.number)
 
@@ -345,7 +346,6 @@ fun HomeSongs(
 
     if (showOnDevicePlaylist) buttonsList += BuiltInPlaylist.OnDevice to stringResource(R.string.on_device)
     if (appSettings.isWebDavEnabled) buttonsList += BuiltInPlaylist.WebDav to stringResource(R.string.webdav)
-    if (showDislikedPlaylist && isNetworkConnected) buttonsList += BuiltInPlaylist.Disliked to stringResource(R.string.disliked)
 
     val excludeSongWithDurationLimit = appSettings.excludeSongWithDurationLimit
     val hapticFeedback = LocalHapticFeedback.current
