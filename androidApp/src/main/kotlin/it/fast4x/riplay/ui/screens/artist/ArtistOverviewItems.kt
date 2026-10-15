@@ -460,25 +460,14 @@ fun ArtistOverviewItems(
                                             )
                                         },
                                         onClick = {
-                                            coroutineScope.launch(Dispatchers.IO) {
-                                                val filteredArtistSongs =
-                                                    artistSongs?.filter { Database.getLikedAt(it.mediaId) != -1L } ?: emptyList()
-                                                if (item in filteredArtistSongs) {
-                                                    withContext(Dispatchers.Main) {
-                                                        binder?.hybridPlayer?.forcePlayAtIndex(
-                                                            filteredArtistSongs,
-                                                            filteredArtistSongs.indexOf(item)
-                                                        )
-                                                    }
-                                                } else {
-                                                    SmartMessage(
-                                                        context.resources.getString(R.string.disliked_this_song),
-                                                        type = PopupType.Error,
-                                                        context = context
-                                                    )
-                                                }
 
+                                            artistSongs?.let {
+                                                binder?.hybridPlayer?.forcePlayAtIndex(
+                                                    it,
+                                                    artistSongs.indexOf(item)
+                                                )
                                             }
+
                                         }
                                     ),
                             )

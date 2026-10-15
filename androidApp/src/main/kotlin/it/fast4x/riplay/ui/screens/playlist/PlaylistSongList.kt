@@ -295,13 +295,8 @@ fun PlaylistSongList(
             durationTextToMillis(it1) }?.toLong() ?: 0
     }
 
-    var dislikedSongs by persistList<String>("")
     val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(Unit) {
-        Database.dislikedSongsById().filterNotNull()
-            .collect { dislikedSongs = it }
-    }
 
     if (isImportingPlaylist) {
         InputTextDialog(
@@ -610,25 +605,18 @@ fun PlaylistSongList(
 
                                 HeaderIconButton(
                                     icon = R.drawable.enqueue,
-                                    enabled = playlistPage?.songs?.any { it.asMediaItem.mediaId !in dislikedSongs } == true,
-                                    color = if (playlistPage?.songs?.any { it.asMediaItem.mediaId !in dislikedSongs } == true) colorPalette().text else colorPalette().textDisabled,
+                                    enabled = playlistPage?.songs?.isNotEmpty() == true,
+                                    color =colorPalette().text,
                                     onClick = {
-                                        if (playlistPage?.songs?.any { it.asMediaItem.mediaId !in dislikedSongs } == true) {
-                                            playlistPage?.songs?.filter { it.asMediaItem.mediaId !in dislikedSongs }
-                                                ?.map(Environment.SongItem::asMediaItem)
-                                                ?.let { mediaItems ->
-                                                    binder?.hybridPlayer?.enqueue(
-                                                        mediaItems,
-                                                        context
-                                                    )
-                                                }
-                                        } else {
-                                            SmartMessage(
-                                                context.resources.getString(R.string.disliked_this_collection),
-                                                type = PopupType.Error,
-                                                context = context
-                                            )
-                                        }
+                                        playlistPage?.songs
+                                            ?.map(Environment.SongItem::asMediaItem)
+                                            ?.let { mediaItems ->
+                                                binder?.hybridPlayer?.enqueue(
+                                                    mediaItems,
+                                                    context
+                                                )
+                                            }
+
                                     },
                                     onLongClick = {
                                         SmartMessage(
@@ -640,26 +628,18 @@ fun PlaylistSongList(
 
                                 HeaderIconButton(
                                     icon = R.drawable.shuffle,
-                                    enabled = playlistPage?.songs?.any { it.asMediaItem.mediaId !in dislikedSongs } == true,
-                                    color = if (playlistPage?.songs?.any { it.asMediaItem.mediaId !in dislikedSongs } == true) colorPalette().text else colorPalette().textDisabled,
+                                    enabled = playlistPage?.songs?.isNotEmpty() == true,
+                                    color = colorPalette().text,
                                     onClick = {
-                                        if (playlistPage?.songs?.any { it.asMediaItem.mediaId !in dislikedSongs } == true) {
-                                            binder?.stopRadio()
-                                            playlistPage?.songs?.filter { it.asMediaItem.mediaId !in dislikedSongs }
-                                                ?.shuffled()
-                                                ?.map(Environment.SongItem::asMediaItem)
-                                                ?.let {
-                                                    binder?.hybridPlayer?.forcePlayFromBeginning(
-                                                        it
-                                                    )
-                                                }
-                                        } else {
-                                            SmartMessage(
-                                                context.resources.getString(R.string.disliked_this_collection),
-                                                type = PopupType.Error,
-                                                context = context
-                                            )
-                                        }
+                                        binder?.stopRadio()
+                                        playlistPage?.songs
+                                            ?.shuffled()
+                                            ?.map(Environment.SongItem::asMediaItem)
+                                            ?.let {
+                                                binder?.hybridPlayer?.forcePlayFromBeginning(
+                                                    it
+                                                )
+                                            }
                                     },
                                     onLongClick = {
                                         SmartMessage(
@@ -671,26 +651,19 @@ fun PlaylistSongList(
 
                                 HeaderIconButton(
                                     icon = R.drawable.radio,
-                                    enabled = playlistPage?.songs?.any { it.asMediaItem.mediaId !in dislikedSongs } == true,
-                                    color = if (playlistPage?.songs?.any { it.asMediaItem.mediaId !in dislikedSongs } == true) colorPalette().text else colorPalette().textDisabled,
+                                    enabled = playlistPage?.songs?.isNotEmpty() == true,
+                                    color = colorPalette().text,
                                     onClick = {
                                         if (binder != null) {
-                                            if (playlistPage?.songs?.any { it.asMediaItem.mediaId !in dislikedSongs } == true) {
                                                 binder.stopRadio()
                                                 binder.playRadio(
                                                     NavigationEndpoint.Endpoint.Watch(
                                                         videoId =
                                                             binder.hybridPlayer.currentMediaItem?.mediaId
-                                                                ?: playlistPage?.songs?.first { it.asMediaItem.mediaId !in dislikedSongs }?.asMediaItem?.mediaId
+                                                                ?: return@HeaderIconButton
                                                     )
                                                 )
-                                            } else {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.disliked_this_collection),
-                                                    type = PopupType.Error,
-                                                    context = context
-                                                )
-                                            }
+
                                         }
                                     },
                                     onLongClick = {
@@ -1194,30 +1167,20 @@ fun PlaylistSongList(
                                             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                         },
                                         onClick = {
-                                            if (song.asMediaItem.mediaId !in dislikedSongs) {
-                                                searching = false
-                                                filter = null
-                                                playlistPage?.songs?.filter { it.asMediaItem.mediaId !in dislikedSongs }
-                                                    ?.map(Environment.SongItem::asMediaItem)
-                                                    ?.let { mediaItems ->
-                                                        binder?.stopRadio()
-                                                        binder?.hybridPlayer?.forcePlayAtIndex(
-                                                            mediaItems,
-                                                            mediaItems.indexOf(song.asMediaItem)
-                                                        )
-                                                    }
-                                            } else {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.disliked_this_song),
-                                                    type = PopupType.Error,
-                                                    context = context
-                                                )
-                                            }
+                                            searching = false
+                                            filter = null
+                                            playlistPage?.songs
+                                                ?.map(Environment.SongItem::asMediaItem)
+                                                ?.let { mediaItems ->
+                                                    binder?.stopRadio()
+                                                    binder?.hybridPlayer?.forcePlayAtIndex(
+                                                        mediaItems,
+                                                        mediaItems.indexOf(song.asMediaItem)
+                                                    )
+                                                }
+
                                         }
                                     ),
-                                //disableScrollingText = disableScrollingText,
-                                //isNowPlaying = binder?.player?.isNowPlaying(song.key) ?: false,
-                                //forceRecompose = forceRecompose
                             )
                         }
                     }
@@ -1251,17 +1214,15 @@ fun PlaylistSongList(
                 lazyListState = lazyListState,
                 iconId = R.drawable.shuffle,
                 onClick = {
-                    if (playlistPage?.songs?.any { it.asMediaItem.mediaId !in dislikedSongs } == true) {
                         binder?.stopRadio()
-                        playlistPage?.songs?.filter{ it.asMediaItem.mediaId !in dislikedSongs }?.shuffled()?.map(Environment.SongItem::asMediaItem)
+                        playlistPage?.songs?.shuffled()
+                            ?.map(Environment.SongItem::asMediaItem)
                             ?.let {
                                 binder?.hybridPlayer?.forcePlayFromBeginning(
                                     it
                                 )
                             }
-                    } else {
-                        SmartMessage(context.resources.getString(R.string.disliked_this_collection),type = PopupType.Error, context = context)
-                    }
+
                 }
             )
 

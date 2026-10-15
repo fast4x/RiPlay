@@ -378,31 +378,18 @@ fun OnDeviceArtistItems(
                                             )
                                         },
                                         onClick = {
-                                            coroutineScope.launch(Dispatchers.IO) {
-                                                val filteredArtistSongs = songs
+                                            //coroutineScope.launch(Dispatchers.Main) {
+                                                val artistSongs = songs
                                                     .mapNotNull { it?.asMediaItem }
-                                                    .filter { Database.getLikedAt(it.mediaId) != -1L }
-                                                if (item in filteredArtistSongs) {
-                                                    withContext(Dispatchers.Main) {
-                                                        binder?.hybridPlayer?.forcePlayAtIndex(
-                                                            filteredArtistSongs,
-                                                            filteredArtistSongs.indexOf(item)
-                                                        )
-                                                    }
-                                                } else {
-                                                    SmartMessage(
-                                                        context.resources.getString(R.string.disliked_this_song),
-                                                        type = PopupType.Error,
-                                                        context = context
-                                                    )
-                                                }
 
-                                            }
+                                                binder?.hybridPlayer?.forcePlayAtIndex(
+                                                    artistSongs,
+                                                    artistSongs.indexOf(item)
+                                                )
+
+                                            //}
                                         }
                                     ),
-                                //disableScrollingText = disableScrollingText,
-                                //isNowPlaying = binder?.player?.isNowPlaying(item.mediaId) ?: false,
-                                //forceRecompose = forceRecompose
                             )
                         }
 

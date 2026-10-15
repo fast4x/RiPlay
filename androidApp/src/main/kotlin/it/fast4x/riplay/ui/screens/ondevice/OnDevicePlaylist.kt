@@ -1172,27 +1172,18 @@ fun OnDevicePlaylist(
                                                 },
                                                 onClick = {
                                                     if (!selectItems) {
-                                                        if (song.song.likedAt != -1L) {
-                                                            searching = false
-                                                            filter = null
-                                                            playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
-                                                                .map(SongEntity::asMediaItem)
-                                                                .let { mediaItems ->
-                                                                    binder?.stopRadio()
-                                                                    binder?.hybridPlayer?.forcePlayAtIndex(
-                                                                        mediaItems,
-                                                                        mediaItems.indexOf(song.asMediaItem)
-                                                                    )
-                                                                }
-                                                        } else {
-                                                            CoroutineScope(Dispatchers.Main).launch {
-                                                                SmartMessage(
-                                                                    context.resources.getString(R.string.disliked_this_song),
-                                                                    type = PopupType.Error,
-                                                                    context = context
+                                                        searching = false
+                                                        filter = null
+                                                        playlistSongs.filter { it.song.thumbnailUrl != ""}
+                                                            .map(SongEntity::asMediaItem)
+                                                            .let { mediaItems ->
+                                                                binder?.stopRadio()
+                                                                binder?.hybridPlayer?.forcePlayAtIndex(
+                                                                    mediaItems,
+                                                                    mediaItems.indexOf(song.asMediaItem)
                                                                 )
                                                             }
-                                                        }
+
                                                     } else checkedState.value = !checkedState.value
                                                 }
                                             )

@@ -889,7 +889,7 @@ fun ArtistOverview(
                                                     },
                                                     onClick = {
                                                         binder?.stopRadio()
-                                                        CoroutineScope(Dispatchers.IO).launch {
+                                                        coroutineScope.launch {
                                                             artistPage?.sections?.firstOrNull { sec -> sec.items.firstOrNull() is Environment.SongItem }
                                                                 .let {
                                                                     songsBrowseId =
@@ -912,28 +912,16 @@ fun ArtistOverview(
                                                                             ?.map { it as Environment.SongItem }
                                                                             ?.map { it.asMediaItem }
 
-                                                                    val filteredArtistSongs =
-                                                                        artistSongs
-                                                                            ?.filter {
-                                                                                it.mediaId != Database.songDisliked(
-                                                                                    it.mediaId
-                                                                                )
-                                                                            }
-
-                                                                    //if (artistSongs?.contains(item.asMediaItem) == false){
                                                                     withContext(Dispatchers.Main) {
                                                                         binder?.hybridPlayer?.forcePlay(
                                                                             item.asMediaItem
                                                                         )
-                                                                        //fastPlay(item.asMediaItem, binder)
-                                                                        if (filteredArtistSongs != null) {
+
+                                                                        if (artistSongs != null) {
                                                                             binder?.hybridPlayer?.addMediaItems(
-                                                                                filteredArtistSongs.filterNot { it.mediaId == item.key })
+                                                                                artistSongs.filterNot { it.mediaId == item.key })
                                                                         }
                                                                     }
-                                                                    //                                                                } else {
-                                                                    //                                                                    SmartMessage(context.resources.getString(R.string.disliked_this_song),type = PopupType.Error, context = context)
-                                                                    //                                                                }
 
                                                                 }
                                                         }

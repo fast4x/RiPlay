@@ -1328,8 +1328,8 @@ fun AlbumDetails(
                                             },
                                             onClick = {
                                                 if (!selectItems) {
-                                                    if (song.likedAt != -1L) {
-                                                        val mediaItems = songs.filter { it.likedAt != -1L }
+
+                                                        val mediaItems = songs
                                                             .map(Song::asMediaItem)
                                                         val mediaItemIndex = mediaItems.indexOfFirst {
                                                             it.mediaId == song.id
@@ -1339,13 +1339,7 @@ fun AlbumDetails(
                                                             mediaItems,
                                                             mediaItemIndex
                                                         )
-                                                    } else {
-                                                        SmartMessage(
-                                                            globalContext().resources.getString(R.string.disliked_this_song),
-                                                            type = PopupType.Error,
-                                                            context = context
-                                                        )
-                                                    }
+
                                                 } else checkedState.value = !checkedState.value
                                             }
                                         ),

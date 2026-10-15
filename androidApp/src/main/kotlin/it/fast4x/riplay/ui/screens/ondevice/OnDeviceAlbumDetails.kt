@@ -789,22 +789,17 @@ fun OnDeviceAlbumDetails(
                                             },
                                             onClick = {
                                                 if (!selectItems) {
-                                                    if (song.likedAt != -1L) {
+                                                    val mediaItems = songs
+                                                        .map(Song::asMediaItem)
+                                                    val index = mediaItems
+                                                        .indexOf(song.asMediaItem)
+
                                                         binder?.stopRadio()
                                                         binder?.hybridPlayer?.forcePlayAtIndex(
-                                                            songs.filter { it.likedAt != -1L }
-                                                                .map(Song::asMediaItem),
-                                                            songs.filter { it.likedAt != -1L }
-                                                                .map(Song::asMediaItem)
-                                                                .indexOf(song.asMediaItem)
+                                                            mediaItems,
+                                                            index
                                                         )
-                                                    } else {
-                                                        SmartMessage(
-                                                            context.resources.getString(R.string.disliked_this_song),
-                                                            type = PopupType.Error,
-                                                            context = context
-                                                        )
-                                                    }
+
                                                 } else checkedState.value = !checkedState.value
                                             }
                                         ),

@@ -2353,10 +2353,11 @@ fun LocalPlaylistSongs(
                                                         if (song.song.thumbnailUrl == "") {
                                                             songMatchingDialogEnable = true
                                                             matchingSongEntity = song
-                                                        } else if (song.song.likedAt != -1L) {
+                                                        } else {
                                                             searching = false
                                                             filter = null
-                                                            playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
+
+                                                            playlistSongs
                                                                 .map(SongEntity::asMediaItem)
                                                                 .let { mediaItems ->
                                                                     binder?.stopRadio()
@@ -2365,22 +2366,12 @@ fun LocalPlaylistSongs(
                                                                         mediaItems.indexOf(song.asMediaItem)
                                                                     )
                                                                 }
-                                                        } else {
-                                                            CoroutineScope(Dispatchers.Main).launch {
-                                                                SmartMessage(
-                                                                    context.resources.getString(R.string.disliked_this_song),
-                                                                    type = PopupType.Error,
-                                                                    context = context
-                                                                )
-                                                            }
                                                         }
                                                     } else checkedState.value = !checkedState.value
                                                 }
                                             )
 
                                             .background(color = colorPalette.background0),
-                                        //disableScrollingText = disableScrollingText,
-                                        //isNowPlaying = binder?.player?.isNowPlaying(song.song.id) ?: false
                                     )
                                 }
                             }

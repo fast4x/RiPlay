@@ -1399,7 +1399,7 @@ fun HomeSongs(
                                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                     },
                                     onClick = {
-                                        if (song.song.likedAt != -1L) {
+                                        //if (song.song.likedAt != -1L) {
                                             searching = false; filter = null
                                             val maxSongs = maxSongsInQueue.number.toInt()
                                             val itemsRange: IntRange
@@ -1445,23 +1445,14 @@ fun HomeSongs(
                                                 }
                                             }
                                             val itemsLimited = items.slice(itemsRange)
+                                                .map(SongEntity::asMediaItem)
+                                            val index = itemsLimited.indexOf(song.asMediaItem)
                                             binder?.stopRadio()
                                             binder?.hybridPlayer?.forcePlayAtIndex(
-                                                itemsLimited.filter { it.song.likedAt != -1L }
-                                                    .map(SongEntity::asMediaItem),
-                                                itemsLimited.filter { it.song.likedAt != -1L }
-                                                    .map(SongEntity::asMediaItem)
-                                                    .indexOf(song.asMediaItem)
+                                                itemsLimited,
+                                                index
                                             )
-                                        } else {
-                                            CoroutineScope(Dispatchers.Main).launch {
-                                                SmartMessage(
-                                                    context.resources.getString(R.string.disliked_this_song),
-                                                    type = PopupType.Error,
-                                                    context = context
-                                                )
-                                            }
-                                        }
+
                                     }
                                 )
                                 .animateItem(
