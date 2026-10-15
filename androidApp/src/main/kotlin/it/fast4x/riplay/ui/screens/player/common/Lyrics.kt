@@ -486,10 +486,11 @@ fun Lyrics(
                     }
                     tracks.clear(); tracks.addAll(it); loading = false; error = false
                 }?.onFailure {
+                    Timber.e("Lyrics LRCLIB fetch error 1 ${it.stackTraceToString()}")
                     if (playerEnableLyricsPopupMessage) coroutineScope.launch { SmartMessage(context.resources.getString(R.string.an_error_has_occurred_while_fetching_the_lyrics).format("LrcLib.net"), type = PopupType.Error, durationLong = true, context = context) }
                     loading = false; error = true
                 }
-            }.onFailure { Timber.e("Lyrics get error 1 ${it.stackTraceToString()}") }
+            }.onFailure { Timber.e("Lyrics LRCLIB get error 1 ${it.stackTraceToString()}") }
         }
         if (loading) DefaultDialog(onDismiss = { isPicking = false }) { CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally)) }
         if (tracks.isNotEmpty()) SelectLyricFromTrack(tracks = tracks, lyrics = currentLyrics)
