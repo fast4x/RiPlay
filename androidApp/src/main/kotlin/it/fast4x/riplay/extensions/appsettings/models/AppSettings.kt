@@ -103,7 +103,7 @@ data class AppSettings(
     val showFavoritesPlaylist: Boolean = true,
     val showMyTopPlaylist: Boolean = true,
     val showOnDevicePlaylist: Boolean = true,
-    val showDislikedPlaylist: Boolean = false,
+    val showDislikedPlaylist: Boolean = true,
     val shakeEventEnabled: Boolean = false,
     val useVolumeKeysToChangeSong: Boolean = false,
     val showFloatingIcon: Boolean = false,
