@@ -2232,8 +2232,6 @@ class PlayerService : MediaLibraryService(),
 
         if (lastOnlineMediaId == newMediaId) {
             Timber.d("PlayerService: onMediaItemTransition Transition ignored, same MediaID ($newMediaId) skipped")
-            updatePlayerState(PlayerConstants.PlayerState.PAUSED)
-            //handlePlayNext("onMediaTransition Transition ignored same id") // non è necessario
             return
         }
 
