@@ -445,6 +445,7 @@ fun HomePageOnline(
                                             //Timber.d("Environment homePage AlbumItem: ${item.info?.name}")
                                             AlbumItem(
                                                 album = item,
+                                                alternative = true,
                                                 thumbnailSizePx = songThumbnailSizePx,
                                                 thumbnailSizeDp = songThumbnailSizeDp,
                                                 disableScrollingText = disableScrollingText,
