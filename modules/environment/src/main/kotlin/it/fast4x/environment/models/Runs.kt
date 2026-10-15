@@ -55,8 +55,8 @@ fun List<Runs.Run>.splitBySeparator(): List<List<Runs.Run>> {
     return res
 }
 
-fun List<Runs.Run>.withoutSeparators(): List<Runs.Run> =
-    filterNot { it.isSeparator() || it.startsWithDigit() == true }
+fun List<Runs.Run>.withoutSeparators(): List<Runs.Run> = if (size == 1) this
+    else filterNot { it.isSeparator() || it.startsWithDigit() == true }
 
 fun <T> List<T>.oddElements() = filterIndexed { index, _ ->
     index % 2 == 0

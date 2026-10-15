@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
@@ -18,11 +19,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import it.fast4x.environment.Environment
+import it.fast4x.riplay.R
+import it.fast4x.riplay.ui.components.themed.HeaderIconButton
 import it.fast4x.riplay.ui.components.themed.TextPlaceholder
 import it.fast4x.riplay.ui.styling.onOverlay
 import it.fast4x.riplay.ui.styling.overlay
 import it.fast4x.riplay.ui.styling.shimmer
 import it.fast4x.riplay.ui.styling.color
+import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.ui.styling.secondary
@@ -96,6 +100,16 @@ fun VideoItem(
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = thumbnailModifier
+            )
+
+            HeaderIconButton(
+                onClick = {},
+                icon = R.drawable.video,
+                color = colorPalette().favoritesIcon,
+                iconSize = 12.dp,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .absoluteOffset(8.dp, 0.dp)
             )
 
             duration?.let {
