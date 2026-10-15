@@ -287,5 +287,6 @@ data class AppSettings(
     val forceUserVideoPlayback: Boolean = false,
     val loaderStyle: LoaderStyle = LoaderStyle.Gradient,
     val lockOrientation: Boolean = false,
+    val showUpNextSongInMiniPlayer: Boolean = true,
 )
 

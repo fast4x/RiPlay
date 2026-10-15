@@ -204,9 +204,7 @@ fun OnDevicePlaylist(
 
         Timber.d("OnDevicePlaylist playlistAllSongs ${playlistAllSongs.size}")
     }
-
-    var filterCharSequence: CharSequence
-    filterCharSequence = filter.toString()
+    val filterCharSequence = filter.toString()
 
     if (!filter.isNullOrBlank())
         playlistSongs =

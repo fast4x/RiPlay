@@ -557,23 +557,24 @@ fun UnifiedMiniPlayer(
             }
 
 
-            Box(
-                modifier = Modifier
-                    .background(colorPalette().background1)
-                    .fillMaxWidth()
-            ) {
-                BasicText(
-                    text = "${stringResource(R.string.queue_up_next).uppercase()} > ${upNextMediaItem.mediaMetadata.title}",
-                    style = typography().xxs.semiBold.copy(
-                        color = colorPalette().accent,
-                        letterSpacing = 1.5.sp
-                    ),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+            if (appSettings.showUpNextSongInMiniPlayer)
+                Box(
                     modifier = Modifier
-                        .padding(start = 16.dp, bottom = 2.dp)
-                )
-            }
+                        .background(colorPalette().background1)
+                        .fillMaxWidth()
+                ) {
+                    BasicText(
+                        text = "${stringResource(R.string.queue_up_next).uppercase()} > ${upNextMediaItem.mediaMetadata.title}",
+                        style = typography().xxs.semiBold.copy(
+                            color = colorPalette().accent,
+                            letterSpacing = 1.5.sp
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .padding(start = 4.dp, bottom = 2.dp)
+                    )
+                }
 
             if (micPermission.status.isGranted) {
                 when (appearanceSettings.audioVisualizerStyleInMiniPlayer) {

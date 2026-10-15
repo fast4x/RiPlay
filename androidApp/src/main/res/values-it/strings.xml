@@ -1513,5 +1513,6 @@
     <string name="homepage_mixed_description">La home combina le sezioni di YouTube Music con blocchi costruiti sui tuoi contenuti locali. Ogni sezione può essere rimossa, per lasciare solo ciò che usi davvero.</string>
     <string name="homepage_local_description">La home è costruita esclusivamente con i contenuti della tua libreria: brani, album e playlist salvati sul dispositivo. Nessuna sezione proviene da YouTube Music.</string>
     <string name="homepage_local_hint">Suggerimento: abbina la modalità Offline per un\'esperienza completamente senza connessione</string>
+    <string name="show_upnext_in_miniplayer">Show up next in the mini player</string>
 
 </resources>

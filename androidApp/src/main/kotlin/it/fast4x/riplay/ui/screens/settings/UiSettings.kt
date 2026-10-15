@@ -149,6 +149,7 @@ fun UiSettings(
     val isSnowEffectEnabled = appSettings.isSnowEffectEnabled
     val showListenerLevels = appSettings.showListenerLevels
     val showMiniPlayerInSettings = appSettings.showMiniPlayerInSettings
+    val showUpNextSongInMiniPlayer = appSettings.showUpNextSongInMiniPlayer
     val loaderStyle = appSettings.loaderStyle
 
     val coroutineScope = rememberCoroutineScope()
@@ -781,6 +782,23 @@ fun UiSettings(
                             valueText = { it.displayName }
                         )
                 }
+
+                if (search.input.isBlank() || stringResource(R.string.show_upnext_in_miniplayer).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.show_upnext_in_miniplayer),
+                        text = "",
+                        isChecked = showUpNextSongInMiniPlayer,
+                        onCheckedChange = {
+                            coroutineScope.launch {
+                                val new = appSettingsManager.activeSettings.value.copy(showUpNextSongInMiniPlayer = it)
+                                appSettingsManager.updateSettings(new)
+                            }
+                        }
+                    )
 
                 if (search.input.isBlank() || stringResource(R.string.show_miniplayer_in_settings).contains(
                         search.input,

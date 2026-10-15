@@ -1514,4 +1514,5 @@
     <string name="homepage_mixed_description">The home feed combines YouTube Music sections with blocks built from your local content. Any section can be removed, leaving only what you actually use.</string>
     <string name="homepage_local_description">The home feed is built exclusively from your library: songs, albums, and playlists stored on your device. No section comes from YouTube Music.</string>
     <string name="homepage_local_hint">Tip: pair with Offline mode for a fully disconnected experience</string>
+    <string name="show_upnext_in_miniplayer">Show up next in the mini player</string>
 </resources>
