@@ -1503,7 +1503,7 @@ class PlayerService : MediaLibraryService(),
                         //_internalYouTubePlayer.value?.pause()
                         //youTubePlayer.pause()
                         if (!firstTimeStarted) {
-                            if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
+                            if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus.value != RiTuneConnectionStatus.Connected) {
                                 youTubePlayer.unMute()
                                 youTubePlayer.setVolume(getSystemMediaVolume())
 
@@ -1582,7 +1582,7 @@ class PlayerService : MediaLibraryService(),
                     this@PlayerService.serviceScope.launch { saveQueue() }
 
 
-                if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
+                if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus.value != RiTuneConnectionStatus.Connected)
                     youTubePlayer.pause()
                 else
                     this@PlayerService.serviceScope.launch {
@@ -1676,7 +1676,7 @@ class PlayerService : MediaLibraryService(),
 //                                exoPlayer.stop()
 //                            }
 
-                            if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
+                            if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus.value != RiTuneConnectionStatus.Connected) {
 
                                 hybridPlayer.pause()
                                 youTubePlayer.pause()
@@ -2288,7 +2288,7 @@ class PlayerService : MediaLibraryService(),
 
                 startForegroundPlaceholder()
 
-                if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected) {
+                if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus.value != RiTuneConnectionStatus.Connected) {
                     Timber.d("PlayerService [AYP JS YT-BRIDGE] onMediaItemTransition mediaItem not local video cued id = ${it.mediaId} playFromSecond $playFromSecond")
                     _internalYouTubePlayer.value?.loadVideo(it.mediaId, 0f) // Si parte sempre dall'inizio perchè è il successivo
                     // Avvia il fade in per il nuovo brano appena parte il play
@@ -2758,7 +2758,7 @@ class PlayerService : MediaLibraryService(),
                     Action.pause.value -> {
                         userInitiatedPause = true
 
-                        if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
+                        if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus.value != RiTuneConnectionStatus.Connected)
                             hybridPlayer.pause()
                         else
                             this@PlayerService.serviceScope.launch {
@@ -2772,7 +2772,7 @@ class PlayerService : MediaLibraryService(),
                     }
                     Action.play.value -> {
 
-                        if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus != RiTuneConnectionStatus.Connected)
+                        if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus.value != RiTuneConnectionStatus.Connected)
                             hybridPlayer.play()
                         else
                             this@PlayerService.serviceScope.launch {
