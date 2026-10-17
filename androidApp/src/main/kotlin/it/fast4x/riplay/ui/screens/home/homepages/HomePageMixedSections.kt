@@ -29,6 +29,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -87,6 +88,7 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 import it.fast4x.riplay.utils.typography
+import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 
@@ -130,6 +132,7 @@ fun HomePageMixedSections(
     showPlaylistMightLike: Boolean,
     blacklisted: State<List<Blacklist>?>,
 ) {
+    val coroutineScope = rememberCoroutineScope()
 
     val relatedInit by remember(relatedInit, blacklisted.value) { mutableStateOf(
         relatedInit?.copy(
@@ -261,8 +264,8 @@ fun HomePageMixedSections(
                                                 },
                                                 mediaItem = song.asMediaItem,
                                                 onRemoveFromQuickPicks = {
-                                                    Database.asyncTransaction {
-                                                        clearEventsFor(song.id)
+                                                    coroutineScope.launch {
+                                                        Database.clearEventsFor(song.id)
                                                     }
                                                 },
                                                 onInfo = {

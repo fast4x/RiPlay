@@ -366,6 +366,8 @@ fun HomePageLocal(
 
     val disableScrollingText by rememberPreference(DISABLE_SCROLLING_TEXT.key, false)
 
+    val coroutineScope = rememberCoroutineScope()
+
 
     PullToRefreshBox(
         refreshing = refreshing,
@@ -579,8 +581,8 @@ fun HomePageLocal(
                                                         },
                                                         mediaItem = song.asMediaItem,
                                                         onRemoveFromQuickPicks = {
-                                                            Database.asyncTransaction {
-                                                                clearEventsFor(song.id)
+                                                            coroutineScope.launch {
+                                                                Database.clearEventsFor(song.id)
                                                             }
                                                         },
                                                         onInfo = {
