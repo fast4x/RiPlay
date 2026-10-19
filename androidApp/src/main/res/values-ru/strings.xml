@@ -1517,4 +1517,9 @@
     <string name="homepage_local_description">The home feed is built exclusively from your library: songs, albums, and playlists stored on your device. No section comes from YouTube Music.</string>
     <string name="homepage_local_hint">Tip: pair with Offline mode for a fully disconnected experience</string>
     <string name="show_upnext_in_miniplayer">Show up next in the mini player</string>
+    <string name="spectralaura">Spectral Aura</string>
+    <string name="prismglass">Prism Glass</string>
+    <string name="heat">Heat</string>
+    <string name="stripy">Stripy</string>
+    <string name="bubblerings">Bubble Rings</string>
 </resources>
