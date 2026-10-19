@@ -17,6 +17,7 @@ import android.hardware.SensorManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.os.IBinder
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
@@ -165,6 +166,7 @@ import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.extensions.databasebackup.BackupViewModel
 import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
 import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
+import it.fast4x.riplay.cast.ritune.models.RiTuneDevice
 import it.fast4x.riplay.cast.ritune.models.toRiTuneDevice
 import it.fast4x.riplay.cast.ritune.RiTuneCastSelector
 import it.fast4x.riplay.enums.CastType
@@ -181,6 +183,7 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.getWebViewInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
@@ -643,34 +646,84 @@ class MainActivity : AppCompatActivity() {
             // Costante per il permesso di Android 17 (Usa la stringa esplicita per retrocompatibilità)
             val localNetworkPermission = "android.permission.ACCESS_LOCAL_NETWORK"
 
-            // Funzione helper isolata che avvia la raccolta dati dal Flow
+            // NSD discovery is independent from the actual Cast WebSocket connection.
+            // Preserve the selected device while connected; otherwise give a missing
+            // device 60 seconds to reappear before removing the stale entry.
+            val discoveredRiTuneDevices = remember { mutableStateOf(emptyList<RiTuneDevice>()) }
+            val selectedDeviceMissingSinceMs = remember { mutableMapOf<String, Long>() }
+            var nsdDiscoveryJob by remember { mutableStateOf<Job?>(null) }
+
+            fun deviceKey(device: RiTuneDevice) =
+                "${device.name}|${device.host}|${device.port}"
+
+            fun refreshRiTuneDevices() {
+                val now = SystemClock.elapsedRealtime()
+                val previousDevices = GlobalSharedData.riTuneDevices.value.toList()
+                val discoveredDevices = discoveredRiTuneDevices.value
+                val isConnected = GlobalSharedData.riTuneConnected.value
+
+                val updatedDevices = discoveredDevices.map { freshDevice ->
+                    val exactMatch = previousDevices.firstOrNull {
+                        it.name == freshDevice.name &&
+                            it.host == freshDevice.host &&
+                            it.port == freshDevice.port
+                    }
+
+                    // If the disconnected service moved to a new IP or port,
+                    // carry selection over only when its service name is unique.
+                    val uniqueName = discoveredDevices.count {
+                        it.name == freshDevice.name
+                    } == 1
+                    val migratedSelection = !isConnected && uniqueName &&
+                        previousDevices.any { it.selected && it.name == freshDevice.name }
+
+                    freshDevice.copy(
+                        selected = exactMatch?.selected == true || migratedSelection
+                    )
+                }.toMutableList()
+
+                for (selected in previousDevices.filter { it.selected }) {
+                    // Already present, possibly at a newly discovered endpoint.
+                    if (updatedDevices.any { it.selected && it.name == selected.name }) continue
+                    if (updatedDevices.any { deviceKey(it) == deviceKey(selected) }) continue
+
+                    val key = deviceKey(selected)
+                    if (isConnected) {
+                        selectedDeviceMissingSinceMs.remove(key)
+                        updatedDevices.add(selected)
+                    } else {
+                        val missingSince = selectedDeviceMissingSinceMs.getOrPut(key) { now }
+                        if (now - missingSince < 60_000L) {
+                            updatedDevices.add(selected)
+                        } else {
+                            Timber.i("RiTune NSD: removing stale selected device ${selected.name}")
+                        }
+                    }
+                }
+
+                val stillMissing = updatedDevices
+                    .filter { device ->
+                        device.selected && discoveredDevices.none {
+                            deviceKey(it) == deviceKey(device)
+                        }
+                    }
+                    .map(::deviceKey)
+                    .toSet()
+                selectedDeviceMissingSinceMs.keys.retainAll(stillMissing)
+
+                if (updatedDevices != previousDevices) {
+                    GlobalSharedData.riTuneDevices.value = updatedDevices.toMutableStateList()
+                }
+            }
+
             fun startNsdCollection() {
-                scope.launch {
+                nsdDiscoveryJob?.cancel()
+                nsdDiscoveryJob = scope.launch {
                     nsdDiscoveryManager.discoverServices("_RiPlayLinkApp._tcp.")
                         .collect { devicesList ->
-                            val previousDevices = GlobalSharedData.riTuneDevices.value.toList()
-                            val updatedDevices = devicesList.map { service ->
-                                val freshDevice = service.toRiTuneDevice()
-                                val previousMatch = previousDevices.firstOrNull {
-                                    it.name == freshDevice.name &&
-                                    it.host == freshDevice.host &&
-                                    it.port == freshDevice.port
-                                }
-                                freshDevice.copy(selected = previousMatch?.selected == true)
-                            }.toMutableList()
-
-                            // Una scomparsa temporanea da NSD non deve cancellare
-                            // la selezione mentre il collegamento Cast e' attivo.
-                            previousDevices.filter { it.selected }.forEach { selected ->
-                                if (updatedDevices.none {
-                                        it.name == selected.name &&
-                                        it.host == selected.host &&
-                                        it.port == selected.port
-                                    }) {
-                                    updatedDevices.add(selected)
-                                }
-                            }
-                            GlobalSharedData.riTuneDevices.value = updatedDevices.toMutableStateList()
+                            discoveredRiTuneDevices.value =
+                                devicesList.map { it.toRiTuneDevice() }
+                            refreshRiTuneDevices()
                         }
                 }
             }
@@ -710,7 +763,17 @@ class MainActivity : AppCompatActivity() {
                         // Versioni precedenti ad Android 17: mDNS è libero, partiamo subito senza prompt!
                         startNsdCollection()
                     }
+
+                    // Keep checking even if NSD stops emitting discovery updates.
+                    while (true) {
+                        delay(1_000L)
+                        refreshRiTuneDevices()
+                    }
                 } else {
+                    nsdDiscoveryJob?.cancel()
+                    nsdDiscoveryJob = null
+                    discoveredRiTuneDevices.value = emptyList()
+                    selectedDeviceMissingSinceMs.clear()
                     // Se l'utente cambia tipo di cast, svuota la lista in modo pulito
                     GlobalSharedData.riTuneDevices.value = mutableListOf()
                 }
