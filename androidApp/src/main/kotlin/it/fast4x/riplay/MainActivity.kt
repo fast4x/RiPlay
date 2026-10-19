@@ -648,9 +648,29 @@ class MainActivity : AppCompatActivity() {
                 scope.launch {
                     nsdDiscoveryManager.discoverServices("_RiPlayLinkApp._tcp.")
                         .collect { devicesList ->
-                            GlobalSharedData.riTuneDevices.value = devicesList
-                                .map { device -> device.toRiTuneDevice() }
-                                .toMutableStateList()
+                            val previousDevices = GlobalSharedData.riTuneDevices.value.toList()
+                            val updatedDevices = devicesList.map { service ->
+                                val freshDevice = service.toRiTuneDevice()
+                                val previousMatch = previousDevices.firstOrNull {
+                                    it.name == freshDevice.name &&
+                                    it.host == freshDevice.host &&
+                                    it.port == freshDevice.port
+                                }
+                                freshDevice.copy(selected = previousMatch?.selected == true)
+                            }.toMutableList()
+
+                            // Una scomparsa temporanea da NSD non deve cancellare
+                            // la selezione mentre il collegamento Cast e' attivo.
+                            previousDevices.filter { it.selected }.forEach { selected ->
+                                if (updatedDevices.none {
+                                        it.name == selected.name &&
+                                        it.host == selected.host &&
+                                        it.port == selected.port
+                                    }) {
+                                    updatedDevices.add(selected)
+                                }
+                            }
+                            GlobalSharedData.riTuneDevices.value = updatedDevices.toMutableStateList()
                         }
                 }
             }
