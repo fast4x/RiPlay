@@ -2295,8 +2295,6 @@ class PlayerService : MediaLibraryService(),
                 startForegroundPlaceholder()
 
                 if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus.value != RiTuneConnectionStatus.Connected) {
-                    isFading = true
-                    _internalYouTubePlayer.value?.setVolume(0)
                     Timber.d("PlayerService [AYP JS YT-BRIDGE] onMediaItemTransition mediaItem not local video cued id = ${it.mediaId} playFromSecond $playFromSecond")
                     _internalYouTubePlayer.value?.loadVideo(it.mediaId, 0f) // Si parte sempre dall'inizio perchè è il successivo
                     // Avvia il fade in per il nuovo brano appena parte il play
