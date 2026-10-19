@@ -164,9 +164,8 @@ data class OnlineRadio (
                 withContext(Dispatchers.IO) {
                     mediaItems?.forEach {
                         val songInPlaylist = Database.songUsedInPlaylists(it.mediaId)
-                        val songIsLiked = (Database.getLikedAt(it.mediaId) !in listOf(-1L,null))
                         val sIQ = songsInQueue(it.mediaId)
-                        if (songInPlaylist == 0 && !songIsLiked && (it.mediaId != sIQ)) {
+                        if (songInPlaylist == 0 && (it.mediaId != sIQ)) {
                             listMediaItems.add(it)
                         }
                     }
@@ -182,9 +181,7 @@ data class OnlineRadio (
             }
 
         withContext(Dispatchers.IO) {
-            mediaItems = mediaItems?.filter {
-                (Database.getLikedAt(it.mediaId) != -1L)
-            }?.distinct()
+            mediaItems = mediaItems?.distinct()
         }
 
         return mediaItems ?: emptyList()

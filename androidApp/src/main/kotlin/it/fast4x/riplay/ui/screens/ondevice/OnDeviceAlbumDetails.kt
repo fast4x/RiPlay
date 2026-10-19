@@ -664,11 +664,9 @@ fun OnDeviceAlbumDetails(
                                                                 mediaItemSetLiked(song.asMediaItem)
                                                             }
                                                         } else {
-                                                            val totalSongsToLike = songs.filter {
-                                                                it.likedAt in listOf(-1L, null)
-                                                            }
+
                                                             CoroutineScope(Dispatchers.IO).launch {
-                                                                addToYtLikedSongs(totalSongsToLike.map { it.asMediaItem })
+                                                                addToYtLikedSongs(songs.map { it.asMediaItem })
                                                             }
                                                         }
                                                     },

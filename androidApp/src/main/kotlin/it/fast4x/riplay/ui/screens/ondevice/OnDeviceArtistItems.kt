@@ -62,7 +62,6 @@ import it.fast4x.riplay.ui.styling.px
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.enums.ArtistItem
-import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.defaultQueue
@@ -195,16 +194,11 @@ fun OnDeviceArtistItems(
                         ) {
                             HeaderIconButton(
                                 icon = R.drawable.shuffle,
-                                color = if (songs.any { it?.thumbnailUrl != "" }) colorPalette().text else colorPalette().textDisabled,
+                                color = if (songs.isNotEmpty()) colorPalette().text else colorPalette().textDisabled,
                                 onClick = {
                                     coroutineScope.launch(Dispatchers.IO) {
-                                        if (songs
-                                                .mapNotNull { it?.asMediaItem }
-                                                .any { Database.getLikedAt(it.mediaId) != -1L }
-                                        ) {
                                             songs
                                                 .mapNotNull { it?.asMediaItem }
-                                                .filter { Database.getLikedAt(it.mediaId) != -1L }
                                                 .let { songs ->
                                                     if (songs.isNotEmpty()) {
                                                         val itemsLimited =
@@ -218,13 +212,7 @@ fun OnDeviceArtistItems(
                                                         }
                                                     }
                                                 }
-                                        } else {
-                                            SmartMessage(
-                                                context.resources.getString(R.string.disliked_this_collection),
-                                                type = PopupType.Error,
-                                                context = context
-                                            )
-                                        }
+
                                     }
                                 },
                                 onLongClick = {
@@ -236,30 +224,19 @@ fun OnDeviceArtistItems(
                             )
                             HeaderIconButton(
                                 icon = R.drawable.enqueue,
-                                //enabled = artistSongs.any { it.mediaMetadata.artworkUri.toString() != "" && it.song.likedAt != -1L },
-                                color = if (songs.any { it?.thumbnailUrl != "" }) colorPalette().text else colorPalette().textDisabled,
+                                enabled = songs.isNotEmpty(),
+                                color = if (songs.isNotEmpty()) colorPalette().text else colorPalette().textDisabled,
                                 onClick = {
                                     coroutineScope.launch(Dispatchers.IO) {
-                                        if (songs
+                                            val artistSongs = songs
                                                 .mapNotNull { it?.asMediaItem }
-                                                .any { Database.getLikedAt(it.mediaId) != -1L }
-                                        ) {
-                                            val filteredArtistSongs = songs
-                                                .mapNotNull { it?.asMediaItem }
-                                                .filter { Database.getLikedAt(it.mediaId) != -1L }
                                             withContext(Dispatchers.Main) {
                                                 binder?.hybridPlayer?.enqueue(
-                                                    filteredArtistSongs,
+                                                    artistSongs,
                                                     context
                                                 )
                                             }
-                                        } else {
-                                            SmartMessage(
-                                                context.resources.getString(R.string.disliked_this_collection),
-                                                type = PopupType.Error,
-                                                context = context
-                                            )
-                                        }
+
                                     }
                                 },
                                 onLongClick = {
@@ -274,26 +251,15 @@ fun OnDeviceArtistItems(
                                 color = if (songs.any { it?.thumbnailUrl != "" }) colorPalette().text else colorPalette().textDisabled,
                                 onClick = {
                                     coroutineScope.launch(Dispatchers.IO) {
-                                        if (songs
+                                            val artistSongs = songs
                                                 .mapNotNull { it?.asMediaItem }
-                                                .any { Database.getLikedAt(it.mediaId) != -1L }
-                                        ) {
-                                            val filteredArtistSongs = songs
-                                                .mapNotNull { it?.asMediaItem }
-                                                .filter { Database.getLikedAt(it.mediaId) != -1L }
                                             withContext(Dispatchers.Main) {
                                                 binder?.hybridPlayer?.addNext(
-                                                    filteredArtistSongs, context,
+                                                    artistSongs, context,
                                                     selectedQueue ?: defaultQueue()
                                                 )
                                             }
-                                        } else {
-                                            SmartMessage(
-                                                context.resources.getString(R.string.disliked_this_collection),
-                                                type = PopupType.Error,
-                                                context = context
-                                            )
-                                        }
+
                                     }
                                 },
                                 onLongClick = {

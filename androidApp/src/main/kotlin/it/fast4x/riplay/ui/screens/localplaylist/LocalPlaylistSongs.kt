@@ -760,16 +760,13 @@ fun LocalPlaylistSongs(
         songItemsToLike.clear()
         if (listMediaItems.isEmpty()) {
             playlistSongs.forEachIndexed { index, song ->
-                if (song.song.likedAt in listOf(-1L,null)) {
-                    songItemsToLike.add(song.asMediaItem)
-                }
+                songItemsToLike.add(song.asMediaItem)
+
             }
         } else {
             Database.asyncTransaction {
                 listMediaItems.forEachIndexed { index, song ->
-                    if (Database.getLikedAt(song.mediaId) in listOf(-1L,null)) {
-                        songItemsToLike.add(song)
-                    }
+                    songItemsToLike.add(song)
                 }
             }
         }
@@ -1062,8 +1059,7 @@ fun LocalPlaylistSongs(
                                     modifier = Modifier
                                         .fillMaxWidth(),
                                     onPlayNowClick = {
-                                        if (playlistSongs.any { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }) {
-                                            playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
+                                            playlistSongs
                                                 .let { songs ->
                                                     if (songs.isNotEmpty()) {
                                                         val itemsLimited =
@@ -1077,18 +1073,10 @@ fun LocalPlaylistSongs(
 
                                                     }
                                                 }
-                                        } else {
-                                            SmartMessage(
-                                                context.resources.getString(R.string.disliked_this_collection),
-                                                type = PopupType.Error,
-                                                context = context
-                                            )
-                                        }
-                                        //fastPlay(binder = binder, mediaItems = playlistSongs.map(SongEntity::asMediaItem))
+
                                     },
                                     onShufflePlayClick = {
-                                        if (playlistSongs.any { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }) {
-                                            playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
+                                            playlistSongs
                                                 .let { songs ->
                                                     if (songs.isNotEmpty()) {
                                                         val itemsLimited =
@@ -1099,16 +1087,9 @@ fun LocalPlaylistSongs(
                                                             itemsLimited.shuffled()
                                                                 .map(SongEntity::asMediaItem)
                                                         )
-                                                        //fastPlay(binder = binder, mediaItems = itemsLimited.map(SongEntity::asMediaItem), withShuffle = true)
                                                     }
                                                 }
-                                        } else {
-                                            SmartMessage(
-                                                context.resources.getString(R.string.disliked_this_collection),
-                                                type = PopupType.Error,
-                                                context = context
-                                            )
-                                        }
+
                                     },
                                     onSmartRecommendationClick = {
                                         coroutineScope.launch {
@@ -1319,17 +1300,10 @@ fun LocalPlaylistSongs(
                                                 playlist = playlistPreview,
                                                 onEnqueue = {
                                                     if (listMediaItems.isEmpty()) {
-                                                        if (playlistSongs.any { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }) {
-                                                            binder?.hybridPlayer?.enqueue(playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
-                                                                .map(SongEntity::asMediaItem),
-                                                                context)
-                                                        } else {
-                                                            SmartMessage(
-                                                                context.resources.getString(R.string.disliked_this_collection),
-                                                                type = PopupType.Error,
-                                                                context = context
-                                                            )
-                                                        }
+                                                        binder?.hybridPlayer?.enqueue(playlistSongs
+                                                            .map(SongEntity::asMediaItem),
+                                                            context
+                                                        )
                                                     } else {
                                                         binder?.hybridPlayer?.enqueue(
                                                             listMediaItems,
@@ -1341,19 +1315,12 @@ fun LocalPlaylistSongs(
                                                 },
                                                 onPlayNext = {
                                                     if (listMediaItems.isEmpty()) {
-                                                        if (playlistSongs.any { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }) {
-                                                            binder?.hybridPlayer?.addNext(playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
-                                                                .map(SongEntity::asMediaItem),
-                                                                context,
-                                                                selectedQueue ?: defaultQueue()
-                                                            )
-                                                        } else {
-                                                            SmartMessage(
-                                                                context.resources.getString(R.string.disliked_this_collection),
-                                                                type = PopupType.Error,
-                                                                context = context
-                                                            )
-                                                        }
+                                                        binder?.hybridPlayer?.addNext(playlistSongs
+                                                            .map(SongEntity::asMediaItem),
+                                                            context,
+                                                            selectedQueue ?: defaultQueue()
+                                                        )
+
                                                     } else {
                                                         binder?.hybridPlayer?.addNext(
                                                             listMediaItems,
@@ -1543,24 +1510,12 @@ fun LocalPlaylistSongs(
                                                     } else if (!isYtSyncEnabled()) {
                                                         if (listMediaItems.isEmpty()) {
                                                             playlistSongs.forEachIndexed { index, song ->
-                                                                if (song.song.likedAt in listOf(
-                                                                        -1L,
-                                                                        null
-                                                                    )
-                                                                ) {
-                                                                    mediaItemToggleLike(song.asMediaItem)
-                                                                }
+                                                                mediaItemToggleLike(song.asMediaItem)
                                                             }
                                                         } else {
                                                             Database.asyncTransaction {
                                                                 listMediaItems.forEachIndexed { index, song ->
-                                                                    if (Database.getLikedAt(song.mediaId) !in listOf(
-                                                                            -1L,
-                                                                            null
-                                                                        )
-                                                                    ) {
-                                                                        mediaItemToggleLike(song)
-                                                                    }
+                                                                    mediaItemToggleLike(song)
                                                                 }
                                                             }
                                                         }
@@ -2396,8 +2351,7 @@ fun LocalPlaylistSongs(
                     iconId = R.drawable.shuffle,
                     visible = !reorderableLazyListState.isAnyItemDragging,
                     onClick = {
-                        if (playlistSongs.any { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }) {
-                            playlistSongs.filter { it.song.thumbnailUrl != "" && it.song.likedAt != -1L }
+                            playlistSongs
                                 .let { songs ->
                                     if (songs.isNotEmpty()) {
                                         binder?.stopRadio()
@@ -2406,13 +2360,7 @@ fun LocalPlaylistSongs(
                                         )
                                     }
                                 }
-                        } else {
-                            SmartMessage(
-                                context.resources.getString(R.string.disliked_this_collection),
-                                type = PopupType.Error,
-                                context = context
-                            )
-                        }
+
                 }
             )
 
