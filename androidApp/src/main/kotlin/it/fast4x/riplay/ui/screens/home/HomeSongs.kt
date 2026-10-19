@@ -832,16 +832,16 @@ fun HomeSongs(
 
                         // Confirmations for Likes
                         if (showRiPlayLikeYoutubeLikeConfirmDialog) {
-                            Database.asyncTransaction { totalMinutesToLike = formatAsDuration((if (listMediaItems.isNotEmpty()) (listMediaItems.filter { Database.getLikedAt(it.mediaId) !in listOf(-1L, null) }).size else (items.filter { Database.getLikedAt(it.asMediaItem.mediaId) !in listOf(-1L, null) }).size) * 1000.toLong()) }
+                            Database.asyncTransaction { totalMinutesToLike = formatAsDuration((if (listMediaItems.isNotEmpty()) listMediaItems.size else items.size) * 1000.toLong()) }
                             ConfirmationDialog(
                                 text = "$totalMinutesToLike " + stringResource(R.string.do_you_really_want_to_like_all),
                                 onDismiss = { showRiPlayLikeYoutubeLikeConfirmDialog = false },
                                 onConfirm = {
                                     showRiPlayLikeYoutubeLikeConfirmDialog = false
                                     if (listMediaItems.isNotEmpty()) {
-                                        CoroutineScope(Dispatchers.IO).launch { addToYtLikedSongs(listMediaItems.filter { Database.getLikedAt(it.mediaId) !in listOf(-1L, null) }.map { it }) }
+                                        CoroutineScope(Dispatchers.IO).launch { addToYtLikedSongs(listMediaItems.map { it }) }
                                     } else {
-                                        CoroutineScope(Dispatchers.IO).launch { addToYtLikedSongs(items.filter { Database.getLikedAt(it.asMediaItem.mediaId) !in listOf(-1L, null) }.map { it.asMediaItem }) }
+                                        CoroutineScope(Dispatchers.IO).launch { addToYtLikedSongs(items.map { it.asMediaItem }) }
                                     }
                                 }
                             )
@@ -850,12 +850,12 @@ fun HomeSongs(
                             songItemsToLike.clear()
                             if (listMediaItems.isEmpty()) {
                                 items.forEachIndexed { _, song ->
-                                    if (song.song.likedAt in listOf(-1L, null)) songItemsToLike.add(song.asMediaItem)
+                                   songItemsToLike.add(song.asMediaItem)
                                 }
                             } else {
                                 Database.asyncTransaction {
                                     listMediaItems.forEachIndexed { _, song ->
-                                        if (Database.getLikedAt(song.mediaId) in listOf(-1L, null)) songItemsToLike.add(song)
+                                        songItemsToLike.add(song)
                                     }
                                 }
                             }
@@ -880,17 +880,15 @@ fun HomeSongs(
 
                         HeaderIconButton(
                             icon = R.drawable.shuffle,
-                            //enabled = items.any { it.song.likedAt != -1L },
-                            color = if (items.any { it.song.likedAt != -1L }) colorPalette().text else colorPalette().textDisabled,
+                            enabled = items.isNotEmpty() || songs.isNotEmpty(),
+                            color = if (items.isNotEmpty() || songs.isNotEmpty()) colorPalette().text else colorPalette().textDisabled,
                             onClick = {
-                                if (builtInPlaylist == BuiltInPlaylist.OnDevice) items = visibleItems
-                                if (items.filter { it.song.likedAt != -1L }.isNotEmpty()) {
-                                    val itemsLimited = if (items.filter { it.song.likedAt != -1L }.size > maxSongsInQueue.number) items.filter { it.song.likedAt != -1L }.shuffled().take(maxSongsInQueue.number.toInt()) else items.filter { it.song.likedAt != -1L }
-                                    binder?.stopRadio()
-                                    binder?.hybridPlayer?.forcePlayFromBeginning(itemsLimited.shuffled().map(SongEntity::asMediaItem))
-                                } else {
-                                    SmartMessage(context.resources.getString(R.string.disliked_this_collection), type = PopupType.Error, context = context)
-                                }
+                                if (builtInPlaylist == BuiltInPlaylist.OnDevice) items = songs
+
+                                val itemsLimited = if (items.size > maxSongsInQueue.number) items.shuffled().take(maxSongsInQueue.number.toInt()) else items
+                                binder?.stopRadio()
+                                binder?.hybridPlayer?.forcePlayFromBeginning(itemsLimited.shuffled().map(SongEntity::asMediaItem))
+
                             },
                             onLongClick = { SmartMessage(context.resources.getString(R.string.info_shuffle), context = context) },
                         )
@@ -951,11 +949,8 @@ fun HomeSongs(
                                         onPlayNext = {
                                             if (builtInPlaylist == BuiltInPlaylist.OnDevice) items = visibleItems
                                             if (listMediaItems.isEmpty()) {
-                                                if (items.any { it.song.likedAt != -1L }) {
-                                                    binder?.hybridPlayer?.addNext(items.filter { it.song.likedAt != -1L }.map(SongEntity::asMediaItem), context, selectedQueue ?: defaultQueue())
-                                                } else {
-                                                    SmartMessage(context.resources.getString(R.string.disliked_this_collection), type = PopupType.Error, context = context)
-                                                }
+                                                    binder?.hybridPlayer?.addNext(items.map(SongEntity::asMediaItem), context, selectedQueue ?: defaultQueue())
+
                                             } else {
                                                 binder?.hybridPlayer?.addNext(listMediaItems, context, selectedQueue ?: defaultQueue())
                                                 listMediaItems.clear(); selectItems = false
@@ -964,11 +959,7 @@ fun HomeSongs(
                                         onEnqueue = {
                                             if (builtInPlaylist == BuiltInPlaylist.OnDevice) items = visibleItems
                                             if (listMediaItems.isEmpty()) {
-                                                if (items.any { it.song.likedAt != -1L }) {
-                                                    binder?.hybridPlayer?.enqueue(items.filter { it.song.likedAt != -1L }.map(SongEntity::asMediaItem), context)
-                                                } else {
-                                                    SmartMessage(context.resources.getString(R.string.disliked_this_collection), type = PopupType.Error, context = context)
-                                                }
+                                                    binder?.hybridPlayer?.enqueue(items.map(SongEntity::asMediaItem), context)
                                             } else {
                                                 binder?.hybridPlayer?.enqueue(listMediaItems, context)
                                                 listMediaItems.clear(); selectItems = false
@@ -1399,7 +1390,6 @@ fun HomeSongs(
                                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                     },
                                     onClick = {
-                                        //if (song.song.likedAt != -1L) {
                                             searching = false; filter = null
                                             val maxSongs = maxSongsInQueue.number.toInt()
                                             val itemsRange: IntRange
