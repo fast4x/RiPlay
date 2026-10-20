@@ -46,7 +46,7 @@ object SpotifyMeta {
     )
 
     @OptIn(ExperimentalSerializationApi::class)
-    private val client by lazy {
+    internal val client by lazy {
         HttpClient(OkHttp) {
             BrowserUserAgent()
 
@@ -221,6 +221,16 @@ object SpotifyMeta {
                 name = node.path("name").str(),
                 thumbnailUrl = thumbnailUrl
             )
+            SpotifyEntityType.PLAYLIST -> SpotifyPlaylistMeta(
+                id = id,
+                name = node.path("name").str(),
+                thumbnailUrl = thumbnailUrl,
+                description = node.path("description").str(),
+                owner = artists,
+                totalCount = node.path("numTracks").str()?.toIntOrNull()
+                    ?: node.path("track")?.jsonArray?.size
+                    ?: 0
+            )
         }
     }
 
@@ -257,6 +267,23 @@ object SpotifyMeta {
                 verified = when (e["verified"]) {
                     is JsonPrimitive -> (e["verified"] as JsonPrimitive).contentOrNull == "true"
                     else -> null
+                }
+            )
+            SpotifyEntityType.PLAYLIST -> SpotifyPlaylistMeta(
+                id = id,
+                name = e.path("title").str(),
+                thumbnailUrl = e.path("coverArt", "sources", "0", "url").str(),
+                owner = e.path("subtitle").str(),
+                tracks = e.path("trackList")?.jsonArray.orEmpty().mapNotNull { item ->
+                    val track = item as? JsonObject ?: return@mapNotNull null
+                    val uri = track["uri"]?.let { (it as? JsonPrimitive)?.contentOrNull }
+                        ?: return@mapNotNull null
+                    SpotifyTrackMeta(
+                        id = uri.substringAfterLast(':'),
+                        name = track["title"]?.let { (it as? JsonPrimitive)?.contentOrNull },
+                        artist = track["subtitle"]?.let { (it as? JsonPrimitive)?.contentOrNull },
+                        durationMs = track["duration"]?.let { (it as? JsonPrimitive)?.contentOrNull }?.toLongOrNull()
+                    )
                 }
             )
         }
@@ -345,6 +372,19 @@ object SpotifyMeta {
                     name = pick(x?.name, y?.name),
                     thumbnailUrl = thumbnail, //pick(y?.thumbnailUrl, x?.thumbnailUrl),
                     verified = x?.verified ?: y?.verified
+                )
+            }
+            SpotifyEntityType.PLAYLIST -> {
+                val x = a as? SpotifyPlaylistMeta; val y = b as? SpotifyPlaylistMeta
+                val tracks = x?.tracks?.takeIf { it.isNotEmpty() } ?: y?.tracks.orEmpty()
+                SpotifyPlaylistMeta(
+                    id = id,
+                    name = pick(x?.name, y?.name),
+                    thumbnailUrl = thumbnail, //pick(y?.thumbnailUrl, x?.thumbnailUrl),
+                    description = pick(x?.description, y?.description),
+                    owner = pick(x?.owner, y?.owner),
+                    tracks = tracks,
+                    totalCount = maxOf(x?.totalCount ?: 0, y?.totalCount ?: 0, tracks.size)
                 )
             }
         }.takeIf { it.name != null }
