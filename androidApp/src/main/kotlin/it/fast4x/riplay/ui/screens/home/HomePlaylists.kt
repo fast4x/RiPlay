@@ -107,6 +107,7 @@ import it.fast4x.riplay.ui.components.themed.IDialog
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.navigation.header.TabToolBar
 import it.fast4x.riplay.ui.components.tab.ImportSongsFromSpotifyCSV
+import it.fast4x.riplay.ui.components.tab.ImportPlaylistFromSpotifyUrlDialog
 import it.fast4x.riplay.ui.components.tab.ItemSize
 import it.fast4x.riplay.ui.components.tab.TabHeader
 import it.fast4x.riplay.ui.components.tab.toolbar.Descriptive
@@ -187,6 +188,7 @@ fun HomePlaylists(
 
     var items by remember { mutableStateOf(emptyList<PlaylistPreview>()) }
     val search = Search.init()
+    var showSpotifyUrlImport by remember { mutableStateOf(false) }
 
     val blacklistIds by remember {
         Database.blacklisted(listOf(BlacklistType.Playlist.name))
@@ -446,6 +448,7 @@ fun HomePlaylists(
                     ImportPlaylistType.Riplay -> importPlaylistDialog.onShortClick()
                     ImportPlaylistType.ExportifyNet -> importPlaylistSpotifyDialog.onShortClick()
                     ImportPlaylistType.TuneMyMusicDeezer -> importPlaylistDeezerDialog.onShortClick()
+                    ImportPlaylistType.SpotifyUrl -> showSpotifyUrlImport = true
                 }
             },
             values = ImportPlaylistType.entries.map { it.menuItem },
@@ -560,6 +563,12 @@ fun HomePlaylists(
     buttonsList += PlaylistType.OnDevicePlaylist to stringResource(R.string.on_device)
 
     newPlaylistDialog.Render()
+
+    if (showSpotifyUrlImport) {
+        ImportPlaylistFromSpotifyUrlDialog(
+            onDismiss = { showSpotifyUrlImport = false }
+        )
+    }
 
     val enableCreateMonthlyPlaylists = appSettings.enableCreateMonthlyPlaylists
     if (enableCreateMonthlyPlaylists)
