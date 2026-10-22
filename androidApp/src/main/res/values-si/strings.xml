@@ -1350,6 +1350,17 @@ CC-BY-SA 3.0</string>
     <string name="settings_title_on_device_music_folder">On device music folder</string>
     <string name="import_playlist_riplay">Import playlist from RiPlay</string>
     <string name="import_playlist_exportify_net">Import playlist from Exportify.net</string>
+    <string name="import_playlist_spotify_url">Import playlist from Spotify link</string>
+    <string name="spotify_playlist_url_placeholder">Spotify playlist link</string>
+    <string name="spotify_playlist_url_invalid">That is not a valid Spotify playlist link</string>
+    <string name="importing_spotify_playlist">Importing Spotify playlist</string>
+    <string name="importing_spotify_playlist_waiting">Reading the playlist…</string>
+    <string name="importing_spotify_playlist_progress">%1$d of %2$d</string>
+    <string name="importing_spotify_playlist_done">Playlist imported</string>
+    <string name="importing_spotify_playlist_failed">Import failed</string>
+    <string name="importing_spotify_playlist_summary">%1$d songs added, %2$d skipped out of %3$d</string>
+    <string name="importing_spotify_playlist_partial">Only part of the playlist could be read from Spotify</string>
+    <string name="close">Close</string>
     <string name="settings_automatic_playback">Automatic Playback</string>
     <string name="settings_bt_title_bluetooth_audio_devices">Bluetooth audio devices</string>
     <string name="settings_bt_info_resume_playback_when_connected_pause_when_disconnected">Resume playback when connected, pause when disconnected</string>

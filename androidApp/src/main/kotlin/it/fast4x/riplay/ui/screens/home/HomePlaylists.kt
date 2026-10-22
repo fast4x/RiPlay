@@ -283,6 +283,7 @@ fun HomePlaylists(
     var time by remember { mutableStateOf("") }
     val formattedDate = currentDateTime.format(formatter)
 
+    /*
     val importPlaylistSpotifyDialog = ImportSongsFromSpotifyCSV.init(
         beforeTransaction = { _, row, pname ->
             time = formattedDate
@@ -331,6 +332,7 @@ fun HomePlaylists(
             }
         }
     )
+    */
 
     val importPlaylistDeezerDialog = ImportSongsFromDeezerCSV.init(
         beforeTransaction = { _, row, pname ->
@@ -446,7 +448,7 @@ fun HomePlaylists(
                 }
                 when(selected) {
                     ImportPlaylistType.Riplay -> importPlaylistDialog.onShortClick()
-                    ImportPlaylistType.ExportifyNet -> importPlaylistSpotifyDialog.onShortClick()
+                    //ImportPlaylistType.ExportifyNet -> importPlaylistSpotifyDialog.onShortClick()
                     ImportPlaylistType.TuneMyMusicDeezer -> importPlaylistDeezerDialog.onShortClick()
                     ImportPlaylistType.SpotifyUrl -> showSpotifyUrlImport = true
                 }
