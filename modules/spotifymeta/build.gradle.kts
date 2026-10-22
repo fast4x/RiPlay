@@ -20,4 +20,10 @@ dependencies {
     implementation(libs.logging.interceptor)
     implementation(libs.jsoup)
 
+    testImplementation(kotlin("test"))
+
+}
+
+tasks.test {
+    useJUnitPlatform()
 }

@@ -376,6 +376,10 @@ extensions.configure<ApplicationExtension> {
         all {
             kotlin.directories.add("src/$name/kotlin")
         }
+        // I test unitari stanno in src/androidUnitTest/kotlin e vengono eseguiti da tutte le varianti
+        matching { it.name.startsWith("test") }.configureEach {
+            kotlin.directories.add("src/androidUnitTest/kotlin")
+        }
     }
 
     androidComponents {
@@ -511,6 +515,7 @@ dependencies {
     "fullImplementation"(projects.chaquopy)
 
     testImplementation(kotlin("test"))
+    testImplementation(kotlin("test-junit"))
 
     ksp(libs.room.compiler)
 
