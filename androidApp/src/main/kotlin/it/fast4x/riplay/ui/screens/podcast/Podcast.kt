@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui.screens.podcast
 
+import it.fast4x.riplay.data.update
+import it.fast4x.riplay.data.insert
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -127,6 +129,7 @@ import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.utils.toPlaylist
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
+import kotlinx.coroutines.runBlocking
 
 @ExperimentalSerializationApi
 @ExperimentalTextApi
@@ -224,7 +227,7 @@ fun Podcast(
 
                     podcastPage?.listEpisode
                         ?.map(Environment.Podcast.EpisodeItem::asMediaItem)
-                        ?.onEach( ::insert )
+                        ?.onEach { Database.insert(it) }
                         ?.mapIndexed { index, mediaItem ->
                             SongPlaylistMap(
                                 songId = mediaItem.mediaId,
@@ -525,13 +528,13 @@ fun Podcast(
                                                         podcastPage?.listEpisode?.forEachIndexed { index, song ->
                                                             runCatching {
                                                                 Database.insert(song.asMediaItem)
-                                                                Database.insert(
+                                                                runBlocking { Database.insert(
                                                                     SongPlaylistMap(
                                                                         songId = song.asMediaItem.mediaId,
                                                                         playlistId = playlistPreview.playlist.id,
                                                                         position = position + index
                                                                     ).default()
-                                                                )
+                                                                ) }
                                                             }.onFailure {
                                                                 Timber.e("Failed onAddToPlaylist in PlaylistSongListModern  ${it.stackTraceToString()}")
                                                             }

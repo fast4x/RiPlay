@@ -1,13 +1,13 @@
 package it.fast4x.riplay.utils
 
-import database.entities.Song
+import it.fast4x.riplay.data.models.Song
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.UserAgent
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.bodies.ContinuationBody
 import it.fast4x.environment.requests.playlistPage
 import it.fast4x.environment.utils.ProxyPreferences
-import database.entities.SongEntity
+import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.environment.utils.getProxy
 
 fun String.resize(

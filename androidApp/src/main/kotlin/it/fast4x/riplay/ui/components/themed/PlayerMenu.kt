@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui.components.themed
 
+import it.fast4x.riplay.data.update
+import it.fast4x.riplay.data.insert
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -284,7 +286,7 @@ fun AddToPlaylistPlayerMenu(
         onAddToPlaylist = { playlist, position ->
             if (!isYtSyncEnabled() || !playlist.isYoutubePlaylist){
                 Database.asyncTransaction {
-                    insert(mediaItem)
+                    Database.insert(mediaItem)
                     insert(
                         SongPlaylistMap(
                             songId = mediaItem.mediaId,
@@ -350,7 +352,7 @@ fun AddToPlaylistArtistSongs(
             mediaItems.forEachIndexed { index, mediaItem ->
                 if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist){
                     Database.asyncTransaction {
-                        insert(mediaItem)
+                        Database.insert(mediaItem)
                         insert(
                             SongPlaylistMap(
                                 songId = mediaItem.mediaId,

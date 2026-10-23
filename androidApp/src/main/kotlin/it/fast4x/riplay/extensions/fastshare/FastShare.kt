@@ -1,5 +1,6 @@
 package it.fast4x.riplay.extensions.fastshare
 
+import it.fast4x.riplay.data.componentName
 import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Context

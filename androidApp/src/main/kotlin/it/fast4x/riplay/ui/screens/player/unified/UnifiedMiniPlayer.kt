@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui.screens.player.unified
 
+import it.fast4x.riplay.data.update
+import it.fast4x.riplay.data.insert
 import android.Manifest
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
@@ -199,7 +201,7 @@ fun UnifiedMiniPlayer(
             } else if (!isYtSyncEnabled()){
                 Database.asyncTransaction {
                     if (like(mediaItem.mediaId, setDisLikeState(likedAt)) == 0)
-                        insert(mediaItem, Song::toggleDislike)
+                        Database.insert(mediaItem, Song::toggleDislike)
                 }
                 if (likedAt == null || (likedAt ?: 0) > 0L)
                     SmartMessage(context.resources.getString(R.string.added_to_disliked), context = context)

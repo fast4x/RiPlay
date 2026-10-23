@@ -39,8 +39,9 @@ class ArtistRelationFetcher() {
 
         for ((artist, mbId, affinity) in topArtists) {
             try {
+                val mbIdSafe = mbId ?: continue
                 delay(1100)
-                val relations = mbClient.fetchArtistRelations(mbId)
+                val relations = mbClient.fetchArtistRelations(mbIdSafe)
 
                 val entities = relations.mapNotNull { rel ->
                     val targetMbId = rel.artist?.id ?: return@mapNotNull null
@@ -51,7 +52,7 @@ class ArtistRelationFetcher() {
                     }
 
                     ArtistRelation(
-                        fromArtistId = mbId,  // ← MBID, non YT id
+                        fromArtistId = mbIdSafe,  // ← MBID, non YT id
                         toArtistId = targetMbId,
                         relationType = relationType,
                         direction = "bidirectional",

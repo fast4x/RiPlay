@@ -79,10 +79,11 @@ class RelatedItemsService() {
         val results = mutableListOf<RelatedArtist>()
 
         // 1. MB graph walk (1-hop)
-        if (sourceArtist.mbId != null) {
-            val relations = artistRelationDao.getBidirectional(sourceArtist.mbId)
+        val sourceMbId = sourceArtist.mbId
+        if (sourceMbId != null) {
+            val relations = artistRelationDao.getBidirectional(sourceMbId)
             for (rel in relations) {
-                val otherMbId = if (rel.fromArtistId == sourceArtist.mbId) rel.toArtistId else rel.fromArtistId
+                val otherMbId = if (rel.fromArtistId == sourceMbId) rel.toArtistId else rel.fromArtistId
                 val other = artistDao.getByMbId(otherMbId) ?: continue
                 results.add(RelatedArtist(
                     artist = other,
@@ -221,7 +222,7 @@ class RelatedItemsService() {
             }
         } else if (!sourceSong.artistsText.isNullOrBlank()) {
             // ★ FALLBACK: usa artistsText se non c'è cross-ref
-            val sameArtistByText = songDao.getSongsByArtistsTextLike(sourceSong.artistsText, limit = 10)
+            val sameArtistByText = songDao.getSongsByArtistsTextLike(sourceSong.artistsText ?: "", limit = 10)
                 .filter { it.id != songId }
             sameArtistByText.forEach { song ->
                 results.add(RelatedSong(song, 0.9f, "Stesso artista", RelatedSource.SAME_ARTIST))
@@ -262,13 +263,14 @@ class RelatedItemsService() {
         }
 
         // === FONTE 4: MB graph (se l'artista ha mbId) ===
-        if (primaryArtist?.mbId != null && results.size < limit) {
-            val relations = artistRelationDao.getBidirectional(primaryArtist.mbId)
+        val primaryMbId = primaryArtist?.mbId
+        if (primaryMbId != null && results.size < limit) {
+            val relations = artistRelationDao.getBidirectional(primaryMbId)
                 .filter { getRelationWeight(it.relationType) > 0.5f }
 
             for (rel in relations.take(5)) {
                 if (results.size >= limit) break
-                val otherMbId = if (rel.fromArtistId == primaryArtist.mbId) rel.toArtistId else rel.fromArtistId
+                val otherMbId = if (rel.fromArtistId == primaryMbId) rel.toArtistId else rel.fromArtistId
                 val otherArtist = artistDao.getByMbId(otherMbId) ?: continue
 
                 val otherSongs = songArtistRefDao.getSongsByArtist(otherArtist.id, limit = 3)

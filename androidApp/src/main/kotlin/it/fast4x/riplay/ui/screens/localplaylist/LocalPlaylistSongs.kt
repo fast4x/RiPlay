@@ -1,6 +1,8 @@
 package it.fast4x.riplay.ui.screens.localplaylist
 
 
+import it.fast4x.riplay.data.update
+import it.fast4x.riplay.data.insert
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -473,7 +475,7 @@ fun LocalPlaylistSongs(
                         }
                     }
                     Database.asyncTransaction {
-                        playlistPreview?.playlist?.let(Database::delete)
+                        playlistPreview?.playlist?.let { delete(it) }
                     }
                 }
 
@@ -670,7 +672,7 @@ fun LocalPlaylistSongs(
                             }
                         }
                         Database.asyncTransaction {
-                            playlistPreview?.playlist?.copy(name = text)?.let(Database::update)
+                            playlistPreview?.playlist?.copy(name = text)?.let { update(it) }
                         }
                     }
 

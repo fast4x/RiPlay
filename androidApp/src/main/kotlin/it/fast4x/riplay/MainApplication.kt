@@ -1,5 +1,6 @@
 package it.fast4x.riplay
 
+import it.fast4x.riplay.utils.appContext
 import android.app.Application
 import android.content.ComponentName
 import android.content.pm.PackageManager
@@ -10,6 +11,7 @@ import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
 import coil.request.CachePolicy
+import it.fast4x.riplay.data.registerAndroidDatabase
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.CoilDiskCacheMaxSize
 import it.fast4x.riplay.extensions.appforegroundtracker.AppForegroundTracker
@@ -104,6 +106,14 @@ class MainApplication : Application(), ImageLoaderFactory {
         )
 
         Dependencies.init(this)
+        // Registro il builder del database v68 condiviso (KMP) per il target Android
+        registerAndroidDatabase {
+            androidx.room.Room.databaseBuilder(
+                appContext(),
+                it.fast4x.riplay.data.DatabaseInitializer::class.java,
+                it.fast4x.riplay.data.DatabaseInitializer.DB_NAME
+            )
+        }
         AppForegroundTracker.init(this)
 
         // Inizializza le impostazioni di app ed aspetto

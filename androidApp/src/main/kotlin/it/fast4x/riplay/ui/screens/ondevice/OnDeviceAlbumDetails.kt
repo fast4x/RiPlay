@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui.screens.ondevice
 
+import it.fast4x.riplay.data.update
+import it.fast4x.riplay.data.insert
 import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -616,7 +618,7 @@ fun OnDeviceAlbumDetails(
                                                             if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                                 songs.forEachIndexed { index, song ->
                                                                     Database.asyncTransaction {
-                                                                        insert(song.asMediaItem)
+                                                                        Database.insert(song.asMediaItem)
                                                                         insert(
                                                                             SongPlaylistMap(
                                                                                 songId = song.asMediaItem.mediaId,
@@ -632,7 +634,7 @@ fun OnDeviceAlbumDetails(
                                                                 listMediaItems.forEachIndexed { index, song ->
                                                                     //Log.d("mediaItemMaxPos", position.toString())
                                                                     Database.asyncTransaction {
-                                                                        insert(song)
+                                                                        Database.insert(song)
                                                                         insert(
                                                                             SongPlaylistMap(
                                                                                 songId = song.mediaId,

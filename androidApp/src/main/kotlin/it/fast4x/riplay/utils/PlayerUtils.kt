@@ -44,7 +44,6 @@ const val MUSIC_VAULT_KEY_PREFIX = "musicvault:"
 const val SPOTIFY_TRACK_KEY_PREFIX = "spotify:track:"
 const val DEEZER_TRACK_KEY_PREFIX = "deezer:track:"
 
-const val WEBDAV_KEY_PREFIX = "webdav:"
 
 val String.isSpotifyTrack: Boolean
         get() = this.startsWith(SPOTIFY_TRACK_KEY_PREFIX)

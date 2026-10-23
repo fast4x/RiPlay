@@ -330,10 +330,11 @@ class WebDavLibraryViewModel () : ViewModel(), ViewModelProvider.Factory {
                 }
 
                 // STEP 2: Fallback Online (YouTube)
-                if (fetchedMetadata == null && song.mediaId.isNotBlank()) {
+                val songMediaId = song.mediaId
+                if (fetchedMetadata == null && songMediaId?.isNotBlank() == true) {
                     try {
                         Timber.d("WebDavLibraryViewModel fetchMetadataIfNeeded Metadata: Provo ad estrarre i metadata da YouTube")
-                        response = getOnlineMetadata(videoId = song.mediaId)
+                        response = getOnlineMetadata(videoId = songMediaId ?: "")
                         val videoDetails = response?.videoDetails
 
                         if (videoDetails != null) {

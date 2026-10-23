@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui.pages
 
+import it.fast4x.riplay.enums.SortOrder
+import it.fast4x.riplay.enums.SongSortBy
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,9 +27,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import database.DB
-import database.entities.Song
-import database.entities.SongEntity
+import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.items.SongItem
 import it.fast4x.riplay.styling.Dimensions.layoutColumnBottomSpacer
 
@@ -39,8 +41,8 @@ fun SongsPage(
     val songs = remember { SnapshotStateList<SongEntity>() }
 
     LaunchedEffect(Unit) {
-        //MusicDatabaseDesktop.songsByTitleAsc().also { songs.addAll(it) }
-        DB.songsByTitleAsc().collect {
+        //Database.songsByTitleAsc().also { songs.addAll(it) }
+        Database.songs(SongSortBy.Title, SortOrder.Ascending, showHiddenSongs = 0).collect {
             songs += it
         }
     }

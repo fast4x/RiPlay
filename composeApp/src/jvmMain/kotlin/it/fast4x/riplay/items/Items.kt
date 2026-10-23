@@ -36,8 +36,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import database.entities.Album
-import database.entities.SongEntity
+import it.fast4x.riplay.data.models.Album
+import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.environment.Environment
 import it.fast4x.riplay.commonutils.MONTHLY_PREFIX
 import it.fast4x.riplay.commonutils.PINNED_PREFIX

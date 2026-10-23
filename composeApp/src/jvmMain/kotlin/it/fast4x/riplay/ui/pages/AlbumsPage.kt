@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui.pages
 
+import it.fast4x.riplay.enums.SortOrder
+import it.fast4x.riplay.enums.AlbumSortBy
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,8 +27,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import database.DB
-import database.entities.Album
+import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.items.AlbumItem
 import it.fast4x.riplay.styling.Dimensions.albumThumbnailSize
 import it.fast4x.riplay.styling.Dimensions.layoutColumnBottomSpacer
@@ -39,7 +41,7 @@ fun AlbumsPage(
     val albums = remember { SnapshotStateList<Album>() }
 
     LaunchedEffect(Unit) {
-        DB.getAllAlbums().collect {
+        Database.albums(AlbumSortBy.Title, SortOrder.Ascending).collect {
             albums += it
         }
     }

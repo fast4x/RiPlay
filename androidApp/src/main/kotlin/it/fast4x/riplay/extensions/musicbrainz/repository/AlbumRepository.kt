@@ -14,8 +14,9 @@ class AlbumRepository() {
     suspend fun upsertSmart(album: Album): String {
 
         // 1. Search by mbId
-        if (album.mbId != null) {
-            albumDao.getByMbId(album.mbId)?.let { existing ->
+        val albumMbId = album.mbId
+        if (albumMbId != null) {
+            albumDao.getByMbId(albumMbId)?.let { existing ->
                 val merged = mergeAlbums(existing, album)
                 val classifiedAlbum = if (album.nature == AlbumNature.UNKNOWN) {
                     merged.copy(nature = AlbumClassifier.classify(merged))
@@ -28,8 +29,9 @@ class AlbumRepository() {
         }
 
         // 2. Search by youtubeAlbumId
-        if (album.youtubeAlbumId != null) {
-            albumDao.getByYoutubeAlbumId(album.youtubeAlbumId)?.let { existing ->
+        val albumYoutubeId = album.youtubeAlbumId
+        if (albumYoutubeId != null) {
+            albumDao.getByYoutubeAlbumId(albumYoutubeId)?.let { existing ->
                 val merged = mergeAlbums(existing, album)
                 val classifiedAlbum = if (album.nature == AlbumNature.UNKNOWN) {
                     merged.copy(nature = AlbumClassifier.classify(merged))
@@ -68,7 +70,7 @@ class AlbumRepository() {
         val newId = album.id.ifBlank {
             when {
                 album.mbId != null -> "mb-${album.mbId}"
-                album.youtubeAlbumId != null -> album.youtubeAlbumId
+                album.youtubeAlbumId != null -> album.youtubeAlbumId ?: ""
                 else -> "album_${UUID.randomUUID()}"
             }
         }

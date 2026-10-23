@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui
 
+import it.fast4x.riplay.enums.SortOrder
+import it.fast4x.riplay.enums.SongSortBy
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -38,9 +40,9 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import database.MusicDatabaseDesktop
-import database.entities.Album
-import database.entities.Song
+import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.data.models.Album
+import it.fast4x.riplay.data.models.Song
 import it.fast4x.environment.Environment
 import it.fast4x.riplay.enums.PageType
 import it.fast4x.riplay.styling.Dimensions.layoutColumnBottomPadding
@@ -73,7 +75,7 @@ import it.fast4x.riplay.player.vlcj.VlcjFrameController
 @Composable
 fun ThreeColumnsApp() {
 
-    val db = remember { MusicDatabaseDesktop }
+    val db = remember { Database }
 
     val coroutineScope by remember { mutableStateOf(CoroutineScope(Dispatchers.IO)) }
 
@@ -108,7 +110,7 @@ fun ThreeColumnsApp() {
     }
 
     coroutineScope.launch {
-        db.getAllSongs().collect {
+        db.songs(SongSortBy.Title, SortOrder.Ascending, showHiddenSongs = 0).collect {
             println("songs in db ${it.size}")
         }
     }
@@ -147,7 +149,7 @@ fun ThreeColumnsApp() {
     var showPageSheet by remember { mutableStateOf(false) }
     var showPageType by remember { mutableStateOf(PageType.QUICKPICS) }
 
-    //println("songs in db ${MusicDatabaseDesktop.getAllSongs()}")
+    //println("songs in db ${Database.getAllSongs()}")
 
     //val backStackEntry by navController.currentBackStackEntryAsState()
     //val currentScreen = backStackEntry?.destination?.route ?: "artists"

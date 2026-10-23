@@ -40,10 +40,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import database.DB
-import database.entities.Album
-import database.entities.Song
-import database.entities.SongAlbumMap
+import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.data.models.Album
+import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.data.models.SongAlbumMap
 import dev.rebelonion.translator.Translator
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.bodies.BrowseBody
@@ -96,14 +96,14 @@ fun AlbumScreen(
 
     var album by remember { mutableStateOf<Album?>(null) }
 //    LaunchedEffect(Unit) {
-//        MusicDatabaseDesktop.album(browseId).collect { album = it }
+//        Database.album(browseId).collect { album = it }
 //    }
 
 
 
     val albumPage = remember { mutableStateOf<Environment.PlaylistOrAlbumPage?>(null) }
     LaunchedEffect(browseId) {
-        DB.album(browseId).collect { currentAlbum ->
+        Database.album(browseId).collect { currentAlbum ->
             album = currentAlbum
 
             if (albumPage.value == null)
@@ -115,7 +115,7 @@ fun AlbumScreen(
                         println("browseId: $browseId albumPage: ${albumPage.value}")
 
                         coroutineScope.launch {
-                            DB.upsert(
+                            Database.upsert(
                                 Album(
                                     id = browseId,
                                     title = if (currentAlbum?.title?.startsWith(MODIFIED_PREFIX) == true) currentAlbum.title else currentAlbumPage.title,
@@ -140,10 +140,10 @@ fun AlbumScreen(
                                 ?.items
                                 ?.map(Environment.SongItem::asSong)
                                 ?.onEach {
-                                    DB.upsert(it)
+                                    Database.upsert(it)
                                 }
                                 ?.mapIndexed { position, song ->
-                                    DB.upsert(
+                                    Database.upsert(
                                         SongAlbumMap(
                                             songId = song.id,
                                             albumId = browseId,
@@ -256,7 +256,7 @@ fun AlbumScreen(
                             album.let {
                                 coroutineScope.launch {
                                     if (it != null) {
-                                        DB.upsert(it.copy(bookmarkedAt = bookmarkedAt))
+                                        Database.upsert(it.copy(bookmarkedAt = bookmarkedAt))
                                     }
                                 }
                             }

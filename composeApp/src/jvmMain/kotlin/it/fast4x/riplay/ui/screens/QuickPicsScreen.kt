@@ -27,7 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import database.entities.Song
+import it.fast4x.riplay.data.models.Song
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.bodies.NextBody
 import it.fast4x.environment.requests.discoverPage
@@ -87,7 +87,7 @@ fun QuickPicsScreen(
             )
         )
 
-        discoverPageResult = Environment.discoverPage()
+        discoverPageResult = Environment.discoverPage("", "")
 
     }
     relatedPageResult?.getOrNull().also { related.value = it }

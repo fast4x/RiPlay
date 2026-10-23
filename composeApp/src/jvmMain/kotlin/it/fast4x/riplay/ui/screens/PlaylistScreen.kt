@@ -40,7 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import database.entities.Song
+import it.fast4x.riplay.data.models.Song
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.requests.playlistPage
@@ -63,8 +63,8 @@ import it.fast4x.riplay.utils.resize
 import it.fast4x.riplay.utils.completed
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import me.bush.translator.Language
-import me.bush.translator.Translator
+import dev.rebelonion.translator.Language
+import dev.rebelonion.translator.Translator
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import riplay.composeapp.generated.resources.Res
@@ -111,7 +111,7 @@ fun PlaylistScreen(
         mutableStateOf(false)
     }
 
-    val translator = Translator(getHttpClient())
+    val translator = Translator()
     val languageDestination = languageDestination()
 
     Box(

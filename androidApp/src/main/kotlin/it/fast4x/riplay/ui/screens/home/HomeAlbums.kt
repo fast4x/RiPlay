@@ -1,5 +1,11 @@
 package it.fast4x.riplay.ui.screens.home
 
+import it.fast4x.riplay.data.icon
+import it.fast4x.riplay.data.menuItem
+import it.fast4x.riplay.data.titleId
+import it.fast4x.riplay.data.textId
+import it.fast4x.riplay.data.update
+import it.fast4x.riplay.data.insert
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -461,7 +467,7 @@ fun HomeAlbums(
                                     var titleId = 0
                                     var defValue = ""
                                     var placeholderTextId: Int = 0
-                                    var queryBlock: (Database, String, String) -> Int = { _, _, _ -> 0 }
+                                    var queryBlock: suspend (Database, String, String) -> Int = { _, _, _ -> 0 }
 
                                     if (showDialogChangeAlbumCover) {
                                         onDismiss = { showDialogChangeAlbumCover = false }
@@ -550,7 +556,7 @@ fun HomeAlbums(
                                                                     if (!isYtSyncEnabled() || !preview.playlist.isYoutubePlaylist) {
                                                                         Database.asyncTransaction {                                 // 🔑 UNA sola transazione
                                                                             songs.forEachIndexed { index, song ->
-                                                                                insert(song.asMediaItem)
+                                                                                Database.insert(song.asMediaItem)
                                                                                 insert(
                                                                                     SongPlaylistMap(
                                                                                         songId = song.asMediaItem.mediaId,
@@ -618,7 +624,7 @@ fun HomeAlbums(
                                     var titleId = 0
                                     var defValue = ""
                                     var placeholderTextId: Int = 0
-                                    var queryBlock: (Database, String, String) -> Int = { _, _, _ -> 0 }
+                                    var queryBlock: suspend (Database, String, String) -> Int = { _, _, _ -> 0 }
 
                                     if (showDialogChangeAlbumCover) {
                                         onDismiss = { showDialogChangeAlbumCover = false }
@@ -706,7 +712,7 @@ fun HomeAlbums(
                                                                     if (!isYtSyncEnabled() || !preview.playlist.isYoutubePlaylist) {
                                                                         Database.asyncTransaction {                                 // 🔑 UNA sola transazione
                                                                             songs.forEachIndexed { index, song ->
-                                                                                insert(song.asMediaItem)
+                                                                                Database.insert(song.asMediaItem)
                                                                                 insert(
                                                                                     SongPlaylistMap(
                                                                                         songId = song.asMediaItem.mediaId,

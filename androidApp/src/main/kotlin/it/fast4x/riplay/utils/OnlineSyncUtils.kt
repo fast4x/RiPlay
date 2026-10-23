@@ -1,5 +1,7 @@
 package it.fast4x.riplay.utils
 
+import it.fast4x.riplay.data.update
+import it.fast4x.riplay.data.insert
 import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -215,7 +217,7 @@ suspend fun importYTMSubscribedChannels(): Boolean {
                             bookmarkedAt = localArtist.bookmarkedAt ?: System.currentTimeMillis(),
                             thumbnailUrl = remoteArtist.thumbnail?.url,
                             isYoutubeArtist = true
-                        ).let(::update)
+                        ).let { update(it) }
                     }
 
 
@@ -276,7 +278,7 @@ suspend fun importYTMLikedAlbums(): Boolean {
                             isYoutubeAlbum = true,
                             bookmarkedAt = localAlbum.bookmarkedAt ?: System.currentTimeMillis(),
                             thumbnailUrl = remoteAlbum.thumbnail?.url)
-                            .let(::update)
+                            .let { update(it) }
                     }
 
                 }

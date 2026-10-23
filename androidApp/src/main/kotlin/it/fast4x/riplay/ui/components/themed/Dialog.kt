@@ -1,5 +1,8 @@
 package it.fast4x.riplay.ui.components.themed
 
+import it.fast4x.riplay.data.models.icon
+import it.fast4x.riplay.data.update
+import it.fast4x.riplay.data.insert
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -637,7 +640,7 @@ fun SelectorArtistsDialog(
                                     EnvironmentExt.getArtistPage(browseId = browseId)
                                         .onSuccess { page ->
                                             artist?.copy(thumbnailUrl = page.artist.thumbnail?.url)
-                                                ?.let(::update)
+                                                ?.let { update(it) }
 
                                             Database.artist(browseId).collect { artist = it }
                                         }

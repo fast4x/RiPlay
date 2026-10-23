@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui.screens.player.unified.components.controls
 
+import it.fast4x.riplay.data.update
+import it.fast4x.riplay.data.insert
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -594,7 +596,7 @@ fun UnifiedInfoAlbumAndArtistModern(
                             } else if (!isYtSyncEnabled()){
                                 Database.asyncTransaction {
                                     if (like(mediaItem.mediaId, setDisLikeState(likedAt)) == 0) {
-                                        insert(mediaItem, Song::toggleDislike)
+                                        Database.insert(mediaItem, Song::toggleDislike)
                                     }
                                 }
                             } else {

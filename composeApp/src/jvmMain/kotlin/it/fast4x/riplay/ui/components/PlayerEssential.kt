@@ -14,7 +14,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import database.entities.Song
+import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.items.SongItem
 import it.fast4x.riplay.utils.LoadImage
 import player.frame.FramePlayer

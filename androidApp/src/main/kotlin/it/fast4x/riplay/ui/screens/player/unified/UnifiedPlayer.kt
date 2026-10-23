@@ -1,6 +1,7 @@
 package it.fast4x.riplay.ui.screens.player.unified
 
 
+import it.fast4x.riplay.data.insert
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.RenderEffect

@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui.screens.player.unified.components.controls
 
+import it.fast4x.riplay.data.update
+import it.fast4x.riplay.data.insert
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
@@ -280,7 +282,7 @@ fun UnifiedInfoAlbumAndArtistEssential(
                                     CoroutineScope(Dispatchers.IO).launch {
                                         if (like(mediaItem.mediaId, setDisLikeState(likedAt)) == 0) {
                                             mediaItem.let {
-                                                    insert(it, Song::toggleDislike)
+                                                    Database.insert(it, Song::toggleDislike)
                                                 }
                                         }
 
@@ -491,7 +493,7 @@ fun UnifiedControlsEssential(
                             CoroutineScope(Dispatchers.IO).launch {
                                 playerState.mediaInfo?.mediaItem?.let {
                                     if (like(it.mediaId, setDisLikeState(likedAt)) == 0) {
-                                        insert(it, Song::toggleDislike)
+                                        Database.insert(it, Song::toggleDislike)
                                     }
                                 }
                             }

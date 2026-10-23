@@ -1,50 +1,46 @@
 package it.fast4x.riplay.extensions.databasebackup
 
 import android.content.Context
-import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
-import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.room.Transactor
+import androidx.room.immediateTransaction
+import androidx.room.execSQL
+import androidx.room.useWriterConnection
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.DatabaseInitializer
+import it.fast4x.riplay.data.getDatabaseInitializer
 import it.fast4x.riplay.enums.RestoreMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
-import androidx.core.database.sqlite.transaction
-import androidx.room.withTransaction
-import it.fast4x.riplay.utils.isAtLeastAndroid11
 
+/**
+ * Backup/restore del database riscritto con la driver API KMP di Room 2.8
+ * (SQLiteConnection/SQLiteStatement/usePrepared) al posto di SupportSQLiteDatabase,
+ * che non è più disponibile nel target KMP.
+ */
 class DatabaseBackupManager(
     private val context: Context,
     private val database: Database
 ) {
+
     suspend fun backupDatabase(backupUri: Uri) = withContext(Dispatchers.IO) {
         val temp = File(context.cacheDir, "riplay-backup-${System.currentTimeMillis()}.db")
         try {
-            if (isAtLeastAndroid11) {
-                // Una istruzione al posto di: checkpoint + vacuum + close + copy + reload
-                DatabaseInitializer.Instance.openHelper.writableDatabase
-                    .execSQL("VACUUM INTO ?", arrayOf(temp.absolutePath))
-
-                context.contentResolver.openOutputStream(backupUri)?.use { out ->
-                    temp.inputStream().use { it.copyTo(out) }
-                } ?: error("Impossibile aprire la destinazione")
-            } else {
-                val db = DatabaseInitializer.Instance.openHelper.writableDatabase
-                db.beginTransaction()          // legge snapshot dal file congelato
-                try {
-                    db.query("SELECT COUNT(*) FROM Song").use { it.moveToFirst() }  // avvia lo snapshot
-                    context.contentResolver.openOutputStream(backupUri)?.use { out ->
-                        temp.inputStream().use { it.copyTo(out) }
-                    } ?: error("Impossibile aprire la destinazione")          // copia il db
-                } finally {
-                    db.endTransaction()
+            getDatabaseInitializer().useWriterConnection { conn ->
+                // VACUUM INTO con parametro: usePrepared + bindText (KMP driver API)
+                conn.usePrepared("VACUUM INTO ?") { stmt ->
+                    stmt.bindText(1, temp.absolutePath)
+                    stmt.step()
                 }
             }
+
+            context.contentResolver.openOutputStream(backupUri)?.use { out ->
+                temp.inputStream().use { it.copyTo(out) }
+            } ?: error("Impossibile aprire la destinazione")
 
         } finally {
             temp.delete()   // VACUUM INTO fallisce se il file esiste già: temp sempre fresca
@@ -56,12 +52,16 @@ class DatabaseBackupManager(
         withContext(Dispatchers.IO) {
             Timber.d("DatabaseBackupManager restoreDatabase close db")
             try {
-                database.openHelper().writableDatabase.execSQL("PRAGMA wal_checkpoint(TRUNCATE);")
-                database.close()
+                getDatabaseInitializer().useWriterConnection { conn ->
+                    conn.usePrepared("PRAGMA wal_checkpoint(TRUNCATE);") { it.step() }
+                }
+                getDatabaseInitializer().close()
 
                 context.applicationContext.contentResolver.openInputStream(restoreUri)
                     ?.use { inputStream ->
-                        FileOutputStream( database.path() ).use { outputStream ->
+                        FileOutputStream(
+                            context.getDatabasePath(DatabaseInitializer.DB_NAME).absolutePath
+                        ).use { outputStream ->
                             inputStream.copyTo(outputStream)
                         }
                     }
@@ -89,51 +89,61 @@ class DatabaseBackupManager(
                 return@withContext
             }
 
-            val db = DatabaseInitializer.Instance.openHelper.writableDatabase
-
             try {
-                // 2. ATTACH sulla connessione di Room (no close!)
-                db.execSQL("ATTACH DATABASE ? AS backup_db", arrayOf(internalBackupFile.absolutePath))
+                getDatabaseInitializer().useWriterConnection { db ->
+                    // 2. ATTACH sulla connessione di Room (no close!)
+                    db.usePrepared("ATTACH DATABASE ? AS backup_db") { stmt ->
+                        stmt.bindText(1, internalBackupFile.absolutePath)
+                        stmt.step()
+                    }
 
-                // 3. Integrity check
-                val ok = db.query("PRAGMA backup_db.integrity_check").use { c ->
-                    c.moveToFirst() && c.getString(0) == "ok"
+                    // 3. Integrity check
+                    val ok = db.usePrepared("PRAGMA backup_db.integrity_check") { stmt ->
+                        stmt.step() && stmt.getText(0) == "ok"
+                    }
+                    if (!ok) throw IllegalStateException("Backup corrotto")
+
+                    // 4. Travaso in transazione
+                    db.immediateTransaction {
+                        val tables = db.usePrepared(
+                            "SELECT name FROM backup_db.sqlite_master " +
+                                    "WHERE type='table' AND name NOT LIKE 'sqlite_%' " +
+                                    "AND name != 'room_master_table'"
+                        ) { stmt ->
+                            buildList { while (stmt.step()) add(stmt.getText(0)) }
+                        }
+
+                        for (table in tables) importTableData(db, table, mode)
+                    }
+                    Timber.d("smartRestore: travaso completato")
                 }
-                if (!ok) throw IllegalStateException("Backup corrotto")
-
-                // 4. Travaso in transazione — withTransaction di room-ktx (suspend)
-                DatabaseInitializer.Instance.withTransaction {
-                    val tables = db.query(
-                        "SELECT name FROM backup_db.sqlite_master " +
-                                "WHERE type='table' AND name NOT LIKE 'sqlite_%' " +
-                                "AND name != 'room_master_table'"
-                    ).use { c -> buildList { while (c.moveToNext()) add(c.getString(0)) } }
-
-                    for (table in tables) importTableData(db, table, mode)
-                }
-                Timber.d("smartRestore: travaso completato")
             } catch (e: Exception) {
                 Timber.e("smartRestore fallito (rollback automatico): ${e.message}")
                 throw e    // propagate alla UI per il messaggio all'utente
             } finally {
-                runCatching { db.execSQL("DETACH DATABASE backup_db") }
+                runCatching {
+                    getDatabaseInitializer().useWriterConnection { conn ->
+                        conn.usePrepared("DETACH DATABASE backup_db") { it.step() }
+                    }
+                }
                 internalBackupFile.delete()
             }
 
         }
     }
 
-    private fun importTableData(db: SupportSQLiteDatabase, tableName: String, mode: RestoreMode) {
+    private suspend fun importTableData(db: Transactor, tableName: String, mode: RestoreMode) {
         if (!tableName.matches(Regex("[A-Za-z0-9_]+"))) return    // whitelist
 
-        val exists = db.query("SELECT name FROM sqlite_master WHERE type='table' AND name='$tableName'")
-            .use { it.moveToFirst() }
+        val exists = db.usePrepared("SELECT name FROM sqlite_master WHERE type='table' AND name='$tableName'") {
+            it.step()
+        }
         if (!exists) return
 
         if (mode == RestoreMode.REPLACE) {
             try {
-                db.execSQL("DELETE FROM `$tableName`")
-                runCatching { db.execSQL("DELETE FROM sqlite_sequence WHERE name='$tableName'") }
+                db.usePrepared("DELETE FROM `$tableName`") { it.step() }
+                runCatching { db.usePrepared("DELETE FROM sqlite_sequence WHERE name='$tableName'") { it.step() } }
                 Timber.d("REPLACE: svuotata $tableName")
             } catch (e: Exception) {
                 throw IllegalStateException("Impossibile svuotare $tableName", e)
@@ -152,17 +162,22 @@ class DatabaseBackupManager(
         val columnsStr = commonColumns.joinToString(",") { "`$it`" }
         val insertSql = "INSERT INTO `$tableName` ($columnsStr) SELECT $columnsStr FROM backup_db.`$tableName`"
 
-        db.execSQL(insertSql)
+        db.usePrepared(insertSql) { it.step() }
 
-        val count = db.query("SELECT COUNT(*) FROM `$tableName`").use { c ->
-            c.moveToFirst(); c.getInt(0)
+        val count = db.usePrepared("SELECT COUNT(*) FROM `$tableName`") { stmt ->
+            stmt.step()
+            stmt.getLong(0).toInt()
         }
         Timber.d("Import OK [$tableName] -> $count record totali")
     }
 
-    private fun getColumnNames(db: SupportSQLiteDatabase, qualifiedTable: String): List<String> =
+    private suspend fun getColumnNames(db: Transactor, qualifiedTable: String): List<String> =
         runCatching {
-            db.query("SELECT * FROM $qualifiedTable LIMIT 0").use { it.columnNames.toList() }
+            db.usePrepared("PRAGMA table_info($qualifiedTable)") { stmt ->
+                buildList {
+                    while (stmt.step()) add(stmt.getText(2))   // campo "name" in PRAGMA table_info
+                }
+            }
         }.getOrElse { emptyList() }
 
 }

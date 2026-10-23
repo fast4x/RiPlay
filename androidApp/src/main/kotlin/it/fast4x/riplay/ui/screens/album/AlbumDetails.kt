@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui.screens.album
 
+import it.fast4x.riplay.data.update
+import it.fast4x.riplay.data.insert
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -996,7 +998,7 @@ fun AlbumDetails(
                                                             if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                                 songs.forEachIndexed { index, song ->
                                                                     Database.asyncTransaction {
-                                                                        insert(song.asMediaItem)
+                                                                        Database.insert(song.asMediaItem)
                                                                         insert(
                                                                             SongPlaylistMap(
                                                                                 songId = song.asMediaItem.mediaId,
@@ -1020,7 +1022,7 @@ fun AlbumDetails(
                                                                     ).onSuccess {
                                                                         songs.forEachIndexed { index, song ->
                                                                             Database.asyncTransaction {
-                                                                                insert(song.asMediaItem)
+                                                                                Database.insert(song.asMediaItem)
                                                                                 insert(
                                                                                     SongPlaylistMap(
                                                                                         songId = song.asMediaItem.mediaId,
@@ -1038,7 +1040,7 @@ fun AlbumDetails(
                                                                 listMediaItems.forEachIndexed { index, song ->
                                                                     //Log.d("mediaItemMaxPos", position.toString())
                                                                     Database.asyncTransaction {
-                                                                        insert(song)
+                                                                        Database.insert(song)
                                                                         insert(
                                                                             SongPlaylistMap(
                                                                                 songId = song.mediaId,

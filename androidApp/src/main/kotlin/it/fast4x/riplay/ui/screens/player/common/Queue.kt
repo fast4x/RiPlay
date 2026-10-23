@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui.screens.player.common
 
+import it.fast4x.riplay.data.update
+import it.fast4x.riplay.data.insert
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -1423,7 +1425,7 @@ fun Queue(
                                                     if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                         windows?.forEachIndexed { index, song ->
                                                             Database.asyncTransaction {
-                                                                insert(song.mediaItem)
+                                                                Database.insert(song.mediaItem)
                                                                 insert(
                                                                     SongPlaylistMap(
                                                                         songId = song.mediaItem.mediaId,
@@ -1454,7 +1456,7 @@ fun Queue(
                                                     if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                         listMediaItems.forEachIndexed { index, song ->
                                                             Database.asyncTransaction {
-                                                                insert(song)
+                                                                Database.insert(song)
                                                                 insert(
                                                                     SongPlaylistMap(
                                                                         songId = song.mediaId,

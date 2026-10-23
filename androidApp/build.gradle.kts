@@ -6,7 +6,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.ksp)
-    alias(libs.plugins.room)
     alias(libs.plugins.kotlin.serialization)
 }
 
@@ -405,10 +404,6 @@ extensions.configure<ApplicationExtension> {
 
 }
 
-room {
-    schemaDirectory("$projectDir/schemas")
-}
-
 dependencies {
     implementation(projects.composeApp)
     //implementation(libs.androidyoutubeplayer) // replaced by project ayp
@@ -516,9 +511,6 @@ dependencies {
 
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit"))
-
-    ksp(libs.room.compiler)
-
 
     coreLibraryDesugaring(libs.desugaring)
 }

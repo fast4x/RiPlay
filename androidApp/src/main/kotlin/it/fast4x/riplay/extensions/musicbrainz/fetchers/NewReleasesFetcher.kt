@@ -54,11 +54,12 @@ class NewReleasesFetcher {
                         if (WorkerDependencies.database.getMBAlbumById(result.id) != null) continue
 
                         // Salta se non ha data
-                        if (details.firstReleaseDate.isNullOrBlank()) continue
+                        val firstRelease = details.firstReleaseDate
+                        if (firstRelease.isNullOrBlank()) continue
 
                         // Salta se più vecchio di 90 giorni
                         val releaseDate = try {
-                            LocalDate.parse(details.firstReleaseDate.take(20))
+                            LocalDate.parse(firstRelease.take(20))
                         } catch (e: Exception) {
                             LocalDate.now()
                         }
@@ -69,8 +70,8 @@ class NewReleasesFetcher {
                             title = details.title,
                             primaryType = details.primaryType,
                             secondaryTypes = details.secondaryTypes.takeIf { it.isNotEmpty() },
-                            firstReleaseDate = details.firstReleaseDate,
-                            originalYear = details.firstReleaseDate.take(4).toIntOrNull(),
+                            firstReleaseDate = firstRelease,
+                            originalYear = firstRelease.take(4).toIntOrNull(),
                             genres = details.genres.map { it.name }.takeIf { it.isNotEmpty() },
                             tags = details.tags?.map { it.name }?.takeIf { it.isNotEmpty() },
                             rating = details.rating?.value,
@@ -128,10 +129,11 @@ class NewReleasesFetcher {
                     Timber.tag("NewReleasesFetcher").i("=== FETCH NOVITA' TOP ARTISTI $details")
 
                     if (WorkerDependencies.database.getMBAlbumById(result.id) != null) continue
-                    if (details.firstReleaseDate.isNullOrBlank()) continue
+                    val firstRelease = details.firstReleaseDate
+                    if (firstRelease.isNullOrBlank()) continue
 
                     val releaseDate = try {
-                        LocalDate.parse(details.firstReleaseDate.take(20))
+                        LocalDate.parse(firstRelease.take(20))
                     } catch (e: Exception) {
                         LocalDate.now()
                     }
@@ -142,8 +144,8 @@ class NewReleasesFetcher {
                         title = details.title,
                         primaryType = details.primaryType,
                         secondaryTypes = details.secondaryTypes.takeIf { it.isNotEmpty() },
-                        firstReleaseDate = details.firstReleaseDate,
-                        originalYear = details.firstReleaseDate.take(4).toIntOrNull(),
+                        firstReleaseDate = firstRelease,
+                        originalYear = firstRelease.take(4).toIntOrNull(),
                         genres = details.genres.map { it.name }.takeIf { it.isNotEmpty() },
                         tags = details.tags?.map { it.name }?.takeIf { it.isNotEmpty() },
                         rating = details.rating?.value,

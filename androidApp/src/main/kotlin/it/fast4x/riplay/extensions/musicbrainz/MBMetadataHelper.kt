@@ -26,18 +26,19 @@ class MBMetadataHelper(
                     && artist.rating != null)
             || artist.name == null) return
 
+        val artistName = artist.name ?: return
         try {
-            var metadata = mbClient.fetchArtistMetadata(artist.name)
+            var metadata = mbClient.fetchArtistMetadata(artistName)
             Timber.d("MBMetadataHelper onArtistViewed metadata fetched $metadata")
 
             // Se l'artista non ha un url di wikipedia provo a cercarlo direttamente da wikipedia
             if (metadata.wikipediaUrl == null) {
                 val searchArtistTerm = if (artist.artistType == "Group") {
-                    "${artist.name} band" // Cerca "Nirvana band"
+                    "${artistName} band" // Cerca "Nirvana band"
                 } else if (artist.artistType == "Person") {
-                    "${artist.name} singer" // Cerca "Adele singer"
+                    "${artistName} singer" // Cerca "Adele singer"
                 } else {
-                    artist.name
+                    artistName
                 }
                 val wikipediaResult = mbClient.fetchWikipediaExtractByArtist(searchArtistTerm)
                 metadata = metadata.copy(wikipediaBio = wikipediaResult?.info, wikipediaUrl = wikipediaResult?.url)
@@ -79,11 +80,13 @@ class MBMetadataHelper(
                     && album.links != null && album.wikipediaInfo != null && album.tags != null
                     && album.rating != null) || album.title == null || album.authorsText == null) return
 
-        val artist = Database.artistByName(album.authorsText).first() ?: return
+        val albumAuthorsText = album.authorsText ?: return
+        val albumTitle = album.title ?: return
+        val artist = Database.artistByName(albumAuthorsText).first() ?: return
 
         try {
             // Proviamo a prendere i generi specifici dell'album
-            var metadata  = mbClient.fetchAlbumMetadata(album.title, artist.name ?: "")
+            var metadata  = mbClient.fetchAlbumMetadata(albumTitle, artist.name ?: "")
 
             Timber.d("MBMetadataHelper onAlbumViewed metadata fetched $metadata")
 
@@ -131,7 +134,8 @@ class MBMetadataHelper(
         val song = Database.song(songId).first() ?: return
         if (song.genres != null || song.artistsText == null) return
 
-        val artist = Database.artistByName(song.artistsText).first() ?: return
+        val songArtistsText = song.artistsText ?: return
+        val artist = Database.artistByName(songArtistsText).first() ?: return
         Timber.d("MBMetadataHelper onSongPlayed artist $artist")
 
         val artistGenres = getOrFetchArtistGenres(artist)
@@ -150,7 +154,7 @@ class MBMetadataHelper(
     private suspend fun getOrFetchArtistGenres(artist: Artist?): List<String> {
         if (artist == null) return emptyList()
         // Se abbiamo già i generi dell'artista (anche lista vuota), li usiamo
-        if (artist.genres != null) return artist.genres
+        artist.genres?.let { return it }
 
         // Altrimenti facciamo la chiamata per l'artista
         onArtistViewed(artist.id)

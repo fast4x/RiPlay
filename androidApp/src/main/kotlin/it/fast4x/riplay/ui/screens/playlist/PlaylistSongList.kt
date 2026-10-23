@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui.screens.playlist
 
+import it.fast4x.riplay.data.update
+import it.fast4x.riplay.data.insert
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -312,7 +314,7 @@ fun PlaylistSongList(
 
                             playlistPage?.songs
                                 ?.map(Environment.SongItem::asMediaItem)
-                                ?.onEach(::insert)
+                                ?.onEach { Database.insert(it) }
                                 ?.mapIndexed { index, mediaItem ->
                                     SongPlaylistMap(
                                         songId = mediaItem.mediaId,
@@ -320,7 +322,7 @@ fun PlaylistSongList(
                                         position = index
                                     ).default()
                                 }
-                                ?.onEach(::insert)
+                                ?.onEach { Database.insert(it) }
                         }
                     }
 
@@ -858,7 +860,7 @@ fun PlaylistSongList(
 
                                                         playlistPage?.songs
                                                             ?.map(Environment.SongItem::asMediaItem)
-                                                            ?.onEach(::insert)
+                                                            ?.onEach { Database.insert(it) }
                                                             ?.mapIndexed { index, mediaItem ->
                                                                 SongPlaylistMap(
                                                                     songId = mediaItem.mediaId,

@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui.components.themed
 
+import it.fast4x.riplay.data.update
+import it.fast4x.riplay.data.insert
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedContent
@@ -184,7 +186,7 @@ fun BaseMediaItemGridMenu(
         onAddToPlaylist = { playlist, position ->
             if (!isYtSyncEnabled() || !playlist.isYoutubePlaylist){
                 Database.asyncTransaction {
-                    insert(mediaItem)
+                    Database.insert(mediaItem)
                     insert(
                         SongPlaylistMap(
                             songId = mediaItem.mediaId,
@@ -262,7 +264,7 @@ fun MiniMediaItemGridMenu(
         onAddToPlaylist = { playlist, position ->
             if (!isYtSyncEnabled() || !playlist.isYoutubePlaylist){
                 Database.asyncTransaction {
-                    insert(mediaItem)
+                    Database.insert(mediaItem)
                     insert(
                         SongPlaylistMap(
                             songId = mediaItem.mediaId,
@@ -464,7 +466,7 @@ fun MediaItemGridMenu (
                         } else if (!isYtSyncEnabled()){
                             Database.asyncTransaction {
                                 if (like(mediaItem.mediaId, setDisLikeState(likedAt)) == 0){
-                                    insert(mediaItem, Song::toggleDislike)
+                                    Database.insert(mediaItem, Song::toggleDislike)
                                 }
                                 updateData = !updateData
                             }

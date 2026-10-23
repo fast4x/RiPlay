@@ -59,10 +59,11 @@ class ArtistInsightsViewModel(application: Application) : AndroidViewModel(appli
 
             // Relazioni MB
             val relations = withContext(Dispatchers.IO) {
-                if (artist.mbId != null) {
-                    val rels = relationDao.getBidirectional(artist.mbId)
+                val artistMbId = artist.mbId
+                if (artistMbId != null) {
+                    val rels = relationDao.getBidirectional(artistMbId)
                     rels.mapNotNull { rel ->
-                        val otherMbId = if (rel.fromArtistId == artist.mbId) rel.toArtistId else rel.fromArtistId
+                        val otherMbId = if (rel.fromArtistId == artistMbId) rel.toArtistId else rel.fromArtistId
                         val otherArtist = artistDao.getByMbId(otherMbId) ?: return@mapNotNull null
                         ArtistRelationInfo(otherArtist, rel.relationType, rel.direction)
                     }

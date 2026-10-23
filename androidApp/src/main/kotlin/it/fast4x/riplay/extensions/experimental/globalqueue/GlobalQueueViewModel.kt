@@ -1,5 +1,7 @@
 package it.fast4x.riplay.extensions.experimental.globalqueue
 
+import it.fast4x.riplay.data.mediaItemCompat
+import it.fast4x.riplay.data.toMediaItemBytes
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -186,7 +188,7 @@ class GlobalQueueViewModel() : ViewModel(), ViewModelProvider.Factory {
 
                 queue.mapIndexed { index, mediaItem ->
                     QueuedMediaItem(
-                        mediaItem = mediaItem,
+                        mediaItemBytes = mediaItem.toMediaItemBytes() ?: ByteArray(0),
                         mediaId = mediaItem.mediaId,
                         //position = if (index == mediaItemIndex) mediaItemPosition else null,
                         position = if (index == _currentIndex.value) _currentIndex.value.toLong() else -1,
@@ -222,9 +224,9 @@ class GlobalQueueViewModel() : ViewModel(), ViewModelProvider.Factory {
             runBlocking(Dispatchers.Main) {
                 add(
                     queuedSong.map { mediaItem ->
-                        mediaItem.mediaItem.buildUpon()
-                            .setUri(mediaItem.mediaItem.mediaId)
-                            .setCustomCacheKey(mediaItem.mediaItem.mediaId)
+                        (mediaItem.mediaItemCompat ?: androidx.media3.common.MediaItem.EMPTY).buildUpon()
+                            .setUri(mediaItem.mediaItemCompat?.mediaId ?: "")
+                            .setCustomCacheKey(mediaItem.mediaItemCompat?.mediaId ?: "")
                             .build().apply {
                                 mediaMetadata.extras?.putBoolean("isFromPersistentQueue", true)
                                 mediaMetadata.extras?.putLong("idQueue", mediaItem.idQueue ?: defaultQueueId())

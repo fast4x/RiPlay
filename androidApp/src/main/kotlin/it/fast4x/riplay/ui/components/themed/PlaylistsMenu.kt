@@ -1,5 +1,7 @@
 ﻿package it.fast4x.riplay.ui.components.themed
 
+import it.fast4x.riplay.data.update
+import it.fast4x.riplay.data.insert
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -94,7 +96,7 @@ class PlaylistsMenu private constructor(
             runBlocking( Dispatchers.IO ) {
                 try {
                     mediaItems( preview ).forEachIndexed { index, mediaItem ->
-                        insert(mediaItem)
+                        Database.insert(mediaItem)
                         insert(
                             SongPlaylistMap(
                                 songId = mediaItem.mediaId,

@@ -1,5 +1,7 @@
 package it.fast4x.riplay.utils
 
+import it.fast4x.riplay.data.update
+import it.fast4x.riplay.data.insert
 import android.content.ContentUris
 import android.net.Uri
 import android.provider.MediaStore
@@ -55,7 +57,7 @@ fun mediaItemToggleLike( mediaItem: MediaItem) {
     CoroutineScope(Dispatchers.IO).launch {
         Database.asyncTransaction {
             if (songExist(mediaItem.mediaId) == 0)
-                insert(mediaItem)
+                Database.insert(mediaItem)
             if (getLikedAt(mediaItem.mediaId) in listOf(null, -1L))
                 like(
                     mediaItem.mediaId,
@@ -74,7 +76,7 @@ fun mediaItemToggleLike( mediaItem: MediaItem) {
 fun mediaItemSetLiked( mediaItem: MediaItem ) {
     Database.asyncTransaction {
         if (songExist(mediaItem.mediaId) == 0)
-            insert(mediaItem)
+            Database.insert(mediaItem)
         if (getLikedAt(mediaItem.mediaId) in listOf(null, -1L))
             like(
                 mediaItem.mediaId,

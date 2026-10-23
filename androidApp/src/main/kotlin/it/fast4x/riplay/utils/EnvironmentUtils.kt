@@ -1,5 +1,7 @@
 package it.fast4x.riplay.utils
 
+import it.fast4x.riplay.data.update
+import it.fast4x.riplay.data.insert
 import android.content.ContentUris
 import android.content.Context
 import android.provider.MediaStore
@@ -738,7 +740,7 @@ suspend fun removeFromOnlineLikedSong(mediaItem: MediaItem){
             .onSuccess {
                 Database.asyncTransaction {
                     if(songExist(mediaItem.mediaId) == 0){
-                        insert(mediaItem)
+                        Database.insert(mediaItem)
                     }
                     like(mediaItem.mediaId, null)
 

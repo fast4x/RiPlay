@@ -1,6 +1,8 @@
 package it.fast4x.riplay.ui.components.themed
 
 
+import it.fast4x.riplay.data.update
+import it.fast4x.riplay.data.insert
 import android.annotation.SuppressLint
 import android.content.Intent
 import androidx.activity.compose.BackHandler
@@ -691,7 +693,7 @@ fun BaseMediaItemMenu(
         onAddToPlaylist = { playlist, position ->
             if (!isYtSyncEnabled() || !playlist.isYoutubePlaylist){
                 Database.asyncTransaction {
-                    insert(mediaItem)
+                    Database.insert(mediaItem)
                     insert(
                         SongPlaylistMap(
                             songId = mediaItem.mediaId,
@@ -786,7 +788,7 @@ fun MiniMediaItemMenu(
         onAddToPlaylist = { playlist, position ->
             if (!isYtSyncEnabled() || !playlist.isYoutubePlaylist){
                 Database.asyncTransaction {
-                    insert(mediaItem)
+                    Database.insert(mediaItem)
                     insert(
                         SongPlaylistMap(
                             songId = mediaItem.mediaId,
@@ -1473,7 +1475,7 @@ fun MediaItemMenu(
                                 } else if (!isYtSyncEnabled()){
                                     Database.asyncTransaction {
                                         if (like(mediaItem.mediaId, setDisLikeState(likedAt)) == 0) {
-                                            insert(mediaItem, Song::toggleDislike)
+                                            Database.insert(mediaItem, Song::toggleDislike)
                                         }
                                     }
                                 } else {

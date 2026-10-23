@@ -1,5 +1,9 @@
 package it.fast4x.riplay.ui.screens.home
 
+import it.fast4x.riplay.data.icon
+import it.fast4x.riplay.data.menuItem
+import it.fast4x.riplay.data.titleId
+import it.fast4x.riplay.data.textId
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -151,6 +155,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.collections.map
+import kotlinx.coroutines.runBlocking
 
 @ExperimentalSerializationApi
 @OptIn(ExperimentalTextApi::class)
@@ -339,38 +344,38 @@ fun HomePlaylists(
             time = formattedDate
             val playlistName = row["Playlist name"] ?: "${pname?.substringBeforeLast('.')} $time"
             plistId = playlistName.let {
-                Database.playlistExistByName(it)
+                runBlocking { Database.playlistExistByName(it) }
             }
 
             if (plistId == 0L)
                 plistId = playlistName.let {
-                    Database.insert(Playlist(plistId, it))
+                    runBlocking { Database.insert(Playlist(plistId, it)) }
                 }
         },
         afterTransaction = { index, song, album, artists ->
             if (song.id.isBlank()) return@init
 
-            Database.insert(song)
-            Database.insert(
+            runBlocking { Database.insert(song) }
+            runBlocking { Database.insert(
                 SongPlaylistMap(
                     songId = song.id,
                     playlistId = plistId,
                     position = index
                 ).default()
-            )
+            ) }
 
             if (album.id != "") {
-                Database.insert(
+                runBlocking { Database.insert(
                     album,
                     SongAlbumMap(
                         songId = song.id,
                         albumId = album.id,
                         position = null
                     )
-                )
+                ) }
             }
             if (artists.isNotEmpty()) {
-                Database.insert(
+                runBlocking { Database.insert(
                     artists,
                     artists.map { artist ->
                         SongArtistMap(
@@ -378,7 +383,7 @@ fun HomePlaylists(
                             artistId = artist.id
                         )
                     }
-                )
+                ) }
             }
         }
     )
@@ -388,38 +393,38 @@ fun HomePlaylists(
             time = formattedDate
             val playlistName = row["PlaylistName"] ?: "New Playlist $time"
             plistId = playlistName.let {
-                Database.playlistExistByName(it)
+                runBlocking { Database.playlistExistByName(it) }
             }
 
             if (plistId == 0L)
                 plistId = playlistName.let {
-                    Database.insert(Playlist(plistId, it, row["PlaylistBrowseId"]))
+                    runBlocking { Database.insert(Playlist(plistId, it, row["PlaylistBrowseId"])) }
                 }
         },
         afterTransaction = { index, song, album, artists ->
             if (song.id.isBlank()) return@init
 
-            Database.insert(song)
-            Database.insert(
+            runBlocking { Database.insert(song) }
+            runBlocking { Database.insert(
                 SongPlaylistMap(
                     songId = song.id,
                     playlistId = plistId,
                     position = index
                 ).default()
-            )
+            ) }
 
             if (album.id != "") {
-                Database.insert(
+                runBlocking { Database.insert(
                     album,
                     SongAlbumMap(
                         songId = song.id,
                         albumId = album.id,
                         position = null
                     )
-                )
+                ) }
             }
             if (artists.isNotEmpty()) {
-                Database.insert(
+                runBlocking { Database.insert(
                     artists,
                     artists.map { artist ->
                         SongArtistMap(
@@ -427,7 +432,7 @@ fun HomePlaylists(
                             artistId = artist.id
                         )
                     }
-                )
+                ) }
             }
         }
     )

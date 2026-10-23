@@ -1,5 +1,7 @@
 package it.fast4x.riplay.utils
 
+import it.fast4x.riplay.data.update
+import it.fast4x.riplay.data.insert
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.SongPlaylistMap
@@ -122,7 +124,7 @@ object SpotifyPlaylistImporter {
         val mediaItem = candidate.asMediaItem
 
         Database.asyncTransaction {
-            insert(mediaItem)
+            Database.insert(mediaItem)
             insert(
                 SongPlaylistMap(
                     songId = mediaItem.mediaId,

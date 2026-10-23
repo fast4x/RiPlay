@@ -20,10 +20,15 @@ import kotlin.io.path.pathString
 class VlcjController : PlayerController {
 
     init {
-        //println("desktop VlcjController init ${System.setProperty("jna.library.path", System.getProperty("user.dir"))}")
+        // Ricerca libvlc multipiattaforma: Windows (libvlc.dll), Linux (libvlc.so), macOS (libvlc.dylib)
+        val libName = when {
+            RuntimeUtil.isWindows() -> "libvlc.dll"
+            RuntimeUtil.isMac() -> "libvlc.dylib"
+            else -> "libvlc.so"
+        }
         addSearchPath(
             RuntimeUtil.getLibVlcLibraryName(),
-            Paths.get(System.getProperty("user.dir"), "lib", "libvlc.dll").pathString
+            Paths.get(System.getProperty("user.dir"), "lib", libName).pathString
         )
         NativeDiscovery().discover()
     }

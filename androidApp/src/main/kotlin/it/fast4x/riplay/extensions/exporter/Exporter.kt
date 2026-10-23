@@ -12,6 +12,7 @@ import it.fast4x.riplay.utils.parseDurationToSeconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.OutputStreamWriter
+import kotlinx.coroutines.runBlocking
 
 object Exporter {
 
@@ -62,8 +63,8 @@ object Exporter {
                         )
 
                         songs.forEach {
-                            val artistInfos = Database.songArtistInfo(it.id)
-                            val albumInfo = Database.songAlbumInfo(it.id)
+                            val artistInfos = runBlocking { Database.songArtistInfo(it.id) }
+                            val albumInfo = runBlocking { Database.songAlbumInfo(it.id) }
                             writeRow(
                                 browseId,
                                 plistName,

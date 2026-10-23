@@ -1,5 +1,7 @@
 package it.fast4x.riplay.services.playback
 
+import it.fast4x.riplay.data.update
+import it.fast4x.riplay.data.insert
 import android.content.ContentResolver
 import android.content.Intent
 import android.net.Uri
@@ -492,14 +494,14 @@ class MediaLibraryServiceCallback(
                                                                 songs = it
                                                             }
                                                         }
-                                                        ?.onEach(Database::insert)
+                                                        ?.onEach { Database.insert(it) }
                                                         ?.map {
                                                             SongArtistMap(
                                                                 songId = it.id,
                                                                 artistId = artist.id
                                                             )
                                                         }
-                                                        ?.onEach(Database::insert)
+                                                        ?.onEach { Database.insert(it) }
                                                 }
 
                                         }
@@ -573,14 +575,14 @@ class MediaLibraryServiceCallback(
                                                                     songs = it
                                                                 }
                                                             }
-                                                            ?.onEach(Database::insert)
+                                                            ?.onEach { Database.insert(it) }
                                                             ?.map {
                                                                 SongArtistMap(
                                                                     songId = it.id,
                                                                     artistId = artist.id
                                                                 )
                                                             }
-                                                            ?.onEach(Database::insert)
+                                                            ?.onEach { Database.insert(it) }
                                                     }
 
                                             }
@@ -624,7 +626,7 @@ class MediaLibraryServiceCallback(
 
                                         val innerSongsAlbumMap = innerSongs
                                             .map(Environment.SongItem::asMediaItem)
-                                            .onEach(Database::insert)
+                                            .onEach { Database.insert(it) }
                                             .mapIndexed { position, mediaItem ->
                                                 SongAlbumMap(
                                                     songId = mediaItem.mediaId,
@@ -707,7 +709,7 @@ class MediaLibraryServiceCallback(
 
                                         val innerSongsAlbumMap = innerSongs
                                             .map(Environment.SongItem::asMediaItem)
-                                            .onEach(Database::insert)
+                                            .onEach { Database.insert(it) }
                                             .mapIndexed { position, mediaItem ->
                                                 SongAlbumMap(
                                                     songId = mediaItem.mediaId,

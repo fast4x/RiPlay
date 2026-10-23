@@ -1,5 +1,6 @@
 package it.fast4x.riplay.services.playback
 
+import it.fast4x.riplay.data.insert
 import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.app.NotificationChannel
@@ -94,6 +95,8 @@ import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.requests.searchPage
 import it.fast4x.environment.utils.fromMusicShelfRenderer
+import it.fast4x.riplay.data.mediaItemCompat
+import it.fast4x.riplay.data.toMediaItemBytes
 import it.fast4x.riplay.MainActivity
 import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.data.models.Event
@@ -3512,7 +3515,7 @@ class PlayerService : MediaLibraryService(),
         withContext(Dispatchers.IO) {
             val queuedMediaItems = mediaItems.mapIndexed { index, mediaItem ->
                 QueuedMediaItem(
-                    mediaItem = mediaItem,
+                    mediaItemBytes = mediaItem.toMediaItemBytes() ?: ByteArray(0),
                     mediaId = mediaItem.mediaId,
                     position = if (index == mediaItemIndex) mediaItemPosition else -1,
                     idQueue = mediaItem.mediaMetadata.extras?.getLong("idQueue", defaultQueueId())
@@ -3555,7 +3558,7 @@ class PlayerService : MediaLibraryService(),
 
         val index = queuedSongs.indexOfFirst { (it.position ?: 0L) >= 0L }.coerceAtLeast(0)
         val queuedSong = queuedSongs[index]
-        val position = if (queuedSong.mediaItem.isLocal) {
+        val position = if (queuedSong.mediaItemCompat?.isLocal == true) {
             queuedSong.position ?: C.TIME_UNSET
         } else {
             (queuedSong.position ?: 0L) / 1000
@@ -3566,7 +3569,7 @@ class PlayerService : MediaLibraryService(),
         withContext(Dispatchers.Main) {
             Timber.d("PlayerService LoadQueue: Dati DB pronti. Ripristino indice: $index, Posizione: $position")
             val mappedItems = queuedSongs.map { mediaItem ->
-                val song = mediaItem.mediaItem
+                val song = mediaItem.mediaItemCompat ?: androidx.media3.common.MediaItem.EMPTY
                 val isMusicVault = song.mediaMetadata.extras
                     ?.getString("musicVaultState") == MusicVaultState.COMPLETED.name
                 val musicVaultFileName = song.mediaMetadata.extras
@@ -3589,13 +3592,13 @@ class PlayerService : MediaLibraryService(),
                     }
             }
 
-            exoPlayer.setMediaItems(mappedItems, index, if (queuedSong.mediaItem.isLocal) position else 0)
+            exoPlayer.setMediaItems(mappedItems, index, if (queuedSong.mediaItemCompat?.isLocal == true) position else 0)
             exoPlayer.prepare()
 
             // valorizza la variabile globale lastOnlineMediaId in modo da non riprodurre la stessa canzone
             lastOnlineMediaId = queuedSong.mediaId
 
-            if (!queuedSong.mediaItem.isLocal) {
+            if (queuedSong.mediaItemCompat?.isLocal != true) {
                 val duration = try { appSettings.stateDuration } catch (e: Exception) { 0f }
                 val mId = appSettings.stateMediaId
 
@@ -3892,7 +3895,7 @@ class PlayerService : MediaLibraryService(),
                             }
 
                     songs.forEach {
-                        Database.asyncTransaction { insert(it) }
+                        Database.asyncTransaction { Database.insert(it) }
                     }
 
                     if (justAdd) {

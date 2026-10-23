@@ -42,7 +42,7 @@ fun ArtistsScreen(
             }
 
             //BasicText(text = "Songs: ${relatedPage.value?.songs?.size.toString()}")
-            //BasicText(text = "commonDao db song ${MusicDatabaseDesktop.getAllSongs()}")
+            //BasicText(text = "commonDao db song ${Database.getAllSongs()}")
 
 
         }

@@ -256,3 +256,21 @@ room {
 }
 
 
+dependencies {
+    // Room compiler per la @Database fusa in commonMain (DatabaseInitializer v68).
+    // Prima della fusione era dichiarato solo in androidApp; il Gradle plugin Room
+    // gestisce gli schemi ma NON aggiunge il compiler -> senza questa riga l'APK
+    // esce senza DatabaseInitializer_Impl e crasha al primo accesso al DB.
+    // NOTA: la config ksp() top-level e' vietata in KMP -> servono config per-target.
+    add("kspJvm", libs.room.compiler)
+    add("kspAndroid", libs.room.compiler)
+    // NOTA: compilazioni jvm "dev"/"test" (hot-reload/unit test) NON sono coperte
+    // (config KSP non esposte da questa versione plugin); il run desktop normale usa kspJvm
+}
+
+// KSP dipende dal config generato di environment (output condiviso build/generated/kotlin/config)
+afterEvaluate {
+    tasks.matching { it.name.startsWith("ksp") }.configureEach {
+        dependsOn(tasks.matching { it.name == "generateEnvironmentConfig" })
+    }
+}

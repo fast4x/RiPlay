@@ -5,7 +5,7 @@ package it.fast4x.riplay.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import it.fast4x.riplay.enums.Languages
-import me.bush.translator.Language
+import dev.rebelonion.translator.Language
 import org.jetbrains.compose.resources.stringResource
 import riplay.composeapp.generated.resources.Res
 import riplay.composeapp.generated.resources.arabic

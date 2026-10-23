@@ -26,8 +26,9 @@ class ArtistRepository() {
         val artistDao = Database.artistDao()
 
         // 1. Search by mbId
-        if (artist.mbId != null) {
-            Database.artistDao().getByMbId(artist.mbId)?.let { existing ->
+        val artistMbId = artist.mbId
+        if (artistMbId != null) {
+            Database.artistDao().getByMbId(artistMbId)?.let { existing ->
                 val merged = mergeArtists(existing, artist)
                 val classifiedArtist = if (merged.nature == ArtistNature.UNKNOWN) {
                     merged.copy(nature = ArtistClassifier.classify(artist))
@@ -41,8 +42,9 @@ class ArtistRepository() {
         }
 
         // 2. Search by youtubeChannelId
-        if (artist.youtubeChannelId != null) {
-            artistDao.getByYoutubeChannelId(artist.youtubeChannelId)?.let { existing ->
+        val artistChannelId = artist.youtubeChannelId
+        if (artistChannelId != null) {
+            artistDao.getByYoutubeChannelId(artistChannelId)?.let { existing ->
                 val merged = mergeArtists(existing, artist)
                 val classifiedArtist = if (merged.nature == ArtistNature.UNKNOWN) {
                     merged.copy(nature = ArtistClassifier.classify(artist))
@@ -82,7 +84,7 @@ class ArtistRepository() {
             // Se l'artista viene da MB, usa mb-<mbid>; se da YT, usa ytChannelId; altrimenti UUID
             when {
                 artist.mbId != null -> "mb-${artist.mbId}"
-                artist.youtubeChannelId != null -> artist.youtubeChannelId
+                artist.youtubeChannelId != null -> artist.youtubeChannelId ?: ""
                 else -> "artist_${UUID.randomUUID()}"
             }
         }

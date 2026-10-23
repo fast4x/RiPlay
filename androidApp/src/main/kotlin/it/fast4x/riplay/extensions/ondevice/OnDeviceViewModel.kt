@@ -53,6 +53,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.isActive
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.runBlocking
 
 class OnDeviceViewModel(application: Application) : AndroidViewModel(application),
     ViewModelProvider.Factory {
@@ -238,15 +239,15 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
                         folder = relativePath
                     )
 
-                    Database.upsert(song, Format(
+                    runBlocking { Database.upsert(song, Format(
                         songId = song.id,
                         itag = 0,
                         mimeType = mimeType,
                         bitrate = bitrate.toLong(),
                         contentLength = fileSize.toLong(),
                         lastModified = dateModified
-                    ))
-                    Database.upsert(
+                    )) }
+                    runBlocking { Database.upsert(
                         Album(
                             id = "$LOCAL_KEY_PREFIX$albumId",
                             title = album,
@@ -257,8 +258,8 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
                             timestamp = dateModified
                         ),
                         SongAlbumMap(songId = song.id, albumId = "$LOCAL_KEY_PREFIX$albumId", position = 0)
-                    )
-                    Database.upsert(
+                    ) }
+                    runBlocking { Database.upsert(
                         Artist(
                             id = "$LOCAL_KEY_PREFIX$artist",
                             name = artist,
@@ -266,7 +267,7 @@ class OnDeviceViewModel(application: Application) : AndroidViewModel(application
                             timestamp = dateModified
                         ),
                         SongArtistMap(songId = song.id, artistId = "$LOCAL_KEY_PREFIX$artist")
-                    )
+                    ) }
 
                     audioFiles.add(song)
                     Timber.d("OnDeviceViewModel added: ${song.title} [${song.id}]")

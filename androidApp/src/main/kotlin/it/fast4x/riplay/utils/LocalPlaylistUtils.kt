@@ -1,5 +1,9 @@
 package it.fast4x.riplay.utils
 
+import it.fast4x.riplay.data.icon
+import it.fast4x.riplay.data.menuItem
+import it.fast4x.riplay.data.titleId
+import it.fast4x.riplay.data.textId
 import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.text.BasicText
@@ -295,7 +299,7 @@ class RenameDialog private constructor(
 
         Database.asyncTransaction {
             playlist.copy( name = newValue)
-                    .let( ::update )
+                    .let { update(it) }
         }
 
         onDismiss()

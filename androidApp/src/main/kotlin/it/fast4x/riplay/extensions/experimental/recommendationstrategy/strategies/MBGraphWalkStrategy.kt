@@ -60,7 +60,8 @@ class MBGraphWalkStrategy() : RecommendationStrategy {
         val maxOnDemandFetch = 30
 
         for ((artist, mbId, affinity) in topArtistsWithMbId) {
-            val relations = relationDao.getBidirectional(mbId)
+            val mbIdSafe = mbId ?: continue
+            val relations = relationDao.getBidirectional(mbIdSafe)
 
             for (rel in relations) {
                 val otherMbId = if (rel.fromArtistId == mbId) rel.toArtistId else rel.fromArtistId

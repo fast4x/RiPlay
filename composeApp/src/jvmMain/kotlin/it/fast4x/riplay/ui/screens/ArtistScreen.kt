@@ -40,7 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import database.entities.Song
+import it.fast4x.riplay.data.models.Song
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.requests.artistPage

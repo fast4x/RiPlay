@@ -1,5 +1,9 @@
 package it.fast4x.riplay.ui.screens.artist
 
+import it.fast4x.riplay.data.icon
+import it.fast4x.riplay.data.menuItem
+import it.fast4x.riplay.data.titleId
+import it.fast4x.riplay.data.textId
 import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
