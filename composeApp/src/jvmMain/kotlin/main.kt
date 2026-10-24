@@ -8,6 +8,7 @@ import it.fast4x.riplay.getAsyncImageLoader
 import it.fast4x.riplay.ui.ThreeColumnsApp
 import it.fast4x.riplay.ui.theme.DesktopTheme
 import it.fast4x.riplay.commonutils.initializeEnvironment
+import it.fast4x.riplay.player.kcef.KcefEngine
 import org.jetbrains.compose.resources.painterResource
 import riplay.composeapp.generated.resources.Res
 import riplay.composeapp.generated.resources.app_icon
@@ -15,6 +16,8 @@ import riplay.composeapp.generated.resources.app_icon
 
 @OptIn(ExperimentalCoilApi::class)
 fun main() = application {
+    // STEP 2: installazione/inizializzazione KCEF in background (non bloccante)
+    KcefEngine.start()
     setSingletonImageLoaderFactory { context ->
         getAsyncImageLoader(context)
     }

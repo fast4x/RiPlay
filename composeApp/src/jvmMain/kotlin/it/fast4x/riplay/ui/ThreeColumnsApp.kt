@@ -61,6 +61,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
+import player.DesktopVideoSource
 import player.frame.FrameContainer
 import riplay.composeapp.generated.resources.Res
 import riplay.composeapp.generated.resources.album
@@ -208,6 +209,9 @@ fun ThreeColumnsApp() {
                 showPageSheet = true
             },
             frameController = frameController,
+            // STEP 2k: l'id della canzone selezionata (videoId) passa al
+            // layout e da lì al player KCEF (DesktopVideoSource)
+            videoId = videoId,
             centerPanelContent = {
                 when (showPageType) {
                     PageType.ALBUM -> {
@@ -438,28 +442,31 @@ fun ThreeColumnsLayout(
     onSongClick: (Song) -> Unit = {},
     onAlbumClick: (Album) -> Unit = {},
     frameController: VlcjFrameController = remember { VlcjFrameController() },
+    // STEP 2k: canzone selezionata (Song.id = videoId YouTube) da passare
+    // al pannello KCEF; null/vuota = nessun video richiesto
+    videoId: String? = null,
     centerPanelContent: @Composable () -> Unit = {}
 ) {
     Row(Modifier.fillMaxSize()) {
         RightPanelContent(
             onShowPlayer = {}
         ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top
-            ) {
-                FrameContainer(
-                    Modifier.requiredHeight(200.dp),
-                    //.border(BorderStroke(1.dp, Color.Red)),
-                    frameController.size.collectAsState(null).value?.run {
-                        IntSize(first, second)
-                    } ?: IntSize.Zero,
-                    frameController.bytes.collectAsState(null).value
-                )
-            }
-
-
+            DesktopVideoSource(
+                modifier = Modifier.fillMaxWidth().fillMaxHeight(),
+                // STEP 2k: l'id della canzone selezionata arriva al player
+                // KCEF (Song.id = videoId YouTube): senza questo passaggio
+                // il pannello KCEF restava senza video (errore YT code=2)
+                videoId = videoId,
+                vlcjContent = {
+                    FrameContainer(
+                        Modifier.requiredHeight(200.dp),
+                        frameController.size.collectAsState(null).value?.run {
+                            IntSize(first, second)
+                        } ?: IntSize.Zero,
+                        frameController.bytes.collectAsState(null).value
+                    )
+                }
+            )
         }
 
         VerticalDivider(

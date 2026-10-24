@@ -12,7 +12,7 @@ coil = "2.7.0"
 coil3 = "3.6.3"
 room = "2.8.5"
 sqlite = "2.7.1"
-media3 = "1.11.1"
+media3 = "1.11.1" #1.10.1 ultima versione con webview in background
 ktor = "3.6.0"
 brotli = "0.1.2"
 palette = "1.0.0"
@@ -40,6 +40,7 @@ gson = "2.14.0"
 mediaPlayerKMP = "2.1.0"
 navigationKMP = "2.9.2"
 vlcj = "4.12.1"
+kcef = "2025.03.23"
 kotlinxCoroutinesSwing = "1.11.0"
 hypnoticcanvas = "0.6.0"
 okhttpDnsOverHttps = "5.5.0"
@@ -127,6 +128,7 @@ gson = {group = "com.google.code.gson", name = "gson", version.ref = "gson"}
 mediaplayer-kmp = { group = "io.github.khubaibkhan4", name = "mediaplayer-kmp", version.ref = "mediaPlayerKMP" }
 navigation-kmp = { group = "org.jetbrains.androidx.navigation", name = "navigation-compose", version.ref = "navigationKMP"}
 vlcj = { group = "uk.co.caprica", name = "vlcj", version.ref = "vlcj"}
+kcef = { group = "dev.datlag", name = "kcef", version.ref = "kcef"}
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil3" }
 coil-compose-core = { module = "io.coil-kt.coil3:coil-compose-core", version.ref = "coil3" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil3" }

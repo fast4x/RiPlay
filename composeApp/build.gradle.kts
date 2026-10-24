@@ -219,6 +219,19 @@ kotlin {
 
             implementation(libs.material.icon.desktop)
             implementation(libs.vlcj)
+            implementation(libs.kcef)
+
+            // JOGL/GlueGen runtime per KCEF (motore YouTube desktop)
+            // jogamp.org risponde 403 al client HTTP di Gradle: si usano gli artefatti 2.6.0 su Maven Central
+            // (jogl-all.jar include le classi nativewindow/newt; la 2.6.0 vince sulla 2.5.0 transitiva di kcef)
+            runtimeOnly("org.jogamp.gluegen:gluegen-rt:2.6.0")
+            runtimeOnly("org.jogamp.jogl:jogl-all:2.6.0")
+            runtimeOnly("org.jogamp.gluegen:gluegen-rt:2.6.0:natives-windows-amd64")
+            runtimeOnly("org.jogamp.gluegen:gluegen-rt:2.6.0:natives-linux-amd64")
+            runtimeOnly("org.jogamp.gluegen:gluegen-rt:2.6.0:natives-macosx-universal")
+            runtimeOnly("org.jogamp.jogl:jogl-all:2.6.0:natives-windows-amd64")
+            runtimeOnly("org.jogamp.jogl:jogl-all:2.6.0:natives-linux-amd64")
+            runtimeOnly("org.jogamp.jogl:jogl-all:2.6.0:natives-macosx-universal")
 
             val fxSuffix = "win"
             implementation("org.openjfx:javafx-base:21.0.5:${fxSuffix}")

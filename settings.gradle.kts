@@ -31,6 +31,7 @@ dependencyResolutionManagement {
         maven( "https://androidx.dev/storage/compose-compiler/repository")
         maven("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev")
         maven("https://maven.mozilla.org/maven2/")
+        maven("https://jogamp.org/deployment/maven/") // fallback JogAmp (403 verso Gradle: gli artefatti usati sono 2.6.0 su Maven Central)
     }
 }
 
