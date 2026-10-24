@@ -107,30 +107,18 @@ fun SettingsScreen(
         if (showMiniPlayerInSettings) miniPlayer else null,
         transitionEffect = transitionEffect,
         navBarContent = { item ->
-            item(0, stringResource(R.string.tab_general), R.drawable.app_icon, true)
-            item(1, stringResource(R.string.ui_tab), R.drawable.ui, true)
-            item(2, stringResource(R.string.player_appearance), R.drawable.color_palette, true)
-            item(3, if (!isYtLoggedIn()) stringResource(R.string.home, true)
-            else stringResource(R.string.home), if (!isYtLoggedIn()) R.drawable.sparkles
-            else R.drawable.home, true)
-            item(4, stringResource(R.string.tab_data), R.drawable.server, true)
-            item(5, stringResource(R.string.tab_accounts), R.drawable.person, true)
-            item(6, stringResource(R.string.tab_miscellaneous), R.drawable.equalizer, true)
-            item(7, stringResource(R.string.about), R.drawable.information, true)
-
+            item(0, "Playback", R.drawable.play, true)
+            item(1, "Account", R.drawable.person, true)
+            item(2, "Storage", R.drawable.server, true)
+            item(3, "About", R.drawable.information, true)
         }
     ) { currentTabIndex ->
         saveableStateHolder.SaveableStateProvider(currentTabIndex) {
             when (currentTabIndex) {
-                0 -> GeneralSettings(navController = navController)
-                1 -> UiSettings(navController = navController)
-                2 -> PlayerAppearanceSettings(navController = navController)
-                3 -> HomeSettings(navController = navController)
-                4 -> DataSettings(navController = navController)
-                5 -> AccountsSettings(navController = navController)
-                6 -> MiscSettings(navController = navController)
-                7 -> About(navController = navController)
-
+                0 -> SpotifyPlaybackSettings()
+                1 -> AccountsSettings(navController = navController)
+                2 -> DataSettings(navController = navController)
+                3 -> About(navController = navController)
             }
         }
     }

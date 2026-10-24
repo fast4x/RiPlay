@@ -41,6 +41,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.ui.components.ScreenContainer
+import it.fast4x.riplay.extensions.spotifreeupdater.SpotifreeUpdater
 import it.fast4x.riplay.ui.screens.home.homepages.HomePageLocal
 import it.fast4x.riplay.ui.screens.home.homepages.HomePageOnline
 import it.fast4x.riplay.ui.screens.home.homepages.HomePageMixed
@@ -85,17 +86,15 @@ fun HomeScreen(
 
     Timber.d("HomeScreen appSettings.homeScreenTabIndex ${appSettings.homeScreenTabIndex} openTabFromShortcut1 $openTabFromShortcut1")
 
-    var tabIndex = appSettings.homeScreenTabIndex
-    LaunchedEffect(Unit,appSettings.homeScreenTabIndex) {
-        tabIndex = appSettings.homeScreenTabIndex
-    }
+    // Sólo 3 pestañas (Inicio / Buscar / Tu Biblioteca); índices antiguos (3, 4) van a Biblioteca
+    val tabIndex = appSettings.homeScreenTabIndex.let { if (it > 2) 2 else it }
 
     val offlineModeEnabled = appSettings.offlineModeEnabled
     LaunchedEffect(Unit, offlineModeEnabled) {
         if (offlineModeEnabled) {
             appSettingsManager.updateSettings(
                 appSettingsManager.activeSettings.value.copy(
-                    homeScreenTabIndex = 1
+                    homeScreenTabIndex = 2
                 )
             )
         }
@@ -133,181 +132,19 @@ fun HomeScreen(
         transitionEffect = transitionEffect,
         navBarContent = { Item ->
 
-            Item(0, stringResource(R.string.home), R.drawable.home, isNetworkConnected)
-            Item(1, stringResource(R.string.songs), R.drawable.musical_notes, true)
-            Item(2, stringResource(R.string.artists), R.drawable.music_artist, true)
-            Item(3, stringResource(R.string.albums), R.drawable.music_album, true)
-            Item(4, stringResource(R.string.playlists), R.drawable.music_library, true)
+            Item(0, "Home", R.drawable.home, true)
+            Item(1, "Search", R.drawable.search, true)
+            Item(2, "Your Library", R.drawable.library, true)
 
         }
     ) { currentTabIndex ->
         //saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
             when (currentTabIndex) {
-                0 -> when(homePageType) {
-                    HomePageMode.Mixed -> HomePageMixed(
-                        onAlbumClick = {
-                            navController.navigate(route = "${NavRoutes.album.name}/$it")
-                        },
-                        onArtistClick = {
-                            navController.navigate(route = "${NavRoutes.artist.name}/$it")
-                        },
-                        onPlaylistClick = {
-                            navController.navigate(route = "${NavRoutes.playlist.name}/$it")
-                        },
-                        onSearchClick = {
-                            navController.navigate(NavRoutes.search.name)
-                        },
-                        onMoodAndGenresClick = { mood ->
-                            navController.currentBackStackEntry?.savedStateHandle?.set(
-                                "mood",
-                                mood.toUiMood()
-                            )
-                            navController.navigate(NavRoutes.mood.name)
-                        },
-                        onChipClick = { chip ->
-                            navController.currentBackStackEntry?.savedStateHandle?.set(
-                                "chip",
-                                chip.toUiChip()
-                            )
-                            navController.navigate(route = NavRoutes.chip.name)
-                        },
-                        onSettingsClick = {
-                            navController.navigate(NavRoutes.settings.name)
-                        },
-                        navController = navController
-                    )
+                0 -> SpotifyHome(navController = navController)
 
-                    HomePageMode.Online -> HomePageOnline(
-                        recommendationService = recommendationService,
-                        onAlbumClick = {
-                            navController.navigate(route = "${NavRoutes.album.name}/$it")
-                        },
-                        onArtistClick = {
-                            navController.navigate(route = "${NavRoutes.artist.name}/$it")
-                        },
-                        onPlaylistClick = {
-                            navController.navigate(route = "${NavRoutes.playlist.name}/$it")
-                        },
-                        onSearchClick = {
-                            navController.navigate(NavRoutes.search.name)
-                        },
-                        onMoodAndGenresClick = { mood ->
-                            navController.currentBackStackEntry?.savedStateHandle?.set(
-                                "mood",
-                                mood.toUiMood()
-                            )
-                            navController.navigate(NavRoutes.mood.name)
-                        },
-                        onChipClick = { chip ->
-                            navController.currentBackStackEntry?.savedStateHandle?.set(
-                                "chip",
-                                chip.toUiChip()
-                            )
-                            navController.navigate(route = NavRoutes.chip.name)
-                        },
-                        onSettingsClick = {
-                            navController.navigate(NavRoutes.settings.name)
-                        },
-                        navController = navController
-                    )
+                1 -> SpotifySearchTab(navController = navController)
 
-                    /*
-                    HomePageMode.Local -> HomePageLocal(
-                            recommendationService = recommendationService,
-                            onAlbumClick = {
-                                navController.navigate(route = "${NavRoutes.album.name}/$it")
-                            },
-                            onArtistClick = {
-                                navController.navigate(route = "${NavRoutes.artist.name}/$it")
-                            },
-                            onPlaylistClick = {
-                                navController.navigate(route = "${NavRoutes.playlist.name}/$it")
-                            },
-                            onSearchClick = {
-                                navController.navigate(NavRoutes.search.name)
-                            },
-                            onMoodAndGenresClick = { mood ->
-                                navController.currentBackStackEntry?.savedStateHandle?.set(
-                                    "mood",
-                                    mood.toUiMood()
-                                )
-                                navController.navigate(NavRoutes.mood.name)
-                            },
-                            onChipClick = { chip ->
-                                navController.currentBackStackEntry?.savedStateHandle?.set(
-                                    "chip",
-                                    chip.toUiChip()
-                                )
-                                navController.navigate(route = NavRoutes.chip.name)
-                            },
-                            onSettingsClick = {
-                                navController.navigate(NavRoutes.settings.name)
-                            },
-                            navController = navController
-                        )
-
-                     */
-
-                }
-
-
-
-                1 -> HomeSongs(
-                    navController = navController,
-                    onSearchClick = {
-                        navController.navigate(NavRoutes.search.name)
-                    },
-                    onSettingsClick = {
-                        navController.navigate(NavRoutes.settings.name)
-                    }
-                )
-
-                2 -> HomeArtists(
-                    navController = navController,
-                    onArtistClick = {
-                        if (!it.id.startsWith(LOCAL_KEY_PREFIX))
-                            navController.navigate(route = "${NavRoutes.artist.name}/${it.id}")
-                        else navController.navigate(route = "${NavRoutes.onDeviceArtist.name}/${it.id}")
-                    },
-                    onSearchClick = {
-                        navController.navigate(NavRoutes.search.name)
-                    },
-                    onSettingsClick = {
-                        navController.navigate(NavRoutes.settings.name)
-                    }
-                )
-
-                3 -> HomeAlbums(
-                    navController = navController,
-                    onAlbumClick = {
-                        if (!it.id.startsWith(LOCAL_KEY_PREFIX))
-                            navController.navigate(route = "${NavRoutes.album.name}/${it.id}")
-                        else navController.navigate(route = "${NavRoutes.onDeviceAlbum.name}/${it.id}")
-                    },
-                    onSearchClick = {
-                        navController.navigate(NavRoutes.search.name)
-                    },
-                    onSettingsClick = {
-                        navController.navigate(NavRoutes.settings.name)
-                    }
-                )
-
-                4 -> HomePlaylists(
-                    navController = navController,
-                    onPlaylistClick = {
-                        if (!it.isOnDevice)
-                            navController.navigate(route = "${NavRoutes.localPlaylist.name}/${it.playlist.id}")
-                        else
-                            navController.navigate(route = "${NavRoutes.onDevicePlaylist.name}/${it.folder?.replace("/", "$")}")
-                    },
-                    onSearchClick = {
-                        navController.navigate(NavRoutes.search.name)
-                    },
-                    onSettingsClick = {
-                        navController.navigate(NavRoutes.settings.name)
-                    }
-
-                )
+                2 -> SpotifyLibraryTab(navController = navController)
 
             }
         //}
@@ -327,6 +164,9 @@ fun HomeScreen(
 
     }
 
+    // Spotifree: check GitHub for a newer automatic build
+    SpotifreeUpdater.Check()
+
     // Exit app when user uses back
     val context = LocalContext.current
     var confirmCount by remember { mutableIntStateOf( 0 ) }
@@ -337,25 +177,15 @@ fun HomeScreen(
         enabled = isOnHome && (!playerSheetState.isExpanded || !playerIsExpanded)
     ) {
 
-        if (closeWithBackButton) {
-            if (confirmCount == 0) {
-                SmartMessage(
-                    context.resources.getString(R.string.press_once_again_to_exit),
-                    context = context
+        // Como Spotify: atrás en Inicio minimiza la app; la música sigue sonando.
+        if (tabIndex != 0) {
+            coroutineScope.launch {
+                appSettingsManager.updateSettings(
+                    appSettingsManager.activeSettings.value.copy(homeScreenTabIndex = 0)
                 )
-                confirmCount++
-
-                // Reset confirmCount after 5s
-                CoroutineScope(Dispatchers.Default).launch {
-                    delay(5000L)
-                    confirmCount = 0
-                }
-            } else {
-                val activity = context as? Activity
-                activity?.finishAffinity()
-                // Close app with exit 0 notify that no problem occurred
-                exitProcess(0)
             }
+        } else {
+            (context as? Activity)?.moveTaskToBack(true)
         }
     }
 }

@@ -6,13 +6,37 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
-import androidx.compose.ui.graphics.toArgb
-import androidx.core.graphics.ColorUtils
 import androidx.palette.graphics.Palette
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.ColorPaletteName
 import it.fast4x.riplay.styling.Hsl
 import it.fast4x.riplay.styling.hsl
+
+/* ------------------------------------------------------------------------------------------------
+ *  Encore Dark – paleta fija. No hay temas claros, dinámicos ni personalizados.
+ * ---------------------------------------------------------------------------------------------- */
+object Encore {
+    val Background      = Color(0xFF121212) // fondo principal
+    val Surface         = Color(0xFF181818) // tarjetas, barra inferior
+    val SurfaceElevated = Color(0xFF282828) // cajitas de inicio, hover, chips
+    val SurfaceHighest  = Color(0xFF3E3E3E) // pressed / separadores fuertes
+    val SurfaceBlack    = Color(0xFF000000) // base del degradado de la barra inferior
+
+    val Green           = Color(0xFF1DB954) // acento
+    val GreenActive     = Color(0xFF1ED760) // acento presionado / activo
+    val OnGreen         = Color(0xFF000000) // texto/icono encima del verde
+
+    val TextPrimary     = Color(0xFFFFFFFF)
+    val TextSecondary   = Color(0xFFB3B3B3)
+    val TextDisabled    = Color(0xFF535353)
+
+    val Red             = Color(0xFFE91429) // errores / borrar
+    val Blue            = Color(0xFF509BF5)
+
+    // Degradado de "Canciones que te gustan"
+    val LikedSongsTop    = Color(0xFF450AF5)
+    val LikedSongsBottom = Color(0xFFC4EFD9)
+}
 
 val youtubeItemTintColor = Color.Red.copy(0.75f).compositeOver(Color.White)
 
@@ -25,202 +49,87 @@ data class ColorPalette(
     val background4: Color,
     val accent: Color,
     val onAccent: Color,
-    val red: Color = Color(0xffbf4040),
-    val blue: Color = Color(0xff4472cf),
+    val red: Color = Encore.Red,
+    val blue: Color = Encore.Blue,
     val text: Color,
     val textSecondary: Color,
     val textDisabled: Color,
     val isDark: Boolean,
     val iconButtonPlayer: Color,
+    val accentActive: Color = Encore.GreenActive,
 ) {
     companion object : Saver<ColorPalette, List<Any>> {
-        override fun restore(value: List<Any>) = when (val accent = value[0] as Int) {
-            0 -> DefaultDarkColorPalette
-            1 -> DefaultLightColorPalette
-            2 -> PureBlackColorPalette
-            3 -> ModernBlackColorPalette
-            else -> dynamicColorPaletteOf(
-                FloatArray(3).apply { ColorUtils.colorToHSL(accent, this) },
-                value[1] as Boolean
-            )
-        }
+        // Sólo existe una paleta global; el Saver la restaura siempre.
+        override fun restore(value: List<Any>) = SpotifyDarkColorPalette
 
-        override fun SaverScope.save(value: ColorPalette) =
-            listOf(
-                when {
-                    value === DefaultDarkColorPalette -> 0
-                    value === DefaultLightColorPalette -> 1
-                    value === PureBlackColorPalette -> 2
-                    value === ModernBlackColorPalette -> 3
-                    else -> value.accent.toArgb()
-                },
-                value.isDark
-            )
+        override fun SaverScope.save(value: ColorPalette) = listOf(0, true)
     }
 }
 
-
-
-val DefaultDarkColorPalette = ColorPalette(
-    background0 = Color(0xff16171d),
-    background1 = Color(0xff1f2029),
-    background2 = Color(0xff2b2d3b),
-    background3 = Color(0xff495057),
-    background4 = Color(0xff333333),
-    text = Color(0xffe1e1e2),
-    textSecondary = Color(0xffa3a4a6),
-    textDisabled = Color(0xff6f6f73),
-    iconButtonPlayer = Color(0xffe1e1e2),
-    accent = Color(0xFFDE6433), //Color(0xFF2b9348),
-    onAccent = Color.White,
+val SpotifyDarkColorPalette = ColorPalette(
+    background0 = Encore.Background,
+    background1 = Encore.Surface,
+    background2 = Encore.SurfaceElevated,
+    background3 = Encore.SurfaceHighest,
+    background4 = Encore.SurfaceBlack,
+    text = Encore.TextPrimary,
+    textSecondary = Encore.TextSecondary,
+    textDisabled = Encore.TextDisabled,
+    iconButtonPlayer = Encore.TextPrimary,
+    accent = Encore.Green,
+    onAccent = Encore.OnGreen,
     isDark = true
 )
 
-val DefaultLightColorPalette = ColorPalette(
-    background0 = Color(0xfffdfdfe),
-    background1 = Color(0xfff8f8fc),
-    background2 = Color(0xffeaeaf5),
-    background3 = Color(0xffeaeafd),
-    background4 = Color(0xffeaeafd),
-    text = Color(0xff212121),
-    textSecondary = Color(0xff656566),
-    textDisabled = Color(0xff9d9d9d),
-    iconButtonPlayer = Color(0xff212121),
-    accent = Color(0xFFDE6433), //Color(0xFF2b9348),
-    onAccent = Color.White,
-    isDark = false
-)
+/* Alias para no romper las ~100 referencias existentes en el resto del código.
+ * Todas apuntan a la misma instancia, así que las comparaciones `===` siguen funcionando. */
+val DefaultDarkColorPalette = SpotifyDarkColorPalette
+val DefaultLightColorPalette = SpotifyDarkColorPalette
+val PureBlackColorPalette = SpotifyDarkColorPalette
+val ModernBlackColorPalette = SpotifyDarkColorPalette
 
-val PureBlackColorPalette = DefaultDarkColorPalette.copy(
-    background0 = Color.Black,
-    background1 = Color.Black,
-    background2 = Color.Black,
-    accent = Color.White,
-    onAccent = Color.DarkGray
-    )
-
-val ModernBlackColorPalette = DefaultDarkColorPalette.copy(
-    background0 = Color.Black,
-    background1 = Color.Black,
-    //background2 = DefaultDarkColorPalette.background2, // Color.Black,
-    background2 = Color.Black,
-    background3 = DefaultDarkColorPalette.accent
-)
-
+/** Ignora nombre/modo/sistema: siempre Encore Dark. */
+@Suppress("UNUSED_PARAMETER")
 fun colorPaletteOf(
     colorPaletteName: ColorPaletteName,
     colorPaletteMode: ColorPaletteMode,
     isSystemInDarkMode: Boolean
-): ColorPalette {
-    return when (colorPaletteName) {
-        ColorPaletteName.Default, ColorPaletteName.Dynamic,
-        ColorPaletteName.MaterialYou, ColorPaletteName.Customized, ColorPaletteName.CustomColor -> when (colorPaletteMode) {
-            ColorPaletteMode.Light -> DefaultLightColorPalette
-            ColorPaletteMode.Dark, ColorPaletteMode.PitchBlack -> DefaultDarkColorPalette
-            ColorPaletteMode.System -> when (isSystemInDarkMode) {
-                true -> DefaultDarkColorPalette
-                false -> DefaultLightColorPalette
-            }
-        }
-        ColorPaletteName.PureBlack -> PureBlackColorPalette
-        ColorPaletteName.ModernBlack -> ModernBlackColorPalette
-    }
-}
+): ColorPalette = SpotifyDarkColorPalette
+
+/* ------------------------------------------------------------------------------------------------
+ *  Paletas derivadas de la carátula (sólo para el reproductor a pantalla completa).
+ *  El acento y los textos NO cambian; sólo se tiñen background1/background2 con el color
+ *  dominante para el degradado "carátula → #121212".
+ * ---------------------------------------------------------------------------------------------- */
 
 fun dynamicColorPaletteOf(bitmap: Bitmap, isDark: Boolean): ColorPalette? {
     val palette = Palette
         .from(bitmap)
-        .maximumColorCount(8)
-        //.addFilter(if (isDark) ({ _, hsl -> hsl[0] !in 36f..100f }) else null)
+        .maximumColorCount(16)
         .generate()
 
+    val swatch = palette.dominantSwatch ?: return null
+    val hsl = swatch.hsl
 
-
-    val hsl = if (isDark) {
-        palette.dominantSwatch ?: Palette
-            .from(bitmap)
-            .maximumColorCount(8)
-            .generate()
-            .dominantSwatch
-    } else {
-        palette.dominantSwatch
-    }?.hsl ?: return null
-
-    return if (hsl[1] < 0.08) {
-        val newHsl = palette.swatches
+    // Carátulas casi grises: buscar el swatch más saturado para que el degradado tenga color.
+    val chosen = if (hsl[1] < 0.08f) {
+        palette.swatches
             .map(Palette.Swatch::getHsl)
             .sortedByDescending(FloatArray::component2)
-            .find { it[1] != 0f }
+            .firstOrNull { it[1] != 0f }
             ?: hsl
-        dynamicColorPaletteOf(newHsl, isDark)
+    } else hsl
 
-    } else {
-        dynamicColorPaletteOf(hsl, isDark)
-    }
+    return dynamicColorPaletteOf(chosen, isDark)
 }
 
-fun dynamicColorPaletteOf(hsl: FloatArray, isDark: Boolean): ColorPalette {
-    return colorPaletteOf(ColorPaletteName.Dynamic, if (isDark) ColorPaletteMode.Dark else ColorPaletteMode.Light, false).copy(
+@Suppress("UNUSED_PARAMETER")
+fun dynamicColorPaletteOf(hsl: FloatArray, isDark: Boolean): ColorPalette =
+    tintedPalette(hue = hsl[0], saturation = hsl[1], lightness = hsl[2])
 
-        background0 = Color.hsl(hsl[0], hsl[1].coerceAtMost(0.1f), if (isDark) 0.10f else 0.925f),
-        background1 = Color.hsl(hsl[0], hsl[1].coerceAtMost(0.3f), if (isDark) 0.15f else 0.90f),
-        background2 = Color.hsl(hsl[0], hsl[1].coerceAtMost(0.4f), if (isDark) 0.2f else 0.85f),
-
-        accent = Color.hsl(hsl[0], hsl[1].coerceAtMost(0.5f), 0.5f),
-
-        text = Color.hsl(hsl[0], hsl[1].coerceAtMost(0.02f), if (isDark) 0.88f else 0.12f),
-        textSecondary = Color.hsl(hsl[0], hsl[1].coerceAtMost(0.1f), if (isDark) 0.65f else 0.40f),
-        textDisabled = Color.hsl(hsl[0], hsl[1].coerceAtMost(0.2f), if (isDark) 0.40f else 0.65f),
-
-    )
-}
-
-
-fun dynamicColorPaletteOf(hsl: Hsl, isDark: Boolean) = hsl.let { (hue, saturation) ->
-    val accentColor = Color.hsl(
-        hue = hue,
-        saturation = saturation.coerceAtMost(if (isDark) 0.4f else 0.5f),
-        lightness = 0.5f
-    )
-
-    colorPaletteOf(
-        ColorPaletteName.Dynamic,
-        if (isDark) ColorPaletteMode.Dark else ColorPaletteMode.Light,
-        isDark
-    ).copy(
-        background0 = Color.hsl(
-            hue = hue,
-            saturation = saturation.coerceAtMost(0.1f),
-            lightness = if (isDark) 0.10f else 0.925f
-        ),
-        background1 = Color.hsl(
-            hue = hue,
-            saturation = saturation.coerceAtMost(0.3f),
-            lightness = if (isDark) 0.15f else 0.90f
-        ),
-        background2 = Color.hsl(
-            hue = hue,
-            saturation = saturation.coerceAtMost(0.4f),
-            lightness = if (isDark) 0.2f else 0.85f
-        ),
-        accent = accentColor,
-        text = Color.hsl(
-            hue = hue,
-            saturation = saturation.coerceAtMost(0.02f),
-            lightness = if (isDark) 0.88f else 0.12f
-        ),
-        textSecondary = Color.hsl(
-            hue = hue,
-            saturation = saturation.coerceAtMost(0.1f),
-            lightness = if (isDark) 0.65f else 0.40f
-        ),
-        textDisabled = Color.hsl(
-            hue = hue,
-            saturation = saturation.coerceAtMost(0.2f),
-            lightness = if (isDark) 0.40f else 0.65f
-        )
-    )
-}
+@Suppress("UNUSED_PARAMETER")
+fun dynamicColorPaletteOf(hsl: Hsl, isDark: Boolean): ColorPalette =
+    tintedPalette(hue = hsl.hue, saturation = hsl.saturation, lightness = hsl.lightness)
 
 fun dynamicColorPaletteOf(
     accentColor: Color,
@@ -230,71 +139,58 @@ fun dynamicColorPaletteOf(
     isDark = isDark
 )
 
+/**
+ * Tono de la carátula, oscurecido para que el texto blanco siempre tenga contraste
+ * (luminosidad 0.24–0.38, igual que la cabecera del reproductor de Spotify).
+ */
+private fun tintedPalette(hue: Float, saturation: Float, lightness: Float): ColorPalette {
+    val sat = saturation.coerceIn(0f, 0.65f)
+    val top = lightness.coerceIn(0.24f, 0.38f)
+    return SpotifyDarkColorPalette.copy(
+        background1 = Color.hsl(hue, sat, top * 0.55f),
+        background2 = Color.hsl(hue, sat, top),
+    )
+}
+
+/* ------------------------------------------------------------------------------------------------
+ *  Colores semánticos usados por los componentes existentes
+ * ---------------------------------------------------------------------------------------------- */
+
+/** Línea de progreso del MiniPlayer: blanca como en Spotify. */
 inline val ColorPalette.collapsedPlayerProgressBar: Color
-    get() = if (this === DefaultDarkColorPalette || this === DefaultLightColorPalette || this === PureBlackColorPalette) {
-        text
-    } else {
-        accent
-    }
+    get() = text
 
-
-
+/** Corazón "Me gusta" activo: verde. */
 inline val ColorPalette.favoritesIcon: Color
-    get() = if (this === DefaultDarkColorPalette || this === DefaultLightColorPalette || this === PureBlackColorPalette) {
-        red
-    } else {
-        accent
-    }
+    get() = accent
 
 inline val ColorPalette.shimmer: Color
-    get() = if (this === DefaultDarkColorPalette || this === DefaultLightColorPalette || this === PureBlackColorPalette) {
-        Color(0xff838383)
-    } else {
-        accent
-    }
+    get() = Encore.SurfaceElevated
 
 inline val ColorPalette.primaryButton: Color
-    get() = if (this === PureBlackColorPalette || this === ModernBlackColorPalette) {
-        Color(0xFF272727)
-    } else {
-        background2
-    }
-
+    get() = background2
 
 inline val ColorPalette.favoritesOverlay: Color
-    get() = if (this === DefaultDarkColorPalette || this === DefaultLightColorPalette || this === PureBlackColorPalette) {
-        red.copy(alpha = 0.4f)
-    } else {
-        accent.copy(alpha = 0.4f)
-    }
+    get() = accent.copy(alpha = 0.4f)
 
 inline val ColorPalette.overlay: Color
-    get() = PureBlackColorPalette.background0.copy(alpha = 0.5f)
+    get() = Encore.SurfaceBlack.copy(alpha = 0.5f)
 
 inline val ColorPalette.onOverlay: Color
-    get() = PureBlackColorPalette.text
+    get() = Encore.TextPrimary
 
 inline val ColorPalette.onOverlayShimmer: Color
-    get() = PureBlackColorPalette.shimmer
+    get() = Encore.SurfaceElevated
 
+/** Se mantiene por compatibilidad: ya no cambia nada porque el tema es fijo. */
 inline val ColorPalette.applyPitchBlack: ColorPalette
-    get() = this.copy(
-        isDark = true,
-        background0 = Color.Black,
-        background1 = Color.Black,
-        background2 = Color.Black,
-        background3 = Color.Black,
-        background4 = Color.Black,
-        text = Color.White,
-    )
+    get() = this
 
 inline val ColorPalette.applyTransparency: ColorPalette
     get() = this.copy(
-        isDark = false,
         background0 = Color.Transparent,
         background1 = Color.Transparent,
         background2 = Color.Transparent,
         background3 = Color.Transparent,
         background4 = Color.Transparent,
-        text = Color.White,
     )

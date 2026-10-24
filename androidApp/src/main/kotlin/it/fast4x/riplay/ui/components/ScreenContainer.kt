@@ -54,6 +54,10 @@ import it.fast4x.riplay.ui.components.navigation.header.AppHeader
 import it.fast4x.riplay.ui.components.navigation.nav.AbstractNavigationBar
 import it.fast4x.riplay.ui.components.navigation.nav.HorizontalNavigationBar
 import it.fast4x.riplay.ui.components.navigation.nav.VerticalNavigationBar
+import it.fast4x.riplay.ui.components.navigation.nav.SpotifyBottomBar
+import it.fast4x.riplay.ui.components.navigation.nav.SpotifyGlobalBottomBar
+import it.fast4x.riplay.ui.components.navigation.nav.SpotifyChipTabs
+import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.transition
 import kotlin.math.abs
@@ -81,6 +85,11 @@ fun ScreenContainer(
                 HorizontalNavigationBar( tabIndex, onTabChanged, navController )
         }
     navigationBar.add( navBarContent )
+
+    // Spotify: en Inicio la barra inferior de 3 pestañas; en el resto, píldoras arriba + barra global abajo
+    val isHome = NavRoutes.home.isHere(navController)
+    val chipTabs = mutableListOf<Pair<Int, String>>()
+    navBarContent { index, text, _, visible -> if (visible) chipTabs.add(index to text) }
 
     var topBarHeightPx by remember { mutableFloatStateOf(0f) }
     var bottomBarHeightPx by remember { mutableFloatStateOf(0f) }
@@ -144,8 +153,8 @@ fun ScreenContainer(
             if( UiType.RiPlay.isCurrent() )
                 AppHeader( navController ).Draw()
 
-            if ( NavigationBarPosition.Top.isCurrent() )
-                navigationBar.Draw()
+            if (!isHome && chipTabs.size > 1)
+                SpotifyChipTabs(chipTabs, tabIndex, onTabChanged)
         }
     }
 
@@ -157,16 +166,14 @@ fun ScreenContainer(
                     bottomBarHeightPx = coordinates.size.height.toFloat()
                 }
         ) {
-            if ( NavigationBarPosition.Bottom.isCurrent() )
-                navigationBar.Draw()
+            if (isHome) SpotifyBottomBar(tabIndex, onTabChanged)
+            else SpotifyGlobalBottomBar(navController)
         }
     }
 
-    val modifier: Modifier =
-        if( UiType.ViMusic.isCurrent() && navigationBar is HorizontalNavigationBar)
-            Modifier
-        else
-            Modifier.nestedScroll(nestedScrollConnection)
+    // Spotify no oculta las barras al hacer scroll
+    @Suppress("UNUSED_VARIABLE") val unusedConnection = nestedScrollConnection
+    val modifier: Modifier = Modifier
 
     val navigationBarInsetPx = WindowInsets.navigationBars.getBottom(density)
     // 0f = barra completamente visibile, 1f = barra fuori dallo schermo
@@ -226,8 +233,6 @@ fun ScreenContainer(
                     .background(colorPalette().background0)
                     .fillMaxSize()
             ) {
-                if( NavigationBarPosition.Left.isCurrent() )
-                    navigationBar.Draw()
 
                 val topPadding = if ( UiType.ViMusic.isCurrent() ) 30.dp else 0.dp
                 AnimatedContent(
@@ -238,8 +243,6 @@ fun ScreenContainer(
                     modifier = Modifier.fillMaxHeight().padding( top = topPadding )
                 )
 
-                if( NavigationBarPosition.Right.isCurrent() )
-                    navigationBar.Draw()
             }
 
             val playerPosition = if (UiType.RiPlay.isCurrent()) appSettings.playerPosition else PlayerPosition.Bottom

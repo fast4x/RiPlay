@@ -1,0 +1,127 @@
+# Spotifree: keeps our Spotify-style changes on top of the original RiPlay project.
+# Every day it merges the latest fast4x/RiPlay "main" into this repository, builds a signed
+# APK and publishes it as a GitHub Release ("sf-<number>"). The app checks those releases
+# and offers the update. If upstream changes conflict with ours, nothing is published and
+# an issue is opened so the conflict can be resolved by hand.
+name: Spotifree – sync with RiPlay & release
+
+on:
+  schedule:
+    - cron: "23 10 * * *"   # daily, 06:23 in Santo Domingo
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Build even if RiPlay has no new commits"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: spotifree
+  cancel-in-progress: false
+
+jobs:
+  sync-build-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - name: Checkout Spotifree
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Merge latest RiPlay
+        id: merge
+        run: |
+          git config user.name  "spotifree-bot"
+          git config user.email "spotifree-bot@users.noreply.github.com"
+          git remote add upstream https://github.com/fast4x/RiPlay.git
+          git fetch --quiet upstream main
+          BEFORE=$(git rev-parse HEAD)
+          # "-X ours": where RiPlay and Spotifree touched the same lines, our version wins
+          git merge --no-edit -X ours upstream/main -m "Merge RiPlay $(git rev-parse --short upstream/main)" || true
+          if git ls-files -u | grep -q .; then
+            git merge --abort || true
+            echo "conflict=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # Upstream may add new workflows: keep only ours
+          find .github/workflows -name '*.yml' ! -name 'spotifree.yml' -exec git rm -q {} \; || true
+          git diff --cached --quiet || git commit -qm "Keep only Spotifree workflow"
+          if [ "$BEFORE" != "$(git rev-parse HEAD)" ]; then echo "changed=true" >> "$GITHUB_OUTPUT"; else echo "changed=false" >> "$GITHUB_OUTPUT"; fi
+          echo "upstream=$(git rev-parse --short upstream/main)" >> "$GITHUB_OUTPUT"
+
+      - name: Open issue on merge conflict
+        if: steps.merge.outputs.conflict == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner, repo: context.repo.repo,
+              title: "Spotifree: conflicto al unir cambios de RiPlay",
+              body: "RiPlay cambió archivos que Spotifree también modifica y no se pudieron unir automáticamente. No se publicó ninguna versión nueva. Resuélvelo uniendo `upstream/main` a mano (o pídeselo a Claude con este mensaje)."
+            });
+            core.setFailed("Merge conflict with upstream RiPlay");
+
+      - name: Decide
+        id: decide
+        if: steps.merge.outputs.conflict != 'true'
+        run: |
+          if [ "${{ steps.merge.outputs.changed }}" = "true" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "build=false" >> "$GITHUB_OUTPUT"
+            echo "RiPlay has no new commits – nothing to do."
+          fi
+
+      - name: Set up JDK 21
+        if: steps.decide.outputs.build == 'true'
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: temurin
+          cache: gradle
+
+      - name: Set up Python 3.13
+        if: steps.decide.outputs.build == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Build signed APK
+        if: steps.decide.outputs.build == 'true'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          SIGNING_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then echo "::error::Falta el secreto KEYSTORE_BASE64"; exit 1; fi
+          mkdir -p "$RUNNER_TEMP/ks"
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/ks/spotifree.jks"
+          export SIGNING_STORE_FILE="$RUNNER_TEMP/ks/spotifree.jks"
+          chmod +x gradlew
+          ./gradlew :androidApp:assembleFossRelease \
+            -PSPOTIFREE_BUILD=${{ github.run_number }} \
+            -PSPOTIFREE_REPO=${{ github.repository }} \
+            --no-daemon --stacktrace --max-workers=2
+          rm -rf "$RUNNER_TEMP/ks"
+          mkdir -p out
+          find androidApp/build/outputs/apk -name "*.apk" -path "*release*" -exec cp {} out/Spotifree.apk \;
+          ls -lah out
+
+      - name: Push merged code
+        if: steps.decide.outputs.build == 'true'
+        run: git push origin HEAD
+
+      - name: Publish release
+        if: steps.decide.outputs.build == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "sf-${{ github.run_number }}" out/Spotifree.apk \
+            --title "Spotifree build ${{ github.run_number }}" \
+            --notes "Built from RiPlay ${{ steps.merge.outputs.upstream }} + Spotifree changes."

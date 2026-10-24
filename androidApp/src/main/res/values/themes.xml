@@ -1,5 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.RiPlay" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <!-- Tema fijo oscuro (Encore). Ya no sigue el modo claro/oscuro del sistema. -->
+    <style name="Theme.RiPlay" parent="Theme.AppCompat.NoActionBar">
         <item name="android:windowActionBar">false</item>
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
@@ -7,20 +8,20 @@
         <item name="android:windowMinWidthMajor">100%</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:enforceNavigationBarContrast" tools:ignore="NewApi">false</item>
+        <item name="android:enforceStatusBarContrast" tools:ignore="NewApi">false</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowBackground">@color/ic_launcher_background_dark</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:ignore="NewApi">false</item>
+        <item name="android:windowBackground">@color/encore_background</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorAccent">@color/encore_green</item>
     </style>
 
-    <!-- Tema per la Splash Screen per rimuovere l'icona dell'app mostrata di default, sarà visualizzato un loader diverso -->
+    <!-- Splash: mismo fondo que la app para que no haya salto de color -->
     <style name="Theme.RiPlay.SplashScreen" parent="Theme.SplashScreen">
-        <!-- Colore di sfondo (nero per fondersi con il loader) -->
-        <item name="windowSplashScreenBackground">@android:color/black</item>
-
-        <!-- L'icona trasparente -->
+        <item name="windowSplashScreenBackground">@color/encore_background</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_transparent</item>
-
-        <!-- Dopo la splash, torna al tema normale dell'app -->
         <item name="postSplashScreenTheme">@style/Theme.RiPlay</item>
     </style>
 </resources>

@@ -438,7 +438,7 @@ fun SongItem(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 BasicText(
                     text = authors,
-                    style = typography().xs.semiBold.secondary,
+                    style = typography().xs.secondary,
                     maxLines = 1,
                     overflow = TextOverflow.Clip,
                     modifier = Modifier
@@ -446,7 +446,7 @@ fun SongItem(
                         .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
                 )
 
-                duration?.let {
+                duration?.takeIf { false }?.let { // Spotify: no duration in rows
                     BasicText(
                         text = it,
                         style = typography().xxs.secondary.medium,
@@ -812,7 +812,7 @@ fun SongItem(
 
                 BasicText(
                     text = authors,
-                    style = typography().xs.semiBold.secondary,
+                    style = typography().xs.secondary,
                     maxLines = 1,
                     overflow = TextOverflow.Clip,
                     modifier = Modifier
@@ -822,7 +822,7 @@ fun SongItem(
                         .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
                 )
 
-                duration?.let {
+                duration?.takeIf { false }?.let { // Spotify: no duration in rows
                     BasicText(
                         text = duration,
                         style = typography().xxs.secondary.medium,
@@ -941,7 +941,7 @@ fun SongItemPlaceholder( thumbnailSizeDp: Dp ) {
                     .fillMaxWidth() ) {
                     BasicText(
                         text = "",
-                        style = typography().xs.semiBold.secondary,
+                        style = typography().xs.secondary,
                         maxLines = 1,
                         overflow = TextOverflow.Clip,
                         modifier = Modifier

@@ -33,7 +33,9 @@ import it.fast4x.riplay.enums.SwipeAnimationNoThumbnail
 import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.enums.ThumbnailType
+import androidx.compose.ui.graphics.toArgb
 import it.fast4x.riplay.ui.styling.DefaultDarkColorPalette
+import it.fast4x.riplay.ui.styling.Encore
 import it.fast4x.riplay.ui.styling.DefaultLightColorPalette
 import kotlinx.serialization.Serializable
 
@@ -43,9 +45,9 @@ data class AppearanceSettings(
     // PLAYER
     val showTopActionsBar: Boolean             = true,
     val showThumbnail: Boolean                 = true,
-    val playerBackgroundColors: PlayerBackgroundColors = PlayerBackgroundColors.BlurredCoverColor,
+    val playerBackgroundColors: PlayerBackgroundColors = PlayerBackgroundColors.CoverColorGradient,
     val blurStrength: Float                    = 25f,
-    val thumbnailRoundness: ThumbnailRoundness = ThumbnailRoundness.None,
+    val thumbnailRoundness: ThumbnailRoundness = ThumbnailRoundness.Light,
     val thumbnailType: ThumbnailType = ThumbnailType.Essential,
     val playerThumbnailSize: PlayerThumbnailSize = PlayerThumbnailSize.Big,
     val playerThumbnailSizeL: PlayerThumbnailSize = PlayerThumbnailSize.Big,
@@ -55,23 +57,23 @@ data class AppearanceSettings(
     val showLyricsThumbnail: Boolean           = false,
     val playerInfoType: PlayerInfoType = PlayerInfoType.Essential,
     val playerType: PlayerType = PlayerType.Essential,
-    val playerTimelineType: PlayerTimelineType = PlayerTimelineType.Default,
+    val playerTimelineType: PlayerTimelineType = PlayerTimelineType.ThinBar,
     val playerTimelineSize: PlayerTimelineSize = PlayerTimelineSize.Biggest,
     val playerControlsType: PlayerControlsType = PlayerControlsType.Essential,
-    val playerPlayButtonType: PlayerPlayButtonType = PlayerPlayButtonType.Disabled,
+    val playerPlayButtonType: PlayerPlayButtonType = PlayerPlayButtonType.Circle,
     val showTotalTimeQueue: Boolean            = false,
-    val showRemainingSongTime: Boolean         = true,
+    val showRemainingSongTime: Boolean         = false,
     val showNextSongsInPlayer: Boolean         = false,
-    val colorPaletteName: ColorPaletteName = ColorPaletteName.Dynamic,
+    val colorPaletteName: ColorPaletteName = ColorPaletteName.Default,
     val colorPaletteMode: ColorPaletteMode = ColorPaletteMode.Dark,
     val transparentBackgroundActionBarPlayer: Boolean = true,
     val actionsSpacedEvenly: Boolean           = true,
     val showButtonPlayerVideo: Boolean         = false,
     val showButtonPlayerDiscover: Boolean      = false,
-    val showButtonPlayerAddToPlaylist: Boolean = false,
+    val showButtonPlayerAddToPlaylist: Boolean = true,
     val showButtonPlayerLoop: Boolean          = true,
     val showButtonPlayerShuffle: Boolean       = true,
-    val showButtonPlayerLyrics: Boolean        = true,
+    val showButtonPlayerLyrics: Boolean        = false,
     val expandedPlayerToggle: Boolean          = false,
     val showButtonPlayerSleepTimer: Boolean    = false,
     val showButtonPlayerArrow: Boolean         = false,
@@ -94,7 +96,7 @@ data class AppearanceSettings(
     val queueType: QueueType                   = QueueType.Essential,
     val noblur: Boolean                        = true,
     val fadingedge: Boolean                    = false,
-    val carousel: Boolean                      = true,
+    val carousel: Boolean                      = false,
     val carouselSize: CarouselSize             = CarouselSize.Biggest,
     val keepPlayerMinimized: Boolean           = false,
     val playerInfoShowIcons: Boolean           = true,
@@ -134,19 +136,19 @@ data class AppearanceSettings(
     val extraSpace: Boolean                        = false,
     val lyricsColor: LyricsColor                   = LyricsColor.Thememode,
     val lyricsOutline: LyricsOutline                = LyricsOutline.None,
-    val lyricsBackground: LyricsBackground          = LyricsBackground.Black,
-    val lyricsFontSize: LyricsFontSize              = LyricsFontSize.Medium,
-    val lyricsHighlight: LyricsHighlight            = LyricsHighlight.None,
-    val lyricsAlignment: LyricsAlignment            = LyricsAlignment.Center,
+    val lyricsBackground: LyricsBackground          = LyricsBackground.None,
+    val lyricsFontSize: LyricsFontSize              = LyricsFontSize.Large,
+    val lyricsHighlight: LyricsHighlight            = LyricsHighlight.White,
+    val lyricsAlignment: LyricsAlignment            = LyricsAlignment.Left,
     val lyricsSizeAnimate: Boolean                  = false,
     val lyricsSize: Float                           = 20f,
     val lyricsSizeL: Float                          = 20f,
     val romanization: Romanization                  = Romanization.Off,
     val showSecondLine: Boolean                    = false,
     val landscapeControls: Boolean                 = true,
-    val isShowingSynchronizedLyrics: Boolean       = false,
+    val isShowingSynchronizedLyrics: Boolean       = true,
     val isShowingSynchronizedWordByWordLyrics: Boolean = false,
-    val customColor: Int                            = Color.Green.hashCode(),
+    val customColor: Int                            = Encore.Green.toArgb(),
     val lastPlayerTimelineType: PlayerTimelineType = PlayerTimelineType.Default,
     val lastPlayerThumbnailSize: PlayerThumbnailSize = PlayerThumbnailSize.Biggest,
     val lastPlayerThumbnailSizeL: PlayerThumbnailSize = PlayerThumbnailSize.Biggest,
@@ -177,6 +179,9 @@ data class AppearanceSettings(
     val audioVisualizerStyleInEqualizer: AudioVisualizerBaseStyle = AudioVisualizerBaseStyle.NONE,
     ) {
     companion object {
+
+        /** Único aspecto visual de la app (Encore Dark). Los valores por defecto de arriba ya son estos. */
+        val Spotify = AppearanceSettings()
 
         val Aura = AppearanceSettings(
             showTopActionsBar = true,

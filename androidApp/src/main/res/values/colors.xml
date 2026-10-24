@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_foreground">#ffffff</color>
-    <color name="ic_launcher_background_dark">#08041D</color>
-    <color name="colorPrimary">#000000</color>
-    <color name="colorAccent">#FF4081</color>
+    <!-- Fondo de ventana / arranque: Encore #121212 (evita el destello morado o blanco al abrir) -->
+    <color name="ic_launcher_background_dark">#121212</color>
+    <color name="encore_background">#121212</color>
+    <color name="encore_surface">#181818</color>
+    <color name="encore_green">#1DB954</color>
+    <!-- La app es siempre oscura: los vectores que usan colorPrimary deben ser blancos -->
+    <color name="colorPrimary">#FFFFFF</color>
+    <color name="colorAccent">#1DB954</color>
 </resources>

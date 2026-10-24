@@ -1,27 +1,36 @@
 package it.fast4x.riplay.ui.components.navigation.header
 
 import android.content.Context
-import androidx.compose.animation.core.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import it.fast4x.riplay.LocalAppSettingsManager
+import it.fast4x.riplay.R
+import it.fast4x.riplay.enums.NavRoutes
+import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.utils.colorPalette
+import it.fast4x.riplay.utils.typography
+import java.util.Calendar
 
+/**
+ * Cabecera estilo Spotify: plana, sin logo.
+ *  - En Inicio: saludo según la hora ("Good afternoon") + iconos blancos (historial, ajustes).
+ *  - En el resto: sólo la flecha atrás (cada pantalla dibuja su propio título).
+ */
+@Suppress("UNUSED_PARAMETER")
 @Composable
 fun ModernTopAppBar(
     modifier: Modifier = Modifier,
@@ -29,83 +38,59 @@ fun ModernTopAppBar(
     backButton: @Composable () -> Unit = {},
     context: Context,
 ) {
-    val appSettingsManager = LocalAppSettingsManager.current
-    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appSettings = LocalAppSettingsManager.current.activeSettings.collectAsStateWithLifecycle().value
 
-    var isVisible by remember { mutableStateOf(false) }
-
-    val offsetY by animateIntAsState(
-        targetValue = if (isVisible) 0 else -300,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "offsetY"
-    )
-
-    val alpha by animateFloatAsState(
-        targetValue = if (isVisible) 1f else 0f,
-        animationSpec = tween(durationMillis = 800),
-        label = "alpha"
-    )
-
-    LaunchedEffect(Unit) {
-        isVisible = true
-    }
-
-    val insetsPadding = if (appSettings.isEnabledFullScreen) TopAppBarDefaults.windowInsets
-        .only(WindowInsetsSides.Horizontal).asPaddingValues()
+    val insetsPadding = if (appSettings.isEnabledFullScreen)
+        TopAppBarDefaults.windowInsets.only(WindowInsetsSides.Horizontal).asPaddingValues()
     else TopAppBarDefaults.windowInsets.asPaddingValues()
 
-    Surface(
+    val isHome = NavRoutes.home.isHere(navController)
+
+    Row(
         modifier = modifier
             .fillMaxWidth()
-            .offset { IntOffset(0, offsetY) }
-            .alpha(alpha)
-            .clip(RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp)),
-        color = Color.Transparent,
-        shadowElevation = 8.dp
+            .background(colorPalette().background0)
+            .padding(insetsPadding)
+            .height(56.dp)
+            .padding(horizontal = if (isHome) 16.dp else 4.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth() // Cambiato da fillMaxSize per gestire l'altezza dinamica
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            colorPalette().background1.copy(alpha = 0.85f),
-                            colorPalette().background1.copy(alpha = 0.95f)
-                        )
-                    )
-                )
-                .padding(insetsPadding) // Il padding ora spinge il contenuto verso il basso correttamente
-        ) {
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp)
-                    .padding(horizontal = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-
-                backButton()
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                Box(
-                    modifier = Modifier.weight(1f),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    AppTitle(navController, context)
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                ActionBar(navController)
-            }
+        if (isHome) {
+            BasicText(
+                text = greeting(),
+                style = typography().xxl.bold.copy(color = colorPalette().text),
+                modifier = Modifier.weight(1f)
+            )
+            HeaderIcon(R.drawable.history) { navController.navigate(NavRoutes.history.name) }
+            Spacer(Modifier.width(8.dp))
+            HeaderIcon(R.drawable.settings) { navController.navigate(NavRoutes.settings.name) }
+        } else {
+            backButton()
+            Spacer(Modifier.weight(1f))
         }
     }
 }
 
+@Composable
+private fun HeaderIcon(iconId: Int, onClick: () -> Unit) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .clickable(onClick = onClick)
+    ) {
+        Image(
+            painter = painterResource(iconId),
+            contentDescription = null,
+            colorFilter = ColorFilter.tint(colorPalette().text),
+            modifier = Modifier.size(24.dp)
+        )
+    }
+}
+
+private fun greeting(): String = when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
+    in 5..11 -> "Good morning"
+    in 12..18 -> "Good afternoon"
+    else -> "Good evening"
+}

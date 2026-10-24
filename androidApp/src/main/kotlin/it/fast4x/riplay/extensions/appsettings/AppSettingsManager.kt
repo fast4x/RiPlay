@@ -24,12 +24,14 @@ class AppSettingsManager {
             dao.ensureBaselineRowExists()
             Timber.d("AppSettingsManager inizializzazione AppSettings dal DB")
             val json = dao.getSettings().first()
-            if (json != "{}") {
-                _activeSettings.value = JsonManager.decodeFromString<AppSettings>(json)
-            }
+            val stored = if (json != "{}") JsonManager.decodeFromString<AppSettings>(json) else AppSettings()
+            val enforced = ZeroConfig.enforce(stored)
+            _activeSettings.value = enforced
+            // Persistir sólo si la DB tenía valores distintos a los impuestos
+            if (enforced != stored || json == "{}") dao.updateSettings(JsonManager.encodeToString(enforced))
         } catch (e: Exception) {
             Timber.e(e, "AppSettingsManager Errore inizializzazione AppSettings dal DB, uso i default")
-
+            _activeSettings.value = ZeroConfig.enforce(AppSettings())
         } finally {
             isInitialized = true
         }
@@ -47,9 +49,10 @@ class AppSettingsManager {
 
 
     suspend fun updateSettings(newSettings: AppSettings) {
-        val settings = JsonManager.encodeToString(newSettings)
+        val enforced = ZeroConfig.enforce(newSettings)
+        val settings = JsonManager.encodeToString(enforced)
         Timber.d("AppSettingsManager updateSettings newSettings: $settings")
-        _activeSettings.value = newSettings // Aggiorna la RAM istantaneamente
+        _activeSettings.value = enforced // Aggiorna la RAM istantaneamente
         dao.updateSettings(settings) // Aggiorna il DB
     }
 

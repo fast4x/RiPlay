@@ -47,6 +47,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -285,8 +286,8 @@ fun UnifiedMiniPlayer(
 
     SwipeToDismissBox(
         modifier = Modifier
-            .padding(horizontal = 12.dp)
-            .clip(getRoundnessShape()),
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .clip(RoundedCornerShape(8.dp)),
         state = dismissState,
         backgroundContent = {
             Row(
@@ -322,8 +323,8 @@ fun UnifiedMiniPlayer(
     ) {
         Column {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .combinedClickable(
                         onLongClick = {
@@ -367,29 +368,17 @@ fun UnifiedMiniPlayer(
                     }
                     .background(colorPalette().background2)
                     .fillMaxWidth()
-                    .drawBehind {
-                        if (backgroundProgress == BackgroundProgress.Both || backgroundProgress == BackgroundProgress.MiniPlayer) {
-                            drawRect(
-                                color = colorPalette.favoritesOverlay,
-                                topLeft = Offset.Zero,
-                                size = Size(
-                                    width = positionAndDurationState.value.first.toFloat() /
-                                            positionAndDurationState.value.second.absoluteValue * size.width,
-                                    height = size.maxDimension
-                                )
-                            )
-                        }
-                    }
+                    .height(56.dp)
             ) {
                 Spacer(
                     modifier = Modifier
-                        .width(2.dp)
+                        .width(0.dp)
                 )
 
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .height(Dimensions.miniPlayerHeight)
+                        .height(56.dp)
                 ) {
                     AsyncImage(
                         model = mediaItem.mediaMetadata.artworkUri.toString()
@@ -398,8 +387,8 @@ fun UnifiedMiniPlayer(
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .then(artworkModifier)
-                            .clip(thumbnailShape())
-                            .size(48.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .size(40.dp)
                     )
                     NowPlayingSongIndicator(mediaItem.mediaId, binder.hybridPlayer)
                 }
@@ -407,7 +396,7 @@ fun UnifiedMiniPlayer(
                 Column(
                     verticalArrangement = Arrangement.Center,
                     modifier = Modifier
-                        .height(Dimensions.miniPlayerHeight)
+                        .height(56.dp)
                         .weight(1f)
                 ) {
                     Row(
@@ -425,7 +414,7 @@ fun UnifiedMiniPlayer(
                             )
                         BasicText(
                             text = cleanPrefix(mediaItem.mediaMetadata.title?.toString() ?: ""),
-                            style = typography().xxs.semiBold,
+                            style = typography().xs.semiBold.copy(color = colorPalette().text),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
@@ -435,7 +424,7 @@ fun UnifiedMiniPlayer(
 
                     BasicText(
                         text = mediaItem.mediaMetadata.artist?.toString() ?: "",
-                        style = typography().xxs.semiBold,
+                        style = typography().xs.copy(color = colorPalette().textSecondary),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
@@ -449,12 +438,22 @@ fun UnifiedMiniPlayer(
                 )
 
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .height(Dimensions.miniPlayerHeight)
+                        .height(56.dp)
                 ) {
-                    if (miniPlayerType == MiniPlayerType.Essential)
+                    // Spotify: [Me gusta] [Play/Pause]
+                    IconButton(
+                        icon = getLikeState(mediaItem.mediaId),
+                        color = if (likedAt != null && likedAt != -1L) colorPalette().accent else colorPalette().text,
+                        onClick = { updateLike = true },
+                        onLongClick = { updateDislike = true },
+                        modifier = Modifier
+                            .padding(horizontal = 6.dp, vertical = 8.dp)
+                            .size(24.dp)
+                    )
+                    if (false)
                         IconButton(
                             icon = R.drawable.play_skip_back,
                             color = colorPalette().iconButtonPlayer,
@@ -498,13 +497,12 @@ fun UnifiedMiniPlayer(
 
                                     }
                                 }
-                                .background(colorPalette().background2)
                                 .size(42.dp)
                         ) {
                             Image(
                                 painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
                                 contentDescription = null,
-                                colorFilter = ColorFilter.tint(colorPalette().iconButtonPlayer),
+                                colorFilter = ColorFilter.tint(colorPalette().text),
                                 modifier = Modifier
                                     .rotate(rotationAngle)
                                     .align(Alignment.Center)
@@ -519,7 +517,7 @@ fun UnifiedMiniPlayer(
                         Loader(size = 42.dp, expandWidth = false)
                     }
 
-                    if (miniPlayerType == MiniPlayerType.Essential)
+                    if (false)
                         IconButton(
                             icon = R.drawable.play_skip_forward,
                             color = colorPalette().iconButtonPlayer,
@@ -531,7 +529,7 @@ fun UnifiedMiniPlayer(
                                 .padding(horizontal = 2.dp, vertical = 8.dp)
                                 .size(24.dp)
                         )
-                    if (miniPlayerType == MiniPlayerType.Modern)
+                    if (false)
                         IconButton(
                             icon = getLikeState(mediaItem.mediaId),
                             color = colorPalette().favoritesIcon,
@@ -556,6 +554,29 @@ fun UnifiedMiniPlayer(
 
             }
 
+
+            // Línea de progreso de 2dp en la base (Spotify)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(2.dp)
+                    .background(colorPalette().background2)
+                    .drawBehind {
+                        drawRect(color = Color.White.copy(alpha = 0.25f), size = size)
+                        val total = positionAndDurationState.value.second.absoluteValue
+                        if (total > 0) {
+                            drawRect(
+                                color = Color.White,
+                                topLeft = Offset.Zero,
+                                size = Size(
+                                    width = (positionAndDurationState.value.first.toFloat() / total * size.width)
+                                        .coerceIn(0f, size.width),
+                                    height = size.height
+                                )
+                            )
+                        }
+                    }
+            )
 
             if (appSettings.showUpNextSongInMiniPlayer)
                 Box(

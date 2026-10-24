@@ -41,12 +41,12 @@ class TextIconButton(
             BasicText(
                 text = text,
                 style =  TextStyle(
-                    fontSize = typography().xs.semiBold.fontSize,
+                    fontSize = typography().xxs.fontSize,
                     fontWeight = typography().xs.semiBold.fontWeight,
                     fontFamily = typography().xs.semiBold.fontFamily,
                     color = color,
                 ),
-                maxLines = 2,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         }

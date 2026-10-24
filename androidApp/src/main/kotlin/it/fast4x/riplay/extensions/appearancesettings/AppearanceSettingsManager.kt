@@ -6,6 +6,7 @@ import it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings
 import it.fast4x.riplay.extensions.appearancesettings.repository.AppearancePresetRepository
 import it.fast4x.riplay.extensions.appearancesettings.repository.AppearancePresetRepositoryImpl
 import it.fast4x.riplay.extensions.appearancesettings.utils.toEntity
+import it.fast4x.riplay.extensions.appsettings.ZeroConfig
 import it.fast4x.riplay.extensions.appsettings.models.AppSettings
 import it.fast4x.riplay.utils.JsonManager
 import it.fast4x.riplay.utils.appContext
@@ -26,7 +27,7 @@ class AppearanceSettingsManager {
             appContext()
         )
 
-    private val _activeSettings = MutableStateFlow(AppearanceSettings())
+    private val _activeSettings = MutableStateFlow(ZeroConfig.enforce(AppearanceSettings.Spotify))
     val activeSettings: StateFlow<AppearanceSettings> = _activeSettings.asStateFlow()
 
     @Volatile
@@ -61,7 +62,9 @@ class AppearanceSettingsManager {
             val customAppearanceSettings = daoApp.getActiveAppearanceSettings().first()
 
             if (customAppearanceSettings != "{}" && !customAppearanceSettings.isEmpty()) {
-                _activeSettings.value = JsonManager.decodeFromString<AppearanceSettings>(customAppearanceSettings)
+                _activeSettings.value = ZeroConfig.enforce(
+                    JsonManager.decodeFromString<AppearanceSettings>(customAppearanceSettings)
+                )
                 Timber.d("AppearanceSettingsManager init: Successfully loaded CUSTOM settings for $id")
             } else {
                 val entity = daoAppearance.getPresetById(id)
@@ -69,7 +72,8 @@ class AppearanceSettingsManager {
                     val settings =
                         JsonManager.decodeFromString<AppearanceSettings>(entity.settingsJson)
                     Timber.d("AppearanceSettingsManager init: Successfully loaded settings for $id")
-                    _activeSettings.value = settings
+                    // Los presets antiguos (Aura, Deck…) se ignoran: el diseño es fijo.
+                    _activeSettings.value = ZeroConfig.enforce(settings)
                 } else {
                     Timber.w("AppearanceSettingsManager init: Preset $id not found in DB, falling back to defaults")
                 }
@@ -94,7 +98,7 @@ class AppearanceSettingsManager {
 
     suspend fun applyPreset(preset: AppearancePreset) {
         daoAppearance.setActivePreset(preset.id)
-        _activeSettings.value = preset.settings
+        _activeSettings.value = ZeroConfig.enforce(preset.settings)
         _activeId.value = preset.id
 
         // L'utente ha scelto di tornare al template di default, quindi resetto le personalizzazioni
@@ -111,9 +115,10 @@ class AppearanceSettingsManager {
         //daoAppearance.updatePresetSettings(currentId, DbSettingsJson.encodeToString(settings))
 
         // Aggiorno subito la ram
-        _activeSettings.value = settings
+        val enforced = ZeroConfig.enforce(settings)
+        _activeSettings.value = enforced
         // Salva le impostazioni personalizzate nella tabella app_settings senza sovrascrivere il preset corrente
-        daoApp.updateActiveAppearanceSettings(JsonManager.encodeToString(settings))
+        daoApp.updateActiveAppearanceSettings(JsonManager.encodeToString(enforced))
 
     }
 
@@ -131,7 +136,7 @@ class AppearanceSettingsManager {
 
         daoAppearance.insertPreset(presetToImport.toEntity())
         daoAppearance.setActivePreset(presetToImport.id)
-        _activeSettings.value = presetToImport.settings
+        _activeSettings.value = ZeroConfig.enforce(presetToImport.settings)
 
         // L'utente ha scelto di importare il template, quindi resetto le personalizzazioni
         daoApp.updateActiveAppearanceSettings("{}")

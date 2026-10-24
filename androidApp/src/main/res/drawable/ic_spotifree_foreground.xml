@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Spotifree launcher icon: two beamed eighth notes (original design, not a third-party logo) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- note heads -->
+    <path android:fillColor="#1ED760"
+        android:pathData="M31,70a9,8 0,1 0,18,0a9,8 0,1 0,-18,0z" />
+    <path android:fillColor="#1ED760"
+        android:pathData="M59,64a9,8 0,1 0,18,0a9,8 0,1 0,-18,0z" />
+    <!-- stems -->
+    <path android:fillColor="#1ED760"
+        android:pathData="M45,40h4.5v31h-4.5z" />
+    <path android:fillColor="#1ED760"
+        android:pathData="M73,34h4.5v31h-4.5z" />
+    <!-- beam -->
+    <path android:fillColor="#1ED760"
+        android:pathData="M45,40L77.5,34L77.5,42L45,48z" />
+</vector>

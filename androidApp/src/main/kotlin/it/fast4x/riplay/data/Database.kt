@@ -828,6 +828,10 @@ interface Database {
     @Query("SELECT playlistId, position FROM SongPlaylistMap WHERE songId = :id")
     fun playlistsUsedForSong(id: String): List<PlayListIdPosition>
 
+    /** Spotifree: canciones importadas de Spotify que aún no tienen equivalente en YouTube Music. */
+    @Query("SELECT * FROM Song WHERE id LIKE 'spotify:%'")
+    fun pendingSpotifySongs(): List<Song>
+
     @Transaction
     @Query("SELECT position FROM SongPlaylistMap WHERE playlistId = :playlistId AND songId = :id")
     fun positionInPlaylist(id: String, playlistId: Long): Int

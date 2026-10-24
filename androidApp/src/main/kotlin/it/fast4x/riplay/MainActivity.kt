@@ -149,6 +149,7 @@ import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.LocalAppearance
 import it.fast4x.riplay.ui.styling.applyPitchBlack
 import it.fast4x.riplay.ui.styling.colorPaletteOf
+import it.fast4x.riplay.ui.screens.player.spotify.SpotifyPlayer
 import it.fast4x.riplay.ui.styling.customColorPalette
 import it.fast4x.riplay.ui.styling.dynamicColorPaletteOf
 import it.fast4x.riplay.ui.styling.typographyOf
@@ -1290,6 +1291,12 @@ class MainActivity : AppCompatActivity() {
                                                     exit = fadeOut(),
                                                 ) {
                                                     navController?.let {
+                                                        if (!(appSettings.videoContentMode.normal || appSettings.forceUserVideoPlayback))
+                                                            SpotifyPlayer(
+                                                                navController = it,
+                                                                onDismiss = { isPlayerExpanded.value = false }
+                                                            )
+                                                        else
                                                         UnifiedPlayer(
                                                             navController = it,
                                                             videoPlayerView = {

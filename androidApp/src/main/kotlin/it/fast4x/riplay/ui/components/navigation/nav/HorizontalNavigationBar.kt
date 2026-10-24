@@ -107,7 +107,7 @@ class HorizontalNavigationBar(
             if (!visible) return@buttons
 
             val color by transition.animateColor(label = "") {
-                if (it == index) colorPalette().text else colorPalette().textDisabled
+                if (it == index) colorPalette().text else colorPalette().textSecondary
             }
 
             val button: Button =
@@ -181,7 +181,16 @@ class HorizontalNavigationBar(
             verticalArrangement = if (NavigationBarPosition.Bottom.isCurrent()) Arrangement.Bottom else Arrangement.Top,
             modifier = modifier
                 .fillMaxWidth()
-                .background(colorPalette().background1)
+                .background(
+                    if (isNavbarBottom)
+                        Brush.verticalGradient(
+                            listOf(
+                                colorPalette().background0.copy(alpha = 0.92f),
+                                Color.Black
+                            )
+                        )
+                    else Brush.verticalGradient(listOf(colorPalette().background0, colorPalette().background0))
+                )
         ) {
 
             // Definizione delle transizioni
@@ -211,8 +220,6 @@ class HorizontalNavigationBar(
                         .applyIf(isNavbarBottom) {
                             padding(contentPadding)
                         }
-                        .clip(getRoundnessShape())
-                        .background(colorPalette().background1)
                 ) {
                     val scrollState = rememberScrollState()
 

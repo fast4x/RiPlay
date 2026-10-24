@@ -43,11 +43,15 @@ extensions.configure<ApplicationExtension> {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "it.fast4x.riplay"
+        applicationId = "com.spotifree.app"
         targetSdk = 37
 
-        versionCode = 101
-        versionName = "0.8.0"
+        // Spotifree: CI passes -PSPOTIFREE_BUILD=<run number> so every automatic build is newer
+        val spotifreeBuild = (project.findProperty("SPOTIFREE_BUILD") as String?)?.toIntOrNull() ?: 0
+        versionCode = 100000 + spotifreeBuild
+        versionName = "0.8.0-sf.$spotifreeBuild"
+        buildConfigField("int", "SPOTIFREE_BUILD", spotifreeBuild.toString())
+        buildConfigField("String", "SPOTIFREE_REPO", "\"${(project.findProperty("SPOTIFREE_REPO") as String?) ?: "eduardojuliohdzlpz-lgtm/Spotifree"}\"")
 
 
         // INIT ENVIRONMENT
@@ -324,14 +328,14 @@ extensions.configure<ApplicationExtension> {
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
-            manifestPlaceholders["appName"] = "RiPlay DEBUG"
+            manifestPlaceholders["appName"] = "Spotifree"
         }
 
         release {
             vcsInfo.include = true
             isMinifyEnabled = true
             isShrinkResources = true
-            manifestPlaceholders["appName"] = "RiPlay"
+            manifestPlaceholders["appName"] = "Spotifree"
             signingConfig = signingConfigs.getByName("release")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
@@ -358,7 +362,7 @@ extensions.configure<ApplicationExtension> {
         create("foss") {
             minSdk = 23
             dimension = "version"
-            //manifestPlaceholders["appName"] = "RiPlay"
+            //manifestPlaceholders["appName"] = "Spotifree"
             //buildConfigField("String", "BUILD_VARIANT", "\"foss\"")
             resValue("string", "RiPlay_CHROMECAST_APPLICATION_ID", "\"\"")
         }
@@ -386,7 +390,7 @@ extensions.configure<ApplicationExtension> {
         onVariants { variant ->
             variant.outputs.forEach { output ->
                 if (output is com.android.build.api.variant.impl.VariantOutputImpl) {
-                    output.outputFileName = "RiPlay-${output.baseName}-${variant.outputs.first().versionName.orNull}.apk"
+                    output.outputFileName = "Spotifree-${output.baseName}-${variant.outputs.first().versionName.orNull}.apk"
                 }
             }
         }

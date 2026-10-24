@@ -141,6 +141,7 @@ fun AccountsSettings(
 
 
         /****** WEBDAV ******/
+        if (false) { // Spotify no tiene WebDAV
         var webDavSync by remember { mutableStateOf(false) }
         var showWebDavAccount by remember { mutableStateOf(false) }
         var webDavAccountEditing by remember { mutableStateOf(false) }
@@ -337,6 +338,7 @@ fun AccountsSettings(
             }
         }
 
+        }
         /****** WEBDAV ******/
 
         /****** YOUTUBE LOGIN ******/
@@ -546,6 +548,7 @@ fun AccountsSettings(
 
 
         /****** LASTFM ******/
+        if (false) { // Last.fm, Discord e identificador de música: no existen en Spotify
         val isEnabledLastfm = appSettings.isEnabledLastFM
         val lastFmSessionToken = appSettings.lastFMSessionToken
         var loginLastfm by remember { mutableStateOf(false) }
@@ -847,6 +850,7 @@ fun AccountsSettings(
 
                 }
             }
+        }
         }
         /**** MUSIC IDENTIFIER ******/
 

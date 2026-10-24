@@ -65,6 +65,7 @@ import it.fast4x.riplay.enums.PlayerPosition
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.ui.components.navigation.header.AppHeader
+import it.fast4x.riplay.ui.components.navigation.nav.SpotifyGlobalBottomBar
 import it.fast4x.riplay.utils.colorPalette
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -144,9 +145,11 @@ fun PageContainer(
         }
     }
 
-    val modifier: Modifier = Modifier.nestedScroll(nestedScrollConnection)
+    @Suppress("UNUSED_VARIABLE") val unusedConnection = nestedScrollConnection
+    val modifier: Modifier = Modifier
 
-    val bottomInset = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
+    // La barra inferior global ya reserva el espacio del sistema
+    val bottomInset = 0.dp
 
      Scaffold(
         modifier = modifier,
@@ -157,6 +160,13 @@ fun PageContainer(
                     .offset { IntOffset(0, -toolbarOffset.roundToInt()) }
             ) {
                 appHeader()
+            }
+        },
+        bottomBar = {
+            Box(
+                modifier = Modifier.onGloballyPositioned { bottomBarHeightPx = it.size.height.toFloat() }
+            ) {
+                SpotifyGlobalBottomBar(navController)
             }
         }
     ) { _ ->
