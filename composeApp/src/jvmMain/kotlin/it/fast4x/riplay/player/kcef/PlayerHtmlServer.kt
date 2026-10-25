@@ -295,8 +295,13 @@ private val PLAYER_HTML = """
   var apiReady = false;
   var pendingLoad = null;
   var pendingCue = null;
+  // STEP 3e: ultimo video richiesto (load o cue). Serve al recupero del
+  // tasto play quando il player non esiste (load perduto/pagina ricominciata):
+  // il play ricarica l'ultimo video invece di restare muto.
+  var lastRequested = null;
   var lastState = -99;
   var lastErr = 0;
+  var activationLogged = false;
 
   console.log('[RiPlay-YT] pagina inizializzata, origine=' + location.origin
     + ', videoId nel documento=' + (bakedVideoId ? bakedVideoId : 'NESSUNO'));
@@ -346,6 +351,23 @@ private val PLAYER_HTML = """
     }
   }, 10000);
 
+  // STEP 3e: secondo tentativo di caricamento dell'IFrame API. Il primo
+  // script usa youtube.com (come AYP); se dopo 4 s YT non c'e' ancora
+  // (rete lenta / DNS lento / avvio graduale) si riprova via www.youtube.com
+  // PRIMA di dichiarare la pagina morta: un brano cliccato non deve restare
+  // in coda per sempre.
+  setTimeout(function () {
+    if (!window.YT || !window.YT.Player) {
+      console.log('[RiPlay-YT] iframe_api non ancora disponibile: secondo tentativo via www.youtube.com');
+      var s2 = document.createElement('script');
+      s2.src = 'https://www.youtube.com/iframe_api';
+      s2.onerror = function () {
+        console.error('[RiPlay-YT] secondo tentativo iframe_api fallito (rete/DNS/proxy?)');
+      };
+      document.head.appendChild(s2);
+    }
+  }, 4000);
+
   function onYouTubeIframeAPIReady() {
     if (apiReady) return; // guardia: evita doppia invocazione
     apiReady = true;
@@ -381,6 +403,19 @@ private val PLAYER_HTML = """
       events: {
         onReady: function() {
           console.log('[RiPlay-YT] player pronto (videoId=' + (id ? id : 'NESSUNO') + ')');
+          // STEP 3f: diagnostica AUTOPOLICY. hasBeenActive=false e un video
+          // che resta in unstarted (stato -1 -> 3 -> -1) indicano che la
+          // policy user activation di Chromium sta bloccando l'autoplay:
+          // l'app inviera' un CLICK REALE via CEF (input nativo) per
+          // attivare l'iframe. Questo log e' la prova della catena.
+          try {
+            if (navigator.userActivation) {
+              console.log('[RiPlay-YT] userActivation: hasBeenActive=' + navigator.userActivation.hasBeenActive
+                + ', isActive=' + navigator.userActivation.isActive);
+            } else {
+              console.log('[RiPlay-YT] userActivation: API non disponibile in questo Chromium');
+            }
+          } catch (e3f) {}
           // Parita' AYP (onReady): sblocca autoplay/encrypted-media
           // sull'iframe e unMute immediato (AYP forza anche volume=100:
           // qui no, il volume desktop e' gestito dall'app via riplaySetVolume).
@@ -420,20 +455,49 @@ private val PLAYER_HTML = """
 
   function riplayLoad(id, start) {
     lastErr = 0;
+    lastRequested = { id: id, start: start || 0 };
     console.log('[RiPlay-YT] load videoId=' + id + ' start=' + (start || 0));
-    if (!apiReady) { pendingLoad = { id: id, start: start || 0 }; return; }
-    if (!player) { createPlayer(id, true); return; }
+    if (!apiReady) { pendingLoad = { id: id, start: start || 0 }; console.log('[RiPlay-YT] load in attesa della API'); return; }
+    if (!player) { console.log('[RiPlay-YT] load senza player: creo il player con autoplay'); createPlayer(id, true); return; }
     player.loadVideoById({ videoId: id, startSeconds: start || 0 });
+    console.log('[RiPlay-YT] load eseguito sul player esistente');
   }
 
   function riplayCue(id, start) {
+    lastRequested = { id: id, start: start || 0 };
     console.log('[RiPlay-YT] cue videoId=' + id + ' start=' + (start || 0));
     if (!apiReady) { pendingCue = { id: id, start: start || 0 }; return; }
     if (!player) { createPlayer(id, false); return; }
     player.cueVideoById({ videoId: id, startSeconds: start || 0 });
   }
 
-  function riplayPlay()  { if (player && player.playVideo)  player.playVideo(); }
+  // STEP 3e: play CON recupero. Prima: se il player non esisteva il play
+  // restava muto (il tasto sembrava morto). Ora: player assente ma un
+  // video e' stato richiesto -> si ricarica l'ultimo video richiesto
+  // (stessa via di riplayLoad, con tutti i suoi controlli); se l'API non
+  // e' ancora pronta il load resta in coda e partira' con la API.
+  function riplayPlay() {
+    // STEP 3f: diagnostica una tantum della user activation al momento del
+    // play: hasBeenActive=false qui = la policy blocchera' playVideo
+    // (il click reale dell'app deve arrivare PRIMA di questa chiamata).
+    if (!activationLogged) {
+      activationLogged = true;
+      try {
+        console.log('[RiPlay-YT] riplayPlay: userActivation.hasBeenActive='
+          + (navigator.userActivation ? navigator.userActivation.hasBeenActive : 'n/d'));
+      } catch (e) {}
+    }
+    if (player && player.playVideo) { player.playVideo(); return; }
+    console.log('[RiPlay-YT] play senza player attivo: recupero con il video richiesto in precedenza');
+    if (lastRequested) {
+      var r = lastRequested;
+      pendingLoad = null;
+      pendingCue = null;
+      riplayLoad(r.id, r.start);
+    } else {
+      console.log('[RiPlay-YT] play senza player e senza video richiesto: nulla da recuperare');
+    }
+  }
   function riplayPause() { if (player && player.pauseVideo) player.pauseVideo(); }
   function riplayStop()  { if (player && player.stopVideo)  player.stopVideo(); }
   function riplaySeekTo(sec) { if (player && player.seekTo) player.seekTo(sec, true); }

@@ -10,16 +10,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import it.fast4x.riplay.ui.components.RiPlayAccent
 import org.jetbrains.compose.resources.painterResource
 import riplay.composeapp.generated.resources.Res
 import riplay.composeapp.generated.resources.album
@@ -84,11 +87,13 @@ fun DesktopNavigationBar(
                     DesktopSection.PLAYLISTS -> Res.drawable.library
                 }
 
-                // Voce attiva: tinta verde dell'app (come il logo / play);
-                // voci inattive: bianco attenuato, identico ad Android
-                // (text vs textDisabled).
-                val tint = if (section == currentSection)
-                    Color.Green.copy(alpha = 0.8f)
+                // STEP 3h (migliorie visive): la voce attiva ha una PILL di
+                // sfondo verde tenue + tinta accento piena (prima solo il
+                // colore dell'icona cambiava); voci inattive bianco attenuato,
+                // identico ad Android (text vs textDisabled).
+                val active = section == currentSection
+                val tint = if (active)
+                    RiPlayAccent
                 else
                     Color.White.copy(alpha = 0.4f)
 
@@ -96,8 +101,10 @@ fun DesktopNavigationBar(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                     modifier = Modifier
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(if (active) RiPlayAccent.copy(alpha = 0.13f) else Color.Transparent)
                         .clickable { onSectionSelected(section) }
-                        .padding(horizontal = 18.dp, vertical = 4.dp)
+                        .padding(horizontal = 16.dp, vertical = 5.dp)
                 ) {
                     Image(
                         painter = painterResource(icon),

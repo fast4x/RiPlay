@@ -1,13 +1,19 @@
 package it.fast4x.riplay.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
@@ -20,20 +26,30 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import extension.formatTimestamp
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.items.SongItem
 import it.fast4x.riplay.utils.LoadImage
+import org.jetbrains.compose.resources.painterResource
 import player.PlayerController
 import player.PlayerState
+import riplay.composeapp.generated.resources.Res
+import riplay.composeapp.generated.resources.chevron_up
 
 /**
- * STEP 3: barra mini SEMPRE agganciata al motore ATTIVO (YouTube KCEF o
- * locale VLCJ): mostra il brano corrente e i comandi play/pausa + tempo
- * dello stesso controller usato dall'area video. Rimosso il vecchio
- * wiring di test (FramePlayer con URL fissa BigBuckBunny), che caricava
- * un video dimostrativo ad ogni avvio.
+ * Barra "in riproduzione" sotto la finestra (sopra la barra di navigazione).
+ *
+ * STEP 3: sempre agganciata al motore ATTIVO (YouTube KCEF o locale VLCJ):
+ * mostra il brano corrente e i comandi play/pausa + tempo dello stesso
+ * controller usato dall'area video.
+ *
+ * STEP 3c (il "posto cliccabile" per i controlli completi, come il mini
+ * player Android): l'INTERA barra e' cliccabile e apre il player espandibile
+ * (DesktopPlayerOverlay) con timeline/seek, volume e toggle video/cover;
+ * in piu' mostra la LINEA DI AVANZAMENTO del brano e il chevron di espansione.
  */
 @Composable
 fun MiniPlayer(
@@ -41,6 +57,12 @@ fun MiniPlayer(
     controller: PlayerController?,
     onExpandAction: () -> Unit
 ){
+
+    // Stato del motore ATTIVO: stesso StateFlow consumato dall'area video
+    val state = if (controller != null) {
+        val s by controller.state.collectAsState()
+        s
+    } else PlayerState()
 
     Column (verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -50,18 +72,32 @@ fun MiniPlayer(
             thickness = 1.dp,
             modifier = Modifier.fillMaxWidth().alpha(0.6f)
         )
+        // STEP 3c: linea di avanzamento del brano sulla barra (se la durata
+        // e' nota): rende visibile a colpo d'occhio dove si e' il brano
+        if (state.duration > 0) {
+            LinearProgressIndicator(
+                progress = (
+                    (state.timestamp.toFloat() / state.duration.toFloat())
+                        .coerceIn(0f, 1f)
+                    ),
+                color = Color.Green.copy(alpha = 0.6f),
+                backgroundColor = Color.Black,
+                modifier = Modifier.fillMaxWidth().height(2.dp)
+            )
+        }
         Row(
-            Modifier.background(Color.Black).fillMaxWidth(),
+            Modifier
+                .background(Color.Black)
+                .fillMaxWidth()
+                // STEP 3c: tutta la barra apre il player espandibile (i
+                // IconButton interni gestiscono i propri click e restano
+                // funzionanti come prima)
+                .clickable { onExpandAction() }
+                .padding(vertical = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(5.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            /*
-            ExpandIcon(
-                onAction = onExpandAction
-            )
-             */
             Row(
-                //Modifier.border(BorderStroke(1.dp, Color.Red)),
                 horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -79,12 +115,6 @@ fun MiniPlayer(
                     modifier = Modifier.fillMaxWidth(0.2f)
                 )
             }
-
-            // Stato del motore ATTIVO: stesso StateFlow consumato dall'area video
-            val state = if (controller != null) {
-                val s by controller.state.collectAsState()
-                s
-            } else PlayerState()
 
             IconButton(
                 onClick = {
@@ -110,6 +140,19 @@ fun MiniPlayer(
             Text(
                 "${state.timestamp.formatTimestamp()} / ${state.duration.formatTimestamp()}",
                 color = Color.White.copy(alpha = 0.6f)
+            )
+
+            Spacer(Modifier.weight(1f))
+
+            // STEP 3c: indicatore di espansione (il player espandibile mostra
+            // cover grande, timeline, volume e toggle video/cover)
+            Image(
+                painter = painterResource(Res.drawable.chevron_up),
+                colorFilter = ColorFilter.tint(Color.White.copy(alpha = 0.6f)),
+                contentDescription = "espandi il player",
+                modifier = Modifier
+                    .padding(horizontal = 14.dp)
+                    .size(18.dp)
             )
         }
     }

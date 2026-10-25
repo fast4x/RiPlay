@@ -21,6 +21,7 @@ import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -39,7 +40,6 @@ import it.fast4x.riplay.styling.Dimensions.layoutColumnTopPadding
 import it.fast4x.riplay.styling.Dimensions.layoutColumnsHorizontalPadding
 import it.fast4x.riplay.ui.bars.DesktopSection
 import it.fast4x.riplay.ui.bars.DesktopNavigationBar
-import it.fast4x.riplay.ui.components.MiniPlayer
 import it.fast4x.riplay.ui.pages.AlbumsPage
 import it.fast4x.riplay.ui.pages.ArtistsPage
 import it.fast4x.riplay.ui.pages.PlaylistsPage
@@ -47,9 +47,16 @@ import it.fast4x.riplay.ui.pages.PlaylistSongsPage
 import it.fast4x.riplay.ui.pages.SongsPage
 import it.fast4x.riplay.ui.screens.AlbumScreen
 import it.fast4x.riplay.ui.screens.ArtistScreen
+import it.fast4x.riplay.ui.screens.DesktopPlayerOverlay
 import it.fast4x.riplay.ui.screens.MoodScreen
 import it.fast4x.riplay.ui.screens.PlaylistScreen
 import it.fast4x.riplay.ui.screens.QuickPicsScreen
+import it.fast4x.riplay.ui.components.RiPlayAccent
+import it.fast4x.riplay.ui.RiPlayWindowTitleBar
+import androidx.compose.ui.window.WindowPlacement
+import androidx.compose.ui.window.WindowScope
+import androidx.compose.ui.window.WindowState
+import androidx.compose.ui.text.font.FontWeight
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -76,9 +83,30 @@ import riplay.composeapp.generated.resources.back
  *  - i click su artista/album/playlist aprono la schermata di dettaglio
  *    SOPRA la sezione corrente, con pulsante Back (freccia) per tornare,
  *    come la navigazione Android.
+ *
+ * STEP 3c (logica display + player espandibile, come Android):
+ *  - i brani audio mostrano la COVER sopra il player (audio invariato);
+ *    il toggle videocamera/immagine lancia il video o torna alla cover e
+ *    la scelta persiste nel db con Song.isAudioOnly (semantica Android);
+ *
+ * STEP 3d (dalla prova utente):
+ *  - la barra mini in basso e' RIMOSSA (la copertina si vede gia' sopra il
+ *    browser nel pannello player): la barra in basso e' solo navigazione;
+ *  - la copertina/segnaposto sopra il player e' CLICCABILE e apre il
+ *    player espandibile (che ha tutti i controlli);
+ *  - il player espandibile ha AVANTI/INDIETRO che navigano la CRONOLOGIA
+ *    dei brani ascoltati nella sessione (songHistory/historyIndex).
  */
 @Composable
-fun ThreeColumnsApp() {
+fun ThreeColumnsApp(
+    // STEP 3h: scope/stato della finestra per la title bar custom
+    // (minimizza/massimizza/chiudi + trascinamento). Da main.kt.
+    windowScope: WindowScope? = null,
+    windowState: WindowState? = null,
+    onMinimize: () -> Unit = {},
+    onToggleMaximize: () -> Unit = {},
+    onClose: () -> Unit = {}
+) {
 
     val db = remember { Database }
 
@@ -103,9 +131,57 @@ fun ThreeColumnsApp() {
     var currentSection by remember { mutableStateOf(DesktopSection.HOME) }
     var detailPage by remember { mutableStateOf<DesktopDetail?>(null) }
 
+    // STEP 3c: player espandibile (overlay a finestra intera) aperto/chiuso.
+    // STEP 3d: si apre CLICCANDO la copertina/segnaposto sopra il player
+    // (la barra mini e' stata rimossa).
+    var playerExpanded by remember { mutableStateOf(false) }
+
+    // STEP 3d: cronologia dei brani ascoltati nella sessione (videoId in
+    // ordine di ascolto + posizione corrente): e' la coda minima dietro i
+    // pulsanti AVANTI/INDIETRO del player espandibile (indietro = brano
+    // precedente, avanti = brano successivo se ci si e' spostati indietro).
+    val songHistory = remember { mutableStateListOf<String>() }
+    var historyIndex by remember { mutableStateOf(-1) }
+    fun pushHistory(id: String) {
+        val current = songHistory.getOrNull(historyIndex)
+        if (current == id) return
+        while (songHistory.size > historyIndex + 1) {
+            songHistory.removeAt(songHistory.lastIndex)
+        }
+        songHistory.add(id)
+        historyIndex = songHistory.lastIndex
+    }
+    val onHistoryPrevious: () -> Unit = {
+        if (historyIndex > 0) {
+            historyIndex--
+            videoId = songHistory[historyIndex]
+        }
+    }
+    val onHistoryNext: () -> Unit = {
+        if (historyIndex < songHistory.lastIndex) {
+            historyIndex++
+            videoId = songHistory[historyIndex]
+        }
+    }
+
+    // STEP 3c: interruttore video/cover (lanciato dall'utente). Oltre a
+    // cambiare il display del player, PERSISTE la scelta nel db con
+    // Song.isAudioOnly, esattamente come Android (isVideo = isAudioOnly != 1):
+    // al prossimo ascolto del brano la modalita' scelta viene rispettata.
+    val onToggleVideoMode: (Boolean) -> Unit = { show ->
+        playerManager.videoVisible = show
+        val current = nowPlayingSong
+        if (current != null && current.isVideo != show) {
+            coroutineScope.launch {
+                db.upsert(current.copy(isAudioOnly = if (show) 0 else 1))
+            }
+        }
+    }
+
     // Brano scelto da una schermata ONLINE (QuickPics/Album/Artista/
     // Playlist YouTube): va inserito nel db e poi riprodotto
     val onSongClickOnline: (Song) -> Unit = { song ->
+        pushHistory(song.id)
         videoId = song.id
         coroutineScope.launch {
             db.upsert(song)
@@ -116,6 +192,7 @@ fun ThreeColumnsApp() {
     // Brano gia' presente nel db (SongsPage / playlist locale): solo play
     val onSongClickFromDb: (Song) -> Unit = { song ->
         //it's just in db, no need to insert
+        pushHistory(song.id)
         videoId = song.id
         println("ThreeColumnsApp onSongClick videoId $videoId")
     }
@@ -124,21 +201,29 @@ fun ThreeColumnsApp() {
         detailPage = detail
     }
 
-    Scaffold(
-        containerColor = Color.Black,
-        contentColor = Color.Gray,
-        bottomBar = {
-            Column {
-                // STEP 3: barra mini agganciata al motore ATTIVO; visibile
-                // quando c'e' un brano
-                if (nowPlayingSong != null) {
-                    MiniPlayer(
-                        song = nowPlayingSong,
-                        controller = playerManager.active,
-                        onExpandAction = {}
-                    )
-                }
-                // STEP 3b: barra di navigazione in basso stile Android
+    Box(Modifier.fillMaxSize()) {
+        // STEP 3h: title bar custom (prima la finestra undecorated non aveva
+        // NE' pulsanti NE' zona di trascinamento) + scaffold sotto. La barra
+        // sta in una Colonna SOPRA lo Scaffold: non tocca la regione interop
+        // del browser (che comincia piu' in basso, nel pannello player).
+        // L'overlay a tutto schermo e' disegnato DOPO (nella Box esterna):
+        // lo copre completamente => il player full screen resta 100% pulito.
+        Column(Modifier.fillMaxSize()) {
+            RiPlayWindowTitleBar(
+                windowScope = windowScope,
+                maximized = windowState?.placement == WindowPlacement.Maximized,
+                onMinimize = onMinimize,
+                onToggleMaximize = onToggleMaximize,
+                onClose = onClose
+            )
+            Scaffold(
+            containerColor = Color.Black,
+            contentColor = Color.Gray,
+            bottomBar = {
+                // STEP 3d: la barra mini e' RIMOSSA (la copertina si vede
+                // gia' sopra il browser nel pannello player ed e' cliccabile:
+                // apre il player espandibile con tutti i controlli).
+                // STEP 3b: resta la barra di navigazione stile Android
                 // (cambiare sezione chiude il dettaglio aperto, come i tab Android)
                 DesktopNavigationBar(
                     currentSection = currentSection,
@@ -148,49 +233,79 @@ fun ThreeColumnsApp() {
                     }
                 )
             }
-        }
-    ) { innerPadding ->
+        ) { innerPadding ->
 
-        Row(
-            Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            // Colonna player (sinistra, invariata rispetto allo step 3)
-            PlayerPanel {
-                DesktopVideoSource(
-                    modifier = Modifier.fillMaxWidth().fillMaxHeight(),
-                    // STEP 2k: l'id della canzone selezionata arriva al player
-                    // (Song.id = videoId YouTube)
-                    videoId = videoId,
-                    // STEP 3: brano corrente (routing brani locali + barra mini)
-                    song = nowPlayingSong,
-                    // STEP 3: motore automatico YouTube KCEF / locale VLCJ
-                    manager = playerManager
+            Row(
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+                // Colonna player (sinistra, invariata rispetto allo step 3)
+                PlayerPanel {
+                    DesktopVideoSource(
+                        modifier = Modifier.fillMaxWidth().fillMaxHeight(),
+                        // STEP 2k: l'id della canzone selezionata arriva al player
+                        // (Song.id = videoId YouTube)
+                        videoId = videoId,
+                        // STEP 3: brano corrente (routing brani locali + barra mini)
+                        song = nowPlayingSong,
+                        // STEP 3: motore automatico YouTube KCEF / locale VLCJ
+                        manager = playerManager,
+                        // STEP 3c: col player espandibile aperto il livello
+                        // Swing del pannello player si nasconde sotto l'overlay
+                        // (l'audio prosegue)
+                        browserHiddenByOverlay = playerExpanded,
+                        // STEP 3d: click sulla copertina/segnaposto -> player espandibile
+                        onCoverClick = {
+                            if (nowPlayingSong != null) playerExpanded = true
+                        }
+                    )
+                }
+
+                VerticalDivider(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .width(1.dp),
+                    color = Color.Gray.copy(alpha = 0.6f)
+                )
+
+                // STEP 3b: pagina di destinazione — parte dove stava la colonna
+                // centrale ma ESPESA VERSO DESTRA fino al bordo finestra
+                DestinationPanel(
+                    modifier = Modifier.weight(1f),
+                    currentSection = currentSection,
+                    detailPage = detailPage,
+                    onBackToSection = { detailPage = null },
+                    onGoHome = {
+                        currentSection = DesktopSection.HOME
+                        detailPage = null
+                    },
+                    onSongClickOnline = onSongClickOnline,
+                    onSongClickFromDb = onSongClickFromDb,
+                    onOpenDetail = { openDetail(it) }
                 )
             }
+        }
+        }
 
-            VerticalDivider(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(1.dp),
-                color = Color.Gray.copy(alpha = 0.6f)
-            )
-
-            // STEP 3b: pagina di destinazione — parte dove stava la colonna
-            // centrale ma ESPESA VERSO DESTRA fino al bordo finestra
-            DestinationPanel(
-                modifier = Modifier.weight(1f),
-                currentSection = currentSection,
-                detailPage = detailPage,
-                onBackToSection = { detailPage = null },
-                onGoHome = {
-                    currentSection = DesktopSection.HOME
-                    detailPage = null
-                },
-                onSongClickOnline = onSongClickOnline,
-                onSongClickFromDb = onSongClickFromDb,
-                onOpenDetail = { openDetail(it) }
+        // STEP 3c: player espandibile stile Android (aperto con un click
+        // sulla copertina/segnaposto del pannello player, chiuso con il
+        // pulsante in alto o con ESC). Disegnato DOPO lo Scaffold = sopra a
+        // tutto (contenuto + barre). L'audio prosegue mentre aperto.
+        if (nowPlayingSong != null) {
+            DesktopPlayerOverlay(
+                visible = playerExpanded,
+                song = nowPlayingSong,
+                controller = playerManager.active,
+                videoVisible = playerManager.videoVisible,
+                onToggleVideo = onToggleVideoMode,
+                engineLabel = playerManager.engine.label,
+                onCollapse = { playerExpanded = false },
+                // STEP 3d: avanti/indietro sulla cronologia di sessione
+                canGoPrevious = historyIndex > 0,
+                canGoNext = historyIndex < songHistory.lastIndex,
+                onPrevious = onHistoryPrevious,
+                onNext = onHistoryNext
             )
         }
     }
@@ -270,16 +385,19 @@ fun DestinationPanel(
             } else {
                 Image(
                     painter = painterResource(Res.drawable.app_icon),
-                    colorFilter = ColorFilter.tint(Color.Green.copy(alpha = 0.6f)),
+                    colorFilter = ColorFilter.tint(RiPlayAccent),
                     contentDescription = null,
                     modifier = Modifier
-                        .size(36.dp)
+                        .size(32.dp)
                         .clickable { onGoHome() }
                 )
+                // STEP 3h: nome completo e peso tipografico giusto
+                // (prima era solo "Play" senza peso)
                 Text(
-                    text = "Play",
+                    text = "RiPlay",
                     color = Color.White,
-                    fontSize = 25.sp,
+                    fontSize = 21.sp,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.clickable { onGoHome() }
                 )
             }

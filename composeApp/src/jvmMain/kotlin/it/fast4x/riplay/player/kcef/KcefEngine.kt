@@ -341,6 +341,92 @@ sealed interface KcefState {
  *     destra, dettagli con Back). Solo UI: questo motore (KCEF) NON
  *     cambia comportamento.
  *
+ *     21) v22 (step3d): la COVER del brano e il segnaposto "nessun brano"
+ *     sono disegnati a livello SWING (KcefPlayerHostPanel: Canvas AWT sopra
+ *     il browser dentro lo stesso pannello ospite) INVECE CHE nascondere il
+ *     componente AWT del browser (v21): nasconderlo lasciava scoperto il
+ *     contenitore Swing di interop (pannello bianco) e bloccava l'avvio
+ *     della riproduzione (tasto play inerte). Il browser resta vivo e
+ *     visibile sotto la cover: pagina player, autoplay e contesto embed
+ *     step2r INTATTI. Banner errori YT spostato sulla canvas. Solo UI:
+ *     questo motore (KCEF) NON cambia comportamento.
+ *
+ *     22) v23 (step3e, dal test v22 "il tasto play non ha alcun effetto"):
+ *     ROBUSTEZZA della catena di caricamento (la pagina player e il
+ *     contesto embed step2r restano IDENTICI). KcefYouTubePlayer:
+ *     attachBrowser non cachea piu' un pannello SENZA browser quando il
+ *     client non e' pronto (la 3d lo cachedava: player muto per sempre,
+ *     nessun errore); ensureBrowser idempotente richiamabile da factory,
+ *     watchdog e recupero del play; WATCHDOG di caricamento (12 s, max 3
+ *     tentativi): il video che non parte e senza ne' errore ne' durata
+ *     viene re-inviato (pagina viva) oppure il browser viene RICREATO con
+ *     il videoId ri-cotto nell'HTML (pagina morta, meccanismo autoplay
+ *     step2r); play() arma il recupero quando non c'e' nessun video
+ *     attivo (il tasto play ha SEMPRE un effetto); log puntuale di ogni
+ *     passaggio (load in attesa, re-invio, ricrea browser, watchdog).
+ *     PlayerHtmlServer (solo JS interno della pagina, contesto embed
+ *     invariato): ultimo video richiesto memorizzato; riplayPlay con
+ *     RECUPERO (player assente -> ricarica l'ultimo video invece di
+ *     restare muto); secondo tentativo iframe_api via www.youtube.com
+ *     dopo 4 s; log "load in attesa della API"/"load eseguito".
+ *
+ *     23) v24 (step3f, dal log del test v23: "stato: -1 -> 3 -> -1", il
+ *     tasto play senza effetto): AUTOPOLICY / USER ACTIVATION. La
+ *     sequenza -1 -> 3 (buffering) -> -1 (unstarted) e' Chromium che
+ *     ANNULLA la riproduzione avviata senza gesto utente: prima di v21
+ *     l'utente cliccava il play DI YOUTUBE nel browser esposto (gesto
+ *     reale); con la cover Swing sopra il browser quel gesto non esiste
+ *     piu' e le chiamate JS da Kotlin NON sono gesti. Il flag
+ *     --autoplay-policy=no-user-gesture-required (step2i) NON basta.
+ *     KcefYouTubePlayer: (a) injectUserActivation: CLICK REALE via
+ *     sendMouseEvent (input nativo CEF = input hardware: user activation
+ *     TRUSTED sull'iframe YT; sul video unstarted e' lui stesso il
+ *     toggle-play; guard anti-pausa su playing/buffering); (b) KICK
+ *     AUTOPLAY 3 s dopo ogni load (click+play se non partito da solo);
+ *     (c) WATCHDOG riscritto: durata>0 MA stato unstarted = autoplay
+ *     bloccato (i metadati arrivano col buffering anche quando la
+ *     partenza viene annullata: era il bug che impediva al soccorso di
+ *     intervenire) -> activation+play invece di uscire; (d) play():
+ *     activation prima del riplayPlay; (e) stato YT GREZZO (raw) per i
+ *     guard. PlayerHtmlServer (solo diagnostica, contesto embed
+ *     invariato): log navigator.userActivation in onReady e in
+ *     riplayPlay (prova della catena activation).
+ *     DesktopVideoSource: la chiave di deduplica del routing include il
+ *     percorso locale SOLO per i brani locali (prima i brani online
+ *     cambiavano chiave tra le due passate e loadVideoById partiva DUE
+ *     volte: brano che ripartiva da zero poco dopo l'avvio).
+ *
+ *     24) v25 (step3g, dal test v24: "con il player aperto si vede un
+ *     pannello bianco posto esattamente sopra il browser" + richiesta
+ *     "aggiungere uno chevron down in alto nel player full"): SOLO UI,
+ *     questo motore (KCEF) NON cambia comportamento. KcefVideoSurface:
+ *     il "pannello bianco" era il WRAPPER di interop che SwingPanel
+ *     (SwingInteropViewGroup, JPanel) dipinge quando il pannello ospite
+ *     e' nascosto e che Compose RI-MOSTRA a ogni layout
+ *     (setVisible(!clip.isEmpty)); Compose inoltre cancella i propri
+ *     pixel nella regione interop (BlendMode.Clear), quindi l'overlay non
+ *     puo' apparire li'. FIX: con l'overlay aperto il nodo SwingPanel si
+ *     riduce a zero (Modifier.size(0.dp)): Compose nasconde da solo il
+ *     wrapper e l'overlay si vede in tutta la finestra; il browser resta
+ *     nella gerarchia AWT (nessun re-parenting) e la finestra nativa e'
+ *     solo nascosta (stato gia' provato: audio che prosegue). Sfondo del
+ *     wrapper forzato a NERO (nessun bianco nemmeno per un frame).
+ *     DesktopPlayerOverlay: chevron di chiusura piu' grande e visibile
+ *     (48dp/22% invece di 40dp/14%: coperto in parte dal bianco, sembrava
+ *     assente) + suggerimento di chiusura aggiornato.
+ *
+ *     25) v26 (step3h, dalla conferma utente v25 "Funziona!!!" e dalla
+ *     richiesta "migliorie visive" + "slider orizzontali della timeline
+ *     e del volume piu' premium"): SOLO UI, il motore KCEF NON cambia
+ *     comportamento. PremiumSlider (nuovo componente): track che si
+ *     ingrandisce al passaggio, gradiente, thumb con alone, bolla del
+ *     tempo, drag locale con UN solo seek al rilascio. Overlay: entrata
+ *     slide+fade+scale, cover con scala a molla/angoli/ombra, play in
+ *     cerchio d'accento, sfondo sfumato. Title bar custom (la finestra
+ *     undecorated prima non aveva min/max/chiudi ne' trascinamento) +
+ *     dimensione finestra ricordata in ~/.riplay/window.properties.
+ *     Barra navigazione con pill attiva. Accento unificato RiPlayAccent.
+ *
  * STEP 4 (packaging) potra' pre-seminare questa directory nel DEB/MSI
  * per evitare il download iniziale.
  */
@@ -350,7 +436,7 @@ object KcefEngine {
      * Marker di versione del bootstrap: SE NEI LOG NON APPARE QUESTA RIGA,
      * il processo sta eseguendo una build NON aggiornata.
      */
-    const val BOOTSTRAP_VERSION = "v20 (step3b)"
+    const val BOOTSTRAP_VERSION = "v26 (step3h)"
 
     private const val TAG = "[RiPlay-KCEF]"
 

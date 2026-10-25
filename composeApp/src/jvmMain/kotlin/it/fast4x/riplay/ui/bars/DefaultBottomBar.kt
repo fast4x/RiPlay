@@ -16,8 +16,6 @@ import androidx.compose.material.icons.automirrored.rounded.VolumeOff
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -27,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import extension.formatTimestamp
+import it.fast4x.riplay.ui.components.PremiumSlider
 import player.PlayerController
 import kotlin.math.roundToLong
 
@@ -74,15 +73,14 @@ fun DefaultBottomBar(modifier: Modifier = Modifier, controller: PlayerController
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
-                Slider(
+                // STEP 3h: slider premium della timeline (bolla del tempo
+                // sull'anteprima del seek, UNA sola seek al rilascio)
+                PremiumSlider(
                     value = animatedTimestamp,
-                    onValueChange = { controller.seekTo(it.roundToLong()) },
-                    valueRange = 0f..state.duration.toFloat(),
-                    colors = SliderDefaults.colors(
-                        activeTrackColor = Color.White,
-                        thumbColor = Color.Green.copy(alpha = 0.6f),
-                        inactiveTrackColor = Color.Gray
-                    ),
+                    onValueChange = {},
+                    onValueChangeFinished = { controller.seekTo(it.roundToLong()) },
+                    valueRange = 0f..state.duration.toFloat().coerceAtLeast(1f),
+                    showTimeBubble = true,
                     modifier = Modifier.fillMaxWidth(0.8f).padding(horizontal = 16.dp)
                 )
 
@@ -102,15 +100,11 @@ fun DefaultBottomBar(modifier: Modifier = Modifier, controller: PlayerController
                             modifier = Modifier.size(28.dp))
                     }
                 }
-                Slider(
+                // STEP 3h: slider premium del volume
+                PremiumSlider(
                     value = state.volume,
                     onValueChange = controller::setVolume,
-                    modifier = Modifier.width(300.dp),
-                    colors = SliderDefaults.colors(
-                        activeTrackColor = Color.White,
-                        thumbColor = Color.Green.copy(alpha = 0.6f),
-                        inactiveTrackColor = Color.Gray
-                    )
+                    modifier = Modifier.width(300.dp)
                 )
             }
 
