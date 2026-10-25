@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.DrawerDefaults.windowInsets
@@ -26,9 +27,11 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +43,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.bodies.BrowseBody
@@ -57,12 +62,15 @@ import it.fast4x.riplay.ui.components.FontSizeRange
 import it.fast4x.riplay.ui.components.Loader
 import it.fast4x.riplay.ui.components.Title
 import it.fast4x.riplay.ui.components.Title2Actions
+import it.fast4x.riplay.ui.components.ToolButton
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.fadingEdge
 import it.fast4x.riplay.utils.getHttpClient
 import it.fast4x.riplay.utils.languageDestination
 import it.fast4x.riplay.utils.resize
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import dev.rebelonion.translator.Language
 import dev.rebelonion.translator.Translator
@@ -71,6 +79,8 @@ import org.jetbrains.compose.resources.stringResource
 import riplay.composeapp.generated.resources.Res
 import riplay.composeapp.generated.resources.albums
 import riplay.composeapp.generated.resources.artist_subscribers
+import riplay.composeapp.generated.resources.bookmark
+import riplay.composeapp.generated.resources.bookmark_outline
 import riplay.composeapp.generated.resources.dice
 import riplay.composeapp.generated.resources.from_wikipedia_cca
 import riplay.composeapp.generated.resources.information
@@ -89,15 +99,51 @@ fun ArtistScreen(
     onViewAllAlbumsClick: () -> Unit,
     onViewAllSinglesClick: () -> Unit,
     onAlbumClick: (String) -> Unit,
-    onClosePage: () -> Unit
+    onClosePage: () -> Unit,
+    // STEP 3i: azione "aggiungi alla coda" sui brani dell'artista
+    onAddToQueue: ((Song) -> Unit)? = null
 ) {
     //val leftScrollState = rememberScrollState()
     //val rightScrollState = rememberScrollState()
     val artistPage = remember { mutableStateOf<Environment.ArtistInfoPage?>(null) }
+
+    // STEP 3i - ARTISTA SEGUITO: lo stato dell'artista nel db (se esiste,
+    // con bookmarkedAt = "seguito") arriva reattivo dal Flow
+    val currentArtist by Database.artist(browseId).collectAsState(initial = null)
+    val coroutineScope = rememberCoroutineScope()
+
     LaunchedEffect(browseId) {
         Environment.artistPage(BrowseBody(browseId = browseId))
             ?.onSuccess {
                 artistPage.value = it
+                // STEP 3i: SALVA L'ARTISTA nel db (stesso schema di
+                // AlbumScreen per gli album): cosi' l'artista VISITATO
+                // compare nella pagina Artists e PUO' essere seguito con
+                // il bookmark qui sotto. Se l'artista esisteva gia' (con
+                // generi/biografia/bookmark) i dati esistenti sono
+                // PRESERVATI: si aggiornano solo nome e thumbnail.
+                runCatching {
+                    val existing = Database.artist(browseId).first()
+                    val toSave = if (existing != null)
+                        existing.copy(
+                            name = it.name ?: existing.name,
+                            thumbnailUrl = it.thumbnail?.url ?: existing.thumbnailUrl
+                        )
+                    else
+                        Artist(
+                            id = browseId,
+                            name = it.name,
+                            thumbnailUrl = it.thumbnail?.url,
+                            timestamp = System.currentTimeMillis(),
+                            isYoutubeArtist = true
+                        )
+                    if (existing == null ||
+                        existing.name != toSave.name ||
+                        existing.thumbnailUrl != toSave.thumbnailUrl
+                    ) {
+                        Database.upsert(toSave)
+                    }
+                }.onFailure { e -> println("[RiPlay-Artista] salvataggio artista fallito: ${e.message}") }
             }
     }
     val artist = artistPage.value
@@ -193,6 +239,46 @@ fun ArtistScreen(
                             )
                         }
                     } ?: Loader()
+                }
+
+                // STEP 3i: pulsante SEGUI (bookmark, stesso meccanismo degli
+                // album preferiti): attivo quando l'artista e' nel db (viene
+                // salvato subito dopo l'apertura della pagina, vedi sopra)
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp)
+                ) {
+                    ToolButton(
+                        icon = if (currentArtist?.bookmarkedAt == null)
+                            Res.drawable.bookmark_outline else Res.drawable.bookmark,
+                        onAction = {
+                            val a = currentArtist
+                            if (a != null) {
+                                coroutineScope.launch {
+                                    Database.upsert(
+                                        a.copy(
+                                            bookmarkedAt =
+                                                if (a.bookmarkedAt == null) System.currentTimeMillis()
+                                                else null
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    )
+                    Spacer(Modifier.width(10.dp))
+                    Text(
+                        text = if (currentArtist?.bookmarkedAt == null) "Segui artista"
+                               else "Seguito",
+                        style = TextStyle(
+                            fontSize = 14.sp,
+                            fontWeight = typography.titleSmall.fontWeight,
+                            color = Color.White.copy(alpha = 0.8f)
+                        ),
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
                 }
 
 
@@ -346,7 +432,10 @@ fun ArtistScreen(
                                             onSongClick(song.asSong)
                                         }
                                     )
-                                    .padding(endPaddingValues)
+                                    .padding(endPaddingValues),
+                                onAddToQueue = onAddToQueue?.let { action ->
+                                    { action(song.asSong) }
+                                }
                             )
 
                         }

@@ -87,7 +87,13 @@ import riplay.composeapp.generated.resources.translate
 fun AlbumScreen(
     browseId: String,
     onSongClick: (Song) -> Unit,
-    onAlbumClick: (String) -> Unit
+    onAlbumClick: (String) -> Unit,
+    // STEP 3i: azione "aggiungi alla coda" sui brani dell'album
+    onAddToQueue: ((Song) -> Unit)? = null,
+    // STEP 3j (richiesta utente n.1): cliccando una canzone dell'album,
+    // L'INTERA LISTA DELL'ALBUM va in coda e parte il brano cliccato
+    // (stesso comportamento del lato Android: forcePlayFromBeginning).
+    onPlayCollection: ((List<Song>, Song) -> Unit)? = null
 ) {
     val coroutineScope by remember { mutableStateOf(CoroutineScope(Dispatchers.IO)) }
     //val leftScrollState = rememberScrollState()
@@ -415,10 +421,30 @@ fun AlbumScreen(
                                              */
                                         },
                                         onClick = {
-                                            onSongClick(song.asSong)
+                                            // STEP 3j: TUTTO L'ALBUM IN CODA.
+                                            // Il brano cliccato parte subito e
+                                            // le altre canzoni dell'album vanno
+                                            // in coda nell'ordine dell'album
+                                            // (per aggiungere SOLO il singolo
+                                            // brano resta il pulsante "+").
+                                            val clicked = song.asSong
+                                            val allAlbumSongs = albumPage.value
+                                                ?.songsPage?.items
+                                                .orEmpty()
+                                                .map { it.asSong }
+                                                .distinctBy { it.id }
+                                            val collection = onPlayCollection
+                                            if (collection != null && allAlbumSongs.size > 1) {
+                                                collection(allAlbumSongs, clicked)
+                                            } else {
+                                                onSongClick(clicked)
+                                            }
                                         }
                                     )
-                                    .padding(endPaddingValues)
+                                    .padding(endPaddingValues),
+                                onAddToQueue = onAddToQueue?.let { action ->
+                                    { action(song.asSong) }
+                                }
                             )
 
                         }

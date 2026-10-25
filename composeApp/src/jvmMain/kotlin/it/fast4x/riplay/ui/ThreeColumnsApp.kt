@@ -32,9 +32,11 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.data.models.Event
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.environment.Environment
+import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.styling.Dimensions.layoutColumnBottomPadding
 import it.fast4x.riplay.styling.Dimensions.layoutColumnTopPadding
 import it.fast4x.riplay.styling.Dimensions.layoutColumnsHorizontalPadding
@@ -59,7 +61,15 @@ import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.text.font.FontWeight
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicLong
+// STEP 3j: RADIO (brani simili in coda) via Environment.nextPage
+import it.fast4x.environment.models.bodies.NextBody
+import it.fast4x.environment.requests.nextPage
+// STEP 3j: pagina di RICERCA YouTube Music
+import it.fast4x.riplay.ui.pages.SearchPage
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import player.DesktopVideoSource
@@ -68,6 +78,17 @@ import riplay.composeapp.generated.resources.Res
 import riplay.composeapp.generated.resources.app_icon
 import riplay.composeapp.generated.resources.arrow_left
 import riplay.composeapp.generated.resources.back
+
+/**
+ * STEP 3j: brano in coda con UID STABILE. Serve per il riordino con il
+ * trascinamento del pannello Coda: le chiavi degli item del LazyColumn
+ * devono restare le stesse durante il drag anche se l'utente ha aggiunto
+ * lo stesso brano piu' volte (con il solo id ci sarebbero chiavi duplicate).
+ */
+data class QueuedSong(
+    val uid: Long,
+    val song: Song
+)
 
 /**
  * STEP 3b: navigazione desktop in stile ANDROID.
@@ -115,16 +136,41 @@ fun ThreeColumnsApp(
     var videoId by remember { mutableStateOf("") }
     var nowPlayingSong by remember { mutableStateOf<Song?>(null) }
 
-    LaunchedEffect(videoId) {
-        if (videoId.isEmpty()) return@LaunchedEffect
-        nowPlayingSong = db.getSong(videoId)
-        println("nowPlayingSong $nowPlayingSong")
-    }
+    // STEP 3i: CODA DI RIPRODUZIONE. E' l'elenco dei brani che partono in
+    // sequenza: alla fine naturale del brano in riproduzione parte il primo
+    // della coda (PlayerController.onEnded -> advanceQueue). I brani si
+    // aggiungono col pulsante "+" accanto al titolo in TUTTE le liste
+    // (Ricerca, Songs, album, artista, playlist, For You). Il click su un
+    // brano in coda (pannello Coda del player) lo rimuove dalla coda e lo
+    // suona ora.
+    // STEP 3j (richiesta utente n.1): il CLICK su un brano dentro un album
+    // (o una playlist YT) mette in coda l'INTERA lista (onPlayCollection).
+    // STEP 3j (richiesta utente n.2): i brani in coda si RIORDINANO col
+    // trascinamento (onQueueMove) => ogni item ha un uid stabile
+    // (QueuedSong) perche' le chiavi del drag devono essere uniche e
+    // stabili anche con brani duplicati.
+    val playQueue = remember { mutableStateListOf<QueuedSong>() }
+    val queueUidCounter = remember { AtomicLong(0) }
+    fun makeQueued(song: Song) = QueuedSong(queueUidCounter.incrementAndGet(), song)
 
-    // STEP 3: UN gestore motore per tutta l'app con selezione automatica
-    // (brano YouTube -> KCEF, brano/locale/file -> VLCJ), come Android fa
-    // con HybridPlayer (switchToExo/switchToYoutube da Song.isLocal)
+    // riferimento aggiornato alla funzione di avanzamento: i callback dei
+    // player sono collegati UNA volta sola (remember), il lamda qui dentro
+    // viene sostituito a ogni ricomposizione cosi' legge SEMPRE lo stato
+    // corrente (coda/cronologia) senza closure stantie.
+    val autoAdvanceRef = remember { mutableStateOf<(() -> Unit)?>(null) }
+
     val playerManager = remember { DesktopPlayerManager() }
+
+    // STEP 3i: aggancio dell'AVANZAMENTO AUTOMATICO ai DUE motori:
+    // - KCEF (YouTube): fine brano naturale = stato YT 0 (ENDED)
+    // - VLCJ (locale): fine brano naturale = evento finished di libVLC
+    // (il lamda passa dal riferimento aggiornato autoAdvanceRef: cosi'
+    // vede sempre la coda corrente senza closure stantie)
+    remember(playerManager) {
+        playerManager.kcef.onEnded = { autoAdvanceRef.value?.invoke() }
+        playerManager.vlcj.onEnded = { autoAdvanceRef.value?.invoke() }
+        true
+    }
 
     // STEP 3b: sezione corrente della barra in basso + dettaglio aperto
     // (artista/album/playlist/mood) sopra la sezione; null = nessun dettaglio
@@ -157,10 +203,36 @@ fun ThreeColumnsApp(
             videoId = songHistory[historyIndex]
         }
     }
+
+    // STEP 3i: riproduci subito un brano della coda e toglilo dalla coda
+    fun playFromQueue(song: Song) {
+        val idx = playQueue.indexOfFirst { it.song.id == song.id }
+        if (idx >= 0) playQueue.removeAt(idx)
+        pushHistory(song.id)
+        videoId = song.id
+        coroutineScope.launch {
+            db.upsert(song)
+        }
+        println("ThreeColumnsApp playFromQueue videoId $videoId (coda: ${playQueue.size})")
+    }
+
+    // STEP 3i: avanzamento automatico a fine brano: parte il primo brano
+    // della coda (se presente). Se la coda e' vuota non fa nulla: il
+    // player resta fermo sulla fine del video (comportamento attuale).
+    val advanceQueue: () -> Unit = {
+        playQueue.firstOrNull()?.let { playFromQueue(it.song) }
+    }
+    autoAdvanceRef.value = advanceQueue
+
     val onHistoryNext: () -> Unit = {
         if (historyIndex < songHistory.lastIndex) {
             historyIndex++
             videoId = songHistory[historyIndex]
+        } else {
+            // STEP 3i: nessun avanti nella cronologia: se c'e' una coda
+            // parte il prossimo brano in coda (stesso comportamento del
+            // pulsante AVANTI di un player)
+            advanceQueue()
         }
     }
 
@@ -197,8 +269,130 @@ fun ThreeColumnsApp(
         println("ThreeColumnsApp onSongClick videoId $videoId")
     }
 
+    // STEP 3i: aggiunta in CODA (pulsante "+" nelle liste). Il brano viene
+    // anche salvato nel db (l'upsert e' idempotente e i brani locali sono
+    // gia' presenti): cosi' la coda puo' contenere solo id ma il play
+    // successivo trova sempre il brano nel db.
+    val onAddToQueue: (Song) -> Unit = { song ->
+        playQueue.add(makeQueued(song))
+        coroutineScope.launch { db.upsert(song) }
+        println("ThreeColumnsApp addToQueue '${song.title}' (coda: ${playQueue.size})")
+    }
+
+    // STEP 3j (richiesta utente n.2): RIORDINO della coda col trascinamento:
+    // il pannello Coda passa gli uid (from -> to) e qui muoviamo il brano
+    // nella SnapshotStateList (la compose vede il cambiamento subito).
+    val onQueueMove: (Long, Long) -> Unit = { fromUid, toUid ->
+        val from = playQueue.indexOfFirst { it.uid == fromUid }
+        val to = playQueue.indexOfFirst { it.uid == toUid }
+        if (from >= 0 && to >= 0 && from != to) {
+            playQueue.add(to, playQueue.removeAt(from))
+        }
+    }
+
+    // STEP 3j (richiesta utente n.1): CLICK SU UN BRANO DI UN ALBUM (o di
+    // una playlist YouTube) => TUTTA la lista va in coda e parte subito il
+    // brano cliccato (comportamento Android: forcePlayFromBeginning). La
+    // coda precedente viene sostituita; il pulsante "+" resta per aggiungere
+    // SOLO il singolo brano.
+    val onPlayCollection: (List<Song>, Song) -> Unit = { songs, start ->
+        playQueue.clear()
+        songs
+            .filter { it.id != start.id }
+            .forEach { s ->
+                playQueue.add(makeQueued(s))
+                coroutineScope.launch { db.upsert(s) }
+            }
+        onSongClickOnline(start)
+        println("ThreeColumnsApp playCollection '${start.title}' + ${playQueue.size} brani in coda")
+    }
+
+    // STEP 3j (richiesta utente n.4): RADIO. Aggiunge in fondo alla coda i
+    // BRANI SIMILI al brano in riproduzione (Environment.nextPage = la
+    // STESSA funzione della radio lato Android, automix inclusa). Evita i
+    // duplicati di brani gia' in coda e mostra un piccolo feedback.
+    var radioLoading by remember { mutableStateOf(false) }
+    var radioFeedback by remember { mutableStateOf<String?>(null) }
+    val onAddRadio: () -> Unit = {
+        val current = nowPlayingSong
+        if (current != null && !radioLoading) {
+            coroutineScope.launch {
+                radioLoading = true
+                try {
+                    val page = Environment.nextPage(NextBody(videoId = current.id))?.getOrNull()
+                    val similar = page?.itemsPage?.items
+                        .orEmpty()
+                        .map { it.asSong }
+                        .filter { it.id.isNotBlank() && it.id != current.id }
+                        .distinctBy { it.id }
+                        .filter { s -> playQueue.none { it.song.id == s.id } }
+                    similar.forEach { s ->
+                        playQueue.add(makeQueued(s))
+                        db.upsert(s)
+                    }
+                    radioFeedback =
+                        if (similar.isEmpty()) "Nessun brano simile trovato"
+                        else "Aggiunti ${similar.size} brani simili"
+                    println("[RiPlay-Radio] +${similar.size} brani simili in coda (coda: ${playQueue.size})")
+                    delay(3000)
+                    radioFeedback = null
+                } catch (e: Exception) {
+                    println("[RiPlay-Radio] errore: $e")
+                    radioFeedback = "Radio non disponibile"
+                    delay(3000)
+                    radioFeedback = null
+                } finally {
+                    radioLoading = false
+                }
+            }
+        }
+    }
+
     fun openDetail(detail: DesktopDetail) {
         detailPage = detail
+    }
+
+    // STEP 3i - STORICO BRANI: a ogni cambio brano vengono registrati nel db
+    // (a) l'evento di ascolto (tabella Event: alimenta l'ordinamento per
+    // "data di riproduzione") e (b) il tempo di ascolto (totalPlayTimeMs,
+    // accumulato a blocchi di 5 s SOLO mentre il brano suona davvero: e'
+    // anche il campo che fa COMPARIRE il brano nella pagina Songs, le cui
+    // query filtrano totalPlayTimeMs > 0). Un +1 ms subito dopo l'avvio
+    // rende il brano visibile subito, senza aspettare i primi 5 secondi.
+    LaunchedEffect(videoId) {
+        if (videoId.isEmpty()) return@LaunchedEffect
+        // il brano ONLINE arriva al db con un piccolo ritardo (upsert
+        // asincrono al click): brevi ritenti prima di arrendersi
+        var song = db.getSong(videoId)
+        var tries = 0
+        while (song == null && tries < 4) {
+            delay(300)
+            song = db.getSong(videoId)
+            tries++
+        }
+        nowPlayingSong = song
+        println("nowPlayingSong $nowPlayingSong")
+        if (song == null) return@LaunchedEffect
+
+        // (a) evento di ascolto (storico/ordinamento DatePlayed)
+        db.insert(
+            Event(
+                songId = song.id,
+                timestamp = System.currentTimeMillis(),
+                playTime = song.totalPlayTimeMs
+            )
+        )
+        // +1 ms: il brano passa il filtro totalPlayTimeMs > 0 della pagina Songs
+        db.incrementTotalPlayTimeMs(song.id, 1)
+        println("[RiPlay-Storico] registrato ascolto '${song.title}' (Event + totalPlayTimeMs)")
+
+        // (b) accumulo del tempo di ascolto mentre il brano suona davvero
+        while (isActive) {
+            delay(5_000L)
+            if (playerManager.active.state.value.isPlaying && videoId == song.id) {
+                db.incrementTotalPlayTimeMs(song.id, 5_000L)
+            }
+        }
     }
 
     Box(Modifier.fillMaxSize()) {
@@ -269,7 +463,7 @@ fun ThreeColumnsApp(
                     color = Color.Gray.copy(alpha = 0.6f)
                 )
 
-                // STEP 3b: pagina di destinazione — parte dove stava la colonna
+                // Pannello di destinazione — parte dove stava la colonna
                 // centrale ma ESPESA VERSO DESTRA fino al bordo finestra
                 DestinationPanel(
                     modifier = Modifier.weight(1f),
@@ -282,6 +476,10 @@ fun ThreeColumnsApp(
                     },
                     onSongClickOnline = onSongClickOnline,
                     onSongClickFromDb = onSongClickFromDb,
+                    onAddToQueue = onAddToQueue,
+                    // STEP 3j: click su un brano di album/playlist YT =
+                    // intera lista in coda
+                    onPlayCollection = onPlayCollection,
                     onOpenDetail = { openDetail(it) }
                 )
             }
@@ -303,9 +501,24 @@ fun ThreeColumnsApp(
                 onCollapse = { playerExpanded = false },
                 // STEP 3d: avanti/indietro sulla cronologia di sessione
                 canGoPrevious = historyIndex > 0,
-                canGoNext = historyIndex < songHistory.lastIndex,
+                // STEP 3i: AVANTI anche con la coda: storia esaurita -> parte
+                // il prossimo brano della coda
+                canGoNext = historyIndex < songHistory.lastIndex || playQueue.isNotEmpty(),
                 onPrevious = onHistoryPrevious,
-                onNext = onHistoryNext
+                onNext = onHistoryNext,
+                // STEP 3i: pannello coda di riproduzione
+                queue = playQueue.toList(),
+                onQueuePlay = { song -> playFromQueue(song) },
+                onQueueRemove = { song ->
+                    val idx = playQueue.indexOfFirst { it.song.id == song.id }
+                    if (idx >= 0) playQueue.removeAt(idx)
+                },
+                onQueueClear = { playQueue.clear() },
+                // STEP 3j: riordino col trascinamento + RADIO (brani simili)
+                onQueueMove = onQueueMove,
+                onAddRadio = onAddRadio,
+                radioLoading = radioLoading,
+                radioFeedback = radioFeedback
             )
         }
     }
@@ -349,6 +562,9 @@ fun DestinationPanel(
     onGoHome: () -> Unit,
     onSongClickOnline: (Song) -> Unit,
     onSongClickFromDb: (Song) -> Unit,
+    onAddToQueue: (Song) -> Unit,
+    // STEP 3j: click su un brano di album/playlist YT = intera lista in coda
+    onPlayCollection: (List<Song>, Song) -> Unit,
     onOpenDetail: (DesktopDetail) -> Unit
 ) {
     Column(
@@ -415,6 +631,8 @@ fun DestinationPanel(
                     onBackToSection = onBackToSection,
                     onSongClickOnline = onSongClickOnline,
                     onSongClickFromDb = onSongClickFromDb,
+                    onAddToQueue = onAddToQueue,
+                    onPlayCollection = onPlayCollection,
                     onOpenDetail = onOpenDetail
                 )
             } else {
@@ -423,6 +641,7 @@ fun DestinationPanel(
                         ScrollColumn {
                             QuickPicsScreen(
                                 onSongClick = onSongClickOnline,
+                                onAddToQueue = onAddToQueue,
                                 onAlbumClick = {
                                     onOpenDetail(DesktopDetail.Album(it))
                                 },
@@ -438,9 +657,25 @@ fun DestinationPanel(
                             )
                         }
 
+                    // STEP 3j: RICERCA YouTube Music (come lato Android)
+                    DesktopSection.SEARCH ->
+                        SearchPage(
+                            onSongClick = onSongClickOnline,
+                            onAddToQueue = onAddToQueue,
+                            onAlbumClick = {
+                                onOpenDetail(DesktopDetail.Album(it))
+                            },
+                            onArtistClick = {
+                                onOpenDetail(DesktopDetail.Artist(it))
+                            },
+                            onPlaylistClick = {
+                                onOpenDetail(DesktopDetail.YtPlaylist(it))
+                            }
+                        )
                     DesktopSection.SONGS ->
                         SongsPage(
-                            onSongClick = onSongClickFromDb
+                            onSongClick = onSongClickFromDb,
+                            onAddToQueue = onAddToQueue
                         )
 
                     DesktopSection.ARTISTS ->
@@ -485,6 +720,9 @@ fun DetailContent(
     onBackToSection: () -> Unit,
     onSongClickOnline: (Song) -> Unit,
     onSongClickFromDb: (Song) -> Unit,
+    onAddToQueue: (Song) -> Unit,
+    // STEP 3j: click su un brano di album/playlist YT = intera lista in coda
+    onPlayCollection: (List<Song>, Song) -> Unit,
     onOpenDetail: (DesktopDetail) -> Unit
 ) {
     when (detail) {
@@ -493,6 +731,7 @@ fun DetailContent(
                 ArtistScreen(
                     browseId = detail.browseId,
                     onSongClick = onSongClickOnline,
+                    onAddToQueue = onAddToQueue,
                     onPlaylistClick = {
                         onOpenDetail(DesktopDetail.YtPlaylist(it))
                     },
@@ -510,6 +749,9 @@ fun DetailContent(
                 AlbumScreen(
                     browseId = detail.browseId,
                     onSongClick = onSongClickOnline,
+                    onAddToQueue = onAddToQueue,
+                    // STEP 3j: click su un brano = TUTTO L'ALBUM in coda
+                    onPlayCollection = onPlayCollection,
                     onAlbumClick = {
                         onOpenDetail(DesktopDetail.Album(it))
                     }
@@ -521,6 +763,9 @@ fun DetailContent(
                 PlaylistScreen(
                     browseId = detail.browseId,
                     onSongClick = onSongClickOnline,
+                    onAddToQueue = onAddToQueue,
+                    // STEP 3j: click su un brano = TUTTA la PLAYLIST in coda
+                    onPlayCollection = onPlayCollection,
                     onAlbumClick = {
                         onOpenDetail(DesktopDetail.Album(it))
                     },
@@ -532,7 +777,8 @@ fun DetailContent(
             PlaylistSongsPage(
                 playlist = detail.playlist,
                 // i brani di una playlist locale sono gia' nel db
-                onSongClick = onSongClickFromDb
+                onSongClick = onSongClickFromDb,
+                onAddToQueue = onAddToQueue
             )
 
         is DesktopDetail.Mood ->

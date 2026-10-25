@@ -80,7 +80,12 @@ fun PlaylistScreen(
     browseId: String,
     onSongClick: (Song) -> Unit,
     onAlbumClick: (String) -> Unit,
-    onClosePage: () -> Unit
+    onClosePage: () -> Unit,
+    // STEP 3i: azione "aggiungi alla coda" sui brani della playlist
+    onAddToQueue: ((Song) -> Unit)? = null,
+    // STEP 3j: come per gli album, cliccando un brano della playlist YT
+    // l'INTERA lista va in coda e parte il brano cliccato
+    onPlayCollection: ((List<Song>, Song) -> Unit)? = null
 ) {
     //val leftScrollState = rememberScrollState()
     //val rightScrollState = rememberScrollState()
@@ -339,10 +344,27 @@ fun PlaylistScreen(
                                              */
                                         },
                                         onClick = {
-                                            onSongClick(song.asSong)
+                                            // STEP 3j: TUTTA LA PLAYLIST IN CODA
+                                            // (come per l'album); il pulsante
+                                            // "+" resta per il singolo brano.
+                                            val clicked = song.asSong
+                                            val allPlaylistSongs = playlistPage
+                                                ?.songsPage?.items
+                                                .orEmpty()
+                                                .map { it.asSong }
+                                                .distinctBy { it.id }
+                                            val collection = onPlayCollection
+                                            if (collection != null && allPlaylistSongs.size > 1) {
+                                                collection(allPlaylistSongs, clicked)
+                                            } else {
+                                                onSongClick(clicked)
+                                            }
                                         }
                                     )
-                                    .padding(endPaddingValues)
+                                    .padding(endPaddingValues),
+                                onAddToQueue = onAddToQueue?.let { action ->
+                                    { action(song.asSong) }
+                                }
                             )
 
                         }

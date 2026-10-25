@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -62,7 +64,27 @@ fun SongItem(
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier,
     trailingContent: @Composable (() -> Unit)? = null,
+    // STEP 3i: azione "aggiungi alla coda di riproduzione" (null = niente
+    // pulsante): e' il piccolo "+" a destra del titolo di ogni riga brano.
+    onAddToQueue: (() -> Unit)? = null,
 ) {
+    // il "+" coda viene renderizzato nel trailingContent se la lista non
+    // ne fornisce uno proprio
+    val trailing: @Composable (() -> Unit)? = trailingContent ?: onAddToQueue?.let { action ->
+        {
+            androidx.compose.material.IconButton(
+                onClick = action,
+                modifier = Modifier.size(30.dp)
+            ) {
+                androidx.compose.material.Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = "aggiungi alla coda",
+                    tint = Color.White.copy(alpha = 0.55f),
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+    }
 
     ItemContainer(
         alternative = false,
@@ -77,7 +99,7 @@ fun SongItem(
         }
 
         ItemInfoContainer {
-            trailingContent?.let {
+            trailing?.let {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     BasicText(
                         text = title ?: "",
@@ -151,7 +173,9 @@ fun SongItem(
     song: Environment.SongItem,
     isDownloaded: Boolean = false,
     thumbnailSizeDp: Dp = 50.dp,
-    modifier: Modifier
+    modifier: Modifier,
+    // STEP 3i: azione "aggiungi alla coda" (null = pulsante nascosto)
+    onAddToQueue: (() -> Unit)? = null
 ) {
     SongItem(
         title = song.info?.name,
@@ -168,7 +192,7 @@ fun SongItem(
             }
             //onThumbnailContent?.invoke(this)
         },
-        trailingContent = {},
+        onAddToQueue = onAddToQueue,
     )
 }
 
@@ -177,7 +201,9 @@ fun SongItem(
     songEntity: SongEntity,
     isDownloaded: Boolean = false,
     thumbnailSizeDp: Dp = 50.dp,
-    modifier: Modifier
+    modifier: Modifier,
+    // STEP 3i: azione "aggiungi alla coda" (null = pulsante nascosto)
+    onAddToQueue: (() -> Unit)? = null
 ) {
     SongItem(
         title = songEntity.song.title,
@@ -194,7 +220,7 @@ fun SongItem(
             }
             //onThumbnailContent?.invoke(this)
         },
-        trailingContent = {},
+        onAddToQueue = onAddToQueue,
     )
 }
 

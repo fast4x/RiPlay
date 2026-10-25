@@ -59,6 +59,8 @@ import riplay.composeapp.generated.resources.similar_artists
 @Composable
 fun QuickPicsScreen(
     onSongClick: (Song) -> Unit,
+    // STEP 3i: pulsante "+" per aggiungere il brano alla coda di riproduzione
+    onAddToQueue: (Song) -> Unit,
     onAlbumClick: (String) -> Unit,
     onArtistClick: (String) -> Unit,
     onPlaylistClick: (String) -> Unit,
@@ -121,7 +123,8 @@ fun QuickPicsScreen(
                             }
                         )
                         .animateItem()
-                        .width(itemInHorizontalGridWidth)
+                        .width(itemInHorizontalGridWidth),
+                    onAddToQueue = { onAddToQueue(song.asSong) }
                 )
             }
         } ?:

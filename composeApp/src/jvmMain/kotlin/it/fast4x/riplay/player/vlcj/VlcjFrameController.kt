@@ -97,6 +97,16 @@ class VlcjFrameController constructor(
     private val _bytes = MutableStateFlow<ByteArray?>(null)
     override val bytes = _bytes.asStateFlow()
 
+    /**
+     * STEP 3i: callback di fine brano naturale (inoltrata a [controller]).
+     * L'app la aggancia per l'avanzamento automatico della coda.
+     */
+    var onEnded: (() -> Unit)?
+        get() = controller.onEnded
+        set(value) {
+            controller.onEnded = value
+        }
+
     override fun load(url: String) {
         controller.load(url)
         controller.player?.videoSurface()?.set(surface)

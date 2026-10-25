@@ -427,6 +427,40 @@ sealed interface KcefState {
  *     dimensione finestra ricordata in ~/.riplay/window.properties.
  *     Barra navigazione con pill attiva. Accento unificato RiPlayAccent.
  *
+ *     26) v27 (step3i, richiesta utente "prima dello step 4 aggiungere
+ *     pezzi mancanti"): (1) ARTISTI SEGUITI - l'artista visitato viene
+ *     salvato nel db (stesso schema AlbumScreen), pulsante SEGUI con
+ *     bookmark (bookmarkedAt, come gli album preferiti), filtro
+ *     "Seguiti" + stella nella pagina Artists; (2) STORICO BRANI - a
+ *     ogni ascolto: insert Event + totalPlayTimeMs (+1 ms subito,
+ *     poi +5 s a blocco mentre suona): la pagina Songs ordina ora per
+ *     data di riproduzione (DatePlayed DESC) e mostra TUTTI i brani
+ *     ascoltati; (3) CODA DI RIPRODUZIONE - bottone + nelle liste
+ *     (Songs/album/artista/playlist/For You), pannello Coda nel player
+ *     full (play subito/X rimuovi/cestino svuota), pulsante AVANTI che
+ *     passa alla coda a cronologia esaurita e AVANZAMENTO AUTOMATICO
+ *     a fine brano naturale (KCEF: stato YT 0 = ENDED, una sola volta
+ *     per video; VLCJ: evento finished di libVLC). L'unica toccata al
+ *     player e' il nuovo hook onEnded (lettura dello stato gia'
+ *     esistente): NESSUNA modifica a embed/activation/referer/play.
+ *
+ *     27) v28 (step3j, dalla conferma utente v27 "Funziona" e dalla
+ *     richiesta di 4 migliorie prima dello STEP 4): SOLO UI/app, il
+ *     motore KCEF NON cambia comportamento. (1) CLICK SU UN BRANO DI UN
+ *     ALBUM => TUTTO l'album va in coda e parte il brano cliccato (stessa
+ *     cosa per le playlist YouTube: onPlayCollection, come il
+ *     forcePlayFromBeginning Android); (2) RIORDINO DELLA CODA col
+ *     TRASCINAMENTO nel pannello Coda (sh.calvin.reorderable, la STESSA
+ *     libreria della coda Android; ogni brano in coda ha un uid stabile
+ *     per chiavi uniche anche con duplicati); (3) RICERCA YouTube Music
+ *     (nuova sezione Search nella barra in basso: campo con INVIO,
+ *     suggerimenti live, cronologia db, filtri Canzoni/Video/Album/
+ *     Artisti/Playlist, "Carica altri"; Environment.searchPage con le
+ *     stesse SearchFilter di Android); (4) RADIO: pulsante nel player
+ *     full che aggiunge in coda i BRANI SIMILI al brano in riproduzione
+ *     (Environment.nextPage = la funzione radio di Android, con
+ *     deduplica e feedback). Play/coda v27 intatti.
+ *
  * STEP 4 (packaging) potra' pre-seminare questa directory nel DEB/MSI
  * per evitare il download iniziale.
  */
@@ -436,7 +470,7 @@ object KcefEngine {
      * Marker di versione del bootstrap: SE NEI LOG NON APPARE QUESTA RIGA,
      * il processo sta eseguendo una build NON aggiornata.
      */
-    const val BOOTSTRAP_VERSION = "v26 (step3h)"
+    const val BOOTSTRAP_VERSION = "v28 (step3j)"
 
     private const val TAG = "[RiPlay-KCEF]"
 

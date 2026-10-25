@@ -19,6 +19,14 @@ import kotlin.io.path.pathString
 
 class VlcjController : PlayerController {
 
+    /**
+     * STEP 3i: callback di FINE BRANO naturale (evento finished di libVLC,
+     * che arriva SOLO al termine naturale del media, non su stop/pausa).
+     * Gancio dell'avanzamento automatico della coda di riproduzione anche
+     * per i brani locali (motore VLCJ).
+     */
+    var onEnded: (() -> Unit)? = null
+
     init {
         // Ricerca libvlc multipiattaforma: Windows (libvlc.dll), Linux (libvlc.so), macOS (libvlc.dylib)
         val libName = when {
@@ -58,6 +66,8 @@ class VlcjController : PlayerController {
 
         override fun finished(mediaPlayer: MediaPlayer) {
             _state.update { it.copy(isPlaying = false) }
+            // STEP 3i: fine naturale del media -> avanza la coda
+            onEnded?.invoke()
         }
 
         override fun muted(mediaPlayer: MediaPlayer, muted: Boolean) {

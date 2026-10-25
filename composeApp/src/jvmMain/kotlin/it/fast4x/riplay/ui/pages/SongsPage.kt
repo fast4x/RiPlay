@@ -1,7 +1,7 @@
 package it.fast4x.riplay.ui.pages
 
-import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.enums.SongSortBy
+import it.fast4x.riplay.enums.SortOrder
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -36,13 +36,18 @@ import it.fast4x.riplay.styling.Dimensions.layoutColumnBottomSpacer
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SongsPage(
-    onSongClick: (Song) -> Unit
+    onSongClick: (Song) -> Unit,
+    // STEP 3i: pulsante "+" per aggiungere il brano alla coda di riproduzione
+    onAddToQueue: (Song) -> Unit
 ) {
     val songs = remember { SnapshotStateList<SongEntity>() }
 
     LaunchedEffect(Unit) {
-        //Database.songsByTitleAsc().also { songs.addAll(it) }
-        Database.songs(SongSortBy.Title, SortOrder.Ascending, showHiddenSongs = 0).collect {
+        // STEP 3i: ordinamento STORICO (data di riproduzione, dal piu'
+        // recente): la pagina Songs e' ora la cronologia di ascolto. La
+        // registrazione avviene in ThreeColumnsApp a ogni play (Event +
+        // totalPlayTimeMs): i brani ascoltati compaiono in testa.
+        Database.songs(SongSortBy.DatePlayed, SortOrder.Descending, showHiddenSongs = 0).collect {
             // STEP 3b: il Flow emette la lista COMPLETA ad ogni emissione:
             // senza clear ogni emissione duplicava tutti i brani
             songs.clear()
@@ -98,7 +103,8 @@ fun SongsPage(
                             onClick = {
                                 onSongClick(song.song)
                             }
-                        )
+                        ),
+                    onAddToQueue = { onAddToQueue(song.song) }
                 )
             }
 

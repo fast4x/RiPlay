@@ -30,6 +30,8 @@ import riplay.composeapp.generated.resources.artists
 import riplay.composeapp.generated.resources.home
 import riplay.composeapp.generated.resources.library
 import riplay.composeapp.generated.resources.musical_notes
+// STEP 3j: icona della nuova sezione RICERCA
+import riplay.composeapp.generated.resources.search
 
 /**
  * STEP 3b: navigazione desktop in stile Android.
@@ -46,6 +48,8 @@ import riplay.composeapp.generated.resources.musical_notes
  */
 enum class DesktopSection(val label: String) {
     HOME("Home"),
+    // STEP 3j: ricerca YouTube Music (come lato Android)
+    SEARCH("Search"),
     SONGS("Songs"),
     ARTISTS("Artists"),
     ALBUMS("Albums"),
@@ -81,6 +85,7 @@ fun DesktopNavigationBar(
 
                 val icon = when (section) {
                     DesktopSection.HOME -> Res.drawable.home
+                    DesktopSection.SEARCH -> Res.drawable.search
                     DesktopSection.SONGS -> Res.drawable.musical_notes
                     DesktopSection.ARTISTS -> Res.drawable.artists
                     DesktopSection.ALBUMS -> Res.drawable.album

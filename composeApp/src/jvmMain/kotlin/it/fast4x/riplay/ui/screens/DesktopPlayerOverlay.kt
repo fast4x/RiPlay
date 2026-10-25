@@ -21,12 +21,16 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
@@ -42,11 +46,21 @@ import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.rounded.PlayArrow
+// STEP 3i: icone del pannello coda di riproduzione
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.List
+// STEP 3j: maniglia di trascinamento + icona RADIO (brani simili in coda)
+import androidx.compose.material.icons.filled.DragHandle
+import androidx.compose.material.icons.filled.Radio
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -67,6 +81,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
@@ -74,7 +89,13 @@ import extension.formatTimestamp
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.ui.components.PremiumSlider
 import it.fast4x.riplay.ui.components.RiPlayAccent
+// STEP 3j: wrapper del brano in coda con uid stabile (serve al drag&drop)
+import it.fast4x.riplay.ui.QueuedSong
 import kotlinx.coroutines.delay
+// STEP 3j: riordino della coda con il TRASCINAMENTO: la STESSA libreria
+// usata dalla coda di riproduzione Android (sh.calvin.reorderable)
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 import org.jetbrains.compose.resources.painterResource
 import player.PlayerController
 import player.PlayerState
@@ -145,7 +166,25 @@ fun DesktopPlayerOverlay(
     canGoPrevious: Boolean = false,
     canGoNext: Boolean = false,
     onPrevious: () -> Unit = {},
-    onNext: () -> Unit = {}
+    onNext: () -> Unit = {},
+    // STEP 3i: CODA DI RIPRODUZIONE. Il pannello (icona in alto a destra)
+    // elenca i brani in coda: click = riproduci subito, X = rimuovi,
+    // cestino = svuota, MANIGLIA = trascina per riordinare (STEP 3j).
+    // L'AVANZAMENTO AUTOMATICO alla fine del brano e' gestito dall'app
+    // (ThreeColumnsApp via PlayerController.onEnded).
+    // STEP 3j: la coda ora e' List<QueuedSong> (uid stabile per item: serve
+    // alle chiavi del drag&drop anche con brani duplicati).
+    queue: List<QueuedSong> = emptyList(),
+    onQueuePlay: (Song) -> Unit = {},
+    onQueueRemove: (Song) -> Unit = {},
+    onQueueClear: () -> Unit = {},
+    // STEP 3j: riordino (from.uid -> to.uid, gestito dall'app sulla lista)
+    onQueueMove: (Long, Long) -> Unit = { _, _ -> },
+    // STEP 3j: RADIO (richiesta utente n.4): aggiunge i BRANI SIMILI in coda
+    // (Environment.nextPage, la stessa funzione della radio Android)
+    onAddRadio: () -> Unit = {},
+    radioLoading: Boolean = false,
+    radioFeedback: String? = null
 ) {
 
     val state = if (controller != null) {
@@ -160,6 +199,9 @@ fun DesktopPlayerOverlay(
         delay(120)
         runCatching { focusRequester.requestFocus() }
     }
+
+    // STEP 3i: pannello coda aperto/chiuso (toggle con l'icona in alto a destra)
+    var queueOpen by remember { mutableStateOf(false) }
 
     AnimatedVisibility(
         visible = visible,
@@ -233,6 +275,64 @@ fun DesktopPlayerOverlay(
                         color = Color.White.copy(alpha = 0.35f),
                         fontSize = 11.sp
                     )
+                    Spacer(Modifier.width(12.dp))
+                    // STEP 3j: pulsante RADIO: aggiunge i BRANI SIMILI del
+                    // brano in riproduzione in fondo alla coda (come la
+                    // funzione radio di Android). Feedback inline.
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .clickable { if (!radioLoading) onAddRadio() }
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color.White.copy(alpha = 0.08f))
+                            .padding(horizontal = 12.dp, vertical = 7.dp)
+                    ) {
+                        if (radioLoading) {
+                            CircularProgressIndicator(
+                                color = RiPlayAccent,
+                                strokeWidth = 2.dp,
+                                modifier = Modifier.size(15.dp)
+                            )
+                        } else {
+                            Icon(
+                                Icons.Filled.Radio,
+                                contentDescription = "radio: aggiungi brani simili in coda",
+                                tint = RiPlayAccent,
+                                modifier = Modifier.size(17.dp)
+                            )
+                        }
+                        Spacer(Modifier.width(7.dp))
+                        Text(
+                            radioFeedback ?: "Radio",
+                            color = if (radioFeedback != null) RiPlayAccent else Color.White.copy(alpha = 0.8f),
+                            fontSize = 13.sp
+                        )
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    // STEP 3i: toggle del pannello CODA DI RIPRODUZIONE
+                    // (icona lista + contatore brani in coda)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .clickable { queueOpen = !queueOpen }
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color.White.copy(alpha = if (queueOpen) 0.16f else 0.08f))
+                            .padding(horizontal = 12.dp, vertical = 7.dp)
+                    ) {
+                        Icon(
+                            Icons.Filled.List,
+                            contentDescription = "coda di riproduzione",
+                            tint = if (queueOpen) RiPlayAccent else Color.White.copy(alpha = 0.8f),
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(7.dp))
+                        Text(
+                            "Coda (${queue.size})",
+                            color = if (queueOpen) RiPlayAccent else Color.White.copy(alpha = 0.8f),
+                            fontSize = 13.sp,
+                            fontWeight = if (queueOpen) FontWeight.SemiBold else FontWeight.Normal
+                        )
+                    }
                 }
 
                 Spacer(Modifier.weight(1f))
@@ -487,6 +587,190 @@ fun DesktopPlayerOverlay(
                 )
 
                 Spacer(Modifier.weight(1f))
+            }
+
+            // STEP 3i: PANNELLO CODA DI RIPRODUZIONE, agganciato al bordo
+            // destro del player a tutto schermo (si apre/chiude con l'icona
+            // "Coda" in alto a destra). Click su un brano = riproduci ora,
+            // X = rimuovi dalla coda, cestino = svuota tutto.
+            androidx.compose.animation.AnimatedVisibility(
+                visible = queueOpen,
+                enter = fadeIn(tween(200)),
+                exit = fadeOut(tween(150)),
+                modifier = Modifier.align(Alignment.CenterEnd)
+            ) {
+                PlayQueuePanel(
+                    queue = queue,
+                    onPlay = onQueuePlay,
+                    onRemove = onQueueRemove,
+                    onClear = onQueueClear,
+                    onMove = onQueueMove
+                )
+            }
+        }
+    }
+}
+
+/**
+ * STEP 3i: pannello laterale con l'elenco dei brani in coda di
+ * riproduzione (il contenuto visibile quando si preme "Coda" nel player
+ * a tutto schermo).
+ *
+ * STEP 3j (richiesta utente n.2 "le canzoni in coda posso essere spostate
+ * a piacimento dall'utente"): RIORDINO CON IL TRASCINAMENTO tramite la
+ * libreria sh.calvin.reorderable (la STESSA della coda Android):
+ *  - ogni item ha una chiave stabile (QueuedSong.uid, non l'indice: cosi'
+ *    anche i brani duplicati in coda restano distinti);
+ *  - la maniglia a sinistra (DragHandle) trascina il brano; mentre trascina
+ *    l'item si evidenzia con una leggera tinta d'accento;
+ *  - l'app riceve (fromUid, toUid) e muove il brano nella SnapshotStateList.
+ */
+@Composable
+private fun PlayQueuePanel(
+    queue: List<QueuedSong>,
+    onPlay: (Song) -> Unit,
+    onRemove: (Song) -> Unit,
+    onClear: () -> Unit,
+    onMove: (Long, Long) -> Unit
+) {
+    val lazyListState = rememberLazyListState()
+    val reorderableState = rememberReorderableLazyListState(
+        lazyListState = lazyListState,
+        scrollThreshold = 40.dp
+    ) { from, to ->
+        val fromUid = from.key as? Long
+        val toUid = to.key as? Long
+        if (fromUid != null && toUid != null) onMove(fromUid, toUid)
+    }
+
+    Column(
+        Modifier
+            .fillMaxHeight()
+            .width(340.dp)
+            .background(Color(0xF2101110))
+            .padding(14.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                Icons.Filled.List,
+                contentDescription = null,
+                tint = RiPlayAccent,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(Modifier.width(9.dp))
+            Text(
+                "Coda di riproduzione (${queue.size})",
+                color = Color.White,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(Modifier.weight(1f))
+            if (queue.isNotEmpty()) {
+                IconButton(
+                    onClick = onClear,
+                    modifier = Modifier.size(30.dp)
+                ) {
+                    Icon(
+                        Icons.Filled.Delete,
+                        contentDescription = "svuota la coda",
+                        tint = Color.White.copy(alpha = 0.6f),
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(4.dp))
+
+        Text(
+            "Trascina la maniglia per riordinare",
+            color = Color.White.copy(alpha = 0.3f),
+            fontSize = 11.sp
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        if (queue.isEmpty()) {
+            Text(
+                "La coda \u00e8 vuota.\n\nAggiungi i brani con il pulsante + accanto al titolo nelle liste (Ricerca, Songs, album, artista, playlist), oppure premi Radio per i brani simili. Cliccando una canzone dentro un ALBUM entra in coda tutto l'album.",
+                color = Color.White.copy(alpha = 0.4f),
+                fontSize = 13.sp,
+                lineHeight = 19.sp
+            )
+        } else {
+            LazyColumn(
+                state = lazyListState,
+                modifier = Modifier.weight(1f)
+            ) {
+                items(queue, key = { it.uid }) { queued ->
+                    ReorderableItem(
+                        state = reorderableState,
+                        key = queued.uid
+                    ) { isDragging ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .animateItem()
+                                .background(
+                                    if (isDragging) RiPlayAccent.copy(alpha = 0.12f)
+                                    else Color.Transparent,
+                                    RoundedCornerShape(10.dp)
+                                )
+                                .clickable { onPlay(queued.song) }
+                                .padding(horizontal = 4.dp, vertical = 6.dp)
+                        ) {
+                            // maniglia di trascinamento (riordino)
+                            Icon(
+                                Icons.Filled.DragHandle,
+                                contentDescription = "trascina per riordinare",
+                                tint = Color.White.copy(alpha = if (isDragging) 0.9f else 0.35f),
+                                modifier = Modifier
+                                    .size(22.dp)
+                                    .draggableHandle()
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            AsyncImage(
+                                model = queued.song.thumbnailUrl,
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(42.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                            )
+                            Spacer(Modifier.width(10.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    queued.song.title,
+                                    color = Color.White,
+                                    fontSize = 14.sp,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                queued.song.artistsText?.let {
+                                    Text(
+                                        it,
+                                        color = Color.White.copy(alpha = 0.5f),
+                                        fontSize = 12.sp,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                            }
+                            IconButton(
+                                onClick = { onRemove(queued.song) },
+                                modifier = Modifier.size(28.dp)
+                            ) {
+                                Icon(
+                                    Icons.Filled.Close,
+                                    contentDescription = "rimuovi dalla coda",
+                                    tint = Color.White.copy(alpha = 0.5f),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }

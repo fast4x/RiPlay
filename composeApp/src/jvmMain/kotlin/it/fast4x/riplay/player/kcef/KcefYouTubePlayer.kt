@@ -132,6 +132,17 @@ class KcefYouTubePlayer(
     private var kickJob: Job? = null
 
     /**
+     * STEP 3i: callback di FINE BRANO naturale (stato YT 0 = ENDED). E' il
+     * gancio dell'AVANZAMENTO AUTOMATICO della coda di riproduzione: quando
+     * il video finisce da solo (NON con stop/pausa/nuovo load) il player
+     * notifica l'app, che avvia il brano successivo della coda.
+     * Gara e duplicati gestiti con endedFiredForVideo: un solo evento per
+     * videoId, azzerato al load successivo.
+     */
+    var onEnded: (() -> Unit)? = null
+    @Volatile private var endedFiredForVideo: String? = null
+
+    /**
      * Crea (una volta sola) il browser CEF e restituisce il componente
      * AWT da incorporare. Chiamare dal thread EDT (SwingPanel factory).
      *
@@ -549,6 +560,8 @@ class KcefYouTubePlayer(
         KcefEngine.logKcef("loadVideoById: videoId='$id' (richiesto: '$videoId') start=$startSeconds")
         // reset tempo/durata: la nuova traccia parte da zero
         _state.value = _state.value.copy(isPlaying = false, timestamp = 0L, duration = 0L)
+        // STEP 3i: il nuovo video puo' di nuovo notificare la fine naturale
+        endedFiredForVideo = null
         lastVideoId = id
         dispatchLoad(id, startSeconds, cue = false)
         // STEP 3f: kick autoplay a 3 s (il video caricato su pagina attiva
@@ -665,6 +678,20 @@ class KcefYouTubePlayer(
                 // STEP 3f: stato YT GREZZO per i guard dell'activation
                 lastRawYtState = s.s
                 if (s.s == 1) disarmWatchdog()
+                // STEP 3i: FINE BRANO NATURALE (stato YT 0 = ENDED): una sola
+                // volta per video (lo stato puo' restare 0 per minuti). Un
+                // videoId in riproduzione e' richiesto: senza, e' il player
+                // vuoto a pagina appena pronta (non e' una fine reale).
+                if (s.s == 0) {
+                    val current = lastVideoId
+                    if (current != null && current.isNotBlank() &&
+                        endedFiredForVideo != current
+                    ) {
+                        endedFiredForVideo = current
+                        KcefEngine.logKcef("fine brano naturale (YT state=0): videoId='$current' -> avanza la coda")
+                        onEnded?.invoke()
+                    }
+                }
             }
         }
     }

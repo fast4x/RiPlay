@@ -42,7 +42,9 @@ import it.fast4x.riplay.utils.LoadImage
 @Composable
 fun PlaylistSongsPage(
     playlist: Playlist,
-    onSongClick: (Song) -> Unit
+    onSongClick: (Song) -> Unit,
+    // STEP 3i: pulsante "+" per aggiungere il brano alla coda di riproduzione
+    onAddToQueue: (Song) -> Unit
 ) {
     val songs = remember { SnapshotStateList<Song>() }
 
@@ -103,7 +105,7 @@ fun PlaylistSongsPage(
                     thumbnailContent = {
                         song.thumbnailUrl?.let { LoadImage(it) }
                     },
-                    trailingContent = {}
+                    onAddToQueue = { onAddToQueue(song) }
                 )
             }
 
