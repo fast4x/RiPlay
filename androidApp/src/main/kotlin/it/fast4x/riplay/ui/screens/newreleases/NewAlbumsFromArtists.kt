@@ -82,7 +82,7 @@ fun NewAlbumsFromArtists(
     val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
 
-    val navigationBarPosition = appSettings.navigationBarPosition
+    val navigationBarPosition = NavigationBarPosition.current()
 
     val showSearchTab = appSettings.showSearchTab
 

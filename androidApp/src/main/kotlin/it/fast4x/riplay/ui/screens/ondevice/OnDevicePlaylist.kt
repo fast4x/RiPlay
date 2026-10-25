@@ -394,7 +394,7 @@ fun OnDevicePlaylist(
         )
     }
 
-    val navigationBarPosition = appSettings.navigationBarPosition
+    val navigationBarPosition = NavigationBarPosition.current()
     val maxSongsInQueue = appSettings.maxSongsInQueue
 
     val thumbnails = playlistSongs.map { it.song }

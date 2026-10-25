@@ -2,6 +2,7 @@ package it.fast4x.riplay.ui.items
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
@@ -31,8 +32,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -346,25 +350,25 @@ fun SongItem(
             thumbnailContent()
 
             if (likedAt != null)
-                HeaderIconButton(
-                    onClick = noOp,
+                SongBadge(
                     icon = getLikeState(mediaItem.mediaId),
                     color = colorPalette().favoritesIcon,
-                    iconSize = 12.dp,
+                    size = 12.dp,
+                    contentDescription = stringResource(R.string.mobile_home_liked_badge),
                     modifier = Modifier
                         .align(Alignment.BottomStart)
-                        .absoluteOffset(-8.dp, 0.dp)
+                        .padding(4.dp)
                 )
 
             if (mediaItem.isVideo)
-                HeaderIconButton(
-                    onClick = noOp,
+                SongBadge(
                     icon = R.drawable.video,
                     color = colorPalette().favoritesIcon,
-                    iconSize = 12.dp,
+                    size = 12.dp,
+                    contentDescription = stringResource(R.string.mobile_home_video_badge),
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .absoluteOffset(8.dp, 0.dp)
+                        .padding(4.dp)
                 )
         }
 
@@ -373,21 +377,19 @@ fun SongItem(
             Row(verticalAlignment = Alignment.CenterVertically) {
 
                 if (isRecommended)
-                    IconButton(
+                    SongBadge(
                         icon = R.drawable.smart_shuffle,
                         color = colorPalette.accent,
-                        enabled = true,
-                        onClick = noOp,
-                        modifier = Modifier.size(18.dp)
+                        size = 18.dp,
+                        contentDescription = stringResource(R.string.mobile_home_recommended_badge)
                     )
 
                 if (mediaItem.isRelated)
-                    IconButton(
+                    SongBadge(
                         icon = R.drawable.circle_arrow,
                         color = colorPalette.accent,
-                        enabled = true,
-                        onClick = noOp,
-                        modifier = Modifier.size(14.dp)
+                        size = 14.dp,
+                        contentDescription = stringResource(R.string.mobile_home_related_badge)
                     )
 
                 if (playlistindicator && songPlaylist > 0) {
@@ -399,26 +401,21 @@ fun SongItem(
                         icon = R.drawable.add_in_playlist,
                         color = playlistIconColor,
                         enabled = true,
-                        onClick = noOp,
+                        onClick = onPlaylistIconClick,
+                        onLongClick = onPlaylistIconLongClick,
+                        contentDescription = stringResource(R.string.add_to_playlist),
                         modifier = Modifier
-                            .size(14.dp)
                             .background(colorPalette().accent, CircleShape)
-                            .padding(all = 3.dp)
-                            .combinedClickable(
-                                onClick = onPlaylistIconClick,
-                                onLongClick = onPlaylistIconLongClick
-                            )
                     )
                     Spacer(modifier = Modifier.padding(horizontal = 3.dp))
                 }
 
                 if (mediaItem.isExplicit)
-                    IconButton(
+                    SongBadge(
                         icon = R.drawable.explicit,
                         color = colorPalette.text,
-                        enabled = true,
-                        onClick = noOp,
-                        modifier = Modifier.size(18.dp)
+                        size = 18.dp,
+                        contentDescription = stringResource(R.string.explicit)
                     )
 
                 BasicText(
@@ -459,42 +456,38 @@ fun SongItem(
                 Spacer(modifier = Modifier.padding(horizontal = 4.dp))
 
                 // Icona isolata: non partecipa al layout della Row
-                Box(
-                    modifier = Modifier
-                        .size(20.dp)
-                        .clipToBounds()
-                ) {
+                Box {
                     val song = mediaItem.asSong
                     when {
-                        isUnplayableTrack -> IconButton(
+                        isUnplayableTrack -> SongBadge(
                             icon = R.drawable.alert_circle,
                             color = colorPalette.red.copy(alpha = 0.55f),
-                            enabled = true,
-                            onClick = noOp,
+                            size = 20.dp,
+                            contentDescription = stringResource(R.string.mobile_home_unavailable_badge)
                         )
-                        song.isExclusivelyLocal && !song.isSpotifyTrack && !song.isDeezerTrack -> IconButton(
+                        song.isExclusivelyLocal && !song.isSpotifyTrack && !song.isDeezerTrack -> SongBadge(
                             icon = R.drawable.folder,
                             color = colorPalette.accent,
-                            enabled = true,
-                            onClick = noOp,
+                            size = 20.dp,
+                            contentDescription = stringResource(R.string.mobile_home_local_badge)
                         )
-                        song.isSpotifyTrack -> IconButton(
+                        song.isSpotifyTrack -> SongBadge(
                             icon = R.drawable.alert,
                             color = colorPalette.accent,
-                            enabled = true,
-                            onClick = noOp,
+                            size = 20.dp,
+                            contentDescription = "Spotify"
                         )
-                        song.isWebDav -> IconButton(
+                        song.isWebDav -> SongBadge(
                             icon = R.drawable.cloud,
                             color = colorPalette.accent,
-                            enabled = true,
-                            onClick = noOp,
+                            size = 20.dp,
+                            contentDescription = "WebDAV"
                         )
-                        song.isDeezerTrack -> IconButton(
+                        song.isDeezerTrack -> SongBadge(
                             icon = R.drawable.alert,
                             color = colorPalette.accent,
-                            enabled = true,
-                            onClick = noOp,
+                            size = 20.dp,
+                            contentDescription = "Deezer"
                         )
                         else -> MusicVaultButton(song)
                     }
@@ -503,6 +496,16 @@ fun SongItem(
             }
         }
     }
+}
+
+@Composable
+private fun SongBadge(icon: Int, color: Color, size: Dp, contentDescription: String?, modifier: Modifier = Modifier) {
+    Image(
+        painter = painterResource(icon),
+        contentDescription = contentDescription,
+        colorFilter = ColorFilter.tint(color),
+        modifier = modifier.size(size)
+    )
 }
 
 /*

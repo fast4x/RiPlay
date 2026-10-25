@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="spotify_import_recommendations_summary">%1$d playable · %2$d pending. Pending tracks are used to personalize your recommendations.</string>
+    <string name="spotify_import_recommendations_playable_skips">Not added as playable: %1$d of %2$d tracks.</string>
+    <string name="spotify_import_recommendations_save_error">Could not save this playlist. Try importing it again.</string>
+</resources>

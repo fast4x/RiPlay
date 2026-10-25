@@ -42,6 +42,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
@@ -82,6 +83,22 @@ class MainApplication : Application(), ImageLoaderFactory {
     )
     //Si inizializza recommendationService senza strategie, in attesa che il db venga inizializzato in onCreate
     lateinit var recommendationService: RecommendationService
+
+    val playlistRecommendationService by lazy {
+        it.fast4x.riplay.extensions.playlistrecommendations.PlaylistRecommendationService(
+            scope = appScopeIO,
+            sources = Database.playlistRecommendationSources(),
+            blacklists = Database.blacklists(),
+            dislikedSongIds = Database.dislikedSongsById(),
+            preferences = appSettingsManager.activeSettings.map { settings ->
+                it.fast4x.riplay.extensions.playlistrecommendations.PlaylistRecommendationPreferences(
+                    offlineMode = settings.offlineModeEnabled,
+                    localeKey = "${settings.languageApp.tag}|${settings.contentCountry.code}"
+                )
+            },
+            networkAvailable = networkConnectivity.map { it is NetworkConnectivity.Connected }
+        )
+    }
 
 
     @OptIn(UnstableApi::class)

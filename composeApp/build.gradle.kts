@@ -1,5 +1,4 @@
 import org.gradle.kotlin.dsl.withType
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
     alias(libs.plugins.android.kmp.library)
@@ -108,132 +107,33 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
     dependsOn(generateEnvironmentConfig)
 }
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-    }
-}
-
-compose.desktop {
-    application {
-
-        mainClass = "MainKt"
-
-        version = "0.0.1"
-        group = "riplay"
-
-        nativeDistributions {
-            vendor = "RiPlay.DesktopApp"
-            description = "RiPlay Desktop Music Player"
-
-            targetFormats(TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
-            packageName = "RiPLay.DesktopApp"
-            packageVersion = "0.0.1"
-
-            /*
-            val iconsRoot = project.file("desktop-icons")
-            windows {
-                iconFile.set(iconsRoot.resolve("icon-windows.ico"))
-            }
-            macOS {
-                iconFile.set(iconsRoot.resolve("icon-mac.icns"))
-            }
-            linux {
-                iconFile.set(iconsRoot.resolve("icon-linux.png"))
-            }
-
-             */
-        }
-
-    }
-}
-
-compose.resources {
-    publicResClass = true
-    generateResClass = always
-}
-
 kotlin {
+    jvmToolchain(21)
+
     androidLibrary {
         namespace = "it.fast4x.riplay.composeapp"
         compileSdk = 37
         minSdk = 23
     }
 
-    jvm()
-
     sourceSets {
-        all {
-            languageSettings {
-                optIn("org.jetbrains.compose.resources.ExperimentalResourceApi")
-            }
-        }
-
         val commonMain by getting {
             kotlin.srcDir(generatedSrcDir)
 
             dependencies {
                 implementation(compose.runtime)
-                implementation(compose.foundation)
-                implementation(compose.material3)
                 implementation(compose.ui)
-                implementation(compose.components.resources)
-                implementation(compose.components.uiToolingPreview)
-
-                implementation(libs.ktor.client.core)
-                implementation(libs.ktor.client.okhttp)
-                implementation(libs.ktor.client.websockets)
 
                 implementation(projects.environment)
-                implementation(projects.kugou)
-                implementation(projects.lrclib)
-                implementation(projects.audiotaginfo)
-                implementation(projects.lastfm)
 
                 implementation(libs.room.runtime)
-                implementation(libs.room.sqlite.bundled)
-
-                implementation(libs.mediaplayer.kmp)
-
-                implementation(libs.navigation.kmp)
-
-                //coil3 mp
-                implementation(libs.coil.compose.core)
-                implementation(libs.coil.compose)
+                // URI helpers remain shared with the Android UI.
                 implementation(libs.coil.mp)
-
-                implementation(libs.translator)
-                implementation(libs.reorderable)
-
-                implementation(libs.fastscroller)
-                implementation(libs.fastscroller.material3)
-                implementation(libs.fastscroller.indicator)
-
             }
         }
 
-        val jvmMain by getting
-        jvmMain.dependencies {
-            implementation(compose.components.resources)
-            implementation(compose.desktop.currentOs)
-
-            implementation(libs.material.icon.desktop)
-            implementation(libs.vlcj)
-
-            val fxSuffix = "win"
-            implementation("org.openjfx:javafx-base:21.0.5:${fxSuffix}")
-            implementation("org.openjfx:javafx-graphics:21.0.5:${fxSuffix}")
-            implementation("org.openjfx:javafx-controls:21.0.5:${fxSuffix}")
-            implementation("org.openjfx:javafx-swing:21.0.5:${fxSuffix}")
-            implementation("org.openjfx:javafx-web:21.0.5:${fxSuffix}")
-            implementation("org.openjfx:javafx-media:21.0.5:${fxSuffix}")
-
-            implementation(libs.coil.network.okhttp)
-            runtimeOnly(libs.kotlinx.coroutines.swing)
-
-        }
-
         androidMain.dependencies {
+            implementation("androidx.core:core:1.18.0")
             implementation(libs.room.ktx)
             implementation(
                 fileTree(

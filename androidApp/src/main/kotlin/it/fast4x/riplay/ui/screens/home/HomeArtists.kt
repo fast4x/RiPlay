@@ -272,122 +272,124 @@ fun HomeArtists(
                 )
         ) {
             Column(Modifier.fillMaxSize()) {
-                // 1. Header Pulito: Solo Titolo e Conteggio
-                TabHeader(R.string.artists) {
-                    HeaderInfo(itemsOnDisplay.size.toString(), R.drawable.music_artist)
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-
-                // 2. Control Bar Unificata: Tabs + Sort
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // FIX:
-                    // ButtonsRow è sicuramente un LazyRow. Non serve (e causa crash)
-                    // avvolgerlo in un altro horizontalScroll.
-                    // La Box con weight(1f) fornisce il vincolo di larghezza necessario.
-                    Box(
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        ButtonsRow(
-                            buttons = buttonsList,
-                            currentValue = artistType,
-                            onValueUpdate = {
-                                coroutineScope.launch {
-                                    appSettingsManager.updateSettings(
-                                        appSettingsManager.activeSettings.value.copy(artistType = it)
-                                    )
-                                }
-                            },
-                            // FillMaxWidth assicura che il LazyRow interno occupi tutto lo spazio disponibile
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                EmbeddedLibraryControls(itemsOnDisplay.size) {
+                    // 1. Header Pulito: Solo Titolo e Conteggio
+                    TabHeader(R.string.artists) {
+                        HeaderInfo(itemsOnDisplay.size.toString(), R.drawable.music_artist)
+                        Spacer(modifier = Modifier.weight(1f))
                     }
 
-                    Spacer(modifier = Modifier.width(4.dp))
-
-                    // SORT CONTROLS
-                    var isSortExpanded by remember { mutableStateOf(false) }
-
-                    // Timer per auto-chiusura dopo 3 secondi di inattività
-                    LaunchedEffect(isSortExpanded) {
-                        if (isSortExpanded) {
-                            delay(3000)
-                            isSortExpanded = false
-                        }
-                    }
-
+                    // 2. Control Bar Unificata: Tabs + Sort
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            // Animazione della larghezza quando si espande/contrae
-                            .animateContentSize(animationSpec = tween(durationMillis = 300))
-                            .clip(getRoundnessShape())
-                            .background(colorPalette().background1.copy(alpha = 0.5f))
-                            .clickable {
-                                // Se è espanso -> Apre il menu ordinamento
-                                // Se è chiuso -> Espande il chip
-                                if (isSortExpanded) {
-                                    menuState.display { sortMenu() }
-                                } else {
-                                    isSortExpanded = true
-                                }
-                            }
-                            .padding(horizontal = 6.dp, vertical = 6.dp)
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // TESTO dell'ordinamento (Animato)
-                        AnimatedVisibility(
-                            visible = isSortExpanded,
-                            enter = fadeIn(tween(200)) + expandHorizontally(expandFrom = Alignment.Start),
-                            exit = fadeOut(tween(200)) + shrinkHorizontally(shrinkTowards = Alignment.Start)
+                        // FIX:
+                        // ButtonsRow è sicuramente un LazyRow. Non serve (e causa crash)
+                        // avvolgerlo in un altro horizontalScroll.
+                        // La Box con weight(1f) fornisce il vincolo di larghezza necessario.
+                        Box(
+                            modifier = Modifier.weight(1f)
                         ) {
-                            Text(
-                                text = stringResource(sortBy.textId),
-                                style = typography().xs,
-                                color = colorPalette().textSecondary,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.padding(end = 4.dp)
+                            ButtonsRow(
+                                buttons = buttonsList,
+                                currentValue = artistType,
+                                onValueUpdate = {
+                                    coroutineScope.launch {
+                                        appSettingsManager.updateSettings(
+                                            appSettingsManager.activeSettings.value.copy(artistType = it)
+                                        )
+                                    }
+                                },
+                                // FillMaxWidth assicura che il LazyRow interno occupi tutto lo spazio disponibile
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
 
-                        Spacer(modifier = Modifier.width(2.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
 
-                        HeaderIconButton(
-                            icon = R.drawable.arrow_up,
-                            color = colorPalette().text,
-                            onClick = {
-                                // Cliccando la freccia:
-                                // Se espanso -> Inverte ordine (e resetta timer)
-                                // Se chiuso -> Espande il chip
-                                if (isSortExpanded) {
-                                    coroutineScope.launch {
-                                        appSettingsManager.updateSettings(
-                                            appSettingsManager.activeSettings.value.copy(artistSortOrder = !sortOrder)
+                        // SORT CONTROLS
+                        var isSortExpanded by remember { mutableStateOf(false) }
 
-                                        )
-                                    }
-                                } else {
-                                    isSortExpanded = true
-                                }
-                            },
-                            onLongClick = { menuState.display { sortMenu() } },
+                        // Timer per auto-chiusura dopo 3 secondi di inattività
+                        LaunchedEffect(isSortExpanded) {
+                            if (isSortExpanded) {
+                                delay(3000)
+                                isSortExpanded = false
+                            }
+                        }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
-                                .graphicsLayer { rotationZ = sortOrderIconRotation }
+                                // Animazione della larghezza quando si espande/contrae
+                                .animateContentSize(animationSpec = tween(durationMillis = 300))
+                                .clip(getRoundnessShape())
+                                .background(colorPalette().background1.copy(alpha = 0.5f))
+                                .clickable {
+                                    // Se è espanso -> Apre il menu ordinamento
+                                    // Se è chiuso -> Espande il chip
+                                    if (isSortExpanded) {
+                                        menuState.display { sortMenu() }
+                                    } else {
+                                        isSortExpanded = true
+                                    }
+                                }
+                                .padding(horizontal = 6.dp, vertical = 6.dp)
+                        ) {
+                            // TESTO dell'ordinamento (Animato)
+                            AnimatedVisibility(
+                                visible = isSortExpanded,
+                                enter = fadeIn(tween(200)) + expandHorizontally(expandFrom = Alignment.Start),
+                                exit = fadeOut(tween(200)) + shrinkHorizontally(shrinkTowards = Alignment.Start)
+                            ) {
+                                Text(
+                                    text = stringResource(sortBy.textId),
+                                    style = typography().xs,
+                                    color = colorPalette().textSecondary,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.padding(end = 4.dp)
+                                )
+                            }
 
-                        )
+                            Spacer(modifier = Modifier.width(2.dp))
+
+                            HeaderIconButton(
+                                icon = R.drawable.arrow_up,
+                                color = colorPalette().text,
+                                onClick = {
+                                    // Cliccando la freccia:
+                                    // Se espanso -> Inverte ordine (e resetta timer)
+                                    // Se chiuso -> Espande il chip
+                                    if (isSortExpanded) {
+                                        coroutineScope.launch {
+                                            appSettingsManager.updateSettings(
+                                                appSettingsManager.activeSettings.value.copy(artistSortOrder = !sortOrder)
+
+                                            )
+                                        }
+                                    } else {
+                                        isSortExpanded = true
+                                    }
+                                },
+                                onLongClick = { menuState.display { sortMenu() } },
+                                modifier = Modifier
+                                    .graphicsLayer { rotationZ = sortOrderIconRotation }
+
+                            )
+                        }
                     }
+
+                    // 3. Toolbar delle azioni (Sync, Random, Shuffle, etc.)
+                    TabToolBar.Buttons(search, randomizer, shuffle, itemSize, viewType)
+
+                    // 4. Search Bar
+                    search.SearchBar(this)
                 }
-
-                // 3. Toolbar delle azioni (Sync, Random, Shuffle, etc.)
-                TabToolBar.Buttons(search, randomizer, shuffle, itemSize, viewType)
-
-                // 4. Search Bar
-                search.SearchBar(this)
 
                 // 5. Contenuto (Lista o Griglia)
                 if (itemsOnDisplay.isEmpty()) {

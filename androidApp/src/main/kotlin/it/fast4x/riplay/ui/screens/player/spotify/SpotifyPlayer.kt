@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,16 +19,20 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.material3.ripple
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -49,10 +54,20 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.setProgress
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -151,8 +166,10 @@ fun SpotifyPlayer(
     // ---------- Shuffle / Repeat ----------
     var shuffle by remember { mutableStateOf(binder.hybridPlayer.shuffleModeEnabled) }
     val loop = appSettings.queueLoopType
+    val dismissThreshold = with(LocalDensity.current) { 96.dp.toPx() }
+    val artworkSwipeThreshold = with(LocalDensity.current) { 64.dp.toPx() }
 
-    Box(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .background(
@@ -163,21 +180,22 @@ fun SpotifyPlayer(
                 )
             )
             .pointerInput(Unit) {
-                // Deslizar hacia abajo cierra (como Spotify)
-                var total = 0f
-                detectVerticalDragGestures(
-                    onDragStart = { total = 0f },
-                    onDragEnd = { if (total > 300f) onDismiss() },
-                    onVerticalDrag = { _, dy -> total += dy }
-                )
-            }
+                // The full-screen surface also blocks taps outside the centered content.
+                detectTapGestures { }
+            },
+        contentAlignment = Alignment.TopCenter
     ) {
+        val largeText = LocalDensity.current.fontScale > 1.3f
+        val compactHeight = maxHeight < 600.dp || largeText
+        val artworkSize = (maxWidth.coerceAtMost(480.dp) - 48.dp)
+            .coerceAtMost(maxHeight * (if (largeText) 0.26f else 0.42f)).coerceAtLeast(96.dp)
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .widthIn(max = 480.dp)
+                .fillMaxWidth()
+                .safeDrawingPadding()
+                .imePadding()
                 .verticalScroll(rememberScrollState())
-                .statusBarsPadding()
-                .navigationBarsPadding()
                 .padding(horizontal = 24.dp)
         ) {
             // ---------- Barra superior ----------
@@ -185,16 +203,31 @@ fun SpotifyPlayer(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
+                    .heightIn(min = 56.dp)
+                    .pointerInput(onDismiss, dismissThreshold) {
+                        var total = 0f
+                        detectVerticalDragGestures(
+                            onDragStart = { total = 0f },
+                            onDragCancel = { total = 0f },
+                            onDragEnd = { if (total > dismissThreshold) onDismiss() },
+                            onVerticalDrag = { change, dy ->
+                                change.consume()
+                                total += dy
+                            }
+                        )
+                    }
             ) {
-                PlayerIcon(R.drawable.chevron_down, 28) { onDismiss() }
+                PlayerIcon(R.drawable.chevron_down, 28,
+                    description = stringResource(R.string.mobile_player_collapse)) { onDismiss() }
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.weight(1f)
                 ) {
                     BasicText(
-                        text = "PLAYING FROM",
-                        style = typography().xxxs.semiBold.copy(color = Color.White, letterSpacing = 1.sp)
+                        text = stringResource(R.string.mobile_player_playing_from),
+                        style = typography().xxs.semiBold.copy(color = Color.White, letterSpacing = 1.sp),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                     BasicText(
                         text = mediaItem.mediaMetadata.albumTitle?.toString()
@@ -204,7 +237,8 @@ fun SpotifyPlayer(
                         style = typography().xxs.bold.copy(color = Color.White)
                     )
                 }
-                PlayerIcon(R.drawable.ellipsis_vertical, 24) {
+                PlayerIcon(R.drawable.ellipsis_vertical, 24,
+                    description = stringResource(R.string.mobile_player_more)) {
                     menuState.display {
                         PlayerMenu(
                             navController = navController,
@@ -221,37 +255,41 @@ fun SpotifyPlayer(
                 }
             }
 
-            Spacer(Modifier.height(28.dp))
+            Spacer(Modifier.height(if (compactHeight) 12.dp else 24.dp))
 
             // ---------- Carátula (deslizar = anterior/siguiente) ----------
             var dragX by remember { mutableFloatStateOf(0f) }
             AsyncImage(
                 model = artworkUrl,
-                contentDescription = null,
+                contentDescription = stringResource(R.string.mobile_player_artwork,
+                    cleanPrefix(mediaItem.mediaMetadata.title?.toString() ?: "")),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f)
+                    .align(Alignment.CenterHorizontally)
+                    .size(artworkSize)
                     .offset { IntOffset((dragX / 3f).roundToInt(), 0) }
                     .shadow(16.dp, RoundedCornerShape(8.dp))
                     .clip(RoundedCornerShape(8.dp))
                     .background(Encore.SurfaceElevated)
-                    .pointerInput(mediaItem.mediaId) {
+                    .pointerInput(mediaItem.mediaId, artworkSwipeThreshold) {
                         detectHorizontalDragGestures(
                             onDragEnd = {
                                 when {
-                                    dragX < -150f -> binder.hybridPlayer.seekToNext()
-                                    dragX > 150f -> binder.hybridPlayer.seekToPrevious()
+                                    dragX < -artworkSwipeThreshold -> binder.hybridPlayer.seekToNext()
+                                    dragX > artworkSwipeThreshold -> binder.hybridPlayer.seekToPrevious()
                                 }
                                 dragX = 0f
                             },
                             onDragCancel = { dragX = 0f },
-                            onHorizontalDrag = { _, dx -> dragX += dx }
+                            onHorizontalDrag = { change, dx ->
+                                change.consume()
+                                dragX += dx
+                            }
                         )
                     }
             )
 
-            Spacer(Modifier.height(36.dp))
+            Spacer(Modifier.height(if (compactHeight) 20.dp else 32.dp))
 
             // ---------- Título / artista / me gusta ----------
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -274,7 +312,8 @@ fun SpotifyPlayer(
                 PlayerIcon(
                     if (isLiked) R.drawable.heart else R.drawable.heart_outline,
                     26,
-                    tint = if (isLiked) Encore.Green else Color.White
+                    tint = if (isLiked) Encore.Green else Color.White,
+                    description = stringResource(if (isLiked) R.string.mobile_player_unlike else R.string.mobile_player_like)
                 ) {
                     if (!isYtSyncEnabled()) mediaItemToggleLike(mediaItem)
                     else scope.launch(Dispatchers.IO) {
@@ -289,12 +328,21 @@ fun SpotifyPlayer(
             val duration = positionAndDuration.second.absoluteValue.coerceAtLeast(1L)
             var seekFraction by remember { mutableStateOf<Float?>(null) }
             val fraction = seekFraction ?: (positionAndDuration.first.toFloat() / duration).coerceIn(0f, 1f)
+            val seekDescription = stringResource(R.string.mobile_player_seek)
 
             BoxWithConstraints(
                 contentAlignment = Alignment.CenterStart,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(20.dp)
+                    .height(48.dp)
+                    .semantics {
+                        contentDescription = seekDescription
+                        progressBarRangeInfo = ProgressBarRangeInfo(fraction, 0f..1f)
+                        setProgress { value ->
+                            binder.hybridPlayer.seekTo((value.coerceIn(0f, 1f) * duration).toLong())
+                            true
+                        }
+                    }
                     .pointerInput(duration) {
                         detectTapGestures { o ->
                             binder.hybridPlayer.seekTo(((o.x / size.width).coerceIn(0f, 1f) * duration).toLong())
@@ -356,32 +404,42 @@ fun SpotifyPlayer(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                ToggleIcon(R.drawable.shuffle, active = shuffle) {
+                ToggleIcon(R.drawable.shuffle, active = shuffle,
+                    description = stringResource(R.string.mobile_player_shuffle),
+                    state = stringResource(if (shuffle) R.string.mobile_player_on else R.string.mobile_player_off)) {
                     shuffle = !shuffle
                     binder.hybridPlayer.shuffleModeEnabled = shuffle
                 }
-                PlayerIcon(R.drawable.play_skip_back, 36) { binder.hybridPlayer.seekToPrevious() }
+                PlayerIcon(R.drawable.play_skip_back, 30,
+                    description = stringResource(R.string.mobile_player_previous)) { binder.hybridPlayer.seekToPrevious() }
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .size(64.dp)
                         .clip(CircleShape)
                         .background(Color.White)
-                        .clickable {
+                        .playerTap {
                             if (isPlaying) binder.hybridPlayer.pause() else binder.hybridPlayer.play()
                         }
                 ) {
                     Image(
                         painter = painterResource(if (isPlaying) R.drawable.pause else R.drawable.play),
-                        contentDescription = null,
+                        contentDescription = stringResource(if (isPlaying) R.string.mobile_player_pause else R.string.mobile_player_play),
                         colorFilter = ColorFilter.tint(Color.Black),
                         modifier = Modifier.size(28.dp)
                     )
                 }
-                PlayerIcon(R.drawable.play_skip_forward, 36) { binder.hybridPlayer.seekToNext() }
+                PlayerIcon(R.drawable.play_skip_forward, 30,
+                    description = stringResource(R.string.mobile_player_next)) { binder.hybridPlayer.seekToNext() }
                 ToggleIcon(
                     if (loop == QueueLoopType.RepeatOne) R.drawable.repeatone else R.drawable.repeat,
-                    active = loop != QueueLoopType.Default
+                    active = loop != QueueLoopType.Default,
+                    description = stringResource(R.string.mobile_player_repeat),
+                    state = stringResource(when (loop) {
+                        QueueLoopType.Default -> R.string.mobile_player_off
+                        QueueLoopType.RepeatAll -> R.string.mobile_player_repeat_all
+                        QueueLoopType.RepeatOne -> R.string.mobile_player_repeat_one
+                    })
                 ) {
                     // Spotify: apagado → repetir todo → repetir una
                     val next = when (loop) {
@@ -401,7 +459,8 @@ fun SpotifyPlayer(
 
             // ---------- Compartir / Cola ----------
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                PlayerIcon(R.drawable.share_social, 22, tint = Encore.TextSecondary) {
+                PlayerIcon(R.drawable.share_social, 22, tint = Encore.TextSecondary,
+                    description = stringResource(R.string.mobile_player_share)) {
                     val send = Intent(Intent.ACTION_SEND).apply {
                         type = "text/plain"
                         putExtra(Intent.EXTRA_TEXT, "https://music.youtube.com/watch?v=${mediaItem.mediaId}")
@@ -409,7 +468,8 @@ fun SpotifyPlayer(
                     context.startActivity(Intent.createChooser(send, null))
                 }
                 Spacer(Modifier.weight(1f))
-                PlayerIcon(R.drawable.playlist, 22, tint = Encore.TextSecondary) {
+                PlayerIcon(R.drawable.playlist, 22, tint = Encore.TextSecondary,
+                    description = stringResource(R.string.mobile_player_queue)) {
                     onDismiss()
                     navController.navigate(NavRoutes.queue.name)
                 }
@@ -426,7 +486,7 @@ fun SpotifyPlayer(
                     .padding(16.dp)
             ) {
                 BasicText(
-                    text = "Lyrics",
+                    text = stringResource(R.string.mobile_player_lyrics),
                     style = typography().m.bold.copy(color = Color.White)
                 )
                 Spacer(Modifier.height(8.dp))
@@ -453,17 +513,23 @@ fun SpotifyPlayer(
 }
 
 @Composable
-private fun PlayerIcon(iconId: Int, sizeDp: Int, tint: Color = Color.White, onClick: () -> Unit) {
+private fun PlayerIcon(
+    iconId: Int,
+    sizeDp: Int,
+    tint: Color = Color.White,
+    description: String,
+    onClick: () -> Unit
+) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
-            .size((sizeDp + 16).dp)
+            .size(48.dp)
             .clip(CircleShape)
-            .clickable(onClick = onClick)
+            .playerTap(onClick)
     ) {
         Image(
             painter = painterResource(iconId),
-            contentDescription = null,
+            contentDescription = description,
             colorFilter = ColorFilter.tint(tint),
             modifier = Modifier.size(sizeDp.dp)
         )
@@ -472,17 +538,19 @@ private fun PlayerIcon(iconId: Int, sizeDp: Int, tint: Color = Color.White, onCl
 
 /** Icono verde con puntito debajo cuando está activo (shuffle / repeat). */
 @Composable
-private fun ToggleIcon(iconId: Int, active: Boolean, onClick: () -> Unit) {
+private fun ToggleIcon(iconId: Int, active: Boolean, description: String, state: String, onClick: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
         modifier = Modifier
+            .size(48.dp)
             .clip(CircleShape)
-            .clickable(onClick = onClick)
-            .padding(8.dp)
+            .semantics(mergeDescendants = true) { stateDescription = state }
+            .playerTap(onClick)
     ) {
         Image(
             painter = painterResource(iconId),
-            contentDescription = null,
+            contentDescription = description,
             colorFilter = ColorFilter.tint(if (active) Encore.Green else Color.White),
             modifier = Modifier.size(24.dp)
         )
@@ -494,6 +562,23 @@ private fun ToggleIcon(iconId: Int, active: Boolean, onClick: () -> Unit) {
                 .background(if (active) Encore.Green else Color.Transparent)
         )
     }
+}
+
+@Composable
+private fun Modifier.playerTap(onClick: () -> Unit): Modifier {
+    val interactions = remember { MutableInteractionSource() }
+    val pressed by interactions.collectIsPressedAsState()
+    val scale by animateFloatAsState(if (pressed) 0.94f else 1f, tween(100), label = "playerPress")
+    return graphicsLayer {
+        scaleX = scale
+        scaleY = scale
+        alpha = if (pressed) 0.8f else 1f
+    }.clickable(
+        interactionSource = interactions,
+        indication = ripple(),
+        role = Role.Button,
+        onClick = onClick
+    )
 }
 
 private fun formatMs(ms: Long): String {

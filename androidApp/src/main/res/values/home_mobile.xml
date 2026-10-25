@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mobile_home_all">All</string>
+    <string name="mobile_home_music">Music</string>
+    <string name="mobile_home_podcasts">Podcasts</string>
+    <string name="mobile_home_recently_played">Recently played</string>
+    <string name="mobile_home_artist">Artist</string>
+    <string name="mobile_home_search">Search</string>
+    <string name="mobile_home_search_prompt">What do you want to listen to?</string>
+    <string name="mobile_home_browse_all">Browse all</string>
+    <string name="mobile_home_library">Your Library</string>
+    <string name="mobile_home_playlists">Playlists</string>
+    <string name="mobile_home_artists">Artists</string>
+    <string name="mobile_home_albums">Albums</string>
+    <string name="mobile_home_songs">Songs</string>
+    <string name="mobile_home_liked_songs">Liked Songs</string>
+    <string name="mobile_home_playlist">Playlist</string>
+    <string name="mobile_home_import_music">Import music</string>
+    <string name="mobile_home_import_link">Import from Spotify link</string>
+    <string name="mobile_home_import_link_hint">Paste a public playlist link from Spotify</string>
+    <string name="mobile_home_import_csv">Import Spotify CSV</string>
+    <string name="mobile_home_csv_hint">CSV file from exportify.net</string>
+    <string name="mobile_home_matching">Matching songs… %1$d/%2$d</string>
+    <string name="mobile_home_unmatched">%1$d songs could not be found</string>
+    <string name="mobile_home_liked_badge">Liked song</string>
+    <string name="mobile_home_video_badge">Video</string>
+    <string name="mobile_home_recommended_badge">Recommended song</string>
+    <string name="mobile_home_related_badge">Related song</string>
+    <string name="mobile_home_unavailable_badge">Unavailable song</string>
+    <string name="mobile_home_local_badge">On this device</string>
+    <string name="mobile_home_enable_block">Enable blocking for %1$s</string>
+    <string name="mobile_home_disable_block">Disable blocking for %1$s</string>
+    <string name="mobile_home_remove_block">Remove %1$s from the blacklist</string>
+    <string name="mobile_home_item_count">Items: %1$d</string>
+    <string name="mobile_home_library_options">Options</string>
+</resources>

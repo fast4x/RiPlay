@@ -100,8 +100,7 @@ fun UiSettings(
     val maxStatisticsItems = appSettings.maxStatisticsItems
     val showStatsListeningTime = appSettings.showStatsListeningTime
     val maxTopPlaylistItems = appSettings.maxTopPlaylistItems
-    val navigationBarPosition = appSettings.navigationBarPosition
-    val navigationBarType = appSettings.navigationBarType
+    val navigationBarPosition = NavigationBarPosition.current()
     val search = Search.init()
     val showFavoritesPlaylist = appSettings.showFavoritesPlaylist
     val showMyTopPlaylist = appSettings.showMyTopPlaylist
@@ -135,7 +134,6 @@ fun UiSettings(
     val customThemeDark_Accent = appearanceSettings.customThemeDark_Accent
     var resetCustomLightThemeDialog by rememberSaveable { mutableStateOf(false) }
     var resetCustomDarkThemeDialog by rememberSaveable { mutableStateOf(false) }
-    val playerPosition = appSettings.playerPosition
     val messageType = appSettings.messageType
     val queueSwipeLeftAction = appSettings.queueSwipeLeftAction
     val queueSwipeRightAction = appSettings.queueSwipeRightAction
@@ -725,63 +723,6 @@ fun UiSettings(
                         },
                         valueText = { it.displayName }
                     )
-
-                if (search.input.isBlank() || stringResource(R.string.navigation_bar_position).contains(
-                        search.input,
-                        true
-                    )
-                )
-                    EnumValueSelectorSettingsEntry(
-                        title = stringResource(R.string.navigation_bar_position),
-                        selectedValue = navigationBarPosition,
-                        onValueSelected = {
-                            coroutineScope.launch {
-                                val new = appSettings.copy(navigationBarPosition = it)
-                                appSettingsManager.updateSettings(new)
-                            }
-                        },
-                        // As of version 0.6.53, changing navigation bar to top or bottom
-                        // while using ViMusic theme breaks the UI
-                        //isEnabled = uiType != UiType.ViMusic,
-                        valueText = { it.displayName }
-                    )
-
-                if (search.input.isBlank() || stringResource(R.string.navigation_bar_type).contains(
-                        search.input,
-                        true
-                    )
-                )
-                    EnumValueSelectorSettingsEntry(
-                        title = stringResource(R.string.navigation_bar_type),
-                        selectedValue = navigationBarType,
-                        onValueSelected = {
-                            coroutineScope.launch {
-                                val new = appSettingsManager.activeSettings.value.copy(navigationBarType = it)
-                                appSettingsManager.updateSettings(new)
-                            }
-                        },
-                        valueText = { it.displayName }
-                    )
-
-                if (UiType.RiPlay.isCurrent()) {
-                    if (search.input.isBlank() || stringResource(R.string.player_position).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        EnumValueSelectorSettingsEntry(
-                            title = stringResource(R.string.player_position),
-                            selectedValue = playerPosition,
-                            onValueSelected = {
-                                coroutineScope.launch {
-                                    val new =
-                                        appSettingsManager.activeSettings.value.copy(playerPosition = it)
-                                    appSettingsManager.updateSettings(new)
-                                }
-                            },
-                            valueText = { it.displayName }
-                        )
-                }
 
                 if (search.input.isBlank() || stringResource(R.string.show_upnext_in_miniplayer).contains(
                         search.input,

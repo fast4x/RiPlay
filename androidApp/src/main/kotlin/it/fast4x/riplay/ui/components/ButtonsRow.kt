@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -56,13 +57,13 @@ fun <E> ButtonsRow(
     Box(
         modifier = modifier
             //.fillMaxWidth()
-            .height(40.dp)
+            .heightIn(min = 48.dp)
     ) {
 
         Row(
             modifier = Modifier
                 //.fillMaxWidth()
-                .height(40.dp)
+                .heightIn(min = 48.dp)
                 .horizontalScroll(scrollState)
                 .padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -80,7 +81,7 @@ fun <E> ButtonsRow(
                         )
                     },
                     selected = currentValue == value,
-                    modifier = Modifier.height(32.dp),
+                    modifier = Modifier.heightIn(min = 48.dp),
                     colors = FilterChipDefaults.filterChipColors(
                         containerColor = Color.Transparent,
                         labelColor = colorPalette().textSecondary,

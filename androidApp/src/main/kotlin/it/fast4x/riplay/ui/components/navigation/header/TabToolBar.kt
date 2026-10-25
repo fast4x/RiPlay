@@ -6,9 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,10 +29,8 @@ object TabToolBar {
     fun Buttons(buttons: List<Button>) {
         val configuration = LocalConfiguration.current
         val availableWidth = configuration.screenWidthDp.dp - (HORIZONTAL_PADDING * 2)
-        val canDisplay = (availableWidth / TOOLBAR_ICON_SIZE).toInt()
-        val isClustered by rememberSaveable(canDisplay) {
-            mutableStateOf(buttons.size > canDisplay)
-        }
+        val canDisplay = (availableWidth / 48.dp).toInt().coerceAtLeast(2)
+        val isClustered = buttons.size > canDisplay
 
         val ellipsisMenu = EllipsisMenuComponent.init {
             buttons.takeLast((buttons.size - canDisplay + 1).coerceAtLeast(0))

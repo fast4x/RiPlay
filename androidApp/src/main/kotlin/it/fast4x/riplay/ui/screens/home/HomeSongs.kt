@@ -668,421 +668,423 @@ fun HomeSongs(
                     .fillMaxWidth()
                     .background(colorPalette().background0)) {
 
-                    // 1. Modern Header (Clean)
-                    TabHeader(R.string.songs) {
-                        HeaderInfo(
-                            title = if (builtInPlaylist == BuiltInPlaylist.OnDevice) "${filteredSongs.size}" else "${items.size}",
-                            iconId = R.drawable.musical_notes
-                        )
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
-
-                    // 2. Control Bar (Tabs + Sort)
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(modifier = Modifier.weight(1f)) {
-                            ButtonsRow(
-                                buttons = buttonsList,
-                                currentValue = builtInPlaylist,
-                                onValueUpdate = {
-                                    coroutineScope.launch {
-                                        appSettingsManager.updateSettings(
-                                            appSettingsManager.activeSettings.value.copy(
-                                                builtInPlaylist = it
-                                            )
-                                        )
-                                    }
-                                },
-                                modifier = Modifier.fillMaxWidth()
+                    EmbeddedLibraryControls(if (builtInPlaylist == BuiltInPlaylist.OnDevice) filteredSongs.size else items.size) {
+                        // 1. Modern Header (Clean)
+                        TabHeader(R.string.songs) {
+                            HeaderInfo(
+                                title = if (builtInPlaylist == BuiltInPlaylist.OnDevice) "${filteredSongs.size}" else "${items.size}",
+                                iconId = R.drawable.musical_notes
                             )
+                            Spacer(modifier = Modifier.weight(1f))
                         }
 
-                        Spacer(modifier = Modifier.width(4.dp))
-
-                        // Sort Controls (Hidden for Top playlist)
-                        if (builtInPlaylist != BuiltInPlaylist.Top) {
-
-                            // Stato per gestire l'espansione del chip
-                            var isSortExpanded by remember { mutableStateOf(false) }
-
-                            // Timer automatico per la chiusura
-                            LaunchedEffect(isSortExpanded) {
-                                if (isSortExpanded) {
-                                    delay(3000) // Aspetta 3 secondi
-                                    isSortExpanded = false // Chiudi il chip
-                                }
-                            }
-
-                            val activeSortTextId = if (builtInPlaylist == BuiltInPlaylist.OnDevice) {
-                                if (showFolders) sortByFolderOnDevice.textId else sortByOnDevice.textId
-                            } else sortBy.textId
-
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .animateContentSize(animationSpec = tween(durationMillis = 300))
-                                    .clip(getRoundnessShape())
-                                    .background(colorPalette().background1.copy(alpha = 0.8f))
-                                    .clickable {
-                                        // Ogni click (sia per aprire che per interagire) resetta il timer
-                                        if (isSortExpanded) {
-                                            menuState.display { sortMenu() }
-                                        } else {
-                                            isSortExpanded = true
-                                        }
-                                    }
-                                    .padding(horizontal = 6.dp, vertical = 6.dp)
-                            ) {
-                                AnimatedVisibility(
-                                    visible = isSortExpanded,
-                                    enter = fadeIn(tween(200)) + expandHorizontally(expandFrom = Alignment.Start),
-                                    exit = fadeOut(tween(200)) + shrinkHorizontally(shrinkTowards = Alignment.Start)
-                                ) {
-                                    Text(
-                                        text = stringResource(activeSortTextId),
-                                        style = typography().xs,
-                                        color = colorPalette().textSecondary,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier.padding(end = 4.dp)
-                                    )
-                                }
-
-                                HeaderIconButton(
-                                    icon = R.drawable.arrow_up,
-                                    color = colorPalette().text,
-                                    onClick = {
-
-                                        // Cliccando la freccia (anche qui) il timer si resetta perché lo stato rimane true
-                                        if (isSortExpanded) {
-                                            coroutineScope.launch {
-                                                appSettingsManager.updateSettings(
-                                                    if (builtInPlaylist != BuiltInPlaylist.OnDevice)
-                                                        appSettingsManager.activeSettings.value.copy(songSortOrder = !sortOrder)
-                                                else
-                                                        appSettingsManager.activeSettings.value.copy(songSortOrder = !sortOrderOnDevice)
+                        // 2. Control Bar (Tabs + Sort)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(modifier = Modifier.weight(1f)) {
+                                ButtonsRow(
+                                    buttons = buttonsList,
+                                    currentValue = builtInPlaylist,
+                                    onValueUpdate = {
+                                        coroutineScope.launch {
+                                            appSettingsManager.updateSettings(
+                                                appSettingsManager.activeSettings.value.copy(
+                                                    builtInPlaylist = it
                                                 )
-                                            }
-                                        } else {
-                                            isSortExpanded = true
+                                            )
                                         }
                                     },
-                                    onLongClick = { menuState.display { sortMenu() } },
-                                    modifier = Modifier
-                                        .graphicsLayer { rotationZ = sortOrderIconRotation }
+                                    modifier = Modifier.fillMaxWidth()
                                 )
                             }
-                        }
-                    }
 
-                    // 3. Action Toolbar
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceAround,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .padding(horizontal = 12.dp)
-                            .padding(vertical = 4.dp)
-                            .fillMaxWidth()
-                    ) {
-                        if (builtInPlaylist == BuiltInPlaylist.Top) {
-                            HeaderIconButton(
-                                icon = R.drawable.stat, color = colorPalette().text,
-                                onClick = {
-                                    menuState.display {
-                                        PeriodMenu(onDismiss = {
-                                            coroutineScope.launch {
-                                                appSettingsManager.updateSettings(
-                                                    appSettingsManager.activeSettings.value.copy(
-                                                        topPlaylistPeriod = it
-                                                    )
-                                                )
+                            Spacer(modifier = Modifier.width(4.dp))
+
+                            // Sort Controls (Hidden for Top playlist)
+                            if (builtInPlaylist != BuiltInPlaylist.Top) {
+
+                                // Stato per gestire l'espansione del chip
+                                var isSortExpanded by remember { mutableStateOf(false) }
+
+                                // Timer automatico per la chiusura
+                                LaunchedEffect(isSortExpanded) {
+                                    if (isSortExpanded) {
+                                        delay(3000) // Aspetta 3 secondi
+                                        isSortExpanded = false // Chiudi il chip
+                                    }
+                                }
+
+                                val activeSortTextId = if (builtInPlaylist == BuiltInPlaylist.OnDevice) {
+                                    if (showFolders) sortByFolderOnDevice.textId else sortByOnDevice.textId
+                                } else sortBy.textId
+
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .animateContentSize(animationSpec = tween(durationMillis = 300))
+                                        .clip(getRoundnessShape())
+                                        .background(colorPalette().background1.copy(alpha = 0.8f))
+                                        .clickable {
+                                            // Ogni click (sia per aprire che per interagire) resetta il timer
+                                            if (isSortExpanded) {
+                                                menuState.display { sortMenu() }
+                                            } else {
+                                                isSortExpanded = true
                                             }
-                                            menuState.hide()
-                                        })
+                                        }
+                                        .padding(horizontal = 6.dp, vertical = 6.dp)
+                                ) {
+                                    AnimatedVisibility(
+                                        visible = isSortExpanded,
+                                        enter = fadeIn(tween(200)) + expandHorizontally(expandFrom = Alignment.Start),
+                                        exit = fadeOut(tween(200)) + shrinkHorizontally(shrinkTowards = Alignment.Start)
+                                    ) {
+                                        Text(
+                                            text = stringResource(activeSortTextId),
+                                            style = typography().xs,
+                                            color = colorPalette().textSecondary,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                            modifier = Modifier.padding(end = 4.dp)
+                                        )
                                     }
-                                },
-                            )
-                        }
 
-                        HeaderIconButton(
-                            onClick = { searching = !searching },
-                            icon = R.drawable.search_circle,
-                            color = colorPalette().text,
-                        )
+                                    HeaderIconButton(
+                                        icon = R.drawable.arrow_up,
+                                        color = colorPalette().text,
+                                        onClick = {
 
-                        HeaderIconButton(
-                            onClick = {
-                                nowPlayingItem = -1; scrollToNowPlaying = false
-                                items.forEachIndexed { index, song ->
-                                    if (song.song.asMediaItem.mediaId == binder?.hybridPlayer?.currentMediaItem?.mediaId) nowPlayingItem = index
-                                }
-                                if (nowPlayingItem > -1) scrollToNowPlaying = true
-                            },
-                            onLongClick = { SmartMessage(context.resources.getString(R.string.info_find_the_song_that_is_playing), context = context) },
-                            icon = R.drawable.locate,
-                            //enabled = items.isNotEmpty(),
-                            color = colorPalette().text
-                        )
-                        LaunchedEffect(scrollToNowPlaying) { if (scrollToNowPlaying) lazyListState.scrollToItem(nowPlayingItem, 1); scrollToNowPlaying = false }
-
-                        // Confirmations for Likes
-                        if (showRiPlayLikeYoutubeLikeConfirmDialog) {
-                            Database.asyncTransaction { totalMinutesToLike = formatAsDuration((if (listMediaItems.isNotEmpty()) (listMediaItems.filter { Database.getLikedAt(it.mediaId) !in listOf(-1L, null) }).size else (items.filter { Database.getLikedAt(it.asMediaItem.mediaId) !in listOf(-1L, null) }).size) * 1000.toLong()) }
-                            ConfirmationDialog(
-                                text = "$totalMinutesToLike " + stringResource(R.string.do_you_really_want_to_like_all),
-                                onDismiss = { showRiPlayLikeYoutubeLikeConfirmDialog = false },
-                                onConfirm = {
-                                    showRiPlayLikeYoutubeLikeConfirmDialog = false
-                                    if (listMediaItems.isNotEmpty()) {
-                                        CoroutineScope(Dispatchers.IO).launch { addToYtLikedSongs(listMediaItems.filter { Database.getLikedAt(it.mediaId) !in listOf(-1L, null) }.map { it }) }
-                                    } else {
-                                        CoroutineScope(Dispatchers.IO).launch { addToYtLikedSongs(items.filter { Database.getLikedAt(it.asMediaItem.mediaId) !in listOf(-1L, null) }.map { it.asMediaItem }) }
-                                    }
-                                }
-                            )
-                        }
-                        if (showYoutubeLikeConfirmDialog) {
-                            songItemsToLike.clear()
-                            if (listMediaItems.isEmpty()) {
-                                items.forEachIndexed { _, song ->
-                                    if (song.song.likedAt in listOf(-1L, null)) songItemsToLike.add(song.asMediaItem)
-                                }
-                            } else {
-                                Database.asyncTransaction {
-                                    listMediaItems.forEachIndexed { _, song ->
-                                        if (Database.getLikedAt(song.mediaId) in listOf(-1L, null)) songItemsToLike.add(song)
-                                    }
+                                            // Cliccando la freccia (anche qui) il timer si resetta perché lo stato rimane true
+                                            if (isSortExpanded) {
+                                                coroutineScope.launch {
+                                                    appSettingsManager.updateSettings(
+                                                        if (builtInPlaylist != BuiltInPlaylist.OnDevice)
+                                                            appSettingsManager.activeSettings.value.copy(songSortOrder = !sortOrder)
+                                                    else
+                                                            appSettingsManager.activeSettings.value.copy(songSortOrder = !sortOrderOnDevice)
+                                                    )
+                                                }
+                                            } else {
+                                                isSortExpanded = true
+                                            }
+                                        },
+                                        onLongClick = { menuState.display { sortMenu() } },
+                                        modifier = Modifier
+                                            .graphicsLayer { rotationZ = sortOrderIconRotation }
+                                    )
                                 }
                             }
-                            totalMinutesToLike = formatAsDuration(((songItemsToLike).size * 1000).toLong())
-                            ConfirmationDialog(
-                                text = "$totalMinutesToLike " + stringResource(R.string.do_you_really_want_to_like_all),
-                                onDismiss = { showYoutubeLikeConfirmDialog = false },
-                                onConfirm = {
-                                    showYoutubeLikeConfirmDialog = false
-                                    CoroutineScope(Dispatchers.IO).launch { addToYtLikedSongs(songItemsToLike) }
-                                }
-                            )
                         }
 
-                        if (builtInPlaylist == BuiltInPlaylist.All)
-                            HeaderIconButton(
-                                onClick = { showHiddenSongs = if (showHiddenSongs == 0) -1 else 0 },
-                                onLongClick = { SmartMessage(context.resources.getString(R.string.info_show_hide_hidden_songs), context = context) },
-                                icon = if (showHiddenSongs == 0) R.drawable.eye_off else R.drawable.eye,
-                                color = colorPalette().text
-                            )
-
-                        HeaderIconButton(
-                            icon = R.drawable.shuffle,
-                            //enabled = items.any { it.song.likedAt != -1L },
-                            color = if (items.any { it.song.likedAt != -1L }) colorPalette().text else colorPalette().textDisabled,
-                            onClick = {
-                                if (builtInPlaylist == BuiltInPlaylist.OnDevice) items = visibleItems
-                                if (items.filter { it.song.likedAt != -1L }.isNotEmpty()) {
-                                    val itemsLimited = if (items.filter { it.song.likedAt != -1L }.size > maxSongsInQueue.number) items.filter { it.song.likedAt != -1L }.shuffled().take(maxSongsInQueue.number.toInt()) else items.filter { it.song.likedAt != -1L }
-                                    binder?.stopRadio()
-                                    binder?.hybridPlayer?.forcePlayFromBeginning(itemsLimited.shuffled().map(SongEntity::asMediaItem))
-                                } else {
-                                    SmartMessage(context.resources.getString(R.string.disliked_this_collection), type = PopupType.Error, context = context)
-                                }
-                            },
-                            onLongClick = { SmartMessage(context.resources.getString(R.string.info_shuffle), context = context) },
-                        )
-
-                        if (builtInPlaylist == BuiltInPlaylist.Favorites)
-                            HeaderIconButton(
-                                icon = R.drawable.random, enabled = true,
-                                color = if (autoShuffle) colorPalette().text else colorPalette().textDisabled,
-                                onClick = {
-                                    coroutineScope.launch {
-                                        appSettingsManager.updateSettings(
-                                            appSettingsManager.activeSettings.value.copy(
-                                                autoShuffle = !autoShuffle
-                                            )
-                                        )
-                                    }
-                                },
-                                onLongClick = { SmartMessage("Random sorting", context = context) },
-                            )
-
-                        if (builtInPlaylist != BuiltInPlaylist.Favorites)
-                            HeaderIconButton(
-                                icon = R.drawable.resource_import, color = colorPalette().text,
-                                onClick = {
-                                    try { importLauncher.launch(arrayOf("text/*")) }
-                                    catch (e: ActivityNotFoundException) { SmartMessage(context.resources.getString(R.string.info_not_find_app_open_doc), type = PopupType.Warning, context = context) }
-                                },
-                                onLongClick = { SmartMessage(context.resources.getString(R.string.import_favorites), context = context) },
-                            )
-
-                        if (BuiltInPlaylist.OnDevice == builtInPlaylist) {
-                            HeaderIconButton(
-                                icon = if (showFolders) R.drawable.list_view else R.drawable.grid_view,
-                                color = colorPalette().text,
-                                onClick = {
-                                    coroutineScope.launch {
-                                        appSettingsManager.updateSettings(
-                                            appSettingsManager.activeSettings.value.copy(
-                                                showFoldersOnDevice = !showFolders
-                                            )
-                                        )
-                                    }
-                                },
-                                onLongClick = { SmartMessage(context.resources.getString(R.string.viewType), context = context) },
-                            )
-                        }
-
-                        HeaderIconButton(
-                            icon = R.drawable.ellipsis_horizontal, color = colorPalette().text,
-                            onClick = {
-                                menuState.display {
-                                    PlaylistsItemMenu(
-                                        navController = navController, modifier = Modifier.fillMaxHeight(0.4f),
-                                        onDismiss = menuState::hide,
-                                        onSelectUnselect = {
-                                            selectItems = !selectItems; if (!selectItems) listMediaItems.clear()
-                                        },
-                                        onPlayNext = {
-                                            if (builtInPlaylist == BuiltInPlaylist.OnDevice) items = visibleItems
-                                            if (listMediaItems.isEmpty()) {
-                                                if (items.any { it.song.likedAt != -1L }) {
-                                                    binder?.hybridPlayer?.addNext(items.filter { it.song.likedAt != -1L }.map(SongEntity::asMediaItem), context, selectedQueue ?: defaultQueue())
-                                                } else {
-                                                    SmartMessage(context.resources.getString(R.string.disliked_this_collection), type = PopupType.Error, context = context)
-                                                }
-                                            } else {
-                                                binder?.hybridPlayer?.addNext(listMediaItems, context, selectedQueue ?: defaultQueue())
-                                                listMediaItems.clear(); selectItems = false
-                                            }
-                                        },
-                                        onEnqueue = {
-                                            if (builtInPlaylist == BuiltInPlaylist.OnDevice) items = visibleItems
-                                            if (listMediaItems.isEmpty()) {
-                                                if (items.any { it.song.likedAt != -1L }) {
-                                                    binder?.hybridPlayer?.enqueue(items.filter { it.song.likedAt != -1L }.map(SongEntity::asMediaItem), context)
-                                                } else {
-                                                    SmartMessage(context.resources.getString(R.string.disliked_this_collection), type = PopupType.Error, context = context)
-                                                }
-                                            } else {
-                                                binder?.hybridPlayer?.enqueue(listMediaItems, context)
-                                                listMediaItems.clear(); selectItems = false
-                                            }
-                                        },
-                                        onAddToPreferites = {
-                                            if (!isNetworkConnected && isYtSyncEnabled()) {
-                                                SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
-                                            } else if (!isYtSyncEnabled()) {
-                                                if (listMediaItems.isNotEmpty()) {
-                                                    Database.asyncTransaction {
-                                                        listMediaItems.filter { getLikedAt(it.mediaId) in listOf(-1L, null) }.map { Database.like(it.mediaId, System.currentTimeMillis()) }
-                                                    }
-                                                } else {
-                                                    Database.asyncTransaction {
-                                                        items.filter { getLikedAt(it.asMediaItem.mediaId) in listOf(-1L, null) }.map { Database.like(it.asMediaItem.mediaId, System.currentTimeMillis()) }
-                                                    }
-                                                }
-                                            } else {
-                                                showYoutubeLikeConfirmDialog = true
-                                            }
-                                        },
-                                        showonAddToPreferitesYoutube = isYtSyncEnabled(),
-                                        onAddToPreferitesYoutube = {
-                                            if (!isNetworkConnected) { SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error) }
-                                            else { showRiPlayLikeYoutubeLikeConfirmDialog = true }
-                                        },
-                                        onAddToPlaylist = { playlistPreview ->
-                                            if (builtInPlaylist == BuiltInPlaylist.OnDevice) items = visibleItems
-                                            position = playlistPreview.songCount.minus(1) ?: 0
-                                            if (position > 0) position++ else position = 0
-                                            val filteredItems = items.filterNot { it.asMediaItem.mediaId.startsWith(LOCAL_KEY_PREFIX) || it.song.thumbnailUrl == "" }
-                                            if ((filteredItems.size + playlistPreview.songCount) > 5000 && playlistPreview.playlist.isYoutubePlaylist && isYtSyncEnabled()) {
-                                                SmartMessage(context.resources.getString(R.string.yt_playlist_limited), context = context, type = PopupType.Error)
-                                            } else if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
-                                                items.forEachIndexed { index, song ->
-                                                    runCatching {
-                                                        CoroutineScope(Dispatchers.IO).launch {
-                                                            Database.insert(song.song.asMediaItem)
-                                                            Database.insert(SongPlaylistMap(songId = song.song.asMediaItem.mediaId, playlistId = playlistPreview.playlist.id, position = position + index).default())
-                                                        }
-                                                    }.onFailure { Timber.e("Failed addToPlaylist in HomeSongsModern ${it.stackTraceToString()}") }
-                                                }
-                                                CoroutineScope(Dispatchers.Main).launch { SmartMessage(context.resources.getString(R.string.done), type = PopupType.Success, context = context) }
-                                            } else {
-                                                CoroutineScope(Dispatchers.IO).launch {
-                                                    addToYtPlaylist(playlistPreview.playlist.id, position, playlistPreview.playlist.browseId ?: "", filteredItems.map { it.asMediaItem })
-                                                }
-                                            }
-                                        },
-                                        onExport = { isExporting = true },
-                                        disableScrollingText = disableScrollingText,
-                                    )
-                                }
-                            },
-                        )
-                    }
-
-                    // 4. Search Bar
-                    AnimatedVisibility(visible = searching) {
+                        // 3. Action Toolbar
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Bottom,
+                            horizontalArrangement = Arrangement.SpaceAround,
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
-                                .padding(all = 10.dp)
+                                .padding(horizontal = 12.dp)
+                                .padding(vertical = 4.dp)
                                 .fillMaxWidth()
                         ) {
-                            val focusRequester = remember { FocusRequester() }
-                            val focusManager = LocalFocusManager.current
-                            val keyboardController = LocalSoftwareKeyboardController.current
-
-                            LaunchedEffect(searching) { focusRequester.requestFocus() }
-
-                            BasicTextField(
-                                value = filter ?: "", onValueChange = { filter = it },
-                                textStyle = typography().xs.semiBold, singleLine = true, maxLines = 1,
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                keyboardActions = KeyboardActions(onDone = {
-                                    if (filter.isNullOrBlank()) filter = ""; focusManager.clearFocus()
-                                }),
-                                cursorBrush = SolidColor(colorPalette().text),
-                                decorationBox = { innerTextField ->
-                                    Box(contentAlignment = Alignment.CenterStart, modifier = Modifier
-                                        .weight(1f)
-                                        .padding(horizontal = 10.dp)) {
-                                        IconButton(onClick = {}, icon = R.drawable.search, color = colorPalette().favoritesIcon, modifier = Modifier
-                                            .align(Alignment.CenterStart)
-                                            .size(16.dp))
-                                    }
-                                    Box(contentAlignment = Alignment.CenterStart, modifier = Modifier
-                                        .weight(1f)
-                                        .padding(horizontal = 30.dp)) {
-                                        androidx.compose.animation.AnimatedVisibility(visible = filter?.isEmpty() ?: true, enter = fadeIn(tween(100)), exit = fadeOut(tween(100))) {
-                                            BasicText(text = stringResource(R.string.search), maxLines = 1, overflow = TextOverflow.Ellipsis, style = typography().xs.semiBold.secondary.copy(color = colorPalette().textDisabled))
+                            if (builtInPlaylist == BuiltInPlaylist.Top) {
+                                HeaderIconButton(
+                                    icon = R.drawable.stat, color = colorPalette().text,
+                                    onClick = {
+                                        menuState.display {
+                                            PeriodMenu(onDismiss = {
+                                                coroutineScope.launch {
+                                                    appSettingsManager.updateSettings(
+                                                        appSettingsManager.activeSettings.value.copy(
+                                                            topPlaylistPeriod = it
+                                                        )
+                                                    )
+                                                }
+                                                menuState.hide()
+                                            })
                                         }
-                                        innerTextField()
+                                    },
+                                )
+                            }
+
+                            HeaderIconButton(
+                                onClick = { searching = !searching },
+                                icon = R.drawable.search_circle,
+                                color = colorPalette().text,
+                            )
+
+                            HeaderIconButton(
+                                onClick = {
+                                    nowPlayingItem = -1; scrollToNowPlaying = false
+                                    items.forEachIndexed { index, song ->
+                                        if (song.song.asMediaItem.mediaId == binder?.hybridPlayer?.currentMediaItem?.mediaId) nowPlayingItem = index
+                                    }
+                                    if (nowPlayingItem > -1) scrollToNowPlaying = true
+                                },
+                                onLongClick = { SmartMessage(context.resources.getString(R.string.info_find_the_song_that_is_playing), context = context) },
+                                icon = R.drawable.locate,
+                                //enabled = items.isNotEmpty(),
+                                color = colorPalette().text
+                            )
+                            LaunchedEffect(scrollToNowPlaying) { if (scrollToNowPlaying) lazyListState.scrollToItem(nowPlayingItem, 1); scrollToNowPlaying = false }
+
+                            // Confirmations for Likes
+                            if (showRiPlayLikeYoutubeLikeConfirmDialog) {
+                                Database.asyncTransaction { totalMinutesToLike = formatAsDuration((if (listMediaItems.isNotEmpty()) (listMediaItems.filter { Database.getLikedAt(it.mediaId) !in listOf(-1L, null) }).size else (items.filter { Database.getLikedAt(it.asMediaItem.mediaId) !in listOf(-1L, null) }).size) * 1000.toLong()) }
+                                ConfirmationDialog(
+                                    text = "$totalMinutesToLike " + stringResource(R.string.do_you_really_want_to_like_all),
+                                    onDismiss = { showRiPlayLikeYoutubeLikeConfirmDialog = false },
+                                    onConfirm = {
+                                        showRiPlayLikeYoutubeLikeConfirmDialog = false
+                                        if (listMediaItems.isNotEmpty()) {
+                                            CoroutineScope(Dispatchers.IO).launch { addToYtLikedSongs(listMediaItems.filter { Database.getLikedAt(it.mediaId) !in listOf(-1L, null) }.map { it }) }
+                                        } else {
+                                            CoroutineScope(Dispatchers.IO).launch { addToYtLikedSongs(items.filter { Database.getLikedAt(it.asMediaItem.mediaId) !in listOf(-1L, null) }.map { it.asMediaItem }) }
+                                        }
+                                    }
+                                )
+                            }
+                            if (showYoutubeLikeConfirmDialog) {
+                                songItemsToLike.clear()
+                                if (listMediaItems.isEmpty()) {
+                                    items.forEachIndexed { _, song ->
+                                        if (song.song.likedAt in listOf(-1L, null)) songItemsToLike.add(song.asMediaItem)
+                                    }
+                                } else {
+                                    Database.asyncTransaction {
+                                        listMediaItems.forEachIndexed { _, song ->
+                                            if (Database.getLikedAt(song.mediaId) in listOf(-1L, null)) songItemsToLike.add(song)
+                                        }
+                                    }
+                                }
+                                totalMinutesToLike = formatAsDuration(((songItemsToLike).size * 1000).toLong())
+                                ConfirmationDialog(
+                                    text = "$totalMinutesToLike " + stringResource(R.string.do_you_really_want_to_like_all),
+                                    onDismiss = { showYoutubeLikeConfirmDialog = false },
+                                    onConfirm = {
+                                        showYoutubeLikeConfirmDialog = false
+                                        CoroutineScope(Dispatchers.IO).launch { addToYtLikedSongs(songItemsToLike) }
+                                    }
+                                )
+                            }
+
+                            if (builtInPlaylist == BuiltInPlaylist.All)
+                                HeaderIconButton(
+                                    onClick = { showHiddenSongs = if (showHiddenSongs == 0) -1 else 0 },
+                                    onLongClick = { SmartMessage(context.resources.getString(R.string.info_show_hide_hidden_songs), context = context) },
+                                    icon = if (showHiddenSongs == 0) R.drawable.eye_off else R.drawable.eye,
+                                    color = colorPalette().text
+                                )
+
+                            HeaderIconButton(
+                                icon = R.drawable.shuffle,
+                                //enabled = items.any { it.song.likedAt != -1L },
+                                color = if (items.any { it.song.likedAt != -1L }) colorPalette().text else colorPalette().textDisabled,
+                                onClick = {
+                                    if (builtInPlaylist == BuiltInPlaylist.OnDevice) items = visibleItems
+                                    if (items.filter { it.song.likedAt != -1L }.isNotEmpty()) {
+                                        val itemsLimited = if (items.filter { it.song.likedAt != -1L }.size > maxSongsInQueue.number) items.filter { it.song.likedAt != -1L }.shuffled().take(maxSongsInQueue.number.toInt()) else items.filter { it.song.likedAt != -1L }
+                                        binder?.stopRadio()
+                                        binder?.hybridPlayer?.forcePlayFromBeginning(itemsLimited.shuffled().map(SongEntity::asMediaItem))
+                                    } else {
+                                        SmartMessage(context.resources.getString(R.string.disliked_this_collection), type = PopupType.Error, context = context)
                                     }
                                 },
+                                onLongClick = { SmartMessage(context.resources.getString(R.string.info_shuffle), context = context) },
+                            )
+
+                            if (builtInPlaylist == BuiltInPlaylist.Favorites)
+                                HeaderIconButton(
+                                    icon = R.drawable.random, enabled = true,
+                                    color = if (autoShuffle) colorPalette().text else colorPalette().textDisabled,
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            appSettingsManager.updateSettings(
+                                                appSettingsManager.activeSettings.value.copy(
+                                                    autoShuffle = !autoShuffle
+                                                )
+                                            )
+                                        }
+                                    },
+                                    onLongClick = { SmartMessage("Random sorting", context = context) },
+                                )
+
+                            if (builtInPlaylist != BuiltInPlaylist.Favorites)
+                                HeaderIconButton(
+                                    icon = R.drawable.resource_import, color = colorPalette().text,
+                                    onClick = {
+                                        try { importLauncher.launch(arrayOf("text/*")) }
+                                        catch (e: ActivityNotFoundException) { SmartMessage(context.resources.getString(R.string.info_not_find_app_open_doc), type = PopupType.Warning, context = context) }
+                                    },
+                                    onLongClick = { SmartMessage(context.resources.getString(R.string.import_favorites), context = context) },
+                                )
+
+                            if (BuiltInPlaylist.OnDevice == builtInPlaylist) {
+                                HeaderIconButton(
+                                    icon = if (showFolders) R.drawable.list_view else R.drawable.grid_view,
+                                    color = colorPalette().text,
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            appSettingsManager.updateSettings(
+                                                appSettingsManager.activeSettings.value.copy(
+                                                    showFoldersOnDevice = !showFolders
+                                                )
+                                            )
+                                        }
+                                    },
+                                    onLongClick = { SmartMessage(context.resources.getString(R.string.viewType), context = context) },
+                                )
+                            }
+
+                            HeaderIconButton(
+                                icon = R.drawable.ellipsis_horizontal, color = colorPalette().text,
+                                onClick = {
+                                    menuState.display {
+                                        PlaylistsItemMenu(
+                                            navController = navController, modifier = Modifier.fillMaxHeight(0.4f),
+                                            onDismiss = menuState::hide,
+                                            onSelectUnselect = {
+                                                selectItems = !selectItems; if (!selectItems) listMediaItems.clear()
+                                            },
+                                            onPlayNext = {
+                                                if (builtInPlaylist == BuiltInPlaylist.OnDevice) items = visibleItems
+                                                if (listMediaItems.isEmpty()) {
+                                                    if (items.any { it.song.likedAt != -1L }) {
+                                                        binder?.hybridPlayer?.addNext(items.filter { it.song.likedAt != -1L }.map(SongEntity::asMediaItem), context, selectedQueue ?: defaultQueue())
+                                                    } else {
+                                                        SmartMessage(context.resources.getString(R.string.disliked_this_collection), type = PopupType.Error, context = context)
+                                                    }
+                                                } else {
+                                                    binder?.hybridPlayer?.addNext(listMediaItems, context, selectedQueue ?: defaultQueue())
+                                                    listMediaItems.clear(); selectItems = false
+                                                }
+                                            },
+                                            onEnqueue = {
+                                                if (builtInPlaylist == BuiltInPlaylist.OnDevice) items = visibleItems
+                                                if (listMediaItems.isEmpty()) {
+                                                    if (items.any { it.song.likedAt != -1L }) {
+                                                        binder?.hybridPlayer?.enqueue(items.filter { it.song.likedAt != -1L }.map(SongEntity::asMediaItem), context)
+                                                    } else {
+                                                        SmartMessage(context.resources.getString(R.string.disliked_this_collection), type = PopupType.Error, context = context)
+                                                    }
+                                                } else {
+                                                    binder?.hybridPlayer?.enqueue(listMediaItems, context)
+                                                    listMediaItems.clear(); selectItems = false
+                                                }
+                                            },
+                                            onAddToPreferites = {
+                                                if (!isNetworkConnected && isYtSyncEnabled()) {
+                                                    SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error)
+                                                } else if (!isYtSyncEnabled()) {
+                                                    if (listMediaItems.isNotEmpty()) {
+                                                        Database.asyncTransaction {
+                                                            listMediaItems.filter { getLikedAt(it.mediaId) in listOf(-1L, null) }.map { Database.like(it.mediaId, System.currentTimeMillis()) }
+                                                        }
+                                                    } else {
+                                                        Database.asyncTransaction {
+                                                            items.filter { getLikedAt(it.asMediaItem.mediaId) in listOf(-1L, null) }.map { Database.like(it.asMediaItem.mediaId, System.currentTimeMillis()) }
+                                                        }
+                                                    }
+                                                } else {
+                                                    showYoutubeLikeConfirmDialog = true
+                                                }
+                                            },
+                                            showonAddToPreferitesYoutube = isYtSyncEnabled(),
+                                            onAddToPreferitesYoutube = {
+                                                if (!isNetworkConnected) { SmartMessage(appContext().resources.getString(R.string.no_connection), context = appContext(), type = PopupType.Error) }
+                                                else { showRiPlayLikeYoutubeLikeConfirmDialog = true }
+                                            },
+                                            onAddToPlaylist = { playlistPreview ->
+                                                if (builtInPlaylist == BuiltInPlaylist.OnDevice) items = visibleItems
+                                                position = playlistPreview.songCount.minus(1) ?: 0
+                                                if (position > 0) position++ else position = 0
+                                                val filteredItems = items.filterNot { it.asMediaItem.mediaId.startsWith(LOCAL_KEY_PREFIX) || it.song.thumbnailUrl == "" }
+                                                if ((filteredItems.size + playlistPreview.songCount) > 5000 && playlistPreview.playlist.isYoutubePlaylist && isYtSyncEnabled()) {
+                                                    SmartMessage(context.resources.getString(R.string.yt_playlist_limited), context = context, type = PopupType.Error)
+                                                } else if (!isYtSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
+                                                    items.forEachIndexed { index, song ->
+                                                        runCatching {
+                                                            CoroutineScope(Dispatchers.IO).launch {
+                                                                Database.insert(song.song.asMediaItem)
+                                                                Database.insert(SongPlaylistMap(songId = song.song.asMediaItem.mediaId, playlistId = playlistPreview.playlist.id, position = position + index).default())
+                                                            }
+                                                        }.onFailure { Timber.e("Failed addToPlaylist in HomeSongsModern ${it.stackTraceToString()}") }
+                                                    }
+                                                    CoroutineScope(Dispatchers.Main).launch { SmartMessage(context.resources.getString(R.string.done), type = PopupType.Success, context = context) }
+                                                } else {
+                                                    CoroutineScope(Dispatchers.IO).launch {
+                                                        addToYtPlaylist(playlistPreview.playlist.id, position, playlistPreview.playlist.browseId ?: "", filteredItems.map { it.asMediaItem })
+                                                    }
+                                                }
+                                            },
+                                            onExport = { isExporting = true },
+                                            disableScrollingText = disableScrollingText,
+                                        )
+                                    }
+                                },
+                            )
+                        }
+
+                        // 4. Search Bar
+                        AnimatedVisibility(visible = searching) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Bottom,
                                 modifier = Modifier
-                                    .height(30.dp)
+                                    .padding(all = 10.dp)
                                     .fillMaxWidth()
-                                    .background(
-                                        colorPalette().background4,
-                                        shape = thumbnailRoundness.shape()
-                                    )
-                                    .focusRequester(focusRequester)
-                                    .onFocusChanged {
-                                        if (!it.hasFocus) {
-                                            keyboardController?.hide()
-                                            if (filter?.isBlank() == true) {
-                                                filter = null; searching = false
+                            ) {
+                                val focusRequester = remember { FocusRequester() }
+                                val focusManager = LocalFocusManager.current
+                                val keyboardController = LocalSoftwareKeyboardController.current
+
+                                LaunchedEffect(searching) { focusRequester.requestFocus() }
+
+                                BasicTextField(
+                                    value = filter ?: "", onValueChange = { filter = it },
+                                    textStyle = typography().xs.semiBold, singleLine = true, maxLines = 1,
+                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                    keyboardActions = KeyboardActions(onDone = {
+                                        if (filter.isNullOrBlank()) filter = ""; focusManager.clearFocus()
+                                    }),
+                                    cursorBrush = SolidColor(colorPalette().text),
+                                    decorationBox = { innerTextField ->
+                                        Box(contentAlignment = Alignment.CenterStart, modifier = Modifier
+                                            .weight(1f)
+                                            .padding(horizontal = 10.dp)) {
+                                            IconButton(onClick = {}, icon = R.drawable.search, color = colorPalette().favoritesIcon, modifier = Modifier
+                                                .align(Alignment.CenterStart)
+                                                .size(16.dp))
+                                        }
+                                        Box(contentAlignment = Alignment.CenterStart, modifier = Modifier
+                                            .weight(1f)
+                                            .padding(horizontal = 30.dp)) {
+                                            androidx.compose.animation.AnimatedVisibility(visible = filter?.isEmpty() ?: true, enter = fadeIn(tween(100)), exit = fadeOut(tween(100))) {
+                                                BasicText(text = stringResource(R.string.search), maxLines = 1, overflow = TextOverflow.Ellipsis, style = typography().xs.semiBold.secondary.copy(color = colorPalette().textDisabled))
+                                            }
+                                            innerTextField()
+                                        }
+                                    },
+                                    modifier = Modifier
+                                        .height(30.dp)
+                                        .fillMaxWidth()
+                                        .background(
+                                            colorPalette().background4,
+                                            shape = thumbnailRoundness.shape()
+                                        )
+                                        .focusRequester(focusRequester)
+                                        .onFocusChanged {
+                                            if (!it.hasFocus) {
+                                                keyboardController?.hide()
+                                                if (filter?.isBlank() == true) {
+                                                    filter = null; searching = false
+                                                }
                                             }
                                         }
-                                    }
-                            )
+                                )
+                            }
                         }
                     }
                 }

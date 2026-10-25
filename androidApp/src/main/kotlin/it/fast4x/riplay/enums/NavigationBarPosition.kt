@@ -2,8 +2,6 @@ package it.fast4x.riplay.enums
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
 
 enum class NavigationBarPosition {
@@ -25,10 +23,9 @@ enum class NavigationBarPosition {
 
         @Composable
         fun current(): NavigationBarPosition {
-            //rememberPreference(NAVIGATION_BAR_POSITION.key, Bottom).value
-            val appSettingsManager = LocalAppSettingsManager.current
-            val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
-            return appSettings.navigationBarPosition
+            // Keep legacy enum values for saved-settings compatibility. Android uses
+            // one fixed bottom bar; old sidebar preferences must not narrow its pages.
+            return Bottom
         }
     }
 

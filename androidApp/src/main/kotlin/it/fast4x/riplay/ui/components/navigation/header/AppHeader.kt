@@ -5,6 +5,10 @@ import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
@@ -35,9 +39,11 @@ class AppHeader(
 
     @Composable
     private fun BackButton() {
+        val backLabel = stringResource(R.string.back)
         //Timber.d("AppHeader BackButton")
         if ( NavRoutes.home.isNotHere( navController ) )
             androidx.compose.material3.IconButton(
+                modifier = Modifier.semantics { contentDescription = backLabel },
                 onClick = {
                     //if (navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED)
                         navController.popBackStack()

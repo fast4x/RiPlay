@@ -67,7 +67,7 @@ fun NewAlbums(
     val thumbnailSizeDp = Dimensions.thumbnails.album + 24.dp
     val thumbnailSizePx = thumbnailSizeDp.px
 
-    val navigationBarPosition = appSettings.navigationBarPosition
+    val navigationBarPosition = NavigationBarPosition.current()
 
     val showSearchTab = appSettings.showSearchTab
 

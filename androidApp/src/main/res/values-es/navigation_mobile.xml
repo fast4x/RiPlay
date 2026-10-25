@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mobile_nav_home">Inicio</string>
+    <string name="mobile_nav_search">Buscar</string>
+    <string name="mobile_nav_library">Biblioteca</string>
+    <string name="mobile_nav_voice_search">Buscar por voz</string>
+    <string name="mobile_nav_good_morning">Buenos días</string>
+    <string name="mobile_nav_good_afternoon">Buenas tardes</string>
+    <string name="mobile_nav_good_evening">Buenas noches</string>
+</resources>

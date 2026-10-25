@@ -17,6 +17,7 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -38,6 +40,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -58,6 +61,9 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -92,6 +98,7 @@ import it.fast4x.riplay.extensions.nextvisualizer.modern.PlayerEqualizerLevel
 import it.fast4x.riplay.extensions.smoothloader.Loader
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.themed.IconButton
+import it.fast4x.riplay.ui.components.mobilePressFeedback
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
@@ -145,6 +152,10 @@ fun UnifiedMiniPlayer(
 
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
+    val miniInteractions = remember { MutableInteractionSource() }
+    val playInteractions = remember { MutableInteractionSource() }
+    val openPlayerLabel = stringResource(R.string.mobile_player_expand)
+    val openQueueLabel = stringResource(R.string.mobile_player_queue)
 
     val hapticFeedback = LocalHapticFeedback.current
 
@@ -326,7 +337,13 @@ fun UnifiedMiniPlayer(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
+                    .mobilePressFeedback(miniInteractions)
                     .combinedClickable(
+                        interactionSource = miniInteractions,
+                        indication = androidx.compose.material3.ripple(),
+                        role = Role.Button,
+                        onClickLabel = openPlayerLabel,
+                        onLongClickLabel = openQueueLabel,
                         onLongClick = {
                             navController?.navigate(NavRoutes.queue.name);
                             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -368,7 +385,8 @@ fun UnifiedMiniPlayer(
                     }
                     .background(colorPalette().background2)
                     .fillMaxWidth()
-                    .height(56.dp)
+                    .heightIn(min = 64.dp)
+                    .padding(start = 8.dp, end = 4.dp)
             ) {
                 Spacer(
                     modifier = Modifier
@@ -378,7 +396,7 @@ fun UnifiedMiniPlayer(
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .height(56.dp)
+                        .heightIn(min = 64.dp)
                 ) {
                     AsyncImage(
                         model = mediaItem.mediaMetadata.artworkUri.toString()
@@ -396,7 +414,7 @@ fun UnifiedMiniPlayer(
                 Column(
                     verticalArrangement = Arrangement.Center,
                     modifier = Modifier
-                        .height(56.dp)
+                        .heightIn(min = 64.dp)
                         .weight(1f)
                 ) {
                     Row(
@@ -404,13 +422,11 @@ fun UnifiedMiniPlayer(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         if (mediaItem.isExplicit)
-                            IconButton(
-                                icon = R.drawable.explicit,
-                                color = colorPalette().text,
-                                enabled = true,
-                                onClick = {},
-                                modifier = Modifier
-                                    .size(14.dp)
+                            Image(
+                                painter = painterResource(R.drawable.explicit),
+                                contentDescription = stringResource(R.string.mobile_player_explicit),
+                                colorFilter = ColorFilter.tint(colorPalette().text),
+                                modifier = Modifier.size(14.dp)
                             )
                         BasicText(
                             text = cleanPrefix(mediaItem.mediaMetadata.title?.toString() ?: ""),
@@ -441,7 +457,7 @@ fun UnifiedMiniPlayer(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .height(56.dp)
+                        .heightIn(min = 64.dp)
                 ) {
                     // Spotify: [Me gusta] [Play/Pause]
                     IconButton(
@@ -449,28 +465,23 @@ fun UnifiedMiniPlayer(
                         color = if (likedAt != null && likedAt != -1L) colorPalette().accent else colorPalette().text,
                         onClick = { updateLike = true },
                         onLongClick = { updateDislike = true },
-                        modifier = Modifier
-                            .padding(horizontal = 6.dp, vertical = 8.dp)
-                            .size(24.dp)
+                        contentDescription = stringResource(
+                            if (likedAt != null && likedAt != -1L) R.string.mobile_player_unlike
+                            else R.string.mobile_player_like
+                        ),
+                        modifier = Modifier.size(48.dp)
                     )
-                    if (false)
-                        IconButton(
-                            icon = R.drawable.play_skip_back,
-                            color = colorPalette().iconButtonPlayer,
-                            onClick = {
-                                binder.hybridPlayer.playPrevious()
-                            },
-                            modifier = Modifier
-                                .rotate(rotationAngle)
-                                .padding(horizontal = 2.dp, vertical = 8.dp)
-                                .size(24.dp)
-                        )
-
                     if (!playerState.loadPending.isPending) {
                         Box(
                             modifier = Modifier
+                                .size(48.dp)
+                                .mobilePressFeedback(playInteractions)
                                 .clip(RoundedCornerShape(playPauseRoundness))
-                                .clickable {
+                                .clickable(
+                                    interactionSource = playInteractions,
+                                    indication = androidx.compose.material3.ripple(),
+                                    role = Role.Button
+                                ) {
                                     if (shouldBePlaying) {
                                         if (!GlobalSharedData.riTuneCastActive)
                                             binder.hybridPlayer.pause()
@@ -497,11 +508,12 @@ fun UnifiedMiniPlayer(
 
                                     }
                                 }
-                                .size(42.dp)
                         ) {
                             Image(
                                 painter = painterResource(if (shouldBePlaying) R.drawable.pause else R.drawable.play),
-                                contentDescription = null,
+                                contentDescription = stringResource(
+                                    if (shouldBePlaying) R.string.mobile_player_pause else R.string.mobile_player_play
+                                ),
                                 colorFilter = ColorFilter.tint(colorPalette().text),
                                 modifier = Modifier
                                     .rotate(rotationAngle)
@@ -514,36 +526,12 @@ fun UnifiedMiniPlayer(
                         enter = fadeIn(tween(300, delayMillis = 350)),
                         exit = fadeOut(tween(150))
                     ) {
-                        Loader(size = 42.dp, expandWidth = false)
+                        val loadingLabel = stringResource(R.string.mobile_player_loading)
+                        Box(Modifier.size(48.dp).semantics { contentDescription = loadingLabel },
+                            contentAlignment = Alignment.Center) {
+                            Loader(size = 32.dp, expandWidth = false)
+                        }
                     }
-
-                    if (false)
-                        IconButton(
-                            icon = R.drawable.play_skip_forward,
-                            color = colorPalette().iconButtonPlayer,
-                            onClick = {
-                                binder.hybridPlayer.playNext()
-                            },
-                            modifier = Modifier
-                                .rotate(rotationAngle)
-                                .padding(horizontal = 2.dp, vertical = 8.dp)
-                                .size(24.dp)
-                        )
-                    if (false)
-                        IconButton(
-                            icon = getLikeState(mediaItem.mediaId),
-                            color = colorPalette().favoritesIcon,
-                            onClick = {
-                                updateLike = true
-                            },
-                            onLongClick = {
-                                updateDislike = true
-                            },
-                            modifier = Modifier
-                                .rotate(rotationAngle)
-                                .padding(horizontal = 2.dp, vertical = 8.dp)
-                                .size(24.dp)
-                        )
 
                 }
 

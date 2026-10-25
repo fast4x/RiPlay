@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="spotify_import_recommendations_summary">%1$d reproducibles · %2$d pendientes. Los pendientes se usan para personalizar tus recomendaciones.</string>
+    <string name="spotify_import_recommendations_playable_skips">Sin añadir como reproducibles: %1$d de %2$d pistas.</string>
+    <string name="spotify_import_recommendations_save_error">No se pudo guardar esta playlist. Intenta importarla de nuevo.</string>
+</resources>

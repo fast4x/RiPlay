@@ -9,17 +9,18 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import kotlinx.serialization.ExperimentalSerializationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -28,10 +29,13 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -44,7 +48,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -88,17 +94,17 @@ fun SpotifySearchTab(navController: NavController) {
     }
 
     LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        columns = GridCells.Adaptive(if (LocalDensity.current.fontScale > 1.3f) 180.dp else 140.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier
             .fillMaxSize()
             .background(colorPalette().background0)
-            .padding(horizontal = 16.dp)
     ) {
         item(span = { GridItemSpan(maxLineSpan) }) {
             BasicText(
-                text = "Search",
+                text = stringResource(R.string.mobile_home_search),
                 style = typography().xxl.bold.copy(color = colorPalette().text),
                 modifier = Modifier.padding(top = 8.dp, bottom = 12.dp)
             )
@@ -110,11 +116,11 @@ fun SpotifySearchTab(navController: NavController) {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp)
+                    .heightIn(min = 56.dp)
                     .clip(RoundedCornerShape(6.dp))
                     .background(Color.White)
-                    .clickable { navController.navigate(NavRoutes.search.name) }
-                    .padding(horizontal = 12.dp)
+                    .mobileHomeClickable(onClick = { navController.navigate(NavRoutes.search.name) })
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
                 Image(
                     painter = painterResource(R.drawable.search),
@@ -124,15 +130,16 @@ fun SpotifySearchTab(navController: NavController) {
                 )
                 Spacer(Modifier.width(12.dp))
                 BasicText(
-                    text = "What do you want to listen to?",
-                    style = typography().s.semiBold.copy(color = Color(0xFF535353))
+                    text = stringResource(R.string.mobile_home_search_prompt),
+                    style = typography().s.semiBold.copy(color = Color(0xFF535353)),
+                    modifier = Modifier.weight(1f)
                 )
             }
         }
 
         item(span = { GridItemSpan(maxLineSpan) }) {
             BasicText(
-                text = "Browse all",
+                text = stringResource(R.string.mobile_home_browse_all),
                 style = typography().m.bold.copy(color = colorPalette().text),
                 modifier = Modifier.padding(top = 20.dp, bottom = 4.dp)
             )
@@ -152,7 +159,6 @@ fun SpotifySearchTab(navController: NavController) {
             )
         }
 
-        item(span = { GridItemSpan(maxLineSpan) }) { Spacer(Modifier.height(Dimensions.bottomSpacer)) }
     }
 }
 
@@ -167,10 +173,10 @@ private fun GenreCard(title: String, color: Color, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1.75f)
+            .heightIn(min = 104.dp)
             .clip(RoundedCornerShape(6.dp))
             .background(bg)
-            .clickable(onClick = onClick)
+            .mobileHomeClickable(onClick = onClick)
             .padding(12.dp)
     ) {
         BasicText(
@@ -187,8 +193,9 @@ private fun GenreCard(title: String, color: Color, onClick: () -> Unit) {
  *  TU BIBLIOTECA
  * ================================================================================================= */
 
-private enum class LibraryFilter(val label: String) {
-    Playlists("Playlists"), Artists("Artists"), Albums("Albums"), Songs("Songs")
+private enum class LibraryFilter(val label: Int) {
+    Playlists(R.string.mobile_home_playlists), Artists(R.string.mobile_home_artists),
+    Albums(R.string.mobile_home_albums), Songs(R.string.mobile_home_songs)
 }
 
 @OptIn(
@@ -206,178 +213,176 @@ fun SpotifyLibraryTab(navController: NavController) {
     val appSettingsManager = LocalAppSettingsManager.current
     val coroutineScope = rememberCoroutineScope()
     var filter by rememberSaveable { mutableLibraryFilter() }
+    var showLibraryActions by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
+    var showUrlImport by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
+    if (showUrlImport) ImportPlaylistFromSpotifyUrlDialog(onDismiss = { showUrlImport = false })
 
-    Column(
+    val spotifyImport = rememberSpotifyImport()
+    val matchProgress by SpotifyMatcher.progress.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) { SpotifyMatcher.request() } // fixes songs left unmatched earlier
+    val matchLabel = when {
+        matchProgress.running -> stringResource(R.string.mobile_home_matching, matchProgress.done, matchProgress.total)
+        matchProgress.failed > 0 -> stringResource(R.string.mobile_home_unmatched, matchProgress.failed)
+        else -> stringResource(R.string.mobile_home_csv_hint)
+    }
+    val openLikedSongs: () -> Unit = {
+        coroutineScope.launch {
+            appSettingsManager.updateSettings(
+                appSettingsManager.activeSettings.value.copy(builtInPlaylist = BuiltInPlaylist.Favorites)
+            )
+        }
+        filter = LibraryFilter.Songs.ordinal
+    }
+
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .background(colorPalette().background0)
     ) {
-        BasicText(
-            text = "Your Library",
-            style = typography().xxl.bold.copy(color = colorPalette().text),
-            modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 12.dp)
-        )
-
-        // Píldoras de filtro
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp)
-        ) {
-            LibraryFilter.entries.forEach { f ->
-                val selected = f.ordinal == filter
+        val compact = maxHeight < 360.dp
+        Column(Modifier.fillMaxSize()) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp, top = 4.dp, bottom = 8.dp)
+            ) {
                 BasicText(
-                    text = f.label,
-                    style = typography().xs.semiBold.copy(
-                        color = if (selected) Encore.OnGreen else colorPalette().text
-                    ),
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .background(if (selected) colorPalette().accent else colorPalette().background2)
-                        .clickable { filter = f.ordinal }
-                        .padding(horizontal = 14.dp, vertical = 7.dp)
+                    text = stringResource(R.string.mobile_home_library),
+                    style = typography().xxl.bold.copy(color = colorPalette().text),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
                 )
+                if (compact) LibraryIcon(R.drawable.heart, stringResource(R.string.mobile_home_liked_songs), openLikedSongs)
+                LibraryIcon(R.drawable.add, stringResource(R.string.mobile_home_import_music)) { showLibraryActions = true }
             }
-        }
 
-        // "Canciones que te gustan" fijada arriba
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                    coroutineScope.launch {
-                        appSettingsManager.updateSettings(
-                            appSettingsManager.activeSettings.value.copy(builtInPlaylist = BuiltInPlaylist.Favorites)
+            // Píldoras de filtro
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+            ) {
+                LibraryFilter.entries.forEach { f ->
+                    val selected = f.ordinal == filter
+                    MobileFilterChip(stringResource(f.label), selected) { filter = f.ordinal }
+                }
+            }
+
+            // "Canciones que te gustan" fijada arriba
+            if (!compact) Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .mobileHomeClickable(onClick = openLikedSongs)
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(Brush.linearGradient(listOf(Encore.LikedSongsTop, Encore.LikedSongsBottom)))
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.heart),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(Color.White),
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    BasicText(
+                        text = stringResource(R.string.mobile_home_liked_songs),
+                        style = typography().s.semiBold.copy(color = colorPalette().text)
+                    )
+                    BasicText(
+                        text = stringResource(R.string.mobile_home_playlist),
+                        style = typography().xs.copy(color = colorPalette().textSecondary)
+                    )
+                }
+            }
+
+            Box(Modifier.weight(1f)) {
+                CompositionLocalProvider(LocalEmbeddedLibrary provides true) {
+                    when (LibraryFilter.entries[filter]) {
+                        LibraryFilter.Playlists -> HomePlaylists(
+                            navController = navController,
+                            onPlaylistClick = {
+                                if (!it.isOnDevice)
+                                    navController.navigate(route = "${NavRoutes.localPlaylist.name}/${it.playlist.id}")
+                                else
+                                    navController.navigate(route = "${NavRoutes.onDevicePlaylist.name}/${it.folder?.replace("/", "$")}")
+                            },
+                            onSearchClick = { navController.navigate(NavRoutes.search.name) },
+                            onSettingsClick = { navController.navigate(NavRoutes.settings.name) }
+                        )
+
+                        LibraryFilter.Artists -> HomeArtists(
+                            navController = navController,
+                            onArtistClick = {
+                                if (!it.id.startsWith(LOCAL_KEY_PREFIX))
+                                    navController.navigate(route = "${NavRoutes.artist.name}/${it.id}")
+                                else navController.navigate(route = "${NavRoutes.onDeviceArtist.name}/${it.id}")
+                            },
+                            onSearchClick = { navController.navigate(NavRoutes.search.name) },
+                            onSettingsClick = { navController.navigate(NavRoutes.settings.name) }
+                        )
+
+                        LibraryFilter.Albums -> HomeAlbums(
+                            navController = navController,
+                            onAlbumClick = {
+                                if (!it.id.startsWith(LOCAL_KEY_PREFIX))
+                                    navController.navigate(route = "${NavRoutes.album.name}/${it.id}")
+                                else navController.navigate(route = "${NavRoutes.onDeviceAlbum.name}/${it.id}")
+                            },
+                            onSearchClick = { navController.navigate(NavRoutes.search.name) },
+                            onSettingsClick = { navController.navigate(NavRoutes.settings.name) }
+                        )
+
+                        LibraryFilter.Songs -> HomeSongs(
+                            navController = navController,
+                            onSearchClick = { navController.navigate(NavRoutes.search.name) },
+                            onSettingsClick = { navController.navigate(NavRoutes.settings.name) }
                         )
                     }
-                    filter = LibraryFilter.Songs.ordinal
                 }
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+            }
+        }
+    }
+
+    if (showLibraryActions) {
+        ModalBottomSheet(
+            onDismissRequest = { showLibraryActions = false },
+            containerColor = colorPalette().background1
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(Brush.linearGradient(listOf(Encore.LikedSongsTop, Encore.LikedSongsBottom)))
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.heart),
-                    contentDescription = null,
-                    colorFilter = ColorFilter.tint(Color.White),
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-            Spacer(Modifier.width(12.dp))
-            Column {
+            Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
                 BasicText(
-                    text = "Liked Songs",
-                    style = typography().s.semiBold.copy(color = colorPalette().text)
+                    text = stringResource(R.string.mobile_home_import_music),
+                    style = typography().xl.bold.copy(color = colorPalette().text),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
-                BasicText(
-                    text = "Playlist",
-                    style = typography().xs.copy(color = colorPalette().textSecondary)
+                LibraryActionRow(
+                    iconId = R.drawable.add,
+                    title = stringResource(R.string.mobile_home_import_link),
+                    subtitle = stringResource(R.string.mobile_home_import_link_hint),
+                    onClick = {
+                        showLibraryActions = false
+                        showUrlImport = true
+                    }
                 )
-            }
-        }
-
-        // "Import from Spotify link": public playlist URL (upstream RiPlay importer)
-        var showUrlImport by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
-        if (showUrlImport) ImportPlaylistFromSpotifyUrlDialog(onDismiss = { showUrlImport = false })
-        LibraryActionRow(
-            iconId = R.drawable.add,
-            title = "Import from Spotify link",
-            subtitle = "Paste a public playlist link from Spotify",
-            onClick = { showUrlImport = true }
-        )
-
-        // "Import from Spotify": exportify.net CSV → automatic YouTube Music matching
-        val spotifyImport = rememberSpotifyImport()
-        val matchProgress by SpotifyMatcher.progress.collectAsStateWithLifecycle()
-        LaunchedEffect(Unit) { SpotifyMatcher.request() } // fixes songs left unmatched earlier
-        val matchLabel = when {
-            matchProgress.running -> "Matching songs… ${matchProgress.done}/${matchProgress.total}"
-            matchProgress.failed > 0 -> "${matchProgress.failed} songs couldn't be found"
-            else -> "CSV file from exportify.net"
-        }
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { spotifyImport.onShortClick() }
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(colorPalette().background2)
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.add),
-                    contentDescription = null,
-                    colorFilter = ColorFilter.tint(Color.White),
-                    modifier = Modifier.size(24.dp)
+                LibraryActionRow(
+                    iconId = R.drawable.add,
+                    title = stringResource(R.string.mobile_home_import_csv),
+                    subtitle = matchLabel,
+                    onClick = {
+                        showLibraryActions = false
+                        spotifyImport.onShortClick()
+                    }
                 )
-            }
-            Spacer(Modifier.width(12.dp))
-            Column {
-                BasicText(
-                    text = "Import Spotify CSV",
-                    style = typography().s.semiBold.copy(color = colorPalette().text)
-                )
-                BasicText(
-                    text = matchLabel,
-                    style = typography().xs.copy(color = colorPalette().textSecondary)
-                )
-            }
-        }
-
-        Box(Modifier.weight(1f)) {
-            when (LibraryFilter.entries[filter]) {
-                LibraryFilter.Playlists -> HomePlaylists(
-                    navController = navController,
-                    onPlaylistClick = {
-                        if (!it.isOnDevice)
-                            navController.navigate(route = "${NavRoutes.localPlaylist.name}/${it.playlist.id}")
-                        else
-                            navController.navigate(route = "${NavRoutes.onDevicePlaylist.name}/${it.folder?.replace("/", "$")}")
-                    },
-                    onSearchClick = { navController.navigate(NavRoutes.search.name) },
-                    onSettingsClick = { navController.navigate(NavRoutes.settings.name) }
-                )
-
-                LibraryFilter.Artists -> HomeArtists(
-                    navController = navController,
-                    onArtistClick = {
-                        if (!it.id.startsWith(LOCAL_KEY_PREFIX))
-                            navController.navigate(route = "${NavRoutes.artist.name}/${it.id}")
-                        else navController.navigate(route = "${NavRoutes.onDeviceArtist.name}/${it.id}")
-                    },
-                    onSearchClick = { navController.navigate(NavRoutes.search.name) },
-                    onSettingsClick = { navController.navigate(NavRoutes.settings.name) }
-                )
-
-                LibraryFilter.Albums -> HomeAlbums(
-                    navController = navController,
-                    onAlbumClick = {
-                        if (!it.id.startsWith(LOCAL_KEY_PREFIX))
-                            navController.navigate(route = "${NavRoutes.album.name}/${it.id}")
-                        else navController.navigate(route = "${NavRoutes.onDeviceAlbum.name}/${it.id}")
-                    },
-                    onSearchClick = { navController.navigate(NavRoutes.search.name) },
-                    onSettingsClick = { navController.navigate(NavRoutes.settings.name) }
-                )
-
-                LibraryFilter.Songs -> HomeSongs(
-                    navController = navController,
-                    onSearchClick = { navController.navigate(NavRoutes.search.name) },
-                    onSettingsClick = { navController.navigate(NavRoutes.settings.name) }
-                )
+                Spacer(Modifier.height(16.dp))
             }
         }
     }
@@ -420,7 +425,7 @@ private fun LibraryActionRow(iconId: Int, title: String, subtitle: String, onCli
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .mobileHomeClickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Box(
@@ -438,9 +443,21 @@ private fun LibraryActionRow(iconId: Int, title: String, subtitle: String, onCli
             )
         }
         Spacer(Modifier.width(12.dp))
-        Column {
+        Column(Modifier.weight(1f)) {
             BasicText(text = title, style = typography().s.semiBold.copy(color = colorPalette().text))
             BasicText(text = subtitle, style = typography().xs.copy(color = colorPalette().textSecondary))
         }
+    }
+}
+
+@Composable
+private fun LibraryIcon(iconId: Int, label: String, onClick: () -> Unit) {
+    IconButton(onClick = onClick, modifier = Modifier.size(Dimensions.touchTarget)) {
+        Image(
+            painter = painterResource(iconId),
+            contentDescription = label,
+            colorFilter = ColorFilter.tint(colorPalette().text),
+            modifier = Modifier.size(24.dp)
+        )
     }
 }

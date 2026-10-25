@@ -19,6 +19,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -604,139 +605,144 @@ fun HomePlaylists(
                 )
         ) {
             Column(Modifier.fillMaxSize()) {
-                // 1. Header Pulito
-                TabHeader(R.string.playlists) {
-                    HeaderInfo(itemsOnDisplay.size.toString(), R.drawable.playlist)
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-
-                // 2. Control Bar Unificata
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(modifier = Modifier.weight(1f)) {
-                        ButtonsRow(
-                            buttons = buttonsList,
-                            currentValue = playlistType,
-                            onValueUpdate = {
-                                coroutineScope.launch {
-                                    appSettingsManager.updateSettings(
-                                        appSettingsManager.activeSettings.value.copy(playlistType = it)
-                                    )
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                EmbeddedLibraryControls(itemsOnDisplay.size) {
+                    // 1. Header Pulito
+                    TabHeader(R.string.playlists) {
+                        HeaderInfo(itemsOnDisplay.size.toString(), R.drawable.playlist)
+                        Spacer(modifier = Modifier.weight(1f))
                     }
 
-                    Spacer(modifier = Modifier.width(4.dp))
-
-                    // SORT CONTROLS
-                    var isSortExpanded by remember { mutableStateOf(false) }
-
-                    // Timer per auto-chiusura dopo 3 secondi di inattività
-                    LaunchedEffect(isSortExpanded) {
-                        if (isSortExpanded) {
-                            delay(3000)
-                            isSortExpanded = false
-                        }
-                    }
-
+                    // 2. Control Bar Unificata
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            // Animazione della larghezza quando si espande/contrae
-                            .animateContentSize(animationSpec = tween(durationMillis = 300))
-                            .clip(getRoundnessShape())
-                            .background(colorPalette().background1.copy(alpha = 0.5f))
-                            .clickable {
-                                // Se è espanso -> Apre il menu ordinamento
-                                // Se è chiuso -> Espande il chip
-                                if (isSortExpanded) {
-                                    menuState.display { sortMenu() }
-                                } else {
-                                    isSortExpanded = true
-                                }
-                            }
-                            .padding(horizontal = 6.dp, vertical = 6.dp)
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // TESTO dell'ordinamento (Animato)
-                        AnimatedVisibility(
-                            visible = isSortExpanded,
-                            enter = fadeIn(tween(200)) + expandHorizontally(expandFrom = Alignment.Start),
-                            exit = fadeOut(tween(200)) + shrinkHorizontally(shrinkTowards = Alignment.Start)
-                        ) {
-                            Text(
-                                text = stringResource(sortBy.textId),
-                                style = typography().xs,
-                                color = colorPalette().textSecondary,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.padding(end = 4.dp)
+                        Box(modifier = Modifier.weight(1f)) {
+                            ButtonsRow(
+                                buttons = buttonsList,
+                                currentValue = playlistType,
+                                onValueUpdate = {
+                                    coroutineScope.launch {
+                                        appSettingsManager.updateSettings(
+                                            appSettingsManager.activeSettings.value.copy(playlistType = it)
+                                        )
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
 
-                        Spacer(modifier = Modifier.width(2.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
 
-                        HeaderIconButton(
-                            icon = R.drawable.arrow_up,
-                            color = colorPalette().text,
-                            onClick = {
-                                // Cliccando la freccia:
-                                // Se espanso -> Inverte ordine (e resetta timer)
-                                // Se chiuso -> Espande il chip
-                                if (isSortExpanded) {
-                                    coroutineScope.launch {
-                                        appSettingsManager.updateSettings(
-                                            appSettingsManager.activeSettings.value.copy(playlistSortOrder = !sortOrder)
-                                        )
-                                    }
-                                } else {
-                                    isSortExpanded = true
-                                }
-                            },
-                            onLongClick = { menuState.display { sortMenu() } },
+                        // SORT CONTROLS
+                        var isSortExpanded by remember { mutableStateOf(false) }
+
+                        // Timer per auto-chiusura dopo 3 secondi di inattività
+                        LaunchedEffect(isSortExpanded) {
+                            if (isSortExpanded) {
+                                delay(3000)
+                                isSortExpanded = false
+                            }
+                        }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
-                                .graphicsLayer { rotationZ = sortOrderIconRotation }
+                                // Animazione della larghezza quando si espande/contrae
+                                .animateContentSize(animationSpec = tween(durationMillis = 300))
+                                .clip(getRoundnessShape())
+                                .background(colorPalette().background1.copy(alpha = 0.5f))
+                                .clickable {
+                                    // Se è espanso -> Apre il menu ordinamento
+                                    // Se è chiuso -> Espande il chip
+                                    if (isSortExpanded) {
+                                        menuState.display { sortMenu() }
+                                    } else {
+                                        isSortExpanded = true
+                                    }
+                                }
+                                .padding(horizontal = 6.dp, vertical = 6.dp)
+                        ) {
+                            // TESTO dell'ordinamento (Animato)
+                            AnimatedVisibility(
+                                visible = isSortExpanded,
+                                enter = fadeIn(tween(200)) + expandHorizontally(expandFrom = Alignment.Start),
+                                exit = fadeOut(tween(200)) + shrinkHorizontally(shrinkTowards = Alignment.Start)
+                            ) {
+                                Text(
+                                    text = stringResource(sortBy.textId),
+                                    style = typography().xs,
+                                    color = colorPalette().textSecondary,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.padding(end = 4.dp)
+                                )
+                            }
 
-                        )
+                            Spacer(modifier = Modifier.width(2.dp))
+
+                            HeaderIconButton(
+                                icon = R.drawable.arrow_up,
+                                color = colorPalette().text,
+                                onClick = {
+                                    // Cliccando la freccia:
+                                    // Se espanso -> Inverte ordine (e resetta timer)
+                                    // Se chiuso -> Espande il chip
+                                    if (isSortExpanded) {
+                                        coroutineScope.launch {
+                                            appSettingsManager.updateSettings(
+                                                appSettingsManager.activeSettings.value.copy(playlistSortOrder = !sortOrder)
+                                            )
+                                        }
+                                    } else {
+                                        isSortExpanded = true
+                                    }
+                                },
+                                onLongClick = { menuState.display { sortMenu() } },
+                                modifier = Modifier
+                                    .graphicsLayer { rotationZ = sortOrderIconRotation }
+
+                            )
+                        }
+
                     }
 
-                }
+                    // 3. Toolbar
+                    val buttons = mutableListOf(
+                        search, shuffle, newPlaylistDialog, importButton, itemSize, viewType
+                    ).apply {
+                        if (playlistType == PlaylistType.OnDevicePlaylist)
+                            add(toggleOndeviceFolderName)
+                    }
+                    TabToolBar.Buttons(buttons)
 
-                // 3. Toolbar
-                val buttons = mutableListOf(
-                    search, shuffle, newPlaylistDialog, importButton, itemSize, viewType
-                ).apply {
-                    if (playlistType == PlaylistType.OnDevicePlaylist)
-                        add(toggleOndeviceFolderName)
+                    // 4. Search Bar
+                    search.SearchBar(this)
                 }
-                TabToolBar.Buttons(buttons)
-
-                // 4. Search Bar
-                search.SearchBar(this)
 
                 // 5. Contenuto (Lista o Griglia)
                 if (itemsOnDisplay.isEmpty()) {
                     // Empty State
-                    Box(
+                    BoxWithConstraints(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(32.dp),
+                            .padding(if (LocalEmbeddedLibrary.current) 8.dp else 32.dp),
                         contentAlignment = Alignment.Center
                     ) {
+                        val showEmptyArtwork = maxHeight >= 160.dp
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(
-                                painter = painterResource(R.drawable.music_album),
-                                contentDescription = null,
-                                modifier = Modifier.size(64.dp),
-                                tint = colorPalette().textDisabled
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
+                            if (showEmptyArtwork) {
+                                Icon(
+                                    painter = painterResource(R.drawable.music_album),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(64.dp),
+                                    tint = colorPalette().textDisabled
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                            }
                             Text(
                                 text = stringResource(R.string.no_playlists), // Assicurati di avere questa stringa o usa un placeholder
                                 style = typography().m,

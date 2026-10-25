@@ -8,6 +8,7 @@ import androidx.compose.ui.unit.dp
 
 @Suppress("ClassName")
 object Dimensions {
+    val touchTarget = 48.dp
     val itemsVerticalPadding = 4.dp
 
     val navigationRailWidth = 50.dp
@@ -20,7 +21,8 @@ object Dimensions {
     val navigationBarHeight = 64.dp
     val contentWidthRightBar = 0.88f
     val additionalVerticalSpaceForFloatingAction = 40.dp
-    val bottomSpacer = 150.dp
+    // The screen scaffold already reserves the player, navigation and system insets.
+    val bottomSpacer = 16.dp
     val fadeSpacingTop = 30.dp
     val fadeSpacingBottom = 64.dp
 

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mobile_home_all">Todo</string>
+    <string name="mobile_home_music">Música</string>
+    <string name="mobile_home_podcasts">Pódcasts</string>
+    <string name="mobile_home_recently_played">Escuchado recientemente</string>
+    <string name="mobile_home_artist">Artista</string>
+    <string name="mobile_home_search">Buscar</string>
+    <string name="mobile_home_search_prompt">¿Qué quieres escuchar?</string>
+    <string name="mobile_home_browse_all">Explorar todo</string>
+    <string name="mobile_home_library">Tu biblioteca</string>
+    <string name="mobile_home_playlists">Playlists</string>
+    <string name="mobile_home_artists">Artistas</string>
+    <string name="mobile_home_albums">Álbumes</string>
+    <string name="mobile_home_songs">Canciones</string>
+    <string name="mobile_home_liked_songs">Canciones que te gustan</string>
+    <string name="mobile_home_playlist">Playlist</string>
+    <string name="mobile_home_import_music">Importar música</string>
+    <string name="mobile_home_import_link">Importar enlace de Spotify</string>
+    <string name="mobile_home_import_link_hint">Pega el enlace de una playlist pública de Spotify</string>
+    <string name="mobile_home_import_csv">Importar CSV de Spotify</string>
+    <string name="mobile_home_csv_hint">Archivo CSV de exportify.net</string>
+    <string name="mobile_home_matching">Buscando canciones… %1$d/%2$d</string>
+    <string name="mobile_home_unmatched">No se encontraron %1$d canciones</string>
+    <string name="mobile_home_liked_badge">Canción que te gusta</string>
+    <string name="mobile_home_video_badge">Vídeo</string>
+    <string name="mobile_home_recommended_badge">Canción recomendada</string>
+    <string name="mobile_home_related_badge">Canción relacionada</string>
+    <string name="mobile_home_unavailable_badge">Canción no disponible</string>
+    <string name="mobile_home_local_badge">En este dispositivo</string>
+    <string name="mobile_home_enable_block">Activar bloqueo de %1$s</string>
+    <string name="mobile_home_disable_block">Desactivar bloqueo de %1$s</string>
+    <string name="mobile_home_remove_block">Quitar %1$s de la lista de bloqueo</string>
+    <string name="mobile_home_item_count">Elementos: %1$d</string>
+    <string name="mobile_home_library_options">Opciones</string>
+</resources>

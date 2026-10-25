@@ -1,0 +1,26 @@
+<resources>
+    <string name="mobile_player_collapse">Minimize player</string>
+    <string name="mobile_player_expand">Open player</string>
+    <string name="mobile_player_playing_from">PLAYING FROM</string>
+    <string name="mobile_player_more">More options</string>
+    <string name="mobile_player_artwork">Cover art for %1$s</string>
+    <string name="mobile_player_like">Add to liked songs</string>
+    <string name="mobile_player_unlike">Remove from liked songs</string>
+    <string name="mobile_player_dislike">Dislike song</string>
+    <string name="mobile_player_seek">Playback position</string>
+    <string name="mobile_player_shuffle">Shuffle</string>
+    <string name="mobile_player_repeat">Repeat</string>
+    <string name="mobile_player_repeat_all">Repeat all</string>
+    <string name="mobile_player_repeat_one">Repeat one song</string>
+    <string name="mobile_player_on">On</string>
+    <string name="mobile_player_off">Off</string>
+    <string name="mobile_player_previous">Previous song</string>
+    <string name="mobile_player_next">Next song</string>
+    <string name="mobile_player_play">Play</string>
+    <string name="mobile_player_pause">Pause</string>
+    <string name="mobile_player_share">Share song</string>
+    <string name="mobile_player_queue">Open queue</string>
+    <string name="mobile_player_lyrics">Lyrics</string>
+    <string name="mobile_player_loading">Loading playback</string>
+    <string name="mobile_player_explicit">Explicit content</string>
+</resources>

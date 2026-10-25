@@ -63,7 +63,7 @@ fun MiscSettings(
     val appSettingsManager = LocalAppSettingsManager.current
     val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
-    val navigationBarPosition = appSettings.navigationBarPosition
+    val navigationBarPosition = NavigationBarPosition.current()
 
     val logDebugEnabled = appSettings.logDebugEnabled
 

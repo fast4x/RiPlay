@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
@@ -27,10 +28,11 @@ inline fun ItemContainer(
     if (alternative) {
         Column(
             horizontalAlignment = horizontalAlignment,
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = modifier
-                .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
-                .width(thumbnailSizeDp)
+                .width(thumbnailSizeDp.coerceAtLeast(Dimensions.touchTarget))
+                .heightIn(min = Dimensions.touchTarget)
+                .padding(vertical = 8.dp)
         ) {
             content()
         }
@@ -39,6 +41,7 @@ inline fun ItemContainer(
             verticalAlignment = verticalAlignment,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             modifier = modifier
+                .heightIn(min = Dimensions.touchTarget)
                 .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
                 .fillMaxWidth()
         ) {

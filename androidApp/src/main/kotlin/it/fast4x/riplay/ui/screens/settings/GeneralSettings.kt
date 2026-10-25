@@ -133,7 +133,7 @@ fun GeneralSettings(
 
     val disableClosingPlayerSwipingDown = appSettings.disableClosingPlayerSwipingDown
 
-    val navigationBarPosition = appSettings.navigationBarPosition
+    val navigationBarPosition = NavigationBarPosition.current()
     val pauseBetweenSongs = appSettings.pauseBetweenSongs
     val maxSongsInQueue = appSettings.maxSongsInQueue
     val filterContentType = appSettings.filterContentType

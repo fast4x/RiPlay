@@ -128,25 +128,17 @@ fun SearchScreen(
 
     val decorationBox: @Composable (@Composable () -> Unit) -> Unit = { innerTextField ->
         Row(
-            horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .padding(all = 10.dp)
+                .padding(horizontal = 8.dp, vertical = 4.dp)
                 .fillMaxWidth()
         ) {
-
-
-            IconButton(
-                onClick = {},
-                icon = R.drawable.search,
-                color = colorPalette().text,
-                modifier = Modifier.size(20.dp)
-            )
 
 
             Box(
                 contentAlignment = Alignment.CenterStart,
                 modifier = Modifier
-                    .padding(horizontal = 10.dp)
+                    .padding(horizontal = 8.dp)
                     .weight(1f)
             ) {
                 if (textFieldValue.text.isEmpty())
@@ -160,21 +152,21 @@ fun SearchScreen(
             }
             Box(
                 contentAlignment = Alignment.CenterEnd,
-                modifier = Modifier.padding(horizontal = 10.dp)
+                modifier = Modifier
             ) {
                 Row(
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(top = 5.dp)
+                    modifier = Modifier
                 ) {
                     if (isEnabledVoiceInput) {
                         IconButton(
                             onClick = { startVoiceInput = true },
                             icon = R.drawable.mic,
+                            contentDescription = stringResource(R.string.mobile_nav_voice_search),
                             color = colorPalette().text,
                             modifier = Modifier.size(24.dp)
                         )
-                        Spacer(modifier = Modifier.width(10.dp))
                     }
                     if (textFieldValue.text.isNotEmpty()) {
                         IconButton(
@@ -184,6 +176,7 @@ fun SearchScreen(
                                 focusManager.clearFocus()
                             },
                             icon = R.drawable.close,
+                            contentDescription = stringResource(R.string.clear),
                             color = colorPalette().text,
                             modifier = Modifier.size(24.dp)
                         )

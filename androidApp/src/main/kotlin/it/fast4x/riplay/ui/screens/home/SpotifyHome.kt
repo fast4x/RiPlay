@@ -4,25 +4,31 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ripple
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -38,9 +44,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import it.fast4x.environment.Environment
@@ -48,11 +61,14 @@ import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.requests.HomePage
 import it.fast4x.riplay.LocalPlayerServiceBinder
+import it.fast4x.riplay.Dependencies
+import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.smoothloader.Loader
+import it.fast4x.riplay.ui.components.mobilePressFeedback
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.Encore
@@ -67,7 +83,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
-private enum class HomeFilter(val label: String) { All("All"), Music("Music"), Podcasts("Podcasts") }
+private enum class HomeFilter(val label: Int) {
+    All(R.string.mobile_home_all), Music(R.string.mobile_home_music), Podcasts(R.string.mobile_home_podcasts)
+}
 
 /**
  * Inicio estilo Spotify:
@@ -80,6 +98,8 @@ private enum class HomeFilter(val label: String) { All("All"), Music("Music"), P
 @Composable
 fun SpotifyHome(navController: NavController) {
     val binder = LocalPlayerServiceBinder.current
+    val playlistRecommendations = remember { Dependencies.application.playlistRecommendationService }
+    val recommendations by playlistRecommendations.state.collectAsStateWithLifecycle()
 
     var homePage by remember { mutableStateOf<HomePage?>(HomeDataCache.homePage) }
     LaunchedEffect(Unit) {
@@ -126,113 +146,201 @@ fun SpotifyHome(navController: NavController) {
         }
     }
 
-    Column(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .background(colorPalette().background0)
-            .verticalScroll(rememberScrollState())
     ) {
-        // ---------- Chips ----------
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+        val recentColumns = if (maxWidth < 360.dp || LocalDensity.current.fontScale > 1.3f) 1 else 2
+        val coverSize = (maxWidth * 0.42f).coerceIn(136.dp, 172.dp)
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 16.dp)
         ) {
-            HomeFilter.entries.forEach { f ->
-                val selected = f.ordinal == filter
-                BasicText(
-                    text = f.label,
-                    style = typography().xs.semiBold.copy(
-                        color = if (selected) Encore.OnGreen else Color.White
-                    ),
+            item(key = "filters") {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier
-                        .clip(CircleShape)
-                        .background(if (selected) Encore.Green else Encore.SurfaceElevated)
-                        .clickable { filter = f.ordinal }
-                        .padding(horizontal = 16.dp, vertical = 7.dp)
-                )
-            }
-        }
-
-        // ---------- Cuadrícula 2 × 4 ----------
-        if (filter != HomeFilter.Podcasts.ordinal && recentDistinct.isNotEmpty()) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                recentDistinct.take(8).chunked(2).forEach { row ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        row.forEach { song ->
-                            RecentTile(song, Modifier.weight(1f)) { playSong(song) }
-                        }
-                        if (row.size == 1) Spacer(Modifier.weight(1f))
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    HomeFilter.entries.forEach { f ->
+                        MobileFilterChip(stringResource(f.label), f.ordinal == filter) { filter = f.ordinal }
                     }
                 }
             }
-        }
 
-        // ---------- Escuchado recientemente ----------
-        if (filter != HomeFilter.Podcasts.ordinal && recentDistinct.size > 8) {
-            SectionTitle("Recently played")
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(recentDistinct.drop(8).take(15), key = { it.id }) { song ->
-                    CoverCard(
-                        imageUrl = song.thumbnailUrl.toThumbnail(300),
-                        title = song.title,
-                        subtitle = song.artistsText,
-                        onClick = { playSong(song) }
-                    )
-                }
-            }
-        }
-
-        // ---------- Secciones de YouTube Music ----------
-        val page = homePage
-        if (page == null) {
-            Box(Modifier.fillMaxWidth().padding(top = 48.dp), contentAlignment = Alignment.Center) { Loader() }
-        } else {
-            page.sections
-                .filter { it.items.isNotEmpty() }
-                .filter {
-                    when (HomeFilter.entries[filter]) {
-                        HomeFilter.Podcasts -> it.title.contains("podcast", ignoreCase = true)
-                        HomeFilter.Music -> !it.title.contains("podcast", ignoreCase = true)
-                        HomeFilter.All -> true
-                    }
-                }
-                .forEach { section ->
-                    SectionTitle(section.title)
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        items(section.items.filterNotNull()) { item ->
-                            val subtitle = when (item) {
-                                is Environment.SongItem -> item.authors?.joinToString { it.name ?: "" }
-                                is Environment.VideoItem -> item.authors?.joinToString { it.name ?: "" }
-                                is Environment.AlbumItem -> item.authors?.joinToString { it.name ?: "" }
-                                is Environment.PlaylistItem -> item.channel?.name
-                                is Environment.ArtistItem -> "Artist"
-                                else -> null
-                            }
-                            CoverCard(
-                                imageUrl = item.thumbnail?.size(300),
-                                title = item.title ?: "",
-                                subtitle = subtitle,
-                                shape = if (item is Environment.ArtistItem) CircleShape else RoundedCornerShape(4.dp),
-                                onClick = { openItem(item) }
+            val taste = recommendations.profile
+            if (filter != HomeFilter.Podcasts.ordinal && taste != null && taste.songCount > 0) {
+                item(key = "playlist_recommendations") {
+                    Column {
+                        SectionTitle(stringResource(R.string.playlist_recs_title))
+                        BasicText(
+                            text = stringResource(
+                                R.string.playlist_recs_summary,
+                                pluralStringResource(R.plurals.playlist_recs_lists, taste.playlistCount, taste.playlistCount),
+                                pluralStringResource(R.plurals.playlist_recs_songs, taste.songCount, taste.songCount)
+                            ),
+                            style = typography().xs.copy(color = Encore.TextSecondary),
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                        if (taste.topArtists.isNotEmpty()) {
+                            BasicText(
+                                text = stringResource(R.string.playlist_recs_artists, taste.topArtists.take(3).joinToString(", ")),
+                                style = typography().xs.copy(color = Encore.TextSecondary),
+                                maxLines = 3,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                             )
                         }
+                        if (recommendations.isLoading) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                modifier = Modifier.padding(horizontal = 16.dp).heightIn(min = 48.dp)
+                            ) {
+                                Loader(size = 20.dp, expandWidth = false)
+                                BasicText(
+                                    text = stringResource(R.string.playlist_recs_loading),
+                                    style = typography().xs.copy(color = Encore.TextSecondary),
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
+                        if (recommendations.items.isNotEmpty()) {
+                            Spacer(Modifier.height(12.dp))
+                            LazyRow(
+                                contentPadding = PaddingValues(horizontal = 16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                items(recommendations.items, key = { it.key }) { song ->
+                                    CoverCard(
+                                        imageUrl = song.thumbnail?.size(300),
+                                        title = song.title.orEmpty(),
+                                        subtitle = song.authors?.mapNotNull { it.name }?.joinToString(", "),
+                                        coverSize = coverSize,
+                                        onClick = { playItem(song) }
+                                    )
+                                }
+                            }
+                        }
+                        val message = when {
+                            recommendations.offline && recommendations.items.isEmpty() -> R.string.playlist_recs_offline
+                            recommendations.offline -> R.string.playlist_recs_offline_cached
+                            taste.seeds.isEmpty() -> R.string.playlist_recs_missing_metadata
+                            !recommendations.isLoading && recommendations.items.isEmpty() -> R.string.playlist_recs_empty
+                            else -> null
+                        }
+                        message?.let {
+                            BasicText(
+                                text = stringResource(it),
+                                style = typography().xs.copy(color = Encore.TextSecondary),
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                            )
+                        }
+                        if (!recommendations.offline && !recommendations.isLoading && taste.seeds.isNotEmpty()) {
+                            TextButton(
+                                onClick = playlistRecommendations::refresh,
+                                modifier = Modifier.padding(horizontal = 8.dp).heightIn(min = 48.dp)
+                            ) {
+                                BasicText(
+                                    text = stringResource(if (recommendations.canRetry) R.string.playlist_recs_retry else R.string.playlist_recs_refresh),
+                                    style = typography().xs.semiBold.copy(color = Encore.Green)
+                                )
+                            }
+                        }
                     }
                 }
-        }
+            }
 
-        Spacer(Modifier.height(Dimensions.bottomSpacer))
+            if (filter != HomeFilter.Podcasts.ordinal && recentDistinct.isNotEmpty()) {
+                item(key = "recent_grid") {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        recentDistinct.take(8).chunked(recentColumns).forEach { row ->
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                row.forEach { song ->
+                                    RecentTile(song, Modifier.weight(1f)) { playSong(song) }
+                                }
+                                if (row.size < recentColumns) Spacer(Modifier.weight(1f))
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (filter != HomeFilter.Podcasts.ordinal && recentDistinct.size > 8) {
+                item(key = "recent_carousel") {
+                    Column {
+                        SectionTitle(stringResource(R.string.mobile_home_recently_played))
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            items(recentDistinct.drop(8).take(15), key = { it.id }) { song ->
+                                CoverCard(
+                                    imageUrl = song.thumbnailUrl.toThumbnail(300),
+                                    title = song.title,
+                                    subtitle = song.artistsText,
+                                    coverSize = coverSize,
+                                    onClick = { playSong(song) }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            val page = homePage
+            if (page == null) {
+                item(key = "loading") {
+                    Box(Modifier.fillMaxWidth().padding(top = 48.dp), contentAlignment = Alignment.Center) { Loader() }
+                }
+            } else {
+                page.sections
+                    .filter { it.items.isNotEmpty() }
+                    .filter {
+                        when (HomeFilter.entries[filter]) {
+                            HomeFilter.Podcasts -> it.title.contains("podcast", ignoreCase = true)
+                            HomeFilter.Music -> !it.title.contains("podcast", ignoreCase = true)
+                            HomeFilter.All -> true
+                        }
+                    }
+                    .forEach { section ->
+                        item {
+                            Column {
+                                SectionTitle(section.title)
+                                LazyRow(
+                                    contentPadding = PaddingValues(horizontal = 16.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                ) {
+                                    items(section.items.filterNotNull()) { item ->
+                                        val subtitle = when (item) {
+                                            is Environment.SongItem -> item.authors?.joinToString { it.name ?: "" }
+                                            is Environment.VideoItem -> item.authors?.joinToString { it.name ?: "" }
+                                            is Environment.AlbumItem -> item.authors?.joinToString { it.name ?: "" }
+                                            is Environment.PlaylistItem -> item.channel?.name
+                                            is Environment.ArtistItem -> stringResource(R.string.mobile_home_artist)
+                                            else -> null
+                                        }
+                                        CoverCard(
+                                            imageUrl = item.thumbnail?.size(300),
+                                            title = item.title ?: "",
+                                            subtitle = subtitle,
+                                            coverSize = coverSize,
+                                            shape = if (item is Environment.ArtistItem) CircleShape else RoundedCornerShape(4.dp),
+                                            onClick = { openItem(item) }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+            }
+        }
     }
 }
 
@@ -240,7 +348,7 @@ fun SpotifyHome(navController: NavController) {
 private fun SectionTitle(title: String) {
     BasicText(
         text = title,
-        maxLines = 1,
+        maxLines = 2,
         overflow = TextOverflow.Ellipsis,
         style = typography().xl.bold.copy(color = Color.White),
         modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 28.dp, bottom = 12.dp)
@@ -252,10 +360,10 @@ private fun RecentTile(song: Song, modifier: Modifier, onClick: () -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
-            .height(56.dp)
-            .clip(RoundedCornerShape(4.dp))
+            .heightIn(min = 64.dp)
+            .clip(RoundedCornerShape(6.dp))
             .background(Encore.SurfaceElevated)
-            .clickable(onClick = onClick)
+            .mobileHomeClickable(onClick = onClick)
     ) {
         AsyncImage(
             model = song.thumbnailUrl.toThumbnail(160),
@@ -267,8 +375,8 @@ private fun RecentTile(song: Song, modifier: Modifier, onClick: () -> Unit) {
             text = song.title,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
-            style = typography().xxs.bold.copy(color = Color.White),
-            modifier = Modifier.padding(horizontal = 8.dp)
+            style = typography().xs.semiBold.copy(color = Color.White),
+            modifier = Modifier.weight(1f).padding(horizontal = 10.dp, vertical = 8.dp)
         )
     }
 }
@@ -278,27 +386,29 @@ private fun CoverCard(
     imageUrl: String?,
     title: String,
     subtitle: String?,
+    coverSize: androidx.compose.ui.unit.Dp,
     shape: Shape = RoundedCornerShape(4.dp),
     onClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
-            .width(140.dp)
-            .clickable(onClick = onClick)
+            .width(coverSize)
+            .clip(RoundedCornerShape(6.dp))
+            .mobileHomeClickable(onClick = onClick)
     ) {
         AsyncImage(
             model = imageUrl,
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .size(140.dp)
+                .size(coverSize)
                 .clip(shape)
                 .background(Encore.SurfaceElevated)
         )
         Spacer(Modifier.height(8.dp))
         BasicText(
             text = title,
-            maxLines = 1,
+            maxLines = 2,
             overflow = TextOverflow.Ellipsis,
             style = typography().xs.semiBold.copy(color = Color.White)
         )
@@ -307,7 +417,35 @@ private fun CoverCard(
                 text = subtitle,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                style = typography().xxs.copy(color = Encore.TextSecondary)
+                style = typography().xs.copy(color = Encore.TextSecondary)
             )
     }
+}
+
+@Composable
+internal fun MobileFilterChip(label: String, isSelected: Boolean, onClick: () -> Unit) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .defaultMinSize(minWidth = Dimensions.touchTarget, minHeight = Dimensions.touchTarget)
+            .clip(CircleShape)
+            .background(if (isSelected) Encore.Green else Encore.SurfaceElevated)
+            .semantics { selected = isSelected }
+            .mobileHomeClickable(onClick, Role.Tab)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+    ) {
+        BasicText(
+            text = label,
+            style = typography().xs.semiBold.copy(color = if (isSelected) Encore.OnGreen else Color.White)
+        )
+    }
+}
+
+@Composable
+internal fun Modifier.mobileHomeClickable(onClick: () -> Unit, role: Role = Role.Button): Modifier {
+    val interactionSource = remember { MutableInteractionSource() }
+    return this
+        .mobilePressFeedback(interactionSource)
+        .semantics(mergeDescendants = true) {}
+        .clickable(interactionSource = interactionSource, indication = ripple(), role = role, onClick = onClick)
 }

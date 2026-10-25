@@ -127,7 +127,7 @@ fun PlayerAppearanceSettings(
     val showButtonPlayerDiscover = appearanceSettings.showButtonPlayerDiscover
     val showButtonPlayerVideo = appearanceSettings.showButtonPlayerVideo
 
-    val navigationBarPosition = appSettings.navigationBarPosition
+    val navigationBarPosition = NavigationBarPosition.current()
 
     val showTotalTimeQueue = appearanceSettings.showTotalTimeQueue
 

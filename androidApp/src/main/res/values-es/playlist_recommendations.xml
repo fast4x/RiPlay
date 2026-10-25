@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="playlist_recs_title">Inspiradas en tus playlists</string>
+    <string name="playlist_recs_summary">Análisis: %1$s · %2$s</string>
+    <string name="playlist_recs_artists">Basadas en %1$s</string>
+    <string name="playlist_recs_loading">Buscando canciones para ti…</string>
+    <string name="playlist_recs_offline">Conéctate a internet para descubrir canciones a partir de tus playlists.</string>
+    <string name="playlist_recs_offline_cached">Sin conexión. Mostrando sugerencias de la última consulta.</string>
+    <string name="playlist_recs_missing_metadata">Añade canciones con título y artista para personalizar tus sugerencias.</string>
+    <string name="playlist_recs_empty">Esta vez no encontramos canciones nuevas. Puedes volver a intentarlo.</string>
+    <string name="playlist_recs_retry">Volver a intentar</string>
+    <string name="playlist_recs_refresh">Actualizar sugerencias</string>
+    <plurals name="playlist_recs_lists">
+        <item quantity="one">%d playlist</item>
+        <item quantity="other">%d playlists</item>
+    </plurals>
+    <plurals name="playlist_recs_songs">
+        <item quantity="one">%d canción</item>
+        <item quantity="other">%d canciones</item>
+    </plurals>
+</resources>

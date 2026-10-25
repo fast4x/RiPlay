@@ -128,7 +128,7 @@ fun StatisticsPage(
     val thumbnailRoundness = appearanceSettings.thumbnailRoundness
     val showStatsListeningTime = appSettings.showStatsListeningTime
     val disableScrollingText = appearanceSettings.disableScrollingText
-    val navigationBarPosition = appSettings.navigationBarPosition
+    val navigationBarPosition = NavigationBarPosition.current()
 
     val maxStatisticsItems = appSettings.maxStatisticsItems
     val statisticsCategory = appSettings.statisticsCategory

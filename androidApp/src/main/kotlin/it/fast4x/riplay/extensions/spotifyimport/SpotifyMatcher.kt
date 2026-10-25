@@ -4,6 +4,7 @@ import androidx.media3.common.util.UnstableApi
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.requests.searchPage
+import it.fast4x.environment.utils.fromMusicShelfRenderer
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.data.Database

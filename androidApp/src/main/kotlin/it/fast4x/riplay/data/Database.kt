@@ -73,6 +73,7 @@ import it.fast4x.riplay.data.models.Lyrics
 import it.fast4x.riplay.data.models.MBAlbum
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.PlaylistPreview
+import it.fast4x.riplay.data.models.PlaylistRecommendationSource
 import it.fast4x.riplay.data.models.PlaylistWithSongs
 import it.fast4x.riplay.data.models.QueuedMediaItem
 import it.fast4x.riplay.data.models.Queues
@@ -2347,6 +2348,27 @@ interface Database {
     @Transaction
     @Query("SELECT DISTINCT S.* FROM Song S INNER JOIN songplaylistmap SM ON S.id=SM.songId")
     fun songsInAllPlaylists(): Flow<List<Song>>
+
+    @Transaction
+    @Query(
+        """
+        SELECT S.*, SM.playlistId AS playlistId, P.name AS playlistName,
+            (SELECT GROUP_CONCAT(artistId, '|') FROM (
+                SELECT artistId FROM SongArtistMap
+                WHERE songId = S.id ORDER BY artistId
+            )) AS artistIds,
+            (SELECT GROUP_CONCAT(albumId, '|') FROM (
+                SELECT albumId FROM SongAlbumMap
+                WHERE songId = S.id ORDER BY albumId
+            )) AS albumIds
+        FROM Song S
+        INNER JOIN SongPlaylistMap SM ON SM.songId = S.id
+        INNER JOIN Playlist P ON P.id = SM.playlistId
+        WHERE P.isPodcast = 0 AND S.isPodcast = 0
+        ORDER BY SM.playlistId, S.id
+        """
+    )
+    fun playlistRecommendationSources(): Flow<List<PlaylistRecommendationSource>>
 
     @Transaction
     @Query("SELECT DISTINCT S.* FROM Song S INNER JOIN songplaylistmap SM ON S.id=SM.songId " +

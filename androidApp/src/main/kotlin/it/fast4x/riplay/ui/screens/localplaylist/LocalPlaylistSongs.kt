@@ -693,7 +693,7 @@ fun LocalPlaylistSongs(
         )
     }
 
-    val navigationBarPosition = appSettings.navigationBarPosition
+    val navigationBarPosition = NavigationBarPosition.current()
     val maxSongsInQueue = appSettings.maxSongsInQueue
 
     val playlistNotMonthlyType =

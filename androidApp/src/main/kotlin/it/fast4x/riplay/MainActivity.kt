@@ -50,10 +50,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material.ExperimentalMaterialApi
@@ -68,7 +65,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -82,7 +78,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
@@ -142,10 +137,8 @@ import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.rememberBottomSheetState
 import it.fast4x.riplay.ui.components.themed.CrossfadeContainer
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.screens.player.unified.components.rememberPlayerSheetState
 import it.fast4x.riplay.ui.screens.settings.isYtLoggedIn
 import it.fast4x.riplay.ui.styling.Appearance
-import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.LocalAppearance
 import it.fast4x.riplay.ui.styling.applyPitchBlack
 import it.fast4x.riplay.ui.styling.colorPaletteOf
@@ -1038,9 +1031,7 @@ class MainActivity : AppCompatActivity() {
             ) {
 
 
-                val density = LocalDensity.current
                 val windowsInsets = WindowInsets.systemBars
-                val bottomDp = with(density) { windowsInsets.getBottom(density).toDp() }
 
                 val localPlayerSheetState = rememberBottomSheetState(
                     dismissedBound = 0.dp,
@@ -1048,29 +1039,9 @@ class MainActivity : AppCompatActivity() {
                     expandedBound = maxHeight
                 )
 
-                // TODO remove in the future
-                val playerSheetState = rememberPlayerSheetState(
-                    dismissedBound = 0.dp,
-                    collapsedBound = Dimensions.collapsedPlayer + bottomDp,
-                    expandedBound = maxHeight,
-                )
-
-
-                val playerAwareWindowInsets by remember(
-                    bottomDp,
-                    playerSheetState.value
-                ) {
-                    derivedStateOf {
-                        val bottom = playerSheetState.value.coerceIn(
-                            bottomDp,
-                            playerSheetState.collapsedBound
-                        )
-
-                        windowsInsets
-                            .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
-                            .add(WindowInsets(bottom = bottom))
-                    }
-                }
+                // The mobile Scaffold measures its player/navigation bars. Full-screen
+                // overlays receive system insets directly, without a legacy player reserve.
+                val playerAwareWindowInsets = windowsInsets
 
                 // Gestiamo la nuova implementazione del PlayerSheet
                 val isPlayerExpanded = remember { mutableStateOf(false) }

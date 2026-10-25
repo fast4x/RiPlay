@@ -44,7 +44,7 @@ private enum class SpotifyImportPhase { INPUT, IMPORTING, DONE }
  * Importa una playlist di Spotify a partire dal suo url.
  *
  * L'utente incolla il link, la playlist viene letta da Spotify e per ogni brano viene
- * cercato il corrispondente su YouTube Music: i brani che non si trovano vengono saltati.
+ * cercato il corrispondente su YouTube Music; i metadati dei brani non risolti restano utili ai consigli.
  */
 @Composable
 fun ImportPlaylistFromSpotifyUrlDialog(
@@ -186,14 +186,24 @@ private fun SpotifyImportResultDialog(
                 } else {
                     Text(
                         text = stringResource(
-                            R.string.importing_spotify_playlist_summary,
+                            R.string.spotify_import_recommendations_summary,
                             result?.imported ?: 0,
-                            result?.skipped ?: 0,
-                            result?.total ?: 0
+                            result?.pending ?: 0
                         ),
                         style = typography().xs,
                         color = colorPalette().textSecondary,
                         textAlign = TextAlign.Start
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(
+                            R.string.spotify_import_recommendations_playable_skips,
+                            result?.skipped ?: 0,
+                            result?.total ?: 0
+                        ),
+                        style = typography().xs,
+                        color = colorPalette().textSecondary
                     )
 
                     result?.playlistName?.let { playlistName ->

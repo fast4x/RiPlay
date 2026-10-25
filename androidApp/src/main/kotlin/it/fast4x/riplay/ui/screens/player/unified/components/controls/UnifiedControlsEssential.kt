@@ -164,24 +164,6 @@ fun UnifiedInfoAlbumAndArtistEssential(
 
             if (!disableScrollingText) modifierTitle = modifierTitle.basicMarquee()
 
-            /*if (isExplicit || playerControlsType == PlayerControlsType.Modern ) {
-                Box(
-                    modifier = Modifier.weight(0.1f)
-                ) {
-                    if (isExplicit) {
-                        IconButton(
-                            icon = R.drawable.explicit,
-                            color = colorPalette().text,
-                            enabled = true,
-                            onClick = {},
-                            modifier = Modifier
-                                .size(18.dp)
-                                .align(Alignment.Center)
-                        )
-                    }
-                }
-            }*/
-
             BoxWithConstraints(
                 modifier = Modifier
                     .weight(1f)
@@ -194,13 +176,11 @@ fun UnifiedInfoAlbumAndArtistEssential(
                         .applyIf(playerControlsType == PlayerControlsType.Modern) { padding(start = likeButtonWidth) }
                 ) {
                     if (isExplicit) {
-                        IconButton(
-                            icon = R.drawable.explicit,
-                            color = colorPalette().text,
-                            enabled = true,
-                            onClick = {},
-                            modifier = Modifier
-                                .size(18.dp)
+                        Image(
+                            painter = painterResource(R.drawable.explicit),
+                            contentDescription = stringResource(R.string.mobile_player_explicit),
+                            colorFilter = ColorFilter.tint(colorPalette().text),
+                            modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier
                             .width(5.dp)
@@ -251,7 +231,7 @@ fun UnifiedInfoAlbumAndArtistEssential(
 
             if (playerControlsType == PlayerControlsType.Modern && playerBackgroundColors != PlayerBackgroundColors.MidnightOdyssey){
                 BoxWithConstraints(
-                    modifier = Modifier.weight(0.1f)
+                    modifier = Modifier.width(48.dp)
                 ) {
                     likeButtonWidth = maxWidth
                     IconButton(
@@ -292,9 +272,11 @@ fun UnifiedInfoAlbumAndArtistEssential(
                                 }
                             }
                         },
-                        modifier = Modifier
-                            .padding(start = 5.dp)
-                            .size(24.dp)
+                        contentDescription = stringResource(
+                            if (likedAt != null && likedAt != -1L) R.string.mobile_player_unlike
+                            else R.string.mobile_player_like
+                        ),
+                        modifier = Modifier.size(48.dp)
                     )
                     if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) {
                         Icon(
