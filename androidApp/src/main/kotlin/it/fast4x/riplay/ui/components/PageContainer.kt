@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -34,7 +33,6 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -61,7 +59,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.enums.NavigationBarPosition
-import it.fast4x.riplay.enums.PlayerPosition
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.ui.components.navigation.header.AppHeader
@@ -73,14 +70,13 @@ import kotlin.math.roundToInt
 @Composable
 fun PageContainer(
     navController: NavController,
-    miniPlayer: @Composable () -> Unit = {},
+    miniPlayer: @Composable (() -> Unit)? = null,
     content: @Composable AnimatedVisibilityScope.(Int) -> Unit
 ) {
     val appSettingsManager = LocalAppSettingsManager.current
     val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val transitionEffect = appSettings.transitionEffect
-    val playerPosition = appSettings.playerPosition
 
     var topBarHeightPx by remember { mutableFloatStateOf(0f) }
     var bottomBarHeightPx by remember { mutableFloatStateOf(0f) }
@@ -148,9 +144,6 @@ fun PageContainer(
     @Suppress("UNUSED_VARIABLE") val unusedConnection = nestedScrollConnection
     val modifier: Modifier = Modifier
 
-    // La barra inferior global ya reserva el espacio del sistema
-    val bottomInset = 0.dp
-
      Scaffold(
         modifier = modifier,
         containerColor = colorPalette().background0,
@@ -163,9 +156,20 @@ fun PageContainer(
             }
         },
         bottomBar = {
-            Box(
-                modifier = Modifier.onGloballyPositioned { bottomBarHeightPx = it.size.height.toFloat() }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onGloballyPositioned { bottomBarHeightPx = it.size.height.toFloat() }
             ) {
+                miniPlayer?.let { player ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp)
+                    ) {
+                        player()
+                    }
+                }
                 SpotifyGlobalBottomBar(navController)
             }
         }
@@ -259,16 +263,6 @@ fun PageContainer(
                         .padding(top = topPadding),
                     content = content
                 )
-            }
-            //**
-            Box(
-                modifier = Modifier
-                    .padding(vertical = 5.dp)
-                    .padding(bottom = bottomInset)
-                    .align(if (playerPosition == PlayerPosition.Top) Alignment.TopCenter
-                    else Alignment.BottomCenter)
-            ) {
-                miniPlayer.invoke()
             }
         }
     }

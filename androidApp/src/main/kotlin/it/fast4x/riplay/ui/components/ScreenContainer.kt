@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -19,7 +18,6 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -47,7 +45,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.enums.NavigationBarPosition
-import it.fast4x.riplay.enums.PlayerPosition
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.ui.components.navigation.header.AppHeader
@@ -159,13 +156,22 @@ fun ScreenContainer(
     }
 
     val bottomBar: @Composable () -> Unit = {
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .onGloballyPositioned { coordinates ->
                     bottomBarHeightPx = coordinates.size.height.toFloat()
                 }
         ) {
+            miniPlayer?.let { player ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                ) {
+                    player()
+                }
+            }
             if (isHome) SpotifyBottomBar(tabIndex, onTabChanged)
             else SpotifyGlobalBottomBar(navController)
         }
@@ -174,18 +180,6 @@ fun ScreenContainer(
     // Spotify no oculta las barras al hacer scroll
     @Suppress("UNUSED_VARIABLE") val unusedConnection = nestedScrollConnection
     val modifier: Modifier = Modifier
-
-    val navigationBarInsetPx = WindowInsets.navigationBars.getBottom(density)
-    // 0f = barra completamente visibile, 1f = barra fuori dallo schermo
-    val bottomBarHideFraction =
-        if (NavigationBarPosition.Bottom.isCurrent() && bottomBarHeightPx > 0f)
-            (toolbarOffset / bottomBarHeightPx).coerceIn(0f, 1f)
-        else
-            1f
-
-    val bottomInset = with(density) {
-        (navigationBarInsetPx * bottomBarHideFraction).toDp()
-    }
 
     Scaffold(
         modifier = modifier,
@@ -245,20 +239,6 @@ fun ScreenContainer(
 
             }
 
-            val playerPosition = if (UiType.RiPlay.isCurrent()) appSettings.playerPosition else PlayerPosition.Bottom
-            val playerAlignment =
-                if (playerPosition == PlayerPosition.Top)
-                    Alignment.TopCenter
-                else
-                    Alignment.BottomCenter
-
-            Box(
-                Modifier
-                    //.padding( vertical = 5.dp )
-                    .padding(bottom = bottomInset)
-                    .align( playerAlignment ),
-                content = { miniPlayer?.invoke() }
-            )
         }
     }
 }
