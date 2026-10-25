@@ -42,6 +42,9 @@ fun AlbumsPage(
 
     LaunchedEffect(Unit) {
         Database.albums(AlbumSortBy.Title, SortOrder.Ascending).collect {
+            // STEP 3b: il Flow emette la lista COMPLETA ad ogni emissione:
+            // senza clear ogni emissione duplicava tutti gli album
+            albums.clear()
             albums += it
         }
     }
@@ -67,7 +70,7 @@ fun AlbumsPage(
                         .fillMaxWidth()
                 ) {
                     Text(
-                        text = "Button row (songs in db ${albums.size})",
+                        text = "Albums (${albums.size})",
                         style = TextStyle(
                             fontSize = typography.titleSmall.fontSize,
                             //fontWeight = typography.titleSmall.fontWeight,

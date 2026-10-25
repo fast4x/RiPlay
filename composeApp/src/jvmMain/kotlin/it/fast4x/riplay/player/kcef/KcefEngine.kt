@@ -319,6 +319,27 @@ sealed interface KcefState {
  *     NoSuchMethodError open/read del glue nativo JCEF (lezione step2o/2p).
  *     playerVars.origin torna DINAMICO (location.origin, validazione
  *     step2k/2n: con valore hardcoded i postMessage vengono scartati).
+ *     VALIDATO UTENTE: "tutti i vari errori 152 sono spariti e viene
+ *     riprodotto tutto quello che clicco".
+ *
+ * 20. STEP 3 (refactor player desktop, niente tab di debug):
+ *     DesktopPlayerManager (player/player/DesktopVideoSource.kt) e' l'UNICO
+ *     gestore motore dell'app: selezione AUTOMATICA in stile Android
+ *     (PlayerService: if (currentSong.isLocal) switchToExo() else
+ *     switchToYoutube()) -> brano/URL YouTube -> KCEF, brano locale
+ *     (Song.id con prefisso local:), file o stream -> VLCJ. Al cambio
+ *     motore l'altro motore va in pausa; al ritorno su KCEF il browser si
+ *     ricrea e il videoId in attesa viene iniettato nell'HTML (meccanismo
+ *     step2r). MiniPlayer e barre di controllo sono agganciate al motore
+ *     ATTIVO (manager.active); rimossi i tab VLCJ/KCEF, l'URL di test
+ *     BigBuckBunny e il wiring FramePlayer; il file picker e' one-shot
+ *     (pickLocalMediaPath) e VlcjController.load rilascia il media player
+ *     precedente. Questo motore (KCEF) NON cambia comportamento.
+ *
+ *     20) v20 (step3b): navigazione desktop stile Android (barra in basso
+ *     Home/Songs/Artists/Albums/Playlists, pagina destinazione espansa a
+ *     destra, dettagli con Back). Solo UI: questo motore (KCEF) NON
+ *     cambia comportamento.
  *
  * STEP 4 (packaging) potra' pre-seminare questa directory nel DEB/MSI
  * per evitare il download iniziale.
@@ -329,7 +350,7 @@ object KcefEngine {
      * Marker di versione del bootstrap: SE NEI LOG NON APPARE QUESTA RIGA,
      * il processo sta eseguendo una build NON aggiornata.
      */
-    const val BOOTSTRAP_VERSION = "v18 (step2r)"
+    const val BOOTSTRAP_VERSION = "v20 (step3b)"
 
     private const val TAG = "[RiPlay-KCEF]"
 

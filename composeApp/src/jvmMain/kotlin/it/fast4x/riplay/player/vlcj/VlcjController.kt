@@ -79,6 +79,14 @@ class VlcjController : PlayerController {
         get() = _state.asStateFlow()
 
     override fun load(url: String) = catch {
+        // STEP 3: ogni load crea un NUOVO EmbeddedMediaPlayer: il precedente
+        // va fermato e rilasciato, altrimenti resta attivo in memoria
+        // (perdita di risorse + audio potenzialmente ancora attivo)
+        player?.run {
+            runCatching { controls().stop() }
+            runCatching { events()?.removeMediaPlayerEventListener(stateListener) }
+            runCatching { release() }
+        }
         player = factory.mediaPlayers()?.newEmbeddedMediaPlayer()?.apply {
             events()?.addMediaPlayerEventListener(stateListener)
             media()?.prepare(url)

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Clear
@@ -16,28 +17,41 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
-import upload.UploadDialog
+import upload.pickLocalMediaPath
 
+/**
+ * STEP 3: input manuale unico per ENTRAMBI i motori (niente piu' tab):
+ *  - URL/id YouTube -> routing verso il motore KCEF;
+ *  - file locale (pulsante cartella o percorso) / URL stream -> VLCJ.
+ * Il routing avviene in [DesktopPlayerManager.route] in base al contenuto.
+ *
+ * Il file picker (prima UploadDialog) ora e' one-shot dentro una
+ * coroutine: niente dialog riaperti a ogni ricomposizione e niente
+ * scritture di stato durante la composizione.
+ */
 @Composable
-fun PlayerInput(onUrl: (String) -> Unit) {
+fun PlayerInput(modifier: Modifier = Modifier, onUrl: (String) -> Unit) {
 
     val (url, setUrl) = remember { mutableStateOf("") }
+    var uploadTick by remember { mutableStateOf(0) }
 
-    val (uploadState, setUploadState) = remember { mutableStateOf(false) }
+    // File picker locale: one-shot (chiamato dalla coroutine, non durante
+    // la composizione); un tick = un'apertura del dialog.
+    LaunchedEffect(uploadTick) {
+        if (uploadTick > 0) {
+            val path = pickLocalMediaPath()
+            if (!path.isNullOrBlank()) setUrl(path)
+        }
+    }
 
-    if (uploadState) UploadDialog(setUrl)
-
+    // Già presente prima: debounce di 500 ms prima di chiamare onUrl
     LaunchedEffect(url) {
         delay(500L)
         url.takeIf { it.isNotBlank() }?.let(onUrl)
     }
 
-    DisposableEffect(uploadState) {
-        onDispose { setUploadState(false) }
-    }
-
     Column(
-        Modifier.fillMaxWidth(),
+        modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
@@ -48,6 +62,7 @@ fun PlayerInput(onUrl: (String) -> Unit) {
                 setUrl,
                 modifier = Modifier.weight(1f),
                 singleLine = true,
+                placeholder = { Text("URL YouTube oppure file / URL locale (VLCJ)") },
                 trailingIcon = {
                     IconButton(onClick = { setUrl("") }, enabled = url.isNotBlank()) {
                         Icon(Icons.Rounded.Clear, "clear url")
@@ -58,8 +73,8 @@ fun PlayerInput(onUrl: (String) -> Unit) {
                 IconButton(onClick = { setUrl(url) }, enabled = url.isNotBlank()) {
                     Icon(Icons.Rounded.Done, "done")
                 }
-                IconButton(onClick = { setUploadState(true) }) {
-                    Icon(Icons.Rounded.FileUpload, "upload")
+                IconButton(onClick = { uploadTick++ }) {
+                    Icon(Icons.Rounded.FileUpload, "apri file locale")
                 }
             }
         }

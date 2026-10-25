@@ -43,6 +43,9 @@ fun SongsPage(
     LaunchedEffect(Unit) {
         //Database.songsByTitleAsc().also { songs.addAll(it) }
         Database.songs(SongSortBy.Title, SortOrder.Ascending, showHiddenSongs = 0).collect {
+            // STEP 3b: il Flow emette la lista COMPLETA ad ogni emissione:
+            // senza clear ogni emissione duplicava tutti i brani
+            songs.clear()
             songs += it
         }
     }
@@ -68,7 +71,7 @@ fun SongsPage(
                         .fillMaxWidth()
                 ) {
                     Text(
-                        text = "Button row (songs in db ${songs.size})",
+                        text = "Songs (${songs.size})",
                         style = TextStyle(
                             fontSize = typography.titleSmall.fontSize,
                             //fontWeight = typography.titleSmall.fontWeight,

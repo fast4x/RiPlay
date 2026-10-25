@@ -1,34 +1,25 @@
 package it.fast4x.riplay.ui
 
-import it.fast4x.riplay.enums.SortOrder
-import it.fast4x.riplay.enums.SongSortBy
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Tab
-import androidx.compose.material.TabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,20 +28,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import it.fast4x.riplay.data.Database
-import it.fast4x.riplay.data.models.Album
+import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.environment.Environment
-import it.fast4x.riplay.enums.PageType
 import it.fast4x.riplay.styling.Dimensions.layoutColumnBottomPadding
-import it.fast4x.riplay.styling.Dimensions.layoutColumnBottomSpacer
 import it.fast4x.riplay.styling.Dimensions.layoutColumnTopPadding
 import it.fast4x.riplay.styling.Dimensions.layoutColumnsHorizontalPadding
+import it.fast4x.riplay.ui.bars.DesktopSection
+import it.fast4x.riplay.ui.bars.DesktopNavigationBar
 import it.fast4x.riplay.ui.components.MiniPlayer
 import it.fast4x.riplay.ui.pages.AlbumsPage
+import it.fast4x.riplay.ui.pages.ArtistsPage
+import it.fast4x.riplay.ui.pages.PlaylistsPage
+import it.fast4x.riplay.ui.pages.PlaylistSongsPage
 import it.fast4x.riplay.ui.pages.SongsPage
 import it.fast4x.riplay.ui.screens.AlbumScreen
 import it.fast4x.riplay.ui.screens.ArtistScreen
@@ -61,18 +54,29 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import player.DesktopVideoSource
-import player.frame.FrameContainer
+import player.DesktopPlayerManager
 import riplay.composeapp.generated.resources.Res
-import riplay.composeapp.generated.resources.album
 import riplay.composeapp.generated.resources.app_icon
-import riplay.composeapp.generated.resources.app_logo_text
-import riplay.composeapp.generated.resources.artists
-import riplay.composeapp.generated.resources.library
-import riplay.composeapp.generated.resources.musical_notes
-import it.fast4x.riplay.player.vlcj.VlcjFrameController
+import riplay.composeapp.generated.resources.arrow_left
+import riplay.composeapp.generated.resources.back
 
-
+/**
+ * STEP 3b: navigazione desktop in stile ANDROID.
+ *
+ * La finestra desktop ora replica la struttura dell'app Android:
+ *  - barra di navigazione IN BASSO (DesktopNavigationBar) con le stesse
+ *    5 voci della barra Android: Home, Songs, Artists, Albums, Playlists;
+ *  - il player KCEF/VLCJ resta nella colonna di sinistra (come prima);
+ *  - la PAGINA DI DESTINAZIONE parte dal centro (dopo la colonna player,
+ *    come la vecchia colonna centrale) ma ora e' ESPESA VERSO DESTRA
+ *    fino al bordo finestra: al posto del vecchio pannello a tab di
+ *    debug (Songs/Albums con TabRow) c'e' la pagina intera della sezione;
+ *  - i click su artista/album/playlist aprono la schermata di dettaglio
+ *    SOPRA la sezione corrente, con pulsante Back (freccia) per tornare,
+ *    come la navigazione Android.
+ */
 @Composable
 fun ThreeColumnsApp() {
 
@@ -82,630 +86,377 @@ fun ThreeColumnsApp() {
 
     var videoId by remember { mutableStateOf("") }
     var nowPlayingSong by remember { mutableStateOf<Song?>(null) }
-    var artistId by remember { mutableStateOf("") }
-    var albumId by remember { mutableStateOf("") }
-    var playlistId by remember { mutableStateOf("") }
-    var mood by remember { mutableStateOf<Environment.Mood.Item?>(null) }
-
-//    val formatAudio =
-//        remember { mutableStateOf<PlayerResponse.StreamingData.AdaptiveFormat?>(null) }
 
     LaunchedEffect(videoId) {
         if (videoId.isEmpty()) return@LaunchedEffect
-
-//        Environment.player(
-//            body = PlayerBody(videoId = videoId)
-//        ).onSuccess {
-//                println("videoId  ${videoId} adaptiveFormats ${it.streamingData?.adaptiveFormats}")
-//                formatAudio.value =
-//                    it.streamingData?.autoMaxQualityFormat
-//                        .let {
-//                            // Specify range to avoid YouTube's throttling
-//                            it?.copy(url = "${it.url}&range=0-${it.contentLength ?: 10000000}")
-//                        }
-//            }
-        //println("videoId  ${videoId} formatAudio url inside ${formatAudio.value?.url}")
-
         nowPlayingSong = db.getSong(videoId)
-        println("nowPlayingSong ${nowPlayingSong}")
+        println("nowPlayingSong $nowPlayingSong")
     }
 
-    coroutineScope.launch {
-        db.songs(SongSortBy.Title, SortOrder.Ascending, showHiddenSongs = 0).collect {
-            println("songs in db ${it.size}")
+    // STEP 3: UN gestore motore per tutta l'app con selezione automatica
+    // (brano YouTube -> KCEF, brano/locale/file -> VLCJ), come Android fa
+    // con HybridPlayer (switchToExo/switchToYoutube da Song.isLocal)
+    val playerManager = remember { DesktopPlayerManager() }
+
+    // STEP 3b: sezione corrente della barra in basso + dettaglio aperto
+    // (artista/album/playlist/mood) sopra la sezione; null = nessun dettaglio
+    var currentSection by remember { mutableStateOf(DesktopSection.HOME) }
+    var detailPage by remember { mutableStateOf<DesktopDetail?>(null) }
+
+    // Brano scelto da una schermata ONLINE (QuickPics/Album/Artista/
+    // Playlist YouTube): va inserito nel db e poi riprodotto
+    val onSongClickOnline: (Song) -> Unit = { song ->
+        videoId = song.id
+        coroutineScope.launch {
+            db.upsert(song)
         }
+        println("ThreeColumnsApp onSongClick videoId $videoId")
     }
 
-    /*
-    val formatAudio = body.value?.streamingData?.adaptiveFormats
-        ?.filter { it.isAudio }
-        ?.maxByOrNull {
-            it.bitrate?.times( (if (it.mimeType.startsWith("audio/webm")) 100 else 1)
-            ) ?: -1 }
+    // Brano gia' presente nel db (SongsPage / playlist locale): solo play
+    val onSongClickFromDb: (Song) -> Unit = { song ->
+        //it's just in db, no need to insert
+        videoId = song.id
+        println("ThreeColumnsApp onSongClick videoId $videoId")
+    }
 
-     */
-
-
-    /*
-    val formatVideo = body.value?.streamingData?.adaptiveFormats
-        ?.filter { it.isVideo }
-        ?.maxByOrNull {
-            it.bitrate?.times( (if (it.mimeType.startsWith("video/mp4")) 100 else 1)
-            ) ?: -1 }
-    */
-
-
-    //val urlAudio by remember { mutableStateOf(formatAudio.value?.url ?: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4") }
-    //var urlVideo by remember { mutableStateOf(formatVideo?.url ?: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4") }
-    var url by remember { mutableStateOf("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4") }
-    //val url by remember { mutableStateOf(formatAudio.value?.url) }
-
-    //val url =  formatAudio.value?.url //"https://rr4---sn-hpa7znzr.googlevideo.com/videoplayback?expire=1727471735&ei=Fsz2ZoyiPO7Si9oPpreTiAI&ip=178.19.172.167&id=o-ABmCff7qCeQd05V_WN5fpAFEfxHP3kxR6G55H_QdlBsh&itag=251&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&mh=43&mm=31%2C26&mn=sn-hpa7znzr%2Csn-4g5lznez&ms=au%2Conr&mv=m&mvi=4&pl=22&gcr=it&initcwndbps=2505000&vprv=1&svpuc=1&mime=audio%2Fwebm&rqh=1&gir=yes&clen=3291443&dur=194.901&lmt=1714829870710563&mt=1727449746&fvip=4&keepalive=yes&fexp=51299152&c=ANDROID_MUSIC&txp=2318224&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cgcr%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Cgir%2Cclen%2Cdur%2Clmt&sig=AJfQdSswRQIhAP5IS0unA9IAhtAtkqY-63FGyG_eRi-FMMgNjWU1TWGzAiACd3c4niMxsPxXjp_55EylpIBysVBOpoD69oQ9xvF8bg%3D%3D&lsparams=mh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpl%2Cinitcwndbps&lsig=ABPmVW0wRAIgZBP07jXYZ5_4xSrp_hZ9jvIOMPsfOa-grREDshQvzSYCIC7ImmFVJCeLUMVASEkedlXa-R4je3RVC_fu2WH8XTvj"
-
-    //var url by remember { mutableStateOf(urlVideo) }
-
-    //val componentController = remember(url) { VlcjComponentController() }
-    val frameController = remember(url) { VlcjFrameController() }
-
-    var showPageSheet by remember { mutableStateOf(false) }
-    var showPageType by remember { mutableStateOf(PageType.QUICKPICS) }
-
-    //println("songs in db ${Database.getAllSongs()}")
-
-    //val backStackEntry by navController.currentBackStackEntryAsState()
-    //val currentScreen = backStackEntry?.destination?.route ?: "artists"
+    fun openDetail(detail: DesktopDetail) {
+        detailPage = detail
+    }
 
     Scaffold(
         containerColor = Color.Black,
         contentColor = Color.Gray,
-        topBar = {
-            /*
-            DesktopTopAppBar(
-                currentScreen = currentScreen,
-                canNavigateBack = navController.previousBackStackEntry != null,
-                navigateUp = { navController.navigateUp() }
-            )
-             */
-        },
         bottomBar = {
-            if (url != null) {
-                MiniPlayer(
-                    frameController = frameController,
-                    url = url,
-                    song = nowPlayingSong,
-                    onExpandAction = { showPageSheet = true }
+            Column {
+                // STEP 3: barra mini agganciata al motore ATTIVO; visibile
+                // quando c'e' un brano
+                if (nowPlayingSong != null) {
+                    MiniPlayer(
+                        song = nowPlayingSong,
+                        controller = playerManager.active,
+                        onExpandAction = {}
+                    )
+                }
+                // STEP 3b: barra di navigazione in basso stile Android
+                // (cambiare sezione chiude il dettaglio aperto, come i tab Android)
+                DesktopNavigationBar(
+                    currentSection = currentSection,
+                    onSectionSelected = { section ->
+                        currentSection = section
+                        detailPage = null
+                    }
                 )
             }
-
         }
     ) { innerPadding ->
 
-        ThreeColumnsLayout(
-            /*
-            onSongClick = {
-                videoId.value = it
-            },
-            onArtistClick = {
-                artistId.value = it
-                showPageType = PageType.ARTIST
-                showPageSheet = true
-            },
-            onAlbumClick = {
-                albumId.value = it
-                showPageType = PageType.ALBUM
-                showPageSheet = true
-            },
-            onPlaylistClick = {},
-             */
-            onHomeClick = { showPageType = PageType.QUICKPICS },
-            onSongClick = {
-                //it's just in db, no need to insert
-                videoId = it.id
-                println("ThreeColumnsApp onSongClick videoId $videoId")
-            },
-            onAlbumClick = {
-                albumId = it.id
-                showPageType = PageType.ALBUM
-                showPageSheet = true
-            },
-            frameController = frameController,
-            // STEP 2k: l'id della canzone selezionata (videoId) passa al
-            // layout e da lì al player KCEF (DesktopVideoSource)
-            videoId = videoId,
-            centerPanelContent = {
-                when (showPageType) {
-                    PageType.ALBUM -> {
-                        AlbumScreen(
-                            browseId = albumId,
-                            onSongClick = {
-                                videoId = it.id
-                                coroutineScope.launch {
-                                    db.upsert(it)
-                                }
-                            },
-                            onAlbumClick = {
-                                albumId = it
-                                showPageType = PageType.ALBUM
-                                showPageSheet = true
-                            }
-                        )
-                    }
-
-                    PageType.ARTIST -> {
-                        ArtistScreen(
-                            browseId = artistId,
-                            onSongClick = {
-                                videoId = it.id
-                                coroutineScope.launch {
-                                    db.upsert(it)
-                                }
-                            },
-                            onPlaylistClick = {
-                                playlistId = it
-                                showPageType = PageType.PLAYLIST
-                                showPageSheet = true
-                            },
-                            onViewAllAlbumsClick = {},
-                            onViewAllSinglesClick = {},
-                            onAlbumClick = {
-                                albumId = it
-                                showPageType = PageType.ALBUM
-                                showPageSheet = true
-                            },
-                            onClosePage = { showPageSheet = false }
-                        )
-                    }
-
-                    PageType.PLAYLIST -> {
-                        PlaylistScreen(
-                            browseId = playlistId,
-                            onSongClick = {
-                                videoId = it.id
-                                coroutineScope.launch {
-                                    db.upsert(it)
-                                }
-                            },
-                            onAlbumClick = {
-                                albumId = it
-                                showPageType = PageType.ALBUM
-                                showPageSheet = true
-                            },
-                            onClosePage = { showPageSheet = false }
-                        )
-                    }
-
-                    PageType.MOOD -> {
-                        mood?.let {
-                            MoodScreen(
-                                mood = it,
-                                onAlbumClick = { id ->
-                                    albumId = id
-                                    showPageType = PageType.ALBUM
-                                    showPageSheet = true
-                                },
-                                onArtistClick = { id ->
-                                    artistId = id
-                                    showPageType = PageType.ARTIST
-                                    showPageSheet = true
-                                },
-                                onPlaylistClick = { id ->
-                                    playlistId = id
-                                    showPageType = PageType.PLAYLIST
-                                    showPageSheet = true
-                                }
-                            )
-                        }
-                    }
-
-                    PageType.QUICKPICS -> {
-                        QuickPicsScreen(
-                            onSongClick = {
-                                videoId = it.id
-                                coroutineScope.launch {
-                                    db.upsert(it)
-                                }
-                                println("ThreeColumnsApp onSongClick videoId $videoId")
-                            },
-                            onAlbumClick = {
-                                albumId = it
-                                showPageType = PageType.ALBUM
-                                showPageSheet = true
-                            },
-                            onArtistClick = {
-                                artistId = it
-                                showPageType = PageType.ARTIST
-                                showPageSheet = true
-                            },
-                            onPlaylistClick = {
-                                playlistId = it
-                                showPageType = PageType.PLAYLIST
-                                showPageSheet = true
-                            },
-                            onMoodClick = {
-                                mood = it
-                                showPageType = PageType.MOOD
-                                showPageSheet = true
-                            }
-                        )
-                    }
-
-                    else -> {}
-                }
-            }
-        )
-
-        /*
-        AnimatedVisibility(
-            visible = showPageSheet,
-            enter = expandIn(animationSpec = tween(350, easing = LinearOutSlowInEasing), expandFrom = Alignment.TopStart),
-            exit =  shrinkOut(animationSpec = tween(350, easing = FastOutSlowInEasing),shrinkTowards = Alignment.TopStart)
+        Row(
+            Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.Black)
-                    .padding(innerPadding),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceBetween,
-            ) {
-                when(showPageType){
-                    PageType.ALBUM -> {
-                        AlbumScreen(
-                            browseId = albumId.value,
-                            onSongClick = {
-                                videoId.value = it
-                            },
-                            onAlbumClick = {
-                                albumId.value = it
-                                showPageType = PageType.ALBUM
-                                showPageSheet = true
-                            },
-                            onClosePage = { showPageSheet = false }
-                        )
-                    }
-                    PageType.ARTIST -> {
-                        ArtistScreen(
-                            browseId = artistId.value,
-                            onSongClick = {
-                                videoId.value = it
-                            },
-                            onPlaylistClick = {},
-                            onViewAllAlbumsClick = {},
-                            onViewAllSinglesClick = {},
-                            onAlbumClick = {
-                                albumId.value = it
-                                showPageType = PageType.ALBUM
-                                showPageSheet = true
-                            },
-                            onClosePage = { showPageSheet = false }
-                        )
-                    }
-                    PageType.PLAYLIST -> {}
-                    PageType.MOOD -> {}
-                    else -> {}
-                }
-            }
-        }
-        */
-        /*
-        CustomModalBottomSheet(
-            showSheet = showPageSheet,
-            onDismissRequest = { showPageSheet = false },
-            containerColor = Color.Black,
-            contentColor = Color.White,
-            modifier = Modifier.fillMaxWidth(),
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            dragHandle = {
-                Surface(
-                    modifier = Modifier.padding(vertical = 0.dp),
-                    color =Color.Black,
-                    shape = ThumbnailRoundness.Medium.shape()
-                ) {}
-            },
-            shape = ThumbnailRoundness.Medium.shape()
-        ) {
-            when(showPageType){
-                PageType.ALBUM -> {}
-                PageType.ARTIST -> {
-                    ArtistScreen(
-                        browseId = artistId.value,
-                        onSongClick = {
-                            videoId.value = it
-                        },
-                        onPlaylistClick = {},
-                        onViewAllAlbumsClick = {},
-                        onViewAllSinglesClick = {},
-                        onAlbumClick = {},
-                        onClosePage = { showPageSheet = false }
-                    )
-                }
-                PageType.PLAYLIST -> {}
-                PageType.MOOD -> {}
-                else -> {}
-            }
-
-        }
-         */
-    }
-}
-
-@Composable
-fun ThreeColumnsLayout(
-    /*
-
-   onArtistClick: (key: String) -> Unit = {},
-   onAlbumClick: (key: String) -> Unit = {},
-   onPlaylistClick: (key: String) -> Unit = {},
-   onMoodClick: (mood: Innertube.Mood.Item) -> Unit = {},
-     */
-    onHomeClick: () -> Unit = {},
-    onSongClick: (Song) -> Unit = {},
-    onAlbumClick: (Album) -> Unit = {},
-    frameController: VlcjFrameController = remember { VlcjFrameController() },
-    // STEP 2k: canzone selezionata (Song.id = videoId YouTube) da passare
-    // al pannello KCEF; null/vuota = nessun video richiesto
-    videoId: String? = null,
-    centerPanelContent: @Composable () -> Unit = {}
-) {
-    Row(Modifier.fillMaxSize()) {
-        RightPanelContent(
-            onShowPlayer = {}
-        ) {
-            DesktopVideoSource(
-                modifier = Modifier.fillMaxWidth().fillMaxHeight(),
-                // STEP 2k: l'id della canzone selezionata arriva al player
-                // KCEF (Song.id = videoId YouTube): senza questo passaggio
-                // il pannello KCEF restava senza video (errore YT code=2)
-                videoId = videoId,
-                vlcjContent = {
-                    FrameContainer(
-                        Modifier.requiredHeight(200.dp),
-                        frameController.size.collectAsState(null).value?.run {
-                            IntSize(first, second)
-                        } ?: IntSize.Zero,
-                        frameController.bytes.collectAsState(null).value
-                    )
-                }
-            )
-        }
-
-        VerticalDivider(
-            modifier = Modifier
-                .fillMaxHeight()
-                .width(1.dp),
-            color = Color.Gray.copy(alpha = 0.6f)
-        )
-        CenterPanelContent(
-            onHomeClick = onHomeClick,
-            content = {
-                centerPanelContent()
-            }
-        )
-        VerticalDivider(
-            modifier = Modifier
-                .fillMaxHeight()
-                .width(1.dp),
-            color = Color.Gray.copy(alpha = 0.6f)
-        )
-        LeftPanelContent(
-            onSongClick = onSongClick,
-            onAlbumClick = onAlbumClick
-        )
-
-    }
-}
-
-@Composable
-fun LeftPanelContent(
-    onSongClick: (Song) -> Unit = {},
-    onAlbumClick: (Album) -> Unit = {}
-) {
-    Column(
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.Start,
-        modifier = Modifier
-            .fillMaxSize() // right
-           // .fillMaxHeight() //left
-           // .fillMaxWidth(0.23f) //left
-            .padding(horizontal = layoutColumnsHorizontalPadding)
-            .padding(top = layoutColumnTopPadding)
-    ) {
-        val (currentTabIndex, setCurrentTabIndex) = remember { mutableStateOf(0) }
-        TabRow(
-            currentTabIndex,
-            modifier = Modifier
-                .height(36.dp)
-                .fillMaxWidth(),
-            backgroundColor = Color.Gray.copy(alpha = 0.2f),
-            contentColor = Color.White.copy(alpha = 0.6f)
-        ) {
-            Tab(
-                currentTabIndex == 0,
-                onClick = { setCurrentTabIndex(0) },
-                text = {
-                    //Text("")
-                },
-                icon = {
-                    Image(
-                        painter = painterResource(Res.drawable.musical_notes),
-                        colorFilter = ColorFilter.tint(Color.White.copy(alpha = 0.6f)),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(20.dp)
-                    )
-                }
-
-            )
-            Tab(
-                currentTabIndex == 1,
-                onClick = { setCurrentTabIndex(1) },
-                text = {
-                    //Text("")
-                },
-                icon = {
-                    Image(
-                        painter = painterResource(Res.drawable.artists),
-                        colorFilter = ColorFilter.tint(Color.White.copy(alpha = 0.6f)),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(20.dp)
-                    )
-                }
-            )
-            Tab(
-                currentTabIndex == 2,
-                onClick = { setCurrentTabIndex(2) },
-                text = {
-                    //Text("")
-                },
-                icon = {
-                    Image(
-                        painter = painterResource(Res.drawable.album),
-                        colorFilter = ColorFilter.tint(Color.White.copy(alpha = 0.6f)),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(20.dp)
-                    )
-                }
-            )
-            Tab(
-                currentTabIndex == 3,
-                onClick = { setCurrentTabIndex(3) },
-                text = {
-                    //Text("")
-                },
-                icon = {
-                    Image(
-                        painter = painterResource(Res.drawable.library),
-                        colorFilter = ColorFilter.tint(Color.White.copy(alpha = 0.6f)),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(20.dp)
-                    )
-                }
-            )
-
-        }
-
-        when (currentTabIndex) {
-            0 -> SongsPage(
-                onSongClick = onSongClick
-            )
-            1 -> {}
-            2 -> {
-                AlbumsPage(
-                    onAlbumClick = onAlbumClick
+            // Colonna player (sinistra, invariata rispetto allo step 3)
+            PlayerPanel {
+                DesktopVideoSource(
+                    modifier = Modifier.fillMaxWidth().fillMaxHeight(),
+                    // STEP 2k: l'id della canzone selezionata arriva al player
+                    // (Song.id = videoId YouTube)
+                    videoId = videoId,
+                    // STEP 3: brano corrente (routing brani locali + barra mini)
+                    song = nowPlayingSong,
+                    // STEP 3: motore automatico YouTube KCEF / locale VLCJ
+                    manager = playerManager
                 )
             }
-            3 -> {}
-        }
 
+            VerticalDivider(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(1.dp),
+                color = Color.Gray.copy(alpha = 0.6f)
+            )
+
+            // STEP 3b: pagina di destinazione — parte dove stava la colonna
+            // centrale ma ESPESA VERSO DESTRA fino al bordo finestra
+            DestinationPanel(
+                modifier = Modifier.weight(1f),
+                currentSection = currentSection,
+                detailPage = detailPage,
+                onBackToSection = { detailPage = null },
+                onGoHome = {
+                    currentSection = DesktopSection.HOME
+                    detailPage = null
+                },
+                onSongClickOnline = onSongClickOnline,
+                onSongClickFromDb = onSongClickFromDb,
+                onOpenDetail = { openDetail(it) }
+            )
+        }
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+/**
+ * Pannello di sinistra con il player (DesktopVideoSource): stessa
+ * struttura/proporzioni del vecchio RightPanelContent (step 2/3).
+ */
 @Composable
-fun CenterPanelContent(
-    onHomeClick: () -> Unit = {},
+fun PlayerPanel(
     content: @Composable () -> Unit
 ) {
-    val scrollState = rememberScrollState()
     Column(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.Start,
         modifier = Modifier
             .fillMaxHeight()
-            .fillMaxWidth(0.7f)
+            .fillMaxWidth(0.23f)
             .padding(horizontal = layoutColumnsHorizontalPadding)
             .padding(top = layoutColumnTopPadding)
-            .padding(bottom = layoutColumnBottomPadding)
-            .verticalScroll(scrollState)
     ) {
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(5.dp),
-            verticalAlignment = Alignment.Top
-        ) {
-            Image(
-                painter = painterResource(Res.drawable.app_icon),
-                colorFilter = ColorFilter.tint(Color.Green.copy(alpha = 0.6f)),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(36.dp)
-                    .combinedClickable(
-                        onClick = {},
-                        onLongClick = {}
-                    )
-            )
-            Text(
-                text = "Play",
-                color = Color.White,
-                fontSize = 25.sp,
-                modifier = Modifier.clickable {
-                    onHomeClick()
-                }
-            )
-//            Image(
-//                painter = painterResource(Res.drawable.app_logo_text),
-//                colorFilter = ColorFilter.tint(
-//                    Color.White
-//                    /*
-//                    when (colorPaletteMode) {
-//                        ColorPaletteMode.Light, ColorPaletteMode.System -> colorPalette.text
-//                        else -> Color.White
-//                    }
-//
-//                     */
-//                ),
-//                contentDescription = null,
-//                modifier = Modifier
-//                    .width(100.dp)
-//                    .clickable { onHomeClick() }
-//            )
-        }
-
-        Column(Modifier.fillMaxSize().border(1.dp, color = Color.Black)) {
-
+        Spacer(Modifier.size(layoutColumnTopPadding))
+        Row {
             content()
-
-            Spacer(Modifier.height(layoutColumnBottomSpacer))
-
-
         }
-
     }
 }
 
-
+/**
+ * Pannello contenuto principale (dal centro verso destra): header con
+ * logo/Back + pagina della sezione corrente oppure la schermata di
+ * dettaglio aperta.
+ */
 @Composable
-fun RightPanelContent(
-    onShowPlayer: (Boolean) -> Unit = {},
-    content: @Composable () -> Unit
+fun DestinationPanel(
+    modifier: Modifier = Modifier,
+    currentSection: DesktopSection,
+    detailPage: DesktopDetail?,
+    onBackToSection: () -> Unit,
+    onGoHome: () -> Unit,
+    onSongClickOnline: (Song) -> Unit,
+    onSongClickFromDb: (Song) -> Unit,
+    onOpenDetail: (DesktopDetail) -> Unit
 ) {
-    var showPlayer by remember { mutableStateOf(false) }
     Column(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.Start,
-        modifier = Modifier
-            //.fillMaxSize() //right
-            .fillMaxHeight() //left
-            .fillMaxWidth(0.23f) //left
+        modifier = modifier
+            .fillMaxHeight()
             .padding(horizontal = layoutColumnsHorizontalPadding)
             .padding(top = layoutColumnTopPadding)
+            .padding(bottom = layoutColumnBottomPadding)
     ) {
-        /*
-        Text(text = "Right Panel", modifier = Modifier.clickable {
-            showPlayer = !showPlayer
-            onShowPlayer(showPlayer)
-        })
-        Spacer(Modifier.size(20.dp))
-
-         */
-        Spacer(Modifier.size(layoutColumnTopPadding))
+        // Header: logo RiPlay (torna a Home) oppure pulsante Back quando
+        // e' aperto un dettaglio (artista/album/playlist/mood)
+        val detail = detailPage
         Row(
-            //Modifier.border(1.dp, color = Color.Yellow)
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            content()
+            if (detail != null) {
+                Image(
+                    painter = painterResource(Res.drawable.arrow_left),
+                    colorFilter = ColorFilter.tint(Color.White.copy(alpha = 0.7f)),
+                    contentDescription = "back",
+                    modifier = Modifier
+                        .size(22.dp)
+                        .clickable { onBackToSection() }
+                )
+                Text(
+                    text = stringResource(Res.string.back),
+                    color = Color.White.copy(alpha = 0.7f),
+                    fontSize = 14.sp,
+                    modifier = Modifier.clickable { onBackToSection() }
+                )
+            } else {
+                Image(
+                    painter = painterResource(Res.drawable.app_icon),
+                    colorFilter = ColorFilter.tint(Color.Green.copy(alpha = 0.6f)),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clickable { onGoHome() }
+                )
+                Text(
+                    text = "Play",
+                    color = Color.White,
+                    fontSize = 25.sp,
+                    modifier = Modifier.clickable { onGoHome() }
+                )
+            }
+        }
+
+        // Contenuto: dettaglio aperto oppure pagina della sezione
+        Box(
+            Modifier
+                .weight(1f)
+                .padding(top = 8.dp)
+        ) {
+            if (detail != null) {
+                DetailContent(
+                    detail = detail,
+                    onBackToSection = onBackToSection,
+                    onSongClickOnline = onSongClickOnline,
+                    onSongClickFromDb = onSongClickFromDb,
+                    onOpenDetail = onOpenDetail
+                )
+            } else {
+                when (currentSection) {
+                    DesktopSection.HOME ->
+                        ScrollColumn {
+                            QuickPicsScreen(
+                                onSongClick = onSongClickOnline,
+                                onAlbumClick = {
+                                    onOpenDetail(DesktopDetail.Album(it))
+                                },
+                                onArtistClick = {
+                                    onOpenDetail(DesktopDetail.Artist(it))
+                                },
+                                onPlaylistClick = {
+                                    onOpenDetail(DesktopDetail.YtPlaylist(it))
+                                },
+                                onMoodClick = {
+                                    onOpenDetail(DesktopDetail.Mood(it))
+                                }
+                            )
+                        }
+
+                    DesktopSection.SONGS ->
+                        SongsPage(
+                            onSongClick = onSongClickFromDb
+                        )
+
+                    DesktopSection.ARTISTS ->
+                        ArtistsPage(
+                            onArtistClick = {
+                                onOpenDetail(DesktopDetail.Artist(it.id))
+                            }
+                        )
+
+                    DesktopSection.ALBUMS ->
+                        AlbumsPage(
+                            onAlbumClick = {
+                                onOpenDetail(DesktopDetail.Album(it.id))
+                            }
+                        )
+
+                    DesktopSection.PLAYLISTS ->
+                        PlaylistsPage(
+                            onPlaylistClick = { preview ->
+                                val browseId = preview.playlist.browseId
+                                if (!browseId.isNullOrBlank())
+                                    onOpenDetail(DesktopDetail.YtPlaylist(browseId))
+                                else
+                                    onOpenDetail(DesktopDetail.LocalPlaylist(preview.playlist))
+                            }
+                        )
+                }
+            }
         }
     }
+}
+
+/**
+ * Schermate di dettaglio aperte sopra la sezione (come la navigazione
+ * Android artista/album/playlist/mood). Le schermate online hanno bisogno
+ * dello scroll verticale (non lo gestiscono da sole); le pagine con
+ * LazyColumn (playlist locale, mood) scrollano da sole.
+ */
+@Composable
+fun DetailContent(
+    detail: DesktopDetail,
+    onBackToSection: () -> Unit,
+    onSongClickOnline: (Song) -> Unit,
+    onSongClickFromDb: (Song) -> Unit,
+    onOpenDetail: (DesktopDetail) -> Unit
+) {
+    when (detail) {
+        is DesktopDetail.Artist ->
+            ScrollColumn {
+                ArtistScreen(
+                    browseId = detail.browseId,
+                    onSongClick = onSongClickOnline,
+                    onPlaylistClick = {
+                        onOpenDetail(DesktopDetail.YtPlaylist(it))
+                    },
+                    onViewAllAlbumsClick = {},
+                    onViewAllSinglesClick = {},
+                    onAlbumClick = {
+                        onOpenDetail(DesktopDetail.Album(it))
+                    },
+                    onClosePage = onBackToSection
+                )
+            }
+
+        is DesktopDetail.Album ->
+            ScrollColumn {
+                AlbumScreen(
+                    browseId = detail.browseId,
+                    onSongClick = onSongClickOnline,
+                    onAlbumClick = {
+                        onOpenDetail(DesktopDetail.Album(it))
+                    }
+                )
+            }
+
+        is DesktopDetail.YtPlaylist ->
+            ScrollColumn {
+                PlaylistScreen(
+                    browseId = detail.browseId,
+                    onSongClick = onSongClickOnline,
+                    onAlbumClick = {
+                        onOpenDetail(DesktopDetail.Album(it))
+                    },
+                    onClosePage = onBackToSection
+                )
+            }
+
+        is DesktopDetail.LocalPlaylist ->
+            PlaylistSongsPage(
+                playlist = detail.playlist,
+                // i brani di una playlist locale sono gia' nel db
+                onSongClick = onSongClickFromDb
+            )
+
+        is DesktopDetail.Mood ->
+            MoodScreen(
+                mood = detail.mood,
+                onAlbumClick = {
+                    onOpenDetail(DesktopDetail.Album(it))
+                },
+                onArtistClick = {
+                    onOpenDetail(DesktopDetail.Artist(it))
+                },
+                onPlaylistClick = {
+                    onOpenDetail(DesktopDetail.YtPlaylist(it))
+                }
+            )
+    }
+}
+
+/**
+ * Colonna con scroll verticale per le schermate che non lo gestiscono
+ * da sole (QuickPics, Album, Artista, Playlist YouTube).
+ */
+@Composable
+private fun ScrollColumn(content: @Composable () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+    ) {
+        content()
+    }
+}
+
+/**
+ * STEP 3b: dettaglio aperto sopra la sezione corrente. Ogni voce e' una
+ * destinazione della navigazione (equivalente desktop delle rotte
+ * NavRoutes.artist/album/playlist/mood di Android).
+ */
+sealed interface DesktopDetail {
+    data class Artist(val browseId: String) : DesktopDetail
+    data class Album(val browseId: String) : DesktopDetail
+    data class YtPlaylist(val browseId: String) : DesktopDetail
+    data class LocalPlaylist(val playlist: Playlist) : DesktopDetail
+    data class Mood(val mood: Environment.Mood.Item) : DesktopDetail
 }
