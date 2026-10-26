@@ -120,7 +120,7 @@ compose.desktop {
         mainClass = "MainKt"
 
         // STEP 3q: versione allineata all'app Android (versionName)
-        version = "0.8.0"
+        version = "0.8.1"
         group = "riplay"
 
         nativeDistributions {
@@ -151,7 +151,7 @@ compose.desktop {
              */
             targetFormats(TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm, TargetFormat.Dmg)
             packageName = "RiPlay"
-            packageVersion = "0.8.0"
+            packageVersion = "0.8.1"
 
             // STEP 4: risorse applicative incluse nel pacchetto (CEF pre-seminato)
             appResourcesRootDir.set(project.layout.projectDirectory.dir("desktop-resources"))

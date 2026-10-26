@@ -1,0 +1,487 @@
+# =============================================================================
+# build-release.yml - WORKFLOW UNIFICATO di rilascio RiPlay
+#
+#
+#   ANDROID  : APK firmati full + foss  (job build-apk, da build-release-apks)
+#   DESKTOP  : pacchetti NATIVI Windows MSI / Linux DEB+RPM / macOS DMG
+#              (job build-desktop, con CEF PRE-SEMINATO: nessun download
+#              ~200MB per l'utente al primo avvio)
+#   ARCHIVI  : 7z AVD / WSA / WAYDROID  (dal job release, come da Version3)
+#   RELEASE  : una sola GitHub Release con TUTTI gli asset + changelog
+#
+# Trigger:
+#  - push di un tag v*          -> costruisce TUTTO (android + desktop) e
+#                                  pubblica la release sul tag
+#  - workflow_dispatch (manuale): si sceglie la "version" e COSA costruire
+#                                  (all / android-only / desktop-only)
+#
+# NOTE TECNICHE:
+#  - jpackage NON fa cross-building: ogni formato desktop esce solo dal
+#    runner del suo sistema (MSI solo su windows-latest, DEB/RPM solo su
+#    Linux, DMG solo su macOS). Il matrix build-desktop riflette questo.
+#  - ubuntu-22.04 per il DEB: glibc di base piu' vecchio -> il pacchetto
+#    gira anche su distribuzioni non recentissime (ubuntu-24.04 linkerebbe
+#    una glibc nuova e il deb non si installerebbe sui sistemi vecchi).
+#  - macOS DMG NON FIRMATO: alla prima apertura serve tasto destro -> Apri
+#    (o `xattr -cr /Applications/RiPlay.app`). Per firmare/notarizzare:
+#    aggiungere i segreti MACOS_CERTIFICATE (p12 base64),
+#    MACOS_CERTIFICATE_PWD, APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD,
+#    APPLE_TEAM_ID e i blocchi signing/notarization in build.gradle.kts
+#    (composeApp, dentro macOS { ... }).
+#  - Il bundle CEF (jbr_jcef) viene seminato PRIMA della build con
+#    scripts/fetch-kcef-bundle.sh (stessa selezione della libreria KCEF)
+#    e finisce DENTRO l'installer (resources/kcef): l'app lo estrae al
+#    primo avvio nella directory dati utente (KcefEngine.preSeedPackagedBundle).
+#  - VLC resta un requisito DI SISTEMA per la riproduzione dei file locali.
+# =============================================================================
+
+name: Build and Release RiPlay
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v1.0.0)'
+        required: true
+        type: string
+      targets:
+        description: 'Cosa costruire'
+        required: true
+        type: choice
+        default: 'all'
+        options:
+          - all
+          - android-only
+          - desktop-only
+
+concurrency:
+  group: build-release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ===========================================================================
+  # 1) VALIDAZIONE: formato versione + tag non esistente + sync a main
+  # ===========================================================================
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+      targets: ${{ steps.targets.outputs.targets }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch latest commits
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git fetch origin main
+          git reset --hard origin/main
+          echo "✅ Synced to latest commit on main"
+
+      - name: Validate version format and check if tag exists
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          # 🔧 FIX: input passato via env, non iniettato nello script
+          VERSION: ${{ github.event.inputs.version }}
+        run: |
+          if [[ ! $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "❌ Invalid version format! Use v1.0.0"
+            exit 1
+          fi
+
+          if git rev-parse "$VERSION" >/dev/null 2>&1; then
+            echo "❌ Tag $VERSION already exists!"
+            exit 1
+          fi
+
+          echo "✅ Version $VERSION is valid and new"
+
+      - name: Resolve version output
+        id: resolve
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+        run: |
+          CURRENT_TAG="$INPUT_VERSION"
+          if [ -z "$CURRENT_TAG" ]; then
+            CURRENT_TAG="${GITHUB_REF_NAME}"
+          fi
+          echo "version=$CURRENT_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve targets output
+        id: targets
+        env:
+          INPUT_TARGETS: ${{ github.event.inputs.targets }}
+        run: |
+          TARGETS="$INPUT_TARGETS"
+          if [ -z "$TARGETS" ]; then
+            # push di un tag -> si costruisce tutto
+            TARGETS="all"
+          fi
+          echo "targets=$TARGETS" >> "$GITHUB_OUTPUT"
+
+  # ===========================================================================
+  # 2) ANDROID: APK firmati full + foss (matrix, invariato dallo script V3)
+  # ===========================================================================
+  build-apk:
+    needs: validate
+    if: >-
+      github.event_name == 'push' ||
+      needs.validate.outputs.targets == 'all' ||
+      needs.validate.outputs.targets == 'android-only'
+    runs-on: ubuntu-latest
+    # Se uno dei due flavor si blocca davvero, fallisce dopo N minuti invece di
+    # restare appeso fino al timeout di 6h del job (o a una cancellazione manuale)
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - flavor: full
+            gradle_task: :androidApp:assembleFull
+            build_variant: ""
+          - flavor: foss
+            gradle_task: :androidApp:assembleFoss
+            build_variant: "foss"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch latest commits
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git fetch origin main
+          git reset --hard origin/main
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Decode keystore from secrets to temp directory
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          mkdir -p "${RUNNER_TEMP}/keystore"
+          echo "$KEYSTORE_BASE64" | base64 -d > "${RUNNER_TEMP}/keystore/RiPlayKeystore.jks"
+          chmod 600 "${RUNNER_TEMP}/keystore/RiPlayKeystore.jks"
+
+      - name: Build Release APK - ${{ matrix.flavor }} flavor
+        env:
+          SIGNING_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          SIGNING_STORE_FILE: ${{ runner.temp }}/keystore/RiPlayKeystore.jks
+        run: |
+          ./gradlew ${{ matrix.gradle_task }} -PBUILD_VARIANT=${{ matrix.build_variant }} \
+            --no-daemon --stacktrace --max-workers=2
+
+      - name: Clean up sensitive files
+        if: always()
+        run: |
+          rm -rf "${RUNNER_TEMP}/keystore"
+          echo "✅ Keystore removed from temporary directory"
+
+      - name: Collect APK for this flavor
+        run: |
+          mkdir -p release-apks
+          find androidApp -name "*.apk" -path "*/release/*" -exec cp {} release-apks/ \;
+          ls -lah release-apks/
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-${{ matrix.flavor }}
+          path: release-apks/*.apk
+          retention-days: 1
+
+  # ===========================================================================
+  # 3) DESKTOP: pacchetti NATIVI MSI / DEB+RPM / DMG (matrix per-OS, jpackage
+  #    non fa cross-building) con CEF pre-seminato dentro l'installer
+  # ===========================================================================
+  build-desktop:
+    needs: validate
+    if: >-
+      github.event_name == 'push' ||
+      needs.validate.outputs.targets == 'all' ||
+      needs.validate.outputs.targets == 'desktop-only'
+    name: desktop-${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows-msi
+            os: windows-latest
+            tasks: :composeApp:packageMsi
+            seed_os: windows
+            seed_arch: x64
+          # ubuntu-22.04: glibc base piu' vecchio -> il deb gira anche su
+          # distribuzioni non recentissime
+          - name: linux-deb-rpm
+            os: ubuntu-22.04
+            tasks: :composeApp:packageDeb :composeApp:packageRpm
+            seed_os: linux
+            seed_arch: x64
+          - name: macos-dmg
+            os: macos-14
+            tasks: :composeApp:packageDmg
+            seed_os: osx
+            seed_arch: aarch64
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch latest commits
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git fetch origin main
+          git reset --hard origin/main
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      # Il modulo chaquopy (python 3.13) e' configurato nella stessa build
+      # Gradle: il setup evita sorprese in fase di configurazione
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # Semina l'archivio jbr_jcef (stessa selezione della libreria KCEF) in
+      # composeApp/desktop-resources/<os>/kcef/ -> jpackage lo include
+      # nell'installer (resources/kcef)
+      - name: Pre-seed bundle CEF (jbr_jcef)
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bash scripts/fetch-kcef-bundle.sh "${{ matrix.seed_os }}" "${{ matrix.seed_arch }}"
+          find composeApp/desktop-resources -type f | head
+
+      - name: Build pacchetto desktop (${{ matrix.name }})
+        shell: bash
+        run: ./gradlew ${{ matrix.tasks }} --no-daemon --stacktrace
+
+      # I binari di jpackage finiscono in composeApp/build/compose/binaries/main
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          if-no-files-found: error
+          path: |
+            composeApp/build/compose/binaries/main/msi/*.msi
+            composeApp/build/compose/binaries/main/deb/*.deb
+            composeApp/build/compose/binaries/main/rpm/*.rpm
+            composeApp/build/compose/binaries/main/dmg/*.dmg
+          retention-days: 1
+
+  # ===========================================================================
+  # 4) RELEASE: raccoglie TUTTI gli artifact (android + desktop), aggiunge gli
+  #    archivi 7z AVD/WSA/WAYDROID e pubblica UNA release con changelog
+  # ===========================================================================
+  release:
+    needs: [validate, build-apk, build-desktop]
+    # Va avanti anche se uno dei due gruppi e' stato SALTATO (dispatch
+    # android-only/desktop-only), ma non se qualcuno e' fallito/cancellato
+    if: >-
+      always() &&
+      needs.validate.result == 'success' &&
+      needs.build-apk.result != 'failure' &&
+      needs.build-apk.result != 'cancelled' &&
+      needs.build-desktop.result != 'failure' &&
+      needs.build-desktop.result != 'cancelled'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Ogni artifact finisce in una SUA sottocartella (niente merge: evita di
+      # mischiare apk full/foss e pacchetti di sistemi diversi)
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+
+      - name: Normalize asset names
+        env:
+          CURRENT_TAG: ${{ needs.validate.outputs.version }}
+        run: |
+          cd release-assets
+          echo "📂 Artifacts scaricati:"
+          find . -type f | sort
+
+          # Nomi canonici per la release (se un artifact contiene piu' file
+          # con la stessa estensione, vengono numerati -1, -2, ...)
+          rename_artifact() { # $1=artifact_dir $2=extension $3=base canonico
+            local files n i=1 f
+            files=$(ls "$1"/*."$2" 2>/dev/null || true)
+            [ -z "$files" ] && return 0
+            n=$(echo "$files" | wc -l)
+            for f in $files; do
+              if [ "$n" -eq 1 ]; then
+                cp "$f" "${3}.${2}"
+              else
+                cp "$f" "${3}-${i}.${2}"
+              fi
+              i=$((i+1))
+            done
+          }
+          rename_artifact apk-full       apk "RiPlay-${CURRENT_TAG}-Android-full"
+          rename_artifact apk-foss       apk "RiPlay-${CURRENT_TAG}-Android-foss"
+          rename_artifact windows-msi    msi "RiPlay-${CURRENT_TAG}-Windows"
+          rename_artifact linux-deb-rpm  deb "RiPlay-${CURRENT_TAG}-Linux"
+          rename_artifact linux-deb-rpm  rpm "RiPlay-${CURRENT_TAG}-Linux"
+          rename_artifact macos-dmg      dmg "RiPlay-${CURRENT_TAG}-macOS"
+
+          echo "📂 Dopo rinomina:"
+          find . -maxdepth 1 -type f | sort
+
+      - name: Package desktop distribution as 7z
+        env:
+          CURRENT_TAG: ${{ needs.validate.outputs.version }}
+        run: |
+          echo "📦 Installing 7zip..."
+          sudo apt-get install -y p7zip-full
+
+          AVD_ARCHIVE="RiPlay-desktop-AVD-${CURRENT_TAG}.7z"
+          WSA_ARCHIVE="RiPlay-desktop-WSA-${CURRENT_TAG}.7z"
+          WAYDROID_ARCHIVE="RiPlay-desktop-WAYDROID-${CURRENT_TAG}.7z"
+
+          # Con guard: se una sorgente non esiste nella repo si salta l'archivio
+          # invece di far fallire tutto il job release
+          if [ -d desktopDistribution/src/avd ]; then
+            echo "📦 Creating ${AVD_ARCHIVE} (Windows & Linux) from desktopDistribution/src/avd/ ..."
+            7z a "release-assets/${AVD_ARCHIVE}" ./desktopDistribution/src/avd/*
+          else
+            echo "⚠️  desktopDistribution/src/avd non presente: ${AVD_ARCHIVE} saltato"
+          fi
+
+          if [ -d desktopDistribution/src/wsa ]; then
+            echo "📦 Creating ${WSA_ARCHIVE} (Windows only) from desktopDistribution/src/wsa/ ..."
+            7z a "release-assets/${WSA_ARCHIVE}" ./desktopDistribution/src/wsa/*
+          else
+            echo "⚠️  desktopDistribution/src/wsa non presente: ${WSA_ARCHIVE} saltato"
+          fi
+
+          if [ -d desktopDistribution/src/waydroid ]; then
+            echo "📦 Creating ${WAYDROID_ARCHIVE} (Linux only) from desktopDistribution/src/waydroid/ ..."
+            7z a "release-assets/${WAYDROID_ARCHIVE}" ./desktopDistribution/src/waydroid/*
+          else
+            echo "⚠️  desktopDistribution/src/waydroid non presente: ${WAYDROID_ARCHIVE} saltato"
+          fi
+
+          echo "📂 Final content of folder release-assets (root):"
+          find release-assets -maxdepth 1 -type f -exec du -h {} \; | sort -k2
+
+      - name: Generate Changelog
+        env:
+          CURRENT_TAG: ${{ needs.validate.outputs.version }}
+        run: |
+          PREVIOUS_TAG=$(git tag --sort=-version:refname --list "v*" --merged HEAD | grep -v "^${CURRENT_TAG}$" | head -1)
+
+          if [ -z "$PREVIOUS_TAG" ]; then
+            echo "⚠️  No previous tag found - showing all commits"
+            # 🔧 FIX: GITHUB_REPOSITORY è una env di default; || true evita fallimento
+            # se grep filtra tutte le righe
+            git log --pretty=format:"- %s ([%h](https://github.com/${GITHUB_REPOSITORY}/commit/%H))" --reverse \
+              | grep -v "Update stats and chart \[skip ci\]" | head -20 > /tmp/changelog.txt || true
+          else
+            echo "📋 Changes between $PREVIOUS_TAG and $CURRENT_TAG"
+            git log "${PREVIOUS_TAG}..HEAD" --pretty=format:"- %s ([%h](https://github.com/${GITHUB_REPOSITORY}/commit/%H))" \
+              | grep -v "Update stats and chart \[skip ci\]" > /tmp/changelog.txt || true
+          fi
+
+          echo "" >> /tmp/changelog.txt
+
+      - name: Create Release Notes
+        env:
+          CURRENT_TAG: ${{ needs.validate.outputs.version }}
+        run: |
+          RELEASE_DATE=$(date +'%Y-%m-%d')
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+
+          {
+            echo "## 🎵 RiPlay ${CURRENT_TAG} - Released ${RELEASE_DATE}"
+            echo ""
+            echo "### 📋 What's Changed"
+            # Il changelog viene letto da file: bash non interpreta
+            # virgolette, backtick o parentesi nei messaggi di commit
+            cat /tmp/changelog.txt
+            echo ""
+            echo "### 📦 Downloads"
+            echo "**Android**"
+            echo "- **APK Full** (all features)"
+            echo "- **APK FOSS** (all features less chromecast, check for updates, musicvault)"
+            echo ""
+            echo "**Desktop nativo** (CEF incluso, nessun download al primo avvio; VLC richiesto per i file locali)"
+            echo "- **Windows** - MSI installer"
+            echo "- **Linux** - DEB + RPM"
+            echo "- **macOS** - DMG (non firmato: primo avvio con tasto destro -> Apri)"
+            echo ""
+            echo "**Desktop distribuzioni Android-based** (7z)"
+            echo "- **Desktop AVD** (Windows & Linux)"
+            echo "- **Desktop WSA** (Windows only)"
+            echo "- **Desktop WAYDROID** (Linux only)"
+            echo ""
+            echo "### ✨ Build Information"
+            echo "- **Build Date**: ${RELEASE_DATE}"
+            echo "- **Git Commit**: \`${COMMIT_HASH}\`"
+            echo "- **Java Version**: 21"
+            echo ""
+            echo "**Thank you for using RiPlay!** 🎵"
+          } > /tmp/release_notes.md
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            release-assets/RiPlay-*-Android-full*.apk
+            release-assets/RiPlay-*-Android-foss*.apk
+            release-assets/*.msi
+            release-assets/*.deb
+            release-assets/*.rpm
+            release-assets/*.dmg
+            release-assets/*.7z
+          body_path: /tmp/release_notes.md
+          draft: false
+          prerelease: false
+          tag_name: ${{ needs.validate.outputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Summary
+        if: success()
+        run: |
+          echo "✅ Release completed successfully!"
+          echo "📦 Release files:"
+          find release-assets -maxdepth 1 -type f -exec du -h {} \; | sort -k2

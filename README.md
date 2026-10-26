@@ -146,7 +146,7 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 
 ## 📲 Installation on PC
 **How to?**
-- Simple download from the [latest release](https://github.com/fast4x/RiPlay/releases/latest), preferred installer for Windows and Linux, only for Windows or only for Linux
+- Simple download from the [latest release](https://github.com/fast4x/RiPlay/releases/latest)
 
 
 ## ❓ Need Help?
