@@ -1,6 +1,8 @@
 # =============================================================================
 # build-release.yml - WORKFLOW UNIFICATO di rilascio RiPlay
 #
+# Unifica in UN SOLO processo (richiesta utente: "unifica il processo di
+# produzione delle varie versioni android con le varie versioni desktop"):
 #
 #   ANDROID  : APK firmati full + foss  (job build-apk, da build-release-apks)
 #   DESKTOP  : pacchetti NATIVI Windows MSI / Linux DEB+RPM / macOS DMG
@@ -33,6 +35,22 @@
 #    e finisce DENTRO l'installer (resources/kcef): l'app lo estrae al
 #    primo avvio nella directory dati utente (KcefEngine.preSeedPackagedBundle).
 #  - VLC resta un requisito DI SISTEMA per la riproduzione dei file locali.
+#
+# STEP 3u (fix DMG macOS):
+#  - Il job macos-dmg e' fallito su macos-14 con "Execution failed for task
+#    ':composeApp:createDistributable' > External tool execution failed ...
+#    Exit code: 1". CAUSA: in fase app-image jpackage su macOS esegue per OGNI
+#    file eseguibile/.dylib di RiPlay.app "codesign --remove-signature" +
+#    "codesign -s -" (firma ad-hoc obbligatoria su Apple Silicon); se un solo
+#    binario e' unsigned la build muore (issue JetBrains/compose-multiplatform#3586)
+#    e l'errore reale viene loggato SOLO a livello verbose.
+#  - RIMEDI in questo workflow: (1) -Pcompose.desktop.verbose=true +
+#    -Pcompose.preserve.working.dir=true sul job mac -> jpackage --verbose
+#    mostra i comandi codesign e il file colpevole; (2) retry x3 della build;
+#    (3) step di diagnostica + artifact SOLO sul fallimento (args di jpackage
+#    e Info.plist generati); (4) pulizia hdiutil dei volumi stale; (5) nel
+#    build.gradle.kts di composeApp il runtime jlink viene pre-firmato ad-hoc
+#    prima di jpackage (createRuntimeImage doLast).
 # =============================================================================
 
 name: Build and Release RiPlay
@@ -233,6 +251,7 @@ jobs:
             tasks: :composeApp:packageMsi
             seed_os: windows
             seed_arch: x64
+            extra_flags: ''
           # ubuntu-22.04: glibc base piu' vecchio -> il deb gira anche su
           # distribuzioni non recentissime
           - name: linux-deb-rpm
@@ -240,11 +259,15 @@ jobs:
             tasks: :composeApp:packageDeb :composeApp:packageRpm
             seed_os: linux
             seed_arch: x64
+            extra_flags: ''
           - name: macos-dmg
             os: macos-14
             tasks: :composeApp:packageDmg
             seed_os: osx
             seed_arch: aarch64
+            # STEP 3u: jpackage --verbose (log completo dei comandi codesign
+            # interni) + working dir preservata per la diagnostica post-fallimento
+            extra_flags: '-Pcompose.desktop.verbose=true -Pcompose.preserve.working.dir=true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -285,9 +308,83 @@ jobs:
           bash scripts/fetch-kcef-bundle.sh "${{ matrix.seed_os }}" "${{ matrix.seed_arch }}"
           find composeApp/desktop-resources -type f | head
 
+      # STEP 3u: i runner macOS a volte lasciano volumi DMG montati da run
+      # precedenti; se /Volumes/RiPlay* esiste gia' il packaging DMG fallisce
+      # con "hdiutil: create failed - File exists". Pulizia preventiva.
+      - name: Pulizia volumi hdiutil stale (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          for v in /Volumes/RiPlay*; do
+            if [ -e "$v" ]; then
+              echo "Detaching stale volume: $v"
+              hdiutil detach "$v" -force || true
+            fi
+          done
+          ls -1 /Volumes || true
+
+      # STEP 3u: retry x3 (le fasi di codesign/hdiutil di jpackage sui runner
+      # CI hanno una famiglia di guasti transitori documentati). Con verbose il
+      # log mostra i comandi interni esatti anche quando un tentativo fallisce.
       - name: Build pacchetto desktop (${{ matrix.name }})
         shell: bash
-        run: ./gradlew ${{ matrix.tasks }} --no-daemon --stacktrace
+        run: |
+          set -u
+          attempt=1
+          max_attempts=3
+          while [ "$attempt" -le "$max_attempts" ]; do
+            echo "::group::Tentativo ${attempt}/${max_attempts} - ./gradlew ${{ matrix.tasks }} ${{ matrix.extra_flags }}"
+            if ./gradlew ${{ matrix.tasks }} ${{ matrix.extra_flags }} --no-daemon --stacktrace; then
+              echo "::endgroup::"
+              echo "✅ Build riuscita al tentativo ${attempt}"
+              exit 0
+            fi
+            echo "::endgroup::"
+            attempt=$((attempt + 1))
+            if [ "$attempt" -le "$max_attempts" ]; then
+              echo "⚠️ Tentativo fallito, riprovo tra 15 secondi..."
+              sleep 15
+            fi
+          done
+          echo "❌ Build fallita dopo ${max_attempts} tentativi"
+          exit 1
+
+      # STEP 3u: se macOS fallisce non voliamo più al buio -> stampiamo gli
+      # argomenti esatti di jpackage e il Info.plist generato, e li alleghiamo
+      # come artifact per l'analisi
+      - name: Diagnostica jpackage (solo su fallimento macOS)
+        if: failure() && runner.os == 'macOS'
+        shell: bash
+        run: |
+          D=composeApp/build/compose/tmp
+          {
+            echo "=== createDistributable.args.txt ==="
+            cat "$D/createDistributable.args.txt" 2>/dev/null || echo "(assente)"
+            echo ""
+            echo "=== packageDmg.args.txt ==="
+            cat "$D/packageDmg.args.txt" 2>/dev/null || echo "(assente)"
+            echo ""
+            echo "=== Info.plist generati ==="
+            find "$D" -maxdepth 3 -name '*.plist' -type f 2>/dev/null | while read -r p; do
+              echo "--- $p ---"
+              cat "$p"
+              echo ""
+            done
+            echo "=== build/compose/tmp (livello 1) ==="
+            ls -la "$D" 2>/dev/null || true
+            echo "=== binaries ==="
+            find composeApp/build/compose/binaries -maxdepth 3 2>/dev/null | head -40 || true
+          } > jpackage-diagnostics.txt 2>&1 || true
+          cat jpackage-diagnostics.txt
+
+      - name: Upload diagnostica jpackage (macOS)
+        if: failure() && runner.os == 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-jpackage-diagnostics
+          path: jpackage-diagnostics.txt
+          if-no-files-found: ignore
+          retention-days: 7
 
       # I binari di jpackage finiscono in composeApp/build/compose/binaries/main
       - name: Upload artifact

@@ -187,6 +187,52 @@ compose.desktop {
     }
 }
 
+// =============================================================================
+// STEP 3u (fix build DMG su CI macOS):
+// In fase app-image jpackage su macOS esegue, per OGNI file eseguibile o
+// .dylib presente in RiPlay.app, "codesign --remove-signature" + "codesign
+// -s -" (la firma ad-hoc e' obbligatoria su Apple Silicon): se anche UN SOLO
+// binario e' unsigned la build muore con "External tool execution failed ...
+// Exit code: 1" e l'errore reale appare SOLO con --verbose (v. issue
+// JetBrains/compose-multiplatform#3586, stessa identica firma).
+// Il plugin Compose pre-firma le dylib estratte dai jar, ma il runtime
+// prodotto da jlink (task createRuntimeImage) e' l'unica parte che NON viene
+// pre-firmata: qui lo firmiamo ad-hoc ("-" = firma senza certificato,
+// sufficiente per eseguire su Apple Silicon) PRIMA che jpackage parta, cosi'
+// la fase di firma di jpackage non trova mai sottocomponenti unsigned.
+// Su Windows/Linux e' un no-op (codesign non esiste). Un eventuale errore
+// codesign e' SOLO un warning: jpackage gestisce comunque la firma.
+// =============================================================================
+tasks.matching { it.name == "createRuntimeImage" }.configureEach {
+    doLast {
+        val osName = System.getProperty("os.name").lowercase()
+        if (!osName.contains("mac") && !osName.contains("darwin")) return@doLast
+        val runtimeDir = outputs.files.firstOrNull { it.isDirectory && it.exists() } ?: return@doLast
+        logger.lifecycle("[riplay-mac] pre-firma ad-hoc del runtime jlink: ${runtimeDir.absolutePath}")
+        var signedOk = 0
+        var signedKo = 0
+        runtimeDir.walkTopDown()
+            .filter { it.isFile }
+            .forEach { file ->
+                val isLib = file.extension == "dylib" || file.name.endsWith(".jnilib")
+                val isExec = file.canExecute()
+                if (!isLib && !isExec) return@forEach
+                val proc = ProcessBuilder(
+                    "/usr/bin/codesign", "--force", "--sign", "-", file.absolutePath
+                ).redirectErrorStream(true).start()
+                val outputMsg = proc.inputStream.bufferedReader().readText().trim()
+                val exitCode = proc.waitFor()
+                if (exitCode == 0) {
+                    signedOk++
+                } else {
+                    signedKo++
+                    logger.warn("[riplay-mac] codesign fallito su ${file.name}: $outputMsg")
+                }
+            }
+        logger.lifecycle("[riplay-mac] runtime pre-firmato: $signedOk file firmati, $signedKo errori")
+    }
+}
+
 compose.resources {
     publicResClass = true
     generateResClass = always
