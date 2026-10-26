@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  RiPlay Desktop - Azərbaycan (values-az)
+  RiPlay Desktop - English (values)
   Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
   Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
   istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
