@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui.pages
 
+import it.fast4x.riplay.i18n.ds
+
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -99,6 +101,13 @@ import kotlinx.coroutines.launch
 fun SearchPage(
     onSongClick: (Song) -> Unit,
     onAddToQueue: (Song) -> Unit,
+    // STEP 3n (richiesta utente n.4 "se clicco un brano o un video, occorre
+    // popolare la coda con l'elenco presente, direi di fissare il massimo a
+    // 50 elementi da inserire in coda"): click su un brano o un video =
+    // il brano cliccato parte subito e la LISTA dei risultati correnti
+    // entra in coda (il cap 50 e' applicato in onPlayCollection di
+    // ThreeColumnsApp, in un unico punto per tutte le raccolte)
+    onPlayCollection: (List<Song>, Song) -> Unit,
     onAlbumClick: (String) -> Unit,
     onArtistClick: (String) -> Unit,
     onPlaylistClick: (String) -> Unit
@@ -315,7 +324,7 @@ fun SearchPage(
                     Box {
                         if (query.text.isEmpty())
                             Text(
-                                "Cerca brani, album, artisti, playlist...",
+                                ds("search.hint"),
                                 color = Color.White.copy(alpha = 0.35f),
                                 fontSize = 15.sp,
                                 maxLines = 1
@@ -337,7 +346,7 @@ fun SearchPage(
             if (query.text.isNotEmpty()) {
                 Icon(
                     Icons.Filled.Close,
-                    contentDescription = "cancella la ricerca",
+                    contentDescription = ds("search.clear"),
                     tint = Color.White.copy(alpha = 0.5f),
                     modifier = Modifier
                         .size(18.dp)
@@ -360,7 +369,7 @@ fun SearchPage(
             ) {
                 if (history.isNotEmpty()) {
                     Text(
-                        "Ricerche recenti",
+                        ds("search.recent"),
                         color = Color.White,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold
@@ -396,7 +405,7 @@ fun SearchPage(
                 if (suggestions.isNotEmpty()) {
                     Spacer(Modifier.size(14.dp))
                     Text(
-                        "Suggerimenti",
+                        ds("search.suggestions"),
                         color = Color.White,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold
@@ -471,39 +480,50 @@ fun SearchPage(
             ) {
                 when (activeTab) {
 
-                    SearchTab.SONGS -> items(
-                        items = songResult?.items.orEmpty(),
-                        key = { it.key }
-                    ) { songItem ->
-                        SongItem(
-                            song = songItem,
-                            modifier = Modifier
-                                .combinedClickable(
-                                    onLongClick = {},
-                                    onClick = { onSongClick(songItem.asSong) }
-                                ),
-                            onAddToQueue = { onAddToQueue(songItem.asSong) }
-                        )
+                    // STEP 3n: click su un brano = parte SUBITO e TUTTA la
+                    // lista dei risultati correnti entra in coda (max 50)
+                    SearchTab.SONGS -> {
+                        val songsInResults = songResult?.items.orEmpty().map { it.asSong }
+                        items(
+                            items = songResult?.items.orEmpty(),
+                            key = { it.key }
+                        ) { songItem ->
+                            val clickedSong = songItem.asSong
+                            SongItem(
+                                song = songItem,
+                                modifier = Modifier
+                                    .combinedClickable(
+                                        onLongClick = {},
+                                        onClick = { onPlayCollection(songsInResults, clickedSong) }
+                                    ),
+                                onAddToQueue = { onAddToQueue(clickedSong) }
+                            )
+                        }
                     }
 
-                    SearchTab.VIDEOS -> items(
-                        items = videoResult?.items.orEmpty(),
-                        key = { it.key }
-                    ) { videoItem ->
-                        val videoSong = videoItem.toSong()
-                        SongItem(
-                            songEntity = SongEntity(
-                                song = videoSong,
-                                contentLength = null,
-                                albumTitle = null
-                            ),
-                            modifier = Modifier
-                                .combinedClickable(
-                                    onLongClick = {},
-                                    onClick = { onSongClick(videoSong) }
+                    // STEP 3n: stesso comportamento per i VIDEO (la lista dei
+                    // video correnti entra in coda, convertita a brani)
+                    SearchTab.VIDEOS -> {
+                        val videosInResults = videoResult?.items.orEmpty().map { it.toSong() }
+                        items(
+                            items = videoResult?.items.orEmpty(),
+                            key = { it.key }
+                        ) { videoItem ->
+                            val videoSong = videoItem.toSong()
+                            SongItem(
+                                songEntity = SongEntity(
+                                    song = videoSong,
+                                    contentLength = null,
+                                    albumTitle = null
                                 ),
-                            onAddToQueue = { onAddToQueue(videoSong) }
-                        )
+                                modifier = Modifier
+                                    .combinedClickable(
+                                        onLongClick = {},
+                                        onClick = { onPlayCollection(videosInResults, videoSong) }
+                                    ),
+                                onAddToQueue = { onAddToQueue(videoSong) }
+                            )
+                        }
                     }
 
                     SearchTab.ALBUMS -> items(
@@ -572,7 +592,7 @@ fun SearchPage(
                                 Loader()
                             } else {
                                 Text(
-                                    "Carica altri",
+                                    ds("search.load_more"),
                                     color = RiPlayAccent,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.SemiBold,

@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui.bars
 
+import it.fast4x.riplay.i18n.ds
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -121,11 +123,11 @@ fun DesktopNavigationBar(
                     Image(
                         painter = painterResource(icon),
                         colorFilter = ColorFilter.tint(tint),
-                        contentDescription = section.label,
+                        contentDescription = sectionLabel(section),
                         modifier = Modifier.size(22.dp)
                     )
                     Text(
-                        text = section.label,
+                        text = sectionLabel(section),
                         color = tint,
                         fontSize = 11.sp,
                         modifier = Modifier.padding(top = 2.dp)
@@ -134,4 +136,15 @@ fun DesktopNavigationBar(
             }
         }
     }
+}
+
+/** STEP 3s: etichetta localizzata della sezione di navigazione. */
+private fun sectionLabel(section: DesktopSection): String = when (section) {
+    DesktopSection.HOME -> ds("nav.home")
+    DesktopSection.SEARCH -> ds("nav.search")
+    DesktopSection.SONGS -> ds("nav.songs")
+    DesktopSection.ARTISTS -> ds("nav.artists")
+    DesktopSection.ALBUMS -> ds("nav.albums")
+    DesktopSection.PLAYLISTS -> ds("nav.playlists")
+    DesktopSection.LOCAL -> ds("nav.local")
 }

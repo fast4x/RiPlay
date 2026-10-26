@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - Esperanto (values-eo)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">Hejmo</string>
+    <string name="nav.search">Serĉi</string>
+    <string name="nav.songs">Kantoj</string>
+    <string name="nav.artists">Artistroj</string>
+    <string name="nav.albums">Albumoj</string>
+    <string name="nav.playlists">Ludlistoj</string>
+    <string name="nav.local">Lokaj dosieroj</string>
+    <string name="queue.title">Ludovico ({n})</string>
+    <string name="queue.open">malfermu la ludovicon</string>
+    <string name="queue.clear">malplenigu la vicon</string>
+    <string name="queue.close_panel">fermu la panelon de la vico</string>
+    <string name="queue.remove">forigu el la vico</string>
+    <string name="queue.drag">tiru por reordigi</string>
+    <string name="queue.drag_handle">Tiru la tenilon por reordigi</string>
+    <string name="action.add_to_queue">aldonu al la vico</string>
+    <string name="action.already_queued">jam en la vico</string>
+    <string name="action.enqueue_all">metu ĉion en la vicon</string>
+    <string name="action.enqueue_album">metu la tutan albumon en la vicon</string>
+    <string name="action.enqueue_playlist">metu la tutan ludliston en la vicon</string>
+    <string name="player.previous">antaŭa kanto</string>
+    <string name="player.next">sekva kanto</string>
+    <string name="player.play">ludu</string>
+    <string name="player.pause">paŭzo</string>
+    <string name="player.volume_off">sono malŝaltita</string>
+    <string name="player.volume_low">malalta laŭteco</string>
+    <string name="player.volume_high">alta laŭteco</string>
+    <string name="player.expand">etendu la ludilon</string>
+    <string name="player.open_fullscreen">malfermu la ludilon plenekrane</string>
+    <string name="player.back_to_cover">reen al la kovrilo de la kanto</string>
+    <string name="player.watch_video">rigardu la filmeton</string>
+    <string name="player.expand_video">etendu la filmeton al la tuta larĝo de la fenestro</string>
+    <string name="player.restore_video">restaŭru la originan larĝon de la filmeto</string>
+    <string name="player.radio">radio: aldonu similajn kantojn al la vico</string>
+    <string name="player.song_cover">kovrilo de la kanto</string>
+    <string name="player.online">Konektita</string>
+    <string name="player.local">Loka</string>
+    <string name="radio.none_found">Neniuj similaj kantoj trovitaj</string>
+    <string name="radio.added">Aldonitaj {n} similaj kantoj</string>
+    <string name="radio.unavailable">Radio nedisponebla</string>
+    <string name="overlay.close_player">fermu la ludilon</string>
+    <string name="overlay.queue_title">ludovico</string>
+    <string name="overlay.queue_count">Vico ({n})</string>
+    <string name="overlay.no_song">Neniu kanto ludata</string>
+    <string name="overlay.video_active_note">Filmeto aktiva en la maldekstra panelo: fermu ĝin por vidi ĝin ĉi tie</string>
+    <string name="overlay.video_active">filmeto aktiva en la panelo</string>
+    <string name="overlay.close_hint">Fermu per la chevrono supre maldekstre aŭ per ESC</string>
+    <string name="page.albums">Albumoj ({n})</string>
+    <string name="page.artists">Artistroj ({n})</string>
+    <string name="page.playlists">Ludlistoj ({n})</string>
+    <string name="page.songs">Kantoj ({n})</string>
+    <string name="page.local">Lokaj dosieroj ({n})</string>
+    <string name="page.followed_only">Nur sekvataj</string>
+    <string name="page.followed">Sekvataj</string>
+    <string name="page.followed_artist">sekvata artisto</string>
+    <string name="page.home">Hejmo</string>
+    <string name="page.moods">Emocioj kaj ĝenroj</string>
+    <string name="page.home_unavailable">Hejmo nedisponebla (kontrolu la konekton kaj premu la ĝisdatigan ikonon supre).</string>
+    <string name="search.hint">Serĉu kantojn, albumojn, artistojn, ludlistojn...</string>
+    <string name="search.load_more">Ŝargu pli</string>
+    <string name="search.recent">Lastaj serĉoj</string>
+    <string name="search.suggestions">Sugestoj</string>
+    <string name="search.clear">forviŝu la serĉon</string>
+    <string name="local.add_folder">Aldonu dosierujon</string>
+    <string name="local.add_files">Aldonu dosierojn</string>
+    <string name="local.fallback_artist">Loka dosiero</string>
+    <string name="local.imported">Importitaj {n} dosieroj</string>
+    <string name="local.scanning">Serĉataj sonaj dosieroj...</string>
+    <string name="local.empty_hint">Neniuj lokaj dosieroj importitaj.\n\nUzu \"Aldonu dosierujon\" por skani dosierujon de la komputilo (inkluzive de subdosierujoj) aŭ \"Aldonu dosierojn\" por elekti unuopajn kantojn. Importitaj dosieroj ludiĝas per la Loka motoro (VLCJ) kaj restas en la biblioteko.</string>
+    <string name="local.input_hint">YouTube-a URL aŭ loka dosiero / URL (VLCJ)</string>
+    <string name="local.clear_url">forviŝu la URL-on</string>
+    <string name="local.open_file">malfermu lokan dosieron</string>
+    <string name="detail.album_shuffle">ludu la albumon hazarde</string>
+    <string name="detail.album_favorite_add">aldonu la albumon al ŝatataj</string>
+    <string name="detail.album_favorite_ok">albumo en ŝatataj</string>
+    <string name="detail.artist_shuffle">ludu la kantojn de la artisto hazarde</string>
+    <string name="detail.artist_follow">sekvu la artiston</string>
+    <string name="detail.artist_followed">artisto sekvata</string>
+    <string name="detail.playlist_shuffle">ludu la ludliston hazarde</string>
+    <string name="detail.playlist_favorite_add">konservu la ludliston inter ŝatataj</string>
+    <string name="detail.playlist_favorite_ok">ludlisto en ŝatataj: klaku por forigi</string>
+    <string name="common.loading">ŝargado...</string>
+    <string name="kcef.unavailable">Ludmotoro KCEF nedisponebla</string>
+    <string name="kcef.details_log">Plenaj detaloj en la log/konzolo: linioj komenciĝantaj per [RiPlay-KCEF].</string>
+    <string name="kcef.retry">Reprovu</string>
+    <string name="kcef.preparing">Preparado de la ludmotoro (KCEF)…</string>
+    <string name="kcef.downloading">Elŝuto de la enkonstruita retumilo (nur unua starto)…</string>
+    <string name="kcef.extracting">Ekstraktado de komponantoj…</string>
+    <string name="kcef.installing">Instalado…</string>
+    <string name="kcef.starting">Startigo de la enkonstruita retumilo…</string>
+    <string name="kcef.preparing_short">Preparado…</string>
+    <string name="kcef.jdk_conflict">La uzata JDK enhavas enkonstruitan retumilan motoron de versio nekongrua kun RiPlay. Post la elŝuto la aplikaĵo fermiĝos: remalfermu ĝin por kompletigi la instaladon.</string>
+    <string name="error.yt_with_code">YouTube-eraro (kodo {code}: {meaning}). Detaloj en la log: linioj [RiPlay-KCEF] / [RiPlay-YT].</string>
+    <string name="error.yt_2">nevalida parametro aŭ filmeto kun aliro/aĝlimoj aŭ YouTube kontraŭ-boto/konsento-kontrolo (bezonata ensaluto)</string>
+    <string name="error.yt_5">eraro de HTML5-ludilo (enhavo/kokeko/reto)</string>
+    <string name="error.yt_100">filmeto ne trovita aŭ privata</string>
+    <string name="error.yt_101_150">la posedanto ne permesas enigitan ludon</string>
+    <string name="error.yt_152">enigita kunteksto malakceptita de YouTube: la Referer de la gastiga paĝo ne akceptiĝas</string>
+    <string name="error.yt_153">eniga peto malakceptita de YouTube (mankas player/referrer-agordo)</string>
+    <string name="error.yt_unknown">nekonata kodo</string>
+    <string name="error.local_unavailable">Loka kanto ne ludeblas sur la tabulon: la dosiervojo ne estas alirebla (origino Android MediaStore aŭ movita dosiero). Vi povas ludi ĝin elektante la dosieron de la komputilo per la dosieruj-butono en la kampo sube.</string>
+    <string name="error.manual_unsupported">Vojo ne trovita aŭ nesubtenata URL: \'{value}\'</string>
+    <string name="misc.playlist_cover">Kovrilo de ludlisto</string>
+    <string name="settings.language">Lingvo</string>
+    <string name="settings.system">Sistema lingvo</string>
+    <string name="titlebar.minimize">Minimumigi</string>
+    <string name="titlebar.maximize">Maksimumigi</string>
+    <string name="titlebar.restore">Restaŭrigi</string>
+    <string name="titlebar.close">Fermi</string>
+    <string name="common.back">Reen</string>
+    <string name="common.songs_word">kantoj</string>
+    <string name="overlay.playing">Nun ludata</string>
+    <string name="local.none_found_in">Neniu sona dosiero trovita en \"{value}\"</string>
+    <string name="local.imported_from">Importitaj {n} dosieroj el \"{value}\"</string>
+</resources>

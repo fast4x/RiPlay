@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - עברית (values-iw)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">בית</string>
+    <string name="nav.search">חיפוש</string>
+    <string name="nav.songs">שירים</string>
+    <string name="nav.artists">אמנים</string>
+    <string name="nav.albums">אלבומים</string>
+    <string name="nav.playlists">רשימות השמעה</string>
+    <string name="nav.local">קבצים מקומיים</string>
+    <string name="queue.title">תור ניגון ({n})</string>
+    <string name="queue.open">פתח את תור הניגון</string>
+    <string name="queue.clear">נקה את התור</string>
+    <string name="queue.close_panel">סגור את פאנל התור</string>
+    <string name="queue.remove">הסר מהתור</string>
+    <string name="queue.drag">גרור לסידור מחדש</string>
+    <string name="queue.drag_handle">גרור את הידית לסידור מחדש</string>
+    <string name="action.add_to_queue">הוסף לתור</string>
+    <string name="action.already_queued">כבר בתור</string>
+    <string name="action.enqueue_all">הוסף הכל לתור</string>
+    <string name="action.enqueue_album">הוסף את האלבום כולו לתור</string>
+    <string name="action.enqueue_playlist">הוסף את רשימת ההשמעה כולה לתור</string>
+    <string name="player.previous">שיר קודם</string>
+    <string name="player.next">שיר הבא</string>
+    <string name="player.play">נגן</string>
+    <string name="player.pause">השהה</string>
+    <string name="player.volume_off">השתקה</string>
+    <string name="player.volume_low">עצמה נמוכה</string>
+    <string name="player.volume_high">עצמה גבוהה</string>
+    <string name="player.expand">הרחב את הנגן</string>
+    <string name="player.open_fullscreen">פתח את הנגן במסך מלא</string>
+    <string name="player.back_to_cover">חזרה לעטיפת השיר</string>
+    <string name="player.watch_video">צפה בסרטון</string>
+    <string name="player.expand_video">הרחב את הסרטון לרוחב החלון המלא</string>
+    <string name="player.restore_video">שחזר את רוחב הסרטון המקורי</string>
+    <string name="player.radio">רדיו: הוסף שירים דומים לתור</string>
+    <string name="player.song_cover">עטיפת השיר</string>
+    <string name="player.online">מקוון</string>
+    <string name="player.local">מקומי</string>
+    <string name="radio.none_found">לא נמצאו שירים דומים</string>
+    <string name="radio.added">נוספו {n} שירים דומים</string>
+    <string name="radio.unavailable">רדיו לא זמין</string>
+    <string name="overlay.close_player">סגור את הנגן</string>
+    <string name="overlay.queue_title">תור ניגון</string>
+    <string name="overlay.queue_count">תור ({n})</string>
+    <string name="overlay.no_song">אף שיר לא מתנגן</string>
+    <string name="overlay.video_active_note">סרטון פעיל בפאנל הנגן משמאל: סגור אותו כדי לצפות בו כאן</string>
+    <string name="overlay.video_active">סרטון פעיל בפאנל הנגן</string>
+    <string name="overlay.close_hint">סגור עם החץ למעלה משמאל או עם ESC</string>
+    <string name="page.albums">אלבומים ({n})</string>
+    <string name="page.artists">אמנים ({n})</string>
+    <string name="page.playlists">רשימות השמעה ({n})</string>
+    <string name="page.songs">שירים ({n})</string>
+    <string name="page.local">קבצים מקומיים ({n})</string>
+    <string name="page.followed_only">רק נעקבים</string>
+    <string name="page.followed">נעקבים</string>
+    <string name="page.followed_artist">אמן נעקב</string>
+    <string name="page.home">בית</string>
+    <string name="page.moods">מצבי רוח וז\'אנרים</string>
+    <string name="page.home_unavailable">בית לא זמין (בדוק את החיבור ולחץ על סמל הרענון למעלה).</string>
+    <string name="search.hint">חפש שירים, אלבומים, אמנים, רשימות השמעה...</string>
+    <string name="search.load_more">טען עוד</string>
+    <string name="search.recent">חיפושים אחרונים</string>
+    <string name="search.suggestions">הצעות</string>
+    <string name="search.clear">נקה חיפוש</string>
+    <string name="local.add_folder">הוסף תיקייה</string>
+    <string name="local.add_files">הוסף קבצים</string>
+    <string name="local.fallback_artist">קובץ מקומי</string>
+    <string name="local.imported">יובאו {n} קבצים</string>
+    <string name="local.scanning">מחפש קבצי שמע...</string>
+    <string name="local.empty_hint">לא יובאו קבצים מקומיים.\n\nהשתמש ב\"הוסף תיקייה\" כדי לסרוק תיקייה במחשב (כולל תתי-תיקיות) או ב\"הוסף קבצים\" כדי לבחור שירים בודדים. קבצים שיובאו מנוגנים עם מנוע מקומי (VLCJ) ונשארים בספרייה.</string>
+    <string name="local.input_hint">כתובת YouTube או קובץ / כתובת מקומית (VLCJ)</string>
+    <string name="local.clear_url">נקה כתובת</string>
+    <string name="local.open_file">פתח קובץ מקומי</string>
+    <string name="detail.album_shuffle">נגן את האלבום בערבוב</string>
+    <string name="detail.album_favorite_add">הוסף את האלבום למועדפים</string>
+    <string name="detail.album_favorite_ok">אלבום במועדפים</string>
+    <string name="detail.artist_shuffle">נגן את שירי האמן בערבוב</string>
+    <string name="detail.artist_follow">עקוב אחר האמן</string>
+    <string name="detail.artist_followed">עוקב אחר האמן</string>
+    <string name="detail.playlist_shuffle">נגן את רשימת ההשמעה בערבוב</string>
+    <string name="detail.playlist_favorite_add">שמור את רשימת ההשמעה במועדפים</string>
+    <string name="detail.playlist_favorite_ok">רשימת השמעה במועדפים: לחץ להסרה</string>
+    <string name="common.loading">טוען...</string>
+    <string name="kcef.unavailable">מנוע הניגון KCEF לא זמין</string>
+    <string name="kcef.details_log">פרטים מלאים בלוג/קונסולה: שורות המתחילות ב-[RiPlay-KCEF].</string>
+    <string name="kcef.retry">נסה שוב</string>
+    <string name="kcef.preparing">מכין את מנוע הניגון (KCEF)…</string>
+    <string name="kcef.downloading">מוריד את הדפדפן המובנה (רק בהפעלה הראשונה)…</string>
+    <string name="kcef.extracting">מחלץ רכיבים…</string>
+    <string name="kcef.installing">מתקין…</string>
+    <string name="kcef.starting">מפעיל את הדפדפן המובנה…</string>
+    <string name="kcef.preparing_short">מכין…</string>
+    <string name="kcef.jdk_conflict">ה-JDK בשימוש מכיל מנוע דפדפן מובנה בגרסה שאינה תואמת ל-RiPlay. לאחר ההורדה היישום ייסגר: פתח אותו שוב כדי להשלים את ההתקנה.</string>
+    <string name="error.yt_with_code">שגיאת YouTube (קוד {code}: {meaning}). פרטים בלוג: שורות [RiPlay-KCEF] / [RiPlay-YT].</string>
+    <string name="error.yt_2">פרמטר לא תקין או סרטון עם הגבלות גישה/גיל או בדיקת אנטי-בוט/הסכמה של YouTube (נדרשת התחברות)</string>
+    <string name="error.yt_5">שגיאת נגן HTML5 (תוכן/קודק/רשת)</string>
+    <string name="error.yt_100">סרטון לא נמצא או פרטי</string>
+    <string name="error.yt_101_150">הבעלים אינו מאפשר ניגון מוטמע</string>
+    <string name="error.yt_152">הקשר מוטמע נדחה על ידי YouTube: ה-Referer של הדף המארח אינו מתקבל</string>
+    <string name="error.yt_153">בקשת הטמעה נדחתה על ידי YouTube (חסרה תצורת player/referrer)</string>
+    <string name="error.yt_unknown">קוד לא מוכר</string>
+    <string name="error.local_unavailable">שיר מקומי לא ניתן לניגון בשולחן העבודה: נתיב הקובץ אינו נגיש (מקור Android MediaStore או קובץ שהועבר). אפשר לנגן אותו בבחירת הקובץ מהמחשב באמצעות כפתור התיקייה בשדה למטה.</string>
+    <string name="error.manual_unsupported">נתיב לא נמצא או כתובת לא נתמכת: \'{value}\'</string>
+    <string name="misc.playlist_cover">עטיפת רשימת השמעה</string>
+    <string name="settings.language">שפה</string>
+    <string name="settings.system">שפת המערכת</string>
+    <string name="titlebar.minimize">מזער</string>
+    <string name="titlebar.maximize">הגדל</string>
+    <string name="titlebar.restore">שחזר</string>
+    <string name="titlebar.close">סגור</string>
+    <string name="common.back">חזרה</string>
+    <string name="common.songs_word">שירים</string>
+    <string name="overlay.playing">מתנגן כעת</string>
+    <string name="local.none_found_in">לא נמצאו קבצי שמע ב\"{value}\"</string>
+    <string name="local.imported_from">יובאו {n} קבצים מ\"{value}\"</string>
+</resources>

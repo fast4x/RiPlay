@@ -1,3 +1,118 @@
+# RiPlay - configurazione Crowdin (CLI)
+#
+# Due sorgenti nello stesso progetto Crowdin:
+#  1) APP ANDROID   : androidApp/src/main/res/values*/strings.xml
+#  2) APP DESKTOP   : composeApp/src/jvmMain/resources/i18n/values*/strings.xml
+#
+# Il mapping esplicito (languages_mapping) traduce i codici lingua Crowdin nei
+# nomi cartella usati dal progetto; e' identico alla convenzione Android, quindi
+# i traduttori trovano le stesse cartelle "values-xx" a cui sono abituati.
+# Segnaposto UI desktop: {n} {code} {meaning} {value} (restano invariati).
 files:
+  # --- APP ANDROID -----------------------------------------------------------
   - source: /androidApp/src/main/res/values/strings.xml
-    translation: /androidApp/src/main/res/values-%two_letters_code%/strings.xml
+    translation: /androidApp/src/main/res/values-%locale%/strings.xml
+    content_segmentation: 0
+    languages_mapping:
+      locale:
+        af: af
+        ar: ar
+        az: az
+        ba: ba
+        bn: bn
+        ca: ca
+        zh-CN: zh-rCN
+        zh-TW: zh-rTW
+        cs: cs
+        da: da
+        de: de
+        el: el
+        eo: eo
+        es: es
+        et: et
+        eu: eu
+        fa: fa
+        fi: fi
+        fil: fil
+        fr: fr
+        ga: ga
+        gl: gl
+        he: he
+        hi: hi
+        hu: hu
+        ia: ia
+        id: id
+        in: in
+        it: it
+        ja: ja
+        ko: ko
+        ml: ml
+        nb: no
+        or: or
+        pl: pl
+        pt-PT: pt
+        pt-BR: pt-rBR
+        ro: ro
+        ru: ru
+        si: si
+        sr-Cyrl: sr
+        sr-Latn: sr-rCS
+        sv: sv
+        ta: ta
+        te: te
+        tr: tr
+        uk: uk
+        vi: vi
+
+  # --- APP DESKTOP (v38, stesse lingue dell'Android) --------------------------
+  - source: /composeApp/src/jvmMain/resources/i18n/values/strings.xml
+    translation: /composeApp/src/jvmMain/resources/i18n/values-%locale%/strings.xml
+    content_segmentation: 0
+    languages_mapping:
+      locale:
+        af: af
+        ar: ar
+        az: az
+        ba: ba
+        bn: bn
+        ca: ca
+        zh-CN: zh-rCN
+        zh-TW: zh-rTW
+        cs: cs
+        da: da
+        de: de
+        el: el
+        eo: eo
+        es: es
+        et: et
+        eu: eu
+        fi: fi
+        fil: fil
+        fr: fr
+        ga: ga
+        gl: gl
+        he: iw
+        hi: hi
+        hu: hu
+        ia: ia
+        id: in
+        it: it
+        ja: ja
+        ko: ko
+        ml: ml
+        nb: no
+        or: or
+        pl: pl
+        pt-PT: pt
+        pt-BR: pt-rBR
+        ro: ro
+        ru: ru
+        si: si
+        sr-Cyrl: sr
+        sr-Latn: sr-rCS
+        sv: sv
+        ta: ta
+        te: te
+        tr: tr
+        uk: uk
+        vi: vi

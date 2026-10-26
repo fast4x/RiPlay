@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui.pages
 
+import it.fast4x.riplay.i18n.ds
+
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -56,7 +58,7 @@ import it.fast4x.riplay.styling.Dimensions.layoutColumnBottomSpacer
  * STEP 3i - ARTISTI SEGUITI: l'artista visitato viene salvato nel db
  * (ArtistScreen) e con il bookmark (stesso meccanismo degli album) diventa
  * PREFERITO. Qui:
- *  - filtro "Seguiti" in alto: mostra SOLO gli artisti preferiti;
+ *  - filtro ds("page.followed") in alto: mostra SOLO gli artisti preferiti;
  *  - gli artisti preferiti hanno la stella accanto al nome.
  */
 @OptIn(ExperimentalFoundationApi::class)
@@ -98,7 +100,7 @@ fun ArtistsPage(
                         .fillMaxWidth()
                 ) {
                     Text(
-                        text = "Artists (${visible.size})",
+                        text = ds("page.artists", "n" to visible.size),
                         style = TextStyle(
                             fontSize = typography.titleSmall.fontSize,
                             color = Color.White,
@@ -106,7 +108,7 @@ fun ArtistsPage(
                         )
                     )
 
-                    // STEP 3i: toggle "Solo seguiti" (stella): filtra l'elenco
+                    // STEP 3i: toggle ds("page.followed_only") (stella): filtra l'elenco
                     // sugli artisti preferiti (bookmarkedAt != null)
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -128,7 +130,7 @@ fun ArtistsPage(
                         )
                         Spacer(Modifier.width(6.dp))
                         Text(
-                            text = "Seguiti",
+                            text = ds("page.followed"),
                             style = TextStyle(
                                 fontSize = 13.sp,
                                 color = if (onlyFollowed) RiPlayAccent
@@ -167,7 +169,7 @@ fun ArtistsPage(
                     if (artist.bookmarkedAt != null) {
                         Icon(
                             imageVector = Icons.Filled.Star,
-                            contentDescription = "artista seguito",
+                            contentDescription = ds("page.followed_artist"),
                             tint = RiPlayAccent,
                             modifier = Modifier
                                 .padding(end = 14.dp)

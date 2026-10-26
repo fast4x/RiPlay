@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - বাংলা (values-bn)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">হোম</string>
+    <string name="nav.search">খোঁজ</string>
+    <string name="nav.songs">গান</string>
+    <string name="nav.artists">শিল্পী</string>
+    <string name="nav.albums">অ্যালবাম</string>
+    <string name="nav.playlists">প্লেলিস্ট</string>
+    <string name="nav.local">স্থানীয় ফাইল</string>
+    <string name="queue.title">প্লেব্যাক সারি ({n})</string>
+    <string name="queue.open">প্লেব্যাক সারি খোলো</string>
+    <string name="queue.clear">সারি খালি করো</string>
+    <string name="queue.close_panel">সারি প্যানেল বন্ধ করো</string>
+    <string name="queue.remove">সারি থেকে সরাও</string>
+    <string name="queue.drag">সাজাতে টেনে আনো</string>
+    <string name="queue.drag_handle">সাজাতে হাতলটি টেনে আনো</string>
+    <string name="action.add_to_queue">সারিতে যোগ করো</string>
+    <string name="action.already_queued">ইতিমধ্যে সারিতে</string>
+    <string name="action.enqueue_all">সব সারিতে যোগ করো</string>
+    <string name="action.enqueue_album">পুরো অ্যালবাম সারিতে যোগ করো</string>
+    <string name="action.enqueue_playlist">পুরো প্লেলিস্ট সারিতে যোগ করো</string>
+    <string name="player.previous">আগের গান</string>
+    <string name="player.next">পরের গান</string>
+    <string name="player.play">চালাও</string>
+    <string name="player.pause">থামাও</string>
+    <string name="player.volume_off">শব্দ বন্ধ</string>
+    <string name="player.volume_low">কম ভলিউম</string>
+    <string name="player.volume_high">বেশি ভলিউম</string>
+    <string name="player.expand">প্লেয়ার বড় করো</string>
+    <string name="player.open_fullscreen">প্লেয়ার ফুল স্ক্রিনে খোলো</string>
+    <string name="player.back_to_cover">গানের কভারে ফিরে যাও</string>
+    <string name="player.watch_video">ভিডিও দেখো</string>
+    <string name="player.expand_video">ভিডিও উইন্ডোর পুরো প্রস্থে বড় করো</string>
+    <string name="player.restore_video">ভিডিওর আসল প্রস্থে ফিরিয়ে আনো</string>
+    <string name="player.radio">রেডিও: একই রকম গান সারিতে যোগ করো</string>
+    <string name="player.song_cover">গানের কভার</string>
+    <string name="player.online">অনলাইন</string>
+    <string name="player.local">স্থানীয়</string>
+    <string name="radio.none_found">একই রকম কোনো গান পাওয়া যায়নি</string>
+    <string name="radio.added">{n}টি একই রকম গান যোগ হয়েছে</string>
+    <string name="radio.unavailable">রেডিও পাওয়া যাচ্ছে না</string>
+    <string name="overlay.close_player">প্লেয়ার বন্ধ করো</string>
+    <string name="overlay.queue_title">প্লেব্যাক সারি</string>
+    <string name="overlay.queue_count">সারি ({n})</string>
+    <string name="overlay.no_song">কোনো গান বাজছে না</string>
+    <string name="overlay.video_active_note">ভিডিও বাঁ প্লেয়ার প্যানেলে চালু: এখানে দেখতে সেটি বন্ধ করো</string>
+    <string name="overlay.video_active">ভিডিও প্লেয়ার প্যানেলে চালু</string>
+    <string name="overlay.close_hint">উপরে বাঁ দিকের শেভরন বা ESC দিয়ে বন্ধ করো</string>
+    <string name="page.albums">অ্যালবাম ({n})</string>
+    <string name="page.artists">শিল্পী ({n})</string>
+    <string name="page.playlists">প্লেলিস্ট ({n})</string>
+    <string name="page.songs">গান ({n})</string>
+    <string name="page.local">স্থানীয় ফাইল ({n})</string>
+    <string name="page.followed_only">শুধু ফলো করা</string>
+    <string name="page.followed">ফলো করা</string>
+    <string name="page.followed_artist">ফলো করা শিল্পী</string>
+    <string name="page.home">হোম</string>
+    <string name="page.moods">মুড ও ধরন</string>
+    <string name="page.home_unavailable">হোম পাওয়া যাচ্ছে না (সংযোগ পরীক্ষা করো এবং উপরে রিফ্রেশ আইকনে চাপো)।</string>
+    <string name="search.hint">গান, অ্যালবাম, শিল্পী, প্লেলিস্ট খোঁজো...</string>
+    <string name="search.load_more">আরও লোড করো</string>
+    <string name="search.recent">সাম্প্রতিক খোঁজ</string>
+    <string name="search.suggestions">পরামর্শ</string>
+    <string name="search.clear">খোঁজ মুছে ফেলো</string>
+    <string name="local.add_folder">ফোল্ডার যোগ করো</string>
+    <string name="local.add_files">ফাইল যোগ করো</string>
+    <string name="local.fallback_artist">স্থানীয় ফাইল</string>
+    <string name="local.imported">{n}টি ফাইল আমদানি হয়েছে</string>
+    <string name="local.scanning">অডিও ফাইল খোঁজা হচ্ছে...</string>
+    <string name="local.empty_hint">কোনো স্থানীয় ফাইল আমদানি হয়নি।\n\nকম্পিউটারের ফোল্ডার স্ক্যান করতে \"ফোল্ডার যোগ করো\" (সাবফোল্ডারসহ) বা আলাদা গান বাছতে \"ফাইল যোগ করো\" ব্যবহার করো। আমদানি করা ফাইল স্থানীয় ইঞ্জিনে (VLCJ) বাজে এবং লাইব্রেরিতে থাকে।</string>
+    <string name="local.input_hint">YouTube URL বা স্থানীয় ফাইল / URL (VLCJ)</string>
+    <string name="local.clear_url">URL মুছে ফেলো</string>
+    <string name="local.open_file">স্থানীয় ফাইল খোলো</string>
+    <string name="detail.album_shuffle">অ্যালবাম এলোমেলোভাবে চালাও</string>
+    <string name="detail.album_favorite_add">অ্যালবাম প্রিয়তে যোগ করো</string>
+    <string name="detail.album_favorite_ok">অ্যালবাম প্রিয়তে</string>
+    <string name="detail.artist_shuffle">শিল্পীর গান এলোমেলোভাবে চালাও</string>
+    <string name="detail.artist_follow">শিল্পীকে ফলো করো</string>
+    <string name="detail.artist_followed">শিল্পীকে ফলো করা হয়েছে</string>
+    <string name="detail.playlist_shuffle">প্লেলিস্ট এলোমেলোভাবে চালাও</string>
+    <string name="detail.playlist_favorite_add">প্লেলিস্ট প্রিয়তে সংরক্ষণ করো</string>
+    <string name="detail.playlist_favorite_ok">প্লেলিস্ট প্রিয়তে: সরাতে চাপো</string>
+    <string name="common.loading">লোড হচ্ছে...</string>
+    <string name="kcef.unavailable">KCEF প্লেব্যাক ইঞ্জিন পাওয়া যাচ্ছে না</string>
+    <string name="kcef.details_log">সম্পূর্ণ বিবরণ লগ/কনসোলে: [RiPlay-KCEF] দিয়ে শুরু হওয়া লাইনগুলি।</string>
+    <string name="kcef.retry">আবার চেষ্টা করো</string>
+    <string name="kcef.preparing">প্লেব্যাক ইঞ্জিন প্রস্তুত হচ্ছে (KCEF)…</string>
+    <string name="kcef.downloading">অন্তর্নির্মিত ব্রাউজার ডাউনলোড হচ্ছে (শুধু প্রথম বার)…</string>
+    <string name="kcef.extracting">উপাদান বের করা হচ্ছে…</string>
+    <string name="kcef.installing">ইনস্টল হচ্ছে…</string>
+    <string name="kcef.starting">অন্তর্নির্মিত ব্রাউজার চালু হচ্ছে…</string>
+    <string name="kcef.preparing_short">প্রস্তুত হচ্ছে…</string>
+    <string name="kcef.jdk_conflict">ব্যবহৃত JDK-তে RiPlay-এর সাথে অসামঞ্জস্যপূর্ণ সংস্করণের অন্তর্নির্মিত ব্রাউজার ইঞ্জিন আছে। ডাউনলোড শেষে অ্যাপ বন্ধ হবে: ইনস্টল সম্পূর্ণ করতে আবার খোলো।</string>
+    <string name="error.yt_with_code">YouTube ত্রুটি (কোড {code}: {meaning})। বিবরণ লগে: [RiPlay-KCEF] / [RiPlay-YT] লাইন।</string>
+    <string name="error.yt_2">অবৈধ প্যারামিটার বা অ্যাক্সেস/বয়স-সীমিত ভিডিও বা YouTube অ্যান্টি-বট/সম্মতি পরীক্ষা (লগইন দরকার)</string>
+    <string name="error.yt_5">HTML5 প্লেয়ার ত্রুটি (বিষয়বস্তু/কোডেক/নেটওয়ার্ক)</string>
+    <string name="error.yt_100">ভিডিও পাওয়া যায়নি বা ব্যক্তিগত</string>
+    <string name="error.yt_101_150">মালিক এমবেডেড প্লেব্যাকের অনুমতি দেন না</string>
+    <string name="error.yt_152">এমবেডেড প্রসঙ্গ YouTube প্রত্যাখ্যান করেছে: হোস্ট পেজের Referer গ্রহণযোগ্য নয়</string>
+    <string name="error.yt_153">এমবেড অনুরোধ YouTube প্রত্যাখ্যান করেছে (player/referrer কনফিগারেশন অনুপস্থিত)</string>
+    <string name="error.yt_unknown">অজানা কোড</string>
+    <string name="error.local_unavailable">স্থানীয় গান ডেস্কটপে বাজানো যাচ্ছে না: ফাইলের পথ ব্যবহারযোগ্য নয় (Android MediaStore উৎস বা সরানো ফাইল)। নিচের ফিল্ডের ফোল্ডার বোতাম দিয়ে কম্পিউটার থেকে ফাইল বেছে চালাতে পারো।</string>
+    <string name="error.manual_unsupported">পথ পাওয়া যায়নি বা অসমর্থিত URL: \'{value}\'</string>
+    <string name="misc.playlist_cover">প্লেলিস্ট কভার</string>
+    <string name="settings.language">ভাষা</string>
+    <string name="settings.system">সিস্টেম ভাষা</string>
+    <string name="titlebar.minimize">ছোট করো</string>
+    <string name="titlebar.maximize">বড় করো</string>
+    <string name="titlebar.restore">পুনরুদ্ধার করো</string>
+    <string name="titlebar.close">বন্ধ করো</string>
+    <string name="common.back">ফিরে যাও</string>
+    <string name="common.songs_word">গান</string>
+    <string name="overlay.playing">এখন বাজছে</string>
+    <string name="local.none_found_in">\"{value}\"-এ কোনো অডিও ফাইল পাওয়া যায়নি</string>
+    <string name="local.imported_from">\"{value}\" থেকে {n}টি ফাইল আমদানি হয়েছে</string>
+</resources>

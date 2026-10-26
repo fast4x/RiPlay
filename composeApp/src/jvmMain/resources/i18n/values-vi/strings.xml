@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - Tiếng Việt (values-vi)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">Trang chủ</string>
+    <string name="nav.search">Tìm kiếm</string>
+    <string name="nav.songs">Bài hát</string>
+    <string name="nav.artists">Nghệ sĩ</string>
+    <string name="nav.albums">Album</string>
+    <string name="nav.playlists">Danh sách</string>
+    <string name="nav.local">Tệp cục bộ</string>
+    <string name="queue.title">Hàng chờ phát ({n})</string>
+    <string name="queue.open">mở hàng chờ phát</string>
+    <string name="queue.clear">xóa sạch hàng chờ</string>
+    <string name="queue.close_panel">đóng bảng hàng chờ</string>
+    <string name="queue.remove">xóa khỏi hàng chờ</string>
+    <string name="queue.drag">kéo để sắp xếp lại</string>
+    <string name="queue.drag_handle">Kéo tay cầm để sắp xếp lại</string>
+    <string name="action.add_to_queue">thêm vào hàng chờ</string>
+    <string name="action.already_queued">đã có trong hàng chờ</string>
+    <string name="action.enqueue_all">thêm tất cả vào hàng chờ</string>
+    <string name="action.enqueue_album">thêm cả album vào hàng chờ</string>
+    <string name="action.enqueue_playlist">thêm cả danh sách vào hàng chờ</string>
+    <string name="player.previous">bài trước</string>
+    <string name="player.next">bài tiếp theo</string>
+    <string name="player.play">phát</string>
+    <string name="player.pause">tạm dừng</string>
+    <string name="player.volume_off">tắt tiếng</string>
+    <string name="player.volume_low">âm lượng thấp</string>
+    <string name="player.volume_high">âm lượng cao</string>
+    <string name="player.expand">mở rộng trình phát</string>
+    <string name="player.open_fullscreen">mở trình phát toàn màn hình</string>
+    <string name="player.back_to_cover">quay lại bìa bài hát</string>
+    <string name="player.watch_video">xem video</string>
+    <string name="player.expand_video">mở rộng video trọn chiều rộng cửa sổ</string>
+    <string name="player.restore_video">khôi phục chiều rộng ban đầu của video</string>
+    <string name="player.radio">radio: thêm bài tương tự vào hàng chờ</string>
+    <string name="player.song_cover">bìa bài hát</string>
+    <string name="player.online">Trực tuyến</string>
+    <string name="player.local">Cục bộ</string>
+    <string name="radio.none_found">Không tìm thấy bài tương tự</string>
+    <string name="radio.added">Đã thêm {n} bài tương tự</string>
+    <string name="radio.unavailable">Radio không khả dụng</string>
+    <string name="overlay.close_player">đóng trình phát</string>
+    <string name="overlay.queue_title">hàng chờ phát</string>
+    <string name="overlay.queue_count">Hàng chờ ({n})</string>
+    <string name="overlay.no_song">Không có bài đang phát</string>
+    <string name="overlay.video_active_note">Video đang hoạt động ở bảng trình phát bên trái: đóng nó để xem tại đây</string>
+    <string name="overlay.video_active">video đang hoạt động ở bảng trình phát</string>
+    <string name="overlay.close_hint">Đóng bằng mũi tên trên bên trái hoặc phím ESC</string>
+    <string name="page.albums">Album ({n})</string>
+    <string name="page.artists">Nghệ sĩ ({n})</string>
+    <string name="page.playlists">Danh sách ({n})</string>
+    <string name="page.songs">Bài hát ({n})</string>
+    <string name="page.local">Tệp cục bộ ({n})</string>
+    <string name="page.followed_only">Chỉ đang theo dõi</string>
+    <string name="page.followed">Đang theo dõi</string>
+    <string name="page.followed_artist">nghệ sĩ đang theo dõi</string>
+    <string name="page.home">Trang chủ</string>
+    <string name="page.moods">Tâm trạng và thể loại</string>
+    <string name="page.home_unavailable">Trang chủ không khả dụng (kiểm tra kết nối và bấm biểu tượng làm mới phía trên).</string>
+    <string name="search.hint">Tìm bài hát, album, nghệ sĩ, danh sách...</string>
+    <string name="search.load_more">Tải thêm</string>
+    <string name="search.recent">Tìm kiếm gần đây</string>
+    <string name="search.suggestions">Gợi ý</string>
+    <string name="search.clear">xóa tìm kiếm</string>
+    <string name="local.add_folder">Thêm thư mục</string>
+    <string name="local.add_files">Thêm tệp</string>
+    <string name="local.fallback_artist">Tệp cục bộ</string>
+    <string name="local.imported">Đã nhập {n} tệp</string>
+    <string name="local.scanning">Đang tìm tệp âm thanh...</string>
+    <string name="local.empty_hint">Chưa nhập tệp cục bộ nào.\n\nDùng \"Thêm thư mục\" để quét một thư mục trên máy tính (kể cả thư mục con) hoặc \"Thêm tệp\" để chọn từng bài. Các tệp đã nhập được phát bằng động cơ Cục bộ (VLCJ) và lưu trong thư viện.</string>
+    <string name="local.input_hint">URL YouTube hoặc tệp / URL cục bộ (VLCJ)</string>
+    <string name="local.clear_url">xóa URL</string>
+    <string name="local.open_file">mở tệp cục bộ</string>
+    <string name="detail.album_shuffle">phát album ngẫu nhiên</string>
+    <string name="detail.album_favorite_add">thêm album vào yêu thích</string>
+    <string name="detail.album_favorite_ok">album trong mục yêu thích</string>
+    <string name="detail.artist_shuffle">phát các bài của nghệ sĩ ngẫu nhiên</string>
+    <string name="detail.artist_follow">theo dõi nghệ sĩ</string>
+    <string name="detail.artist_followed">đã theo dõi nghệ sĩ</string>
+    <string name="detail.playlist_shuffle">phát danh sách ngẫu nhiên</string>
+    <string name="detail.playlist_favorite_add">lưu danh sách vào yêu thích</string>
+    <string name="detail.playlist_favorite_ok">danh sách trong yêu thích: bấm để gỡ</string>
+    <string name="common.loading">đang tải...</string>
+    <string name="kcef.unavailable">Động cơ phát KCEF không khả dụng</string>
+    <string name="kcef.details_log">Chi tiết đầy đủ trong log/console: các dòng bắt đầu bằng [RiPlay-KCEF].</string>
+    <string name="kcef.retry">Thử lại</string>
+    <string name="kcef.preparing">Đang chuẩn bị động cơ phát (KCEF)…</string>
+    <string name="kcef.downloading">Đang tải trình duyệt tích hợp (chỉ lần khởi động đầu)…</string>
+    <string name="kcef.extracting">Đang giải nén các thành phần…</string>
+    <string name="kcef.installing">Đang cài đặt…</string>
+    <string name="kcef.starting">Đang khởi động trình duyệt tích hợp…</string>
+    <string name="kcef.preparing_short">Đang chuẩn bị…</string>
+    <string name="kcef.jdk_conflict">JDK đang dùng chứa động cơ trình duyệt tích hợp phiên bản không tương thích với RiPlay. Sau khi tải xong ứng dụng sẽ đóng: mở lại để hoàn tất cài đặt.</string>
+    <string name="error.yt_with_code">Lỗi YouTube (mã {code}: {meaning}). Chi tiết trong log: các dòng [RiPlay-KCEF] / [RiPlay-YT].</string>
+    <string name="error.yt_2">tham số không hợp lệ hoặc video giới hạn truy cập/độ tuổi hoặc kiểm tra chống bot/đồng ý của YouTube (cần đăng nhập)</string>
+    <string name="error.yt_5">lỗi trình phát HTML5 (nội dung/codec/mạng)</string>
+    <string name="error.yt_100">không tìm thấy video hoặc video riêng tư</string>
+    <string name="error.yt_101_150">chủ sở hữu không cho phép phát nhúng</string>
+    <string name="error.yt_152">ngữ cảnh nhúng bị YouTube từ chối: Referer của trang nhúng không được chấp nhận</string>
+    <string name="error.yt_153">yêu cầu nhúng bị YouTube từ chối (thiếu cấu hình player/referrer)</string>
+    <string name="error.yt_unknown">mã không rõ</string>
+    <string name="error.local_unavailable">Bài cục bộ không phát được trên máy tính: đường dẫn tệp không truy cập được (nguồn Android MediaStore hoặc tệp đã di chuyển). Bạn có thể phát bằng cách chọn tệp trên máy qua nút thư mục ở ô bên dưới.</string>
+    <string name="error.manual_unsupported">Không tìm thấy đường dẫn hoặc URL không được hỗ trợ: \'{value}\'</string>
+    <string name="misc.playlist_cover">Bìa danh sách</string>
+    <string name="settings.language">Ngôn ngữ</string>
+    <string name="settings.system">Ngôn ngữ hệ thống</string>
+    <string name="titlebar.minimize">Thu nhỏ</string>
+    <string name="titlebar.maximize">Phóng to</string>
+    <string name="titlebar.restore">Khôi phục</string>
+    <string name="titlebar.close">Đóng</string>
+    <string name="common.back">Quay lại</string>
+    <string name="common.songs_word">bài hát</string>
+    <string name="overlay.playing">Đang phát</string>
+    <string name="local.none_found_in">Không tìm thấy tệp âm thanh nào trong \"{value}\"</string>
+    <string name="local.imported_from">Đã nhập {n} tệp từ \"{value}\"</string>
+</resources>

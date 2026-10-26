@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - Gaeilge (values-ga)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">Baile</string>
+    <string name="nav.search">Cuardach</string>
+    <string name="nav.songs">Amhráin</string>
+    <string name="nav.artists">Ealaíontóirí</string>
+    <string name="nav.albums">Albaim</string>
+    <string name="nav.playlists">Seinmliostaí</string>
+    <string name="nav.local">Comhaid áitiúla</string>
+    <string name="queue.title">Ciú seinm ({n})</string>
+    <string name="queue.open">oscail an ciú seinm</string>
+    <string name="queue.clear">bánaigh an ciú</string>
+    <string name="queue.close_panel">dún painéal an chiú</string>
+    <string name="queue.remove">bain as an ciú</string>
+    <string name="queue.drag">tarraing chun athordú</string>
+    <string name="queue.drag_handle">Tarraing an láimhseáil chun athordú</string>
+    <string name="action.add_to_queue">cuir leis an gciú</string>
+    <string name="action.already_queued">sa chiú cheana</string>
+    <string name="action.enqueue_all">cuir gach rud sa chiú</string>
+    <string name="action.enqueue_album">cuir an t-albam ar fad sa chiú</string>
+    <string name="action.enqueue_playlist">cuir an seinmliosta ar fad sa chiú</string>
+    <string name="player.previous">amhrán roimhe</string>
+    <string name="player.next">an chéad amhrán eile</string>
+    <string name="player.play">seinn</string>
+    <string name="player.pause">sos</string>
+    <string name="player.volume_off">fuaim as</string>
+    <string name="player.volume_low">faid íseal</string>
+    <string name="player.volume_high">faid ard</string>
+    <string name="player.expand">leathnaigh an seinnteoir</string>
+    <string name="player.open_fullscreen">oscail an seinnteoir ar an scáileán iomlán</string>
+    <string name="player.back_to_cover">ar ais go clúdach an amhráin</string>
+    <string name="player.watch_video">féach ar an bhfíseán</string>
+    <string name="player.expand_video">leathnaigh an físeán go hiomlán leithead na fuinneoige</string>
+    <string name="player.restore_video">aisghair leithead bunúsach an fhíseáin</string>
+    <string name="player.radio">raidió: cuir amhráin chosúla sa chiú</string>
+    <string name="player.song_cover">clúdach an amhráin</string>
+    <string name="player.online">Ar líne</string>
+    <string name="player.local">Áitiúil</string>
+    <string name="radio.none_found">Níor aimsíodh amhráin chosúla</string>
+    <string name="radio.added">Cuireadh {n} amhrán cosúil leis</string>
+    <string name="radio.unavailable">Raidió ar fáil</string>
+    <string name="overlay.close_player">dún an seinnteoir</string>
+    <string name="overlay.queue_title">ciú seinm</string>
+    <string name="overlay.queue_count">Ciú ({n})</string>
+    <string name="overlay.no_song">Níl aon amhrán á sheinm</string>
+    <string name="overlay.video_active_note">Físeán gníomhach i bpainéal an tseinnteora ar chlé: dún é chun é a fheiceáil anseo</string>
+    <string name="overlay.video_active">físeán gníomhach i bpainéal an tseinnteora</string>
+    <string name="overlay.close_hint">Dún leis an chevron uachtarach ar chlé nó le ESC</string>
+    <string name="page.albums">Albaim ({n})</string>
+    <string name="page.artists">Ealaíontóirí ({n})</string>
+    <string name="page.playlists">Seinmliostaí ({n})</string>
+    <string name="page.songs">Amhráin ({n})</string>
+    <string name="page.local">Comhaid áitiúla ({n})</string>
+    <string name="page.followed_only">Lean daoine amháin</string>
+    <string name="page.followed">Ag leanúint</string>
+    <string name="page.followed_artist">ealaíontóir leantha</string>
+    <string name="page.home">Baile</string>
+    <string name="page.moods">Meon agus seánraí</string>
+    <string name="page.home_unavailable">Baile níl ar fáil (seiceáil an nasc agus brúigh an deilbhín athnuachana thuas).</string>
+    <string name="search.hint">Cuardaigh amhráin, albaim, ealaíontóirí, seinmliostaí...</string>
+    <string name="search.load_more">Lódáil tuilleadh</string>
+    <string name="search.recent">Cuardaigh le déanaí</string>
+    <string name="search.suggestions">Moltaí</string>
+    <string name="search.clear">soiléir an cuardach</string>
+    <string name="local.add_folder">Cuir fillteán leis</string>
+    <string name="local.add_files">Cuir comhaid leis</string>
+    <string name="local.fallback_artist">Comhad áitiúil</string>
+    <string name="local.imported">Iompórtéadh {n} comhad</string>
+    <string name="local.scanning">Ag cuardach comhad fuaime...</string>
+    <string name="local.empty_hint">Níl aon chomhad áitiúla iompórtéilte.\n\nBain úsáid as \"Cuir fillteán leis\" chun fillteán ríomhaire a scanadh (fófillteáin san áireamh) nó \"Cuir comhaid leis\" chun amhráin aonair a roghnú. Seinntear na comhaid iompórtéilte leis an inneall Áitiúil (VLCJ) agus fanaidís sa leabharlann.</string>
+    <string name="local.input_hint">URL YouTube nó comhad / URL áitiúil (VLCJ)</string>
+    <string name="local.clear_url">soiléir an URL</string>
+    <string name="local.open_file">oscail comhad áitiúil</string>
+    <string name="detail.album_shuffle">seinn an t-albam go randamach</string>
+    <string name="detail.album_favorite_add">cuir an t-albam le ceanáin</string>
+    <string name="detail.album_favorite_ok">albam sna ceanáin</string>
+    <string name="detail.artist_shuffle">seinn amhráin an ealaíontóra go randamach</string>
+    <string name="detail.artist_follow">lean an t-ealaíontóir</string>
+    <string name="detail.artist_followed">ealaíontóir leantha</string>
+    <string name="detail.playlist_shuffle">seinn an seinmliosta go randamach</string>
+    <string name="detail.playlist_favorite_add">sábháil an seinmliosta i gceanáin</string>
+    <string name="detail.playlist_favorite_ok">seinmliosta sna ceanáin: brúigh chun é a bhaint</string>
+    <string name="common.loading">ag lódáil...</string>
+    <string name="kcef.unavailable">Inneall seinm KCEF ar fáil</string>
+    <string name="kcef.details_log">Sonraí iomlána sa log/console: línte a thosaíonn le [RiPlay-KCEF].</string>
+    <string name="kcef.retry">Atriáil</string>
+    <string name="kcef.preparing">Ullmhú inneall seinm (KCEF)…</string>
+    <string name="kcef.downloading">Brabhsálaí ionsuite á íoslódáil (an chéad tosaithe amháin)…</string>
+    <string name="kcef.extracting">Comhpháirteanna á mbaint amach…</string>
+    <string name="kcef.installing">Á shuiteáil…</string>
+    <string name="kcef.starting">Brabhsálaí ionsuite á thosú…</string>
+    <string name="kcef.preparing_short">Ullmhú…</string>
+    <string name="kcef.jdk_conflict">Tá inneall brabhsálaí ionsuite i leagan neamh-chomhoiriúnach le RiPlay sa JDK in úsáid. Tar éis an íoslódála dúnfar an feidhmchlár: oscail arís chun an tsuiteáil a chur i gcrích.</string>
+    <string name="error.yt_with_code">Earráid YouTube (cód {code}: {meaning}). Sonraí sa log: línte [RiPlay-KCEF] / [RiPlay-YT].</string>
+    <string name="error.yt_2">paraiméadar neamhbhailí nó físeán le srianta rochtaine/aoise nó seiceáil frith-bhot/tolaíochta YouTube (tá logáil isteach riachtanach)</string>
+    <string name="error.yt_5">earráid seinnteora HTML5 (ábhar/codec/líonra)</string>
+    <string name="error.yt_100">físeán gan aimsiú nó príobháideach</string>
+    <string name="error.yt_101_150">nár cheadaigh an t-úinéir seinm leabaithe</string>
+    <string name="error.yt_152">comhthéacs leabaithe diúltaithe ag YouTube: nár glacadh le Referer an leathanaigh óstála</string>
+    <string name="error.yt_153">iarratas leabaithe diúltaithe ag YouTube (cumraíocht player/referrer ar iarraidh)</string>
+    <string name="error.yt_unknown">cód anaithnid</string>
+    <string name="error.local_unavailable">Ní féidir an t-amhrán áitiúil a sheinm ar an deasc: níl cosán an chomhaid inrochtana (budún Android MediaStore nó comhad bogtha). Is féidir leat é a sheinm tríd an gcomhad a roghnú ón ríomhaire leis an gcnaipe fillteáin sa réimse thíos.</string>
+    <string name="error.manual_unsupported">Cosán gan aimsiú nó URL gan tacaíocht: \'{value}\'</string>
+    <string name="misc.playlist_cover">Clúdach seinmliosta</string>
+    <string name="settings.language">Teanga</string>
+    <string name="settings.system">Teanga an chórais</string>
+    <string name="titlebar.minimize">Íoslaghdaigh</string>
+    <string name="titlebar.maximize">Uasmhéadaigh</string>
+    <string name="titlebar.restore">Cuir ar ais</string>
+    <string name="titlebar.close">Dún</string>
+    <string name="common.back">Ar ais</string>
+    <string name="common.songs_word">amhrán</string>
+    <string name="overlay.playing">Á sheinm anois</string>
+    <string name="local.none_found_in">Níor aimsíodh aon chomhad fuaime i \"{value}\"</string>
+    <string name="local.imported_from">Iompórtéadh {n} comhad as \"{value}\"</string>
+</resources>

@@ -1,108 +1,124 @@
 package it.fast4x.riplay.enums
 
-enum class Languages {
-    System,
-    Afrikaans,
-    Arabic,
-    Bashkir,
-    Bengali,
-    Catalan,
-    Danish,
-    English,
-    Esperanto,
-    Estonian,
-    ChineseSimplified,
-    ChineseTraditional,
-    Czech,
-    Dutch,
-    Filipino,
-    Finnish,
-    French,
-    Galician,
-    German,
-    Greek,
-    Hebrew,
-    Hindi,
-    Hungarian,
-    Italian,
-    Indonesian,
-    Interlingua,
-    Irish,
-    Japanese,
-    Korean,
-    Malayalam,
-    Norwegian,
-    Odia,
-    Persian,
-    Polish,
-    PortugueseBrazilian,
-    Portuguese,
-    Romanian,
-    //RomanianEmo,
-    Russian,
-    SerbianCyrillic,
-    SerbianLatin,
-    Sinhala,
-    Spanish,
-    Swedish,
-    Telugu,
-    Turkish,
-    Ukrainian,
-    Vietnamese;
+/**
+ * STEP 3s: enum ALLINEATA ALLA VERSIONE ANDROID
+ * (androidApp/.../enums/Locales.kt: STESSA lista di lingue, STESSI tag).
+ * Aggiunte Azerbaijani/Basque/Tamil (presenti su Android), Persian rimossa
+ * (commentata anche su Android). [nativeName] = esonimo per il selettore
+ * lingua della title bar desktop.
+ */
+enum class Languages(
+    val tag: String,
+    val nativeName: String
+) {
+    System("system", "System"),
+    Afrikaans("af-ZA", "Afrikaans"),
+    Arabic("ar-AE", "العربية"),
+    Azerbaijani("az-AZ", "Azərbaycan"),
+    Bashkir("ba-RU", "Башҡортса"),
+    Basque("eu-ES", "Euskara"),
+    Bengali("bn-BD", "বাংলা"),
+    Catalan("ca-ES", "Català"),
+    ChineseSimplified("zh-CN", "简体中文"),
+    ChineseTraditional("zh-TW", "繁體中文"),
+    Czech("cs-CZ", "Čeština"),
+    Danish("da-DK", "Dansk"),
+    Dutch("nl-NL", "Nederlands"),
+    English("en-US", "English"),
+    Esperanto("eo", "Esperanto"),
+    Estonian("et-EE", "Eesti"),
+    Filipino("fil-PH", "Filipino"),
+    Finnish("fi-FI", "Suomi"),
+    French("fr-FR", "Français"),
+    Galician("gl-ES", "Galego"),
+    German("de-DE", "Deutsch"),
+    Greek("el-GR", "Ελληνικά"),
+    Hebrew("iw-IL", "עברית"),
+    Hindi("hi-IN", "हिन्दी"),
+    Hungarian("hu-HU", "Magyar"),
+    Italian("it-IT", "Italiano"),
+    Indonesian("in-ID", "Bahasa Indonesia"),
+    Interlingua("ia", "Interlingua"),
+    Irish("ga-IE", "Gaeilge"),
+    Japanese("ja-JP", "日本語"),
+    Korean("ko-KR", "한국어"),
+    Malayalam("ml-IN", "മലയാളം"),
+    Norwegian("no-NO", "Norsk"),
+    Odia("or-IN", "ଓଡ଼ିଆ"),
+    Polish("pl-PL", "Polski"),
+    PortugueseBrazilian("pt-BR", "Português (Brasil)"),
+    Portuguese("pt-PT", "Português"),
+    Romanian("ro-RO", "Română"),
+    Russian("ru-RU", "Русский"),
+    SerbianCyrillic("sr-RS", "Српски"),
+    SerbianLatin("sr-Latn-RS", "Srpski (latinica)"),
+    Sinhala("si-LK", "සිංහල"),
+    Spanish("es-ES", "Español"),
+    Swedish("sv-SE", "Svenska"),
+    Tamil("ta-IN", "தமிழ்"),
+    Telugu("te-IN", "తెలుగు"),
+    Turkish("tr-TR", "Türkçe"),
+    Ukrainian("uk-UA", "Українська"),
+    Vietnamese("vi-VN", "Tiếng Việt");
 
     val code: String
-        get() = when (this) {
-            System -> "system"
-            Afrikaans -> "af"
-            Arabic -> "ar"
-            Bashkir -> "ba"
-            Bengali -> "bn"
-            Catalan -> "ca"
-            ChineseSimplified -> "zh-CN"
-            ChineseTraditional -> "zh-TW"
-            Danish -> "da"
-            Dutch -> "nl"
-            English -> "en"
-            Esperanto -> "eo"
-            Estonian -> "et"
-            Filipino -> "fil"
-            Finnish -> "fi"
-            Galician -> "gl"
-            Italian -> "it"
-            Indonesian -> "in"
-            Irish -> "ga"
-            Japanese -> "ja"
-            Korean -> "ko"
-            Czech -> "cs"
-            German -> "de"
-            Greek -> "el"
-            Hebrew -> "iw" //Hebrew -> "he"
-            Hindi -> "hi"
-            Hungarian -> "hu"
-            Interlingua -> "ia"
-            Spanish -> "es"
-            French -> "fr"
-            Malayalam -> "ml"
-            Norwegian -> "no"
-            Odia -> "or"
-            Persian -> "fa"
-            Polish -> "pl"
-            Portuguese -> "pt"
-            PortugueseBrazilian -> "pt-BR"
-            Romanian -> "ro"
-            //RomanianEmo -> "ro-RO"
-            Russian -> "ru"
-            SerbianCyrillic -> "sr"
-            SerbianLatin -> "sr-CS"
-            Sinhala -> "si"
-            Swedish -> "sv"
-            Telugu -> "te"
-            Turkish -> "tr"
-            Ukrainian -> "uk"
-            Vietnamese -> "vi"
+        get() = tag.substringBefore("-")
+
+    companion object {
+        fun languageFromcode(code: String): Languages? = when (code) {
+            "system" -> System
+            "af" -> Afrikaans
+            "ar" -> Arabic
+            "az" -> Azerbaijani
+            "ba" -> Bashkir
+            "eu" -> Basque
+            "bn" -> Bengali
+            "ca" -> Catalan
+            "zh-CN" -> ChineseSimplified
+            "zh-TW" -> ChineseTraditional
+            "da" -> Danish
+            "nl" -> Dutch
+            "en" -> English
+            "eo" -> Esperanto
+            "et" -> Estonian
+            "fil" -> Filipino
+            "fi" -> Finnish
+            "gl" -> Galician
+            "it" -> Italian
+            "in" -> Indonesian
+            "ga" -> Irish
+            "ja" -> Japanese
+            "ko" -> Korean
+            "cs" -> Czech
+            "de" -> German
+            "el" -> Greek
+            "iw" -> Hebrew
+            "he" -> Hebrew
+            "hi" -> Hindi
+            "hu" -> Hungarian
+            "ia" -> Interlingua
+            "es" -> Spanish
+            "fr" -> French
+            "ml" -> Malayalam
+            "no" -> Norwegian
+            "or" -> Odia
+            "pl" -> Polish
+            "pt" -> Portuguese
+            "pt-BR" -> PortugueseBrazilian
+            "ro" -> Romanian
+            "ru" -> Russian
+            "sr" -> SerbianCyrillic
+            "sr-CS" -> SerbianLatin
+            "si" -> Sinhala
+            "sv" -> Swedish
+            "ta" -> Tamil
+            "te" -> Telugu
+            "tr" -> Turkish
+            "uk" -> Ukrainian
+            "vi" -> Vietnamese
+            else -> null
         }
-
-
+    }
 }
 
 enum class Countries {
@@ -247,7 +263,7 @@ enum class Countries {
             EC -> "Ecuador"
             EG -> "Egypt"
             SV -> "El Salvador"
-            EE -> "Es->nia"
+            EE -> "Estonia"
             FI -> "Finland"
             FR -> "France"
             GE -> "Georgia"
@@ -299,7 +315,7 @@ enum class Countries {
             PH -> "Philippines"
             PL -> "Poland"
             PT -> "Portugal"
-            PR -> "Puer-> Rico"
+            PR -> "Puerto Rico"
             QA -> "Qatar"
             RO -> "Romania"
             RU -> "Russian Federation"

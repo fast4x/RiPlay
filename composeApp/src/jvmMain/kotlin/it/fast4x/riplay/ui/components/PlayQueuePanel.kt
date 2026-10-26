@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui.components
 
+import it.fast4x.riplay.i18n.ds
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -99,7 +101,7 @@ fun PlayQueuePanel(
             )
             Spacer(Modifier.width(9.dp))
             Text(
-                "Coda di riproduzione (${queue.size})",
+                ds("queue.title", "n" to queue.size),
                 color = Color.White,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold
@@ -112,7 +114,7 @@ fun PlayQueuePanel(
                 ) {
                     Icon(
                         Icons.Filled.Delete,
-                        contentDescription = "svuota la coda",
+                        contentDescription = ds("queue.clear"),
                         tint = Color.White.copy(alpha = 0.6f),
                         modifier = Modifier.size(18.dp)
                     )
@@ -125,7 +127,7 @@ fun PlayQueuePanel(
             ) {
                 Icon(
                     Icons.Filled.Close,
-                    contentDescription = "chiudi il pannello coda",
+                    contentDescription = ds("queue.close_panel"),
                     tint = Color.White,
                     modifier = Modifier.size(20.dp)
                 )
@@ -135,7 +137,7 @@ fun PlayQueuePanel(
         Spacer(Modifier.height(4.dp))
 
         Text(
-            "Trascina la maniglia per riordinare",
+            ds("queue.drag_handle"),
             color = Color.White.copy(alpha = 0.3f),
             fontSize = 11.sp
         )
@@ -175,7 +177,7 @@ fun PlayQueuePanel(
                             // maniglia di trascinamento (riordino)
                             Icon(
                                 Icons.Filled.DragHandle,
-                                contentDescription = "trascina per riordinare",
+                                contentDescription = ds("queue.drag"),
                                 tint = Color.White.copy(alpha = if (isDragging) 0.9f else 0.35f),
                                 modifier = Modifier
                                     .size(22.dp)
@@ -215,7 +217,7 @@ fun PlayQueuePanel(
                             ) {
                                 Icon(
                                     Icons.Filled.Close,
-                                    contentDescription = "rimuovi dalla coda",
+                                    contentDescription = ds("queue.remove"),
                                     tint = Color.White.copy(alpha = 0.5f),
                                     modifier = Modifier.size(16.dp)
                                 )

@@ -93,3 +93,49 @@ val Environment.SongItem.asSongEntity: SongEntity
         contentLength = null,
         albumTitle = null
     )
+
+/**
+ * STEP 3n (richiesta utente n.7 "la qualita' della cover del player mini e'
+ * molto bassa"): la miniatura che arriva da YouTube Music e' di solito il
+ * miniaturizzato a 60/120px (=w60-h60-l90-rj oppure default.jpg 120x90).
+ * Il pannello player e' largo 300-400px: ingrandire un'immagine cosi'
+ * piccola la rende sfocata.
+ *
+ * Questa funzione chiede alla STESSA URL la risoluzione alta: i server CDN
+ * di googleusercontent ridimensionano in URL (basta cambiare il suffisso
+ * "=wNNN-hNNN"), mentre per i file i.ytimg.com si sostituisce default.jpg
+ * o mqdefault.jpg con hqdefault.jpg (480x360, sempre disponibile; la
+ * maxres NON esiste per tutti i video quindi non si usa).
+ *
+ * URL non riconosciuti = ritornano INVARIATI (nessun rischio per le
+ * immagini che arrivano da altre fonti). In caso di regex imprevista
+ * ritorna l'originale (runCatching).
+ */
+fun String.hiResCoverUrl(): String = runCatching {
+    when {
+        // 1) miniatura video standard di YouTube: default (120px) e mq (320px)
+        contains("/default.jpg") -> replace("/default.jpg", "/hqdefault.jpg")
+        contains("/mqdefault.jpg") -> replace("/mqdefault.jpg", "/hqdefault.jpg")
+
+        // 2) CDN googleusercontent / ggpht: il suffisso "=..." decide la dimensione
+        contains("googleusercontent.com") || contains("ggpht.com") -> {
+            val match = Regex("=([ws]\\d+[^=]*)$").find(this)
+            when {
+                // nessun suffisso di dimensione (e nessuna query): lo si puo'
+                // appendere, e' l'API di ridimensionamento del CDN
+                match == null && !contains("?") -> "$this=w544-h544-l90-rj"
+                match == null -> this
+                else -> {
+                    val current = match.groupValues[1]
+                    val width = Regex("^[ws](\\d+)").find(current)
+                        ?.groupValues?.get(1)?.toIntOrNull() ?: 0
+                    // gia' abbastanza grande: invariata
+                    if (width >= 480) this
+                    else replaceRange(match.range, "=w544-h544-l90-rj")
+                }
+            }
+        }
+
+        else -> this
+    }
+}.getOrDefault(this)

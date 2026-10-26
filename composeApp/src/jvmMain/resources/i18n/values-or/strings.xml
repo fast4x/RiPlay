@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - ଓଡ଼ିଆ (values-or)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">ହୋମ</string>
+    <string name="nav.search">ଖୋଜ</string>
+    <string name="nav.songs">ଗୀତ</string>
+    <string name="nav.artists">କଳାକାର</string>
+    <string name="nav.albums">ଆଲବମ୍</string>
+    <string name="nav.playlists">ପ୍ଲେଲିଷ୍ଟ</string>
+    <string name="nav.local">ସ୍ଥାନୀୟ ଫାଇଲ୍</string>
+    <string name="queue.title">ପ୍ଲେବ୍ୟାକ୍ ଧାଡି ({n})</string>
+    <string name="queue.open">ପ୍ଲେବ୍ୟାକ୍ ଧାଡି ଖୋଲ</string>
+    <string name="queue.clear">ଧାଡି ଖାଲି କର</string>
+    <string name="queue.close_panel">ଧାଡି ପ୍ୟାନେଲ ବନ୍ଦ କର</string>
+    <string name="queue.remove">ଧାଡିରୁ ବାହାର କର</string>
+    <string name="queue.drag">କ୍ରମ ବଦଳାଇବା ପାଇଁ ଟାଣ</string>
+    <string name="queue.drag_handle">କ୍ରମ ବଦଳାଇବା ପାଇଁ ହାଣ୍ଡଲ୍ ଟାଣ</string>
+    <string name="action.add_to_queue">ଧାଡିରେ ଯୋଗ କର</string>
+    <string name="action.already_queued">ପୂର୍ବରୁ ଧାଡିରେ</string>
+    <string name="action.enqueue_all">ସବୁ ଧାଡିରେ ଯୋଗ କର</string>
+    <string name="action.enqueue_album">ପୁରା ଆଲବମ୍ ଧାଡିରେ ଯୋଗ କର</string>
+    <string name="action.enqueue_playlist">ପୁରା ପ୍ଲେଲିଷ୍ଟ ଧାଡିରେ ଯୋଗ କର</string>
+    <string name="player.previous">ପୂର୍ବ ଗୀତ</string>
+    <string name="player.next">ପରବର୍ତ୍ତୀ ଗୀତ</string>
+    <string name="player.play">ଚଲାଅ</string>
+    <string name="player.pause">ବିରାମ</string>
+    <string name="player.volume_off">ଶବ୍ଦ ବନ୍ଦ</string>
+    <string name="player.volume_low">କମ୍ ଭଲ୍ୟୁମ୍</string>
+    <string name="player.volume_high">ବେଶି ଭଲ୍ୟୁମ୍</string>
+    <string name="player.expand">ପ୍ଲେୟାର ବଡ଼ କର</string>
+    <string name="player.open_fullscreen">ପ୍ଲେୟାର ଫୁଲ୍ ସ୍କ୍ରିନରେ ଖୋଲ</string>
+    <string name="player.back_to_cover">ଗୀତର କଭରକୁ ଫେର</string>
+    <string name="player.watch_video">ଭିଡିଓ ଦେଖ</string>
+    <string name="player.expand_video">ଭିଡିଓକୁ ଉଇଣ୍ଡୋର ପୁରା ଓସାରକୁ ବଡ଼ କର</string>
+    <string name="player.restore_video">ଭିଡିଓର ମୂଳ ଓସାର ପୁନଃସ୍ଥାପନ କର</string>
+    <string name="player.radio">ରେଡିଓ: ସମାନ ଗୀତ ଧାଡିରେ ଯୋଗ କର</string>
+    <string name="player.song_cover">ଗୀତର କଭର</string>
+    <string name="player.online">ଅନଲାଇନ୍</string>
+    <string name="player.local">ସ୍ଥାନୀୟ</string>
+    <string name="radio.none_found">ସମାନ ଗୀତ ମିଳିଲା ନାହିଁ</string>
+    <string name="radio.added">{n} ସମାନ ଗୀତ ଯୋଗ ହେଲା</string>
+    <string name="radio.unavailable">ରେଡିଓ ଉପଲବ୍ଧ ନାହିଁ</string>
+    <string name="overlay.close_player">ପ୍ଲେୟାର ବନ୍ଦ କର</string>
+    <string name="overlay.queue_title">ପ୍ଲେବ୍ୟାକ୍ ଧାଡି</string>
+    <string name="overlay.queue_count">ଧାଡି ({n})</string>
+    <string name="overlay.no_song">କୌଣସି ଗୀତ ଚାଲୁନାହିଁ</string>
+    <string name="overlay.video_active_note">ଭିଡିଓ ବାମ ପ୍ଲେୟାର ପ୍ୟାନେଲରେ ସକ୍ରିୟ: ଏଠାରେ ଦେଖିବା ପାଇଁ ଏହାକୁ ବନ୍ଦ କର</string>
+    <string name="overlay.video_active">ଭିଡିଓ ପ୍ଲେୟାର ପ୍ୟାନେଲରେ ସକ୍ରିୟ</string>
+    <string name="overlay.close_hint">ଉପରେ ବାମରେ ଥିବା ଶେଭ୍ରନ୍ କିମ୍ବା ESC ଦ୍ୱାରା ବନ୍ଦ କର</string>
+    <string name="page.albums">ଆଲବମ୍ ({n})</string>
+    <string name="page.artists">କଳାକାର ({n})</string>
+    <string name="page.playlists">ପ୍ଲେଲିଷ୍ଟ ({n})</string>
+    <string name="page.songs">ଗୀତ ({n})</string>
+    <string name="page.local">ସ୍ଥାନୀୟ ଫାଇଲ୍ ({n})</string>
+    <string name="page.followed_only">କେବଳ ଫଲୋ କରା</string>
+    <string name="page.followed">ଫଲୋ କରା</string>
+    <string name="page.followed_artist">ଫଲୋ କରା କଳାକାର</string>
+    <string name="page.home">ହୋମ</string>
+    <string name="page.moods">ମୁଡ୍ ଏବଂ ଶୈଳୀ</string>
+    <string name="page.home_unavailable">ହୋମ ଉପଲବ୍ଧ ନାହିଁ (ସଂଯୋଗ ଯାଞ୍ଚ କର ଏବଂ ଉପରେ ରିଫ୍ରେସ୍ ଆଇକନ୍ ଦବାଅ)।</string>
+    <string name="search.hint">ଗୀତ, ଆଲବମ୍, କଳାକାର, ପ୍ଲେଲିଷ୍ଟ ଖୋଜ...</string>
+    <string name="search.load_more">ଅଧିକ ଲୋଡ୍ କର</string>
+    <string name="search.recent">ସାମ୍ପ୍ରତିକ ଖୋଜ</string>
+    <string name="search.suggestions">ପରାମର୍ଶ</string>
+    <string name="search.clear">ଖୋଜ ସଫା କର</string>
+    <string name="local.add_folder">ଫୋଲ୍ଡର ଯୋଗ କର</string>
+    <string name="local.add_files">ଫାଇଲ୍ ଯୋଗ କର</string>
+    <string name="local.fallback_artist">ସ୍ଥାନୀୟ ଫାଇଲ୍</string>
+    <string name="local.imported">{n} ଫାଇଲ୍ ଆମଦାନୀ ହେଲା</string>
+    <string name="local.scanning">ଅଡିଓ ଫାଇଲ୍ ଖୋଜାଯାଉଛି...</string>
+    <string name="local.empty_hint">କୌଣସି ସ୍ଥାନୀୟ ଫାଇଲ୍ ଆମଦାନୀ ହୋଇନାହିଁ।\n\nକମ୍ପ୍ୟୁଟରର ଫୋଲ୍ଡର ସ୍କାନ୍ କରିବା ପାଇଁ \"ଫୋଲ୍ଡର ଯୋଗ କର\" (ସବ୍‌ଫୋଲ୍ଡର ସହିତ) କିମ୍ବା ଅଲଗା ଗୀତ ବାଛିବା ପାଇଁ \"ଫାଇଲ୍ ଯୋଗ କର\" ବ୍ୟବହାର କର। ଆମଦାନୀ ହୋଇଥିବା ଫାଇଲ୍ ସ୍ଥାନୀୟ ଇଞ୍ଜିନ୍ (VLCJ) ଦ୍ୱାରା ଚାଲେ ଏବଂ ଲାଇବ୍ରେରୀରେ ରହେ।</string>
+    <string name="local.input_hint">YouTube URL କିମ୍ବା ସ୍ଥାନୀୟ ଫାଇଲ୍ / URL (VLCJ)</string>
+    <string name="local.clear_url">URL ସଫା କର</string>
+    <string name="local.open_file">ସ୍ଥାନୀୟ ଫାଇଲ୍ ଖୋଲ</string>
+    <string name="detail.album_shuffle">ଆଲବମ୍ ଶଫୁଲରେ ଚଲାଅ</string>
+    <string name="detail.album_favorite_add">ଆଲବମ୍ ପ୍ରିୟତମରେ ଯୋଗ କର</string>
+    <string name="detail.album_favorite_ok">ଆଲବମ୍ ପ୍ରିୟତମରେ</string>
+    <string name="detail.artist_shuffle">କଳାକାରଙ୍କ ଗୀତ ଶଫୁଲରେ ଚଲାଅ</string>
+    <string name="detail.artist_follow">କଳାକାରଙ୍କୁ ଫଲୋ କର</string>
+    <string name="detail.artist_followed">କଳାକାରଙ୍କୁ ଫଲୋ କରାଗଲା</string>
+    <string name="detail.playlist_shuffle">ପ୍ଲେଲିଷ୍ଟ ଶଫୁଲରେ ଚଲାଅ</string>
+    <string name="detail.playlist_favorite_add">ପ୍ଲେଲିଷ୍ଟ ପ୍ରିୟତମରେ ସଂରକ୍ଷଣ କର</string>
+    <string name="detail.playlist_favorite_ok">ପ୍ଲେଲିଷ୍ଟ ପ୍ରିୟତମରେ: ବାହାର କରିବା ପାଇଁ ଦବାଅ</string>
+    <string name="common.loading">ଲୋଡ୍ ହେଉଛି...</string>
+    <string name="kcef.unavailable">KCEF ପ୍ଲେବ୍ୟାକ୍ ଇଞ୍ଜିନ୍ ଉପଲବ୍ଧ ନାହିଁ</string>
+    <string name="kcef.details_log">ସମ୍ପୂର୍ଣ୍ଣ ବିବରଣୀ ଲଗ୍/କନସୋଲରେ: [RiPlay-KCEF] ରୁ ଆରମ୍ଭ ହେଉଥିବା ଲାଇନ୍।</string>
+    <string name="kcef.retry">ପୁଣି ଚେଷ୍ଟା କର</string>
+    <string name="kcef.preparing">ପ୍ଲେବ୍ୟାକ୍ ଇଞ୍ଜିନ୍ ପ୍ରସ୍ତୁତ ହେଉଛି (KCEF)…</string>
+    <string name="kcef.downloading">ଅନ୍ତର୍ନିହିତ ବ୍ରାଉଜର୍ ଡାଉନଲୋଡ୍ ହେଉଛି (କେବଳ ପ୍ରଥମ ଆରମ୍ଭରେ)…</string>
+    <string name="kcef.extracting">ଉପାଦାନ ବାହାର କରାଯାଉଛି…</string>
+    <string name="kcef.installing">ଇନଷ୍ଟଲ୍ ହେଉଛି…</string>
+    <string name="kcef.starting">ଅନ୍ତର୍ନିହିତ ବ୍ରାଉଜର୍ ଆରମ୍ଭ ହେଉଛି…</string>
+    <string name="kcef.preparing_short">ପ୍ରସ୍ତୁତ ହେଉଛି…</string>
+    <string name="kcef.jdk_conflict">ବ୍ୟବହୃତ JDK ରେ RiPlay ସହ ଅସଙ୍ଗତ ସଂସ୍କରଣର ଅନ୍ତର୍ନିହିତ ବ୍ରାଉଜର୍ ଇଞ୍ଜିନ୍ ଅଛି। ଡାଉନଲୋଡ୍ ପରେ ଆପ୍ ବନ୍ଦ ହେବ: ଇନଷ୍ଟଲେସନ୍ ସମ୍ପୂର୍ଣ୍ଣ କରିବା ପାଇଁ ପୁଣି ଖୋଲ।</string>
+    <string name="error.yt_with_code">YouTube ତ୍ରୁଟି (କୋଡ୍ {code}: {meaning})। ବିବରଣୀ ଲଗ୍‌ରେ: [RiPlay-KCEF] / [RiPlay-YT] ଲାଇନ୍।</string>
+    <string name="error.yt_2">ଅବୈଧ ପାରାମିଟର୍ କିମ୍ବା ଆକ୍ସେସ୍/ବୟସ-ସୀମିତ ଭିଡିଓ କିମ୍ବା YouTube ଆଣ୍ଟି-ବଟ୍/ସମ୍ମତି ଯାଞ୍ଚ (ଲଗିନ୍ ଆବଶ୍ୟକ)</string>
+    <string name="error.yt_5">HTML5 ପ୍ଲେୟାର ତ୍ରୁଟି (ବିଷୟବସ୍ତୁ/କୋଡେକ୍/ନେଟୱାର୍କ)</string>
+    <string name="error.yt_100">ଭିଡିଓ ମିଳିଲା ନାହିଁ କିମ୍ବା ବ୍ୟକ୍ତିଗତ</string>
+    <string name="error.yt_101_150">ମାଲିକ ଏମ୍ବେଡେଡ୍ ପ୍ଲେବ୍ୟାକ୍ ଅନୁମତି ଦିଅନ୍ତି ନାହିଁ</string>
+    <string name="error.yt_152">ଏମ୍ବେଡେଡ୍ ପ୍ରସଙ୍ଗ YouTube ପ୍ରତ୍ୟାଖ୍ୟାନ କଲା: ହୋଷ୍ଟ ପୃଷ୍ଠାର Referer ଗ୍ରହଣ ହେଉନାହିଁ</string>
+    <string name="error.yt_153">ଏମ୍ବେଡ୍ ଅନୁରୋଧ YouTube ପ୍ରତ୍ୟାଖ୍ୟାନ କଲା (player/referrer କନଫିଗରେସନ୍ ନାହିଁ)</string>
+    <string name="error.yt_unknown">ଅଜଣା କୋଡ୍</string>
+    <string name="error.local_unavailable">ସ୍ଥାନୀୟ ଗୀତ ଡେସ୍କଟପରେ ଚାଲିଲା ନାହିଁ: ଫାଇଲ୍ ପଥ ଉପଲବ୍ଧ ନାହିଁ (Android MediaStore ଉତ୍ସ କିମ୍ବା ସ୍ଥାନାନ୍ତରିତ ଫାଇଲ୍)। ତଳ ଫିଲ୍ଡର ଫୋଲ୍ଡର ବଟନ୍ ଦ୍ୱାରା କମ୍ପ୍ୟୁଟରରୁ ଫାଇଲ୍ ବାଛି ଚଲାଇ ପାରିବ।</string>
+    <string name="error.manual_unsupported">ପଥ ମିଳିଲା ନାହିଁ କିମ୍ବା ଅସମର୍ଥିତ URL: \'{value}\'</string>
+    <string name="misc.playlist_cover">ପ୍ଲେଲିଷ୍ଟ କଭର</string>
+    <string name="settings.language">ଭାଷା</string>
+    <string name="settings.system">ସିଷ୍ଟମ୍ ଭାଷା</string>
+    <string name="titlebar.minimize">ସେନ୍ଦ୍ରୀକୃତ କର</string>
+    <string name="titlebar.maximize">ବଡ଼ କର</string>
+    <string name="titlebar.restore">ପୁନଃସ୍ଥାପନ କର</string>
+    <string name="titlebar.close">ବନ୍ଦ କର</string>
+    <string name="common.back">ପଛକୁ</string>
+    <string name="common.songs_word">ଗୀତ</string>
+    <string name="overlay.playing">ଏବେ ଚାଲୁଛି</string>
+    <string name="local.none_found_in">\"{value}\" ରେ କୌଣସି ଅଡିଓ ଫାଇଲ୍ ମିଳିଲା ନାହିଁ</string>
+    <string name="local.imported_from">\"{value}\" ରୁ {n} ଫାଇଲ୍ ଆମଦାନୀ ହେଲା</string>
+</resources>

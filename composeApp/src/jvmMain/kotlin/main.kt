@@ -2,6 +2,7 @@ import androidx.compose.ui.window.application
 import androidx.compose.runtime.remember
 import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.setSingletonImageLoaderFactory
+import it.fast4x.riplay.i18n.DesktopI18n
 import it.fast4x.riplay.getAsyncImageLoader
 import it.fast4x.riplay.ui.ThreeColumnsApp
 import it.fast4x.riplay.ui.initialWindowState
@@ -18,6 +19,10 @@ import androidx.compose.ui.window.WindowPlacement
 
 @OptIn(ExperimentalCoilApi::class)
 fun main() = application {
+    // STEP 3s (richiesta utente): lingua UI desktop = scelta salvata o
+    // lingua DEL SISTEMA (fallback inglese), PRIMA della prima UI
+    DesktopI18n.initialize()
+
     // STEP 2: installazione/inizializzazione KCEF in background (non bloccante)
     KcefEngine.start()
     setSingletonImageLoaderFactory { context ->

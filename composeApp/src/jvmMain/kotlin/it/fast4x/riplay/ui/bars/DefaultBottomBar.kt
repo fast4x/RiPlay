@@ -1,5 +1,9 @@
 package it.fast4x.riplay.ui.bars
 
+import androidx.compose.ui.text.style.TextOverflow
+
+import it.fast4x.riplay.i18n.ds
+
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,6 +29,8 @@ import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.OpenInFull
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.Radio
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Text
@@ -73,6 +79,22 @@ import kotlin.math.roundToLong
  *
  * Il motore di riproduzione NON e' toccato: questa barra legge solo lo
  * [PlayerState] del controller attivo (KCEF o VLCJ).
+ *
+ * STEP 3o (richiesta utente n.5 "aggiungere i controlli avanti/indietro
+ * nel miniplayer della home ... prova a riorganizzare al meglio i vari
+ * controlli e pulsanti gia' presenti"): la barra e' RIORGANIZZATA:
+ *  - RIGA 1 (trasporto): INDIETRO (SkipPrevious), play/pausa, AVANTI
+ *    (SkipNext) a sinistra — la stessa navigazione di sessione/coda del
+ *    player full (onPrevious/onNext con i grigi quando non disponibili);
+ *    a destra restano le azioni display: switch audio/video, fullscreen
+ *    (teatro) ed espandi player full. La colonna e' stretta: e' l'unica
+ *    divisione che tiene insieme tutto senza compressioni.
+ *  - RIGA 2: la pill RADIO da sola e CENTRATA (prima era schiacciata a
+ *    destra della riga transport: col testo di feedback esce dallo
+ *    spazio; da sola ha tutta la larghezza che le serve).
+ *  - RIGHE 3-5 (invariate): timeline, timestamp, volume.
+ *  - onPrevious/onNext NULLI = pulsanti nascosti (comportamento v32
+ *    per chi usa la barra senza passare la navigazione).
  */
 @Composable
 fun DefaultBottomBar(
@@ -93,7 +115,20 @@ fun DefaultBottomBar(
     widened: Boolean = false,
     // STEP 3l: espande/ripristina la larghezza del pannello player
     // (null = pulsante nascosto)
-    onToggleWiden: (() -> Unit)? = null
+    onToggleWiden: (() -> Unit)? = null,
+    // STEP 3o (richiesta utente n.5): AVANTI/INDIETRO nel miniplayer della
+    // home (stessa navigazione del player full: cronologia + coda).
+    // Null = pulsante nascosto (parametro facoltativo per compatibilita').
+    onPrevious: (() -> Unit)? = null,
+    onNext: (() -> Unit)? = null,
+    canGoPrevious: Boolean = false,
+    canGoNext: Boolean = false,
+    // STEP 3q (richiesta utente: "aggiungere nel miniplayer il titolo della
+    // canzone ed il nome dell'artista con font non molto grande"): RIGA META
+    // in testa alla barra. Null = riga nascosta (compatibilita' con
+    // FramePlayer che non la passa).
+    title: String? = null,
+    artist: String? = null
 ) {
 
     val state by controller.state.collectAsState()
@@ -106,17 +141,63 @@ fun DefaultBottomBar(
         verticalArrangement = Arrangement.Center
     ) {
 
-        // Riga 1: play/pausa + switch audio/video ... radio + espandi full screen
+        // STEP 3q: RIGA META (titolo 13sp bianco, artista 11sp attenuato,
+        // una riga ciascuno con ellissi) sopra i controlli. Nascosta quando
+        // non c'e' nulla da mostrare (nessun brano / chiamate legacy).
+        if (!title.isNullOrBlank() || !artist.isNullOrBlank()) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                if (!title.isNullOrBlank()) {
+                    Text(
+                        text = title,
+                        color = Color.White,
+                        fontSize = 13.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+                if (!artist.isNullOrBlank()) {
+                    Text(
+                        text = artist,
+                        color = Color.White.copy(alpha = 0.65f),
+                        fontSize = 11.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        }
+
+        // Riga 1 (STEP 3o): trasporto + azioni display.
+        // Sinistra: INDIETRO - play/pausa - AVANTI (cronologia di sessione,
+        // stessa funzione del player full; grigi quando non disponibili).
+        // Destra: switch audio/video, fullscreen (teatro), espandi full.
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(2.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
 
+            // STEP 3o: brano precedente (nascosto se nessuna navigazione
+            // e' stata passata: compatibilita' con il comportamento v32)
+            if (onPrevious != null) {
+                IconButton(onClick = onPrevious, enabled = canGoPrevious) {
+                    Icon(
+                        Icons.Filled.SkipPrevious, ds("player.previous"),
+                        tint = Color.White.copy(alpha = if (canGoPrevious) 0.9f else 0.3f),
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+            }
+
             if (state.isPlaying) {
                 IconButton(controller::pause) {
                     Icon(
-                        Icons.Filled.Pause, "pause media",
+                        Icons.Filled.Pause, ds("player.pause"),
                         tint = Color.Green.copy(alpha = 0.6f),
                         modifier = Modifier.size(34.dp)
                     )
@@ -124,12 +205,25 @@ fun DefaultBottomBar(
             } else {
                 IconButton(controller::play) {
                     Icon(
-                        Icons.Rounded.PlayArrow, "play media",
+                        Icons.Rounded.PlayArrow, ds("player.play"),
                         tint = Color.Green.copy(alpha = 0.6f),
                         modifier = Modifier.size(34.dp)
                     )
                 }
             }
+
+            // STEP 3o: brano successivo (cronologia esaurita = parte la coda)
+            if (onNext != null) {
+                IconButton(onClick = onNext, enabled = canGoNext) {
+                    Icon(
+                        Icons.Filled.SkipNext, ds("player.next"),
+                        tint = Color.White.copy(alpha = if (canGoNext) 0.9f else 0.3f),
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+            }
+
+            Spacer(Modifier.weight(1f))
 
             // STEP 3k n.1: switch audio/video come nel player full
             // (videocamera = guarda il video, immagine = torna alla cover)
@@ -138,47 +232,10 @@ fun DefaultBottomBar(
                     Icon(
                         if (videoVisible) Icons.Filled.Image else Icons.Filled.Videocam,
                         contentDescription = if (videoVisible)
-                            "torna alla cover del brano"
-                        else "guarda il video",
+                            ds("player.back_to_cover")
+                        else ds("player.watch_video"),
                         tint = RiPlayAccent,
                         modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-
-            Spacer(Modifier.weight(1f))
-
-            // STEP 3k n.4: radio (brani simili in coda), pill compatta con
-            // lo stesso stile del pulsante Radio del player full
-            if (onAddRadio != null) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .clickable { if (!radioLoading) onAddRadio() }
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(Color.White.copy(alpha = 0.08f))
-                        .padding(horizontal = 10.dp, vertical = 6.dp)
-                ) {
-                    if (radioLoading) {
-                        CircularProgressIndicator(
-                            color = RiPlayAccent,
-                            strokeWidth = 2.dp,
-                            modifier = Modifier.size(14.dp)
-                        )
-                    } else {
-                        Icon(
-                            Icons.Filled.Radio,
-                            contentDescription = "radio: aggiungi brani simili in coda",
-                            tint = RiPlayAccent,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                    Spacer(Modifier.width(6.dp))
-                    Text(
-                        radioFeedback ?: "Radio",
-                        color = if (radioFeedback != null) RiPlayAccent
-                                else Color.White.copy(alpha = 0.8f),
-                        fontSize = 12.sp
                     )
                 }
             }
@@ -195,9 +252,9 @@ fun DefaultBottomBar(
                         if (widened) Icons.Filled.FullscreenExit
                         else Icons.Filled.Fullscreen,
                         contentDescription = if (widened)
-                            "riporta il video alla larghezza iniziale"
+                            ds("player.restore_video")
                         else
-                            "espandi il video a tutta larghezza della finestra",
+                            ds("player.expand_video"),
                         tint = RiPlayAccent,
                         modifier = Modifier.size(22.dp)
                     )
@@ -209,9 +266,51 @@ fun DefaultBottomBar(
             if (onExpand != null) {
                 IconButton(onClick = onExpand) {
                     Icon(
-                        Icons.Filled.OpenInFull, "apri il player a schermo intero",
+                        Icons.Filled.OpenInFull, ds("player.open_fullscreen"),
                         tint = Color.White.copy(alpha = 0.75f),
                         modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
+
+        // STEP 3o: RIGA 2 - la pill RADIO da sola e centrata (prima stava
+        // schiacciata a destra della riga transport: col feedback testuale
+        // esce dallo spazio della colonna stretta)
+        if (onAddRadio != null) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .clickable { if (!radioLoading) onAddRadio() }
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color.White.copy(alpha = 0.08f))
+                        .padding(horizontal = 12.dp, vertical = 5.dp)
+                ) {
+                    if (radioLoading) {
+                        CircularProgressIndicator(
+                            color = RiPlayAccent,
+                            strokeWidth = 2.dp,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    } else {
+                        Icon(
+                            Icons.Filled.Radio,
+                            contentDescription = ds("player.radio"),
+                            tint = RiPlayAccent,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        radioFeedback ?: "Radio",
+                        color = if (radioFeedback != null) RiPlayAccent
+                                else Color.White.copy(alpha = 0.8f),
+                        fontSize = 12.sp
                     )
                 }
             }
@@ -254,17 +353,17 @@ fun DefaultBottomBar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (state.isMuted || state.volume == 0f) IconButton(controller::toggleSound) {
-                Icon(Icons.AutoMirrored.Rounded.VolumeOff, "volume off",
+                Icon(Icons.AutoMirrored.Rounded.VolumeOff, ds("player.volume_off"),
                     tint = Color.White,
                     modifier = Modifier.size(26.dp))
             }
             else {
                 if (state.volume < .5f) IconButton(controller::toggleSound) {
-                    Icon(Icons.AutoMirrored.Rounded.VolumeDown, "volume low",
+                    Icon(Icons.AutoMirrored.Rounded.VolumeDown, ds("player.volume_low"),
                         tint = Color.White,
                         modifier = Modifier.size(26.dp))
                 } else IconButton(controller::toggleSound) {
-                    Icon(Icons.AutoMirrored.Rounded.VolumeUp, "volume high",
+                    Icon(Icons.AutoMirrored.Rounded.VolumeUp, ds("player.volume_high"),
                         tint = Color.White,
                         modifier = Modifier.size(26.dp))
                 }

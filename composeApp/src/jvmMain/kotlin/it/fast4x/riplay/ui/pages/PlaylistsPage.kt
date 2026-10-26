@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui.pages
 
+import it.fast4x.riplay.i18n.ds
+
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.combinedClickable
@@ -89,7 +91,7 @@ fun PlaylistsPage(
                         .fillMaxWidth()
                 ) {
                     Text(
-                        text = "Playlists (${playlists.size})",
+                        text = ds("page.playlists", "n" to playlists.size),
                         style = TextStyle(
                             fontSize = typography.titleSmall.fontSize,
                             color = Color.White,

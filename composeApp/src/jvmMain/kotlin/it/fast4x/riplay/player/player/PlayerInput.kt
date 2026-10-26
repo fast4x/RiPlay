@@ -1,5 +1,7 @@
 package player
 
+import it.fast4x.riplay.i18n.ds
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -62,10 +64,10 @@ fun PlayerInput(modifier: Modifier = Modifier, onUrl: (String) -> Unit) {
                 setUrl,
                 modifier = Modifier.weight(1f),
                 singleLine = true,
-                placeholder = { Text("URL YouTube oppure file / URL locale (VLCJ)") },
+                placeholder = { Text(ds("local.input_hint")) },
                 trailingIcon = {
                     IconButton(onClick = { setUrl("") }, enabled = url.isNotBlank()) {
-                        Icon(Icons.Rounded.Clear, "clear url")
+                        Icon(Icons.Rounded.Clear, ds("local.clear_url"))
                     }
                 })
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -74,7 +76,7 @@ fun PlayerInput(modifier: Modifier = Modifier, onUrl: (String) -> Unit) {
                     Icon(Icons.Rounded.Done, "done")
                 }
                 IconButton(onClick = { uploadTick++ }) {
-                    Icon(Icons.Rounded.FileUpload, "apri file locale")
+                    Icon(Icons.Rounded.FileUpload, ds("local.open_file"))
                 }
             }
         }

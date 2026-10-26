@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - Ελληνικά (values-el)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">Αρχική</string>
+    <string name="nav.search">Αναζήτηση</string>
+    <string name="nav.songs">Τραγούδια</string>
+    <string name="nav.artists">Καλλιτέχνες</string>
+    <string name="nav.albums">Άλμπουμ</string>
+    <string name="nav.playlists">Λίστες</string>
+    <string name="nav.local">Τοπικά αρχεία</string>
+    <string name="queue.title">Ουρά αναπαραγωγής ({n})</string>
+    <string name="queue.open">άνοιξε την ουρά αναπαραγωγής</string>
+    <string name="queue.clear">άδειασμα ουράς</string>
+    <string name="queue.close_panel">κλείσε το πάνελ της ουράς</string>
+    <string name="queue.remove">αφαίρεση από την ουρά</string>
+    <string name="queue.drag">σύρε για ταξινόμηση</string>
+    <string name="queue.drag_handle">Σύρε τη λαβή για ταξινόμηση</string>
+    <string name="action.add_to_queue">προσθήκη στην ουρά</string>
+    <string name="action.already_queued">ήδη στην ουρά</string>
+    <string name="action.enqueue_all">τα πάντα στην ουρά</string>
+    <string name="action.enqueue_album">όλο το άλμπουμ στην ουρά</string>
+    <string name="action.enqueue_playlist">όλη τη λίστα στην ουρά</string>
+    <string name="player.previous">προηγούμενο τραγούδι</string>
+    <string name="player.next">επόμενο τραγούδι</string>
+    <string name="player.play">αναπαραγωγή</string>
+    <string name="player.pause">παύση</string>
+    <string name="player.volume_off">ήχος ανενεργός</string>
+    <string name="player.volume_low">χαμηλή ένταση</string>
+    <string name="player.volume_high">υψηλή ένταση</string>
+    <string name="player.expand">ανάπτυξη αναπαραγωγέα</string>
+    <string name="player.open_fullscreen">άνοιξε τον αναπαραγωγέα σε πλήρη οθόνη</string>
+    <string name="player.back_to_cover">πιστά στο εξώφυλλο του τραγουδιού</string>
+    <string name="player.watch_video">δες το βίντεο</string>
+    <string name="player.expand_video">ανάπτυξη βίντεο σε όλο το πλάτος του παραθύρου</string>
+    <string name="player.restore_video">επαναφορά αρχικού πλάτους βίντεο</string>
+    <string name="player.radio">ραδιόφωνο: πρόσθεσε παρόμοια τραγούδια στην ουρά</string>
+    <string name="player.song_cover">εξώφυλλο τραγουδιού</string>
+    <string name="player.online">Σε σύνδεση</string>
+    <string name="player.local">Τοπικό</string>
+    <string name="radio.none_found">Δεν βρέθηκαν παρόμοια τραγούδια</string>
+    <string name="radio.added">Προστέθηκαν {n} παρόμοια τραγούδια</string>
+    <string name="radio.unavailable">Ραδιόφωνο μη διαθέσιμο</string>
+    <string name="overlay.close_player">κλείσε τον αναπαραγωγέα</string>
+    <string name="overlay.queue_title">ουρά αναπαραγωγής</string>
+    <string name="overlay.queue_count">Ουρά ({n})</string>
+    <string name="overlay.no_song">Κανένα τραγούδι δεν παίζει</string>
+    <string name="overlay.video_active_note">Βίντεο ενεργό στο αριστερό πάνελ: κλείσε το για να το δεις εδώ</string>
+    <string name="overlay.video_active">βίντεο ενεργό στο πάνελ</string>
+    <string name="overlay.close_hint">Κλείσε με το βέλος πάνω αριστερά ή με ESC</string>
+    <string name="page.albums">Άλμπουμ ({n})</string>
+    <string name="page.artists">Καλλιτέχνες ({n})</string>
+    <string name="page.playlists">Λίστες ({n})</string>
+    <string name="page.songs">Τραγούδια ({n})</string>
+    <string name="page.local">Τοπικά αρχεία ({n})</string>
+    <string name="page.followed_only">Μόνο που ακολουθείς</string>
+    <string name="page.followed">Ακολουθούμενα</string>
+    <string name="page.followed_artist">καλλιτέχνης που ακολουθείς</string>
+    <string name="page.home">Αρχική</string>
+    <string name="page.moods">Διαθέσεις και είδη</string>
+    <string name="page.home_unavailable">Η Αρχική δεν είναι διαθέσιμη (έλεγξε τη σύνδεση και πάτα το εικονίδιο ανανέωσης πάνω).</string>
+    <string name="search.hint">Αναζήτηση τραγουδιών, άλμπουμ, καλλιτεχνών, λιστών...</string>
+    <string name="search.load_more">Φόρτωσε περισσότερα</string>
+    <string name="search.recent">Πρόσφατες αναζητήσεις</string>
+    <string name="search.suggestions">Προτάσεις</string>
+    <string name="search.clear">καθαρισμός αναζήτησης</string>
+    <string name="local.add_folder">Προσθήκη φακέλου</string>
+    <string name="local.add_files">Προσθήκη αρχείων</string>
+    <string name="local.fallback_artist">Τοπικό αρχείο</string>
+    <string name="local.imported">Εισήχθησαν {n} αρχεία</string>
+    <string name="local.scanning">Αναζήτηση αρχείων ήχου...</string>
+    <string name="local.empty_hint">Δεν υπάρχουν τοπικά αρχεία.\n\nΧρησιμοποίησε «Προσθήκη φακέλου» για σάρωση φακέλου του υπολογιστή (και υποφακέλους) ή «Προσθήκη αρχείων» για μεμονωμένα τραγούδια. Τα εισαγμένα αρχεία παίζουν με την Τοπική μηχανή (VLCJ) και μένουν στη βιβλιοθήκη.</string>
+    <string name="local.input_hint">URL YouTube ή τοπικό αρχείο / URL (VLCJ)</string>
+    <string name="local.clear_url">καθαρισμός URL</string>
+    <string name="local.open_file">άνοιγμα τοπικού αρχείου</string>
+    <string name="detail.album_shuffle">αναπαραγωγή άλμπουμ σε τυχαία σειρά</string>
+    <string name="detail.album_favorite_add">προσθήκη άλμπουμ στα αγαπημένα</string>
+    <string name="detail.album_favorite_ok">άλμπουμ στα αγαπημένα</string>
+    <string name="detail.artist_shuffle">αναπαραγωγή τραγουδιών καλλιτέχνη σε τυχαία σειρά</string>
+    <string name="detail.artist_follow">ακολούθησε τον καλλιτέχνη</string>
+    <string name="detail.artist_followed">καλλιτέχνης ακολουθήθηκε</string>
+    <string name="detail.playlist_shuffle">αναπαραγωγή λίστας σε τυχαία σειρά</string>
+    <string name="detail.playlist_favorite_add">αποθήκευση λίστας στα αγαπημένα</string>
+    <string name="detail.playlist_favorite_ok">λίστα στα αγαπημένα: πάτα για αφαίρεση</string>
+    <string name="common.loading">φόρτωση...</string>
+    <string name="kcef.unavailable">Η μηχανή αναπαραγωγής KCEF δεν είναι διαθέσιμη</string>
+    <string name="kcef.details_log">Πλήρεις λεπτομέρειες στο log/κονσόλα: γραμμές που αρχίζουν από [RiPlay-KCEF].</string>
+    <string name="kcef.retry">Ξαναδοκίμασε</string>
+    <string name="kcef.preparing">Προετοιμασία μηχανής αναπαραγωγής (KCEF)…</string>
+    <string name="kcef.downloading">Λήψη ενσωματωμένου browser (μόνο στην πρώτη εκκίνηση)…</string>
+    <string name="kcef.extracting">Εξαγωγή στοιχείων…</string>
+    <string name="kcef.installing">Εγκατάσταση…</string>
+    <string name="kcef.starting">Εκκίνηση ενσωματωμένου browser…</string>
+    <string name="kcef.preparing_short">Προετοιμασία…</string>
+    <string name="kcef.jdk_conflict">Το JDK σε χρήση περιέχει ενσωματωμένη μηχανή browser σε έκδοση ασύμβατη με το RiPlay. Μετά τη λήψη η εφαρμογή θα κλείσει: άνοιξέ την ξανά για να ολοκληρωθεί η εγκατάσταση.</string>
+    <string name="error.yt_with_code">Σφάλμα YouTube (κωδικός {code}: {meaning}). Λεπτομέρειες στο log: γραμμές [RiPlay-KCEF] / [RiPlay-YT].</string>
+    <string name="error.yt_2">μη έγκυρη παράμετρος ή βίντεο με περιορισμούς πρόσβασης/ηλικίας ή έλεγχος anti-bot/συναίνεσης YouTube (απαιτείται σύνδεση)</string>
+    <string name="error.yt_5">σφάλμα αναπαραγωγέα HTML5 (περιεχόμενο/codec/δίκτυο)</string>
+    <string name="error.yt_100">βίντεο δεν βρέθηκε ή είναι ιδιωτικό</string>
+    <string name="error.yt_101_150">ο ιδιοκτήτης δεν επιτρέπει ενσωματωμένη αναπαραγωγή</string>
+    <string name="error.yt_152">ενσωματωμένο περιβάλλον απορρίφθηκε από YouTube: το Referer της σελίδας υποδοχής δεν γίνεται αποδεκτό</string>
+    <string name="error.yt_153">αίτημα ενσωμάτωσης απορρίφθηκε από YouTube (λείπει ρύθμιση player/referrer)</string>
+    <string name="error.yt_unknown">άγνωστος κωδικός</string>
+    <string name="error.local_unavailable">Τοπικό τραγούδι δεν αναπαράγεται στην επιφάνεια εργασίας: η διαδρομή αρχείου δεν είναι προσβάσιμη (προέλευση Android MediaStore ή μετακινημένο αρχείο). Μπορείς να το παίξεις επιλέγοντας το αρχείο από τον υπολογιστή με το κουμπί φακέλου στο παρακάτω πεδίο.</string>
+    <string name="error.manual_unsupported">Διαδρομή δεν βρέθηκε ή μη υποστηριζόμενο URL: \'{value}\'</string>
+    <string name="misc.playlist_cover">Εξώφυλλο λίστας</string>
+    <string name="settings.language">Γλώσσα</string>
+    <string name="settings.system">Γλώσσα συστήματος</string>
+    <string name="titlebar.minimize">Ελαχιστοποίηση</string>
+    <string name="titlebar.maximize">Μεγιστοποίηση</string>
+    <string name="titlebar.restore">Επαναφορά</string>
+    <string name="titlebar.close">Κλείσιμο</string>
+    <string name="common.back">Πίσω</string>
+    <string name="common.songs_word">τραγούδια</string>
+    <string name="overlay.playing">Παίζει τώρα</string>
+    <string name="local.none_found_in">Δεν βρέθηκαν αρχεία ήχου στο \"{value}\"</string>
+    <string name="local.imported_from">Εισήχθησαν {n} αρχεία από το \"{value}\"</string>
+</resources>

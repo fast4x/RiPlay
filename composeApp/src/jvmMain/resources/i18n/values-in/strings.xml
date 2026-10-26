@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - Bahasa Indonesia (values-in)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">Beranda</string>
+    <string name="nav.search">Cari</string>
+    <string name="nav.songs">Lagu</string>
+    <string name="nav.artists">Artis</string>
+    <string name="nav.albums">Album</string>
+    <string name="nav.playlists">Playlist</string>
+    <string name="nav.local">File lokal</string>
+    <string name="queue.title">Antrean pemutaran ({n})</string>
+    <string name="queue.open">buka antrean pemutaran</string>
+    <string name="queue.clear">kosongkan antrean</string>
+    <string name="queue.close_panel">tutup panel antrean</string>
+    <string name="queue.remove">hapus dari antrean</string>
+    <string name="queue.drag">geser untuk mengurutkan ulang</string>
+    <string name="queue.drag_handle">Geser pegangan untuk mengurutkan ulang</string>
+    <string name="action.add_to_queue">tambahkan ke antrean</string>
+    <string name="action.already_queued">sudah di antrean</string>
+    <string name="action.enqueue_all">masukkan semua ke antrean</string>
+    <string name="action.enqueue_album">masukkan seluruh album ke antrean</string>
+    <string name="action.enqueue_playlist">masukkan seluruh playlist ke antrean</string>
+    <string name="player.previous">lagu sebelumnya</string>
+    <string name="player.next">lagu berikutnya</string>
+    <string name="player.play">putar</string>
+    <string name="player.pause">jeda</string>
+    <string name="player.volume_off">suara mati</string>
+    <string name="player.volume_low">volume rendah</string>
+    <string name="player.volume_high">volume tinggi</string>
+    <string name="player.expand">perbesar pemutar</string>
+    <string name="player.open_fullscreen">buka pemutar layar penuh</string>
+    <string name="player.back_to_cover">kembali ke sampul lagu</string>
+    <string name="player.watch_video">tonton video</string>
+    <string name="player.expand_video">perluas video selebar jendela</string>
+    <string name="player.restore_video">kembalikan lebar awal video</string>
+    <string name="player.radio">radio: tambahkan lagu serupa ke antrean</string>
+    <string name="player.song_cover">sampul lagu</string>
+    <string name="player.online">Daring</string>
+    <string name="player.local">Lokal</string>
+    <string name="radio.none_found">Tidak ada lagu serupa ditemukan</string>
+    <string name="radio.added">Menambahkan {n} lagu serupa</string>
+    <string name="radio.unavailable">Radio tidak tersedia</string>
+    <string name="overlay.close_player">tutup pemutar</string>
+    <string name="overlay.queue_title">antrean pemutaran</string>
+    <string name="overlay.queue_count">Antrean ({n})</string>
+    <string name="overlay.no_song">Tidak ada lagu diputar</string>
+    <string name="overlay.video_active_note">Video aktif di panel pemutar kiri: tutup untuk menonton di sini</string>
+    <string name="overlay.video_active">video aktif di panel pemutar</string>
+    <string name="overlay.close_hint">Tutup dengan chevron kiri atas atau dengan ESC</string>
+    <string name="page.albums">Album ({n})</string>
+    <string name="page.artists">Artis ({n})</string>
+    <string name="page.playlists">Playlist ({n})</string>
+    <string name="page.songs">Lagu ({n})</string>
+    <string name="page.local">File lokal ({n})</string>
+    <string name="page.followed_only">Hanya yang diikuti</string>
+    <string name="page.followed">Diikuti</string>
+    <string name="page.followed_artist">artis yang diikuti</string>
+    <string name="page.home">Beranda</string>
+    <string name="page.moods">Suasana dan genre</string>
+    <string name="page.home_unavailable">Beranda tidak tersedia (periksa koneksi dan ketuk ikon muat ulang di atas).</string>
+    <string name="search.hint">Cari lagu, album, artis, playlist...</string>
+    <string name="search.load_more">Muat lebih banyak</string>
+    <string name="search.recent">Pencarian terbaru</string>
+    <string name="search.suggestions">Saran</string>
+    <string name="search.clear">hapus pencarian</string>
+    <string name="local.add_folder">Tambah folder</string>
+    <string name="local.add_files">Tambah file</string>
+    <string name="local.fallback_artist">File lokal</string>
+    <string name="local.imported">Mengimpor {n} file</string>
+    <string name="local.scanning">Mencari file audio...</string>
+    <string name="local.empty_hint">Belum ada file lokal yang diimpor.\n\nGunakan \"Tambah folder\" untuk memindai folder komputer (termasuk subfolder) atau \"Tambah file\" untuk memilih lagu satu per satu. File yang diimpor diputar dengan mesin Lokal (VLCJ) dan tetap ada di pustaka.</string>
+    <string name="local.input_hint">URL YouTube atau file / URL lokal (VLCJ)</string>
+    <string name="local.clear_url">hapus URL</string>
+    <string name="local.open_file">buka file lokal</string>
+    <string name="detail.album_shuffle">putar album secara acak</string>
+    <string name="detail.album_favorite_add">tambahkan album ke favorit</string>
+    <string name="detail.album_favorite_ok">album di favorit</string>
+    <string name="detail.artist_shuffle">putar lagu artis secara acak</string>
+    <string name="detail.artist_follow">ikuti artis</string>
+    <string name="detail.artist_followed">artis diikuti</string>
+    <string name="detail.playlist_shuffle">putar playlist secara acak</string>
+    <string name="detail.playlist_favorite_add">simpan playlist ke favorit</string>
+    <string name="detail.playlist_favorite_ok">playlist di favorit: ketuk untuk menghapus</string>
+    <string name="common.loading">memuat...</string>
+    <string name="kcef.unavailable">Mesin pemutaran KCEF tidak tersedia</string>
+    <string name="kcef.details_log">Detail lengkap di log/konsol: baris yang dimulai dengan [RiPlay-KCEF].</string>
+    <string name="kcef.retry">Coba lagi</string>
+    <string name="kcef.preparing">Menyiapkan mesin pemutaran (KCEF)…</string>
+    <string name="kcef.downloading">Mengunduh peramban bawaan (hanya mulai pertama)…</string>
+    <string name="kcef.extracting">Mengekstrak komponen…</string>
+    <string name="kcef.installing">Memasang…</string>
+    <string name="kcef.starting">Memulai peramban bawaan…</string>
+    <string name="kcef.preparing_short">Menyiapkan…</string>
+    <string name="kcef.jdk_conflict">JDK yang digunakan berisi mesin peramban bawaan versi yang tidak kompatibel dengan RiPlay. Setelah unduhan selesai aplikasi akan tertutup: buka kembali untuk menyelesaikan pemasangan.</string>
+    <string name="error.yt_with_code">Kesalahan YouTube (kode {code}: {meaning}). Detail di log: baris [RiPlay-KCEF] / [RiPlay-YT].</string>
+    <string name="error.yt_2">parameter tidak valid atau video dengan pembatasan akses/umur atau pemeriksaan anti-bot/persetujuan YouTube (perlu login)</string>
+    <string name="error.yt_5">kesalahan pemutar HTML5 (konten/codec/jaringan)</string>
+    <string name="error.yt_100">video tidak ditemukan atau pribadi</string>
+    <string name="error.yt_101_150">pemilik tidak mengizinkan pemutaran tersemat</string>
+    <string name="error.yt_152">konteks tersemat ditolak YouTube: Referer halaman penyemat tidak diterima</string>
+    <string name="error.yt_153">permintaan semat ditolak YouTube (konfigurasi player/referrer tidak ada)</string>
+    <string name="error.yt_unknown">kode tidak dikenal</string>
+    <string name="error.local_unavailable">Lagu lokal tidak dapat diputar di desktop: jalur file tidak dapat diakses (asal Android MediaStore atau file dipindahkan). Anda dapat memutarnya dengan memilih file dari komputer melalui tombol folder di kolom bawah.</string>
+    <string name="error.manual_unsupported">Jalur tidak ditemukan atau URL tidak didukung: \'{value}\'</string>
+    <string name="misc.playlist_cover">Sampul playlist</string>
+    <string name="settings.language">Bahasa</string>
+    <string name="settings.system">Bahasa sistem</string>
+    <string name="titlebar.minimize">Minimalkan</string>
+    <string name="titlebar.maximize">Maksimalkan</string>
+    <string name="titlebar.restore">Pulihkan</string>
+    <string name="titlebar.close">Tutup</string>
+    <string name="common.back">Kembali</string>
+    <string name="common.songs_word">lagu</string>
+    <string name="overlay.playing">Sedang diputar</string>
+    <string name="local.none_found_in">Tidak ada file audio ditemukan di \"{value}\"</string>
+    <string name="local.imported_from">Mengimpor {n} file dari \"{value}\"</string>
+</resources>

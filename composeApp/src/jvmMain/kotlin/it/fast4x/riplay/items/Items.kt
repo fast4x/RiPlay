@@ -1,5 +1,7 @@
 package it.fast4x.riplay.items
 
+import it.fast4x.riplay.i18n.ds
+
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -22,11 +24,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,6 +50,7 @@ import it.fast4x.riplay.commonutils.PINNED_PREFIX
 import it.fast4x.riplay.commonutils.PIPED_PREFIX
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.enums.ThumbnailRoundness
+import it.fast4x.riplay.ui.components.RiPlayAccent
 import it.fast4x.riplay.utils.LoadImage
 import it.fast4x.riplay.utils.getTitleMonthlyPlaylist
 import org.jetbrains.compose.resources.painterResource
@@ -53,6 +58,19 @@ import riplay.composeapp.generated.resources.Res
 import riplay.composeapp.generated.resources.pin
 import riplay.composeapp.generated.resources.piped_logo
 import riplay.composeapp.generated.resources.stat_month
+
+/**
+ * STEP 3n (richiesta utente n.6 "quando l'utente clicca sul pulsante + di
+ * una canzone per aggiungerla in coda, non si accorge se e' stato fatto:
+ * cambiare icona con una spunta quando la canzone e' gia' inserita in
+ * coda"): gli ID dei brani attualmente in CODA DI RIPRODUZIONE.
+ *
+ * E' una CompositionLocal fornita da ThreeColumnsApp (che possiede la
+ * playQueue): cosi' il pulsante dentro SongItem la legge SENZA passare
+ * l'elenco attraverso tutte le pagine/schermate. L'insieme si aggiorna
+ * automaticamente a ogni aggiunta/rimozione/svuotamento della coda.
+ */
+val LocalQueuedSongIds = staticCompositionLocalOf<Set<String>> { emptySet() }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -67,19 +85,26 @@ fun SongItem(
     // STEP 3i: azione "aggiungi alla coda di riproduzione" (null = niente
     // pulsante): e' il piccolo "+" a destra del titolo di ogni riga brano.
     onAddToQueue: (() -> Unit)? = null,
+    // STEP 3n: id del brano rappresentato dalla riga (serve a riconoscere
+    // se e' GIA' in coda e mostrare la SPUNTA al posto del "+")
+    songId: String? = null,
 ) {
     // il "+" coda viene renderizzato nel trailingContent se la lista non
     // ne fornisce uno proprio
+    // STEP 3n: se il brano e' gia' in coda l'icona diventa una SPUNTA
+    // accentata (RiPlayAccent) e il click e' inerte (il brano e' gia' li':
+    // aggiungerlo di nuovo creerebbe solo un duplicato)
     val trailing: @Composable (() -> Unit)? = trailingContent ?: onAddToQueue?.let { action ->
         {
+            val queued = songId != null && songId in LocalQueuedSongIds.current
             androidx.compose.material.IconButton(
-                onClick = action,
+                onClick = if (queued) { {} } else action,
                 modifier = Modifier.size(30.dp)
             ) {
                 androidx.compose.material.Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = "aggiungi alla coda",
-                    tint = Color.White.copy(alpha = 0.55f),
+                    imageVector = if (queued) Icons.Filled.Check else Icons.Filled.Add,
+                    contentDescription = if (queued) ds("action.already_queued") else ds("action.add_to_queue"),
+                    tint = if (queued) RiPlayAccent else Color.White.copy(alpha = 0.55f),
                     modifier = Modifier.size(18.dp)
                 )
             }
@@ -193,6 +218,9 @@ fun SongItem(
             //onThumbnailContent?.invoke(this)
         },
         onAddToQueue = onAddToQueue,
+        // STEP 3n: per la spunta "gia' in coda" (id = videoId, la STESSA chiave
+        // con cui il brano viene aggiunto alla coda come Song.id)
+        songId = song.key
     )
 }
 
@@ -221,6 +249,8 @@ fun SongItem(
             //onThumbnailContent?.invoke(this)
         },
         onAddToQueue = onAddToQueue,
+        // STEP 3n: per la spunta "gia' in coda"
+        songId = songEntity.song.id
     )
 }
 
@@ -476,7 +506,7 @@ fun PlaylistItem(
                         modifier = Modifier
                             .size(40.dp)
                             .padding(all = 5.dp),
-                        contentDescription = "Background Image"
+                        contentDescription = ds("misc.playlist_cover")
                     )
                 }
                 if (it.startsWith(PINNED_PREFIX,0,true)) {
@@ -486,7 +516,7 @@ fun PlaylistItem(
                         modifier = Modifier
                             .size(40.dp)
                             .padding(all = 5.dp),
-                        contentDescription = "Background Image",
+                        contentDescription = ds("misc.playlist_cover"),
                         contentScale = ContentScale.Fit
                     )
                 }
@@ -497,7 +527,7 @@ fun PlaylistItem(
                         modifier = Modifier
                             .size(40.dp)
                             .padding(all = 5.dp),
-                        contentDescription = "Background Image",
+                        contentDescription = ds("misc.playlist_cover"),
                         contentScale = ContentScale.Fit
                     )
                 }

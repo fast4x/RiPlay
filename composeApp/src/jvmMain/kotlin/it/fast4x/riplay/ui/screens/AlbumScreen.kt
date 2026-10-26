@@ -1,27 +1,22 @@
 package it.fast4x.riplay.ui.screens
 
-import androidx.compose.foundation.ExperimentalFoundationApi
+import it.fast4x.riplay.i18n.ds
+
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.DrawerDefaults.windowInsets
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,9 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
@@ -57,9 +50,10 @@ import it.fast4x.riplay.styling.Dimensions.fadeSpacingTop
 import it.fast4x.riplay.styling.Dimensions.layoutColumnBottomSpacer
 import it.fast4x.riplay.ui.components.AutoResizeText
 import it.fast4x.riplay.ui.components.FontSizeRange
+import it.fast4x.riplay.ui.components.HeaderActionIcon
 import it.fast4x.riplay.ui.components.Loader
+import it.fast4x.riplay.ui.components.RiPlayAccent
 import it.fast4x.riplay.ui.components.Title
-import it.fast4x.riplay.ui.components.ToolButton
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.fadingEdge
 import it.fast4x.riplay.utils.getHttpClient
@@ -70,19 +64,40 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import dev.rebelonion.translator.Language
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.filled.PlaylistAdd
+import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.foundation.clickable
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import riplay.composeapp.generated.resources.Res
 import riplay.composeapp.generated.resources.album_alternative_versions
-import riplay.composeapp.generated.resources.bookmark
-import riplay.composeapp.generated.resources.bookmark_outline
 import riplay.composeapp.generated.resources.from_wikipedia_cca
 import riplay.composeapp.generated.resources.information
-import riplay.composeapp.generated.resources.shuffle
 import riplay.composeapp.generated.resources.songs
 import riplay.composeapp.generated.resources.translate
 
-@OptIn(ExperimentalFoundationApi::class)
+/**
+ * STEP 3o (richiesta utente n.2 "modificare la pagina di dettaglio di
+ * artista, album e playlist a quella lato android"): la pagina e'
+ * RISTRUTTURATA come AlbumDetails di Android in LANDSCAPE (la desktop e'
+ * una finestra larga):
+ *  - a SINISTRA la copertina QUADRATA fissa (40% della larghezza, 1:1,
+ *    immagine centrata con bordo sfumato) - prima 4:3 su mezza colonna;
+ *  - a DESTRA un'unica colonna scorrevole con:
+ *      il TITOLO grande centrato (AutoResizeText 32..38sp, come Android),
+ *      la riga info centrata ("anno - N canzoni"),
+ *      la RIGA DI AZIONI con Arrangement.SpaceAround (HeaderActionIcon:
+ *      bookmark preferiti, shuffle, metti tutto in coda),
+ *      i BRANI con NUMERO DI TRACCIA al posto della miniatura (come la
+ *      lista Android: thumbnailContent = "${index + 1}"),
+ *      le versioni alternative e la descrizione (Information).
+ *
+ * Le funzioni (salvataggio album nel db, bookmark preferiti, traduzione,
+ * click = album intero in coda) restano IDENTICHE: cambia solo il layout.
+ */
 @Composable
 fun AlbumScreen(
     browseId: String,
@@ -93,19 +108,14 @@ fun AlbumScreen(
     // STEP 3j (richiesta utente n.1): cliccando una canzone dell'album,
     // L'INTERA LISTA DELL'ALBUM va in coda e parte il brano cliccato
     // (stesso comportamento del lato Android: forcePlayFromBeginning).
-    onPlayCollection: ((List<Song>, Song) -> Unit)? = null
+    onPlayCollection: ((List<Song>, Song) -> Unit)? = null,
+    // STEP 3o (richiesta utente n.2): "metti in coda tutto" senza avviare
+    // (l'icona enqueue della riga di azioni Android)
+    onEnqueueAll: ((List<Song>) -> Unit)? = null
 ) {
     val coroutineScope by remember { mutableStateOf(CoroutineScope(Dispatchers.IO)) }
-    //val leftScrollState = rememberScrollState()
-    //val rightScrollState = rememberScrollState()
-
 
     var album by remember { mutableStateOf<Album?>(null) }
-//    LaunchedEffect(Unit) {
-//        Database.album(browseId).collect { album = it }
-//    }
-
-
 
     val albumPage = remember { mutableStateOf<Environment.PlaylistOrAlbumPage?>(null) }
     LaunchedEffect(browseId) {
@@ -117,7 +127,6 @@ fun AlbumScreen(
                     ?.onSuccess { currentAlbumPage ->
                         albumPage.value = currentAlbumPage
 
-                        //println("browseId: $browseId album: $album")
                         println("browseId: $browseId albumPage: ${albumPage.value}")
 
                         coroutineScope.launch {
@@ -164,14 +173,19 @@ fun AlbumScreen(
 
     }
 
-    val endPaddingValues = windowInsets.only(WindowInsetsSides.End).asPaddingValues()
-
     var translateEnabled by remember {
         mutableStateOf(false)
     }
 
     val translator = Translator()
     val languageDestination = languageDestination()
+
+    // lista brani dell'album (per shuffle / metti in coda tutto / click)
+    val allAlbumSongs = albumPage.value
+        ?.songsPage?.items
+        .orEmpty()
+        .map { it.asSong }
+        .distinctBy { it.id }
 
     Box(
         modifier = Modifier
@@ -183,79 +197,85 @@ fun AlbumScreen(
             modifier = Modifier
                 .fillMaxSize()
         ) {
+
+            // COPERTINA QUADRATA fissa a sinistra (40%, come il landscape
+            // Android di AlbumDetails: fillMaxWidth(.4f) + aspectRatio(1f))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.4f)
+                    .aspectRatio(1f)
+            ) {
+                albumPage.value?.let {
+                    AsyncImage(
+                        model = albumPage.value!!.thumbnail?.url?.resize(1200, 1200),
+                        contentDescription = ds("common.loading"),
+                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.Center)
+                            .fadingEdge(
+                                top = fadeSpacingTop,
+                                bottom = fadeSpacingBottom
+                            )
+                    )
+                } ?: Loader()
+            }
+
+            // COLONNA DESTRA scorrevole (titolo, info, azioni, brani...)
             Column(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .fillMaxHeight()
-                    .fillMaxWidth(0.5f)
+                    .fillMaxSize()
             ) {
 
-                Box(
-                    modifier = Modifier
-                        .aspectRatio(4f / 3)
-                        //.height(300.dp)
-                        .fillMaxWidth()
-                ) {
-                    albumPage.value?.let {
-                        AsyncImage(
-                            model = albumPage.value!!.thumbnail?.url?.resize(1200, 900),
-                            contentDescription = "loading...",
+                // TITOLO grande centrato (Android: AutoResizeText 32..38sp
+                // in fondo all'header, qui in testa alla colonna destra)
+                albumPage.value?.let {
+                    if (!it.title.isNullOrEmpty())
+                        AutoResizeText(
+                            text = it.title.toString(),
+                            style = typography.displayMedium,
+                            fontSizeRange = FontSizeRange(30.sp, 38.sp),
+                            fontWeight = typography.displayMedium.fontWeight,
+                            fontFamily = typography.displayMedium.fontFamily,
+                            color = typography.displayMedium.color,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                            textAlign = TextAlign.Center,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .align(Alignment.TopCenter)
-                                .fadingEdge(
-                                    top = fadeSpacingTop,
-                                    bottom = fadeSpacingBottom
-                                )
+                                .padding(horizontal = 24.dp, vertical = 8.dp)
                         )
 
-                        if (!albumPage.value?.title.isNullOrEmpty())
-                            AutoResizeText(
-                                text = albumPage.value?.title.toString(),
-                                style = typography.displayMedium,
-                                fontSizeRange = FontSizeRange(50.sp, 100.sp),
-                                fontWeight = typography.displayMedium.fontWeight,
-                                fontFamily = typography.displayMedium.fontFamily,
-                                color = typography.displayMedium.color,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier
-                                    .align(Alignment.BottomCenter)
-                                    .padding(horizontal = 30.dp)
-                                    .padding(bottom = 30.dp)
-                            )
-
-
-                        Text(
-                            text = "${albumPage.value?.year} - " + albumPage.value?.songsPage?.items?.size.toString() + " "
-                                    + stringResource(Res.string.songs),
-                            //+ " - " + formatAsTime(totalPlayTimes),
-                            style = TextStyle(
-                                fontSize = typography.titleMedium.fontSize,
-                                fontWeight = typography.titleMedium.fontWeight,
-                                color = Color.White,
-                                textAlign = TextAlign.Start
-                            ),
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-
-                        )
-                    } ?: Loader()
+                    // RIGA INFO centrata (Android: "anno - N songs - durata")
+                    Text(
+                        text = "${it.year ?: ""}${if (it.year != null) " - " else ""}${it.songsPage?.items?.size ?: 0} "
+                                + ds("common.songs_word"),
+                        color = Color.White.copy(alpha = 0.6f),
+                        fontSize = 13.sp,
+                        textAlign = TextAlign.Center
+                    )
                 }
 
+                // RIGA DI AZIONI (Android: Row SpaceAround di HeaderIconButton):
+                // preferiti (bookmark), shuffle, metti tutto in coda
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    horizontalArrangement = Arrangement.SpaceAround,
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
+                        .padding(top = 10.dp)
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .padding(top = 16.dp)
                 ) {
-                    ToolButton(
-                        icon = if (album?.bookmarkedAt == null) Res.drawable.bookmark_outline else Res.drawable.bookmark,
-                        onAction = {
+                    HeaderActionIcon(
+                        icon = if (album?.bookmarkedAt == null) Icons.Filled.BookmarkBorder
+                               else Icons.Filled.Bookmark,
+                        contentDescription = if (album?.bookmarkedAt == null)
+                            ds("detail.album_favorite_add")
+                        else ds("detail.album_favorite_ok"),
+                        accent = album?.bookmarkedAt != null,
+                        onClick = {
                             val bookmarkedAt =
                                 if (album?.bookmarkedAt == null) System.currentTimeMillis() else null
 
@@ -266,18 +286,123 @@ fun AlbumScreen(
                                     }
                                 }
                             }
-
-
                         }
                     )
-                    ToolButton(
-                        icon = Res.drawable.shuffle,
-                        onAction = {}
+
+                    HeaderActionIcon(
+                        icon = Icons.Filled.Shuffle,
+                        contentDescription = ds("detail.album_shuffle"),
+                        enabled = allAlbumSongs.isNotEmpty(),
+                        onClick = {
+                            if (allAlbumSongs.isNotEmpty()) {
+                                val shuffled = allAlbumSongs.shuffled()
+                                val collection = onPlayCollection
+                                if (collection != null)
+                                    collection(shuffled, shuffled.first())
+                                else
+                                    onSongClick(shuffled.first())
+                            }
+                        }
                     )
+
+                    HeaderActionIcon(
+                        icon = Icons.Filled.PlaylistAdd,
+                        contentDescription = ds("action.enqueue_album"),
+                        enabled = allAlbumSongs.isNotEmpty(),
+                        onClick = {
+                            if (allAlbumSongs.isNotEmpty()) onEnqueueAll?.invoke(allAlbumSongs)
+                        }
+                    )
+                }
+
+                if (albumPage.value != null) {
+
+                    // BRANI con NUMERO DI TRACCIA al posto della miniatura
+                    // (come la lista Android: BasicText("${index + 1}"))
+                    Row(
+                        verticalAlignment = Alignment.Bottom,
+                        horizontalArrangement = Arrangement.Start,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        Title(
+                            title = ds("common.songs_word")
+                        )
+                    }
+
+                    Spacer(Modifier.height(4.dp))
+
+                    allAlbumSongs.forEachIndexed { index, song ->
+                        SongItem(
+                            title = song.title,
+                            authors = song.artistsText,
+                            duration = song.durationText,
+                            thumbnailSizeDp = 50.dp,
+                            thumbnailContent = {
+                                Text(
+                                    text = "${index + 1}",
+                                    color = Color.White.copy(alpha = 0.45f),
+                                    fontSize = 14.sp,
+                                    modifier = Modifier.align(Alignment.Center)
+                                )
+                            },
+                            modifier = Modifier
+                                .clickable {
+                                    val collection = onPlayCollection
+                                    if (collection != null && allAlbumSongs.size > 1) {
+                                        collection(allAlbumSongs, song)
+                                    } else {
+                                        onSongClick(song)
+                                    }
+                                },
+                            onAddToQueue = onAddToQueue?.let { action ->
+                                { action(song) }
+                            },
+                            // per la spunta "gia' in coda" (STEP 3n)
+                            songId = song.id
+                        )
+                    }
+
+                    albumPage.value!!.otherVersions?.let { otherVersion ->
+                        Row(
+                            verticalAlignment = Alignment.Bottom,
+                            horizontalArrangement = Arrangement.Start,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                        ) {
+                            Title(
+                                title = stringResource(Res.string.album_alternative_versions)
+                            )
+                        }
+
+                        LazyRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            items(
+                                items = otherVersion,
+                                key = Environment.AlbumItem::key
+                            ) { album ->
+                                AlbumItem(
+                                    album = album,
+                                    thumbnailSizeDp = albumThumbnailSize,
+                                    alternative = true,
+                                    modifier = Modifier
+                                        .clickable(onClick = {
+                                            onAlbumClick(album.key)
+                                        }
+                                        )
+                                )
+                            }
+                        }
+                    }
 
                 }
 
-
+                // DESCRIZIONE (Information): in fondo alla colonna destra,
+                // come la sezione "Info & community" di Android
                 albumPage.value?.description?.let { description ->
                     val attributionsIndex = description.lastIndexOf("\n\nFrom Wikipedia")
 
@@ -335,165 +460,24 @@ fun AlbumScreen(
                     ) {
                         Text(
                             text = "“ $translatedText „",
-                            style = TextStyle(
-                                fontSize = typography.titleSmall.fontSize,
-                                //fontWeight = typography.titleSmall.fontWeight,
-                                color = Color.White,
-                                textAlign = TextAlign.Start
-                            )
-
+                            color = Color.White,
+                            fontSize = typography.titleSmall.fontSize,
+                            textAlign = TextAlign.Start
                         )
 
                         if (attributionsIndex != -1) {
                             Text(
                                 text = stringResource(Res.string.from_wikipedia_cca),
-                                style = TextStyle(
-                                    fontSize = typography.titleSmall.fontSize,
-                                    fontWeight = typography.titleSmall.fontWeight,
-                                    color = Color.White,
-                                    textAlign = TextAlign.Start
-                                ),
-                                //modifier = Modifier
-                                //.padding(horizontal = 16.dp)
-                                //.padding(bottom = 16.dp)
-                                //.padding(endPaddingValues)
-
+                                color = Color.White,
+                                fontSize = typography.titleSmall.fontSize,
+                                fontWeight = typography.titleSmall.fontWeight,
+                                textAlign = TextAlign.Start
                             )
                         }
                     }
 
                 }
-                Spacer(modifier = Modifier.height(layoutColumnBottomSpacer))
-            }
-
-            Column(
-                verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxHeight()
-                    //.fillMaxWidth(0.5f)
-                    .fillMaxSize()
-                //.verticalScroll(rightScrollState)
-            ) {
-
-                if (albumPage.value != null) {
-
-                    albumPage.value!!.songsPage?.items.let { allSongs ->
-
-                        val parentalControlEnabled = false
-
-                        val songs = if (parentalControlEnabled)
-                            allSongs?.filter { !it.explicit } else allSongs
-                        Row(
-                            verticalAlignment = Alignment.Bottom,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(endPaddingValues)
-                        ) {
-                            Title(
-                                title = stringResource(Res.string.songs),
-                                onClick = {
-                                    //if (youtubeArtistPage.songsEndpoint?.browseId != null) {
-
-                                    //} else SmartToast(context.resources.getString(R.string.info_no_songs_yet))
-                                },
-                                //modifier = Modifier.fillMaxWidth(0.7f)
-                            )
-
-                        }
-
-                        songs?.forEachIndexed { index, song ->
-
-                            SongItem(
-                                song = song,
-                                modifier = Modifier
-                                    .combinedClickable(
-                                        onLongClick = {
-                                            /*
-                                            menuState.display {
-                                                NonQueuedMediaItemMenu(
-                                                    navController = navController,
-                                                    onDismiss = menuState::hide,
-                                                    mediaItem = song.asMediaItem,
-                                                )
-                                            }
-                                             */
-                                        },
-                                        onClick = {
-                                            // STEP 3j: TUTTO L'ALBUM IN CODA.
-                                            // Il brano cliccato parte subito e
-                                            // le altre canzoni dell'album vanno
-                                            // in coda nell'ordine dell'album
-                                            // (per aggiungere SOLO il singolo
-                                            // brano resta il pulsante "+").
-                                            val clicked = song.asSong
-                                            val allAlbumSongs = albumPage.value
-                                                ?.songsPage?.items
-                                                .orEmpty()
-                                                .map { it.asSong }
-                                                .distinctBy { it.id }
-                                            val collection = onPlayCollection
-                                            if (collection != null && allAlbumSongs.size > 1) {
-                                                collection(allAlbumSongs, clicked)
-                                            } else {
-                                                onSongClick(clicked)
-                                            }
-                                        }
-                                    )
-                                    .padding(endPaddingValues),
-                                onAddToQueue = onAddToQueue?.let { action ->
-                                    { action(song.asSong) }
-                                }
-                            )
-
-                        }
-                    }
-
-                    albumPage.value!!.otherVersions?.let { otherVersion ->
-                        Row(
-                            verticalAlignment = Alignment.Bottom,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(endPaddingValues)
-                        ) {
-                            Title(
-                                title = stringResource(Res.string.album_alternative_versions),
-                                onClick = {
-                                    //if (youtubeArtistPage.albumsEndpoint?.browseId != null) {
-                                    //onViewAllAlbumsClick()
-                                    //} else SmartToast(context.resources.getString(R.string.info_no_albums_yet))
-                                }
-                            )
-                        }
-
-                        LazyRow(
-                            contentPadding = endPaddingValues,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            items(
-                                items = otherVersion,
-                                key = Environment.AlbumItem::key
-                            ) { album ->
-                                AlbumItem(
-                                    album = album,
-                                    thumbnailSizeDp = albumThumbnailSize,
-                                    alternative = true,
-                                    modifier = Modifier
-                                        .clickable(onClick = {
-                                            onAlbumClick(album.key)
-                                        }
-                                        )
-                                )
-                            }
-                        }
-                    }
-
-                }
-
-
+                Spacer(Modifier.height(layoutColumnBottomSpacer))
             }
         }
 

@@ -1,5 +1,7 @@
 package it.fast4x.riplay.player.kcef
 
+import it.fast4x.riplay.i18n.ds
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -125,7 +127,7 @@ fun KcefVideoSurface(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Motore di riproduzione KCEF non disponibile", color = Color.White)
+            Text(ds("kcef.unavailable"), color = Color.White)
             Spacer(Modifier.height(8.dp))
             Text(
                 s.message,
@@ -134,13 +136,13 @@ fun KcefVideoSurface(
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                "Dettagli completi nel log/console: righe che iniziano con [RiPlay-KCEF].",
+                ds("kcef.details_log"),
                 color = Color(0xFF8A8A8A),
                 textAlign = TextAlign.Center
             )
             Spacer(Modifier.height(16.dp))
             Button(onClick = { KcefEngine.retry() }) {
-                Text("Riprova")
+                Text(ds("kcef.retry"))
             }
         }
 
@@ -167,9 +169,7 @@ fun KcefVideoSurface(
             if (KcefEngine.needsRestartAfterFirstDownload) {
                 Spacer(Modifier.height(12.dp))
                 Text(
-                    "Il JDK in uso contiene un motore browser integrato di versione " +
-                            "incompatibile con quello di RiPlay. Al termine del download " +
-                            "l'applicazione si chiudera': riaprila per completare l'installazione.",
+                    ds("kcef.jdk_conflict"),
                     color = Color(0xFFFFC107),
                     textAlign = TextAlign.Center
                 )
@@ -191,24 +191,19 @@ internal fun CoverOverlay(coverUrl: String, modifier: Modifier = Modifier) {
     ) {
         AsyncImage(
             model = coverUrl,
-            contentDescription = "cover del brano",
+            contentDescription = ds("player.song_cover"),
             contentScale = ContentScale.Fit,
             modifier = Modifier.fillMaxSize().padding(6.dp)
         )
     }
 }
 
+@Composable
 private fun stateLabel(s: KcefState): String = when (s) {
-    KcefState.NotStarted, KcefState.Locating ->
-        "Preparazione del motore di riproduzione (KCEF)…"
-    is KcefState.Downloading ->
-        "Download del browser integrato (solo primo avvio)…"
-    KcefState.Extracting ->
-        "Estrazione dei componenti…"
-    KcefState.Installing ->
-        "Installazione…"
-    KcefState.Initializing ->
-        "Avvio del browser integrato…"
-    else ->
-        "Preparazione…"
+    KcefState.NotStarted, KcefState.Locating -> ds("kcef.preparing")
+    is KcefState.Downloading -> ds("kcef.downloading")
+    KcefState.Extracting -> ds("kcef.extracting")
+    KcefState.Installing -> ds("kcef.installing")
+    KcefState.Initializing -> ds("kcef.starting")
+    else -> ds("kcef.preparing_short")
 }

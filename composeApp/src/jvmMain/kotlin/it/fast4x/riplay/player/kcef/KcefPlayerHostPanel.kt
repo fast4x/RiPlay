@@ -184,6 +184,11 @@ internal class CoverCanvas : Canvas() {
             val iw = img.getWidth(null)
             val ih = img.getHeight(null)
             if (iw > 0 && ih > 0) {
+                // STEP 3n: interpolazione bilineare (scala piu' morbida)
+                (g as? Graphics2D)?.setRenderingHint(
+                    RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_BILINEAR
+                )
                 val scale = minOf(w.toDouble() / iw, h.toDouble() / ih)
                 val dw = (iw * scale).toInt().coerceAtLeast(1)
                 val dh = (ih * scale).toInt().coerceAtLeast(1)

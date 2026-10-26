@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - Српски (values-sr)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">Почетна</string>
+    <string name="nav.search">Претрага</string>
+    <string name="nav.songs">Нумере</string>
+    <string name="nav.artists">Извођачи</string>
+    <string name="nav.albums">Албуми</string>
+    <string name="nav.playlists">Плејлисте</string>
+    <string name="nav.local">Локалне датотеке</string>
+    <string name="queue.title">Ред репродукције ({n})</string>
+    <string name="queue.open">отвори ред репродукције</string>
+    <string name="queue.clear">испразни ред</string>
+    <string name="queue.close_panel">затвори панел реда</string>
+    <string name="queue.remove">уклони из реда</string>
+    <string name="queue.drag">превуци за сортирање</string>
+    <string name="queue.drag_handle">Превуци ручку за сортирање</string>
+    <string name="action.add_to_queue">додај у ред</string>
+    <string name="action.already_queued">већ у реду</string>
+    <string name="action.enqueue_all">додај све у ред</string>
+    <string name="action.enqueue_album">додај цео албум у ред</string>
+    <string name="action.enqueue_playlist">додај целу плејлисту у ред</string>
+    <string name="player.previous">претходна нумера</string>
+    <string name="player.next">следећа нумера</string>
+    <string name="player.play">пусти</string>
+    <string name="player.pause">пауза</string>
+    <string name="player.volume_off">звук искључен</string>
+    <string name="player.volume_low">тихо</string>
+    <string name="player.volume_high">гласно</string>
+    <string name="player.expand">прошири плејер</string>
+    <string name="player.open_fullscreen">отвори плејер преко целог екрана</string>
+    <string name="player.back_to_cover">назад на омот нумере</string>
+    <string name="player.watch_video">погледај видео</string>
+    <string name="player.expand_video">прошири видео на целу ширину прозора</string>
+    <string name="player.restore_video">врати видео на почетну ширину</string>
+    <string name="player.radio">радио: додај сличне нумере у ред</string>
+    <string name="player.song_cover">омот нумере</string>
+    <string name="player.online">Онлајн</string>
+    <string name="player.local">Локално</string>
+    <string name="radio.none_found">Нису пронађене сличне нумере</string>
+    <string name="radio.added">Додате {n} сличне нумере</string>
+    <string name="radio.unavailable">Радио није доступно</string>
+    <string name="overlay.close_player">затвори плејер</string>
+    <string name="overlay.queue_title">ред репродукције</string>
+    <string name="overlay.queue_count">Ред ({n})</string>
+    <string name="overlay.no_song">Ниједна нумера не свира</string>
+    <string name="overlay.video_active_note">Видео активан у левом панелу плејера: затвори га да га видиш овде</string>
+    <string name="overlay.video_active">видео активан у панелу плејера</string>
+    <string name="overlay.close_hint">Затвори шевроном горе лево или са ESC</string>
+    <string name="page.albums">Албуми ({n})</string>
+    <string name="page.artists">Извођачи ({n})</string>
+    <string name="page.playlists">Плејлисте ({n})</string>
+    <string name="page.songs">Нумере ({n})</string>
+    <string name="page.local">Локалне датотеке ({n})</string>
+    <string name="page.followed_only">Само праћени</string>
+    <string name="page.followed">Праћени</string>
+    <string name="page.followed_artist">праћени извођач</string>
+    <string name="page.home">Почетна</string>
+    <string name="page.moods">Расположења и жанрови</string>
+    <string name="page.home_unavailable">Почетна није доступна (провери везу и притисни икону освежавања горе).</string>
+    <string name="search.hint">Претражи нумере, албуме, извођаче, плејлисте...</string>
+    <string name="search.load_more">Учитај више</string>
+    <string name="search.recent">Скорашње претраге</string>
+    <string name="search.suggestions">Предлози</string>
+    <string name="search.clear">обриши претрагу</string>
+    <string name="local.add_folder">Додај фасциклу</string>
+    <string name="local.add_files">Додај датотеке</string>
+    <string name="local.fallback_artist">Локална датотека</string>
+    <string name="local.imported">Увежено {n} датотека</string>
+    <string name="local.scanning">Претражују се аудио датотеке...</string>
+    <string name="local.empty_hint">Ниједна локална датотека није увежена.\n\nКористи „Додај фасциклу” да скенираш фасциклу на рачунару (укључујући подфасцикле) или „Додај датотеке” да одабеш појединачне нумере. Увежене датотеке пушта Локални мотор (VLCJ) и остају у библиотеци.</string>
+    <string name="local.input_hint">YouTube URL или локална датотека / URL (VLCJ)</string>
+    <string name="local.clear_url">обриши URL</string>
+    <string name="local.open_file">отвори локалну датотеку</string>
+    <string name="detail.album_shuffle">пусти албум насумично</string>
+    <string name="detail.album_favorite_add">додај албум у омиљене</string>
+    <string name="detail.album_favorite_ok">албум у омиљеним</string>
+    <string name="detail.artist_shuffle">пусти нумере извођача насумично</string>
+    <string name="detail.artist_follow">прати извођача</string>
+    <string name="detail.artist_followed">извођач праћен</string>
+    <string name="detail.playlist_shuffle">пусти плејлисту насумично</string>
+    <string name="detail.playlist_favorite_add">сачувај плејлисту у омиљене</string>
+    <string name="detail.playlist_favorite_ok">плејлиста у омиљеним: притисни да уклониш</string>
+    <string name="common.loading">учитавање...</string>
+    <string name="kcef.unavailable">Мотор репродукције KCEF није доступан</string>
+    <string name="kcef.details_log">Потпуни детаљи у логу/конзоли: редови који почињу са [RiPlay-KCEF].</string>
+    <string name="kcef.retry">Пробај поново</string>
+    <string name="kcef.preparing">Припрема се мотор репродукције (KCEF)…</string>
+    <string name="kcef.downloading">Преузима се уграђени прегледач (само прво покретање)…</string>
+    <string name="kcef.extracting">Распакују се компоненте…</string>
+    <string name="kcef.installing">Инсталира се…</string>
+    <string name="kcef.starting">Покреће се уграђени прегледач…</string>
+    <string name="kcef.preparing_short">Припрема…</string>
+    <string name="kcef.jdk_conflict">Коришћени JDK садржи уграђени мотор прегледача верзије неусаглашене са RiPlay. Након преузимања апликација ће се затворити: отвори је поново да се инсталација заврши.</string>
+    <string name="error.yt_with_code">YouTube грешка (код {code}: {meaning}). Детаљи у логу: редови [RiPlay-KCEF] / [RiPlay-YT].</string>
+    <string name="error.yt_2">неисправан параметар или видео са ограничењима приступа/узраста или YouTube провера ботова/сагласности (потребна пријава)</string>
+    <string name="error.yt_5">грешка HTML5 плејера (садржај/кодек/мрежа)</string>
+    <string name="error.yt_100">видео није пронађено или је приватно</string>
+    <string name="error.yt_101_150">власник не дозвољава уграђену репродукцију</string>
+    <string name="error.yt_152">уграђени контекст одбијен од YouTube: Referer странице домаћина није прихваћен</string>
+    <string name="error.yt_153">захтев за уграђивање одбијен од YouTube (недостаје player/referrer конфигурација)</string>
+    <string name="error.yt_unknown">непознат код</string>
+    <string name="error.local_unavailable">Локална нумера се не може пустити на радној површини: путања датотеке није приступива (порекло Android MediaStore или премештена датотека). Можеш је пустити бирањем датотеке на рачунару дугметом фасцикле у пољу испод.</string>
+    <string name="error.manual_unsupported">Путања није пронађена или URL није подржан: \'{value}\'</string>
+    <string name="misc.playlist_cover">Омот плејлисте</string>
+    <string name="settings.language">Језик</string>
+    <string name="settings.system">Језик система</string>
+    <string name="titlebar.minimize">Минимизуј</string>
+    <string name="titlebar.maximize">Максимизуј</string>
+    <string name="titlebar.restore">Врати</string>
+    <string name="titlebar.close">Затвори</string>
+    <string name="common.back">Назад</string>
+    <string name="common.songs_word">нумера</string>
+    <string name="overlay.playing">Сада свира</string>
+    <string name="local.none_found_in">У \"{value}\" није пронађена ниједна аудио датотека</string>
+    <string name="local.imported_from">Увежено {n} датотека из \"{value}\"</string>
+</resources>

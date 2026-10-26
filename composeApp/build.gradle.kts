@@ -119,30 +119,69 @@ compose.desktop {
 
         mainClass = "MainKt"
 
-        version = "0.0.1"
+        // STEP 3q: versione allineata all'app Android (versionName)
+        version = "0.8.0"
         group = "riplay"
 
         nativeDistributions {
             vendor = "RiPlay.DesktopApp"
             description = "RiPlay Desktop Music Player"
-
-            targetFormats(TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
-            packageName = "RiPLay.DesktopApp"
-            packageVersion = "0.0.1"
+            copyright = "Copyright (c) RiPlay.DesktopApp"
+            // Licenza inclusa nel pacchetto (file LICENSE alla radice repo)
+            licenseFile.set(rootProject.file("LICENSE"))
 
             /*
+             * STEP 4 - PACCHETTIZZAZIONE DEB/MSI/DMG (richiesta utente):
+             *  - Msi si costruisce SOLO su Windows, Deb/Rpm SOLO su Linux,
+             *    Dmg SOLO su macOS (jpackage non fa cross-building): ogni
+             *    formato viene prodotto dal runner corrispondente nel
+             *    workflow GitHub Actions unificato
+             *    (.github/workflows/build-release.yml, job build-desktop).
+             *  - CEF PRE-SEMINATO: gli archivi jbr_jcef (selezionati come fa
+             *    KCEF, v. scripts/fetch-kcef-bundle.sh) vanno messi in
+             *    composeApp/desktop-resources/<os>/kcef/ (la DSL copia nell'app
+             *    solo le sottocartelle per sistema: linux | windows | macos)
+             *    PRIMA della build: finiscono nell'applicazione (resources/kcef) e
+             *    KcefEngine li estrae
+             *    al primo avvio nella directory dati utente (nessun download
+             *    ~200MB per l'utente finale). Se l'archivio manca, l'app
+             *    continua a scaricare il bundle come sempre (fallback).
+             *  - VLC (motore Locale): resta un REQUISITO DI SISTEMA (vlcj
+             *    NativeDiscovery trova libvlc di VLC installato).
+             */
+            targetFormats(TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm, TargetFormat.Dmg)
+            packageName = "RiPlay"
+            packageVersion = "0.8.0"
+
+            // STEP 4: risorse applicative incluse nel pacchetto (CEF pre-seminato)
+            appResourcesRootDir.set(project.layout.projectDirectory.dir("desktop-resources"))
+
+            // STEP 4: runtime completo (ktor/room/serialization/coroutines usano
+            // reflection e moduli java che il default di jpackage esclude)
+            includeAllModules = true
+
             val iconsRoot = project.file("desktop-icons")
+
             windows {
                 iconFile.set(iconsRoot.resolve("icon-windows.ico"))
-            }
-            macOS {
-                iconFile.set(iconsRoot.resolve("icon-mac.icns"))
+                menu = true
+                shortcut = true
+                dirChooser = true
+                perUserInstall = true
+                // UUID fisso: le versioni successive si aggiornano correttamente
+                upgradeUuid = "54b878d7-1cb9-47b7-b948-4f9308ae2e86"
             }
             linux {
                 iconFile.set(iconsRoot.resolve("icon-linux.png"))
+                menuGroup = "Audio;AudioVideo"
+                // NOTA: sostituire con l'email reale del manutentore del deb
+                debMaintainer = "riplay.desktopapp@gmail.com"
             }
-
-             */
+            macOS {
+                iconFile.set(iconsRoot.resolve("icon-mac.icns"))
+                bundleID = "it.fast4x.riplay.desktop"
+                minimumSystemVersion = "10.15"
+            }
         }
 
     }
@@ -233,7 +272,19 @@ kotlin {
             runtimeOnly("org.jogamp.jogl:jogl-all:2.6.0:natives-linux-amd64")
             runtimeOnly("org.jogamp.jogl:jogl-all:2.6.0:natives-macosx-universal")
 
-            val fxSuffix = "win"
+            // STEP 4 (build Mac/Linux): il classifier JavaFX segue il SISTEMA
+            // CHE COSTRUISCE (prima era "win" fisso: giusto solo per la build
+            // locale Windows dell'utente). Su Apple Silicon = mac-aarch64.
+            // JavaFX non e' importato dal codice desktop (resta nel classpath
+            // per compatibilita' con librerie che lo toccano a runtime).
+            val osName = System.getProperty("os.name").lowercase()
+            val osArch = System.getProperty("os.arch").lowercase()
+            val fxSuffix = when {
+                osName.contains("win") -> "win"
+                osName.contains("mac") || osName.contains("darwin") ->
+                    if (osArch.contains("aarch64") || osArch.contains("arm64")) "mac-aarch64" else "mac"
+                else -> "linux"
+            }
             implementation("org.openjfx:javafx-base:21.0.5:${fxSuffix}")
             implementation("org.openjfx:javafx-graphics:21.0.5:${fxSuffix}")
             implementation("org.openjfx:javafx-controls:21.0.5:${fxSuffix}")

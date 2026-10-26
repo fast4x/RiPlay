@@ -321,11 +321,11 @@ class KcefYouTubePlayer(
      * (meccanismo autoplay step2r, il piu' affidabile validato) e la pagina
      * ricomincia da zero. EDT-safe: le operazioni native girano sull'EDT.
      */
-    private fun recreateBrowser(reason: String, videoId: String, attempt: Int) {
+    private fun recreateBrowser(reason: String, videoId: String, attempt: Int, allowPlayRecovery: Boolean = true) {
         if (recreatingBrowser) {
             // rientro (es. un secondo watchdog armato dal play): riprova piu'
             // tardi invece di far morire la catena in silenzio
-            armWatchdog(videoId, attempt + 1)
+            armWatchdog(videoId, attempt + 1, allowPlayRecovery)
             return
         }
         recreatingBrowser = true
@@ -335,7 +335,7 @@ class KcefYouTubePlayer(
                 val client = KcefEngine.clientOrNull()
                 if (client == null) {
                     KcefEngine.logKcef("ricrea browser: client KCEF assente, riprovero' al prossimo tentativo")
-                    armWatchdog(videoId, attempt + 1)
+                    armWatchdog(videoId, attempt + 1, allowPlayRecovery)
                     return
                 }
                 KcefEngine.logKcef("ricreo il browser del player: $reason")
@@ -344,7 +344,11 @@ class KcefYouTubePlayer(
                 pollJob?.cancel()
                 pollJob = null
                 pendingVideoId = videoId
-                pendingIsCue = false
+                // STEP 3p: pendingIsCue NON viene piu' azzerato qui: riflette
+                // l'ULTIMO intento richiesto (loadVideoById=false /
+                // cueVideoById=true, impostato sempre da entrambi): se il
+                // browser muore mentre e' in coda un cue, la pagina nuova
+                // dovra' RICUEare il brano (non caricarlo/avviarlo)
                 java.awt.EventQueue.invokeAndWait {
                     runCatching { old?.dispose() }
                     PlayerHtmlServer.resetPageSession()
@@ -364,7 +368,7 @@ class KcefYouTubePlayer(
                 }
                 startPolling()
             }
-            armWatchdog(videoId, attempt + 1)
+            armWatchdog(videoId, attempt + 1, allowPlayRecovery)
         } catch (t: Throwable) {
             KcefEngine.logKcef("ricrea browser FALLITA: ${t.javaClass.simpleName}: ${t.message}")
         } finally {
@@ -378,8 +382,16 @@ class KcefYouTubePlayer(
      * si e' persa da qualche parte: re-invio del load (pagina viva) oppure
      * RICREAZIONE del browser con videoId ri-cotto nell'HTML (pagina morta).
      * Massimo 3 tentativi, ognuno con log puntuale dello stato della catena.
+     *
+     * STEP 3p: [allowPlayRecovery] = false per i video caricati in CUE
+     * (cueVideoById, primo brano della coda all'avvio): in quel caso
+     * "durata nota MA non in riproduzione" e' lo stato ATTESO (brano
+     * pronto in attesa del play dell'utente) e NON va recuperato con
+     * activation+play (il vecchio comportamento lo avrebbe AVVIATO da
+     * solo dopo 12 s, vanificando il cue). Il recupero del cue tocca
+     * solo il caso "niente durata" (metadati mai arrivati): ri-cue.
      */
-    private fun armWatchdog(videoId: String, attempt: Int = 0) {
+    private fun armWatchdog(videoId: String, attempt: Int = 0, allowPlayRecovery: Boolean = true) {
         watchdogJob?.cancel()
         if (attempt >= 3) {
             KcefEngine.logKcef(
@@ -404,8 +416,18 @@ class KcefYouTubePlayer(
                         "durata=${st.duration} err=$err"
             )
             if (!pageAlive || !PlayerHtmlServer.pageActive || browser == null) {
-                recreateBrowser("pagina player non risponde o assente", videoId, attempt)
+                recreateBrowser("pagina player non risponde o assente", videoId, attempt, allowPlayRecovery)
             } else if (st.duration > 0L || raw == 5 || raw == 1) {
+                if (!allowPlayRecovery) {
+                    // STEP 3p: video in CUE pronto: i metadati sono arrivati
+                    // (durata nota) ma la riproduzione e' volutamente ferma
+                    // in attesa del play dell'utente: NESSUN intervento
+                    // (il vecchio recupero autoplay l'avrebbe avviato da solo)
+                    KcefEngine.logKcef(
+                        "watchdog: video in CUE pronto e fermo (attesa del play dell'utente): nessun recupero"
+                    )
+                    return@launch
+                }
                 // STEP 3f (bug v23): durata > 0 MA stato unstarted = AUTOPLAY
                 // BLOCCATO (i metadati arrivano col buffering anche quando
                 // Chromium annulla poi la partenza: stato 3 -> -1 nel log del
@@ -421,13 +443,19 @@ class KcefYouTubePlayer(
                     delay(250L)
                     evaluate("window.riplayPlay && riplayPlay()")
                 }
-                armWatchdog(videoId, attempt + 1)
+                armWatchdog(videoId, attempt + 1, allowPlayRecovery)
+            } else if (!allowPlayRecovery) {
+                // STEP 3p: il cue non ha prodotto niente (niente durata):
+                // ri-invio del CUE (NON del load, che avvierebbe il brano)
+                KcefEngine.logKcef("watchdog: pagina viva, re-invio riplayCue('$videoId')")
+                evaluate("window.riplayCue && riplayCue('$videoId', ${pendingStart})")
+                armWatchdog(videoId, attempt + 1, allowPlayRecovery)
             } else {
                 // il load non ha mai prodotto nulla: re-invio con activation
                 KcefEngine.logKcef("watchdog: pagina viva, activation + re-invio riplayLoad('$videoId')")
                 injectUserActivation("watchdog re-invio $videoId")
                 evaluate("window.riplayLoad && riplayLoad('$videoId', ${pendingStart})")
-                armWatchdog(videoId, attempt + 1)
+                armWatchdog(videoId, attempt + 1, allowPlayRecovery)
             }
         }
     }
@@ -443,15 +471,26 @@ class KcefYouTubePlayer(
      * CONSUMATO (parte da solo con l'aplay=1 dei playerVars); se non c'e'
      * nessun video in attesa la pagina nasce con undefined, identica ad
      * AYP quando initialize riceve videoId null.
+     *
+     * STEP 3p: se il videoId in attesa era un CUE (cueVideoById: carica
+     * senza avviare, primo brano della coda ripristinata all'avvio) la
+     * pagina viene cotta con autoplay=0: il player nasce col brano
+     * caricato e FERMO, in attesa del play dell'utente.
      */
     private fun buildPlayerPageHtml(): String {
         val id = pendingVideoId?.let { extractYouTubeVideoId(it) }
         if (id != null) {
+            // STEP 3p: il flag cue va letto PRIMA di consumare l'attesa
+            val wasCue = pendingIsCue
             pendingVideoId = null
             pendingIsCue = false
-            KcefEngine.logKcef("pagina player: videoId='$id' sostituito nell'HTML (meccanismo Android)")
+            KcefEngine.logKcef(
+                "pagina player: videoId='$id' sostituito nell'HTML (meccanismo Android" +
+                        ", autoplay=" + if (wasCue) "0 = cue" else "1" + ")"
+            )
+            return PlayerHtmlServer.playerPageHtml("'$id'", autoplay = !wasCue)
         }
-        return PlayerHtmlServer.playerPageHtml(if (id != null) "'$id'" else null)
+        return PlayerHtmlServer.playerPageHtml(null)
     }
 
     // ---- PlayerController ----
@@ -554,6 +593,10 @@ class KcefYouTubePlayer(
         }
         pendingStart = startSeconds
         muted = false
+        // STEP 3p: flag SEMPRE aggiornato (non solo quando la pagina non e'
+        // attiva): se il browser verra' ricreato (watchdog), la pagina nuova
+        // deve sapere che l'ultimo intento era un LOAD (autoplay=1)
+        pendingIsCue = false
         resetYtError()
         // STEP 2i/2k: log dell'id ESATTO che arriva al player (differenziato
         // dal valore richiesto, per diagnosticare id corrotti o URL interi)
@@ -580,13 +623,19 @@ class KcefYouTubePlayer(
             return
         }
         pendingStart = startSeconds
+        // STEP 3p: flag SEMPRE aggiornato: un eventuale ricrea-browser
+        // (watchdog) dovra' ricueare, non caricare
+        pendingIsCue = true
         resetYtError()
         KcefEngine.logKcef("cueVideoById: videoId='$id' (richiesto: '$videoId') start=$startSeconds")
         lastVideoId = id
         dispatchLoad(id, startSeconds, cue = true)
-        // STEP 3e: anche il cue e' vigilato (la durata arriva con i metadati
-        // e disarmia il watchdog: un cue riuscito non viene toccato)
-        armWatchdog(id)
+        // STEP 3e/3p: anche il cue e' vigilato, ma in modalita' CUE-SAFE:
+        // "caricato ma non avviato" e' lo stato ATTESO (il brano aspetta il
+        // play dell'utente): il watchdog NON deve mai forzare il play
+        // (niente kick autoplay, niente activation+play); recupera solo se
+        // il cue non ha prodotto niente (niente durata = metadati mancati).
+        armWatchdog(id, 0, allowPlayRecovery = false)
     }
 
     /**

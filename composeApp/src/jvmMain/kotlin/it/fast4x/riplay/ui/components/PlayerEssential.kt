@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui.components
 
+import it.fast4x.riplay.i18n.ds
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -124,13 +126,13 @@ fun MiniPlayer(
             ) {
                 if (state.isPlaying) {
                     Icon(
-                        Icons.Filled.Pause, "pause media",
+                        Icons.Filled.Pause, ds("player.pause"),
                         tint = Color.Green.copy(alpha = 0.6f),
                         modifier = Modifier.size(28.dp)
                     )
                 } else {
                     Icon(
-                        Icons.Rounded.PlayArrow, "play media",
+                        Icons.Rounded.PlayArrow, ds("player.play"),
                         tint = Color.Green.copy(alpha = 0.6f),
                         modifier = Modifier.size(28.dp)
                     )
@@ -149,7 +151,7 @@ fun MiniPlayer(
             Image(
                 painter = painterResource(Res.drawable.chevron_up),
                 colorFilter = ColorFilter.tint(Color.White.copy(alpha = 0.6f)),
-                contentDescription = "espandi il player",
+                contentDescription = ds("player.expand"),
                 modifier = Modifier
                     .padding(horizontal = 14.dp)
                     .size(18.dp)

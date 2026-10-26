@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui.pages
 
+import it.fast4x.riplay.i18n.ds
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -65,8 +67,11 @@ import java.io.File
  *  - la lista elenca TUTTI i brani locali del db (ordine alfabetico per
  *    titolo) e si AGGIORNA DA SOLA (Flow) dopo ogni importazione;
  *  - click su un brano = parte col motore VLCJ (il routing automatico
- *    di DesktopPlayerManager invia gli id "local:..." a VLCJ);
- *  - "+" = aggiunge il brano alla coda di riproduzione.
+ *    di DesktopPlayerManager invia gli id "local:..." a VLCJ) e ANCHE I
+ *    RESTANTI brani della lista entrano in coda (STEP 3n, richiesta
+ *    utente n.5, stesso comportamento degli album: la lista completa e'
+ *    passata a onPlayCollection, che applica il cap di QUEUE_MAX_ITEMS);
+ *  - "+" = aggiunge il SOLO brano alla coda di riproduzione.
  *
  * L'upsert e' IDEMPOTENTE (stesso percorso = stesso id): reimportare la
  * stessa cartella non crea duplicati, aggiorna solo le righe esistenti.
@@ -74,7 +79,12 @@ import java.io.File
 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun LocalSongsPage(
-    onSongClick: (Song) -> Unit,
+    // STEP 3n (richiesta utente n.5 "dalla scheda Locali se clicco su una
+    // canzone le restanti non vengono aggiunte in coda"): il click passa
+    // da onPlayCollection = brano cliccato parte subito + RESTO della
+    // lista in coda (i brani locali sono gia' nel db: l'upsert dentro
+    // onPlayCollection e' idempotente e non crea duplicati)
+    onPlayCollection: (List<Song>, Song) -> Unit,
     onAddToQueue: (Song) -> Unit
 ) {
 
@@ -97,7 +107,7 @@ fun LocalSongsPage(
         mediaId = file.absolutePath,
         title = file.nameWithoutExtension,
         // nome della cartella come contesto "autore" (il file non ha tag letti)
-        artistsText = file.parentFile?.name?.takeIf { it.isNotBlank() } ?: "File locale",
+        artistsText = file.parentFile?.name?.takeIf { it.isNotBlank() } ?: ds("local.fallback_artist"),
         durationText = null,
         thumbnailUrl = null,
         // audio (no video): la COVER copre il player, come i brani YT
@@ -126,9 +136,9 @@ fun LocalSongsPage(
             }.also { count ->
                 scanning = false
                 feedback = if (count == 0)
-                    "Nessun file audio trovato in \"$dirPath\""
+                    ds("local.none_found_in", "value" to dirPath)
                 else
-                    "Importati $count file da \"$dirPath\""
+                    ds("local.imported_from", "n" to count, "value" to dirPath)
                 println("[RiPlay-Locali] importati $count file da $dirPath")
             }
         } else {
@@ -145,7 +155,7 @@ fun LocalSongsPage(
                     .size
             }
             scanning = false
-            feedback = "Importati $added file"
+            feedback = ds("local.imported", "n" to added)
             println("[RiPlay-Locali] importati $added singoli file")
         }
     }
@@ -165,7 +175,7 @@ fun LocalSongsPage(
                 .fillMaxWidth()
         ) {
             Text(
-                text = "Locali (${songs.size})",
+                text = ds("page.local", "n" to songs.size),
                 style = TextStyle(
                     fontSize = typography.titleSmall.fontSize,
                     color = Color.White,
@@ -184,13 +194,13 @@ fun LocalSongsPage(
         ) {
             ImportPill(
                 icon = { Icon(Icons.Filled.Folder, contentDescription = null, tint = RiPlayAccent, modifier = Modifier.size(17.dp)) },
-                label = "Aggiungi cartella",
+                label = ds("local.add_folder"),
                 enabled = !scanning
             ) { scanRequest = 1 }
 
             ImportPill(
                 icon = { Icon(Icons.Filled.Audiotrack, contentDescription = null, tint = RiPlayAccent, modifier = Modifier.size(17.dp)) },
-                label = "Aggiungi file",
+                label = ds("local.add_files"),
                 enabled = !scanning
             ) { scanRequest = 2 }
 
@@ -202,7 +212,7 @@ fun LocalSongsPage(
                 )
                 Spacer(Modifier.width(6.dp))
                 Text(
-                    "Ricerca file audio in corso...",
+                    ds("local.scanning"),
                     color = Color.White.copy(alpha = 0.6f),
                     fontSize = 12.sp
                 )
@@ -220,7 +230,7 @@ fun LocalSongsPage(
 
         if (songs.isEmpty() && !scanning) {
             Text(
-                "Nessun file locale importato.\n\nUsa \"Aggiungi cartella\" per scansionare una cartella del computer (cerca anche nelle sottocartelle) oppure \"Aggiungi file\" per scegliere i singoli brani. I file importati vengono riprodotti dal motore Locale (VLCJ) e restano nella libreria.",
+                ds("local.empty_hint"),
                 color = Color.White.copy(alpha = 0.4f),
                 fontSize = 13.sp,
                 lineHeight = 19.sp,
@@ -243,7 +253,9 @@ fun LocalSongsPage(
                         .padding(vertical = 4.dp)
                         .combinedClickable(
                             onLongClick = {},
-                            onClick = { onSongClick(song) }
+                            // STEP 3n: il click mette in coda ANCHE i restanti
+                            // brani della lista (cap 50 in onPlayCollection)
+                            onClick = { onPlayCollection(songs.toList(), song) }
                         ),
                     onAddToQueue = { onAddToQueue(song) }
                 )

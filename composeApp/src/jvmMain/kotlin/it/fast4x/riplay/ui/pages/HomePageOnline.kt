@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui.pages
 
+import it.fast4x.riplay.i18n.ds
+
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -110,7 +112,7 @@ fun HomePageOnline(
     }
 
     Title2Actions(
-        title = "Home",
+        title = ds("page.home"),
         onClick1 = {},
         icon2 = Res.drawable.refresh,
         onClick2 = {
@@ -130,7 +132,7 @@ fun HomePageOnline(
     val page = homePage
     if (page == null) {
         Text(
-            "Home non disponibile (controlla la connessione e premi l'icona di aggiornamento in alto).",
+            ds("page.home_unavailable"),
             color = Color.White.copy(alpha = 0.4f),
             fontSize = 13.sp,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)

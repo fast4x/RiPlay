@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - Nederlands (values-nl)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">Start</string>
+    <string name="nav.search">Zoeken</string>
+    <string name="nav.songs">Nummers</string>
+    <string name="nav.artists">Artiesten</string>
+    <string name="nav.albums">Albums</string>
+    <string name="nav.playlists">Playlists</string>
+    <string name="nav.local">Lokale bestanden</string>
+    <string name="queue.title">Afspeelwachtrij ({n})</string>
+    <string name="queue.open">open de afspeelwachtrij</string>
+    <string name="queue.clear">wachtrij legen</string>
+    <string name="queue.close_panel">sluit het wachtrij-paneel</string>
+    <string name="queue.remove">verwijder uit de wachtrij</string>
+    <string name="queue.drag">sleep om te herordenen</string>
+    <string name="queue.drag_handle">Sleep het handvat om te herordenen</string>
+    <string name="action.add_to_queue">toevoegen aan wachtrij</string>
+    <string name="action.already_queued">al in de wachtrij</string>
+    <string name="action.enqueue_all">alles aan de wachtrij toevoegen</string>
+    <string name="action.enqueue_album">hele album aan de wachtrij toevoegen</string>
+    <string name="action.enqueue_playlist">hele playlist aan de wachtrij toevoegen</string>
+    <string name="player.previous">vorige nummer</string>
+    <string name="player.next">volgende nummer</string>
+    <string name="player.play">afspelen</string>
+    <string name="player.pause">pauze</string>
+    <string name="player.volume_off">geluid uit</string>
+    <string name="player.volume_low">laag volume</string>
+    <string name="player.volume_high">hoog volume</string>
+    <string name="player.expand">speler uitklappen</string>
+    <string name="player.open_fullscreen">speler op volledig scherm openen</string>
+    <string name="player.back_to_cover">terug naar de albumhoes</string>
+    <string name="player.watch_video">video bekijken</string>
+    <string name="player.expand_video">video over de volledige vensterbreedte uitklappen</string>
+    <string name="player.restore_video">oorspronkelijke videobreedte herstellen</string>
+    <string name="player.radio">radio: vergelijkbare nummers aan de wachtrij toevoegen</string>
+    <string name="player.song_cover">albumhoes</string>
+    <string name="player.online">Online</string>
+    <string name="player.local">Lokaal</string>
+    <string name="radio.none_found">Geen vergelijkbare nummers gevonden</string>
+    <string name="radio.added">{n} vergelijkbare nummers toegevoegd</string>
+    <string name="radio.unavailable">Radio niet beschikbaar</string>
+    <string name="overlay.close_player">sluit de speler</string>
+    <string name="overlay.queue_title">afspeelwachtrij</string>
+    <string name="overlay.queue_count">Wachtrij ({n})</string>
+    <string name="overlay.no_song">Er speelt geen nummer</string>
+    <string name="overlay.video_active_note">Video actief in het linker spelerpaneel: sluit hem om hem hier te zien</string>
+    <string name="overlay.video_active">video actief in het spelerpaneel</string>
+    <string name="overlay.close_hint">Sluit met het chevron linksboven of met ESC</string>
+    <string name="page.albums">Albums ({n})</string>
+    <string name="page.artists">Artiesten ({n})</string>
+    <string name="page.playlists">Playlists ({n})</string>
+    <string name="page.songs">Nummers ({n})</string>
+    <string name="page.local">Lokale bestanden ({n})</string>
+    <string name="page.followed_only">Alleen gevolgden</string>
+    <string name="page.followed">Gevolgd</string>
+    <string name="page.followed_artist">gevolgde artiest</string>
+    <string name="page.home">Start</string>
+    <string name="page.moods">Stemmingen en genres</string>
+    <string name="page.home_unavailable">Start niet beschikbaar (controleer de verbinding en tik bovenaan op het verversingspictogram).</string>
+    <string name="search.hint">Zoek nummers, albums, artiesten, playlists...</string>
+    <string name="search.load_more">Meer laden</string>
+    <string name="search.recent">Recente zoekopdrachten</string>
+    <string name="search.suggestions">Suggesties</string>
+    <string name="search.clear">zoekopdracht wissen</string>
+    <string name="local.add_folder">Map toevoegen</string>
+    <string name="local.add_files">Bestanden toevoegen</string>
+    <string name="local.fallback_artist">Lokaal bestand</string>
+    <string name="local.imported">{n} bestanden geïmporteerd</string>
+    <string name="local.scanning">Audio-bestanden zoeken...</string>
+    <string name="local.empty_hint">Geen lokale bestanden geïmporteerd.\n\nGebruik \"Map toevoegen\" om een computermap te scannen (inclusief submappen) of \"Bestanden toevoegen\" om losse nummers te kiezen. Geïmporteerde bestanden worden met de Lokale engine (VLCJ) afgespeeld en blijven in de bibliotheek.</string>
+    <string name="local.input_hint">YouTube-URL of lokaal bestand / URL (VLCJ)</string>
+    <string name="local.clear_url">URL wissen</string>
+    <string name="local.open_file">lokaal bestand openen</string>
+    <string name="detail.album_shuffle">album in willekeurige volgorde afspelen</string>
+    <string name="detail.album_favorite_add">album aan favorieten toevoegen</string>
+    <string name="detail.album_favorite_ok">album in favorieten</string>
+    <string name="detail.artist_shuffle">nummers van de artiest in willekeurige volgorde afspelen</string>
+    <string name="detail.artist_follow">artiest volgen</string>
+    <string name="detail.artist_followed">artiest gevolgd</string>
+    <string name="detail.playlist_shuffle">playlist in willekeurige volgorde afspelen</string>
+    <string name="detail.playlist_favorite_add">playlist opslaan bij favorieten</string>
+    <string name="detail.playlist_favorite_ok">playlist bij favorieten: tik om te verwijderen</string>
+    <string name="common.loading">laden...</string>
+    <string name="kcef.unavailable">KCEF-afspeelengine niet beschikbaar</string>
+    <string name="kcef.details_log">Volledige details in het log/console: regels die beginnen met [RiPlay-KCEF].</string>
+    <string name="kcef.retry">Opnieuw proberen</string>
+    <string name="kcef.preparing">Afspeelengine wordt voorbereid (KCEF)…</string>
+    <string name="kcef.downloading">Ingebouwde browser wordt gedownload (alleen eerste start)…</string>
+    <string name="kcef.extracting">Onderdelen worden uitgepakt…</string>
+    <string name="kcef.installing">Installeren…</string>
+    <string name="kcef.starting">Ingebouwde browser wordt gestart…</string>
+    <string name="kcef.preparing_short">Voorbereiden…</string>
+    <string name="kcef.jdk_conflict">De gebruikte JDK bevat een ingebouwde browser-engine van een versie die niet compatibel is met RiPlay. Na het downloaden wordt de toepassing gesloten: open haar opnieuw om de installatie te voltooien.</string>
+    <string name="error.yt_with_code">YouTube-fout (code {code}: {meaning}). Details in het log: regels [RiPlay-KCEF] / [RiPlay-YT].</string>
+    <string name="error.yt_2">ongeldige parameter of video met toegangs-/leeftijdsbeperkingen of YouTube anti-bot/consent-controle (aanmelding vereist)</string>
+    <string name="error.yt_5">HTML5-spelerfout (inhoud/codec/netwerk)</string>
+    <string name="error.yt_100">video niet gevonden of privé</string>
+    <string name="error.yt_101_150">de eigenaar staat ingesloten afspelen niet toe</string>
+    <string name="error.yt_152">ingesloten context geweigerd door YouTube: de Referer van de hostpagina wordt niet geaccepteerd</string>
+    <string name="error.yt_153">insluitingsverzoek geweigerd door YouTube (player/referrer-configuratie ontbreekt)</string>
+    <string name="error.yt_unknown">onbekende code</string>
+    <string name="error.local_unavailable">Lokaal nummer niet afspeelbaar op desktop: het bestandspad is niet toegankelijk (afkomst Android MediaStore of verplaatst bestand). Je kunt het afspelen door het bestand onderaan via de mapknop te kiezen.</string>
+    <string name="error.manual_unsupported">Pad niet gevonden of URL niet ondersteund: \'{value}\'</string>
+    <string name="misc.playlist_cover">Playlist-hoes</string>
+    <string name="settings.language">Taal</string>
+    <string name="settings.system">Systeemtaal</string>
+    <string name="titlebar.minimize">Minimaliseren</string>
+    <string name="titlebar.maximize">Maximaliseren</string>
+    <string name="titlebar.restore">Herstellen</string>
+    <string name="titlebar.close">Sluiten</string>
+    <string name="common.back">Terug</string>
+    <string name="common.songs_word">nummers</string>
+    <string name="overlay.playing">Speelt nu</string>
+    <string name="local.none_found_in">Geen audiobestanden gevonden in \"{value}\"</string>
+    <string name="local.imported_from">{n} bestanden geïmporteerd uit \"{value}\"</string>
+</resources>

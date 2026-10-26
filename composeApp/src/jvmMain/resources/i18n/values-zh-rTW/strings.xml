@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - 繁體中文 (values-zh-rTW)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">首頁</string>
+    <string name="nav.search">搜尋</string>
+    <string name="nav.songs">歌曲</string>
+    <string name="nav.artists">歌手</string>
+    <string name="nav.albums">專輯</string>
+    <string name="nav.playlists">播放清單</string>
+    <string name="nav.local">本機檔案</string>
+    <string name="queue.title">播放佇列 ({n})</string>
+    <string name="queue.open">開啟播放佇列</string>
+    <string name="queue.clear">清空佇列</string>
+    <string name="queue.close_panel">關閉佇列面板</string>
+    <string name="queue.remove">從佇列中移除</string>
+    <string name="queue.drag">拖曳以重新排序</string>
+    <string name="queue.drag_handle">拖曳把手以重新排序</string>
+    <string name="action.add_to_queue">加入佇列</string>
+    <string name="action.already_queued">已在佇列中</string>
+    <string name="action.enqueue_all">全部加入佇列</string>
+    <string name="action.enqueue_album">將整張專輯加入佇列</string>
+    <string name="action.enqueue_playlist">將整個播放清單加入佇列</string>
+    <string name="player.previous">上一首</string>
+    <string name="player.next">下一首</string>
+    <string name="player.play">播放</string>
+    <string name="player.pause">暫停</string>
+    <string name="player.volume_off">靜音</string>
+    <string name="player.volume_low">音量低</string>
+    <string name="player.volume_high">音量高</string>
+    <string name="player.expand">展開播放器</string>
+    <string name="player.open_fullscreen">以全螢幕開啟播放器</string>
+    <string name="player.back_to_cover">返回歌曲封面</string>
+    <string name="player.watch_video">觀看影片</string>
+    <string name="player.expand_video">將影片延展至視窗全寬</string>
+    <string name="player.restore_video">還原影片原始寬度</string>
+    <string name="player.radio">電台：將相似歌曲加入佇列</string>
+    <string name="player.song_cover">歌曲封面</string>
+    <string name="player.online">線上</string>
+    <string name="player.local">本機</string>
+    <string name="radio.none_found">找不到相似歌曲</string>
+    <string name="radio.added">已加入 {n} 首相似歌曲</string>
+    <string name="radio.unavailable">電台無法使用</string>
+    <string name="overlay.close_player">關閉播放器</string>
+    <string name="overlay.queue_title">播放佇列</string>
+    <string name="overlay.queue_count">佇列 ({n})</string>
+    <string name="overlay.no_song">沒有正在播放的歌曲</string>
+    <string name="overlay.video_active_note">影片正在左側播放器面板中播放：請將其關閉以在此觀看</string>
+    <string name="overlay.video_active">影片正在播放器面板中播放</string>
+    <string name="overlay.close_hint">以左上角的箭頭或 ESC 關閉</string>
+    <string name="page.albums">專輯 ({n})</string>
+    <string name="page.artists">歌手 ({n})</string>
+    <string name="page.playlists">播放清單 ({n})</string>
+    <string name="page.songs">歌曲 ({n})</string>
+    <string name="page.local">本機檔案 ({n})</string>
+    <string name="page.followed_only">僅追蹤的</string>
+    <string name="page.followed">已追蹤</string>
+    <string name="page.followed_artist">已追蹤的歌手</string>
+    <string name="page.home">首頁</string>
+    <string name="page.moods">心情與曲風</string>
+    <string name="page.home_unavailable">首頁無法使用（請檢查連線並點按上方的重新整理圖示）。</string>
+    <string name="search.hint">搜尋歌曲、專輯、歌手、播放清單...</string>
+    <string name="search.load_more">載入更多</string>
+    <string name="search.recent">最近的搜尋</string>
+    <string name="search.suggestions">建議</string>
+    <string name="search.clear">清除搜尋</string>
+    <string name="local.add_folder">新增資料夾</string>
+    <string name="local.add_files">新增檔案</string>
+    <string name="local.fallback_artist">本機檔案</string>
+    <string name="local.imported">已匯入 {n} 個檔案</string>
+    <string name="local.scanning">正在搜尋音訊檔案...</string>
+    <string name="local.empty_hint">尚未匯入本機檔案。\n\n使用「新增資料夾」掃描電腦中的資料夾（包含子資料夾），或使用「新增檔案」逐一選取歌曲。匯入的檔案由本機引擎 (VLCJ) 播放，並保留在媒體庫中。</string>
+    <string name="local.input_hint">YouTube 網址或本機檔案 / 網址 (VLCJ)</string>
+    <string name="local.clear_url">清除網址</string>
+    <string name="local.open_file">開啟本機檔案</string>
+    <string name="detail.album_shuffle">隨機播放專輯</string>
+    <string name="detail.album_favorite_add">將專輯加入收藏</string>
+    <string name="detail.album_favorite_ok">專輯已在收藏中</string>
+    <string name="detail.artist_shuffle">隨機播放歌手的歌曲</string>
+    <string name="detail.artist_follow">追蹤歌手</string>
+    <string name="detail.artist_followed">已追蹤歌手</string>
+    <string name="detail.playlist_shuffle">隨機播放清單</string>
+    <string name="detail.playlist_favorite_add">將播放清單儲存到收藏</string>
+    <string name="detail.playlist_favorite_ok">播放清單已在收藏中：點按即可移除</string>
+    <string name="common.loading">載入中...</string>
+    <string name="kcef.unavailable">KCEF 播放引擎無法使用</string>
+    <string name="kcef.details_log">完整詳細資料見日誌/主控台：以 [RiPlay-KCEF] 開頭的行。</string>
+    <string name="kcef.retry">重試</string>
+    <string name="kcef.preparing">正在準備播放引擎 (KCEF)…</string>
+    <string name="kcef.downloading">正在下載內嵌瀏覽器（僅首次啟動）…</string>
+    <string name="kcef.extracting">正在解壓縮元件…</string>
+    <string name="kcef.installing">正在安裝…</string>
+    <string name="kcef.starting">正在啟動內嵌瀏覽器…</string>
+    <string name="kcef.preparing_short">準備中…</string>
+    <string name="kcef.jdk_conflict">目前使用的 JDK 包含與 RiPlay 不相容版本的內嵌瀏覽器引擎。下載完成後應用程式將關閉：請重新開啟以完成安裝。</string>
+    <string name="error.yt_with_code">YouTube 錯誤（代碼 {code}：{meaning}）。詳細資料見日誌：[RiPlay-KCEF] / [RiPlay-YT] 行。</string>
+    <string name="error.yt_2">參數無效，或影片有存取/年齡限制，或 YouTube 反機器人/同意檢查（需要登入）</string>
+    <string name="error.yt_5">HTML5 播放器錯誤（內容/編解碼器/網路）</string>
+    <string name="error.yt_100">找不到影片或影片為私人</string>
+    <string name="error.yt_101_150">擁有者不允許內嵌播放</string>
+    <string name="error.yt_152">內嵌內容遭 YouTube 拒絕：宿主頁面的 Referer 未被接受</string>
+    <string name="error.yt_153">內嵌要求遭 YouTube 拒絕（缺少 player/referrer 設定）</string>
+    <string name="error.yt_unknown">未知代碼</string>
+    <string name="error.local_unavailable">本機歌曲無法在桌面版播放：檔案路徑無法存取（來源為 Android MediaStore 或檔案已移動）。你可以透過下方欄位中的資料夾按鈕從電腦選取檔案來播放。</string>
+    <string name="error.manual_unsupported">找不到路徑或不支援的網址：\'{value}\'</string>
+    <string name="misc.playlist_cover">播放清單封面</string>
+    <string name="settings.language">語言</string>
+    <string name="settings.system">系統語言</string>
+    <string name="titlebar.minimize">最小化</string>
+    <string name="titlebar.maximize">最大化</string>
+    <string name="titlebar.restore">還原</string>
+    <string name="titlebar.close">關閉</string>
+    <string name="common.back">返回</string>
+    <string name="common.songs_word">首歌曲</string>
+    <string name="overlay.playing">正在播放</string>
+    <string name="local.none_found_in">在「{value}」中找不到音訊檔案</string>
+    <string name="local.imported_from">已從「{value}」匯入 {n} 個檔案</string>
+</resources>

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - తెలుగు (values-te)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">హోమ్</string>
+    <string name="nav.search">వెతుకు</string>
+    <string name="nav.songs">పాటలు</string>
+    <string name="nav.artists">కళాకారులు</string>
+    <string name="nav.albums">ఆల్బమ్‌లు</string>
+    <string name="nav.playlists">ప్లేజాబితాలు</string>
+    <string name="nav.local">స్థానిక ఫైల్‌లు</string>
+    <string name="queue.title">ప్లేబ్యాక్ క్యూ ({n})</string>
+    <string name="queue.open">ప్లేబ్యాక్ క్యూని తెరువు</string>
+    <string name="queue.clear">క్యూని ఖాళీ చెయ్యి</string>
+    <string name="queue.close_panel">క్యూ ప్యానెల్ మూసివేయి</string>
+    <string name="queue.remove">క్యూ నుండి తీసివేయి</string>
+    <string name="queue.drag">క్రమం మార్చడానికి లాగు</string>
+    <string name="queue.drag_handle">క్రమం మార్చడానికి హ్యాండిల్‌ను లాగు</string>
+    <string name="action.add_to_queue">క్యూకి జోడించు</string>
+    <string name="action.already_queued">ఇప్పటికే క్యూలో ఉంది</string>
+    <string name="action.enqueue_all">అన్నింటిని క్యూకి జోడించు</string>
+    <string name="action.enqueue_album">మొత్తం ఆల్బమ్‌ను క్యూకి జోడించు</string>
+    <string name="action.enqueue_playlist">మొత్తం ప్లేజాబితాను క్యూకి జోడించు</string>
+    <string name="player.previous">మునుపటి పాట</string>
+    <string name="player.next">తర్వాతి పాట</string>
+    <string name="player.play">ప్లే చెయ్యి</string>
+    <string name="player.pause">పాజ్ చెయ్యి</string>
+    <string name="player.volume_off">శబ్దం ఆఫ్</string>
+    <string name="player.volume_low">తక్కువ వాల్యూమ్</string>
+    <string name="player.volume_high">ఎక్కువ వాల్యూమ్</string>
+    <string name="player.expand">ప్లేయర్‌ను విస్తరించు</string>
+    <string name="player.open_fullscreen">ప్లేయర్‌ను ఫుల్ స్క్రీన్‌లో తెరువు</string>
+    <string name="player.back_to_cover">పాట కవర్‌కి తిరిగి వెళ్ళు</string>
+    <string name="player.watch_video">వీడియో చూడు</string>
+    <string name="player.expand_video">వీడియోను విండో పూర్తి వెడల్పుకి విస్తరించు</string>
+    <string name="player.restore_video">వీడియో అసలు వెడల్పును పునరుద్ధరించు</string>
+    <string name="player.radio">రేడియో: పోలిన పాటలను క్యూకి జోడించు</string>
+    <string name="player.song_cover">పాట కవర్</string>
+    <string name="player.online">ఆన్‌లైన్</string>
+    <string name="player.local">స్థానిక</string>
+    <string name="radio.none_found">పోలిన పాటలు కనుగొనబడలేదు</string>
+    <string name="radio.added">{n} పోలిన పాటలు జోడించబడ్డాయి</string>
+    <string name="radio.unavailable">రేడియో అందుబాటులో లేదు</string>
+    <string name="overlay.close_player">ప్లేయర్ మూసివేయి</string>
+    <string name="overlay.queue_title">ప్లేబ్యాక్ క్యూ</string>
+    <string name="overlay.queue_count">క్యూ ({n})</string>
+    <string name="overlay.no_song">ఏ పాట ప్లే అవ్వడం లేదు</string>
+    <string name="overlay.video_active_note">వీడియో ఎడమ ప్లేయర్ ప్యానెల్‌లో సక్రియంగా ఉంది: ఇక్కడ చూడటానికి దాన్ని మూసివేయి</string>
+    <string name="overlay.video_active">వీడియో ప్లేయర్ ప్యానెల్‌లో సక్రియంగా ఉంది</string>
+    <string name="overlay.close_hint">ఎడమ పైన ఉన్న షెవ్రాన్ లేదా ESC తో మూసివేయి</string>
+    <string name="page.albums">ఆల్బమ్‌లు ({n})</string>
+    <string name="page.artists">కళాకారులు ({n})</string>
+    <string name="page.playlists">ప్లేజాబితాలు ({n})</string>
+    <string name="page.songs">పాటలు ({n})</string>
+    <string name="page.local">స్థానిక ఫైల్‌లు ({n})</string>
+    <string name="page.followed_only">ఫాలో అయినవి మాత్రమే</string>
+    <string name="page.followed">ఫాలో అయినవి</string>
+    <string name="page.followed_artist">ఫాలో అయిన కళాకారుడు</string>
+    <string name="page.home">హోమ్</string>
+    <string name="page.moods">మూడ్స్ మరియు శైలులు</string>
+    <string name="page.home_unavailable">హోమ్ అందుబాటులో లేదు (కనెక్షన్ తనిఖీ చేసి పైన రిఫ్రెష్ ఐకాన్ నొక్కు).</string>
+    <string name="search.hint">పాటలు, ఆల్బమ్‌లు, కళాకారులు, ప్లేజాబితాలు వెతుకు...</string>
+    <string name="search.load_more">మరిన్ని లోడ్ చెయ్యి</string>
+    <string name="search.recent">ఇటీవలి శోధనలు</string>
+    <string name="search.suggestions">సూచనలు</string>
+    <string name="search.clear">శోధన క్లియర్ చెయ్యి</string>
+    <string name="local.add_folder">ఫోల్డర్ జోడించు</string>
+    <string name="local.add_files">ఫైల్‌లు జోడించు</string>
+    <string name="local.fallback_artist">స్థానిక ఫైల్</string>
+    <string name="local.imported">{n} ఫైల్‌లు దిగుమతి అయ్యాయి</string>
+    <string name="local.scanning">ఆడియో ఫైల్‌ల కోసం వెతుకుతోంది...</string>
+    <string name="local.empty_hint">స్థానిక ఫైల్‌లు ఏవీ దిగుమతి కాలేదు.\n\nకంప్యూటర్‌లోని ఫోల్డర్‌ను స్కాన్ చేయడానికి \"ఫోల్డర్ జోడించు\" (సబ్‌ఫోల్డర్‌లతో సహా) లేదా వేరువేరు పాటలను ఎంచుకోవడానికి \"ఫైల్‌లు జోడించు\" ఉపయోగించండి. దిగుమతి చేసిన ఫైల్‌లు స్థానిక ఇంజన్ (VLCJ) తో ప్లే అవుతాయి మరియు లైబ్రరీలో ఉంటాయి.</string>
+    <string name="local.input_hint">YouTube URL లేదా స్థానిక ఫైల్ / URL (VLCJ)</string>
+    <string name="local.clear_url">URL క్లియర్ చెయ్యి</string>
+    <string name="local.open_file">స్థానిక ఫైల్ తెరువు</string>
+    <string name="detail.album_shuffle">ఆల్బమ్‌ను షఫుల్‌లో ప్లే చెయ్యి</string>
+    <string name="detail.album_favorite_add">ఆల్బమ్‌ను ఇష్టమైనవాటికి జోడించు</string>
+    <string name="detail.album_favorite_ok">ఆల్బమ్ ఇష్టమైనవాటిలో</string>
+    <string name="detail.artist_shuffle">కళాకారుడి పాటలను షఫుల్‌లో ప్లే చెయ్యి</string>
+    <string name="detail.artist_follow">కళాకారుడిని ఫాలో అవ్వు</string>
+    <string name="detail.artist_followed">కళాకారుడిని ఫాలో అయ్యారు</string>
+    <string name="detail.playlist_shuffle">ప్లేజాబితాను షఫుల్‌లో ప్లే చెయ్యి</string>
+    <string name="detail.playlist_favorite_add">ప్లేజాబితాను ఇష్టమైనవాటిలో సేవ్ చెయ్యి</string>
+    <string name="detail.playlist_favorite_ok">ప్లేజాబితా ఇష్టమైనవాటిలో: తీసివేయడానికి నొక్కు</string>
+    <string name="common.loading">లోడ్ అవుతోంది...</string>
+    <string name="kcef.unavailable">KCEF ప్లేబ్యాక్ ఇంజన్ అందుబాటులో లేదు</string>
+    <string name="kcef.details_log">పూర్తి వివరాలు లాగ్/కన్సోల్‌లో: [RiPlay-KCEF] తో ప్రారంభమయ్యే లైన్లు.</string>
+    <string name="kcef.retry">మళ్ళీ ప్రయత్నించు</string>
+    <string name="kcef.preparing">ప్లేబ్యాక్ ఇంజన్ సిద్ధమవుతోంది (KCEF)…</string>
+    <string name="kcef.downloading">అంతర్నిర్మిత బ్రౌజర్ డౌన్‌లోడ్ అవుతోంది (మొదటి ప్రారంభానికే)…</string>
+    <string name="kcef.extracting">భాగాలు వేరు చేయబడుతున్నాయి…</string>
+    <string name="kcef.installing">ఇన్‌స్టాల్ అవుతోంది…</string>
+    <string name="kcef.starting">అంతర్నిర్మిత బ్రౌజర్ ప్రారంభమవుతోంది…</string>
+    <string name="kcef.preparing_short">సిద్ధమవుతోంది…</string>
+    <string name="kcef.jdk_conflict">ఉపయోగిస్తున్న JDKలో RiPlayకి అనుకూలం కాని వెర్షన్ అంతర్నిర్మిత బ్రౌజర్ ఇంజన్ ఉంది. డౌన్‌లోడ్ తర్వాత యాప్ మూసివేయబడుతుంది: ఇన్‌స్టాలేషన్ పూర్తి చేయడానికి దాన్ని మళ్ళీ తెరువు.</string>
+    <string name="error.yt_with_code">YouTube లోపం (కోడ్ {code}: {meaning}). వివరాలు లాగ్‌లో: [RiPlay-KCEF] / [RiPlay-YT] లైన్లు.</string>
+    <string name="error.yt_2">చెల్లని పారామితి లేదా యాక్సెస్/వయసు-పరిమిత వీడియో లేదా YouTube యాంటీ-బాట్/సమ్మతి తనిఖీ (లాగిన్ అవసరం)</string>
+    <string name="error.yt_5">HTML5 ప్లేయర్ లోపం (కంటెంట్/కోడెక్/నెట్‌వర్క్)</string>
+    <string name="error.yt_100">వీడియో కనుగొనబడలేదు లేదా ప్రైవేట్</string>
+    <string name="error.yt_101_150">యజమాని ఎంబెడెడ్ ప్లేబ్యాక్‌ను అనుమతించడం లేదు</string>
+    <string name="error.yt_152">ఎంబెడెడ్ కాంటెక్స్ట్ YouTube తిరస్కరించింది: హోస్ట్ పేజీ Referer ఆమోదించబడటం లేదు</string>
+    <string name="error.yt_153">ఎంబెడ్ అభ్యర్థన YouTube తిరస్కరించింది (player/referrer కాన్ఫిగరేషన్ లేదు)</string>
+    <string name="error.yt_unknown">తెలియని కోడ్</string>
+    <string name="error.local_unavailable">స్థానిక పాట డెస్క్‌టాప్‌లో ప్లే కాలేదు: ఫైల్ పాత్ అందుబాటులో లేదు (Android MediaStore మూలం లేదా తరలించిన ఫైల్). కింది ఫీల్డ్‌లోని ఫోల్డర్ బటన్‌తో కంప్యూటర్ నుండి ఫైల్‌ను ఎంచుకుని ప్లే చేయవచ్చు.</string>
+    <string name="error.manual_unsupported">పాత్ కనుగొనబడలేదు లేదా మద్దతు లేని URL: \'{value}\'</string>
+    <string name="misc.playlist_cover">ప్లేజాబితా కవర్</string>
+    <string name="settings.language">భాష</string>
+    <string name="settings.system">సిస్టమ్ భాష</string>
+    <string name="titlebar.minimize">చిన్నది చెయ్యి</string>
+    <string name="titlebar.maximize">పెద్దది చెయ్యి</string>
+    <string name="titlebar.restore">పునరుద్ధరించు</string>
+    <string name="titlebar.close">మూసివేయి</string>
+    <string name="common.back">వెనుకకు</string>
+    <string name="common.songs_word">పాటలు</string>
+    <string name="overlay.playing">ఇప్పుడు ప్లే అవుతోంది</string>
+    <string name="local.none_found_in">\"{value}\"లో ఏ ఆడియో ఫైల్‌లు కనుగొనబడలేదు</string>
+    <string name="local.imported_from">\"{value}\" నుండి {n} ఫైల్‌లు దిగుమతి అయ్యాయి</string>
+</resources>

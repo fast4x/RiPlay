@@ -119,10 +119,18 @@ object PlayerHtmlServer {
      * identico ad Android WebViewYouTubePlayer.initWebView):
      * "<<injectedVideoId>>" -> 'videoId' quotato oppure undefined,
      * "<<injectedPlayerVars>>" -> playerVars autolock AYP (origin dinamico).
+     *
+     * STEP 3p: [autoplay] = false quando il videoId cotto nella pagina era
+     * arrivato come CUE (cueVideoById: carica il brano SENZA avviarlo,
+     * richiesta "all'avvio carica il primo brano della coda nel player e
+     * se premo play parte"): la pagina nasce con autoplay=0 e onReady NON
+     * chiama playVideo: il brano resta pronto in attesa del play
+     * dell'utente (stessa semantica del riplayCue sulle pagine attive).
      */
-    fun playerPageHtml(injectedVideoId: String?): String =
+    fun playerPageHtml(injectedVideoId: String?, autoplay: Boolean = true): String =
         PLAYER_HTML
             .replace("<<injectedVideoId>>", injectedVideoId ?: "undefined")
+            .replace("<<injectedAutoplay>>", if (autoplay) "1" else "0")
             .replace("<<injectedPlayerVars>>", AYP_PLAYER_VARS_JSON)
 
     // ------------------------------------------------------------------
@@ -282,6 +290,17 @@ private val PLAYER_HTML = """
      catena di riproduzione verificata). */
   #guardTitolo { position: absolute; top: 0; left: 0; width: 100%; height: 70px; z-index: 3; background: transparent; cursor: default; }
   #guardLogo { position: absolute; bottom: 0; right: 0; width: 190px; height: 90px; z-index: 3; background: transparent; cursor: default; }
+  /* STEP 3o (richiesta utente n.6 "nel player all'interno del browser risulta
+     cliccabile il pulsante di condivisione, disattivalo come fatto con gli
+     altri click"): terzo livello trasparente per il pulsante CONDIVIDI
+     dell'embed: sta nella barra controlli in basso, SUBITO A SINISTRA della
+     zona logo gia' intercettata (il logo copre gli ultimi 190px: il pulsante
+     condivisione e' il gruppo successivo). La larghezza si adatta:
+     max(0px, 100% - 430px) con tetto 120px => nei player PICCOLI (colonna
+     di sinistra ~23% della finestra) la larghezza calcolata scende a 0 e il
+     guard scompare, cosi' non copre la barra di avanzamento; nei player
+     piu' larghi copre solo il gruppo condivisione. */
+  #guardCondividi { position: absolute; bottom: 0; right: 180px; height: 80px; width: max(0px, calc(100% - 430px)); max-width: 120px; z-index: 3; background: transparent; cursor: default; }
 </style>
 </head>
 <body>
@@ -290,6 +309,7 @@ private val PLAYER_HTML = """
 </div>
 <div id="guardTitolo"></div>
 <div id="guardLogo"></div>
+<div id="guardCondividi"></div>
 <script>
   console.log('[RiPlay-YT] pagina player avviata, origine=' + location.origin + ', UA=' + navigator.userAgent);
 </script>
@@ -302,6 +322,10 @@ private val PLAYER_HTML = """
   // (meccanismo identico ad Android: WebViewYouTubePlayer.initWebView
   // sostituisce i segnaposto nell'HTML locale e poi carica la pagina)
   var bakedVideoId = <<injectedVideoId>>;   // stringa quotata oppure undefined
+  // STEP 3p: 1 = il video nel documento parte da solo (load normale);
+  // 0 = il video nel documento e' stato arrivato come CUE (caricato ma
+  // NON avviato: all'avvio dell'app il primo brano della coda salvata).
+  var bakedAutoplay = <<injectedAutoplay>>;
 
   var player = null;
   var apiReady = false;
@@ -392,7 +416,9 @@ private val PLAYER_HTML = """
       if (pendingLoad && pendingLoad.id === bakedVideoId) pendingLoad = null;
       if (pendingCue && pendingCue.id === bakedVideoId) pendingCue = null;
     }
-    createPlayer(bakedVideoId || null, !!bakedVideoId);
+    // STEP 3p: autoplay solo se il video nel documento NON e' un cue
+    // (bakedAutoplay=0: il player nasce col brano caricato e fermo).
+    createPlayer(bakedVideoId || null, bakedVideoId && bakedAutoplay);
     if (pendingLoad) { var r = pendingLoad; pendingLoad = null; window.riplayLoad(r.id, r.start); }
     else if (pendingCue) { var c = pendingCue; pendingCue = null; window.riplayCue(c.id, c.start); }
   }

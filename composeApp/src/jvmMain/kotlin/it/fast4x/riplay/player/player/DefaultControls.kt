@@ -1,5 +1,7 @@
 package player
 
+import it.fast4x.riplay.i18n.ds
+
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -48,13 +50,13 @@ fun DefaultControls(modifier: Modifier = Modifier, controller: PlayerController)
 
             if (state.isPlaying) {
                 IconButton(controller::pause) {
-                    Icon(Icons.Filled.Pause, "pause media",
+                    Icon(Icons.Filled.Pause, ds("player.pause"),
                         tint = Color.Green,
                         modifier = Modifier.size(36.dp))
                 }
             } else {
                 IconButton(controller::play) {
-                    Icon(Icons.Rounded.PlayArrow, "play media",
+                    Icon(Icons.Rounded.PlayArrow, ds("player.play"),
                         tint = Color.Green,
                         modifier = Modifier.size(36.dp))
                 }
@@ -67,17 +69,17 @@ fun DefaultControls(modifier: Modifier = Modifier, controller: PlayerController)
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     if (state.isMuted || state.volume == 0f) IconButton(controller::toggleSound) {
-                        Icon(Icons.AutoMirrored.Rounded.VolumeOff, "volume off",
+                        Icon(Icons.AutoMirrored.Rounded.VolumeOff, ds("player.volume_off"),
                             tint = Color.White,
                             modifier = Modifier.size(28.dp))
                     }
                     else {
                         if (state.volume < .5f) IconButton(controller::toggleSound) {
-                            Icon(Icons.AutoMirrored.Rounded.VolumeDown, "volume low",
+                            Icon(Icons.AutoMirrored.Rounded.VolumeDown, ds("player.volume_low"),
                                 tint = Color.White,
                                 modifier = Modifier.size(28.dp))
                         } else IconButton(controller::toggleSound) {
-                            Icon(Icons.AutoMirrored.Rounded.VolumeUp, "volume high",
+                            Icon(Icons.AutoMirrored.Rounded.VolumeUp, ds("player.volume_high"),
                                 tint = Color.White,
                                 modifier = Modifier.size(28.dp))
                         }
@@ -117,7 +119,7 @@ fun DefaultControls(modifier: Modifier = Modifier, controller: PlayerController)
                     if (state.isPlaying) {
                         IconButton(controller::pause) {
                             Icon(
-                                Icons.Filled.Pause, "pause media",
+                                Icons.Filled.Pause, ds("player.pause"),
                                 tint = Color.Green,
                                 modifier = Modifier.size(36.dp)
                             )
@@ -125,7 +127,7 @@ fun DefaultControls(modifier: Modifier = Modifier, controller: PlayerController)
                     } else {
                         IconButton(controller::play) {
                             Icon(
-                                Icons.Rounded.PlayArrow, "play media",
+                                Icons.Rounded.PlayArrow, ds("player.play"),
                                 tint = Color.Green,
                                 modifier = Modifier.size(36.dp)
                             )
@@ -155,7 +157,7 @@ fun DefaultControls(modifier: Modifier = Modifier, controller: PlayerController)
                     ) {
                         if (state.isMuted || state.volume == 0f) IconButton(controller::toggleSound) {
                             Icon(
-                                Icons.AutoMirrored.Rounded.VolumeOff, "volume off",
+                                Icons.AutoMirrored.Rounded.VolumeOff, ds("player.volume_off"),
                                 tint = Color.White,
                                 modifier = Modifier.size(28.dp)
                             )
@@ -163,13 +165,13 @@ fun DefaultControls(modifier: Modifier = Modifier, controller: PlayerController)
                         else {
                             if (state.volume < .5f) IconButton(controller::toggleSound) {
                                 Icon(
-                                    Icons.AutoMirrored.Rounded.VolumeDown, "volume low",
+                                    Icons.AutoMirrored.Rounded.VolumeDown, ds("player.volume_low"),
                                     tint = Color.White,
                                     modifier = Modifier.size(28.dp)
                                 )
                             } else IconButton(controller::toggleSound) {
                                 Icon(
-                                    Icons.AutoMirrored.Rounded.VolumeUp, "volume high",
+                                    Icons.AutoMirrored.Rounded.VolumeUp, ds("player.volume_high"),
                                     tint = Color.White,
                                     modifier = Modifier.size(28.dp)
                                 )

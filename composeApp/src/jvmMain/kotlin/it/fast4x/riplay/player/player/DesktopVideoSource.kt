@@ -1,5 +1,7 @@
 package player
 
+import it.fast4x.riplay.i18n.ds
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -41,6 +43,7 @@ import it.fast4x.riplay.player.kcef.KcefYouTubePlayer
 import it.fast4x.riplay.player.kcef.extractYouTubeVideoId
 import it.fast4x.riplay.player.vlcj.VlcjFrameController
 import it.fast4x.riplay.ui.bars.DefaultBottomBar
+import it.fast4x.riplay.utils.hiResCoverUrl
 import player.frame.FrameContainer
 import java.io.File
 
@@ -69,6 +72,18 @@ enum class DesktopPlayerEngine(val label: String) {
     YOUTUBE("YouTube (KCEF)"),
     LOCAL("Locale (VLCJ)")
 }
+
+/**
+ * STEP 3n (richiesta utente n.1 "se non e' video non mostrare il pulsante
+ * video"): estensioni di file che contengono davvero una traccia video.
+ * I brani locali importati dalla pagina Locali sono SOLO audio
+ * (LOCAL_AUDIO_EXTENSIONS in upload): per loro l'interruttore a/v non ha
+ * senso e viene nascosto; resta invece visibile se l'utente carica a mano
+ * un file video (mp4, mkv, ...) che VLCJ puo' mostrare.
+ */
+val LOCAL_VIDEO_EXTENSIONS = setOf(
+    "mp4", "mkv", "webm", "avi", "mov", "m4v", "mpg", "mpeg", "wmv", "ts", "3gp"
+)
 
 /** Percorso/URL riproducibile da VLCJ per un brano locale, se risolvibile. */
 fun localMediaPath(song: Song): String? {
@@ -118,6 +133,43 @@ class DesktopPlayerManager(
     /** Messaggio per l'utente quando un media locale non e' riproducibile. */
     var localUnavailableReason by mutableStateOf<String?>(null)
         private set
+
+    /**
+     * STEP 3p (richiesta utente: "dato che la coda viene salvata, sarebbe
+     * opportuno che all'avvio oltre a caricare la cosa, venga caricato il
+     * primo brano della cosa nel player, in modo che se l'utente preme
+     * invio va in riproduzione il primo"): videoId del brano caricato in
+     * CUE all'avvio (caricato ma NON avviato). Null = nessun cue attivo
+     * (qualsiasi load vero lo azzera).
+     *
+     * Serve a route() per NON ricaricare il brano quando la UI allinea lo
+     * stato (videoId = brano in cue dopo il play): un reload farebbe
+     * RIPARTIRE il brano da zero poco dopo l'avvio.
+     */
+    @Volatile
+    var cuedVideoId: String? = null
+        private set
+
+    /**
+     * STEP 3p: TRUE quando il brano in cue e' REALMENTE partito (l'utente
+     * ha premuto play e il motore ha iniziato a suonare): il route()
+     * successivo con lo stesso videoId deve deduplicarsi (registra la
+     * chiave e basta) invece di ricaricare il brano. Distinto dal solo
+     * "videoId == cuedVideoId" perche' il click ESPLICITO sul brano in cue
+     * (lista/coda) mentre e' fermo DEVE invece riprodurlo da zero.
+     */
+    @Volatile
+    var cuePlaybackConfirmed: Boolean = false
+        private set
+
+    /**
+     * STEP 3p: chiamata dall'app quando il brano in cue comincia davvero a
+     * suonare (transizione isPlaying osservata sulla UI): sblocca il dedup
+     * di route() per lo stesso videoId.
+     */
+    fun confirmCuedPlayback() {
+        cuePlaybackConfirmed = true
+    }
 
     /**
      * STEP 3c: TRUE = il player (video) e' VISIBILE; FALSE = sopra il player
@@ -173,6 +225,28 @@ class DesktopPlayerManager(
         val localKey = if (videoId.startsWith(LOCAL_KEY_PREFIX)) (localPath ?: "") else ""
         val key = "$manual|$videoId|$localKey"
         if (key == lastRouteKey) return
+        // STEP 3p: rispetto del brano caricato in CUE all'avvio (primo
+        // brano della coda ripristinata). (a) La UI non ha ancora una
+        // selezione (videoId vuoto: route risalito a una ricomposizione,
+        // es. la Song che si risolve dal db): NON toccare il cue (un route
+        // "nessun media" rimetterebbe il segnaposto e coprirebbe il brano
+        // caricato). (b) videoId uguale al brano in cue E il cue e' davvero
+        // partito (l'utente ha premuto play, l'app ha confermato): dedup
+        // puro (registra la chiave): ricaricare ripartirebbe da zero. Un
+        // CLICK esplicito sul brano in cue mentre e' ancora fermo non ha
+        // la conferma e ricade nel load normale = riproduzione da zero.
+        val cued = cuedVideoId
+        if (cued != null && manual.isEmpty()) {
+            if (videoId.isEmpty()) return
+            if (videoId == cued && cuePlaybackConfirmed) {
+                cuePlaybackConfirmed = false
+                lastRouteKey = key
+                return
+            }
+        }
+        // qualunque altro percorso e' un LOAD VERO: lo stato cue finisce qui
+        cuedVideoId = null
+        cuePlaybackConfirmed = false
         lastRouteKey = key
         // qualunque media caricato toglie l'app dallo stato "segna\nposto"
         idle = false
@@ -196,7 +270,7 @@ class DesktopPlayerManager(
                     loadLocalMedia(manual, "input manuale")
                 } else {
                     localUnavailableReason =
-                        "Percorso non trovato o URL non supportato: '$manual'"
+                        ds("error.manual_unsupported", "value" to manual)
                     KcefEngine.logKcef(
                         "input manuale scartato: '$manual' non e' ne' un file esistente ne' un URL supportato (http/rtsp/mms/file)"
                     )
@@ -212,11 +286,7 @@ class DesktopPlayerManager(
                 if (localPath != null && (localPath.isStreamUrl() || File(localPath).isFile)) {
                     loadLocalMedia(localPath, "brano locale '${song.title}'")
                 } else {
-                    localUnavailableReason =
-                        "Brano locale non riproducibile su desktop: il percorso del file non e' " +
-                                "accessibile (origine Android MediaStore o file spostato). Puoi " +
-                                "riprodurlo scegliendo il file dal computer con il pulsante " +
-                                "cartella nel campo qui sotto."
+                    localUnavailableReason = ds("error.local_unavailable")
                     KcefEngine.logKcef(
                         "brano locale NON riproducibile su desktop: id='$videoId' " +
                                 "mediaId='${song?.mediaId}' percorso risolto='$localPath' " +
@@ -275,6 +345,65 @@ class DesktopPlayerManager(
         vlcj.load(path)
         vlcj.play()
     }
+
+    /**
+     * STEP 3p: CARICA UN BRANO NEL PLAYER SENZA AVVIARLO (cue). All'avvio
+     * dell'app, con la coda ripristinata dalla persistenza, l'app chiama
+     * questa funzione col PRIMO brano della coda: il player lo mostra
+     * (titolo/cover/durata) pronto a partire col play dell'utente.
+     *
+     *  - brano YouTube: kcef.cueVideoById (IFrame API cueVideoById:
+     *    metadati e durata arrivano, la riproduzione resta ferma; il
+     *    watchdog in modalita' cue-safe non forzera' mai il play);
+     *  - brano locale: vlcj.load (media().prepare di libVLC: il media
+     *    viene preparato, non avviato); play() dell'utente lo parte.
+     *
+     * Ritorna TRUE se il brano e' stato caricato (l'app allora aggiorna
+     * nowPlayingSong); FALSE se il brano locale non e' risolvibile su
+     * questo pc (in quel caso la coda resta utilizzabile a mano).
+     *
+     * NON tocca lastRouteKey: il primo route() della UI (videoId vuoto)
+     * viene fermato dalla guardia del cue dentro route() e la chiave
+     * effettiva viene registrata solo da un load vero.
+     */
+    fun cueForStartup(song: Song): Boolean {
+        val id = song.id.trim()
+        if (id.isEmpty()) return false
+        cuePlaybackConfirmed = false
+        val isLocal = id.startsWith(LOCAL_KEY_PREFIX)
+        if (isLocal) {
+            val localPath = localMediaPath(song)
+            if (localPath == null || !(localPath.isStreamUrl() || File(localPath).isFile)) {
+                KcefEngine.logKcef(
+                    "cue avvio SALTATO: brano locale non riproducibile su desktop " +
+                            "(id='$id', percorso risolto=$localPath): la coda resta utilizzabile a mano"
+                )
+                return false
+            }
+            KcefEngine.logKcef(
+                "cue avvio: brano locale '${song.title}' caricato nel motore VLCJ SENZA avviarlo " +
+                        "(partira' col play dell'utente)"
+            )
+            selectEngine(DesktopPlayerEngine.LOCAL)
+            videoVisible = song.isVideo
+            logDisplayMode(song)
+            idle = false
+            cuedVideoId = id
+            vlcj.load(localPath)   // prepare SENZA play
+            return true
+        }
+        KcefEngine.logKcef(
+            "cue avvio: brano YouTube '$id' caricato nel motore KCEF SENZA avviarlo " +
+                    "(partira' col play dell'utente)"
+        )
+        selectEngine(DesktopPlayerEngine.YOUTUBE)
+        videoVisible = song.isVideo
+        logDisplayMode(song)
+        idle = false
+        cuedVideoId = id
+        kcef.cueVideoById(id, 0f)
+        return true
+    }
 }
 
 /**
@@ -309,6 +438,13 @@ fun DesktopVideoSource(
     // STEP 3k (richiesta utente n.2): pulsante ESPANDI per aprire il player
     // full screen anche quando la cover NON e' visibile (video in riproduzione).
     onExpand: (() -> Unit)? = null,
+    // STEP 3o (richiesta utente n.5): AVANTI/INDIETRO nel miniplayer della
+    // home (cronologia di sessione + coda, stessa navigazione del player
+    // full). Null = pulsanti nascosti.
+    onPrevious: (() -> Unit)? = null,
+    onNext: (() -> Unit)? = null,
+    canGoPrevious: Boolean = false,
+    canGoNext: Boolean = false,
     // STEP 3l (richiesta utente): TRUE = VIDEO A TUTTA LARGHEZZA FINESTRA
     // (modalita' teatro). Cambia SOLO il layout attorno allo stesso
     // SwingPanel (il browser non viene ricreato ne' riappeso: la
@@ -334,18 +470,42 @@ fun DesktopVideoSource(
     // media effettivamente caricato (a riposo c'e' solo il segnaposto).
     val widenCallback = if (manager.idle) null else onToggleWiden
 
+    // STEP 3n (richiesta utente n.1): l'interruttore AUDIO/VIDEO esiste SOLO
+    // se il media in riproduzione PUO' avere un video:
+    //  - motore YouTube (KCEF): sempre (ogni brano YT ha il video);
+    //  - motore locale (VLCJ): solo se il file ha un'estensione video
+    //    (i brani importati dalla pagina Locali sono solo audio);
+    //  - a riposo (nessun media): nascosto (non c'e' nulla da mostrare).
+    val isLocalEngine = manager.engine == DesktopPlayerEngine.LOCAL
+    val localPath = song?.let { localMediaPath(it) }
+    val localFileIsVideo = isLocalEngine && localPath != null && !localPath.isStreamUrl() &&
+            File(localPath).extension.lowercase() in LOCAL_VIDEO_EXTENSIONS
+    val videoSwitchCallback: ((Boolean) -> Unit)? =
+        if (!manager.idle && (!isLocalEngine || localFileIsVideo)) onToggleVideo else null
+
+    // STEP 3n: anche il pulsante RADIO (brani simili) ha senso SOLO per i
+    // brani YouTube: con un brano locale chiamerebbe l'API YT con un id
+    // "local:..." (risposta impossibile). Nascosto sul motore locale e
+    // a riposo.
+    val radioCallback: (() -> Unit)? =
+        if (!manager.idle && !isLocalEngine) onAddRadio else null
+
     Column(modifier) {
         when (manager.engine) {
             DesktopPlayerEngine.YOUTUBE -> YoutubeKcefPane(
                 manager, song, browserHiddenByOverlay, onCoverClick,
-                onToggleVideo, onAddRadio, radioLoading, radioFeedback, onExpand,
+                videoSwitchCallback, radioCallback, radioLoading, radioFeedback, onExpand,
                 widened, widenCallback,
+                // STEP 3o: navigazione brani anche nel miniplayer
+                onPrevious, onNext, canGoPrevious, canGoNext,
                 Modifier.weight(1f)
             )
             DesktopPlayerEngine.LOCAL -> LocalVlcjPane(
                 manager, song, onCoverClick,
-                onToggleVideo, onAddRadio, radioLoading, radioFeedback, onExpand,
+                videoSwitchCallback, radioCallback, radioLoading, radioFeedback, onExpand,
                 widened, widenCallback,
+                // STEP 3o: navigazione brani anche nel miniplayer
+                onPrevious, onNext, canGoPrevious, canGoNext,
                 Modifier.weight(1f)
             )
         }
@@ -365,7 +525,8 @@ private fun YoutubeKcefPane(
     song: Song?,
     overlayOpen: Boolean,
     onCoverClick: () -> Unit,
-    onToggleVideo: (Boolean) -> Unit,
+    // STEP 3n: GIA' GATATI (null = pulsante nascosto: media non video / locale)
+    onToggleVideo: ((Boolean) -> Unit)?,
     onAddRadio: (() -> Unit)?,
     radioLoading: Boolean,
     radioFeedback: String?,
@@ -373,6 +534,11 @@ private fun YoutubeKcefPane(
     // STEP 3l: video a tutta larghezza finestra (teatro)
     widened: Boolean,
     onToggleWiden: (() -> Unit)?,
+    // STEP 3o: avanti/indietro nel miniplayer (null = nascosti)
+    onPrevious: (() -> Unit)?,
+    onNext: (() -> Unit)?,
+    canGoPrevious: Boolean,
+    canGoNext: Boolean,
     modifier: Modifier = Modifier
 ) {
     // Al passaggio all'altro motore il browser viene rilasciato (come nei
@@ -390,11 +556,13 @@ private fun YoutubeKcefPane(
     // segnaposto RiPlay. Se il player YT segnala un errore la canvas mostra
     // il messaggio (il vecchio banner Compose era coperto dal browser nativo).
     val ytErr by manager.kcef.ytError.collectAsState()
-    val coverUrl = song?.thumbnailUrl
+    // STEP 3n (richiesta utente n.7): la cover del player viene caricata alla
+    // RISOLUZIONE PIU' ALTA disponibile (prima arrivava il miniaturizzato
+    // 120px e risultava sfocata nel pannello player)
+    val coverUrl = song?.thumbnailUrl?.hiResCoverUrl()
     val showCoverArt = manager.idle || (song != null && !manager.videoVisible)
     val errorText = ytErr.takeIf { it != 0 }?.let { code ->
-        "Errore YouTube (codice $code: ${KcefEngine.ytErrorMeaning(code)}). " +
-                "Dettagli nel log: righe [RiPlay-KCEF] / [RiPlay-YT]."
+        ds("error.yt_with_code", "code" to code, "meaning" to KcefEngine.ytErrorMeaning(code))
     }
 
     Box(modifier) {
@@ -414,17 +582,27 @@ private fun YoutubeKcefPane(
             )
             // STEP 3k: switch audio/video + radio + espandi passano alla barra
             // STEP 3l: anche il toggle video a tutta larghezza finestra
+            // STEP 3n: onToggleVideo/onAddRadio sono gia' GATATI a monte
+            // (null = pulsante nascosto quando il media non e' video)
+            // STEP 3o: anche avanti/indietro
             DefaultBottomBar(
                 Modifier.fillMaxWidth(),
                 manager.kcef,
                 videoVisible = manager.videoVisible,
-                onToggleVideo = { onToggleVideo(!manager.videoVisible) },
+                onToggleVideo = onToggleVideo?.let { cb -> { cb(!manager.videoVisible) } },
                 onAddRadio = onAddRadio,
                 radioLoading = radioLoading,
                 radioFeedback = radioFeedback,
                 onExpand = onExpand,
                 widened = widened,
-                onToggleWiden = onToggleWiden
+                onToggleWiden = onToggleWiden,
+                onPrevious = onPrevious,
+                onNext = onNext,
+                canGoPrevious = canGoPrevious,
+                canGoNext = canGoNext,
+                // STEP 3q: titolo+artista nel miniplayer
+                title = song?.title,
+                artist = song?.artistsText
             )
         }
         EngineBadge(DesktopPlayerEngine.YOUTUBE)
@@ -436,7 +614,8 @@ private fun LocalVlcjPane(
     manager: DesktopPlayerManager,
     song: Song?,
     onCoverClick: () -> Unit,
-    onToggleVideo: (Boolean) -> Unit,
+    // STEP 3n: GIA' GATATI (null = pulsante nascosto: media non video / locale)
+    onToggleVideo: ((Boolean) -> Unit)?,
     onAddRadio: (() -> Unit)?,
     radioLoading: Boolean,
     radioFeedback: String?,
@@ -444,6 +623,11 @@ private fun LocalVlcjPane(
     // STEP 3l: video a tutta larghezza finestra (teatro)
     widened: Boolean,
     onToggleWiden: (() -> Unit)?,
+    // STEP 3o: avanti/indietro nel miniplayer (null = nascosti)
+    onPrevious: (() -> Unit)?,
+    onNext: (() -> Unit)?,
+    canGoPrevious: Boolean,
+    canGoNext: Boolean,
     modifier: Modifier = Modifier
 ) {
     // Al passaggio all'altro motore VLCJ viene fermato (il controller resta
@@ -460,7 +644,8 @@ private fun LocalVlcjPane(
     // normale (niente trucchi AWT). Il messaggio di errore resta visibile
     // perche' la cover lascia posto a lui.
     // STEP 3d: la cover e' CLICCABILE come nel pannello KCEF.
-    val coverUrl = song?.thumbnailUrl
+    // STEP 3n: cover alla risoluzione piu' alta disponibile (come pannello KCEF)
+    val coverUrl = song?.thumbnailUrl?.hiResCoverUrl()
     val showCover = song != null && !manager.videoVisible &&
             !coverUrl.isNullOrEmpty() && manager.localUnavailableReason == null
 
@@ -500,17 +685,26 @@ private fun LocalVlcjPane(
             }
             // STEP 3k: switch audio/video + radio + espandi passano alla barra
             // STEP 3l: anche il toggle video a tutta larghezza finestra
+            // STEP 3n: onToggleVideo/onAddRadio gia' GATATI a monte
+            // STEP 3o: anche avanti/indietro
             DefaultBottomBar(
                 Modifier.fillMaxWidth(),
                 manager.vlcj,
                 videoVisible = manager.videoVisible,
-                onToggleVideo = { onToggleVideo(!manager.videoVisible) },
+                onToggleVideo = onToggleVideo?.let { cb -> { cb(!manager.videoVisible) } },
                 onAddRadio = onAddRadio,
                 radioLoading = radioLoading,
                 radioFeedback = radioFeedback,
                 onExpand = onExpand,
                 widened = widened,
-                onToggleWiden = onToggleWiden
+                onToggleWiden = onToggleWiden,
+                onPrevious = onPrevious,
+                onNext = onNext,
+                canGoPrevious = canGoPrevious,
+                canGoNext = canGoNext,
+                // STEP 3q: titolo+artista nel miniplayer
+                title = song?.title,
+                artist = song?.artistsText
             )
         }
         EngineBadge(DesktopPlayerEngine.LOCAL)

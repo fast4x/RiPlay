@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - Português (Brasil) (values-pt-rBR)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">Início</string>
+    <string name="nav.search">Pesquisar</string>
+    <string name="nav.songs">Músicas</string>
+    <string name="nav.artists">Artistas</string>
+    <string name="nav.albums">Álbuns</string>
+    <string name="nav.playlists">Playlists</string>
+    <string name="nav.local">Arquivos locais</string>
+    <string name="queue.title">Fila de reprodução ({n})</string>
+    <string name="queue.open">abrir a fila de reprodução</string>
+    <string name="queue.clear">limpar a fila</string>
+    <string name="queue.close_panel">fechar o painel da fila</string>
+    <string name="queue.remove">remover da fila</string>
+    <string name="queue.drag">arraste para reordenar</string>
+    <string name="queue.drag_handle">Arraste a alça para reordenar</string>
+    <string name="action.add_to_queue">adicionar à fila</string>
+    <string name="action.already_queued">já está na fila</string>
+    <string name="action.enqueue_all">adicionar tudo à fila</string>
+    <string name="action.enqueue_album">adicionar o álbum inteiro à fila</string>
+    <string name="action.enqueue_playlist">adicionar a playlist inteira à fila</string>
+    <string name="player.previous">música anterior</string>
+    <string name="player.next">próxima música</string>
+    <string name="player.play">reproduzir</string>
+    <string name="player.pause">pausar</string>
+    <string name="player.volume_off">som desativado</string>
+    <string name="player.volume_low">volume baixo</string>
+    <string name="player.volume_high">volume alto</string>
+    <string name="player.expand">expandir o player</string>
+    <string name="player.open_fullscreen">abrir o player em tela cheia</string>
+    <string name="player.back_to_cover">voltar à capa da música</string>
+    <string name="player.watch_video">assistir ao vídeo</string>
+    <string name="player.expand_video">expandir o vídeo para toda a largura da janela</string>
+    <string name="player.restore_video">restaurar a largura inicial do vídeo</string>
+    <string name="player.radio">rádio: adicionar músicas parecidas à fila</string>
+    <string name="player.song_cover">capa da música</string>
+    <string name="player.online">On-line</string>
+    <string name="player.local">Local</string>
+    <string name="radio.none_found">Nenhuma música parecida encontrada</string>
+    <string name="radio.added">Adicionadas {n} músicas parecidas</string>
+    <string name="radio.unavailable">Rádio indisponível</string>
+    <string name="overlay.close_player">fechar o player</string>
+    <string name="overlay.queue_title">fila de reprodução</string>
+    <string name="overlay.queue_count">Fila ({n})</string>
+    <string name="overlay.no_song">Nenhuma música tocando</string>
+    <string name="overlay.video_active_note">Vídeo ativo no painel do player à esquerda: feche-o para assistir aqui</string>
+    <string name="overlay.video_active">vídeo ativo no painel do player</string>
+    <string name="overlay.close_hint">Feche com a seta no canto superior esquerdo ou com ESC</string>
+    <string name="page.albums">Álbuns ({n})</string>
+    <string name="page.artists">Artistas ({n})</string>
+    <string name="page.playlists">Playlists ({n})</string>
+    <string name="page.songs">Músicas ({n})</string>
+    <string name="page.local">Arquivos locais ({n})</string>
+    <string name="page.followed_only">Somente seguidos</string>
+    <string name="page.followed">Seguidos</string>
+    <string name="page.followed_artist">artista seguido</string>
+    <string name="page.home">Início</string>
+    <string name="page.moods">Climas e gêneros</string>
+    <string name="page.home_unavailable">Início indisponível (verifique a conexão e toque no ícone de atualização no topo).</string>
+    <string name="search.hint">Pesquisar músicas, álbuns, artistas, playlists...</string>
+    <string name="search.load_more">Carregar mais</string>
+    <string name="search.recent">Pesquisas recentes</string>
+    <string name="search.suggestions">Sugestões</string>
+    <string name="search.clear">limpar a pesquisa</string>
+    <string name="local.add_folder">Adicionar pasta</string>
+    <string name="local.add_files">Adicionar arquivos</string>
+    <string name="local.fallback_artist">Arquivo local</string>
+    <string name="local.imported">{n} arquivos importados</string>
+    <string name="local.scanning">Procurando arquivos de áudio...</string>
+    <string name="local.empty_hint">Nenhum arquivo local importado.\n\nUse \"Adicionar pasta\" para escanear uma pasta do computador (subpastas incluídas) ou \"Adicionar arquivos\" para escolher músicas individualmente. Os arquivos importados são reproduzidos pelo mecanismo Local (VLCJ) e ficam na biblioteca.</string>
+    <string name="local.input_hint">URL do YouTube ou arquivo / URL local (VLCJ)</string>
+    <string name="local.clear_url">limpar o URL</string>
+    <string name="local.open_file">abrir arquivo local</string>
+    <string name="detail.album_shuffle">reproduzir o álbum em ordem aleatória</string>
+    <string name="detail.album_favorite_add">adicionar o álbum aos favoritos</string>
+    <string name="detail.album_favorite_ok">álbum nos favoritos</string>
+    <string name="detail.artist_shuffle">reproduzir as músicas do artista em ordem aleatória</string>
+    <string name="detail.artist_follow">seguir o artista</string>
+    <string name="detail.artist_followed">artista seguido</string>
+    <string name="detail.playlist_shuffle">reproduzir a playlist em ordem aleatória</string>
+    <string name="detail.playlist_favorite_add">salvar a playlist nas favoritas</string>
+    <string name="detail.playlist_favorite_ok">playlist nas favoritas: clique para remover</string>
+    <string name="common.loading">carregando...</string>
+    <string name="kcef.unavailable">Mecanismo de reprodução KCEF indisponível</string>
+    <string name="kcef.details_log">Detalhes completos no log/console: linhas que começam com [RiPlay-KCEF].</string>
+    <string name="kcef.retry">Tentar novamente</string>
+    <string name="kcef.preparing">Preparando o mecanismo de reprodução (KCEF)…</string>
+    <string name="kcef.downloading">Baixando o navegador integrado (somente na primeira execução)…</string>
+    <string name="kcef.extracting">Extraindo componentes…</string>
+    <string name="kcef.installing">Instalando…</string>
+    <string name="kcef.starting">Iniciando o navegador integrado…</string>
+    <string name="kcef.preparing_short">Preparando…</string>
+    <string name="kcef.jdk_conflict">O JDK em uso contém um mecanismo de navegador integrado de versão incompatível com o RiPlay. Ao terminar o download o aplicativo será fechado: reabra-o para concluir a instalação.</string>
+    <string name="error.yt_with_code">Erro do YouTube (código {code}: {meaning}). Detalhes no log: linhas [RiPlay-KCEF] / [RiPlay-YT].</string>
+    <string name="error.yt_2">parâmetro inválido ou vídeo com restrições de acesso/idade ou verificação anti-bot/consentimento do YouTube (login necessário)</string>
+    <string name="error.yt_5">erro do player HTML5 (conteúdo/codec/rede)</string>
+    <string name="error.yt_100">vídeo não encontrado ou privado</string>
+    <string name="error.yt_101_150">o proprietário não permite a reprodução incorporada</string>
+    <string name="error.yt_152">contexto incorporado recusado pelo YouTube: o Referer da página de incorporação não é aceito</string>
+    <string name="error.yt_153">solicitação incorporada recusada pelo YouTube (configuração player/referrer ausente)</string>
+    <string name="error.yt_unknown">código desconhecido</string>
+    <string name="error.local_unavailable">Música local não reproduzível no desktop: o caminho do arquivo não está acessível (origem MediaStore do Android ou arquivo movido). Você pode reproduzi-la escolhendo o arquivo no computador com o botão de pasta no campo abaixo.</string>
+    <string name="error.manual_unsupported">Caminho não encontrado ou URL não suportado: \'{value}\'</string>
+    <string name="misc.playlist_cover">Capa de playlist</string>
+    <string name="settings.language">Idioma</string>
+    <string name="settings.system">Idioma do sistema</string>
+    <string name="titlebar.minimize">Minimizar</string>
+    <string name="titlebar.maximize">Maximizar</string>
+    <string name="titlebar.restore">Restaurar</string>
+    <string name="titlebar.close">Fechar</string>
+    <string name="common.back">Voltar</string>
+    <string name="common.songs_word">músicas</string>
+    <string name="overlay.playing">Reproduzindo agora</string>
+    <string name="local.none_found_in">Nenhum arquivo de áudio encontrado em \"{value}\"</string>
+    <string name="local.imported_from">{n} arquivos importados de \"{value}\"</string>
+</resources>

@@ -1,28 +1,24 @@
 package it.fast4x.riplay.ui.screens
 
-import androidx.compose.foundation.ExperimentalFoundationApi
+import it.fast4x.riplay.i18n.ds
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.DrawerDefaults.windowInsets
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -59,13 +55,13 @@ import it.fast4x.riplay.styling.Dimensions.layoutColumnBottomSpacer
 import it.fast4x.riplay.styling.Dimensions.playlistThumbnailSize
 import it.fast4x.riplay.ui.components.AutoResizeText
 import it.fast4x.riplay.ui.components.FontSizeRange
+import it.fast4x.riplay.ui.components.HeaderActionIcon
 import it.fast4x.riplay.ui.components.Loader
+import it.fast4x.riplay.ui.components.RiPlayAccent
 import it.fast4x.riplay.ui.components.Title
 import it.fast4x.riplay.ui.components.Title2Actions
-import it.fast4x.riplay.ui.components.ToolButton
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.fadingEdge
-import it.fast4x.riplay.utils.getHttpClient
 import it.fast4x.riplay.utils.languageDestination
 import it.fast4x.riplay.utils.resize
 import kotlinx.coroutines.Dispatchers
@@ -74,13 +70,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import dev.rebelonion.translator.Language
 import dev.rebelonion.translator.Translator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.filled.Shuffle
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import riplay.composeapp.generated.resources.Res
 import riplay.composeapp.generated.resources.albums
 import riplay.composeapp.generated.resources.artist_subscribers
-import riplay.composeapp.generated.resources.bookmark
-import riplay.composeapp.generated.resources.bookmark_outline
 import riplay.composeapp.generated.resources.dice
 import riplay.composeapp.generated.resources.from_wikipedia_cca
 import riplay.composeapp.generated.resources.information
@@ -90,7 +88,21 @@ import riplay.composeapp.generated.resources.songs
 import riplay.composeapp.generated.resources.translate
 import kotlin.random.Random
 
-@OptIn(ExperimentalFoundationApi::class)
+/**
+ * STEP 3o (richiesta utente n.2 "modificare la pagina di dettaglio di
+ * artista, album e playlist a quella lato android"): ristrutturata come
+ * ArtistOverview di Android in LANDSCAPE:
+ *  - a SINISTRA la foto QUADRATA fissa dell'artista (40%, 1:1);
+ *  - a DESTRA colonna scorrevole: NOME grande centrato (32..38sp), riga
+ *    iscritti centrata, RIGA DI AZIONI (Segui artista / shuffle brani),
+ *    poi Brani, Playlists, Albums, Singles e descrizione (Information).
+ *
+ * Le funzioni restano IDENTICHE: salvataggio dell'artista nel db al load,
+ * SEGUI (bookmarkedAt come gli album preferiti, step3i), traduzione della
+ * biografia. NUOVO (richiesta utente n.2): shuffle dei brani dell'artista
+ * (tutta la lista in coda in ordine casuale e parte il primo).
+ */
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun ArtistScreen(
     browseId: String,
@@ -101,10 +113,14 @@ fun ArtistScreen(
     onAlbumClick: (String) -> Unit,
     onClosePage: () -> Unit,
     // STEP 3i: azione "aggiungi alla coda" sui brani dell'artista
-    onAddToQueue: ((Song) -> Unit)? = null
+    onAddToQueue: ((Song) -> Unit)? = null,
+    // STEP 3o: click = TUTTA la lista in coda (usato dallo shuffle)
+    onPlayCollection: ((List<Song>, Song) -> Unit)? = null,
+    // STEP 3o (richiesta utente n.2): "metti in coda tutto" senza avviare
+    // (passato dall'app per uniformita' con album/playlist; la pagina
+    // artista lo lascia ai singoli pulsanti "+" dei brani)
+    onEnqueueAll: ((List<Song>) -> Unit)? = null
 ) {
-    //val leftScrollState = rememberScrollState()
-    //val rightScrollState = rememberScrollState()
     val artistPage = remember { mutableStateOf<Environment.ArtistInfoPage?>(null) }
 
     // STEP 3i - ARTISTA SEGUITO: lo stato dell'artista nel db (se esiste,
@@ -147,11 +163,13 @@ fun ArtistScreen(
             }
     }
     val artist = artistPage.value
-    val endPaddingValues = windowInsets.only(WindowInsetsSides.End).asPaddingValues()
 
-    val sectionTextModifier = Modifier
-        .padding(horizontal = 16.dp)
-        .padding(top = 24.dp, bottom = 8.dp)
+    // lista brani dell'artista (per lo shuffle)
+    val allArtistSongs = artistPage.value
+        ?.songs
+        .orEmpty()
+        .map { it.asSong }
+        .distinctBy { it.id }
 
     var translateEnabled by remember {
         mutableStateOf(false)
@@ -170,90 +188,88 @@ fun ArtistScreen(
             modifier = Modifier
                 .fillMaxSize()
         ) {
+
+            // FOTO QUADRATA fissa a sinistra (40%, landscape Android)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.4f)
+                    .aspectRatio(1f)
+            ) {
+                artistPage.value?.let {
+                    AsyncImage(
+                        model = artistPage.value!!.thumbnail?.url?.resize(1200, 1200),
+                        contentDescription = ds("common.loading"),
+                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.Center)
+                            .fadingEdge(
+                                top = fadeSpacingTop,
+                                bottom = fadeSpacingBottom
+                            )
+                    )
+                } ?: Loader()
+            }
+
+            // COLONNA DESTRA scorrevole
             Column(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .fillMaxHeight()
-                    .fillMaxWidth(0.5f)
-                    //.verticalScroll(leftScrollState)
+                    .fillMaxSize()
             ) {
-                /*
-                ExpandIcon(
-                    onAction = onClosePage,
-                    actionClose = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                 */
 
-                Box(
-                    modifier = Modifier
-                        .aspectRatio(4f / 3)
-                        //.height(300.dp)
-                        .fillMaxWidth()
-                ) {
-                    artistPage.value?.let {
-                        AsyncImage(
-                            model = artistPage.value!!.thumbnail?.url?.resize(1200, 900),
-                            contentDescription = "loading...",
+                artistPage.value?.let {
+                    // NOME grande centrato (Android: AutoResizeText 32..38sp)
+                    if (!it.name.isNullOrEmpty())
+                        AutoResizeText(
+                            text = it.name.toString(),
+                            style = typography.displayLarge,
+                            fontSizeRange = FontSizeRange(30.sp, 38.sp),
+                            fontWeight = typography.displayLarge.fontWeight,
+                            fontFamily = typography.displayLarge.fontFamily,
+                            color = typography.displayLarge.color,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = TextAlign.Center,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .align(Alignment.TopCenter)
-                                .fadingEdge(
-                                    top = fadeSpacingTop,
-                                    bottom = fadeSpacingBottom
-                                )
+                                .padding(horizontal = 24.dp, vertical = 8.dp)
                         )
 
-                        if (!artistPage.value?.name.isNullOrEmpty())
-                            AutoResizeText(
-                                text = artistPage.value?.name.toString(),
-                                style = typography.displayLarge,
-                                fontSizeRange = FontSizeRange(50.sp, 100.sp),
-                                fontWeight = typography.displayLarge.fontWeight,
-                                fontFamily = typography.displayLarge.fontFamily,
-                                color = typography.displayLarge.color,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier
-                                    .align(Alignment.BottomCenter)
-                                    .padding(horizontal = 30.dp)
-                            )
-
-                        artistPage.value?.subscriberCountText?.let {
-                            Text(
-                                text = String.format(
-                                    stringResource(Res.string.artist_subscribers),
-                                    it
-                                ), //stringResource(Res.string.artist_subscribers, it),
-                                style = TextStyle(
-                                    fontSize = typography.titleMedium.fontSize,
-                                    fontWeight = typography.titleMedium.fontWeight,
-                                    color = Color.White,
-                                    textAlign = TextAlign.Start
-                                ),
-                                modifier = Modifier
-                                    .align(Alignment.BottomCenter)
-
-                            )
-                        }
-                    } ?: Loader()
+                    // RIGA INFO: iscritti (Android: subscriberCountText)
+                    it.subscriberCountText?.let { subscribers ->
+                        Text(
+                            text = String.format(
+                                stringResource(Res.string.artist_subscribers),
+                                subscribers
+                            ),
+                            color = Color.White.copy(alpha = 0.6f),
+                            fontSize = 13.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
 
-                // STEP 3i: pulsante SEGUI (bookmark, stesso meccanismo degli
-                // album preferiti): attivo quando l'artista e' nel db (viene
-                // salvato subito dopo l'apertura della pagina, vedi sopra)
+                // RIGA DI AZIONI: SEGUI (bookmark) + shuffle brani
                 Row(
-                    horizontalArrangement = Arrangement.Center,
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
+                        .padding(top = 10.dp)
                         .fillMaxWidth()
-                        .padding(top = 12.dp)
                 ) {
-                    ToolButton(
-                        icon = if (currentArtist?.bookmarkedAt == null)
-                            Res.drawable.bookmark_outline else Res.drawable.bookmark,
-                        onAction = {
+                    // STEP 3i: pulsante SEGUI (bookmark, stesso meccanismo
+                    // degli album preferiti)
+                    HeaderActionIcon(
+                        icon = if (currentArtist?.bookmarkedAt == null) Icons.Filled.BookmarkBorder
+                               else Icons.Filled.Bookmark,
+                        contentDescription = if (currentArtist?.bookmarkedAt == null)
+                            ds("detail.artist_follow")
+                        else ds("detail.artist_followed"),
+                        accent = currentArtist?.bookmarkedAt != null,
+                        onClick = {
                             val a = currentArtist
                             if (a != null) {
                                 coroutineScope.launch {
@@ -268,21 +284,179 @@ fun ArtistScreen(
                             }
                         }
                     )
-                    Spacer(Modifier.width(10.dp))
-                    Text(
-                        text = if (currentArtist?.bookmarkedAt == null) "Segui artista"
-                               else "Seguito",
-                        style = TextStyle(
-                            fontSize = 14.sp,
-                            fontWeight = typography.titleSmall.fontWeight,
-                            color = Color.White.copy(alpha = 0.8f)
-                        ),
-                        modifier = Modifier.padding(top = 8.dp)
+
+                    HeaderActionIcon(
+                        icon = Icons.Filled.Shuffle,
+                        contentDescription = ds("detail.artist_shuffle"),
+                        enabled = allArtistSongs.isNotEmpty(),
+                        onClick = {
+                            if (allArtistSongs.isNotEmpty()) {
+                                val shuffled = allArtistSongs.shuffled()
+                                val collection = onPlayCollection
+                                if (collection != null)
+                                    collection(shuffled, shuffled.first())
+                                else
+                                    onSongClick(shuffled.first())
+                            }
+                        }
                     )
                 }
 
+                if (artistPage.value != null) {
+
+                    artistPage.value!!.songs?.let { allSongs ->
+
+                        val parentalControlEnabled = false
+
+                        val songs = if (parentalControlEnabled)
+                            allSongs.filter { !it.explicit } else allSongs
+                        Row(
+                            verticalAlignment = Alignment.Bottom,
+                            horizontalArrangement = Arrangement.Start,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                        ) {
+                            Title(
+                                title = stringResource(Res.string.songs)
+                            )
+                        }
+
+                        Spacer(Modifier.height(4.dp))
+
+                        songs.forEachIndexed { index, song ->
+
+                            SongItem(
+                                song = song,
+                                modifier = Modifier
+                                    .clickable {
+                                        onSongClick(song.asSong)
+                                    },
+                                onAddToQueue = onAddToQueue?.let { action ->
+                                    { action(song.asSong) }
+                                }
+                            )
+
+                        }
+                    }
+
+                    artistPage.value!!.playlists?.let { playlists ->
+                        Row(
+                            verticalAlignment = Alignment.Bottom,
+                            horizontalArrangement = Arrangement.Start,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                        ) {
+                            Title(
+                                title = stringResource(Res.string.playlists)
+                            )
+                        }
+
+                        LazyRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            items(
+                                items = playlists,
+                                key = Environment.PlaylistItem::key
+                            ) { playlist ->
+                                PlaylistItem(
+                                    playlist = playlist,
+                                    thumbnailSizeDp = playlistThumbnailSize,
+                                    alternative = true,
+                                    modifier = Modifier
+                                        .clickable(onClick = {
+                                            onPlaylistClick(playlist.key)
+                                        }
+                                        )
+                                )
+                            }
+                        }
+                    }
+
+                    artistPage.value!!.albums?.let { albums ->
+                        Row(
+                            verticalAlignment = Alignment.Bottom,
+                            horizontalArrangement = Arrangement.Start,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                        ) {
+                            Title2Actions(
+                                title = stringResource(Res.string.albums),
+                                onClick1 = {
+                                    onViewAllAlbumsClick()
+                                },
+                                icon2 = Res.drawable.dice,
+                                onClick2 = {
+                                    val albumId = albums.get(
+                                        Random(System.currentTimeMillis()).nextInt(
+                                            0,
+                                            albums.size - 1
+                                        )
+                                    ).key
+                                    onAlbumClick(albumId)
+                                }
+                            )
+                        }
+
+                        LazyRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            items(
+                                items = albums,
+                                key = Environment.AlbumItem::key
+                            ) { album ->
+                                AlbumItem(
+                                    album = album,
+                                    thumbnailSizeDp = albumThumbnailSize,
+                                    alternative = true,
+                                    modifier = Modifier
+                                        .clickable(onClick = { onAlbumClick(album.key) })
+                                )
+                            }
+                        }
+                    }
+
+                    artistPage.value!!.singles?.let { singles ->
+                        Row(
+                            verticalAlignment = Alignment.Bottom,
+                            horizontalArrangement = Arrangement.Start,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                        ) {
+                            Title(
+                                title = stringResource(Res.string.singles)
+                            )
+                        }
+
+                        LazyRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            items(
+                                items = singles,
+                                key = Environment.AlbumItem::key
+                            ) { album ->
+                                AlbumItem(
+                                    album = album,
+                                    thumbnailSizeDp = albumThumbnailSize,
+                                    alternative = true,
+                                    modifier = Modifier
+                                        .clickable(onClick = { onAlbumClick(album.key) })
+                                )
+                            }
+
+                        }
+                    }
 
 
+                }
+
+                // BIOGRAFIA (Information) in fondo alla colonna destra
                 artistPage.value?.description?.let { description ->
                     val attributionsIndex = description.lastIndexOf("\n\nFrom Wikipedia")
 
@@ -337,19 +511,14 @@ fun ArtistScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
                             .padding(top = 16.dp)
-                    ) {
+                    ){
                         Text(
                             text = "“ $translatedText „",
                             style = TextStyle(
                                 fontSize = typography.titleSmall.fontSize,
-                                //fontWeight = typography.titleSmall.fontWeight,
                                 color = Color.White,
                                 textAlign = TextAlign.Start
-                            ),
-                           // modifier = Modifier
-                           //     .padding(horizontal = 12.dp)
-                           //     .weight(1f)
-
+                            )
                         )
 
                         if (attributionsIndex != -1) {
@@ -360,12 +529,7 @@ fun ArtistScreen(
                                     fontWeight = typography.titleSmall.fontWeight,
                                     color = Color.White,
                                     textAlign = TextAlign.Start
-                                ),
-                               // modifier = Modifier
-                               //     .padding(horizontal = 16.dp)
-                               //     .padding(bottom = 16.dp)
-                                //.padding(endPaddingValues)
-
+                                )
                             )
                         }
                     }
@@ -373,208 +537,6 @@ fun ArtistScreen(
                 }
                 Spacer(modifier = Modifier.height(layoutColumnBottomSpacer))
             }
-
-            Column(
-                verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxHeight()
-                    //.fillMaxWidth(0.5f)
-                    .fillMaxSize()
-                    //.verticalScroll(rightScrollState)
-            ) {
-
-                if (artistPage.value != null) {
-
-                    artistPage.value!!.songs?.let { allSongs ->
-
-                        val parentalControlEnabled = false
-
-                        val songs = if (parentalControlEnabled)
-                            allSongs.filter { !it.explicit } else allSongs
-                        Row(
-                            verticalAlignment = Alignment.Bottom,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(endPaddingValues)
-                        ) {
-                            Title(
-                                title = stringResource(Res.string.songs),
-                                onClick = {
-                                    //if (youtubeArtistPage.songsEndpoint?.browseId != null) {
-
-                                    //} else SmartToast(context.resources.getString(R.string.info_no_songs_yet))
-                                },
-                                //modifier = Modifier.fillMaxWidth(0.7f)
-                            )
-
-                        }
-
-                        songs.forEachIndexed { index, song ->
-
-                            SongItem(
-                                song = song,
-                                modifier = Modifier
-                                    .combinedClickable(
-                                        onLongClick = {
-                                            /*
-                                            menuState.display {
-                                                NonQueuedMediaItemMenu(
-                                                    navController = navController,
-                                                    onDismiss = menuState::hide,
-                                                    mediaItem = song.asMediaItem,
-                                                )
-                                            }
-                                             */
-                                        },
-                                        onClick = {
-                                            onSongClick(song.asSong)
-                                        }
-                                    )
-                                    .padding(endPaddingValues),
-                                onAddToQueue = onAddToQueue?.let { action ->
-                                    { action(song.asSong) }
-                                }
-                            )
-
-                        }
-                    }
-
-                    artistPage.value!!.playlists?.let { playlists ->
-                        Row(
-                            verticalAlignment = Alignment.Bottom,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(endPaddingValues)
-                        ) {
-                            Title(
-                                title = stringResource(Res.string.playlists),
-                                onClick = {
-                                    //if (youtubeArtistPage.albumsEndpoint?.browseId != null) {
-                                    //onViewAllAlbumsClick()
-                                    //} else SmartToast(context.resources.getString(R.string.info_no_albums_yet))
-                                }
-                            )
-                        }
-
-                        LazyRow(
-                            contentPadding = endPaddingValues,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            items(
-                                items = playlists,
-                                key = Environment.PlaylistItem::key
-                            ) { playlist ->
-                                PlaylistItem(
-                                    playlist = playlist,
-                                    thumbnailSizeDp = playlistThumbnailSize,
-                                    alternative = true,
-                                    modifier = Modifier
-                                        .clickable(onClick = {
-                                            onPlaylistClick(playlist.key)
-                                        }
-                                        )
-                                )
-                            }
-                        }
-                    }
-
-                    artistPage.value!!.albums?.let { albums ->
-                        Row(
-                            verticalAlignment = Alignment.Bottom,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(endPaddingValues)
-                        ) {
-                            Title2Actions(
-                                title = stringResource(Res.string.albums),
-                                onClick1 = {
-                                    //if (youtubeArtistPage.albumsEndpoint?.browseId != null) {
-                                    onViewAllAlbumsClick()
-                                    //} else SmartToast(context.resources.getString(R.string.info_no_albums_yet))
-                                },
-                                icon2 = Res.drawable.dice,
-                                onClick2 = {
-                                    val albumId = albums.get(
-                                        Random(System.currentTimeMillis()).nextInt(
-                                            0,
-                                            albums.size - 1
-                                        )
-                                    ).key
-                                    onAlbumClick(albumId)
-                                }
-                            )
-                        }
-
-                        LazyRow(
-                            contentPadding = endPaddingValues,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            items(
-                                items = albums,
-                                key = Environment.AlbumItem::key
-                            ) { album ->
-                                AlbumItem(
-                                    album = album,
-                                    thumbnailSizeDp = albumThumbnailSize,
-                                    alternative = true,
-                                    modifier = Modifier
-                                        .clickable(onClick = { onAlbumClick(album.key) })
-                                )
-                            }
-                        }
-                    }
-
-                    artistPage.value!!.singles?.let { singles ->
-                        Row(
-                            verticalAlignment = Alignment.Bottom,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(endPaddingValues)
-                        ) {
-                            Title(
-                                title = stringResource(Res.string.singles),
-                                onClick = {
-                                    //if (youtubeArtistPage.singlesEndpoint?.browseId != null) {
-                                    onViewAllSinglesClick()
-                                    //} else SmartToast(context.resources.getString(R.string.info_no_singles_yet))
-                                }
-                            )
-                        }
-
-                        LazyRow(
-                            contentPadding = endPaddingValues,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            items(
-                                items = singles,
-                                key = Environment.AlbumItem::key
-                            ) { album ->
-                                AlbumItem(
-                                    album = album,
-                                    thumbnailSizeDp = albumThumbnailSize,
-                                    alternative = true,
-                                    modifier = Modifier
-                                        .clickable(onClick = { onAlbumClick(album.key) })
-                                )
-                            }
-
-                        }
-                    }
-
-
-                }
-
-
-            }
         }
     }
-
 }

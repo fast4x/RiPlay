@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - සිංහල (values-si)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">මුල් පිටුව</string>
+    <string name="nav.search">සොයන්න</string>
+    <string name="nav.songs">ගීත</string>
+    <string name="nav.artists">ශිල්පීන්</string>
+    <string name="nav.albums">ඇල්බම</string>
+    <string name="nav.playlists">ධාවන ලැයිස්තු</string>
+    <string name="nav.local">දේශීය ගොනු</string>
+    <string name="queue.title">ධාවන පෝලිම ({n})</string>
+    <string name="queue.open">ධාවන පෝලිම විවෘත කරන්න</string>
+    <string name="queue.clear">පෝලිම හිස් කරන්න</string>
+    <string name="queue.close_panel">පෝලිම් පැනලය වසන්න</string>
+    <string name="queue.remove">පෝලිමෙන් ඉවත් කරන්න</string>
+    <string name="queue.drag">නැවත සැකසීමට අදින්න</string>
+    <string name="queue.drag_handle">නැවත සැකසීමට හැඳුම අදින්න</string>
+    <string name="action.add_to_queue">පෝලිමට එක් කරන්න</string>
+    <string name="action.already_queued">දැනටමත් පෝලිමේ</string>
+    <string name="action.enqueue_all">සියල්ල පෝලිමට එක් කරන්න</string>
+    <string name="action.enqueue_album">සම්පූර්ණ ඇල්බමය පෝලිමට එක් කරන්න</string>
+    <string name="action.enqueue_playlist">සම්පූර්ණ ධාවන ලැයිස්තුව පෝලිමට එක් කරන්න</string>
+    <string name="player.previous">පෙර ගීතය</string>
+    <string name="player.next">ඊළඟ ගීතය</string>
+    <string name="player.play">ධාවනය</string>
+    <string name="player.pause">විරාමය</string>
+    <string name="player.volume_off">ශබ්දය නිවා</string>
+    <string name="player.volume_low">අඩු ශබ්දය</string>
+    <string name="player.volume_high">වැඩි ශබ්දය</string>
+    <string name="player.expand">ප්ලේයර් විහිදුවන්න</string>
+    <string name="player.open_fullscreen">ප්ලේයර් පූර්ණ තිරයේ විවෘත කරන්න</string>
+    <string name="player.back_to_cover">ගීතයේ කවරයට ආපසු</string>
+    <string name="player.watch_video">වීඩියෝව නරඹන්න</string>
+    <string name="player.expand_video">වීඩියෝව කවුළුවේ පූර්ණ පළලට විහිදුවන්න</string>
+    <string name="player.restore_video">වීඩියෝවේ මුල් පළල යථා තත්ත්වයට පත් කරන්න</string>
+    <string name="player.radio">රේඩියෝ: සමාන ගීත පෝලිමට එක් කරන්න</string>
+    <string name="player.song_cover">ගීතයේ කවරය</string>
+    <string name="player.online">සබැඳි</string>
+    <string name="player.local">දේශීය</string>
+    <string name="radio.none_found">සමාන ගීත හමු නොවීය</string>
+    <string name="radio.added">සමාන ගීත {n} ක් එක් කළා</string>
+    <string name="radio.unavailable">රේඩියෝ ලබා ගත නොහැක</string>
+    <string name="overlay.close_player">ප්ලේයර් වසන්න</string>
+    <string name="overlay.queue_title">ධාවන පෝලිම</string>
+    <string name="overlay.queue_count">පෝලිම ({n})</string>
+    <string name="overlay.no_song">කිසිදු ගීතයක් වාදනය නොවේ</string>
+    <string name="overlay.video_active_note">වීඩියෝව වම් ප්ලේයර් පැනලයේ සක්රීයයි: මෙහි නැරඹීමට එය වසන්න</string>
+    <string name="overlay.video_active">වීඩියෝව ප්ලේයර් පැනලයේ සක්රීයයි</string>
+    <string name="overlay.close_hint">වම් ඉහළ ඊතලයෙන් හෝ ESC මගින් වසන්න</string>
+    <string name="page.albums">ඇල්බම ({n})</string>
+    <string name="page.artists">ශිල්පීන් ({n})</string>
+    <string name="page.playlists">ධාවන ලැයිස්තු ({n})</string>
+    <string name="page.songs">ගීත ({n})</string>
+    <string name="page.local">දේශීය ගොනු ({n})</string>
+    <string name="page.followed_only">පසුපස හඹා යන ඒවා පමණි</string>
+    <string name="page.followed">හඹා යන</string>
+    <string name="page.followed_artist">හඹා යන ශිල්පී</string>
+    <string name="page.home">මුල් පිටුව</string>
+    <string name="page.moods">මනෝභාව සහ ප්රභේද</string>
+    <string name="page.home_unavailable">මුල් පිටුව ලබා ගත නොහැක (සම්බන්ධතාවය පරීක්ෂා කර ඉහළ නැවුම් නිරූපකය ඔබන්න).</string>
+    <string name="search.hint">ගීත, ඇල්බම, ශිල්පීන්, ධාවන ලැයිස්තු සොයන්න...</string>
+    <string name="search.load_more">තව පූරණය</string>
+    <string name="search.recent">මෑත සොයන ලදී</string>
+    <string name="search.suggestions">යෝජනා</string>
+    <string name="search.clear">සොයන්න මකන්න</string>
+    <string name="local.add_folder">බහාලුමක් එක් කරන්න</string>
+    <string name="local.add_files">ගොනු එක් කරන්න</string>
+    <string name="local.fallback_artist">දේශීය ගොනුව</string>
+    <string name="local.imported">ගොනු {n} ක් ආයාත කළා</string>
+    <string name="local.scanning">ශ්රව්ය ගොනු සොයමින්...</string>
+    <string name="local.empty_hint">දේශීය ගොනු ආයාත කර නැත.\n\nපරිගණකයේ බහාලුමක් සුපිරික්සීමට \"බහාලුමක් එක් කරන්න\" (අනු බහාලුම් ඇතුළුව) හෝ තනි ගීත තෝරා ගැනීමට \"ගොනු එක් කරන්න\" භාවිතා කරන්න. ආයාත කළ ගොනු දේශීය එන්ජිම (VLCJ) මගින් වාදනය වන අතර පුස්තකාලයේ රැඳේ.</string>
+    <string name="local.input_hint">YouTube URL හෝ දේශීය ගොනුව / URL (VLCJ)</string>
+    <string name="local.clear_url">URL මකන්න</string>
+    <string name="local.open_file">දේශීය ගොනුව විවෘත කරන්න</string>
+    <string name="detail.album_shuffle">ඇල්බමය මිශ්රිතව ධාවනය කරන්න</string>
+    <string name="detail.album_favorite_add">ඇල්බමය ප්රියතමයන්ට එක් කරන්න</string>
+    <string name="detail.album_favorite_ok">ඇල්බමය ප්රියතමයන්හි</string>
+    <string name="detail.artist_shuffle">ශිල්පියාගේ ගීත මිශ්රිතව ධාවනය කරන්න</string>
+    <string name="detail.artist_follow">ශිල්පියා අනුගමනය කරන්න</string>
+    <string name="detail.artist_followed">ශිල්පියා අනුගමනය කළා</string>
+    <string name="detail.playlist_shuffle">ධාවන ලැයිස්තුව මිශ්රිතව ධාවනය කරන්න</string>
+    <string name="detail.playlist_favorite_add">ධාවන ලැයිස්තුව ප්රියතමයන්ට සුරකින්න</string>
+    <string name="detail.playlist_favorite_ok">ධාවන ලැයිස්තුව ප්රියතමයන්හි: ඉවත් කිරීමට ඔබන්න</string>
+    <string name="common.loading">පූරණය වෙමින්...</string>
+    <string name="kcef.unavailable">KCEF වාදන එන්ජිම ලබා ගත නොහැක</string>
+    <string name="kcef.details_log">සම්පූර්ණ විස්තර ලොග්/කොන්සෝලයේ: [RiPlay-KCEF] සමඟ ආරම්භ වන පේළි.</string>
+    <string name="kcef.retry">නැවත උත්සාහ කරන්න</string>
+    <string name="kcef.preparing">වාදන එන්ජිම සූදානම් වෙමින් (KCEF)…</string>
+    <string name="kcef.downloading">ඇතුළත් බ්රව්සරය බාගනිමින් (පළමු ආරම්භයේදී පමණි)…</string>
+    <string name="kcef.extracting">සංරචක ලබා ගනිමින්…</string>
+    <string name="kcef.installing">ස්ථාපනය වෙමින්…</string>
+    <string name="kcef.starting">ඇතුළත් බ්රව්සරය ආරම්භ වෙමින්…</string>
+    <string name="kcef.preparing_short">සූදානම් වෙමින්…</string>
+    <string name="kcef.jdk_conflict">භාවිතා කරන JDK හි RiPlay සමඟ නොගැලපෙන අනුවාදයක ඇතුළත් බ්රව්සර එන්ජිමක් ඇත. බාගැනීමෙන් පසු යෙදුම වසා දමනු ලැබේ: ස්ථාපනය සම්පූර්ණ කිරීමට නැවත විවෘත කරන්න.</string>
+    <string name="error.yt_with_code">YouTube දෝෂයකි (කේතය {code}: {meaning}). විස්තර ලොග් එකේ: [RiPlay-KCEF] / [RiPlay-YT] පේළි.</string>
+    <string name="error.yt_2">වලංගු නොවන පරාමිතියක් හෝ ප්රවේශ/වයස-සීමාකාරී වීඩියෝවක් හෝ YouTube ඇන්ටි-බොට්/කැමැත්ත පරීක්ෂාව (ලොග් වීම අවශ්යයි)</string>
+    <string name="error.yt_5">HTML5 ප්ලේයර් දෝෂයකි (අන්තර්ගතය/කොඩෙක්/ජාලය)</string>
+    <string name="error.yt_100">වීඩියෝව හමු නොවීය හෝ පෞද්ගලිකයි</string>
+    <string name="error.yt_101_150">හිමිකරු කාවැද්දූ වාදනයට ඉඩ නොදෙයි</string>
+    <string name="error.yt_152">කාවැද්දූ සන්දර්භය YouTube විසින් ප්රතික්ෂේප කළා: සත්කාරක පිටුවේ Referer පිළිගනු නොලැබේ</string>
+    <string name="error.yt_153">කාවැද්දීමේ ඉල්ලීම YouTube විසින් ප්රතික්ෂේප කළා (player/referrer වින්යාසය නොමැත)</string>
+    <string name="error.yt_unknown">නොදන්නා කේතයකි</string>
+    <string name="error.local_unavailable">දේශීය ගීතය ඩෙස්ක්ටොප් එකේ වාදනය කළ නොහැක: ගොනු මාර්ගය ප්රවේශ විය නොහැක (Android MediaStore මූලාශ්රය හෝ ගෙන යන ලද ගොනුව). පහළ ක්ෂේත්රයේ බහාලුම් බොත්තම මගින් පරිගණකයෙන් ගොනුව තෝරා වාදනය කළ හැක.</string>
+    <string name="error.manual_unsupported">මාර්ගය හමු නොවීය හෝ සහාය නොදක්වන URL: \'{value}\'</string>
+    <string name="misc.playlist_cover">ධාවන ලැයිස්තු කවරය</string>
+    <string name="settings.language">භාෂාව</string>
+    <string name="settings.system">පද්ධති භාෂාව</string>
+    <string name="titlebar.minimize">කුඩා කරන්න</string>
+    <string name="titlebar.maximize">විශාල කරන්න</string>
+    <string name="titlebar.restore">ප්‍රතිසාධනය කරන්න</string>
+    <string name="titlebar.close">වසන්න</string>
+    <string name="common.back">ආපසු</string>
+    <string name="common.songs_word">ගීත</string>
+    <string name="overlay.playing">දැන් වාදනය වේ</string>
+    <string name="local.none_found_in">\"{value}\" තුළ ශ්රව්ය ගොනු හමු නොවීය</string>
+    <string name="local.imported_from">\"{value}\" වෙතින් ගොනු {n} ක් ආයාත කළා</string>
+</resources>

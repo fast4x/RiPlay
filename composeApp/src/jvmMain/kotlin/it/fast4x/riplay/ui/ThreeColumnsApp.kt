@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui
 
+import it.fast4x.riplay.i18n.ds
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -30,6 +32,9 @@ import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.QueueMusic
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+// STEP 3p: osservazione dello stato del motore (il brano in cue e' partito)
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -56,6 +61,8 @@ import it.fast4x.riplay.ui.bars.DesktopSection
 import it.fast4x.riplay.ui.bars.DesktopNavigationBar
 // STEP 3m: pannello coda PUBBLICO condiviso col player full screen
 import it.fast4x.riplay.ui.components.PlayQueuePanel
+// STEP 3n (richiesta utente n.6): id dei brani in coda per la SPUNTA sul "+"
+import it.fast4x.riplay.items.LocalQueuedSongIds
 import it.fast4x.riplay.ui.components.RiPlayAccent
 import it.fast4x.riplay.ui.pages.AlbumsPage
 import it.fast4x.riplay.ui.pages.ArtistsPage
@@ -63,6 +70,11 @@ import it.fast4x.riplay.ui.pages.ArtistsPage
 import it.fast4x.riplay.ui.pages.HomePageOnline
 // STEP 3m (richiesta utente n.2): pagina dei FILE LOCALI (VLCJ)
 import it.fast4x.riplay.ui.pages.LocalSongsPage
+// STEP 3o (richiesta utente n.4): CODA PERSISTENTE (salvataggio/ripristino)
+import it.fast4x.riplay.ui.loadSavedQueueIds
+import it.fast4x.riplay.ui.saveQueueIds
+// STEP 3o (richiesta utente n.3): etichetta del player full SENZA nome motore
+import player.DesktopPlayerEngine
 import it.fast4x.riplay.ui.pages.PlaylistsPage
 import it.fast4x.riplay.ui.pages.PlaylistSongsPage
 import it.fast4x.riplay.ui.pages.SongsPage
@@ -94,6 +106,16 @@ import riplay.composeapp.generated.resources.Res
 import riplay.composeapp.generated.resources.app_icon
 import riplay.composeapp.generated.resources.arrow_left
 import riplay.composeapp.generated.resources.back
+
+/**
+ * STEP 3n (richiesta utente n.4, pagina di ricerca: "se clicco un brano o
+ * un video, occorre popolare la coda con l'elenco presente, direi di
+ * fissare il massimo a 50 elementi da inserire in coda"): numero MASSIMO
+ * di brani che una lista (ricerca, album, playlist, file locali) puo'
+ * inserire in coda con onPlayCollection. Applicato in un unico punto
+ * (onPlayCollection qui sotto) perche' valga ovunque allo stesso modo.
+ */
+const val QUEUE_MAX_ITEMS = 50
 
 /**
  * STEP 3j: brano in coda con UID STABILE. Serve per il riordino con il
@@ -339,6 +361,24 @@ fun ThreeColumnsApp(
         println("ThreeColumnsApp addToQueue '${song.title}' (coda: ${playQueue.size})")
     }
 
+    // STEP 3o (richiesta utente n.2, pagine dettaglio stile Android):
+    // METTI IN CODA UN'INTERA LISTA SENZA AVVIARE LA RIPRODUZIONE (il
+    // pulsante "metti in coda tutto" delle pagine di dettaglio, come
+    // l'icona enqueue di Android). Non svuota la coda: aggiunge in fondo,
+    // senza duplicati di cio' che e' gia' in coda e con lo stesso cap di
+    // onPlayCollection (QUEUE_MAX_ITEMS).
+    val onEnqueueAll: (List<Song>) -> Unit = { songs ->
+        val toAdd = songs
+            .distinctBy { it.id }
+            .filter { s -> playQueue.none { it.song.id == s.id } }
+            .take(QUEUE_MAX_ITEMS)
+        toAdd.forEach { s ->
+            playQueue.add(makeQueued(s))
+            coroutineScope.launch { db.upsert(s) }
+        }
+        println("ThreeColumnsApp enqueueAll +${toAdd.size} brani (coda: ${playQueue.size})")
+    }
+
     // STEP 3j (richiesta utente n.2): RIORDINO della coda col trascinamento:
     // il pannello Coda passa gli uid (from -> to) e qui muoviamo il brano
     // nella SnapshotStateList (la compose vede il cambiamento subito).
@@ -355,10 +395,18 @@ fun ThreeColumnsApp(
     // brano cliccato (comportamento Android: forcePlayFromBeginning). La
     // coda precedente viene sostituita; il pulsante "+" resta per aggiungere
     // SOLO il singolo brano.
+    // STEP 3n: (a) la lista e' DEDUPLICATA per id e limitata a
+    // QUEUE_MAX_ITEMS (50) come richiesto per la ricerca: il cap ora vale
+    // per TUTTE le raccolte (ricerca, album, playlist, file locali);
+    // (b) e' usato anche dalla pagina di RICERCA (click su brano/video =
+    // la lista dei risultati entra in coda) e dalla pagina LOCALI (click su
+    // un brano = anche i restanti entrano in coda).
     val onPlayCollection: (List<Song>, Song) -> Unit = { songs, start ->
         playQueue.clear()
         songs
             .filter { it.id != start.id }
+            .distinctBy { it.id }
+            .take(QUEUE_MAX_ITEMS)
             .forEach { s ->
                 playQueue.add(makeQueued(s))
                 coroutineScope.launch { db.upsert(s) }
@@ -391,14 +439,14 @@ fun ThreeColumnsApp(
                         db.upsert(s)
                     }
                     radioFeedback =
-                        if (similar.isEmpty()) "Nessun brano simile trovato"
-                        else "Aggiunti ${similar.size} brani simili"
+                        if (similar.isEmpty()) ds("radio.none_found")
+                        else ds("radio.added", "n" to similar.size)
                     println("[RiPlay-Radio] +${similar.size} brani simili in coda (coda: ${playQueue.size})")
                     delay(3000)
                     radioFeedback = null
                 } catch (e: Exception) {
                     println("[RiPlay-Radio] errore: $e")
-                    radioFeedback = "Radio non disponibile"
+                    radioFeedback = ds("radio.unavailable")
                     delay(3000)
                     radioFeedback = null
                 } finally {
@@ -455,7 +503,88 @@ fun ThreeColumnsApp(
         }
     }
 
+    // STEP 3o (richiesta utente n.4): CODA PERSISTENTE.
+    // (a) RIPRISTINO all'avvio: gli id salvati in ~/.riplay/queue.properties
+    //     tornano in coda (le Song complete arrivano dal db: ogni brano
+    //     messo in coda e' stato anche salvato). Il ripristino NON avvia
+    //     nulla: la coda e' pronta e l'utente continua con un click
+    //     (pannello coda, pulsantino laterale o AVANTI nel player).
+    // STEP 3p (richiesta utente: "dato che la coda viene salvata, sarebbe
+    //     opportuno che all'avvio oltre a caricare la cosa, venga caricato
+    //     il primo brano della cosa nel player, in modo che se l'utente
+    //     preme invio va in riproduzione il primo"): il PRIMO brano della
+    //     coda ripristinata viene CARICATO nel player in CUE (senza
+    //     avviarlo): titolo/cover/durata compaiono nel player e con il
+    //     PLAY dell'utente parte il brano (observer piu' sotto allinea
+    //     cronologia/coda/videoId solo quando la riproduzione e' vera).
+    LaunchedEffect(Unit) {
+        val saved = loadSavedQueueIds()
+        if (saved.isNotEmpty()) {
+            val restored = saved.mapNotNull { db.getSong(it) }
+            restored.forEach { playQueue.add(makeQueued(it)) }
+            println("ThreeColumnsApp coda ripristinata: ${restored.size} brani")
+            restored.firstOrNull()?.let { primo ->
+                if (playerManager.cueForStartup(primo)) {
+                    nowPlayingSong = primo
+                    println(
+                        "ThreeColumnsApp primo brano della coda caricato nel player SENZA avviarlo: " +
+                                "'${primo.title}' (partira' col play)"
+                    )
+                }
+            }
+        }
+    }
+    // (b) SALVATAGGIO a ogni modifica della coda (con debounce: le
+    //     modifiche possono essere rapide, il disco no). Il key del
+    //     LaunchedEffect e' il CONTENUTO della lista: a ogni cambio
+    //     l'effetto riparte e il lancio precedente (con il suo delay)
+    //     viene annullato => scrive solo quando la coda e' "ferma" da
+    //     300 ms. Alla chiusura dell'app l'ultimo stato salvato e' quello
+    //     visibile (salvo cambi nei 300 ms finali).
+    LaunchedEffect(playQueue.toList()) {
+        kotlinx.coroutines.withContext(Dispatchers.IO) {
+            delay(300)
+            saveQueueIds(playQueue.map { it.song.id })
+        }
+    }
+
+    // STEP 3p: FINALIZZAZIONE del brano caricato in cue all'avvio. Il brano
+    // caricato SENZA avviarlo (cueForStartup nel ripristino sopra) parte
+    // quando l'utente preme PLAY (i pulsanti dei player chiamano direttamente
+    // controller.play() del motore attivo: qui osserviamo lo STATO). Quando
+    // la riproduzione e' VERA (isPlaying del motore attivo) e lo stato dell'app
+    // non e' ancora allineato (videoId vuoto), allineiamo TUTTO in un punto
+    // solo: conferma al manager (il route() con lo stesso videoId non dovra'
+    // ricaricare), uscita del brano dalla coda (e' ora "in riproduzione",
+    // stessa semantica di playFromQueue), cronologia e videoId (l'effetto
+    // storico su videoId registra l'ascolto SOLO ora: un brano caricato ma
+    // mai suonato non finisce nella cronologia).
+    val activeEngineState by playerManager.active.state.collectAsState()
+    LaunchedEffect(activeEngineState.isPlaying) {
+        if (!activeEngineState.isPlaying) return@LaunchedEffect
+        val cued = playerManager.cuedVideoId ?: return@LaunchedEffect
+        if (videoId.isNotEmpty()) return@LaunchedEffect
+        val song = nowPlayingSong
+        if (song == null || song.id != cued) return@LaunchedEffect
+        playerManager.confirmCuedPlayback()
+        val idx = playQueue.indexOfFirst { it.song.id == cued }
+        if (idx >= 0) playQueue.removeAt(idx)
+        pushHistory(cued)
+        videoId = cued
+        println(
+            "ThreeColumnsApp brano in cue AVVIATO col play dell'utente: '$cued' " +
+                    "(coda: ${playQueue.size})"
+        )
+    }
+
     Box(Modifier.fillMaxSize()) {
+        // STEP 3n (richiesta utente n.6): gli id dei brani attualmente in coda
+        // sono forniti a TUTTO l'albero via CompositionLocal: il pulsante "+"
+        // di ogni riga brano (SongItem) mostra una SPUNTA accentata quando il
+        // brano e' gia' in coda. La letta avviene nella composizione: ogni
+        // modifica della SnapshotStateList ricompone subito le righe.
+        val queuedSongIds = playQueue.map { it.song.id }.toSet()
+        CompositionLocalProvider(LocalQueuedSongIds provides queuedSongIds) {
         // STEP 3h: title bar custom (prima la finestra undecorated non aveva
         // NE' pulsanti NE' zona di trascinamento) + scaffold sotto. La barra
         // sta in una Colonna SOPRA lo Scaffold: non tocca la regione interop
@@ -525,6 +654,14 @@ fun ThreeColumnsApp(
                         onAddRadio = onAddRadio,
                         radioLoading = radioLoading,
                         radioFeedback = radioFeedback,
+                        // STEP 3o (richiesta utente n.5): AVANTI/INDIETRO anche
+                        // nel miniplayer della home (stessa navigazione della
+                        // cronologia del player full: indietro = brano
+                        // precedente, avanti = successivo o coda)
+                        onPrevious = onHistoryPrevious,
+                        onNext = onHistoryNext,
+                        canGoPrevious = historyIndex > 0,
+                        canGoNext = historyIndex < songHistory.lastIndex || playQueue.isNotEmpty(),
                         // STEP 3k (richiesta utente n.2): quando la cover non e'
                         // visibile perche' sta suonando un VIDEO deve restare un
                         // modo per aprire il player full screen (pulsante espandi)
@@ -567,6 +704,8 @@ fun ThreeColumnsApp(
                     // STEP 3j: click su un brano di album/playlist YT =
                     // intera lista in coda
                     onPlayCollection = onPlayCollection,
+                    // STEP 3o: "metti in coda tutto" delle pagine dettaglio
+                    onEnqueueAll = onEnqueueAll,
                     onOpenDetail = { openDetail(it) }
                 )
 
@@ -636,7 +775,13 @@ fun ThreeColumnsApp(
                 // RIMOSSO dal player full (per guardare il video si deve
                 // comunque tornare alla home: il toggle vive solo nella
                 // barra del player di sinistra)
-                engineLabel = playerManager.engine.label,
+                // STEP 3o (richiesta utente n.3): etichetta SENZA il nome del
+                // motore: solo "Online" (brano YouTube) o "Locale" (file del
+                // pc) — prima "YouTube (KCEF)" / "Locale (VLCJ)".
+                engineLabel = when (playerManager.engine) {
+                    DesktopPlayerEngine.YOUTUBE -> ds("player.online")
+                    DesktopPlayerEngine.LOCAL -> ds("player.local")
+                },
                 onCollapse = { playerExpanded = false },
                 // STEP 3d: avanti/indietro sulla cronologia di sessione
                 canGoPrevious = historyIndex > 0,
@@ -660,6 +805,7 @@ fun ThreeColumnsApp(
                 radioFeedback = radioFeedback
             )
         }
+        } // fine CompositionLocalProvider (STEP 3n: spunta "+"/coda)
     }
 }
 
@@ -755,6 +901,8 @@ fun DestinationPanel(
     onAddToQueue: (Song) -> Unit,
     // STEP 3j: click su un brano di album/playlist YT = intera lista in coda
     onPlayCollection: (List<Song>, Song) -> Unit,
+    // STEP 3o (richiesta utente n.2): "metti in coda tutto" senza avviare
+    onEnqueueAll: (List<Song>) -> Unit,
     onOpenDetail: (DesktopDetail) -> Unit
 ) {
     Column(
@@ -780,7 +928,7 @@ fun DestinationPanel(
                 Image(
                     painter = painterResource(Res.drawable.arrow_left),
                     colorFilter = ColorFilter.tint(Color.White.copy(alpha = 0.7f)),
-                    contentDescription = "back",
+                    contentDescription = ds("common.back"),
                     modifier = Modifier
                         .size(22.dp)
                         .clickable { onBackToSection() }
@@ -808,6 +956,7 @@ fun DestinationPanel(
                     onSongClickFromDb = onSongClickFromDb,
                     onAddToQueue = onAddToQueue,
                     onPlayCollection = onPlayCollection,
+                    onEnqueueAll = onEnqueueAll,
                     onOpenDetail = onOpenDetail
                 )
             } else {
@@ -841,6 +990,10 @@ fun DestinationPanel(
                         SearchPage(
                             onSongClick = onSongClickOnline,
                             onAddToQueue = onAddToQueue,
+                            // STEP 3n (richiesta utente n.4): click su un brano
+                            // o un video = la lista dei risultati entra in coda
+                            // (max QUEUE_MAX_ITEMS, cap applicato in onPlayCollection)
+                            onPlayCollection = onPlayCollection,
                             onAlbumClick = {
                                 onOpenDetail(DesktopDetail.Album(it))
                             },
@@ -884,10 +1037,11 @@ fun DestinationPanel(
 
                     // STEP 3m (richiesta utente n.2): FILE LOCALI del pc
                     // (importazione cartella/file + riproduzione VLCJ)
+                    // STEP 3n (richiesta utente n.5): click su un brano della
+                    // scheda Locali = anche i RESTANTI entrano in coda
                     DesktopSection.LOCAL ->
                         LocalSongsPage(
-                            // i brani locali sono gia' nel db: niente upsert
-                            onSongClick = onSongClickFromDb,
+                            onPlayCollection = onPlayCollection,
                             onAddToQueue = onAddToQueue
                         )
                 }
@@ -911,6 +1065,8 @@ fun DetailContent(
     onAddToQueue: (Song) -> Unit,
     // STEP 3j: click su un brano di album/playlist YT = intera lista in coda
     onPlayCollection: (List<Song>, Song) -> Unit,
+    // STEP 3o (richiesta utente n.2): "metti in coda tutto" senza avviare
+    onEnqueueAll: (List<Song>) -> Unit,
     onOpenDetail: (DesktopDetail) -> Unit
 ) {
     when (detail) {
@@ -920,6 +1076,8 @@ fun DetailContent(
                     browseId = detail.browseId,
                     onSongClick = onSongClickOnline,
                     onAddToQueue = onAddToQueue,
+                    onPlayCollection = onPlayCollection,
+                    onEnqueueAll = onEnqueueAll,
                     onPlaylistClick = {
                         onOpenDetail(DesktopDetail.YtPlaylist(it))
                     },
@@ -940,6 +1098,8 @@ fun DetailContent(
                     onAddToQueue = onAddToQueue,
                     // STEP 3j: click su un brano = TUTTO L'ALBUM in coda
                     onPlayCollection = onPlayCollection,
+                    // STEP 3o: metti in coda tutto (stile Android)
+                    onEnqueueAll = onEnqueueAll,
                     onAlbumClick = {
                         onOpenDetail(DesktopDetail.Album(it))
                     }
@@ -954,6 +1114,8 @@ fun DetailContent(
                     onAddToQueue = onAddToQueue,
                     // STEP 3j: click su un brano = TUTTA la PLAYLIST in coda
                     onPlayCollection = onPlayCollection,
+                    // STEP 3o: metti in coda tutto (stile Android)
+                    onEnqueueAll = onEnqueueAll,
                     onAlbumClick = {
                         onOpenDetail(DesktopDetail.Album(it))
                     },

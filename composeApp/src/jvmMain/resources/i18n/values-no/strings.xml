@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - Norsk (values-no)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">Hjem</string>
+    <string name="nav.search">Søk</string>
+    <string name="nav.songs">Sanger</string>
+    <string name="nav.artists">Artister</string>
+    <string name="nav.albums">Album</string>
+    <string name="nav.playlists">Spillelister</string>
+    <string name="nav.local">Lokale filer</string>
+    <string name="queue.title">Avspillingskø ({n})</string>
+    <string name="queue.open">åpne avspillingskøen</string>
+    <string name="queue.clear">tøm køen</string>
+    <string name="queue.close_panel">lukk køpanelet</string>
+    <string name="queue.remove">fjern fra køen</string>
+    <string name="queue.drag">dra for å sortere</string>
+    <string name="queue.drag_handle">Dra i håndtaket for å sortere</string>
+    <string name="action.add_to_queue">legg til i kø</string>
+    <string name="action.already_queued">allerede i køen</string>
+    <string name="action.enqueue_all">legg alt i køen</string>
+    <string name="action.enqueue_album">legg hele albumet i køen</string>
+    <string name="action.enqueue_playlist">legg hele spillelisten i køen</string>
+    <string name="player.previous">forrige sang</string>
+    <string name="player.next">neste sang</string>
+    <string name="player.play">spill</string>
+    <string name="player.pause">pause</string>
+    <string name="player.volume_off">lyd av</string>
+    <string name="player.volume_low">lavt volum</string>
+    <string name="player.volume_high">høyt volum</string>
+    <string name="player.expand">utvid spilleren</string>
+    <string name="player.open_fullscreen">åpne spilleren i fullskjerm</string>
+    <string name="player.back_to_cover">tilbake til sangens omslag</string>
+    <string name="player.watch_video">se videoen</string>
+    <string name="player.expand_video">utvid videoen til hele vindusbredde</string>
+    <string name="player.restore_video">gjenopprett videoens opprinnelige bredde</string>
+    <string name="player.radio">radio: legg til lignende sanger i køen</string>
+    <string name="player.song_cover">sangens omslag</string>
+    <string name="player.online">På nett</string>
+    <string name="player.local">Lokal</string>
+    <string name="radio.none_found">Ingen lignende sanger funnet</string>
+    <string name="radio.added">La til {n} lignende sanger</string>
+    <string name="radio.unavailable">Radio utilgjengelig</string>
+    <string name="overlay.close_player">lukk spilleren</string>
+    <string name="overlay.queue_title">avspillingskø</string>
+    <string name="overlay.queue_count">Kø ({n})</string>
+    <string name="overlay.no_song">Ingen sang spiller</string>
+    <string name="overlay.video_active_note">Video aktiv i venstre spillerpanel: lukk den for å se den her</string>
+    <string name="overlay.video_active">video aktiv i spillerpanelet</string>
+    <string name="overlay.close_hint">Lukk med chevronen øverst til venstre eller med ESC</string>
+    <string name="page.albums">Album ({n})</string>
+    <string name="page.artists">Artister ({n})</string>
+    <string name="page.playlists">Spillelister ({n})</string>
+    <string name="page.songs">Sanger ({n})</string>
+    <string name="page.local">Lokale filer ({n})</string>
+    <string name="page.followed_only">Kun fulgte</string>
+    <string name="page.followed">Fulgte</string>
+    <string name="page.followed_artist">fulgt artist</string>
+    <string name="page.home">Hjem</string>
+    <string name="page.moods">Stemninger og sjangre</string>
+    <string name="page.home_unavailable">Hjem utilgjengelig (sjekk tilkoblingen og trykk på oppdateringsikonet øverst).</string>
+    <string name="search.hint">Søk sanger, album, artister, spillelister...</string>
+    <string name="search.load_more">Last inn mer</string>
+    <string name="search.recent">Nylige søk</string>
+    <string name="search.suggestions">Forslag</string>
+    <string name="search.clear">tøm søket</string>
+    <string name="local.add_folder">Legg til mappe</string>
+    <string name="local.add_files">Legg til filer</string>
+    <string name="local.fallback_artist">Lokal fil</string>
+    <string name="local.imported">Importerte {n} filer</string>
+    <string name="local.scanning">Søker etter lydfiler...</string>
+    <string name="local.empty_hint">Ingen lokale filer importert.\n\nBruk \"Legg til mappe\" for å skanne en datamappe (undermapper inkludert) eller \"Legg til filer\" for å velge enkeltsanger. Importerte filer spilles med den lokale motoren (VLCJ) og forblir i biblioteket.</string>
+    <string name="local.input_hint">YouTube-URL eller lokal fil / URL (VLCJ)</string>
+    <string name="local.clear_url">tøm URL-en</string>
+    <string name="local.open_file">åpne lokal fil</string>
+    <string name="detail.album_shuffle">spill albumet i tilfeldig rekkefølge</string>
+    <string name="detail.album_favorite_add">legg albumet til i favoritter</string>
+    <string name="detail.album_favorite_ok">album i favoritter</string>
+    <string name="detail.artist_shuffle">spill artistens sanger i tilfeldig rekkefølge</string>
+    <string name="detail.artist_follow">følg artisten</string>
+    <string name="detail.artist_followed">artist fulgt</string>
+    <string name="detail.playlist_shuffle">spill spillelisten i tilfeldig rekkefølge</string>
+    <string name="detail.playlist_favorite_add">lagre spillelisten blant favoritter</string>
+    <string name="detail.playlist_favorite_ok">spilleliste i favoritter: trykk for å fjerne</string>
+    <string name="common.loading">laster...</string>
+    <string name="kcef.unavailable">KCEF-avspillingsmotor utilgjengelig</string>
+    <string name="kcef.details_log">Fullstendige detaljer i logg/konsoll: linjer som begynner med [RiPlay-KCEF].</string>
+    <string name="kcef.retry">Prøv igjen</string>
+    <string name="kcef.preparing">Forbereder avspillingsmotoren (KCEF)…</string>
+    <string name="kcef.downloading">Laster ned den innebygde nettleseren (kun første oppstart)…</string>
+    <string name="kcef.extracting">Pakker ut komponenter…</string>
+    <string name="kcef.installing">Installerer…</string>
+    <string name="kcef.starting">Starter den innebygde nettleseren…</string>
+    <string name="kcef.preparing_short">Forbereder…</string>
+    <string name="kcef.jdk_conflict">JDK-en som brukes inneholder en innebygd nettlesermotor i en versjon som ikke er kompatibel med RiPlay. Etter nedlastingen lukkes programmet: åpne det igjen for å fullføre installasjonen.</string>
+    <string name="error.yt_with_code">YouTube-feil (kode {code}: {meaning}). Detaljer i loggen: linjer [RiPlay-KCEF] / [RiPlay-YT].</string>
+    <string name="error.yt_2">ugyldig parameter eller video med tilgangs/aldersbegrensninger eller YouTubes anti-bot/samtykkekontroll (innlogging kreves)</string>
+    <string name="error.yt_5">HTML5-spillerfeil (innhold/codec/nettverk)</string>
+    <string name="error.yt_100">video ikke funnet eller privat</string>
+    <string name="error.yt_101_150">eieren tillater ikke innebygd avspilling</string>
+    <string name="error.yt_152">innebygd kontekst avvist av YouTube: vertsides Referer aksepteres ikke</string>
+    <string name="error.yt_153">innebygd forespørsel avvist av YouTube (mangler player/referrer-konfigurasjon)</string>
+    <string name="error.yt_unknown">ukjent kode</string>
+    <string name="error.local_unavailable">Lokal sang kan ikke spilles på skrivebordet: filstien er ikke tilgjengelig (opprinnelse Android MediaStore eller flyttet fil). Du kan spille den ved å velge filen på datamaskinen med mappeknappen i feltet nedenfor.</string>
+    <string name="error.manual_unsupported">Sti ikke funnet eller URL ikke støttet: \'{value}\'</string>
+    <string name="misc.playlist_cover">Spillelisteomslag</string>
+    <string name="settings.language">Språk</string>
+    <string name="settings.system">Systemspråk</string>
+    <string name="titlebar.minimize">Minimer</string>
+    <string name="titlebar.maximize">Maksimer</string>
+    <string name="titlebar.restore">Gjenopprett</string>
+    <string name="titlebar.close">Lukk</string>
+    <string name="common.back">Tilbake</string>
+    <string name="common.songs_word">sanger</string>
+    <string name="overlay.playing">Spiller nå</string>
+    <string name="local.none_found_in">Ingen lydfiler funnet i \"{value}\"</string>
+    <string name="local.imported_from">Importerte {n} filer fra \"{value}\"</string>
+</resources>

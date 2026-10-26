@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - தமிழ் (values-ta)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">முகப்பு</string>
+    <string name="nav.search">தேடல்</string>
+    <string name="nav.songs">பாடல்கள்</string>
+    <string name="nav.artists">கலைஞர்கள்</string>
+    <string name="nav.albums">ஆல்பங்கள்</string>
+    <string name="nav.playlists">பிளேலிஸ்டுகள்</string>
+    <string name="nav.local">உள்ளூர் கோப்புகள்</string>
+    <string name="queue.title">இயக்க வரிசை ({n})</string>
+    <string name="queue.open">இயக்க வரிசையைத் திற</string>
+    <string name="queue.clear">வரிசையைக் காலி செய்</string>
+    <string name="queue.close_panel">வரிசை பேனலை மூடு</string>
+    <string name="queue.remove">வரிசையிலிருந்து நீக்கு</string>
+    <string name="queue.drag">மறுவரிசைப்படுத்த இழு</string>
+    <string name="queue.drag_handle">மறுவரிசைப்படுத்த கைப்பிடியை இழு</string>
+    <string name="action.add_to_queue">வரிசையில் சேர்</string>
+    <string name="action.already_queued">ஏற்கனவே வரிசையில்</string>
+    <string name="action.enqueue_all">அனைத்தையும் வரிசையில் சேர்</string>
+    <string name="action.enqueue_album">முழு ஆல்பத்தையும் வரிசையில் சேர்</string>
+    <string name="action.enqueue_playlist">முழு பிளேலிஸ்டையும் வரிசையில் சேர்</string>
+    <string name="player.previous">முந்தைய பாடல்</string>
+    <string name="player.next">அடுத்த பாடல்</string>
+    <string name="player.play">இயக்கு</string>
+    <string name="player.pause">இடைநிறுத்து</string>
+    <string name="player.volume_off">ஒலி அணைக்கப்பட்டது</string>
+    <string name="player.volume_low">குறைந்த ஒலி</string>
+    <string name="player.volume_high">அதிக ஒலி</string>
+    <string name="player.expand">பிளேயரை விரிவாக்கு</string>
+    <string name="player.open_fullscreen">பிளேயரை முழுத்திரையில் திற</string>
+    <string name="player.back_to_cover">பாடலின் அட்டைக்குத் திரும்பு</string>
+    <string name="player.watch_video">வீடியோவைப் பார்</string>
+    <string name="player.expand_video">வீடியோவை சாளரத்தின் முழு அகலத்திற்கும் விரிவாக்கு</string>
+    <string name="player.restore_video">வீடியோவின் மூல அகலத்தை மீட்டமை</string>
+    <string name="player.radio">ரேடியோ: ஒத்த பாடல்களை வரிசையில் சேர்</string>
+    <string name="player.song_cover">பாடலின் அட்டை</string>
+    <string name="player.online">ஆன்லைன்</string>
+    <string name="player.local">உள்ளூர்</string>
+    <string name="radio.none_found">ஒத்த பாடல்கள் எதுவும் கிடைக்கவில்லை</string>
+    <string name="radio.added">{n} ஒத்த பாடல்கள் சேர்க்கப்பட்டன</string>
+    <string name="radio.unavailable">ரேடியோ கிடைக்கவில்லை</string>
+    <string name="overlay.close_player">பிளேயரை மூடு</string>
+    <string name="overlay.queue_title">இயக்க வரிசை</string>
+    <string name="overlay.queue_count">வரிசை ({n})</string>
+    <string name="overlay.no_song">எந்தப் பாடலும் இயங்கவில்லை</string>
+    <string name="overlay.video_active_note">வீடியோ இடது பிளேயர் பேனலில் சுறுசுறுப்பாக உள்ளது: இங்கே பார்க்க அதை மூடு</string>
+    <string name="overlay.video_active">வீடியோ பிளேயர் பேனலில் சுறுசுறுப்பாக உள்ளது</string>
+    <string name="overlay.close_hint">மேல் இடது மூலையில் உள்ள அம்புக்குறி அல்லது ESC மூலம் மூடு</string>
+    <string name="page.albums">ஆல்பங்கள் ({n})</string>
+    <string name="page.artists">கலைஞர்கள் ({n})</string>
+    <string name="page.playlists">பிளேலிஸ்டுகள் ({n})</string>
+    <string name="page.songs">பாடல்கள் ({n})</string>
+    <string name="page.local">உள்ளூர் கோப்புகள் ({n})</string>
+    <string name="page.followed_only">பின்தொடர்பவை மட்டும்</string>
+    <string name="page.followed">பின்தொடர்கிறேன்</string>
+    <string name="page.followed_artist">பின்தொடர்ந்த கலைஞர்</string>
+    <string name="page.home">முகப்பு</string>
+    <string name="page.moods">உணர்வுகள் மற்றும் வகைகள்</string>
+    <string name="page.home_unavailable">முகப்பு கிடைக்கவில்லை (இணைப்பைச் சரிபார்த்து மேலே புதுப்பிக்கும் படவுருவை அழுத்து).</string>
+    <string name="search.hint">பாடல், ஆல்பம், கலைஞர், பிளேலிஸ்ட் தேடு...</string>
+    <string name="search.load_more">மேலும் ஏற்று</string>
+    <string name="search.recent">சமீபத்திய தேடல்கள்</string>
+    <string name="search.suggestions">பரிந்துரைகள்</string>
+    <string name="search.clear">தேடலை அழி</string>
+    <string name="local.add_folder">கோப்புறை சேர்</string>
+    <string name="local.add_files">கோப்புகளைச் சேர்</string>
+    <string name="local.fallback_artist">உள்ளூர் கோப்பு</string>
+    <string name="local.imported">{n} கோப்புகள் இறக்குமதி செய்யப்பட்டன</string>
+    <string name="local.scanning">ஆடியோ கோப்புகள் தேடப்படுகின்றன...</string>
+    <string name="local.empty_hint">உள்ளூர் கோப்புகள் எதுவும் இறக்குமதி செய்யப்படவில்லை.\n\nகணினியில் ஒரு கோப்புறையை ஸ்கேன் செய்ய \"கோப்புறை சேர்\" (துணைக்கோப்புறைகள் உட்பட) அல்லது தனித்தனிப் பாடல்களைத் தேர்வு செய்ய \"கோப்புகளைச் சேர்\" பயன்படுத்து. இறக்குமதி செய்யப்பட்ட கோப்புகள் உள்ளூர் எஞ்சினால் (VLCJ) இயக்கப்பட்டு நூலகத்தில் இருக்கும்.</string>
+    <string name="local.input_hint">YouTube URL அல்லது உள்ளூர் கோப்பு / URL (VLCJ)</string>
+    <string name="local.clear_url">URL-ஐ அழி</string>
+    <string name="local.open_file">உள்ளூர் கோப்பைத் திற</string>
+    <string name="detail.album_shuffle">ஆல்பத்தைக் கலந்து இயக்கு</string>
+    <string name="detail.album_favorite_add">ஆல்பத்தைப் பிடித்தவைக்குச் சேர்</string>
+    <string name="detail.album_favorite_ok">ஆல்பம் பிடித்தவையில்</string>
+    <string name="detail.artist_shuffle">கலைஞரின் பாடல்களைக் கலந்து இயக்கு</string>
+    <string name="detail.artist_follow">கலைஞரைப் பின்தொடர்</string>
+    <string name="detail.artist_followed">கலைஞரைப் பின்தொடர்கிறேன்</string>
+    <string name="detail.playlist_shuffle">பிளேலிஸ்டைக் கலந்து இயக்கு</string>
+    <string name="detail.playlist_favorite_add">பிளேலிஸ்டைப் பிடித்தவையில் சேமி</string>
+    <string name="detail.playlist_favorite_ok">பிளேலிஸ்ட் பிடித்தவையில்: நீக்க அழுத்து</string>
+    <string name="common.loading">ஏற்றுகிறது...</string>
+    <string name="kcef.unavailable">KCEF இயக்க எஞ்சின் கிடைக்கவில்லை</string>
+    <string name="kcef.details_log">முழு விவரங்கள் லாக்/கன்சோலில்: [RiPlay-KCEF] உடன் தொடங்கும் வரிகள்.</string>
+    <string name="kcef.retry">மீண்டும் முயற்சி</string>
+    <string name="kcef.preparing">இயக்க எஞ்சின் தயாராகிறது (KCEF)…</string>
+    <string name="kcef.downloading">உள்ளடங்கிய உலாவி பதிவிறக்கப்படுகிறது (முதல் தொடக்கத்தில் மட்டும்)…</string>
+    <string name="kcef.extracting">கூறுகள் பிரிக்கப்படுகின்றன…</string>
+    <string name="kcef.installing">நிறுவப்படுகிறது…</string>
+    <string name="kcef.starting">உள்ளடங்கிய உலாவி தொடங்குகிறது…</string>
+    <string name="kcef.preparing_short">தயாராகிறது…</string>
+    <string name="kcef.jdk_conflict">பயன்படுத்தப்படும் JDK-யில் RiPlay உடன் பொருந்தாத பதிப்பின் உள்ளடங்கிய உலாவி எஞ்சின் உள்ளது. பதிவிறக்கத்திற்குப் பிறகு பயன்பாடு மூடப்படும்: நிறுவலை முடிக்க மீண்டும் திற.</string>
+    <string name="error.yt_with_code">YouTube பிழை (குறியீடு {code}: {meaning}). விவரங்கள் லாக்கில்: [RiPlay-KCEF] / [RiPlay-YT] வரிகள்.</string>
+    <string name="error.yt_2">தவறான அளவுரு அல்லது அணுகல்/வயது கட்டுப்பாடுள்ள வீடியோ அல்லது YouTube ஆண்டிபாட்/சம்மதச் சோதனை (உள்நுழைவு தேவை)</string>
+    <string name="error.yt_5">HTML5 பிளேயர் பிழை (உள்ளடக்கம்/கோடெக்/நெட்வொர்க்)</string>
+    <string name="error.yt_100">வீடியோ கிடைக்கவில்லை அல்லது தனிப்பட்டது</string>
+    <string name="error.yt_101_150">உரிமையாளர் உட்பொதிக்கப்பட்ட இயக்கத்தை அனுமதிக்கவில்லை</string>
+    <string name="error.yt_152">உட்பொதிக்கப்பட்ட சூழலை YouTube நிராகரித்தது: தொகுப்புப் பக்கத்தின் Referer ஏற்கப்படவில்லை</string>
+    <string name="error.yt_153">உட்பொதித்தல் கோரிக்கையை YouTube நிராகரித்தது (player/referrer கட்டமைப்பு இல்லை)</string>
+    <string name="error.yt_unknown">தெரியாத குறியீடு</string>
+    <string name="error.local_unavailable">உள்ளூர் பாடலை டெஸ்க்டாப்பில் இயக்க முடியவில்லை: கோப்புப் பாதை அணுக முடியவில்லை (Android MediaStore மூலம் அல்லது நகர்த்தப்பட்ட கோப்பு). கீழே உள்ள புலத்தில் கோப்புறை பொத்தான் மூலம் கணினியிலிருந்து கோப்பைத் தேர்ந்தெடுத்து இயக்கலாம்.</string>
+    <string name="error.manual_unsupported">பாதை கிடைக்கவில்லை அல்லது ஆதரிக்கப்படாத URL: \'{value}\'</string>
+    <string name="misc.playlist_cover">பிளேலிஸ்ட் அட்டை</string>
+    <string name="settings.language">மொழி</string>
+    <string name="settings.system">கணினி மொழி</string>
+    <string name="titlebar.minimize">சிறுப்பி</string>
+    <string name="titlebar.maximize">பெரிதாக்கு</string>
+    <string name="titlebar.restore">மீட்டமை</string>
+    <string name="titlebar.close">மூடு</string>
+    <string name="common.back">பின்செல்</string>
+    <string name="common.songs_word">பாடல்கள்</string>
+    <string name="overlay.playing">இப்போது இயங்குகிறது</string>
+    <string name="local.none_found_in">\"{value}\"-இல் எந்த ஆடியோ கோப்பும் கிடைக்கவில்லை</string>
+    <string name="local.imported_from">\"{value}\"-இலிருந்து {n} கோப்புகள் இறக்குமதி செய்யப்பட்டன</string>
+</resources>

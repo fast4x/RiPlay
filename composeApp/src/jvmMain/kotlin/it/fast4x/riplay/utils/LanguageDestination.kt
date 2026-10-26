@@ -69,7 +69,9 @@ fun languageDestination (
     return when (language ?: otherLanguageApp) {
         Languages.Afrikaans -> Language.AFRIKAANS
         Languages.Arabic -> Language.ARABIC
+        Languages.Azerbaijani -> Language.AZERBAIJANI
         Languages.Bashkir -> Language.BASQUE
+        Languages.Basque -> Language.BASQUE
         Languages.Bengali -> Language.BENGALI
         Languages.Catalan -> Language.CATALAN
         Languages.ChineseSimplified -> Language.CHINESE_SIMPLIFIED
@@ -98,7 +100,7 @@ fun languageDestination (
         Languages.Malayalam -> Language.MALAYALAM
         Languages.Norwegian -> Language.NORWEGIAN
         Languages.Odia -> Language.ODIA
-        Languages.Persian -> Language.PERSIAN
+        Languages.Tamil -> Language.TAMIL
         Languages.Polish -> Language.POLISH
         Languages.PortugueseBrazilian -> Language.PORTUGUESE
         Languages.Portuguese -> Language.PORTUGUESE
@@ -129,7 +131,9 @@ fun languageDestinationName (
         Languages.System -> stringResource(Res.string.system_language)
         Languages.Afrikaans -> stringResource(Res.string.lang_afrikaans)
         Languages.Arabic -> stringResource(Res.string.arabic)
+        Languages.Azerbaijani -> Languages.Azerbaijani.nativeName
         Languages.Bashkir -> stringResource(Res.string.bashkir)
+        Languages.Basque -> Languages.Basque.nativeName
         Languages.Bengali -> stringResource(Res.string.lang_bengali)
         Languages.Catalan -> stringResource(Res.string.catalan)
         Languages.ChineseSimplified -> stringResource(Res.string.chinese_simplified)
@@ -158,7 +162,7 @@ fun languageDestinationName (
         Languages.Malayalam -> stringResource(Res.string.lang_malayalam)
         Languages.Norwegian -> stringResource(Res.string.lang_norwegian)
         Languages.Odia -> stringResource(Res.string.odia)
-        Languages.Persian -> stringResource(Res.string.persian)
+        Languages.Tamil -> Languages.Tamil.nativeName
         Languages.Polish -> stringResource(Res.string.polish)
         Languages.PortugueseBrazilian -> stringResource(Res.string.portuguese_brazilian)
         Languages.Portuguese -> stringResource(Res.string.portuguese)

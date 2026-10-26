@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui.pages
 
+import it.fast4x.riplay.i18n.ds
+
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.enums.AlbumSortBy
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -70,7 +72,7 @@ fun AlbumsPage(
                         .fillMaxWidth()
                 ) {
                     Text(
-                        text = "Albums (${albums.size})",
+                        text = ds("page.albums", "n" to albums.size),
                         style = TextStyle(
                             fontSize = typography.titleSmall.fontSize,
                             //fontWeight = typography.titleSmall.fontWeight,

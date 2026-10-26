@@ -1,5 +1,7 @@
 package it.fast4x.riplay.player.kcef
 
+import it.fast4x.riplay.i18n.ds
+
 import dev.datlag.kcef.KCEF
 import dev.datlag.kcef.KCEFClient
 import it.fast4x.riplay.data.DesktopDbRegistry
@@ -512,7 +514,7 @@ object KcefEngine {
      * Marker di versione del bootstrap: SE NEI LOG NON APPARE QUESTA RIGA,
      * il processo sta eseguendo una build NON aggiornata.
      */
-    const val BOOTSTRAP_VERSION = "v31 (step3m)"
+    const val BOOTSTRAP_VERSION = "v37 (step3s)"
 
     private const val TAG = "[RiPlay-KCEF]"
 
@@ -860,6 +862,274 @@ object KcefEngine {
      * Avvia installazione + inizializzazione in background (idempotente,
      * non bloccante: sicuro chiamarlo all'avvio dell'app).
      */
+    // ---------------------------------------------------------------------------
+    // STEP 3q/3s: CEF PRE-SEMINATO DALL'INSTALLER (deb/msi/dmg).
+    //
+    // La build desktop puo' includere l'archivio jbr_jcef (lo STESSO che
+    // KCEF scaricherebbe: scripts/fetch-kcef-bundle.sh/.ps1 usa la SELEZIONE
+    // IDENTICA a KCEFBuilder.GitHub) dentro l'applicazione via
+    // appResourcesRootDir: finisce in <app>/resources/kcef/ e a runtime e'
+    // raggiungibile con la proprieta' di sistema
+    // "compose.application.resources.dir" impostata dal launcher Compose.
+    //
+    // Comportamento:
+    //  - archivio assente -> nessuna azione (come prima: KCEF scarichera');
+    //  - bundle installato + preseed.stamp UGUALE -> salto immediato;
+    //  - bundle installato SENZA stamp (scaricato da KCEF) -> MAI toccato;
+    //  - stamp DIVERSO -> AGGIORNAMENTO (installDir cancellata e ri-estratta);
+    //  - estrazione: 'tar' di sistema (Win10+ include bsdtar) con fallback a
+    //    un lettore tar minimale in Kotlin (ustar 512, GNU 'L', pax 'x',
+    //    symlink best-effort, guard path traversal);
+    //  - layout finale REPLICA di TarGzExtractor+move di KCEF (win: lib+bin
+    //    -> root; linux: lib -> root; mac: Contents/Home/lib -> root +
+    //    Contents/Frameworks -> root/Frameworks);
+    //  - preseed.stamp = nome|size|lastModified dell'archivio;
+    //  - QUALUNQUE errore = ripristino e fallback COMPLETO al download KCEF.
+    // ---------------------------------------------------------------------------
+    private const val PRESEED_STAMP_FILE = "preseed.stamp"
+
+    /** Archivio CEF incluso nel pacchetto (resources: kcef con archivio .tar.gz), se presente. */
+    private fun packagedKcefArchive(): File? = runCatching {
+        val resDir = System.getProperty("compose.application.resources.dir") ?: return null
+        val dir = File(resDir, "kcef")
+        dir.listFiles { f -> f.isFile && f.name.startsWith("jbr_jcef") && f.name.endsWith(".tar.gz") }
+            ?.maxByOrNull { it.lastModified() }
+    }.getOrNull()?.takeIf { it.isFile && it.length() > 0L }
+
+    private fun preseedStampFile(): File = File(installDir, PRESEED_STAMP_FILE)
+
+    private fun stampOf(archive: File): String =
+        "${archive.name}|${archive.length()}|${archive.lastModified()}"
+
+    private fun preSeedPackagedBundle() {
+        val archive = packagedKcefArchive() ?: run {
+            log("pre-seed: nessun archivio CEF nel pacchetto (il download normale resta disponibile)")
+            return
+        }
+        val want = stampOf(archive)
+        val stampFile = preseedStampFile()
+        if (bundleInstalled()) {
+            val have = runCatching { stampFile.readText().trim() }.getOrDefault("")
+            when {
+                have == want -> {
+                    log("pre-seed: bundle gia' estratto dall'installer (stamp corrisponde): salto")
+                    return
+                }
+                have.isNotEmpty() -> log("pre-seed: bundle da archivio DIVERSO ($have -> $want): AGGIORNAMENTO")
+                else -> {
+                    log("pre-seed: bundle esistente scaricato da KCEF (senza stamp): MAI toccato")
+                    return
+                }
+            }
+            // aggiornamento: estrazione pulita dall'archivio nuovo
+            runCatching { installDir.deleteRecursively() }
+        }
+        _state.value = KcefState.Installing
+        log("pre-seed: estrazione di ${archive.name} (${archive.length()} byte) in ${installDir.absolutePath}")
+        try {
+            installDir.mkdirs()
+            extractTarGzWithSystemTar(archive, installDir)
+            applyPreseedLayout()
+            stampFile.writeText(want)
+            log("pre-seed: OK (stamp scritto: $want)")
+        } catch (t: Throwable) {
+            log("pre-seed FALLITA (${t.javaClass.simpleName}: ${t.message}): fallback COMPLETO al download KCEF")
+            runCatching { installDir.deleteRecursively() }
+            runCatching { stampFile.delete() }
+        }
+    }
+
+    /** Estrazione con il 'tar' di sistema (Win10+ include bsdtar); fallback Kotlin. */
+    private fun extractTarGzWithSystemTar(archive: File, dest: File) {
+        val proc = ProcessBuilder(
+            listOf("tar", "-xzf", archive.absolutePath, "-C", dest.absolutePath)
+        ).redirectErrorStream(true).start()
+        val out = proc.inputStream.bufferedReader().readText()
+        val code = proc.waitFor()
+        if (code == 0) return
+        log("pre-seed: tar di sistema fallita (code=$code): ${out.take(200)} -> lettore tar Kotlin")
+        extractTarGzKotlin(archive, dest)
+    }
+
+    /** Replica del layout TarGzExtractor+move di KCEF (dipendente dal sistema). */
+    private fun applyPreseedLayout() {
+        val os = System.getProperty("os.name").lowercase()
+        when {
+            os.contains("win") -> {
+                File(installDir, "lib").takeIf { it.isDirectory }?.let { moveDirInto(it, installDir) }
+                File(installDir, "bin").takeIf { it.isDirectory }?.let { moveDirInto(it, installDir) }
+            }
+            os.contains("mac") || os.contains("darwin") -> {
+                val homeLib = File(installDir, "Contents/Home/lib")
+                if (homeLib.isDirectory) moveDirInto(homeLib, installDir)
+                val frameworks = File(installDir, "Contents/Frameworks")
+                if (frameworks.isDirectory) {
+                    val target = File(installDir, "Frameworks")
+                    target.mkdirs()
+                    moveDirInto(frameworks, target)
+                }
+            }
+            else -> {
+                File(installDir, "lib").takeIf { it.isDirectory }?.let { moveDirInto(it, installDir) }
+            }
+        }
+    }
+
+    /** Sposta il CONTENUTO di [src] dentro [targetDir] (rename, fallback copy). */
+    private fun moveDirInto(src: File, targetDir: File) {
+        for (c in src.listFiles().orEmpty()) {
+            val dst = File(targetDir, c.name)
+            if (dst.exists()) {
+                // sovrascrittura deterministica (aggiornamento bundle)
+                if (dst.isDirectory) dst.deleteRecursively() else dst.delete()
+            }
+            if (!c.renameTo(dst)) {
+                if (c.isDirectory) {
+                    dst.mkdirs()
+                    moveDirInto(c, dst)
+                    c.deleteRecursively()
+                } else {
+                    c.copyTo(dst, overwrite = true)
+                    c.delete()
+                }
+            }
+        }
+        src.deleteRecursively()
+    }
+
+    // --------------------------- lettore tar minimale (fallback Kotlin) -----
+    private fun readFully(input: java.io.InputStream, buffer: ByteArray): Int {
+        var off = 0
+        while (off < buffer.size) {
+            val n = input.read(buffer, off, buffer.size - off)
+            if (n < 0) return if (off == 0) -1 else off
+            off += n
+        }
+        return off
+    }
+
+    private fun tarName(header: ByteArray): String {
+        var end = header.size
+        for (i in header.indices) {
+            if (header[i] == 0.toByte()) { end = i; break }
+        }
+        return String(header, 0, end, Charsets.UTF_8).trimEnd(' ')
+    }
+
+    private fun tarOctal(header: ByteArray, off: Int, len: Int): Long {
+        var s = String(header, off, len, Charsets.US_ASCII).trim(' ', 0.toChar())
+        if (s.isEmpty()) return 0L
+        if (s.last() == '+') s = s.dropLast(1)
+        return s.toLongOrNull(8) ?: 0L
+    }
+
+    /** Salta in avanti [size] byte di payload tar (con padding a 512). */
+    private fun skipTarPayload(gz: java.io.InputStream, size: Long) {
+        var left = size
+        val buf = ByteArray(4096)
+        while (left > 0) {
+            val take = minOf(left, buf.size.toLong()).toInt()
+            val got = readFully(gz, buf.copyOfRange(0, take))
+            if (got <= 0) return
+            left -= got
+        }
+        val pad = ((512 - (size % 512)) % 512).toInt()
+        if (pad > 0) {
+            val padBuf = ByteArray(pad)
+            readFully(gz, padBuf)
+        }
+    }
+
+    private fun extractTarGzKotlin(archive: File, dest: File) {
+        val canonDest = dest.canonicalFile
+        java.util.zip.GZIPInputStream(archive.inputStream().buffered()).use { gz ->
+            val header = ByteArray(512)
+            var longName: String? = null
+            while (true) {
+                val n = readFully(gz, header)
+                if (n != 512) break
+                if (header.all { it == 0.toByte() }) continue
+                val rawName = tarName(header.copyOfRange(0, 100))
+                val type = header[156].toInt().toChar()
+                val size = tarOctal(header, 124, 12)
+                val prefix = tarName(header.copyOfRange(345, 500))
+                var name = longName ?: rawName
+                longName = null
+                if (prefix.isNotEmpty() && !name.contains("/")) name = "$prefix/$name"
+
+                when (type) {
+                    'L' -> {
+                        // GNU longname: il PROSSIMO header ha nome vuoto
+                        val buf = ByteArray(size.toInt())
+                        if (readFully(gz, buf) != size.toInt()) break
+                        longName = buf.toString(Charsets.UTF_8).trimEnd(0.toChar())
+                        val pad = ((512 - (size % 512)) % 512).toInt()
+                        if (pad > 0) { val p = ByteArray(pad); readFully(gz, p) }
+                        continue
+                    }
+                    'x', 'g' -> {
+                        // pax header: estrai il campo path (se presente)
+                        val buf = ByteArray(size.toInt())
+                        if (readFully(gz, buf) != size.toInt()) break
+                        if (type == 'x') {
+                            val text = buf.toString(Charsets.UTF_8)
+                            val m = Regex("(?m)^\\d+ path=(.+)").find(text)
+                            if (m != null) longName = m.groupValues[1].trimEnd()
+                        }
+                        val pad = ((512 - (size % 512)) % 512).toInt()
+                        if (pad > 0) { val p = ByteArray(pad); readFully(gz, p) }
+                        continue
+                    }
+                }
+
+                val clean = name.removePrefix("./").trimStart('/')
+                if (clean.isEmpty()) {
+                    if (size > 0) skipTarPayload(gz, size)
+                    continue
+                }
+                val target = File(canonDest, clean).canonicalFile
+                if (!target.path.startsWith(canonDest.path)) {
+                    log("pre-seed: percorso scartato (path traversal): $clean")
+                    if (size > 0) skipTarPayload(gz, size)
+                    continue
+                }
+                when (type) {
+                    '5' -> target.mkdirs()
+                    '2' -> {
+                        // symlink: best-effort (i link del bundle seguono il
+                        // layout originale; se falliscono l'installazione resta
+                        // valida perche' i file reali sono stati gia' estratti)
+                        val linkName = tarName(header.copyOfRange(157, 257))
+                        runCatching {
+                            target.parentFile?.mkdirs()
+                            java.nio.file.Files.createSymbolicLink(
+                                target.toPath(),
+                                java.nio.file.Paths.get(linkName)
+                            )
+                        }
+                    }
+                    '0', 0.toChar() -> {
+                        target.parentFile?.mkdirs()
+                        target.outputStream().use { fos ->
+                            var left = size
+                            val buf = ByteArray(4096)
+                            while (left > 0) {
+                                val take = minOf(left, buf.size.toLong()).toInt()
+                                val got = readFully(gz, buf.copyOfRange(0, take))
+                                if (got <= 0) break
+                                fos.write(buf, 0, got)
+                                left -= got
+                            }
+                        }
+                        val pad = ((512 - (size % 512)) % 512).toInt()
+                        if (pad > 0) { val p = ByteArray(pad); readFully(gz, p) }
+                    }
+                    else -> if (size > 0) skipTarPayload(gz, size)
+                }
+            }
+        }
+    }
+
     fun start() {
         installGlobalUncaughtExceptionHandler()
         if (started) return
@@ -870,6 +1140,13 @@ object KcefEngine {
             Thread({
                 try {
                     logEnvironment()
+
+                    // STEP 3q/3s (richiesta utente): CEF PRE-SEMINATO nell'installer
+                    // (deb/msi/dmg): l'archivio jbr_jcef incluso nell'app viene
+                    // estratto qui nella directory dati utente PRIMA della catena
+                    // KCEF -> NESSUN download ~200MB al primo avvio. Qualunque
+                    // problema = fallback COMPLETO al download normale.
+                    preSeedPackagedBundle()
 
                     // STEP 2h: KCEFBuilder.install cancella l'INTERA installDir
                     // e ri-scarica il bundle se manca install.lock (bytecode
@@ -1093,16 +1370,13 @@ object KcefEngine {
      * (documentazione ufficiale YT Player API + comportamento reale).
      */
     fun ytErrorMeaning(code: Int): String = when (code) {
-        2 -> "parametro non valido oppure video con restrizioni di accesso/eta' " +
-                "o verifica anti-bot/consenso di YouTube (login richiesto)"
-        5 -> "errore del player HTML5 (contenuto/codec/rete)"
-        100 -> "video non trovato o privato"
-        101, 150 -> "il proprietario non consente la riproduzione incorporata"
-        152 -> "contesto embed rifiutato da YouTube: il Referer della pagina incorporante non e' " +
-                "accettato (rifiutati: www.youtube.com, 127.0.0.1, referrer assente; accettati: " +
-                "localhost, apex youtube.com, domini terzi - verifica empirica 2r)"
-        153 -> "richiesta embed rifiutata da YouTube (configurazione player/referrer mancante)"
-        else -> "codice sconosciuto"
+        2 -> ds("error.yt_2")
+        5 -> ds("error.yt_5")
+        100 -> ds("error.yt_100")
+        101, 150 -> ds("error.yt_101_150")
+        152 -> ds("error.yt_152")
+        153 -> ds("error.yt_153")
+        else -> ds("error.yt_unknown")
     }
 
     /**
@@ -1159,6 +1433,10 @@ object KcefEngine {
 
     @Volatile
     private var embedRefererLogged = false
+
+    /** Log una sola volta dell'iniezione CSS "nascondi condividi" (STEP 3o). */
+    @Volatile
+    private var embedShareHiddenLogged = false
 
     private fun installEmbedRefererPolicy(c: KCEFClient) {
         runCatching {
@@ -1277,6 +1555,41 @@ object KcefEngine {
                         // STEP 2r: conferma attivazione pagina player (load end
                         // della pagina locale http://localhost).
                         PlayerHtmlServer.onMainFrameLoadEnd(browser, frame.url, httpStatusCode)
+                    } else {
+                        // STEP 3o (richiesta utente n.6 "nel player all'interno
+                        // del browser risulta cliccabile il pulsante di
+                        // condivisione, disattivalo come fatto con gli altri
+                        // click"): nei FRAME EMBED di YouTube (l'iframe che
+                        // contiene il player con i suoi controlli) inietta un
+                        // foglio di stile che NASCONDE il pulsante CONDIVIDI
+                        // (.ytp-share-button) e il pannello che apre. La regola
+                        // vale anche per il DOM creato DOPO il load end: un
+                        // <style> persistente e' piu' affidabile della posizione
+                        // in pixel. SOLO COSMETICO: tocca il DOM dell'embed,
+                        // non il bridge riplay*/la catena di riproduzione; il
+                        // fallback a livello pagina resta il guard trasparente
+                        // #guardCondividi nella pagina player locale.
+                        val fUrl = frame?.url.orEmpty()
+                        if (fUrl.contains("youtube.com/embed")) {
+                            runCatching {
+                                frame.executeJavaScript(
+                                    "(function(){try{if(document.getElementById('riplay-no-share'))return;"
+                                        + "var s=document.createElement('style');s.id='riplay-no-share';"
+                                        + "s.textContent='.ytp-share-button{display:none!important}'"
+                                        + "+'.ytp-share-panel{display:none!important}'"
+                                        + "+'.ytp-title-share-button{display:none!important}';"
+                                        + "(document.head||document.documentElement).appendChild(s);}catch(e){}})()",
+                                    fUrl,
+                                    1
+                                )
+                                if (!embedShareHiddenLogged) {
+                                    embedShareHiddenLogged = true
+                                    log("CSS 'nascondi condividi' iniettato nel frame embed (ytp-share-button)")
+                                }
+                            }.onFailure {
+                                log("iniezione CSS condividi fallita: ${it.javaClass.simpleName}: ${it.message}")
+                            }
+                        }
                     }
                 }
             })

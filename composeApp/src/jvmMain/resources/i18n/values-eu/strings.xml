@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - Euskara (values-eu)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">Hasiera</string>
+    <string name="nav.search">Bilatu</string>
+    <string name="nav.songs">Abestiak</string>
+    <string name="nav.artists">Artista</string>
+    <string name="nav.albums">Albumak</string>
+    <string name="nav.playlists">Zerrendak</string>
+    <string name="nav.local">Fitxategi lokalak</string>
+    <string name="queue.title">Erreprodukzio-ilara ({n})</string>
+    <string name="queue.open">ireki erreprodukzio-ilara</string>
+    <string name="queue.clear"> hustu ilara</string>
+    <string name="queue.close_panel">itxi ilararen panela</string>
+    <string name="queue.remove">kendu ilaratik</string>
+    <string name="queue.drag">arrastatu berrantolatzeko</string>
+    <string name="queue.drag_handle">Arrastatu heldulekua berrantolatzeko</string>
+    <string name="action.add_to_queue">gehitu ilarari</string>
+    <string name="action.already_queued">dagoeneko ilaran</string>
+    <string name="action.enqueue_all">jarri guztiak ilaran</string>
+    <string name="action.enqueue_album">jarri album osoa ilaran</string>
+    <string name="action.enqueue_playlist">jarri zerrenda osoa ilaran</string>
+    <string name="player.previous">aurreko abestia</string>
+    <string name="player.next">hurrengo abestia</string>
+    <string name="player.play">erreproduzitu</string>
+    <string name="player.pause">geldi</string>
+    <string name="player.volume_off">soinua itzalita</string>
+    <string name="player.volume_low">bolumen baxua</string>
+    <string name="player.volume_high">bolumen altua</string>
+    <string name="player.expand">zabaldu erreproduzitzailea</string>
+    <string name="player.open_fullscreen">ireki erreproduzitzailea pantaila osoan</string>
+    <string name="player.back_to_cover">itzuli abestiaren azalera</string>
+    <string name="player.watch_video">ikusi bideoa</string>
+    <string name="player.expand_video">zabaldu bideoa leihoaren zabalera osera</string>
+    <string name="player.restore_video">berrezarri bideoaren hasierako zabalera</string>
+    <string name="player.radio">irratia: gehitu antzeko abestiak ilarara</string>
+    <string name="player.song_cover">abestiaren azala</string>
+    <string name="player.online">Linean</string>
+    <string name="player.local">Lokala</string>
+    <string name="radio.none_found">Ez da antzeko abestirik aurkitu</string>
+    <string name="radio.added">{n} antzeko abesti gehitu dira</string>
+    <string name="radio.unavailable">Irratia ez dago erabilgarri</string>
+    <string name="overlay.close_player">itxi erreproduzitzailea</string>
+    <string name="overlay.queue_title">erreprodukzio-ilara</string>
+    <string name="overlay.queue_count">Ilara ({n})</string>
+    <string name="overlay.no_song">Ez dago abestirik erreproduzitzen</string>
+    <string name="overlay.video_active_note">Bideoa ezkerreko erreproduzitzaile-panelean aktibatuta dago: itxi hemen ikusteko</string>
+    <string name="overlay.video_active">bideoa erreproduzitzaile-panelean aktibatuta</string>
+    <string name="overlay.close_hint">Itxi goiko ezkerreko chevronarekin edo ESCrekin</string>
+    <string name="page.albums">Albumak ({n})</string>
+    <string name="page.artists">Artista ({n})</string>
+    <string name="page.playlists">Zerrendak ({n})</string>
+    <string name="page.songs">Abestiak ({n})</string>
+    <string name="page.local">Fitxategi lokalak ({n})</string>
+    <string name="page.followed_only">Jarraitutakoak soilik</string>
+    <string name="page.followed">Jarraitutakoak</string>
+    <string name="page.followed_artist">jarraitutako artista</string>
+    <string name="page.home">Hasiera</string>
+    <string name="page.moods">Giroak eta generoak</string>
+    <string name="page.home_unavailable">Hasiera ez dago erabilgarri (egiaztatu konexioa eta sakatu goiko eguneratze-ikonoa).</string>
+    <string name="search.hint">Bilatu abestiak, albumak, artistak, zerrendak...</string>
+    <string name="search.load_more">Kargatu gehiago</string>
+    <string name="search.recent">Azken bilaketak</string>
+    <string name="search.suggestions">Iradokizunak</string>
+    <string name="search.clear">garbitu bilaketa</string>
+    <string name="local.add_folder">Gehitu karpeta</string>
+    <string name="local.add_files">Gehitu fitxategiak</string>
+    <string name="local.fallback_artist">Fitxategi lokala</string>
+    <string name="local.imported">{n} fitxategi inportatu dira</string>
+    <string name="local.scanning">Audio-fitxategiak bilatzen...</string>
+    <string name="local.empty_hint">Ez dago inportatutako fitxategi lokalik.\n\nErabili \"Gehitu karpeta\" ordenagailuko karpeta bat eskaneatzeko (azpikarpetak barne) edo \"Gehitu fitxategiak\" banakako abestiak aukeratzeko. Inportatutako fitxategiak Motor Lokalarekin (VLCJ) erreproduzitzen dira eta liburutegian geratzen dira.</string>
+    <string name="local.input_hint">YouTube URL edo fitxategi / URL lokala (VLCJ)</string>
+    <string name="local.clear_url">garbitu URLa</string>
+    <string name="local.open_file">ireki fitxategi lokala</string>
+    <string name="detail.album_shuffle">erreproduzitu albuma nahastuta</string>
+    <string name="detail.album_favorite_add">gehitu albuma gogokoetara</string>
+    <string name="detail.album_favorite_ok">albuma gogokoetan</string>
+    <string name="detail.artist_shuffle">erreproduzitu artistaren abestiak nahastuta</string>
+    <string name="detail.artist_follow">jarraitu artistari</string>
+    <string name="detail.artist_followed">artista jarraitua</string>
+    <string name="detail.playlist_shuffle">erreproduzitu zerrenda nahastuta</string>
+    <string name="detail.playlist_favorite_add">gorde zerrenda gogokoetan</string>
+    <string name="detail.playlist_favorite_ok">zerrenda gogokoetan: sakatu kentzeko</string>
+    <string name="common.loading">kargatzen...</string>
+    <string name="kcef.unavailable">KCEF erreprodukzio-motorra ez dago erabilgarri</string>
+    <string name="kcef.details_log">Xehetasun osoak log/kontsolan: [RiPlay-KCEF] hasten diren lerroak.</string>
+    <string name="kcef.retry">Saiatu berriro</string>
+    <string name="kcef.preparing">Erreprodukzio-motorra prestatzen (KCEF)…</string>
+    <string name="kcef.downloading">Integratutako nabigatzailea deskargatzen (lehenengo abioan bakarrik)…</string>
+    <string name="kcef.extracting">Osagaiak ateratzen…</string>
+    <string name="kcef.installing">Instalatzen…</string>
+    <string name="kcef.starting">Integratutako nabigatzailea abiarazten…</string>
+    <string name="kcef.preparing_short">Prestatzen…</string>
+    <string name="kcef.jdk_conflict">Erabiltzen ari den JDKk RiPlayekin bateragarria ez den bertsio bateko integratutako nabigatzaile-motor bat du. Deskargaren ondoren aplikazioa itxiko da: ireki berriro instalazioa osatzeko.</string>
+    <string name="error.yt_with_code">YouTube errorea ({code} kodea: {meaning}). Xehetasunak logean: [RiPlay-KCEF] / [RiPlay-YT] lerroak.</string>
+    <string name="error.yt_2">baliogabeko parametroa edo sarbide/adineko murrizketak dituen bideoa edo YouTuberen anti-bot/baimen egiaztapena (saioa hasi behar)</string>
+    <string name="error.yt_5">HTML5 erreproduzitzailearen errorea (edukia/kodeka/sarea)</string>
+    <string name="error.yt_100">bideoa ez da aurkitu edo pribatua da</string>
+    <string name="error.yt_101_150">jabeak ez du onartzen kapsulatutako erreprodukzioa</string>
+    <string name="error.yt_152">kapsulatutako testuingurua YouTubeek baztertu du: ostalari orriaren Referer-a ez da onartzen</string>
+    <string name="error.yt_153">kapsulatzeko eskaera YouTubeek baztertu du (player/referrer konfigurazioa falta da)</string>
+    <string name="error.yt_unknown">kode ezezaguna</string>
+    <string name="error.local_unavailable">Abesti lokala ezin da erreproduzitu mahaigainean: fitxategiaren bidea eskuraezin dago (Android MediaStore jatorria edo lekuz aldatutako fitxategia). Beheko eremuko karpeta-botoiarekin ordenagailutik fitxategia aukeratuz erreproduzi dezakezu.</string>
+    <string name="error.manual_unsupported">Bidea ez da aurkitu edo URLa ez da onartzen: \'{value}\'</string>
+    <string name="misc.playlist_cover">Zerrendaren azala</string>
+    <string name="settings.language">Hizkuntza</string>
+    <string name="settings.system">Sistemaren hizkuntza</string>
+    <string name="titlebar.minimize">Minimizatu</string>
+    <string name="titlebar.maximize">Maximizatu</string>
+    <string name="titlebar.restore">Berrezarri</string>
+    <string name="titlebar.close">Itxi</string>
+    <string name="common.back">Atzera</string>
+    <string name="common.songs_word">abesti</string>
+    <string name="overlay.playing">Orain erreproduzitzen</string>
+    <string name="local.none_found_in">Ez da audio-fitxategirik aurkitu \"{value}\"(e)n</string>
+    <string name="local.imported_from">{n} fitxategi inportatu dira \"{value}\"(t)ik</string>
+</resources>

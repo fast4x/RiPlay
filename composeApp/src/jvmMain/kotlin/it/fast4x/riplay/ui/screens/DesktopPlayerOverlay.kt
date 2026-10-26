@@ -1,5 +1,7 @@
 package it.fast4x.riplay.ui.screens
 
+import it.fast4x.riplay.i18n.ds
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
@@ -89,6 +91,8 @@ import it.fast4x.riplay.ui.components.RiPlayAccent
 import it.fast4x.riplay.ui.components.PlayQueuePanel
 // STEP 3j: wrapper del brano in coda con uid stabile (serve al drag&drop)
 import it.fast4x.riplay.ui.QueuedSong
+// STEP 3n: cover alla risoluzione alta (richiesta utente n.7)
+import it.fast4x.riplay.utils.hiResCoverUrl
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.painterResource
 import player.PlayerController
@@ -256,14 +260,14 @@ fun DesktopPlayerOverlay(
                     ) {
                         Icon(
                             painter = painterResource(Res.drawable.chevron_down),
-                            contentDescription = "chiudi il player",
+                            contentDescription = ds("overlay.close_player"),
                             tint = Color.White,
                             modifier = Modifier.size(28.dp)
                         )
                     }
                     Spacer(Modifier.width(10.dp))
                     Text(
-                        "Riproduzione in corso",
+                        ds("overlay.playing"),
                         color = Color.White,
                         fontSize = 16.sp
                     )
@@ -294,7 +298,7 @@ fun DesktopPlayerOverlay(
                         } else {
                             Icon(
                                 Icons.Filled.Radio,
-                                contentDescription = "radio: aggiungi brani simili in coda",
+                                contentDescription = ds("player.radio"),
                                 tint = RiPlayAccent,
                                 modifier = Modifier.size(17.dp)
                             )
@@ -319,13 +323,13 @@ fun DesktopPlayerOverlay(
                     ) {
                         Icon(
                             Icons.Filled.List,
-                            contentDescription = "coda di riproduzione",
+                            contentDescription = ds("overlay.queue_title"),
                             tint = if (queueOpen) RiPlayAccent else Color.White.copy(alpha = 0.8f),
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(Modifier.width(7.dp))
                         Text(
-                            "Coda (${queue.size})",
+                            ds("overlay.queue_count", "n" to queue.size),
                             color = if (queueOpen) RiPlayAccent else Color.White.copy(alpha = 0.8f),
                             fontSize = 13.sp,
                             fontWeight = if (queueOpen) FontWeight.SemiBold else FontWeight.Normal
@@ -340,7 +344,11 @@ fun DesktopPlayerOverlay(
                 // sfondo d'arte attenuata + nota sulla posizione del video.
                 // STEP 3h: ingresso con scala a molla + angoli arrotondati
                 // e ombra (profondita', stile player chic).
+                // STEP 3n (richiesta utente n.7): copertina alla RISOLUZIONE
+                // ALTA (la cover qui arriva a >50% della finestra: la
+                // miniatura 120px era ancora piu' visibilmente sfocata)
                 if (song?.thumbnailUrl != null) {
+                    val hiResCover = remember(song.id) { song.thumbnailUrl?.hiResCoverUrl() }
                     val coverScale = remember { Animatable(0.88f) }
                     LaunchedEffect(visible, song.id) {
                         if (visible) {
@@ -356,8 +364,8 @@ fun DesktopPlayerOverlay(
                     ) {
                         val coverSize = minOf(maxWidth * 0.52f, maxHeight * 0.52f)
                         AsyncImage(
-                            model = song.thumbnailUrl,
-                            contentDescription = "cover del brano",
+                            model = hiResCover,
+                            contentDescription = ds("player.song_cover"),
                             contentScale = ContentScale.Fit,
                             modifier = Modifier
                                 .graphicsLayer {
@@ -381,7 +389,7 @@ fun DesktopPlayerOverlay(
                             )
                             Spacer(Modifier.width(6.dp))
                             Text(
-                                "Video attivo nel pannello player a sinistra: chiudi per guardarlo",
+                                ds("overlay.video_active_note"),
                                 color = Color.White.copy(alpha = 0.5f),
                                 fontSize = 11.sp
                             )
@@ -400,7 +408,7 @@ fun DesktopPlayerOverlay(
 
                 // Titolo + artista
                 Text(
-                    song?.title ?: "Nessun brano in riproduzione",
+                    song?.title ?: ds("overlay.no_song"),
                     color = Color.White,
                     fontSize = 23.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -465,7 +473,7 @@ fun DesktopPlayerOverlay(
                         enabled = canGoPrevious
                     ) {
                         Icon(
-                            Icons.Filled.SkipPrevious, "brano precedente",
+                            Icons.Filled.SkipPrevious, ds("player.previous"),
                             tint = RiPlayAccent.copy(alpha = if (canGoPrevious) 1f else 0.3f),
                             modifier = Modifier.size(40.dp)
                         )
@@ -484,13 +492,13 @@ fun DesktopPlayerOverlay(
                     ) {
                         if (state.isPlaying) {
                             Icon(
-                                Icons.Filled.Pause, "pause media",
+                                Icons.Filled.Pause, ds("player.pause"),
                                 tint = RiPlayAccent,
                                 modifier = Modifier.size(50.dp)
                             )
                         } else {
                             Icon(
-                                Icons.Rounded.PlayArrow, "play media",
+                                Icons.Rounded.PlayArrow, ds("player.play"),
                                 tint = RiPlayAccent,
                                 modifier = Modifier.size(50.dp)
                             )
@@ -502,7 +510,7 @@ fun DesktopPlayerOverlay(
                         enabled = canGoNext
                     ) {
                         Icon(
-                            Icons.Filled.SkipNext, "brano successivo",
+                            Icons.Filled.SkipNext, ds("player.next"),
                             tint = RiPlayAccent.copy(alpha = if (canGoNext) 1f else 0.3f),
                             modifier = Modifier.size(40.dp)
                         )
@@ -523,19 +531,19 @@ fun DesktopPlayerOverlay(
                         when {
                             state.isMuted || state.volume == 0f ->
                                 Icon(
-                                    Icons.AutoMirrored.Rounded.VolumeOff, "volume off",
+                                    Icons.AutoMirrored.Rounded.VolumeOff, ds("player.volume_off"),
                                     tint = Color.White.copy(alpha = 0.8f),
                                     modifier = Modifier.size(24.dp)
                                 )
                             state.volume < 0.5f ->
                                 Icon(
-                                    Icons.AutoMirrored.Rounded.VolumeDown, "volume low",
+                                    Icons.AutoMirrored.Rounded.VolumeDown, ds("player.volume_low"),
                                     tint = Color.White.copy(alpha = 0.8f),
                                     modifier = Modifier.size(24.dp)
                                 )
                             else ->
                                 Icon(
-                                    Icons.AutoMirrored.Rounded.VolumeUp, "volume high",
+                                    Icons.AutoMirrored.Rounded.VolumeUp, ds("player.volume_high"),
                                     tint = Color.White.copy(alpha = 0.8f),
                                     modifier = Modifier.size(24.dp)
                                 )
@@ -562,7 +570,7 @@ fun DesktopPlayerOverlay(
                 // Suggerimento di chiusura (dalla prova: la via d'uscita
                 // non era evidente)
                 Text(
-                    "Chiudi con il chevron in alto a sinistra oppure con ESC",
+                    ds("overlay.close_hint"),
                     color = Color.White.copy(alpha = 0.3f),
                     fontSize = 11.sp
                 )
