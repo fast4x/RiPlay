@@ -28,9 +28,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
@@ -80,7 +77,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
@@ -88,13 +84,12 @@ import extension.formatTimestamp
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.ui.components.PremiumSlider
 import it.fast4x.riplay.ui.components.RiPlayAccent
+// STEP 3m: pannello coda estratto in ui/components (ora usato anche nella
+// colonna destra della finestra principale, senza aprire il player full)
+import it.fast4x.riplay.ui.components.PlayQueuePanel
 // STEP 3j: wrapper del brano in coda con uid stabile (serve al drag&drop)
 import it.fast4x.riplay.ui.QueuedSong
 import kotlinx.coroutines.delay
-// STEP 3j: riordino della coda con il TRASCINAMENTO: la STESSA libreria
-// usata dalla coda di riproduzione Android (sh.calvin.reorderable)
-import sh.calvin.reorderable.ReorderableItem
-import sh.calvin.reorderable.rememberReorderableLazyListState
 import org.jetbrains.compose.resources.painterResource
 import player.PlayerController
 import player.PlayerState
@@ -590,200 +585,20 @@ fun DesktopPlayerOverlay(
                 exit = fadeOut(tween(150)),
                 modifier = Modifier.align(Alignment.CenterEnd)
             ) {
+                // STEP 3m: il pannello e' il componente PUBBLICO condiviso con
+                // la colonna coda della finestra principale (topPadding 70.dp:
+                // inizia sotto la barra superiore, fix step3k n.5)
                 PlayQueuePanel(
                     queue = queue,
                     onPlay = onQueuePlay,
                     onRemove = onQueueRemove,
                     onClear = onQueueClear,
                     onMove = onQueueMove,
-                    onClose = { queueOpen = false }
+                    onClose = { queueOpen = false },
+                    topPadding = 70.dp
                 )
             }
         }
     }
 }
 
-/**
- * STEP 3i: pannello laterale con l'elenco dei brani in coda di
- * riproduzione (il contenuto visibile quando si preme "Coda" nel player
- * a tutto schermo).
- *
- * STEP 3j (richiesta utente n.2 "le canzoni in coda posso essere spostate
- * a piacimento dall'utente"): RIORDINO CON IL TRASCINAMENTO tramite la
- * libreria sh.calvin.reorderable (la STESSA della coda Android):
- *  - ogni item ha una chiave stabile (QueuedSong.uid, non l'indice: cosi'
- *    anche i brani duplicati in coda restano distinti);
- *  - la maniglia a sinistra (DragHandle) trascina il brano; mentre trascina
- *    l'item si evidenzia con una leggera tinta d'accento;
- *  - l'app riceve (fromUid, toUid) e muove il brano nella SnapshotStateList.
- */
-@Composable
-private fun PlayQueuePanel(
-    queue: List<QueuedSong>,
-    onPlay: (Song) -> Unit,
-    onRemove: (Song) -> Unit,
-    onClear: () -> Unit,
-    onMove: (Long, Long) -> Unit,
-    // STEP 3k (richiesta utente n.5): chiusura esplicita del pannello
-    onClose: () -> Unit
-) {
-    val lazyListState = rememberLazyListState()
-    val reorderableState = rememberReorderableLazyListState(
-        lazyListState = lazyListState,
-        scrollThreshold = 40.dp
-    ) { from, to ->
-        val fromUid = from.key as? Long
-        val toUid = to.key as? Long
-        if (fromUid != null && toUid != null) onMove(fromUid, toUid)
-    }
-
-    Column(
-        Modifier
-            .fillMaxHeight()
-            .width(340.dp)
-            // STEP 3k n.5: il pannello ora inizia SOTTO la barra superiore:
-            // la zona trasparente lascia il pulsante "Coda" cliccabile
-            // (prima il pannello a piena altezza lo copriva e non si poteva
-            // piu' chiudere la coda)
-            .padding(top = 70.dp)
-            .background(Color(0xF2101110))
-            .padding(14.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                Icons.Filled.List,
-                contentDescription = null,
-                tint = RiPlayAccent,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(Modifier.width(9.dp))
-            Text(
-                "Coda di riproduzione (${queue.size})",
-                color = Color.White,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(Modifier.weight(1f))
-            if (queue.isNotEmpty()) {
-                IconButton(
-                    onClick = onClear,
-                    modifier = Modifier.size(30.dp)
-                ) {
-                    Icon(
-                        Icons.Filled.Delete,
-                        contentDescription = "svuota la coda",
-                        tint = Color.White.copy(alpha = 0.6f),
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-            }
-            // STEP 3k n.5: pulsante di CHIUSURA del pannello coda (prima
-            // mancava: una volta aperto non si poteva piu' richiudere)
-            IconButton(
-                onClick = onClose,
-                modifier = Modifier.size(30.dp)
-            ) {
-                Icon(
-                    Icons.Filled.Close,
-                    contentDescription = "chiudi il pannello coda",
-                    tint = Color.White,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        }
-
-        Spacer(Modifier.height(4.dp))
-
-        Text(
-            "Trascina la maniglia per riordinare",
-            color = Color.White.copy(alpha = 0.3f),
-            fontSize = 11.sp
-        )
-
-        Spacer(Modifier.height(8.dp))
-
-        if (queue.isEmpty()) {
-            Text(
-                "La coda \u00e8 vuota.\n\nAggiungi i brani con il pulsante + accanto al titolo nelle liste (Ricerca, Songs, album, artista, playlist), oppure premi Radio per i brani simili. Cliccando una canzone dentro un ALBUM entra in coda tutto l'album.",
-                color = Color.White.copy(alpha = 0.4f),
-                fontSize = 13.sp,
-                lineHeight = 19.sp
-            )
-        } else {
-            LazyColumn(
-                state = lazyListState,
-                modifier = Modifier.weight(1f)
-            ) {
-                items(queue, key = { it.uid }) { queued ->
-                    ReorderableItem(
-                        state = reorderableState,
-                        key = queued.uid
-                    ) { isDragging ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .animateItem()
-                                .background(
-                                    if (isDragging) RiPlayAccent.copy(alpha = 0.12f)
-                                    else Color.Transparent,
-                                    RoundedCornerShape(10.dp)
-                                )
-                                .clickable { onPlay(queued.song) }
-                                .padding(horizontal = 4.dp, vertical = 6.dp)
-                        ) {
-                            // maniglia di trascinamento (riordino)
-                            Icon(
-                                Icons.Filled.DragHandle,
-                                contentDescription = "trascina per riordinare",
-                                tint = Color.White.copy(alpha = if (isDragging) 0.9f else 0.35f),
-                                modifier = Modifier
-                                    .size(22.dp)
-                                    .draggableHandle()
-                            )
-                            Spacer(Modifier.width(6.dp))
-                            AsyncImage(
-                                model = queued.song.thumbnailUrl,
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .size(42.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                            )
-                            Spacer(Modifier.width(10.dp))
-                            Column(Modifier.weight(1f)) {
-                                Text(
-                                    queued.song.title,
-                                    color = Color.White,
-                                    fontSize = 14.sp,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                queued.song.artistsText?.let {
-                                    Text(
-                                        it,
-                                        color = Color.White.copy(alpha = 0.5f),
-                                        fontSize = 12.sp,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                }
-                            }
-                            IconButton(
-                                onClick = { onRemove(queued.song) },
-                                modifier = Modifier.size(28.dp)
-                            ) {
-                                Icon(
-                                    Icons.Filled.Close,
-                                    contentDescription = "rimuovi dalla coda",
-                                    tint = Color.White.copy(alpha = 0.5f),
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}

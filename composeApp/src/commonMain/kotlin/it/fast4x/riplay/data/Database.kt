@@ -1631,6 +1631,14 @@ interface Database {
     @Query("SELECT * FROM Song WHERE id = :id")
     suspend fun getSong(id: String): Song?
 
+    // STEP 3m: brani LOCALI del computer (id "local:<percorso file>").
+    // Sono i file importati dalla pagina "Locali" (scansione di una
+    // cartella scelta dall'utente) e riprodotti dal motore VLCJ.
+    // Nessuna modifica allo SCHEMA (solo una nuova SELECT): nessuna
+    // migrazione del db necessaria.
+    @Query("SELECT * FROM Song WHERE id LIKE '$LOCAL_KEY_PREFIX%' ORDER BY title COLLATE NOCASE ASC")
+    fun getLocalSongs(): Flow<List<Song>>
+
     @Query("SELECT * FROM Song WHERE id = :id")
     suspend fun songNoFlow(id: String?): Song?
 

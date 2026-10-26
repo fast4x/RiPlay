@@ -32,6 +32,8 @@ import riplay.composeapp.generated.resources.library
 import riplay.composeapp.generated.resources.musical_notes
 // STEP 3j: icona della nuova sezione RICERCA
 import riplay.composeapp.generated.resources.search
+// STEP 3m: icona della sezione FILE LOCALI (VLCJ)
+import riplay.composeapp.generated.resources.folder
 
 /**
  * STEP 3b: navigazione desktop in stile Android.
@@ -53,7 +55,10 @@ enum class DesktopSection(val label: String) {
     SONGS("Songs"),
     ARTISTS("Artists"),
     ALBUMS("Albums"),
-    PLAYLISTS("Playlists")
+    PLAYLISTS("Playlists"),
+    // STEP 3m (richiesta utente n.2): FILE LOCALI del computer
+    // (importazione + riproduzione con il motore VLCJ)
+    LOCAL("Locali")
 }
 
 @Composable
@@ -90,6 +95,8 @@ fun DesktopNavigationBar(
                     DesktopSection.ARTISTS -> Res.drawable.artists
                     DesktopSection.ALBUMS -> Res.drawable.album
                     DesktopSection.PLAYLISTS -> Res.drawable.library
+                    // STEP 3m: sezione file locali del computer
+                    DesktopSection.LOCAL -> Res.drawable.folder
                 }
 
                 // STEP 3h (migliorie visive): la voce attiva ha una PILL di

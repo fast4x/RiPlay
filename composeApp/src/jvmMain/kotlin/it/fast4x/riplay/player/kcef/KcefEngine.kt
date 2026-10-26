@@ -494,6 +494,17 @@ sealed interface KcefState {
  *     cambia solo il layout attorno allo stesso SwingPanel (come un
  *     ridimensionamento della finestra), audio/video intatti; a video
  *     espanso l'input manuale e' nascosto.
+ *
+ *     30) v31 (step3m, richieste utente "coda accessibile senza il player
+ *     full / caricamento dei file locali / home come Android"):
+ *     SOLO VERSIONE (marker build): il motore NON cambia. Le tre novita'
+ *     vivono TUTTE fuori da KCEF: (1) colonna coda a destra della
+ *     finestra principale (Compose puro a destra della colonna player,
+ *     che resta al 23% fisso: il browser non viene ridimensionato ne'
+ *     toccato); (2) pagina Locali (importazione file del pc -> db ->
+ *     motore VLCJ esistente); (3) home desktop da EnvironmentExt
+ *     .getHomePage (stessa API della home Android). Catena di play
+ *     invariata al 100%.
  */
 object KcefEngine {
 
@@ -501,7 +512,7 @@ object KcefEngine {
      * Marker di versione del bootstrap: SE NEI LOG NON APPARE QUESTA RIGA,
      * il processo sta eseguendo una build NON aggiornata.
      */
-    const val BOOTSTRAP_VERSION = "v30 (step3l)"
+    const val BOOTSTRAP_VERSION = "v31 (step3m)"
 
     private const val TAG = "[RiPlay-KCEF]"
 

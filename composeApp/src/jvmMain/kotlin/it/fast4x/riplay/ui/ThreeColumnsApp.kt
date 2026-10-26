@@ -1,6 +1,13 @@
 package it.fast4x.riplay.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,6 +25,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
+// STEP 3m: icona del pulsantino laterale che apre la colonna Coda
+import androidx.compose.material.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.QueueMusic
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -29,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import it.fast4x.riplay.data.Database
@@ -42,8 +54,15 @@ import it.fast4x.riplay.styling.Dimensions.layoutColumnTopPadding
 import it.fast4x.riplay.styling.Dimensions.layoutColumnsHorizontalPadding
 import it.fast4x.riplay.ui.bars.DesktopSection
 import it.fast4x.riplay.ui.bars.DesktopNavigationBar
+// STEP 3m: pannello coda PUBBLICO condiviso col player full screen
+import it.fast4x.riplay.ui.components.PlayQueuePanel
+import it.fast4x.riplay.ui.components.RiPlayAccent
 import it.fast4x.riplay.ui.pages.AlbumsPage
 import it.fast4x.riplay.ui.pages.ArtistsPage
+// STEP 3m (richiesta utente n.3): home desktop = HomePageOnline Android
+import it.fast4x.riplay.ui.pages.HomePageOnline
+// STEP 3m (richiesta utente n.2): pagina dei FILE LOCALI (VLCJ)
+import it.fast4x.riplay.ui.pages.LocalSongsPage
 import it.fast4x.riplay.ui.pages.PlaylistsPage
 import it.fast4x.riplay.ui.pages.PlaylistSongsPage
 import it.fast4x.riplay.ui.pages.SongsPage
@@ -52,7 +71,6 @@ import it.fast4x.riplay.ui.screens.ArtistScreen
 import it.fast4x.riplay.ui.screens.DesktopPlayerOverlay
 import it.fast4x.riplay.ui.screens.MoodScreen
 import it.fast4x.riplay.ui.screens.PlaylistScreen
-import it.fast4x.riplay.ui.screens.QuickPicsScreen
 import it.fast4x.riplay.ui.RiPlayWindowTitleBar
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowScope
@@ -128,6 +146,23 @@ data class QueuedSong(
  * spostato nell'albero: cambia SOLO il layout attorno allo stesso
  * SwingPanel (equivalente a un ridimensionamento della finestra), quindi
  * audio e video proseguono senza interruzioni.
+ *
+ * STEP 3m (richieste utente: coda sempre visibile, file locali, home
+ * come Android):
+ *  1. COLONNA CODA ALL'ESTREMA DESTRA della finestra principale (senza
+ *     aprire il player full screen): stesso pannello del player full
+ *     (PlayQueuePanel pubblico: click = riproduci, trascina = riordina,
+ *     X = rimuovi, cestino = svuota). Si apre con il pulsantino laterale
+ *     a destra (icona coda + numero brani) e RIENTRA con la sua X
+ *     (slide da/destra). Nascosta in modalita' teatro (video a tutta
+ *     larghezza); e' Compose puro: il browser KCEF a sinistra NON ne'
+ *     toccato (la colonna player resta a larghezza fissa 23%).
+ *  2. Pagina LOCALI in navigazione: importazione dei file del PC
+ *     ("Aggiungi cartella" con scansione ricorsiva / "Aggiungi file"),
+ *     inserimento nel db (id "local:<percorso>") e riproduzione col
+ *     motore VLCJ esistente.
+ *  3. HOME = HomePageOnline Android: EnvironmentExt.getHomePage() (le
+ *     sezioni reali della home YT Music) + discoverPage per i moods.
  */
 @Composable
 fun ThreeColumnsApp(
@@ -200,6 +235,12 @@ fun ThreeColumnsApp(
     // barra del player; il browser non viene MAI ricreato: solo il layout
     // attorno allo stesso SwingPanel cambia (come un resize della finestra).
     var videoWidened by remember { mutableStateOf(false) }
+
+    // STEP 3m (richiesta utente n.1): COLONNA CODA all'estrema destra
+    // della finestra principale (senza aprire il player full screen).
+    // Condivide la STESSA playQueue (e le stesse funzioni) del pannello
+    // coda del player full: tutto resta sincronizzato ovunque si usi.
+    var queuePanelOpen by remember { mutableStateOf(false) }
 
     // STEP 3d: cronologia dei brani ascoltati nella sessione (videoId in
     // ordine di ascolto + posizione corrente): e' la coda minima dietro i
@@ -528,6 +569,55 @@ fun ThreeColumnsApp(
                     onPlayCollection = onPlayCollection,
                     onOpenDetail = { openDetail(it) }
                 )
+
+                // STEP 3m (richiesta utente n.1): COLONNA CODA all'estrema
+                // destra dello schermo (stesse funzionalita' del pannello
+                // coda del player full). Nascosta in modalita' teatro (il
+                // video espanso a tutta larghezza non lascia spazio ed e'
+                // il look immersivo richiesto); torna al ritorno alla
+                // larghezza iniziale. E' Compose puro a destra della
+                // colonna player: il browser KCEF non viene ridimensionato
+                // (la sua colonna resta al 23% fisso).
+                if (!videoWidened) {
+                    AnimatedVisibility(
+                        visible = queuePanelOpen,
+                        enter = slideInHorizontally(tween(220)) { it } + fadeIn(tween(220)),
+                        exit = slideOutHorizontally(tween(180)) { it } + fadeOut(tween(180))
+                    ) {
+                        Row {
+                            VerticalDivider(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .width(1.dp),
+                                color = Color.Gray.copy(alpha = 0.6f)
+                            )
+                            PlayQueuePanel(
+                                queue = playQueue.toList(),
+                                onPlay = { song -> playFromQueue(song) },
+                                onRemove = { song ->
+                                    val idx = playQueue.indexOfFirst { it.song.id == song.id }
+                                    if (idx >= 0) playQueue.removeAt(idx)
+                                },
+                                onClear = { playQueue.clear() },
+                                onMove = onQueueMove,
+                                // il pulsante X del pannello la fa rientrare
+                                // verso destra (stessa richiesta dell'utente)
+                                onClose = { queuePanelOpen = false },
+                                // nella finestra principale non c'e' nessuna
+                                // barra superiore da lasciare cliccabile
+                                topPadding = 0.dp
+                            )
+                        }
+                    }
+                    if (!queuePanelOpen) {
+                        // pulsantino laterale che apre la coda (icona coda
+                        // + numero brani in attesa)
+                        QueueRailButton(
+                            count = playQueue.size,
+                            onClick = { queuePanelOpen = true }
+                        )
+                    }
+                }
             }
         }
         }
@@ -607,6 +697,49 @@ fun PlayerPanel(
 }
 
 /**
+ * STEP 3m (richiesta utente n.1): striscia laterale VERTICALE all'estrema
+ * destra dello schermo che apre la colonna coda senza passare dal player
+ * full screen. Mostra l'icona coda + il numero di brani in attesa. Quando
+ * la coda e' aperta scompare (al suo posto c'e' il pannello, che rientra
+ * con la sua X).
+ */
+@Composable
+private fun QueueRailButton(
+    count: Int,
+    onClick: () -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .fillMaxHeight()
+            .width(34.dp)
+            .background(Color(0xFF101010))
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp)
+    ) {
+        Icon(
+            Icons.Filled.QueueMusic,
+            contentDescription = "apri la coda di riproduzione",
+            tint = if (count > 0) RiPlayAccent else Color.White.copy(alpha = 0.55f),
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(Modifier.size(6.dp))
+        Text(
+            "$count",
+            color = if (count > 0) RiPlayAccent else Color.White.copy(alpha = 0.55f),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            "Coda",
+            color = Color.White.copy(alpha = 0.4f),
+            fontSize = 10.sp
+        )
+    }
+}
+
+/**
  * Pannello contenuto principale (dal centro verso destra): header con
  * logo/Back + pagina della sezione corrente oppure la schermata di
  * dettaglio aperta.
@@ -679,9 +812,13 @@ fun DestinationPanel(
                 )
             } else {
                 when (currentSection) {
+                    // STEP 3m (richiesta utente n.3): la home desktop e' la
+                    // STESSA di Android HomePageOnline: le sezioni reali
+                    // della home YouTube Music (EnvironmentExt.getHomePage)
+                    // + i moods & genres (discoverPage)
                     DesktopSection.HOME ->
                         ScrollColumn {
-                            QuickPicsScreen(
+                            HomePageOnline(
                                 onSongClick = onSongClickOnline,
                                 onAddToQueue = onAddToQueue,
                                 onAlbumClick = {
@@ -743,6 +880,15 @@ fun DestinationPanel(
                                 else
                                     onOpenDetail(DesktopDetail.LocalPlaylist(preview.playlist))
                             }
+                        )
+
+                    // STEP 3m (richiesta utente n.2): FILE LOCALI del pc
+                    // (importazione cartella/file + riproduzione VLCJ)
+                    DesktopSection.LOCAL ->
+                        LocalSongsPage(
+                            // i brani locali sono gia' nel db: niente upsert
+                            onSongClick = onSongClickFromDb,
+                            onAddToQueue = onAddToQueue
                         )
                 }
             }
