@@ -463,6 +463,37 @@ sealed interface KcefState {
  *
  * STEP 4 (packaging) potra' pre-seminare questa directory nel DEB/MSI
  * per evitare il download iniziale.
+ *
+ *     28) v29 (step3k, 8 sistemazioni richieste dall'utente dopo la
+ *     conferma v28): TUTTE UI/app tranne una. (1) SWITCH AUDIO/VIDEO
+ *     anche nella barra del player di sinistra; (2) pulsante ESPANDI
+ *     nella stessa barra: apre il player full screen anche quando la
+ *     cover e' coperta da un video in riproduzione; (3) toggle
+ *     audio/video RIMOSSO dal player full (per guardare il video si
+ *     torna alla home); (4) pulsante RADIO anche nel player di sinistra;
+ *     (5) pannello Coda nel full screen ORA CHIUDIBILE (X propria + il
+ *     pannello inizia sotto la barra superiore, prima la copriva);
+ *     (6) volume su RIGA PROPRIA in fondo nella barra del player di
+ *     sinistra (prima compresso nella riga della timeline); (7) NELLA
+ *     PAGINA PLAYER: due livelli trasparenti bloccano i click sul
+ *     TITOLO del video e sul LOGO YouTube dell'embed (parita' Android:
+ *     la WebView Android e' coperta dall'UI dell'app); SOLO blocco
+ *     click, NESSUNA modifica a playerVars/bridge/embed; (8) logo e
+ *     titolo RiPlay rimossi dall'header della colonna centrale in home.
+ *
+ *     29) v30 (step3l, richiesta utente "espandere il video a tutta
+ *     larghezza della finestra dell'app come fosse un fullscreen, con
+ *     ritorno alla larghezza iniziale"): SOLO UI, il motore KCEF NON
+ *     cambia comportamento. Nuova modalita' TEATRO nel player di
+ *     sinistra: il pulsante fullscreen nella barra (accanto a Radio ed
+ *     ESPANDI, solo con un video in visualizzazione) espande la colonna
+ *     player su TUTTA la larghezza della finestra (colonna centrale
+ *     composta ma a larghezza zero: nessuna perdita di stato delle
+ *     pagine); il pulsante diventa fullscreen-exit e riporta alla
+ *     larghezza iniziale. Il browser NON viene ricreato ne' riappeso:
+ *     cambia solo il layout attorno allo stesso SwingPanel (come un
+ *     ridimensionamento della finestra), audio/video intatti; a video
+ *     espanso l'input manuale e' nascosto.
  */
 object KcefEngine {
 
@@ -470,7 +501,7 @@ object KcefEngine {
      * Marker di versione del bootstrap: SE NEI LOG NON APPARE QUESTA RIGA,
      * il processo sta eseguendo una build NON aggiornata.
      */
-    const val BOOTSTRAP_VERSION = "v28 (step3j)"
+    const val BOOTSTRAP_VERSION = "v30 (step3l)"
 
     private const val TAG = "[RiPlay-KCEF]"
 

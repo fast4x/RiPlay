@@ -272,12 +272,24 @@ private val PLAYER_HTML = """
   #youTubePlayerDOM { width: 100%; height: 100%; }
   iframe { width: 100%; height: 100%; border: 0; }
   #segnaposto { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #000; color: #8a8a8a; font: 14px sans-serif; text-align: center; padding: 24px; box-sizing: border-box; }
+  /* STEP 3k (richiesta utente n.7): il TITOLO del video (in alto) e il
+     LOGO YouTube (watermark in basso a destra) dell'embed restano
+     CLICCABILI e mandano su youtube.com. Su Android l'utente non li vede
+     perche' la WebView e' coperta dall'interfaccia dell'app; qui il
+     browser e' visibile, quindi due livelli TRASPARENTI intercettano i
+     click su quelle zone prima che arrivino all'iframe (solo blocco
+     click: NESSUNA modifica a playerVars, al bridge riplay* e alla
+     catena di riproduzione verificata). */
+  #guardTitolo { position: absolute; top: 0; left: 0; width: 100%; height: 70px; z-index: 3; background: transparent; cursor: default; }
+  #guardLogo { position: absolute; bottom: 0; right: 0; width: 190px; height: 90px; z-index: 3; background: transparent; cursor: default; }
 </style>
 </head>
 <body>
 <div id="youTubePlayerDOM">
   <div id="segnaposto">Nessun video in riproduzione.<br>Seleziona una canzone nell'app RiPlay:<br>il player YouTube parte qui.</div>
 </div>
+<div id="guardTitolo"></div>
+<div id="guardLogo"></div>
 <script>
   console.log('[RiPlay-YT] pagina player avviata, origine=' + location.origin + ', UA=' + navigator.userAgent);
 </script>

@@ -40,7 +40,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.VolumeDown
 import androidx.compose.material.icons.automirrored.rounded.VolumeOff
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
-import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
@@ -159,7 +158,11 @@ fun DesktopPlayerOverlay(
     song: Song?,
     controller: PlayerController?,
     videoVisible: Boolean,
-    onToggleVideo: (Boolean) -> Unit,
+    // STEP 3k (richiesta utente n.3): il pulsante audio/video e' RIMOSSO
+    // dal player full (per guardare il video si deve comunque tornare alla
+    // home: il toggle vive solo nella barra del player di sinistra).
+    // [videoVisible] resta: decide se la cover appare attenuata con la nota
+    // "video attivo nel pannello player".
     engineLabel: String,
     onCollapse: () -> Unit,
     // STEP 3d: navigazione tra i brani ascoltati (cronologia di sessione)
@@ -555,28 +558,11 @@ fun DesktopPlayerOverlay(
 
                 Spacer(Modifier.height(10.dp))
 
-                // Interruttore video/cover (la scelta persiste nel db come Android)
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .clickable { onToggleVideo(!videoVisible) }
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Icon(
-                        if (videoVisible) Icons.Filled.Image else Icons.Filled.Videocam,
-                        contentDescription = null,
-                        tint = RiPlayAccent,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        if (videoVisible) "Torna alla cover" else "Guarda il video",
-                        color = Color.White.copy(alpha = 0.85f),
-                        fontSize = 14.sp
-                    )
-                }
-
-                Spacer(Modifier.height(6.dp))
+                // STEP 3k (richiesta utente n.3): l'interruttore video/cover
+                // e' stato RIMOSSO dal player full: la copertina attenuata con
+                // la nota qui sopra resta come stato informativo, mentre lo
+                // switch vero si usa nella barra del player di sinistra
+                // (per guardare il video si deve comunque tornare alla home).
 
                 // Suggerimento di chiusura (dalla prova: la via d'uscita
                 // non era evidente)
@@ -593,6 +579,11 @@ fun DesktopPlayerOverlay(
             // destro del player a tutto schermo (si apre/chiude con l'icona
             // "Coda" in alto a destra). Click su un brano = riproduci ora,
             // X = rimuovi dalla coda, cestino = svuota tutto.
+            // STEP 3k (richiesta utente n.5): una volta aperto NON si poteva
+            // piu' chiudere: il pannello copriva l'intera altezza INCLUSA
+            // la barra in alto a destra col pulsante "Coda". Ora (a) il
+            // pannello inizia SOTTO la barra superiore (il pulsante Coda
+            // resta cliccabile) e (b) ha un pulsante X proprio nell'intestazione.
             androidx.compose.animation.AnimatedVisibility(
                 visible = queueOpen,
                 enter = fadeIn(tween(200)),
@@ -604,7 +595,8 @@ fun DesktopPlayerOverlay(
                     onPlay = onQueuePlay,
                     onRemove = onQueueRemove,
                     onClear = onQueueClear,
-                    onMove = onQueueMove
+                    onMove = onQueueMove,
+                    onClose = { queueOpen = false }
                 )
             }
         }
@@ -631,7 +623,9 @@ private fun PlayQueuePanel(
     onPlay: (Song) -> Unit,
     onRemove: (Song) -> Unit,
     onClear: () -> Unit,
-    onMove: (Long, Long) -> Unit
+    onMove: (Long, Long) -> Unit,
+    // STEP 3k (richiesta utente n.5): chiusura esplicita del pannello
+    onClose: () -> Unit
 ) {
     val lazyListState = rememberLazyListState()
     val reorderableState = rememberReorderableLazyListState(
@@ -647,6 +641,11 @@ private fun PlayQueuePanel(
         Modifier
             .fillMaxHeight()
             .width(340.dp)
+            // STEP 3k n.5: il pannello ora inizia SOTTO la barra superiore:
+            // la zona trasparente lascia il pulsante "Coda" cliccabile
+            // (prima il pannello a piena altezza lo copriva e non si poteva
+            // piu' chiudere la coda)
+            .padding(top = 70.dp)
             .background(Color(0xF2101110))
             .padding(14.dp)
     ) {
@@ -677,6 +676,19 @@ private fun PlayQueuePanel(
                         modifier = Modifier.size(18.dp)
                     )
                 }
+            }
+            // STEP 3k n.5: pulsante di CHIUSURA del pannello coda (prima
+            // mancava: una volta aperto non si poteva piu' richiudere)
+            IconButton(
+                onClick = onClose,
+                modifier = Modifier.size(30.dp)
+            ) {
+                Icon(
+                    Icons.Filled.Close,
+                    contentDescription = "chiudi il pannello coda",
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
+                )
             }
         }
 

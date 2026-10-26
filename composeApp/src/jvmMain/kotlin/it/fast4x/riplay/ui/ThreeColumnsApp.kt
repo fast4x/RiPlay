@@ -53,12 +53,10 @@ import it.fast4x.riplay.ui.screens.DesktopPlayerOverlay
 import it.fast4x.riplay.ui.screens.MoodScreen
 import it.fast4x.riplay.ui.screens.PlaylistScreen
 import it.fast4x.riplay.ui.screens.QuickPicsScreen
-import it.fast4x.riplay.ui.components.RiPlayAccent
 import it.fast4x.riplay.ui.RiPlayWindowTitleBar
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowScope
 import androidx.compose.ui.window.WindowState
-import androidx.compose.ui.text.font.FontWeight
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -117,6 +115,19 @@ data class QueuedSong(
  *    player espandibile (che ha tutti i controlli);
  *  - il player espandibile ha AVANTI/INDIETRO che navigano la CRONOLOGIA
  *    dei brani ascoltati nella sessione (songHistory/historyIndex).
+ *
+ * STEP 3l (richiesta utente: "nel caso che si riproduce un video, la
+ * possibilita' di espanderlo a tutta larghezza della finestra dell'app
+ * come fosse un fullscreen, con ritorno alla larghezza iniziale"):
+ * VIDEO A TUTTA LARGHEZZA (modalita' teatro). Con un video in
+ * riproduzione il pulsante fullscreen nella barra del player di sinistra
+ * ESPANDE la colonna player su TUTTA la larghezza della finestra (la
+ * colonna centrale resta COMPposta ma a larghezza zero: la pagina aperta
+ * non perde stato); il pulsante diventa fullscreen-exit e RIporta il
+ * player alla larghezza iniziale. Il browser KCEF NON viene ricreato ne'
+ * spostato nell'albero: cambia SOLO il layout attorno allo stesso
+ * SwingPanel (equivalente a un ridimensionamento della finestra), quindi
+ * audio e video proseguono senza interruzioni.
  */
 @Composable
 fun ThreeColumnsApp(
@@ -181,6 +192,14 @@ fun ThreeColumnsApp(
     // STEP 3d: si apre CLICCANDO la copertina/segnaposto sopra il player
     // (la barra mini e' stata rimossa).
     var playerExpanded by remember { mutableStateOf(false) }
+
+    // STEP 3l: VIDEO A TUTTA LARGHEZZA FINESTRA (modalita' teatro).
+    // TRUE = la colonna player occupa tutta la larghezza dell'app e la
+    // colonna centrale resta composta ma a larghezza zero (ricerca, scroll
+    // e pagine mantengono lo stato). Toggle dal pulsante fullscreen nella
+    // barra del player; il browser non viene MAI ricreato: solo il layout
+    // attorno allo stesso SwingPanel cambia (come un resize della finestra).
+    var videoWidened by remember { mutableStateOf(false) }
 
     // STEP 3d: cronologia dei brani ascoltati nella sessione (videoId in
     // ordine di ascolto + posizione corrente): e' la coda minima dietro i
@@ -434,8 +453,10 @@ fun ThreeColumnsApp(
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
-                // Colonna player (sinistra, invariata rispetto allo step 3)
-                PlayerPanel {
+                // Colonna player (sinistra): 23% della finestra come da
+                // step 3b, TUTTA LA LARGHEZZA quando il video e' espanso
+                // (STEP 3l, modalita' teatro)
+                PlayerPanel(widened = videoWidened) {
                     DesktopVideoSource(
                         modifier = Modifier.fillMaxWidth().fillMaxHeight(),
                         // STEP 2k: l'id della canzone selezionata arriva al player
@@ -452,28 +473,53 @@ fun ThreeColumnsApp(
                         // STEP 3d: click sulla copertina/segnaposto -> player espandibile
                         onCoverClick = {
                             if (nowPlayingSong != null) playerExpanded = true
-                        }
+                        },
+                        // STEP 3k (richiesta utente n.1): lo SWITCH AUDIO/VIDEO
+                        // esiste anche nel player di sinistra (prima solo nel
+                        // player full, dove ora e' RIMOSSO: per guardare il
+                        // video serve tornare alla home)
+                        onToggleVideo = onToggleVideoMode,
+                        // STEP 3k (richiesta utente n.4): pulsante RADIO anche
+                        // nel player di sinistra in home
+                        onAddRadio = onAddRadio,
+                        radioLoading = radioLoading,
+                        radioFeedback = radioFeedback,
+                        // STEP 3k (richiesta utente n.2): quando la cover non e'
+                        // visibile perche' sta suonando un VIDEO deve restare un
+                        // modo per aprire il player full screen (pulsante espandi)
+                        onExpand = {
+                            if (nowPlayingSong != null) playerExpanded = true
+                        },
+                        // STEP 3l: VIDEO A TUTTA LARGHEZZA FINESTRA (teatro):
+                        // espande/ripristina la larghezza del pannello player
+                        // senza mai ricreare il browser
+                        widened = videoWidened,
+                        onToggleWiden = { videoWidened = !videoWidened }
                     )
                 }
 
-                VerticalDivider(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .width(1.dp),
-                    color = Color.Gray.copy(alpha = 0.6f)
-                )
+                // STEP 3l: a video espanso il divisore scompare (bordo a bordo,
+                // come un fullscreen); ritorna con la larghezza iniziale
+                if (!videoWidened) {
+                    VerticalDivider(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .width(1.dp),
+                        color = Color.Gray.copy(alpha = 0.6f)
+                    )
+                }
 
                 // Pannello di destinazione — parte dove stava la colonna
-                // centrale ma ESPESA VERSO DESTRA fino al bordo finestra
+                // centrale ma ESPESA VERSO DESTRA fino al bordo finestra.
+                // STEP 3l: resta COMPOSTA anche a video espanso (weight su
+                // spazio residuo = zero): le pagine aperte non perdono stato
+                // (ricerca, scroll) e al ritorno alla larghezza iniziale
+                // tutto e' esattamente come prima.
                 DestinationPanel(
                     modifier = Modifier.weight(1f),
                     currentSection = currentSection,
                     detailPage = detailPage,
                     onBackToSection = { detailPage = null },
-                    onGoHome = {
-                        currentSection = DesktopSection.HOME
-                        detailPage = null
-                    },
                     onSongClickOnline = onSongClickOnline,
                     onSongClickFromDb = onSongClickFromDb,
                     onAddToQueue = onAddToQueue,
@@ -496,7 +542,10 @@ fun ThreeColumnsApp(
                 song = nowPlayingSong,
                 controller = playerManager.active,
                 videoVisible = playerManager.videoVisible,
-                onToggleVideo = onToggleVideoMode,
+                // STEP 3k (richiesta utente n.3): il pulsante audio/video e'
+                // RIMOSSO dal player full (per guardare il video si deve
+                // comunque tornare alla home: il toggle vive solo nella
+                // barra del player di sinistra)
                 engineLabel = playerManager.engine.label,
                 onCollapse = { playerExpanded = false },
                 // STEP 3d: avanti/indietro sulla cronologia di sessione
@@ -527,9 +576,18 @@ fun ThreeColumnsApp(
 /**
  * Pannello di sinistra con il player (DesktopVideoSource): stessa
  * struttura/proporzioni del vecchio RightPanelContent (step 2/3).
+ *
+ * STEP 3l: con [widened] TRUE il pannello si ESPANDE su tutta la larghezza
+ * della finestra (modalita' teatro del video): niente padding laterali o
+ * superiori e niente spacer iniziale, il player tocca i bordi come un
+ * fullscreen. Il contenuto NON cambia identita' nella composizione: lo
+ * stesso SwingPanel del browser si adatta alla nuova dimensione (identico
+ * a un ridimensionamento della finestra), quindi la riproduzione prosegue.
  */
 @Composable
 fun PlayerPanel(
+    // STEP 3l: TRUE = a tutta larghezza finestra (video espanso)
+    widened: Boolean = false,
     content: @Composable () -> Unit
 ) {
     Column(
@@ -537,11 +595,11 @@ fun PlayerPanel(
         horizontalAlignment = Alignment.Start,
         modifier = Modifier
             .fillMaxHeight()
-            .fillMaxWidth(0.23f)
-            .padding(horizontal = layoutColumnsHorizontalPadding)
-            .padding(top = layoutColumnTopPadding)
+            .fillMaxWidth(if (widened) 1f else 0.23f)
+            .padding(horizontal = if (widened) 0.dp else layoutColumnsHorizontalPadding)
+            .padding(top = if (widened) 0.dp else layoutColumnTopPadding)
     ) {
-        Spacer(Modifier.size(layoutColumnTopPadding))
+        if (!widened) Spacer(Modifier.size(layoutColumnTopPadding))
         Row {
             content()
         }
@@ -559,7 +617,6 @@ fun DestinationPanel(
     currentSection: DesktopSection,
     detailPage: DesktopDetail?,
     onBackToSection: () -> Unit,
-    onGoHome: () -> Unit,
     onSongClickOnline: (Song) -> Unit,
     onSongClickFromDb: (Song) -> Unit,
     onAddToQueue: (Song) -> Unit,
@@ -576,8 +633,11 @@ fun DestinationPanel(
             .padding(top = layoutColumnTopPadding)
             .padding(bottom = layoutColumnBottomPadding)
     ) {
-        // Header: logo RiPlay (torna a Home) oppure pulsante Back quando
-        // e' aperto un dettaglio (artista/album/playlist/mood)
+        // Header: pulsante Back SOLO quando e' aperto un dettaglio
+        // (artista/album/playlist/mood).
+        // STEP 3k (richiesta utente n.8): il logo RiPlay e il titolo in alto
+        // nella colonna centrale SONO RIMOSSI (il logo/nome restano nella
+        // title bar custom della finestra, introdotta nello step 3h).
         val detail = detailPage
         Row(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -597,24 +657,6 @@ fun DestinationPanel(
                     color = Color.White.copy(alpha = 0.7f),
                     fontSize = 14.sp,
                     modifier = Modifier.clickable { onBackToSection() }
-                )
-            } else {
-                Image(
-                    painter = painterResource(Res.drawable.app_icon),
-                    colorFilter = ColorFilter.tint(RiPlayAccent),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clickable { onGoHome() }
-                )
-                // STEP 3h: nome completo e peso tipografico giusto
-                // (prima era solo "Play" senza peso)
-                Text(
-                    text = "RiPlay",
-                    color = Color.White,
-                    fontSize = 21.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable { onGoHome() }
                 )
             }
         }

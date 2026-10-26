@@ -297,7 +297,28 @@ fun DesktopVideoSource(
     song: Song?,
     manager: DesktopPlayerManager,
     browserHiddenByOverlay: Boolean = false,
-    onCoverClick: () -> Unit = {}
+    onCoverClick: () -> Unit = {},
+    // STEP 3k (richiesta utente n.1): SWITCH AUDIO/VIDEO anche nella barra
+    // del player di sinistra (prima esisteva solo nel player full).
+    onToggleVideo: (Boolean) -> Unit = {},
+    // STEP 3k (richiesta utente n.4): pulsante RADIO nella barra del player
+    // di sinistra in home (stessa funzione del Radio nel player full).
+    onAddRadio: (() -> Unit)? = null,
+    radioLoading: Boolean = false,
+    radioFeedback: String? = null,
+    // STEP 3k (richiesta utente n.2): pulsante ESPANDI per aprire il player
+    // full screen anche quando la cover NON e' visibile (video in riproduzione).
+    onExpand: (() -> Unit)? = null,
+    // STEP 3l (richiesta utente): TRUE = VIDEO A TUTTA LARGHEZZA FINESTRA
+    // (modalita' teatro). Cambia SOLO il layout attorno allo stesso
+    // SwingPanel (il browser non viene ricreato ne' riappeso: la
+    // riproduzione prosegue come durante un resize della finestra); a
+    // video espanso l'input manuale in fondo e' nascosto per un look
+    // immersivo e la barra mostra il pulsante per TORNARE alla larghezza
+    // iniziale.
+    widened: Boolean = false,
+    // STEP 3l: toggle espandi/ripristina larghezza (null = pulsante nascosto)
+    onToggleWiden: (() -> Unit)? = null
 ) {
     val manualInput = remember { mutableStateOf("") }
 
@@ -309,16 +330,32 @@ fun DesktopVideoSource(
         manager.route(song, videoId.orEmpty(), manualInput.value)
     }
 
+    // STEP 3l: il pulsante fullscreen della barra ha senso solo con un
+    // media effettivamente caricato (a riposo c'e' solo il segnaposto).
+    val widenCallback = if (manager.idle) null else onToggleWiden
+
     Column(modifier) {
         when (manager.engine) {
             DesktopPlayerEngine.YOUTUBE -> YoutubeKcefPane(
-                manager, song, browserHiddenByOverlay, onCoverClick, Modifier.weight(1f)
+                manager, song, browserHiddenByOverlay, onCoverClick,
+                onToggleVideo, onAddRadio, radioLoading, radioFeedback, onExpand,
+                widened, widenCallback,
+                Modifier.weight(1f)
             )
             DesktopPlayerEngine.LOCAL -> LocalVlcjPane(
-                manager, song, onCoverClick, Modifier.weight(1f)
+                manager, song, onCoverClick,
+                onToggleVideo, onAddRadio, radioLoading, radioFeedback, onExpand,
+                widened, widenCallback,
+                Modifier.weight(1f)
             )
         }
-        PlayerInput(Modifier.fillMaxWidth()) { manualInput.value = it }
+        // STEP 3l: a video espanso l'input manuale e' nascosto (solo video
+        // + barra di controllo, look teatro). E' un campo Compose: puo'
+        // uscire/rientrare nella composizione senza toccare il browser,
+        // che vive nel pane sopra.
+        if (!widened) {
+            PlayerInput(Modifier.fillMaxWidth()) { manualInput.value = it }
+        }
     }
 }
 
@@ -328,6 +365,14 @@ private fun YoutubeKcefPane(
     song: Song?,
     overlayOpen: Boolean,
     onCoverClick: () -> Unit,
+    onToggleVideo: (Boolean) -> Unit,
+    onAddRadio: (() -> Unit)?,
+    radioLoading: Boolean,
+    radioFeedback: String?,
+    onExpand: (() -> Unit)?,
+    // STEP 3l: video a tutta larghezza finestra (teatro)
+    widened: Boolean,
+    onToggleWiden: (() -> Unit)?,
     modifier: Modifier = Modifier
 ) {
     // Al passaggio all'altro motore il browser viene rilasciato (come nei
@@ -367,7 +412,20 @@ private fun YoutubeKcefPane(
                 errorText = errorText,
                 onCoverClick = onCoverClick
             )
-            DefaultBottomBar(Modifier.fillMaxWidth(), manager.kcef)
+            // STEP 3k: switch audio/video + radio + espandi passano alla barra
+            // STEP 3l: anche il toggle video a tutta larghezza finestra
+            DefaultBottomBar(
+                Modifier.fillMaxWidth(),
+                manager.kcef,
+                videoVisible = manager.videoVisible,
+                onToggleVideo = { onToggleVideo(!manager.videoVisible) },
+                onAddRadio = onAddRadio,
+                radioLoading = radioLoading,
+                radioFeedback = radioFeedback,
+                onExpand = onExpand,
+                widened = widened,
+                onToggleWiden = onToggleWiden
+            )
         }
         EngineBadge(DesktopPlayerEngine.YOUTUBE)
     }
@@ -378,6 +436,14 @@ private fun LocalVlcjPane(
     manager: DesktopPlayerManager,
     song: Song?,
     onCoverClick: () -> Unit,
+    onToggleVideo: (Boolean) -> Unit,
+    onAddRadio: (() -> Unit)?,
+    radioLoading: Boolean,
+    radioFeedback: String?,
+    onExpand: (() -> Unit)?,
+    // STEP 3l: video a tutta larghezza finestra (teatro)
+    widened: Boolean,
+    onToggleWiden: (() -> Unit)?,
     modifier: Modifier = Modifier
 ) {
     // Al passaggio all'altro motore VLCJ viene fermato (il controller resta
@@ -432,7 +498,20 @@ private fun LocalVlcjPane(
                     )
                 }
             }
-            DefaultBottomBar(Modifier.fillMaxWidth(), manager.vlcj)
+            // STEP 3k: switch audio/video + radio + espandi passano alla barra
+            // STEP 3l: anche il toggle video a tutta larghezza finestra
+            DefaultBottomBar(
+                Modifier.fillMaxWidth(),
+                manager.vlcj,
+                videoVisible = manager.videoVisible,
+                onToggleVideo = { onToggleVideo(!manager.videoVisible) },
+                onAddRadio = onAddRadio,
+                radioLoading = radioLoading,
+                radioFeedback = radioFeedback,
+                onExpand = onExpand,
+                widened = widened,
+                onToggleWiden = onToggleWiden
+            )
         }
         EngineBadge(DesktopPlayerEngine.LOCAL)
     }
