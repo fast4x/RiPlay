@@ -114,13 +114,77 @@ java {
     }
 }
 
+// =============================================================================
+// STEP 3v (fix DMG macOS - createDistributable fallisce con jpackage exit 1):
+//   jdk.jpackage.internal.ConfigException: The first number in an app-version
+//   cannot be zero or negative (jdk.jpackage.internal.CFBundleVersion.of,
+//   MacAppBundler.doValidate -> AppImageBundler.validate)
+// CAUSA: su macOS jpackage valida la CFBundleVersion del bundle e il PRIMO
+// numero dell'app-version NON puo' essere 0; Windows (Msi) e Linux (Deb/Rpm)
+// invece accettano 0.x. La versione desktop e' allineata all'app Android
+// ("0.8.0", schema 0.x), quindi per macOS la versione viene mappata in modo
+// deterministico: se il primo numero e' 0 viene promosso a 1
+// ("0.8.0" -> "1.8.0"), mantenendo minor/patch riconoscibili.
+// (verificato sul sorgente del plugin Compose 1.11.0:
+//  - packageVersionFor(AppImage/Dmg) risolve macOS.packageVersion PRIMA del
+//    top-level packageVersion (internal/packageVersions.kt)
+//  - CFBundleVersion = packageBuildVersion ?: packageVersion
+//    (AbstractJPackageTask.patchInfoPlistIfNeeded))
+// Cosi' il tag GitHub v0.8.0 resta invariato e i prossimi 0.x funzioneranno
+// automaticamente; i tag v1.x passano la funzione senza modifiche.
+// =============================================================================
+fun macSafeJPackageVersion(raw: String): String {
+    val nums = raw.split('.').map { part ->
+        part.trim().takeWhile { it.isDigit() }.ifEmpty { "0" }.toInt()
+    }
+    if (nums.isEmpty()) return "1.0.0"
+    val first = if (nums[0] <= 0) 1 else nums[0]
+    val rest = List(2) { idx -> nums.getOrNull(idx + 1) ?: 0 }
+    return (listOf(first) + rest).joinToString(".")
+}
+
+val riplayDesktopVersion = "0.8.0"
+val riplayDesktopVersionMac = macSafeJPackageVersion(riplayDesktopVersion)
+
+// =============================================================================
+// STEP 3x (difesa finale app-version macOS + canarino diagnostico):
+// Verifica sui sorgenti plugin Compose 1.11.0 (internal/packageVersions.kt +
+// dsl/TargetFormat.kt): packageVersionFor(AppImage) -> formatSpecific (null
+// per AppImage) ?: osSpecific (macOS.packageVersion, perche' AppImage ha
+// targetOS = currentOS che su runner macOS e' MacOS) ?: top-level. Il fix
+// STEP 3v nel blocco macOS{} e' quindi corretto; il fallimento CI del
+// 27/10 08:28Z con lo stesso errore e' imputabile a una run che NON
+// conteneva questo codice (tag su commit vecchio / checkout su ref diverso:
+// il workflow su workflow_dispatch esegue anche "git reset --hard origin/main").
+// Difese aggiuntive:
+// 1) versione mac-safe impostata ANCHE sul packageVersion top-level quando
+//    il build gira su host macOS: qualunque formato/target riceve 1.8.0
+//    indipendentemente dalla catena di risoluzione (su Linux/Windows nulla
+//    cambia: resta 0.8.0)
+// 2) la riga "RiPlay packaging version:" nel log di configurazione rende
+//    visibile in OGNI run quale codice sta girando: se una run fallisce con
+//    "The first number in an app-version" SENZA questa riga, la run NON
+//    contiene questo file (controllare tag/branch del push).
+//    NB: println = livello QUIET, visibile anche con org.gradle.logging.level=warn
+//    (logger.lifecycle verrebbe filtrato dal log level warn di gradle.properties)
+// =============================================================================
+val riplayMacHost = (System.getProperty("os.name") ?: "").startsWith("Mac", ignoreCase = true)
+val riplayPackageVersionForHost = if (riplayMacHost) riplayDesktopVersionMac else riplayDesktopVersion
+println(
+    "RiPlay packaging version: host='" + System.getProperty("os.name") + "' " +
+        "packageVersion=$riplayPackageVersionForHost (raw=$riplayDesktopVersion, macSafe=$riplayDesktopVersionMac)"
+)
+
 compose.desktop {
     application {
 
         mainClass = "MainKt"
 
         // STEP 3q: versione allineata all'app Android (versionName)
-        version = "0.8.1"
+        // NOTA: dentro application{} "version =" risolve sulla proprieta' del
+        // Project Gradle (receiver esterno al lambda), il plugin Compose 1.11
+        // non espone una version propria su JvmApplication
+        version = riplayDesktopVersion
         group = "riplay"
 
         nativeDistributions {
@@ -151,7 +215,10 @@ compose.desktop {
              */
             targetFormats(TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm, TargetFormat.Dmg)
             packageName = "RiPlay"
-            packageVersion = "0.8.1"
+            // STEP 3x: su host macOS qui arriva gia' la versione mac-safe (1.8.0),
+            // cosi' jpackage non puo' mai ricevere 0.x per qualunque formato
+            // (createDistributable/AppImage incluso); su Linux/Windows resta 0.8.0
+            packageVersion = riplayPackageVersionForHost
 
             // STEP 4: risorse applicative incluse nel pacchetto (CEF pre-seminato)
             appResourcesRootDir.set(project.layout.projectDirectory.dir("desktop-resources"))
@@ -181,6 +248,13 @@ compose.desktop {
                 iconFile.set(iconsRoot.resolve("icon-mac.icns"))
                 bundleID = "it.fast4x.riplay.desktop"
                 minimumSystemVersion = "10.15"
+                // STEP 3v: su macOS jpackage rifiuta versioni 0.x (CFBundleVersion
+                // con primo numero 0 o negativo). "0.8.0" -> "1.8.0": vale per
+                // createDistributable (--app-version), packageDmg e la
+                // CFBundleVersion/CFBundleShortVersionString dell'Info.plist.
+                // Windows/Linux continuano a usare 0.8.0 (top-level).
+                packageVersion = riplayDesktopVersionMac
+                packageBuildVersion = riplayDesktopVersionMac
             }
         }
 

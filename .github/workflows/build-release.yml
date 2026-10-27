@@ -267,12 +267,9 @@ jobs:
             seed_arch: aarch64
             # STEP 3u: jpackage --verbose (log completo dei comandi codesign
             # interni) + working dir preservata per la diagnostica post-fallimento
-            # STEP 3w: il runner macos-14 ha 7 GB RAM (ubuntu/windows 16 GB):
-            # il cap kotlin.daemon.jvmargs=-Xmx4g di gradle.properties e' pensato
-            # per le compilate release ANDROID (che fallivano con 1536M); la
-            # compilazione desktop e' sempre stata <1.5GB, quindi su mac
-            # riportiamo il cap a 2g per non sommare heap teorici (gradle 4g +
-            # kotlin 4g) a un runner piccolo durante jpackage
+            # STEP 3w: cap Kotlin daemon ridotto (runner macos-14 = 7GB; i cap
+            # teorici 4g+4g di gradle.properties sono pensati per i runner 16GB,
+            # la compilazione desktop resta <1.5GB)
             extra_flags: '-Pcompose.desktop.verbose=true -Pcompose.preserve.working.dir=true -Pkotlin.daemon.jvmargs=-Xmx2g'
     steps:
       - name: Checkout code
@@ -302,6 +299,25 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
+      # STEP 3x: canarino diagnostico — mostra nel log QUALI fix sono presenti
+      # nel codice realmente eseguito dalla run (un tag creato su un commit
+      # vecchio, o un checkout su ref diverso, gira su codice SENZA i fix:
+      # ora si vede subito). shell bash per compatibilita' win/linux/mac
+      - name: Canarino fix versioni/heap nel codice di questa run
+        shell: bash
+        run: |
+          echo "=== STEP 3x canarino: fix presenti nel codice eseguito ==="
+          if grep -n "riplayPackageVersionForHost" composeApp/build.gradle.kts; then
+            echo "OK: fix versione mac-safe (STEP 3v/3x) PRESENTE"
+          else
+            echo "!! ATTENZIONE: fix versione mac-safe ASSENTE — run su codice vecchio (tag su commit vecchio? checkout su ref diverso?) !!"
+          fi
+          if grep -n "kotlin.daemon.jvmargs=-Xmx4g" gradle.properties; then
+            echo "OK: fix memoria Kotlin daemon (STEP 3w) PRESENTE"
+          else
+            echo "!! ATTENZIONE: fix memoria (kotlin.daemon.jvmargs=-Xmx4g) ASSENTE — run su codice vecchio !!"
+          fi
 
       # Semina l'archivio jbr_jcef (stessa selezione della libreria KCEF) in
       # composeApp/desktop-resources/<os>/kcef/ -> jpackage lo include
