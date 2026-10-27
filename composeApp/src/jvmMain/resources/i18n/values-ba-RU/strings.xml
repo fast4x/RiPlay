@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - English (values)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">Баш бит</string>
+    <string name="nav.search">Эҙләү</string>
+    <string name="nav.songs">Йырҙар</string>
+    <string name="nav.artists">Башҡарыусылар</string>
+    <string name="nav.albums">Альбомдар</string>
+    <string name="nav.playlists">Плейлистар</string>
+    <string name="nav.local">Локаль файлдар</string>
+    <string name="queue.title">Уйнатыу сираттағы ({n})</string>
+    <string name="queue.open">уйнатыу сираттағы асыу</string>
+    <string name="queue.clear">сиратты таҙартыу</string>
+    <string name="queue.close_panel">сират панелен ябыу</string>
+    <string name="queue.remove">сираттан алып ташлау</string>
+    <string name="queue.drag">теҙеп ҡуйыр өсөн һөйрәгеҙ</string>
+    <string name="queue.drag_handle">Теҙеп ҡуйыр өсөн тотҡаны һөйрәгеҙ</string>
+    <string name="action.add_to_queue">сиратҡа өҫтәү</string>
+    <string name="action.already_queued">инде сиратта</string>
+    <string name="action.enqueue_all">барыһын да сиратҡа өҫтәү</string>
+    <string name="action.enqueue_album">бөтә альбомды сиратҡа өҫтәү</string>
+    <string name="action.enqueue_playlist">бөтә плейлисты сиратҡа өҫтәү</string>
+    <string name="player.previous">алдағы йыр</string>
+    <string name="player.next">кәйеҫ йыр</string>
+    <string name="player.play">уйнат</string>
+    <string name="player.pause">туҡтау</string>
+    <string name="player.volume_off">тауыш һүндерелгән</string>
+    <string name="player.volume_low">тауыш түбән</string>
+    <string name="player.volume_high">тауыш юғары</string>
+    <string name="player.expand">плеерҙы киңәйтеү</string>
+    <string name="player.open_fullscreen">плеерҙы тулы экранда асыу</string>
+    <string name="player.back_to_cover">йыр тышлығына ҡайтыу</string>
+    <string name="player.watch_video">видеоны ҡарау</string>
+    <string name="player.expand_video">видеоны тәҙрә киңлегенә тиклем киңәйтеү</string>
+    <string name="player.restore_video">видеоның баштағы киңлеген кире ҡайтарыу</string>
+    <string name="player.radio">радио: оҡшаш йырҙарҙы сиратҡа өҫтәү</string>
+    <string name="player.song_cover">йыр тышлығы</string>
+    <string name="player.online">Онлайн</string>
+    <string name="player.local">Локаль</string>
+    <string name="radio.none_found">Оҡшаш йырҙар табылманы</string>
+    <string name="radio.added">{n} оҡшаш йыр өҫтәлде</string>
+    <string name="radio.unavailable">Радио ҡулланыу мөмкин түгел</string>
+    <string name="overlay.close_player">плеерҙы ябыу</string>
+    <string name="overlay.queue_title">уйнатыу сираттағы</string>
+    <string name="overlay.queue_count">Сират ({n})</string>
+    <string name="overlay.no_song">Бер йыр уйнамай</string>
+    <string name="overlay.video_active_note">Видео һул плеер панелендә актив: бында күреү өсөн ябығыҙ</string>
+    <string name="overlay.video_active">видео плеер панелендә актив</string>
+    <string name="overlay.close_hint">Өҫтә һулдағы шеврон менән йәки ESC менән ябығыҙ</string>
+    <string name="page.albums">Альбомдар ({n})</string>
+    <string name="page.artists">Башҡарыусылар ({n})</string>
+    <string name="page.playlists">Плейлистар ({n})</string>
+    <string name="page.songs">Йырҙар ({n})</string>
+    <string name="page.local">Локаль файлдар ({n})</string>
+    <string name="page.followed_only">Тик эйәртелгәндәр</string>
+    <string name="page.followed">Эйәртелгәндәр</string>
+    <string name="page.followed_artist">эйәртелгән башҡарыусы</string>
+    <string name="page.home">Баш бит</string>
+    <string name="page.moods">Кәйеф һәм жанрҙар</string>
+    <string name="page.home_unavailable">Баш бит ҡулланыу мөмкин түгел (бәйләнеште тикшерегеҙ һәм өҫтә яңыртыу тамғаһына баҫығыҙ).</string>
+    <string name="search.hint">Йыр, альбом, башҡарыусы, плейлист эҙләгеҙ...</string>
+    <string name="search.load_more">Тағы тейәү</string>
+    <string name="search.recent">Һуңғы эҙләүҙәр</string>
+    <string name="search.suggestions">Тәҡдимдәр</string>
+    <string name="search.clear">эҙләүҙе таҙартыу</string>
+    <string name="local.add_folder">Папка өҫтәү</string>
+    <string name="local.add_files">Файлдар өҫтәү</string>
+    <string name="local.fallback_artist">Локаль файл</string>
+    <string name="local.imported">{n} файл индерелде</string>
+    <string name="local.scanning">Аудио файлдар эҙләнә...</string>
+    <string name="local.empty_hint">Локаль файлдар индерелмәгән.\n\nКомпьютерҙағы папканы сканерлау өсөн \"Папка өҫтәү\" (ярҙамсы папкалар менән) йәки айырым йырҙар һайлау өсөн \"Файлдар өҫтәү\" ҡулланығыҙ. Индерелгән файлдар Локаль двигателе (VLCJ) менән уйнатыла һәм китапханала ҡала.</string>
+    <string name="local.input_hint">YouTube URL йәки локаль файл / URL (VLCJ)</string>
+    <string name="local.clear_url">URL-ды таҙартыу</string>
+    <string name="local.open_file">локаль файл асыу</string>
+    <string name="detail.album_shuffle">альбомды осраҡлы тәртиптә уйнатыу</string>
+    <string name="detail.album_favorite_add">альбомды яратҡандарға өҫтәү</string>
+    <string name="detail.album_favorite_ok">альбом яратҡандарҙа</string>
+    <string name="detail.artist_shuffle">башҡарыусының йырҙарын осраҡлы тәртиптә уйнатыу</string>
+    <string name="detail.artist_follow">башҡарыусыға эйәреү</string>
+    <string name="detail.artist_followed">башҡарыусыға эйәрелде</string>
+    <string name="detail.playlist_shuffle">плейлисты осраҡлы тәртиптә уйнатыу</string>
+    <string name="detail.playlist_favorite_add">плейлисты яратҡандарға һаҡлау</string>
+    <string name="detail.playlist_favorite_ok">плейлист яратҡандарҙа: алып ташлау өсөн баҫығыҙ</string>
+    <string name="common.loading">тейәү...</string>
+    <string name="kcef.unavailable">KCEF уйнатыу двигателе ҡулланыу мөмкин түгел</string>
+    <string name="kcef.details_log">Тулы мәғлүмәт лог/консолда: [RiPlay-KCEF] менән башланған юлдар.</string>
+    <string name="kcef.retry">Яңынан һынағыҙ</string>
+    <string name="kcef.preparing">Уйнатыу двигателе әҙерләнә (KCEF)…</string>
+    <string name="kcef.downloading">Урынлаштырылған браузер тейәлә (тәүге стартта ғына)…</string>
+    <string name="kcef.extracting">Компоненттар асылда...</string>
+    <string name="kcef.installing">Урынлаштырыла...</string>
+    <string name="kcef.starting">Урынлаштырылған браузер башлана...</string>
+    <string name="kcef.preparing_short">Әҙерләнә...</string>
+    <string name="kcef.jdk_conflict">Ҡулланылған JDK RiPlay менән тап килмәгән версияла урынлаштырылған браузер двигателе тотҡан. Тейәүҙән һуң ҡушымта ябыласаҡ: ҡуйыуҙы тамамлау өсөн яңынан асығыҙ.</string>
+    <string name="error.yt_with_code">YouTube хатаһы (код {code}: {meaning}). Мәғлүмәт логта: [RiPlay-KCEF] / [RiPlay-YT] юлдары.</string>
+    <string name="error.yt_2">хата параметр йәки видео инеү/йәш сикләүле йәки YouTube анти-бот/ризалыҡ тикшереүе (кереү кәрәк)</string>
+    <string name="error.yt_5">HTML5 плеер хатаһы (йөкмәтке/кодек/селтәр)</string>
+    <string name="error.yt_100">видео табылманы йәки шәхси</string>
+    <string name="error.yt_101_150">эйәһе урынлаштырылған уйнатыуға рөхсәт итмәй</string>
+    <string name="error.yt_152">урынлаштырылған контекст YouTube тарафынан кире ҡағылды: хужа битенең Referer ҡабул ителмәй</string>
+    <string name="error.yt_153">урынлаштырыу һорауы YouTube тарафынан кире ҡағылды (player/referrer көйләүҙәре юҡ)</string>
+    <string name="error.yt_unknown">билдәһеҙ код</string>
+    <string name="error.local_unavailable">Локаль йыр өҫтәлдә уйнатылмай: файл юлы ҡулланыу мөмкин түгел (Android MediaStore сығанағы йәки күсерелгән файл). Аҫтағы яландың папка төймәһе менән компьютерҙән файл һайлап уйната алаһығыҙ.</string>
+    <string name="error.manual_unsupported">Юл табылманы йәки URL хупланмай: \'{value}\'</string>
+    <string name="misc.playlist_cover">Плейлист тышлығы</string>
+    <string name="settings.language">Тел</string>
+    <string name="settings.system">Система теле</string>
+    <string name="titlebar.minimize">Кесәйтеү</string>
+    <string name="titlebar.maximize">Ҙурайтыу</string>
+    <string name="titlebar.restore">Тергеҙеү</string>
+    <string name="titlebar.close">Ябыу</string>
+    <string name="common.back">Артҡа</string>
+    <string name="common.songs_word">йыр</string>
+    <string name="overlay.playing">Хәҙер уйнай</string>
+    <string name="local.none_found_in">\"{value}\" эсендә аудио файл табылманы</string>
+    <string name="local.imported_from">\"{value}\" папкаһынан {n} файл индерелде</string>
+</resources>
