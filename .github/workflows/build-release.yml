@@ -267,7 +267,13 @@ jobs:
             seed_arch: aarch64
             # STEP 3u: jpackage --verbose (log completo dei comandi codesign
             # interni) + working dir preservata per la diagnostica post-fallimento
-            extra_flags: '-Pcompose.desktop.verbose=true -Pcompose.preserve.working.dir=true'
+            # STEP 3w: il runner macos-14 ha 7 GB RAM (ubuntu/windows 16 GB):
+            # il cap kotlin.daemon.jvmargs=-Xmx4g di gradle.properties e' pensato
+            # per le compilate release ANDROID (che fallivano con 1536M); la
+            # compilazione desktop e' sempre stata <1.5GB, quindi su mac
+            # riportiamo il cap a 2g per non sommare heap teorici (gradle 4g +
+            # kotlin 4g) a un runner piccolo durante jpackage
+            extra_flags: '-Pcompose.desktop.verbose=true -Pcompose.preserve.working.dir=true -Pkotlin.daemon.jvmargs=-Xmx2g'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
