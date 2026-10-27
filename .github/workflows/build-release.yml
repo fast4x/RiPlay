@@ -51,6 +51,32 @@
 #    e Info.plist generati); (4) pulizia hdiutil dei volumi stale; (5) nel
 #    build.gradle.kts di composeApp il runtime jlink viene pre-firmato ad-hoc
 #    prima di jpackage (createRuntimeImage doLast).
+#
+# STEP 3y (fix artifact NON allegati alla release):
+#  - SINTOMO: le 3 build desktop VERDI ma NESSUN installer (msi/deb/rpm/dmg)
+#    allegato alla GitHub Release (gli APK invece c'erano).
+#  - CAUSA (verificata sul README actions/upload-artifact@v4): con piu' search
+#    path la root dell'artifact e' "the least common ancestor of all the
+#    search paths". Lo step Upload del job desktop passava 4 glob
+#    (binaries/main/msi|deb|rpm|dmg) il cui antenato comune e' binaries/main/
+#    -> DENTRO l'artifact i pacchetti erano ANNIDATI (msi/..., deb/...,
+#    dmg/...); il job release li cerca alla radice dell'artifact e non
+#    trovandoli salta la rinomina IN SILENZIO (|| true) -> i glob statici
+#    release-assets/*.msi ecc. non matchano nulla -> asset mai allegati.
+#    Gli APK usavano UN solo search path (release-apks/*.apk) -> root
+#    piatta -> per questo gli APK erano sempre presenti.
+#  - RIMEDI: (1) staging PIATTO: nuovo step "Raccogli pacchetti" copia i
+#    prodotti jpackage in desktop-packages/ (una sola dir = root piatta,
+#    niente LCA) con assert per-OS sull'estensione attesa e fallimento
+#    esplicito se vuota; (2) il job release VERIFICA gli asset attesi
+#    (targets-aware: all / android-only / desktop-only) PRIMA di creare la
+#    release ed esce con ::error:: se manca qualcosa (mai piu' silenzio);
+#    (3) elenco file da allegare DINAMICO (env RELEASE_FILES costruita dai
+#    file realmente presenti) + fail_on_unmatched_files: true;
+#    (4) softprops/action-gh-release v1 -> v3 (v1 non manutenuta dal 2021;
+#    v3 ha overwrite_files: un re-run sullo stesso tag SOVRASCRIVE gli asset
+#    omonimi invece di fallire) e permissions: contents: write esplicite
+#    (con token di default read-only la release falliva con 403).
 # =============================================================================
 
 name: Build and Release RiPlay
@@ -78,6 +104,12 @@ on:
 concurrency:
   group: build-release-${{ github.ref }}
   cancel-in-progress: true
+
+# STEP 3y: permessi espliciti per creare la release e caricare gli asset
+# (se il repo limita il token di default a read-only, la creazione della
+# release fallisce con 403 "Resource not accessible by integration")
+permissions:
+  contents: write
 
 jobs:
   # ===========================================================================
@@ -408,17 +440,50 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-      # I binari di jpackage finiscono in composeApp/build/compose/binaries/main
+      # STEP 3y: staging PIATTO dei pacchetti jpackage. upload-artifact@v4 con
+      # piu' search path usa come root dell'artifact il "least common ancestor
+      # of all the search paths": passando i 4 glob sotto binaries/main/ il
+      # root era binaries/main/ e i pacchetti arrivavano ANNIDATI (msi/...,
+      # deb/...) dentro l'artifact -> il job release non li trovava e non
+      # allegava nulla alla release. Con UNA sola directory piatta il root e'
+      # la directory stessa e i file arrivano alla radice dell'artifact.
+      - name: Raccogli pacchetti prodotti (staging piatto)
+        shell: bash
+        run: |
+          set -u
+          mkdir -p desktop-packages
+          find composeApp/build/compose/binaries -type f \( -name '*.msi' -o -name '*.deb' -o -name '*.rpm' -o -name '*.dmg' \) -print -exec cp {} desktop-packages/ \;
+          echo "📦 Pacchetti raccolti in desktop-packages/:"
+          ls -lah desktop-packages/
+          n=$(ls -1 desktop-packages | wc -l)
+          if [ "$n" -eq 0 ]; then
+            echo "❌ jpackage non ha prodotto nessun pacchetto: albero binaries:"
+            find composeApp/build/compose/binaries -maxdepth 4 || true
+            exit 1
+          fi
+          # Assert per-OS: ogni runner DEVE produrre la sua estensione
+          case "${RUNNER_OS}" in
+            Windows) exts="msi" ;;
+            Linux)   exts="deb rpm" ;;
+            macOS)   exts="dmg" ;;
+            *)       exts="" ;;
+          esac
+          for ext in $exts; do
+            if ls desktop-packages/*."$ext" >/dev/null 2>&1; then
+              echo "✅ *.${ext} presente (runner ${RUNNER_OS})"
+            else
+              echo "❌ MANCA *.${ext} atteso sul runner ${RUNNER_OS}"
+              exit 1
+            fi
+          done
+
+      # Root piatta garantita: un solo search path = niente LCA/annidamenti
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.name }}
           if-no-files-found: error
-          path: |
-            composeApp/build/compose/binaries/main/msi/*.msi
-            composeApp/build/compose/binaries/main/deb/*.deb
-            composeApp/build/compose/binaries/main/rpm/*.rpm
-            composeApp/build/compose/binaries/main/dmg/*.dmg
+          path: desktop-packages/*
           retention-days: 1
 
   # ===========================================================================
@@ -485,6 +550,53 @@ jobs:
           echo "📂 Dopo rinomina:"
           find . -maxdepth 1 -type f | sort
 
+      # STEP 3y: verifica GLI ASSET ATTESI prima di creare la release. Finora
+      # un asset mancante passava inosservato (glob senza match ignorati in
+      # silenzio): ora l'elenco atteso e' esplicito e il job muore con un
+      # ::error:: che dice COSA manca (consapevole dei targets scelti)
+      - name: Verifica asset attesi prima della release
+        env:
+          CURRENT_TAG: ${{ needs.validate.outputs.version }}
+          TARGETS: ${{ needs.validate.outputs.targets }}
+        run: |
+          cd release-assets
+          echo "=== Inventario artifact scaricati (2 livelli) ==="
+          find . -mindepth 1 -maxdepth 2 | sort
+          missing=0
+          check() { # $1=pattern glob $2=descrizione
+            if ls -1 $1 >/dev/null 2>&1; then
+              echo "✅ $2: $(ls -1 $1 | tr '\n' ' ')"
+            else
+              echo "❌ $2: MANCANTE (pattern: $1)"
+              missing=$((missing+1))
+            fi
+          }
+          case "$TARGETS" in
+            android-only)
+              check "RiPlay-${CURRENT_TAG}-Android-full*.apk" "APK full"
+              check "RiPlay-${CURRENT_TAG}-Android-foss*.apk" "APK foss"
+              ;;
+            desktop-only)
+              check "RiPlay-${CURRENT_TAG}-Windows*.msi" "MSI Windows"
+              check "RiPlay-${CURRENT_TAG}-Linux*.deb"   "DEB Linux"
+              check "RiPlay-${CURRENT_TAG}-Linux*.rpm"   "RPM Linux"
+              check "RiPlay-${CURRENT_TAG}-macOS*.dmg"   "DMG macOS"
+              ;;
+            *) # all (push tag o dispatch 'all')
+              check "RiPlay-${CURRENT_TAG}-Android-full*.apk" "APK full"
+              check "RiPlay-${CURRENT_TAG}-Android-foss*.apk" "APK foss"
+              check "RiPlay-${CURRENT_TAG}-Windows*.msi" "MSI Windows"
+              check "RiPlay-${CURRENT_TAG}-Linux*.deb"   "DEB Linux"
+              check "RiPlay-${CURRENT_TAG}-Linux*.rpm"   "RPM Linux"
+              check "RiPlay-${CURRENT_TAG}-macOS*.dmg"   "DMG macOS"
+              ;;
+          esac
+          echo "Asset attesi mancanti: ${missing}"
+          if [ "$missing" -gt 0 ]; then
+            echo "::error::STEP 3y: asset attesi mancanti in release-assets — la release NON verra' creata incompleta. Vedi l'inventario sopra."
+            exit 1
+          fi
+
       - name: Package desktop distribution as 7z
         env:
           CURRENT_TAG: ${{ needs.validate.outputs.version }}
@@ -521,6 +633,21 @@ jobs:
 
           echo "📂 Final content of folder release-assets (root):"
           find release-assets -maxdepth 1 -type f -exec du -h {} \; | sort -k2
+
+      # STEP 3y: elenco DINAMICO e concreto dei file da allegare (solo file
+      # realmente presenti in release-assets/): niente glob statici che
+      # possono non matchare nulla in silenzio; con fail_on_unmatched_files
+      # ogni anomalia fallirebbe comunque alla vista
+      - name: Prepara elenco file per la release
+        run: |
+          LIST=$(find release-assets -maxdepth 1 -type f | sort)
+          echo "📂 File che verranno allegati alla release:"
+          echo "$LIST"
+          {
+            echo "RELEASE_FILES<<RFILES_EOF"
+            echo "$LIST"
+            echo "RFILES_EOF"
+          } >> "$GITHUB_ENV"
 
       - name: Generate Changelog
         env:
@@ -580,21 +707,21 @@ jobs:
             echo "**Thank you for using RiPlay!** 🎵"
           } > /tmp/release_notes.md
 
+      # STEP 3y: action-gh-release v1 -> v3 (v1 non manutenuta; v3 gestisce
+      # overwrite_files per i re-run sullo stesso tag). files = elenco concreto
+      # e dinamico preparato dallo step precedente; fail_on_unmatched_files
+      # rende impossibile creare una release con asset mancanti in silenzio
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
-          files: |
-            release-assets/RiPlay-*-Android-full*.apk
-            release-assets/RiPlay-*-Android-foss*.apk
-            release-assets/*.msi
-            release-assets/*.deb
-            release-assets/*.rpm
-            release-assets/*.dmg
-            release-assets/*.7z
+          files: ${{ env.RELEASE_FILES }}
+          fail_on_unmatched_files: true
+          overwrite_files: true
           body_path: /tmp/release_notes.md
           draft: false
           prerelease: false
           tag_name: ${{ needs.validate.outputs.version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
