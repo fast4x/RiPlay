@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - English (values)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">Ana sayfa</string>
+    <string name="nav.search">Ara</string>
+    <string name="nav.songs">Şarkılar</string>
+    <string name="nav.artists">Sanatçılar</string>
+    <string name="nav.albums">Albümler</string>
+    <string name="nav.playlists">Çalma listeleri</string>
+    <string name="nav.local">Yerel dosyalar</string>
+    <string name="queue.title">Çalma kuyruğu ({n})</string>
+    <string name="queue.open">çalma kuyruğunu aç</string>
+    <string name="queue.clear">kuyruğu temizle</string>
+    <string name="queue.close_panel">kuyruk panelini kapat</string>
+    <string name="queue.remove">kuyruktan çıkar</string>
+    <string name="queue.drag">yeniden sıralamak için sürükle</string>
+    <string name="queue.drag_handle">Yeniden sıralamak için tutamacı sürükle</string>
+    <string name="action.add_to_queue">kuyruğa ekle</string>
+    <string name="action.already_queued">zaten kuyrukta</string>
+    <string name="action.enqueue_all">tümünü kuyruğa ekle</string>
+    <string name="action.enqueue_album">tüm albümü kuyruğa ekle</string>
+    <string name="action.enqueue_playlist">tüm çalma listesini kuyruğa ekle</string>
+    <string name="player.previous">önceki şarkı</string>
+    <string name="player.next">sonraki şarkı</string>
+    <string name="player.play">oynat</string>
+    <string name="player.pause">duraklat</string>
+    <string name="player.volume_off">ses kapalı</string>
+    <string name="player.volume_low">ses düzeyi düşük</string>
+    <string name="player.volume_high">ses düzeyi yüksek</string>
+    <string name="player.expand">oynatıcıyı genişlet</string>
+    <string name="player.open_fullscreen">oynatıcıyı tam ekranda aç</string>
+    <string name="player.back_to_cover">şarkının kapağına dön</string>
+    <string name="player.watch_video">videoyu izle</string>
+    <string name="player.expand_video">videoyu pencerenin tam genişliğine genişlet</string>
+    <string name="player.restore_video">videonun ilk genişliğini geri getir</string>
+    <string name="player.radio">radyo: benzer şarkıları kuyruğa ekle</string>
+    <string name="player.song_cover">şarkı kapağı</string>
+    <string name="player.online">Çevrimiçi</string>
+    <string name="player.local">Yerel</string>
+    <string name="radio.none_found">Benzer şarkı bulunamadı</string>
+    <string name="radio.added">{n} benzer şarkı eklendi</string>
+    <string name="radio.unavailable">Radyo kullanılamıyor</string>
+    <string name="overlay.close_player">oynatıcıyı kapat</string>
+    <string name="overlay.queue_title">çalma kuyruğu</string>
+    <string name="overlay.queue_count">Kuyruk ({n})</string>
+    <string name="overlay.no_song">Çalan şarkı yok</string>
+    <string name="overlay.video_active_note">Video soldaki oynatıcı panelinde etkin: burada izlemek için kapat</string>
+    <string name="overlay.video_active">video oynatıcı panelinde etkin</string>
+    <string name="overlay.close_hint">Sol üstteki chevron ile veya ESC ile kapat</string>
+    <string name="page.albums">Albümler ({n})</string>
+    <string name="page.artists">Sanatçılar ({n})</string>
+    <string name="page.playlists">Çalma listeleri ({n})</string>
+    <string name="page.songs">Şarkılar ({n})</string>
+    <string name="page.local">Yerel dosyalar ({n})</string>
+    <string name="page.followed_only">Yalnızca takip edilenler</string>
+    <string name="page.followed">Takip edilenler</string>
+    <string name="page.followed_artist">takip edilen sanatçı</string>
+    <string name="page.home">Ana sayfa</string>
+    <string name="page.moods">Ruh halleri ve türler</string>
+    <string name="page.home_unavailable">Ana sayfa kullanılamıyor (bağlantıyı kontrol et ve üstteki yenile simgesine bas).</string>
+    <string name="search.hint">Şarkı, albüm, sanatçı, çalma listesi ara...</string>
+    <string name="search.load_more">Daha fazla yükle</string>
+    <string name="search.recent">Son aramalar</string>
+    <string name="search.suggestions">Öneriler</string>
+    <string name="search.clear">aramayı temizle</string>
+    <string name="local.add_folder">Klasör ekle</string>
+    <string name="local.add_files">Dosya ekle</string>
+    <string name="local.fallback_artist">Yerel dosya</string>
+    <string name="local.imported">{n} dosya içe aktarıldı</string>
+    <string name="local.scanning">Ses dosyaları aranıyor...</string>
+    <string name="local.empty_hint">İçe aktarılmış yerel dosya yok.\n\nBilgisayardaki bir klasörü taramak için \"Klasör ekle\"yi (alt klasörler dahil) ya da tek tek şarkı seçmek için \"Dosya ekle\"yi kullan. İçe aktarılan dosyalar Yerel motorla (VLCJ) çalınır ve kitaplıkta kalır.</string>
+    <string name="local.input_hint">YouTube URL veya yerel dosya / URL (VLCJ)</string>
+    <string name="local.clear_url">URL\'yi temizle</string>
+    <string name="local.open_file">yerel dosya aç</string>
+    <string name="detail.album_shuffle">albümü karıştırarak oynat</string>
+    <string name="detail.album_favorite_add">albümü favorilere ekle</string>
+    <string name="detail.album_favorite_ok">albüm favorilerde</string>
+    <string name="detail.artist_shuffle">sanatçının şarkılarını karıştırarak oynat</string>
+    <string name="detail.artist_follow">sanatçıyı takip et</string>
+    <string name="detail.artist_followed">sanatçı takip ediliyor</string>
+    <string name="detail.playlist_shuffle">çalma listesini karıştırarak oynat</string>
+    <string name="detail.playlist_favorite_add">çalma listesini favorilere kaydet</string>
+    <string name="detail.playlist_favorite_ok">çalma listesi favorilerde: kaldırmak için dokun</string>
+    <string name="common.loading">yükleniyor...</string>
+    <string name="kcef.unavailable">KCEF oynatma motoru kullanılamıyor</string>
+    <string name="kcef.details_log">Tam ayrıntılar log/konsolda: [RiPlay-KCEF] ile başlayan satırlar.</string>
+    <string name="kcef.retry">Tekrar dene</string>
+    <string name="kcef.preparing">Oynatma motoru hazırlanıyor (KCEF)…</string>
+    <string name="kcef.downloading">Yerleşik tarayıcı indiriliyor (yalnızca ilk başlatmada)…</string>
+    <string name="kcef.extracting">Bileşenler çıkarılıyor…</string>
+    <string name="kcef.installing">Yükleniyor…</string>
+    <string name="kcef.starting">Yerleşik tarayıcı başlatılıyor…</string>
+    <string name="kcef.preparing_short">Hazırlanıyor…</string>
+    <string name="kcef.jdk_conflict">Kullanılan JDK, RiPlay ile uyumsuz bir sürümde yerleşik tarayıcı motoru içeriyor. İndirme bittiğinde uygulama kapanacak: kurulumu tamamlamak için yeniden aç.</string>
+    <string name="error.yt_with_code">YouTube hatası (kod {code}: {meaning}). Ayrıntılar logda: [RiPlay-KCEF] / [RiPlay-YT] satırları.</string>
+    <string name="error.yt_2">geçersiz parametre ya da video erişim/yaş kısıtlamalı veya YouTube anti-bot/izin kontrolü (giriş gerekli)</string>
+    <string name="error.yt_5">HTML5 oynatıcı hatası (içerik/kodek/ağ)</string>
+    <string name="error.yt_100">video bulunamadı veya özel</string>
+    <string name="error.yt_101_150">sahibi gömülü oynatmaya izin vermiyor</string>
+    <string name="error.yt_152">gömülü bağlam YouTube tarafından reddedildi: barındıran sayfanın Referer\'i kabul edilmiyor</string>
+    <string name="error.yt_153">gömme isteği YouTube tarafından reddedildi (player/referrer yapılandırması eksik)</string>
+    <string name="error.yt_unknown">bilinmeyen kod</string>
+    <string name="error.local_unavailable">Yerel şarkı masaüstünde oynatılamıyor: dosya yolu erişilebilir değil (Android MediaStore kaynağı veya taşınmış dosya). Aşağıdaki alandaki klasör düğmesiyle bilgisayardan dosyayı seçerek çalabilirsin.</string>
+    <string name="error.manual_unsupported">Yol bulunamadı veya URL desteklenmiyor: \'{value}\'</string>
+    <string name="misc.playlist_cover">Çalma listesi kapağı</string>
+    <string name="settings.language">Dil</string>
+    <string name="settings.system">Sistem dili</string>
+    <string name="titlebar.minimize">Küçült</string>
+    <string name="titlebar.maximize">Büyüt</string>
+    <string name="titlebar.restore">Geri getir</string>
+    <string name="titlebar.close">Kapat</string>
+    <string name="common.back">Geri</string>
+    <string name="common.songs_word">şarkı</string>
+    <string name="overlay.playing">Şimdi çalıyor</string>
+    <string name="local.none_found_in">\"{value}\" içinde ses dosyası bulunamadı</string>
+    <string name="local.imported_from">\"{value}\" klasöründen {n} dosya içe aktarıldı</string>
+</resources>

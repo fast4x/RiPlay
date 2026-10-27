@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - English (values)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">Ana səhifə</string>
+    <string name="nav.search">Axtarış</string>
+    <string name="nav.songs">Mahnılar</string>
+    <string name="nav.artists">İfaçılar</string>
+    <string name="nav.albums">Albomlar</string>
+    <string name="nav.playlists">Pleylistlər</string>
+    <string name="nav.local">Yerli fayllar</string>
+    <string name="queue.title">Oynatma növbəsi ({n})</string>
+    <string name="queue.open">oynatma növbəsini aç</string>
+    <string name="queue.clear">növbəni təmizlə</string>
+    <string name="queue.close_panel">növbə panelini bağla</string>
+    <string name="queue.remove">növbədən çıxar</string>
+    <string name="queue.drag">yenidən düzmək üçün çək</string>
+    <string name="queue.drag_handle">Yenidən düzmək üçün tutacağı çək</string>
+    <string name="action.add_to_queue">növbəyə əlavə et</string>
+    <string name="action.already_queued">artıq növbədə</string>
+    <string name="action.enqueue_all">hamısını növbəyə əlavə et</string>
+    <string name="action.enqueue_album">bütün albomu növbəyə əlavə et</string>
+    <string name="action.enqueue_playlist">bütün pleylisti növbəyə əlavə et</string>
+    <string name="player.previous">əvvəlki mahnı</string>
+    <string name="player.next">növbəti mahnı</string>
+    <string name="player.play">oynat</string>
+    <string name="player.pause">fasilə</string>
+    <string name="player.volume_off">səs söndürülüb</string>
+    <string name="player.volume_low">səs səviyyəsi aşağı</string>
+    <string name="player.volume_high">səs səviyyəsi yüksək</string>
+    <string name="player.expand">pleseri genişləndir</string>
+    <string name="player.open_fullscreen">pleseri tam ekranda aç</string>
+    <string name="player.back_to_cover">mahnının üz qabığına qayıt</string>
+    <string name="player.watch_video">videonu bax</string>
+    <string name="player.expand_video">videonu pəncərənin tam eninə genişləndir</string>
+    <string name="player.restore_video">videonun ilkin enini bərpa et</string>
+    <string name="player.radio">radio: oxşar mahnıları növbəyə əlavə et</string>
+    <string name="player.song_cover">mahnının üz qabığı</string>
+    <string name="player.online">Onlayn</string>
+    <string name="player.local">Yerli</string>
+    <string name="radio.none_found">Oxşar mahnı tapılmadı</string>
+    <string name="radio.added">{n} oxşar mahnı əlavə edildi</string>
+    <string name="radio.unavailable">Radio əlçatmazdır</string>
+    <string name="overlay.close_player">pleseri bağla</string>
+    <string name="overlay.queue_title">oynatma növbəsi</string>
+    <string name="overlay.queue_count">Növbə ({n})</string>
+    <string name="overlay.no_song">Heç bir mahnı oynamır</string>
+    <string name="overlay.video_active_note">Video sol pleserdə aktivdir: burada görmək üçün onu bağla</string>
+    <string name="overlay.video_active">video pleserdə aktivdir</string>
+    <string name="overlay.close_hint">Sol yuxarıdakı chevron ilə və ya ESC ilə bağla</string>
+    <string name="page.albums">Albomlar ({n})</string>
+    <string name="page.artists">İfaçılar ({n})</string>
+    <string name="page.playlists">Pleylistlər ({n})</string>
+    <string name="page.songs">Mahnılar ({n})</string>
+    <string name="page.local">Yerli fayllar ({n})</string>
+    <string name="page.followed_only">Yalnız izlənilənlər</string>
+    <string name="page.followed">İzlənilənlər</string>
+    <string name="page.followed_artist">izlənilən ifaçı</string>
+    <string name="page.home">Ana səhifə</string>
+    <string name="page.moods">Əhval-ruhiyyə və janrlar</string>
+    <string name="page.home_unavailable">Ana səhifə əlçatmazdır (bağlantını yoxla və yuxarıdakı yeniləmə nişanına bas).</string>
+    <string name="search.hint">Mahnı, albom, ifaçı, pleylist axtar...</string>
+    <string name="search.load_more">Daha çox yüklə</string>
+    <string name="search.recent">Son axtarışlar</string>
+    <string name="search.suggestions">Təkliflər</string>
+    <string name="search.clear">axtarışı təmizlə</string>
+    <string name="local.add_folder">Qovluq əlavə et</string>
+    <string name="local.add_files">Fayl əlavə et</string>
+    <string name="local.fallback_artist">Yerli fayl</string>
+    <string name="local.imported">{n} fayl idxal edildi</string>
+    <string name="local.scanning">Audio fayllar axtarılır...</string>
+    <string name="local.empty_hint">Yerli fayl idxal edilməyib.\n\nKompüterdəki qovluğu skan etmək üçün \"Qovluq əlavə et\" (alt qovluqlar daxil olmaqla) və ya ayrı-ayrı mahnılar seçmək üçün \"Fayl əlavə et\" istifadə edin. İdxal edilən fayllar Yerli mühərrik (VLCJ) ilə oynadılır və kitabxanada qalır.</string>
+    <string name="local.input_hint">YouTube URL və ya yerli fayl / URL (VLCJ)</string>
+    <string name="local.clear_url">URL-ni təmizlə</string>
+    <string name="local.open_file">yerli fayl aç</string>
+    <string name="detail.album_shuffle">albomu təsadüfi ardıcıllıqla oynat</string>
+    <string name="detail.album_favorite_add">albomu sevimlilərə əlavə et</string>
+    <string name="detail.album_favorite_ok">albom sevimlilərdə</string>
+    <string name="detail.artist_shuffle">ifaçının mahnılarını təsadüfi ardıcıllıqla oynat</string>
+    <string name="detail.artist_follow">ifaçını izlə</string>
+    <string name="detail.artist_followed">ifaçı izlənilir</string>
+    <string name="detail.playlist_shuffle">pleylisti təsadüfi ardıcıllıqla oynat</string>
+    <string name="detail.playlist_favorite_add">pleylisti sevimlilərə yadda saxla</string>
+    <string name="detail.playlist_favorite_ok">pleylist sevimlilərdə: çıxarmaq üçün toxun</string>
+    <string name="common.loading">yüklənir...</string>
+    <string name="kcef.unavailable">KCEF oynatma mühərriki əlçatmazdır</string>
+    <string name="kcef.details_log">Tam təfərrüatlar log/konsolda: [RiPlay-KCEF] ilə başlayan sətirlər.</string>
+    <string name="kcef.retry">Yenidən cəhd et</string>
+    <string name="kcef.preparing">Oynatma mühərriki hazırlanır (KCEF)…</string>
+    <string name="kcef.downloading">Daxili brauser yüklənir (yalnız ilk başlatmada)…</string>
+    <string name="kcef.extracting">Komponentlər çıxarılır…</string>
+    <string name="kcef.installing">Quraşdırılır…</string>
+    <string name="kcef.starting">Daxili brauser başladılır…</string>
+    <string name="kcef.preparing_short">Hazırlanır…</string>
+    <string name="kcef.jdk_conflict">İstifadə olunan JDK, RiPlay ilə uyğun gəlməyən versiyada daxili brauser mühərriki ehtiva edir. Yükləmədən sonra tətbiq bağlanacaq: quraşdırmanı tamamlamaq üçün yenidən aç.</string>
+    <string name="error.yt_with_code">YouTube xətası (kod {code}: {meaning}). Təfərrüatlar logda: [RiPlay-KCEF] / [RiPlay-YT] sətirləri.</string>
+    <string name="error.yt_2">yanlış parametr və ya videodaxil giriş/yaş məhdudiyyətləri və ya YouTube anti-bot/razılıq yoxlaması (giriş tələb olunur)</string>
+    <string name="error.yt_5">HTML5 pleyer xətası (məzmun/kodek/şəbəkə)</string>
+    <string name="error.yt_100">video tapılmadı və ya özəldir</string>
+    <string name="error.yt_101_150">sahib yerləşdirilmiş oynatmaya icazə vermir</string>
+    <string name="error.yt_152">yerləşdirilmiş kontekst YouTube tərəfindən rədd edildi: əsas səhifənin Referer-i qəbul edilmir</string>
+    <string name="error.yt_153">yerləşdirmə sorğusu YouTube tərəfindən rədd edildi (player/referrer konfiqurasiyası yoxdur)</string>
+    <string name="error.yt_unknown">naməlum kod</string>
+    <string name="error.local_unavailable">Yerli mahnı masaüstündə oynadıla bilmir: fayl yolu əlçatmazdır (Android MediaStore mənbəyi və ya daşınmış fayl). Aşağıdakı sahədəki qovluq düyməsi ilə kompüterdən faylı seçərək oynada bilərsən.</string>
+    <string name="error.manual_unsupported">Yol tapılmadı və ya URL dəstəklənmir: \'{value}\'</string>
+    <string name="misc.playlist_cover">Pleylist üz qabığı</string>
+    <string name="settings.language">Dil</string>
+    <string name="settings.system">Sistem dili</string>
+    <string name="titlebar.minimize">Kiçilt</string>
+    <string name="titlebar.maximize">Böyüt</string>
+    <string name="titlebar.restore">Bərpa et</string>
+    <string name="titlebar.close">Bağla</string>
+    <string name="common.back">Geri</string>
+    <string name="common.songs_word">mahnı</string>
+    <string name="overlay.playing">İndi çalır</string>
+    <string name="local.none_found_in">\"{value}\" içində audio fayl tapılmadı</string>
+    <string name="local.imported_from">\"{value}\" qovluğundan {n} fayl idxal edildi</string>
+</resources>

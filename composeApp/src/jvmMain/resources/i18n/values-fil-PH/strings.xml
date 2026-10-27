@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - English (values)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">Home</string>
+    <string name="nav.search">Paghahanap</string>
+    <string name="nav.songs">Mga kanta</string>
+    <string name="nav.artists">Mga artist</string>
+    <string name="nav.albums">Mga album</string>
+    <string name="nav.playlists">Mga playlist</string>
+    <string name="nav.local">Mga lokal na file</string>
+    <string name="queue.title">Pila ng pag-play ({n})</string>
+    <string name="queue.open">buksan ang pila ng pag-play</string>
+    <string name="queue.clear">burahin ang pila</string>
+    <string name="queue.close_panel">isara ang panel ng pila</string>
+    <string name="queue.remove">alisin sa pila</string>
+    <string name="queue.drag">hilahin para muling ayusin</string>
+    <string name="queue.drag_handle">Hilahin ang hawakan para muling ayusin</string>
+    <string name="action.add_to_queue">idagdag sa pila</string>
+    <string name="action.already_queued">nasa pila na</string>
+    <string name="action.enqueue_all">ilagay lahat sa pila</string>
+    <string name="action.enqueue_album">ilagay ang buong album sa pila</string>
+    <string name="action.enqueue_playlist">ilagay ang buong playlist sa pila</string>
+    <string name="player.previous">nakaraang kanta</string>
+    <string name="player.next">susunod na kanta</string>
+    <string name="player.play">i-play</string>
+    <string name="player.pause">ihinto sandali</string>
+    <string name="player.volume_off">naka-mute</string>
+    <string name="player.volume_low">mababang volume</string>
+    <string name="player.volume_high">mataas na volume</string>
+    <string name="player.expand">palawakin ang player</string>
+    <string name="player.open_fullscreen">buksan ang player sa full screen</string>
+    <string name="player.back_to_cover">bumalik sa cover ng kanta</string>
+    <string name="player.watch_video">panoorin ang video</string>
+    <string name="player.expand_video">palawakin ang video sa buong lapad ng bintana</string>
+    <string name="player.restore_video">ibalik ang orihinal na lapad ng video</string>
+    <string name="player.radio">radyo: magdagdag ng katulad na kanta sa pila</string>
+    <string name="player.song_cover">cover ng kanta</string>
+    <string name="player.online">Online</string>
+    <string name="player.local">Lokal</string>
+    <string name="radio.none_found">Walang natagpuang katulad na kanta</string>
+    <string name="radio.added">Nagdagdag ng {n} katulad na kanta</string>
+    <string name="radio.unavailable">Hindi available ang radyo</string>
+    <string name="overlay.close_player">isara ang player</string>
+    <string name="overlay.queue_title">pila ng pag-play</string>
+    <string name="overlay.queue_count">Pila ({n})</string>
+    <string name="overlay.no_song">Walang kumakantang tugtugin</string>
+    <string name="overlay.video_active_note">Aktibo ang video sa player panel sa kaliwa: isara ito para panoorin dito</string>
+    <string name="overlay.video_active">aktibo ang video sa player panel</string>
+    <string name="overlay.close_hint">Isara gamit ang chevron sa kaliwang itaas o ang ESC</string>
+    <string name="page.albums">Mga album ({n})</string>
+    <string name="page.artists">Mga artist ({n})</string>
+    <string name="page.playlists">Mga playlist ({n})</string>
+    <string name="page.songs">Mga kanta ({n})</string>
+    <string name="page.local">Mga lokal na file ({n})</string>
+    <string name="page.followed_only">Mga minabantay lamang</string>
+    <string name="page.followed">Minabantay</string>
+    <string name="page.followed_artist">minabantay na artist</string>
+    <string name="page.home">Home</string>
+    <string name="page.moods">Mga mood at genre</string>
+    <string name="page.home_unavailable">Hindi available ang Home (suriin ang koneksyon at pindutin ang refresh icon sa itaas).</string>
+    <string name="search.hint">Maghanap ng kanta, album, artist, playlist...</string>
+    <string name="search.load_more">Mag-load pa</string>
+    <string name="search.recent">Mga kamakailang paghahanap</string>
+    <string name="search.suggestions">Mga suhestiyon</string>
+    <string name="search.clear">burahin ang paghahanap</string>
+    <string name="local.add_folder">Magdagdag ng folder</string>
+    <string name="local.add_files">Magdagdag ng mga file</string>
+    <string name="local.fallback_artist">Lokal na file</string>
+    <string name="local.imported">Nag-import ng {n} file</string>
+    <string name="local.scanning">Naghahanap ng mga audio file...</string>
+    <string name="local.empty_hint">Walang na-import na lokal na file.\n\nGamitin ang \"Magdagdag ng folder\" para i-scan ang isang folder sa computer (kasama ang mga subfolder) o \"Magdagdag ng mga file\" para pumili ng mga kanta isa-isa. Ang mga na-import na file ay pinatutugtog ng Lokal na engine (VLCJ) at nananatili sa library.</string>
+    <string name="local.input_hint">YouTube URL o lokal na file / URL (VLCJ)</string>
+    <string name="local.clear_url">burahin ang URL</string>
+    <string name="local.open_file">buksan ang lokal na file</string>
+    <string name="detail.album_shuffle">i-play ang album nang random</string>
+    <string name="detail.album_favorite_add">idagdag ang album sa mga paborito</string>
+    <string name="detail.album_favorite_ok">nasa mga paborito ang album</string>
+    <string name="detail.artist_shuffle">i-play ang mga kanta ng artist nang random</string>
+    <string name="detail.artist_follow">i-follow ang artist</string>
+    <string name="detail.artist_followed">na-follow ang artist</string>
+    <string name="detail.playlist_shuffle">i-play ang playlist nang random</string>
+    <string name="detail.playlist_favorite_add">i-save ang playlist sa mga paborito</string>
+    <string name="detail.playlist_favorite_ok">nasa mga paborito ang playlist: pindutin para alisin</string>
+    <string name="common.loading">naglo-load...</string>
+    <string name="kcef.unavailable">Hindi available ang KCEF playback engine</string>
+    <string name="kcef.details_log">Buong detalye sa log/console: mga linya na nagsisimula sa [RiPlay-KCEF].</string>
+    <string name="kcef.retry">Subukan muli</string>
+    <string name="kcef.preparing">Hinahanda ang playback engine (KCEF)…</string>
+    <string name="kcef.downloading">Dina-download ang naka-embed na browser (sa unang bukas lang)…</string>
+    <string name="kcef.extracting">Kinukuha ang mga bahagi…</string>
+    <string name="kcef.installing">Nag-i-install…</string>
+    <string name="kcef.starting">Binubuksan ang naka-embed na browser…</string>
+    <string name="kcef.preparing_short">Hinahanda…</string>
+    <string name="kcef.jdk_conflict">Ang ginagamit na JDK ay may naka-embed na browser engine na bersyong hindi compatible sa RiPlay. Pagkatapos ng download, magsasara ang app: buksan muli para matapos ang pag-install.</string>
+    <string name="error.yt_with_code">Error sa YouTube (code {code}: {meaning}). Detalye sa log: mga linya ng [RiPlay-KCEF] / [RiPlay-YT].</string>
+    <string name="error.yt_2">hindi wastong parameter o video na may access/age restriction o YouTube anti-bot/consent check (kailangan ng login)</string>
+    <string name="error.yt_5">error sa HTML5 player (nilalaman/codec/network)</string>
+    <string name="error.yt_100">hindi nahanap ang video o pribado ito</string>
+    <string name="error.yt_101_150">hindi pinapayagan ng may-ari ang naka-embed na pag-play</string>
+    <string name="error.yt_152">tinanggihan ng YouTube ang naka-embed na context: hindi tinatanggap ang Referer ng naka-embed na page</string>
+    <string name="error.yt_153">tinanggihan ng YouTube ang embed request (kulang ang player/referrer configuration)</string>
+    <string name="error.yt_unknown">hindi kilalang code</string>
+    <string name="error.local_unavailable">Hindi ma-play ang lokal na kanta sa desktop: hindi naa-access ang file path (pinagmulan ay Android MediaStore o inilipat na file). Maaari mo itong i-play sa pamamagitan ng pagpili ng file mula sa computer gamit ang folder button sa field sa ibaba.</string>
+    <string name="error.manual_unsupported">Hindi nahanap ang path o hindi suportadong URL: \'{value}\'</string>
+    <string name="misc.playlist_cover">Cover ng playlist</string>
+    <string name="settings.language">Wika</string>
+    <string name="settings.system">Wika ng sistema</string>
+    <string name="titlebar.minimize">I-minimize</string>
+    <string name="titlebar.maximize">I-maximize</string>
+    <string name="titlebar.restore">Ibalik</string>
+    <string name="titlebar.close">Isara</string>
+    <string name="common.back">Bumalik</string>
+    <string name="common.songs_word">mga kanta</string>
+    <string name="overlay.playing">Kasalukuyang nagpe-play</string>
+    <string name="local.none_found_in">Walang natagpuang audio file sa \"{value}\"</string>
+    <string name="local.imported_from">Nag-import ng {n} file mula sa \"{value}\"</string>
+</resources>

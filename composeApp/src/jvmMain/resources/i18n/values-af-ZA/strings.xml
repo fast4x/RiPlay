@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - English (values)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">Tuis</string>
+    <string name="nav.search">Soek</string>
+    <string name="nav.songs">Liedjies</string>
+    <string name="nav.artists">Kunstenaars</string>
+    <string name="nav.albums">Albums</string>
+    <string name="nav.playlists">Speellyste</string>
+    <string name="nav.local">Plaaslike lêers</string>
+    <string name="queue.title">Speelry ({n})</string>
+    <string name="queue.open">maak die speelry oop</string>
+    <string name="queue.clear">maak die ry skoon</string>
+    <string name="queue.close_panel">maak die rypaneel toe</string>
+    <string name="queue.remove">verwyder uit die ry</string>
+    <string name="queue.drag">sleep om te herorden</string>
+    <string name="queue.drag_handle">Sleep die handvatsel om te herorden</string>
+    <string name="action.add_to_queue">voeg by die ry</string>
+    <string name="action.already_queued">reeds in die ry</string>
+    <string name="action.enqueue_all">plaas alles in die ry</string>
+    <string name="action.enqueue_album">plaas die hele album in die ry</string>
+    <string name="action.enqueue_playlist">plaas die hele speellys in die ry</string>
+    <string name="player.previous">vorige liedjie</string>
+    <string name="player.next">volgende liedjie</string>
+    <string name="player.play">speel</string>
+    <string name="player.pause">pouse</string>
+    <string name="player.volume_off">klank af</string>
+    <string name="player.volume_low">lae volume</string>
+    <string name="player.volume_high">hoe volume</string>
+    <string name="player.expand">brei die speler uit</string>
+    <string name="player.open_fullscreen">maak die speler in volskerm oop</string>
+    <string name="player.back_to_cover">terug na die liedjie se voorblad</string>
+    <string name="player.watch_video">kyk die video</string>
+    <string name="player.expand_video">brei die video oor die volle vensterbreedte uit</string>
+    <string name="player.restore_video">herstel die oorspronklike videobreedte</string>
+    <string name="player.radio">radio: voeg soortgelyke liedjies by die ry</string>
+    <string name="player.song_cover">liedjie se voorblad</string>
+    <string name="player.online">Aanlyn</string>
+    <string name="player.local">Plaaslik</string>
+    <string name="radio.none_found">Geen soortgelyke liedjies gevind nie</string>
+    <string name="radio.added">{n} soortgelyke liedjies bygevoeg</string>
+    <string name="radio.unavailable">Radio nie beskikbaar nie</string>
+    <string name="overlay.close_player">maak die speler toe</string>
+    <string name="overlay.queue_title">speelry</string>
+    <string name="overlay.queue_count">Ry ({n})</string>
+    <string name="overlay.no_song">Geen liedjie speel tans nie</string>
+    <string name="overlay.video_active_note">Video aktief in die linkerspelerpaneel: maak dit toe om dit hier te sien</string>
+    <string name="overlay.video_active">video aktief in die spelerpaneel</string>
+    <string name="overlay.close_hint">Maak toe met die chevron bo-links of met ESC</string>
+    <string name="page.albums">Albums ({n})</string>
+    <string name="page.artists">Kunstenaars ({n})</string>
+    <string name="page.playlists">Speellyste ({n})</string>
+    <string name="page.songs">Liedjies ({n})</string>
+    <string name="page.local">Plaaslike lêers ({n})</string>
+    <string name="page.followed_only">Slegs gevolgdes</string>
+    <string name="page.followed">Gevolgdes</string>
+    <string name="page.followed_artist">gevolgde kunstenaar</string>
+    <string name="page.home">Tuis</string>
+    <string name="page.moods">Stemminge en genres</string>
+    <string name="page.home_unavailable">Tuis nie beskikbaar nie (kontroleer die verbinding en tik bo-op die verfosikoon).</string>
+    <string name="search.hint">Soek liedjies, albums, kunstenaars, speellyste...</string>
+    <string name="search.load_more">Laai meer</string>
+    <string name="search.recent">Onlangse soektogte</string>
+    <string name="search.suggestions">Voorstelle</string>
+    <string name="search.clear">vee die soektog uit</string>
+    <string name="local.add_folder">Voeg vouer by</string>
+    <string name="local.add_files">Voeg lêers by</string>
+    <string name="local.fallback_artist">Plaaslike lêer</string>
+    <string name="local.imported">{n} lêers ingevoer</string>
+    <string name="local.scanning">Soek tans oudiolêers...</string>
+    <string name="local.empty_hint">Geen plaaslike lêers ingevoer nie.\n\nGebruik \"Voeg vouer by\" om \'n rekenaarvouer te skandeer (subvouers ingesluit) of \"Voeg lêers by\" om enkel liedjies te kies. Ingevoerde lêers word met die Plaaslike enjin (VLCJ) gespeel en bly in die biblioteek.</string>
+    <string name="local.input_hint">YouTube-URL of plaaslike lêer / URL (VLCJ)</string>
+    <string name="local.clear_url">vee die URL uit</string>
+    <string name="local.open_file">maak plaaslike lêer oop</string>
+    <string name="detail.album_shuffle">speel die album lukraak</string>
+    <string name="detail.album_favorite_add">voeg die album by gunstelinge</string>
+    <string name="detail.album_favorite_ok">album in gunstelinge</string>
+    <string name="detail.artist_shuffle">speel die kunstenaar se liedjies lukraak</string>
+    <string name="detail.artist_follow">volg die kunstenaar</string>
+    <string name="detail.artist_followed">kunstenaar gevolg</string>
+    <string name="detail.playlist_shuffle">speel die speellys lukraak</string>
+    <string name="detail.playlist_favorite_add">stoor die speellys by gunstelinge</string>
+    <string name="detail.playlist_favorite_ok">speellys by gunstelinge: tik om te verwyder</string>
+    <string name="common.loading">laai tans...</string>
+    <string name="kcef.unavailable">KCEF-speelenjin nie beskikbaar nie</string>
+    <string name="kcef.details_log">Volledige besonderhede in die log/konsole: reëls wat met [RiPlay-KCEF] begin.</string>
+    <string name="kcef.retry">Probeer weer</string>
+    <string name="kcef.preparing">Berei die speelenjin voor (KCEF)…</string>
+    <string name="kcef.downloading">Laai die ingeboude blaaier af (slegs eerste begin)…</string>
+    <string name="kcef.extracting">Ontpak komponente…</string>
+    <string name="kcef.installing">Installeer…</string>
+    <string name="kcef.starting">Begin die ingeboude blaaier…</string>
+    <string name="kcef.preparing_short">Berei voor…</string>
+    <string name="kcef.jdk_conflict">Die JDK in gebruik bevat \'n ingeboude blaaierenjin van \'n weergawe onversoenbaar met RiPlay. Na die aflaai sal die toepassing sluit: maak dit weer oop om die installasie te voltooi.</string>
+    <string name="error.yt_with_code">YouTube-fout (kode {code}: {meaning}). Besonderhede in die log: reëls [RiPlay-KCEF] / [RiPlay-YT].</string>
+    <string name="error.yt_2">ongeldige parameter of video met toegang/ouderdomsbeperkings of YouTube anti-bot/toestemmingkontrole (aanmelding nodig)</string>
+    <string name="error.yt_5">HTML5-spelerfout (inhoud/koeks/netwerk)</string>
+    <string name="error.yt_100">video nie gevind nie of privaat</string>
+    <string name="error.yt_101_150">die eienaar laat ingeslote speel nie toe</string>
+    <string name="error.yt_152">ingeslote konteks deur YouTube geweier: die Referer van die gasheerbladsy word nie aanvaar nie</string>
+    <string name="error.yt_153">insluitingsversoek deur YouTube geweier (speler/verwyser-konfigurasie ontbreek)</string>
+    <string name="error.yt_unknown">onbekende kode</string>
+    <string name="error.local_unavailable">Plaaslike liedjie nie op die lessenaar speelbaar nie: die lêerpad is nie toeganklik nie (Android MediaStore-oorsprong of geskuifde lêer). Jy kan dit speel deur die lêer met die vouerknoppie in die veld hieronder te kies.</string>
+    <string name="error.manual_unsupported">Pad nie gevind nie of URL nie ondersteun nie: \'{value}\'</string>
+    <string name="misc.playlist_cover">Speellys se voorblad</string>
+    <string name="settings.language">Taal</string>
+    <string name="settings.system">Stelseltaal</string>
+    <string name="titlebar.minimize">Minimeer</string>
+    <string name="titlebar.maximize">Maksimeer</string>
+    <string name="titlebar.restore">Herstel</string>
+    <string name="titlebar.close">Maak toe</string>
+    <string name="common.back">Terug</string>
+    <string name="common.songs_word">liedjies</string>
+    <string name="overlay.playing">Speel nou</string>
+    <string name="local.none_found_in">Geen oudiolêers in \"{value}\" gevind nie</string>
+    <string name="local.imported_from">{n} lêers uit \"{value}\" ingevoer</string>
+</resources>

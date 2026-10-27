@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - English (values)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">Domů</string>
+    <string name="nav.search">Hledat</string>
+    <string name="nav.songs">Skladby</string>
+    <string name="nav.artists">Interpreti</string>
+    <string name="nav.albums">Alba</string>
+    <string name="nav.playlists">Playlisty</string>
+    <string name="nav.local">Místní soubory</string>
+    <string name="queue.title">Fronta přehrávání ({n})</string>
+    <string name="queue.open">otevřít frontu přehrávání</string>
+    <string name="queue.clear">vyprázdnit frontu</string>
+    <string name="queue.close_panel">zavřít panel fronty</string>
+    <string name="queue.remove">odebrat z fronty</string>
+    <string name="queue.drag">přetáhněte pro seřazení</string>
+    <string name="queue.drag_handle">Přetáhněte úchop pro seřazení</string>
+    <string name="action.add_to_queue">přidat do fronty</string>
+    <string name="action.already_queued">již ve frontě</string>
+    <string name="action.enqueue_all">zařadit vše do fronty</string>
+    <string name="action.enqueue_album">zařadit celé album do fronty</string>
+    <string name="action.enqueue_playlist">zařadit celý playlist do fronty</string>
+    <string name="player.previous">předchozí skladba</string>
+    <string name="player.next">další skladba</string>
+    <string name="player.play">přehrát</string>
+    <string name="player.pause">pauza</string>
+    <string name="player.volume_off">zvuk vypnut</string>
+    <string name="player.volume_low">nízká hlasitost</string>
+    <string name="player.volume_high">vysoká hlasitost</string>
+    <string name="player.expand">zvětšit přehrávač</string>
+    <string name="player.open_fullscreen">otevřít přehrávač na celou obrazovku</string>
+    <string name="player.back_to_cover">zpět na obal skladby</string>
+    <string name="player.watch_video">sledovat video</string>
+    <string name="player.expand_video">rozšířit video na celou šířku okna</string>
+    <string name="player.restore_video">obnovit původní šířku videa</string>
+    <string name="player.radio">rádio: přidat podobné skladby do fronty</string>
+    <string name="player.song_cover">obal skladby</string>
+    <string name="player.online">Online</string>
+    <string name="player.local">Místní</string>
+    <string name="radio.none_found">Nebyly nalezeny žádné podobné skladby</string>
+    <string name="radio.added">Přidány {n} podobné skladby</string>
+    <string name="radio.unavailable">Rádio není dostupné</string>
+    <string name="overlay.close_player">zavřít přehrávač</string>
+    <string name="overlay.queue_title">fronta přehrávání</string>
+    <string name="overlay.queue_count">Fronta ({n})</string>
+    <string name="overlay.no_song">Nehraje žádná skladba</string>
+    <string name="overlay.video_active_note">Video aktivní v levém panelu přehrávače: zavřete ho, aby bylo vidět zde</string>
+    <string name="overlay.video_active">video aktivní v panelu přehrávače</string>
+    <string name="overlay.close_hint">Zavřete šipkou vlevo nahoře nebo klávesou ESC</string>
+    <string name="page.albums">Alba ({n})</string>
+    <string name="page.artists">Interpreti ({n})</string>
+    <string name="page.playlists">Playlisty ({n})</string>
+    <string name="page.songs">Skladby ({n})</string>
+    <string name="page.local">Místní soubory ({n})</string>
+    <string name="page.followed_only">Pouze sledované</string>
+    <string name="page.followed">Sledované</string>
+    <string name="page.followed_artist">sledovaný interpret</string>
+    <string name="page.home">Domů</string>
+    <string name="page.moods">Nálady a žánry</string>
+    <string name="page.home_unavailable">Domů není dostupné (zkontrolujte připojení a klepněte nahoře na ikonu aktualizace).</string>
+    <string name="search.hint">Hledat skladby, alba, interprety, playlisty...</string>
+    <string name="search.load_more">Načíst více</string>
+    <string name="search.recent">Nedávné hledání</string>
+    <string name="search.suggestions">Návrhy</string>
+    <string name="search.clear">vymazat hledání</string>
+    <string name="local.add_folder">Přidat složku</string>
+    <string name="local.add_files">Přidat soubory</string>
+    <string name="local.fallback_artist">Místní soubor</string>
+    <string name="local.imported">Importováno {n} souborů</string>
+    <string name="local.scanning">Hledají se zvukové soubory...</string>
+    <string name="local.empty_hint">Nejsou importovány žádné místní soubory.\n\nPoužijte „Přidat složku“ ke skenování složky v počítači (včetně podsložek) nebo „Přidat soubory“ k výběru jednotlivých skladeb. Importované soubory se přehrávají pomocí místního enginu (VLCJ) a zůstávají v knihovně.</string>
+    <string name="local.input_hint">URL YouTube nebo místní soubor / URL (VLCJ)</string>
+    <string name="local.clear_url">vymazat URL</string>
+    <string name="local.open_file">otevřít místní soubor</string>
+    <string name="detail.album_shuffle">přehrát album v náhodném pořadí</string>
+    <string name="detail.album_favorite_add">přidat album do oblíbených</string>
+    <string name="detail.album_favorite_ok">album v oblíbených</string>
+    <string name="detail.artist_shuffle">přehrát skladby interpreta v náhodném pořadí</string>
+    <string name="detail.artist_follow">sledovat interpreta</string>
+    <string name="detail.artist_followed">interpret sledován</string>
+    <string name="detail.playlist_shuffle">přehrát playlist v náhodném pořadí</string>
+    <string name="detail.playlist_favorite_add">uložit playlist do oblíbených</string>
+    <string name="detail.playlist_favorite_ok">playlist v oblíbených: klepnutím odeberete</string>
+    <string name="common.loading">načítání...</string>
+    <string name="kcef.unavailable">Přehrávací engine KCEF není dostupný</string>
+    <string name="kcef.details_log">Úplné podrobnosti v logu/konzoli: řádky začínající [RiPlay-KCEF].</string>
+    <string name="kcef.retry">Zkusit znovu</string>
+    <string name="kcef.preparing">Připravuje se přehrávací engine (KCEF)…</string>
+    <string name="kcef.downloading">Stahuje se vestavěný prohlížeč (jen při prvním spuštění)…</string>
+    <string name="kcef.extracting">Rozbalují se komponenty…</string>
+    <string name="kcef.installing">Instaluje se…</string>
+    <string name="kcef.starting">Spouští se vestavěný prohlížeč…</string>
+    <string name="kcef.preparing_short">Příprava…</string>
+    <string name="kcef.jdk_conflict">Používané JDK obsahuje vestavěný prohlížečový engine ve verzi nekompatibilní s RiPlay. Po stažení se aplikace zavře: otevřete ji znovu pro dokončení instalace.</string>
+    <string name="error.yt_with_code">Chyba YouTube (kód {code}: {meaning}). Podrobnosti v logu: řádky [RiPlay-KCEF] / [RiPlay-YT].</string>
+    <string name="error.yt_2">neplatný parametr nebo video s omezeními přístupu/věku nebo kontrola anti-bot/souhlasu YouTube (vyžadováno přihlášení)</string>
+    <string name="error.yt_5">chyba přehrávače HTML5 (obsah/kodek/síť)</string>
+    <string name="error.yt_100">video nenalezeno nebo je soukromé</string>
+    <string name="error.yt_101_150">vlastník nepovoluje vložené přehrávání</string>
+    <string name="error.yt_152">vložený kontext odmítnut YouTube: Referer hostitelské stránky není přijat</string>
+    <string name="error.yt_153">požadavek na vložení odmítnut YouTube (chybí konfigurace player/referrer)</string>
+    <string name="error.yt_unknown">neznámý kód</string>
+    <string name="error.local_unavailable">Místní skladba na desktopu nepřehratelná: cesta k souboru není přístupná (původ Android MediaStore nebo přesunutý soubor). Můžete ji přehrát výběrem souboru v počítači tlačítkem složky v poli níže.</string>
+    <string name="error.manual_unsupported">Cesta nenalezena nebo nepodporovaná URL: \'{value}\'</string>
+    <string name="misc.playlist_cover">Obal playlistu</string>
+    <string name="settings.language">Jazyk</string>
+    <string name="settings.system">Jazyk systému</string>
+    <string name="titlebar.minimize">Minimalizovat</string>
+    <string name="titlebar.maximize">Maximalizovat</string>
+    <string name="titlebar.restore">Obnovit</string>
+    <string name="titlebar.close">Zavřít</string>
+    <string name="common.back">Zpět</string>
+    <string name="common.songs_word">skladeb</string>
+    <string name="overlay.playing">Právě hraje</string>
+    <string name="local.none_found_in">V \"{value}\" nebyly nalezeny žádné zvukové soubory</string>
+    <string name="local.imported_from">Importováno {n} souborů z \"{value}\"</string>
+</resources>
