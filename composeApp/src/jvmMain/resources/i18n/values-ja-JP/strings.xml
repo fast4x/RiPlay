@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - English (values)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">ホーム</string>
+    <string name="nav.search">検索</string>
+    <string name="nav.songs">曲</string>
+    <string name="nav.artists">アーティスト</string>
+    <string name="nav.albums">アルバム</string>
+    <string name="nav.playlists">プレイリスト</string>
+    <string name="nav.local">ローカルファイル</string>
+    <string name="queue.title">再生キュー（{n}）</string>
+    <string name="queue.open">再生キューを開く</string>
+    <string name="queue.clear">キューを空にする</string>
+    <string name="queue.close_panel">キューパネルを閉じる</string>
+    <string name="queue.remove">キューから削除</string>
+    <string name="queue.drag">ドラッグして並べ替え</string>
+    <string name="queue.drag_handle">ハンドルをドラッグして並べ替え</string>
+    <string name="action.add_to_queue">キューに追加</string>
+    <string name="action.already_queued">すでにキューにあります</string>
+    <string name="action.enqueue_all">すべてキューに追加</string>
+    <string name="action.enqueue_album">アルバム全体をキューに追加</string>
+    <string name="action.enqueue_playlist">プレイリスト全体をキューに追加</string>
+    <string name="player.previous">前の曲</string>
+    <string name="player.next">次の曲</string>
+    <string name="player.play">再生</string>
+    <string name="player.pause">一時停止</string>
+    <string name="player.volume_off">ミュート</string>
+    <string name="player.volume_low">音量 小</string>
+    <string name="player.volume_high">音量 大</string>
+    <string name="player.expand">プレーヤーを拡大</string>
+    <string name="player.open_fullscreen">フルスクリーンでプレーヤーを開く</string>
+    <string name="player.back_to_cover">曲のカバーに戻る</string>
+    <string name="player.watch_video">動画を見る</string>
+    <string name="player.expand_video">動画をウィンドウ幅いっぱいに拡大</string>
+    <string name="player.restore_video">動画の元の幅に戻す</string>
+    <string name="player.radio">ラジオ：類似曲をキューに追加</string>
+    <string name="player.song_cover">曲のカバー</string>
+    <string name="player.online">オンライン</string>
+    <string name="player.local">ローカル</string>
+    <string name="radio.none_found">類似曲が見つかりません</string>
+    <string name="radio.added">類似曲を{n}曲追加しました</string>
+    <string name="radio.unavailable">ラジオを利用できません</string>
+    <string name="overlay.close_player">プレーヤーを閉じる</string>
+    <string name="overlay.queue_title">再生キュー</string>
+    <string name="overlay.queue_count">キュー（{n}）</string>
+    <string name="overlay.no_song">再生中の曲はありません</string>
+    <string name="overlay.video_active_note">動画が左のプレーヤーパネルで再生中です：ここで見るには閉じてください</string>
+    <string name="overlay.video_active">動画がプレーヤーパネルで再生中</string>
+    <string name="overlay.close_hint">左上のシェブロンまたはESCで閉じる</string>
+    <string name="page.albums">アルバム（{n}）</string>
+    <string name="page.artists">アーティスト（{n}）</string>
+    <string name="page.playlists">プレイリスト（{n}）</string>
+    <string name="page.songs">曲（{n}）</string>
+    <string name="page.local">ローカルファイル（{n}）</string>
+    <string name="page.followed_only">フォロー中のみ</string>
+    <string name="page.followed">フォロー中</string>
+    <string name="page.followed_artist">フォロー中のアーティスト</string>
+    <string name="page.home">ホーム</string>
+    <string name="page.moods">ムードとジャンル</string>
+    <string name="page.home_unavailable">ホームを利用できません（接続を確認し、上部の更新アイコンを押してください）。</string>
+    <string name="search.hint">曲、アルバム、アーティスト、プレイリストを検索...</string>
+    <string name="search.load_more">さらに読み込む</string>
+    <string name="search.recent">最近の検索</string>
+    <string name="search.suggestions">候補</string>
+    <string name="search.clear">検索をクリア</string>
+    <string name="local.add_folder">フォルダを追加</string>
+    <string name="local.add_files">ファイルを追加</string>
+    <string name="local.fallback_artist">ローカルファイル</string>
+    <string name="local.imported">{n}件のファイルを取り込みました</string>
+    <string name="local.scanning">オーディオファイルを検索中...</string>
+    <string name="local.empty_hint">ローカルファイルは取り込まれていません。\n\n「フォルダを追加」でパソコンのフォルダをスキャン（サブフォルダも含む）するか、「ファイルを追加」で曲を1つずつ選んでください。取り込んだファイルはローカルエンジン（VLCJ）で再生され、ライブラリに残ります。</string>
+    <string name="local.input_hint">YouTubeのURL またはローカルのファイル / URL（VLCJ）</string>
+    <string name="local.clear_url">URLをクリア</string>
+    <string name="local.open_file">ローカルファイルを開く</string>
+    <string name="detail.album_shuffle">アルバムをシャッフル再生</string>
+    <string name="detail.album_favorite_add">アルバムをお気に入りに追加</string>
+    <string name="detail.album_favorite_ok">アルバムはお気に入りです</string>
+    <string name="detail.artist_shuffle">アーティストの曲をシャッフル再生</string>
+    <string name="detail.artist_follow">アーティストをフォロー</string>
+    <string name="detail.artist_followed">アーティストをフォローしました</string>
+    <string name="detail.playlist_shuffle">プレイリストをシャッフル再生</string>
+    <string name="detail.playlist_favorite_add">プレイリストをお気に入りに保存</string>
+    <string name="detail.playlist_favorite_ok">プレイリストはお気に入りです：押すと解除します</string>
+    <string name="common.loading">読み込み中...</string>
+    <string name="kcef.unavailable">KCEF再生エンジンを利用できません</string>
+    <string name="kcef.details_log">詳細はログ/コンソールの[RiPlay-KCEF]で始まる行をご覧ください。</string>
+    <string name="kcef.retry">再試行</string>
+    <string name="kcef.preparing">再生エンジンを準備しています（KCEF）…</string>
+    <string name="kcef.downloading">内蔵ブラウザをダウンロードしています（初回のみ）…</string>
+    <string name="kcef.extracting">コンポーネントを展開しています…</string>
+    <string name="kcef.installing">インストールしています…</string>
+    <string name="kcef.starting">内蔵ブラウザを起動しています…</string>
+    <string name="kcef.preparing_short">準備中…</string>
+    <string name="kcef.jdk_conflict">使用中のJDKにはRiPlayと互換性のないバージョンの内蔵ブラウザエンジンが含まれています。ダウンロード後、アプリは終了します。インストールを完了するには再度開いてください。</string>
+    <string name="error.yt_with_code">YouTubeエラー（コード {code}：{meaning}）。詳細はログの[RiPlay-KCEF] / [RiPlay-YT]行を参照。</string>
+    <string name="error.yt_2">無効なパラメータ、またはアクセス/年齢制限のある動画、またはYouTubeのアンチボット/同意チェック（ログインが必要）</string>
+    <string name="error.yt_5">HTML5プレーヤーエラー（コンテンツ/コーデック/ネットワーク）</string>
+    <string name="error.yt_100">動画が見つからないか非公開です</string>
+    <string name="error.yt_101_150">所有者が埋め込み再生を許可していません</string>
+    <string name="error.yt_152">埋め込みコンテキストがYouTubeに拒否されました：埋め込み元ページのRefererが受け付けられません</string>
+    <string name="error.yt_153">埋め込みリクエストがYouTubeに拒否されました（player/referrer設定なし）</string>
+    <string name="error.yt_unknown">不明なコード</string>
+    <string name="error.local_unavailable">ローカル曲をデスクトップで再生できません：ファイルパスにアクセスできません（Android MediaStore由来か移動済みファイル）。下のフィールドのフォルダボタンでパソコンからファイルを選んで再生できます。</string>
+    <string name="error.manual_unsupported">パスが見つからないか、サポートされないURLです：\'{value}\'</string>
+    <string name="misc.playlist_cover">プレイリストのカバー</string>
+    <string name="settings.language">言語</string>
+    <string name="settings.system">システムの言語</string>
+    <string name="titlebar.minimize">最小化</string>
+    <string name="titlebar.maximize">最大化</string>
+    <string name="titlebar.restore">元に戻す</string>
+    <string name="titlebar.close">閉じる</string>
+    <string name="common.back">戻る</string>
+    <string name="common.songs_word">曲</string>
+    <string name="overlay.playing">再生中</string>
+    <string name="local.none_found_in">「{value}」にオーディオファイルが見つかりません</string>
+    <string name="local.imported_from">「{value}」から{n}件のファイルを取り込みました</string>
+</resources>

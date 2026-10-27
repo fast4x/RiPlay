@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - English (values)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">Koti</string>
+    <string name="nav.search">Haku</string>
+    <string name="nav.songs">Kappaleet</string>
+    <string name="nav.artists">Artistit</string>
+    <string name="nav.albums">Albumit</string>
+    <string name="nav.playlists">Soittolistat</string>
+    <string name="nav.local">Paikalliset tiedostot</string>
+    <string name="queue.title">Toistojono ({n})</string>
+    <string name="queue.open">avaa toistojono</string>
+    <string name="queue.clear">tyhjennä jono</string>
+    <string name="queue.close_panel">sulje jonopaneeli</string>
+    <string name="queue.remove">poista jonosta</string>
+    <string name="queue.drag">raahaa järjestelläksesi</string>
+    <string name="queue.drag_handle">Raahaa kahvasta järjestelläksesi</string>
+    <string name="action.add_to_queue">lisää jonoon</string>
+    <string name="action.already_queued">jo jonossa</string>
+    <string name="action.enqueue_all">lisää kaikki jonoon</string>
+    <string name="action.enqueue_album">lisää koko albumi jonoon</string>
+    <string name="action.enqueue_playlist">lisää koko soittolista jonoon</string>
+    <string name="player.previous">edellinen kappale</string>
+    <string name="player.next">seuraava kappale</string>
+    <string name="player.play">toista</string>
+    <string name="player.pause">keskeytä</string>
+    <string name="player.volume_off">ääni pois</string>
+    <string name="player.volume_low">pieni äänenvoimakkuus</string>
+    <string name="player.volume_high">suuri äänenvoimakkuus</string>
+    <string name="player.expand">laajenna soitin</string>
+    <string name="player.open_fullscreen">avaa soitin koko näytölle</string>
+    <string name="player.back_to_cover">takaisin kappaleen kansikuvaan</string>
+    <string name="player.watch_video">katso video</string>
+    <string name="player.expand_video">laajenna video koko ikkunan levyiseksi</string>
+    <string name="player.restore_video">palauta videon alkuperäinen leveys</string>
+    <string name="player.radio">radio: lisää samankaltaisia kappaleita jonoon</string>
+    <string name="player.song_cover">kappaleen kansikuva</string>
+    <string name="player.online">Verkossa</string>
+    <string name="player.local">Paikallinen</string>
+    <string name="radio.none_found">Samankaltaisia kappaleita ei löytynyt</string>
+    <string name="radio.added">Lisätty {n} samankaltaista kappaletta</string>
+    <string name="radio.unavailable">Radio ei saatavilla</string>
+    <string name="overlay.close_player">sulje soitin</string>
+    <string name="overlay.queue_title">toistojono</string>
+    <string name="overlay.queue_count">Jono ({n})</string>
+    <string name="overlay.no_song">Ei toistettavaa kappaletta</string>
+    <string name="overlay.video_active_note">Video aktiivinen vasemmassa soitinpaneelissa: sulje se nähdäksesi sen tässä</string>
+    <string name="overlay.video_active">video aktiivinen soitinpaneelissa</string>
+    <string name="overlay.close_hint">Sulje vasemman yläkulman chevronilla tai ESC-näppäimellä</string>
+    <string name="page.albums">Albumit ({n})</string>
+    <string name="page.artists">Artistit ({n})</string>
+    <string name="page.playlists">Soittolistat ({n})</string>
+    <string name="page.songs">Kappaleet ({n})</string>
+    <string name="page.local">Paikalliset tiedostot ({n})</string>
+    <string name="page.followed_only">Vain seuratut</string>
+    <string name="page.followed">Seuratut</string>
+    <string name="page.followed_artist">seurattu artisti</string>
+    <string name="page.home">Koti</string>
+    <string name="page.moods">Tunnelmat ja tyylilajit</string>
+    <string name="page.home_unavailable">Koti ei saatavilla (tarkista yhteys ja paina yläreunan päivityskuvaketta).</string>
+    <string name="search.hint">Hae kappaleita, albumeita, artisteja, soittolistoja...</string>
+    <string name="search.load_more">Lataa lisää</string>
+    <string name="search.recent">Viimeaikaiset haut</string>
+    <string name="search.suggestions">Ehdotukset</string>
+    <string name="search.clear">tyhjennä haku</string>
+    <string name="local.add_folder">Lisää kansio</string>
+    <string name="local.add_files">Lisää tiedostoja</string>
+    <string name="local.fallback_artist">Paikallinen tiedosto</string>
+    <string name="local.imported">Tuotu {n} tiedostoa</string>
+    <string name="local.scanning">Etsitään äänitiedostoja...</string>
+    <string name="local.empty_hint">Ei tuotuja paikallisia tiedostoja.\n\nKäytä \"Lisää kansio\" -painiketta skannataksesi koneen kansion (mukaan lukien alikansiot) tai \"Lisää tiedostoja\" valitaksesi yksittäisiä kappaleita. Tuodut tiedostot toistetaan paikallisella moottorilla (VLCJ) ja jäävät kirjastoon.</string>
+    <string name="local.input_hint">YouTube-URL tai paikallinen tiedosto / URL (VLCJ)</string>
+    <string name="local.clear_url">tyhjennä URL</string>
+    <string name="local.open_file">avaa paikallinen tiedosto</string>
+    <string name="detail.album_shuffle">toista albumi satunnaisessa järjestyksessä</string>
+    <string name="detail.album_favorite_add">lisää albumi suosikkeihin</string>
+    <string name="detail.album_favorite_ok">albumi suosikeissa</string>
+    <string name="detail.artist_shuffle">toista artistin kappaleet satunnaisessa järjestyksessä</string>
+    <string name="detail.artist_follow">seuraa artistia</string>
+    <string name="detail.artist_followed">artistia seurataan</string>
+    <string name="detail.playlist_shuffle">toista soittolista satunnaisessa järjestyksessä</string>
+    <string name="detail.playlist_favorite_add">tallenna soittolista suosikkeihin</string>
+    <string name="detail.playlist_favorite_ok">soittolista suosikeissa: poista painamalla</string>
+    <string name="common.loading">ladataan...</string>
+    <string name="kcef.unavailable">KCEF-toistomoottori ei saatavilla</string>
+    <string name="kcef.details_log">Täydelliset tiedot lokissa/konsolissa: rivit, jotka alkavat [RiPlay-KCEF].</string>
+    <string name="kcef.retry">Yritä uudelleen</string>
+    <string name="kcef.preparing">Valmistellaan toistomoottoria (KCEF)…</string>
+    <string name="kcef.downloading">Ladataan sisäänrakennettua selainta (vain ensimmäinen käynnistys)…</string>
+    <string name="kcef.extracting">Puretaan osia…</string>
+    <string name="kcef.installing">Asennetaan…</string>
+    <string name="kcef.starting">Käynnistetään sisäänrakennettua selainta…</string>
+    <string name="kcef.preparing_short">Valmistellaan…</string>
+    <string name="kcef.jdk_conflict">Käytössä oleva JDK sisältää sisäänrakennetun selainmoottorin version, joka ei ole yhteensopiva RiPlayn kanssa. Latauksen jälkeen sovellus sulkeutuu: avaa se uudelleen viimeistelläksesi asennuksen.</string>
+    <string name="error.yt_with_code">YouTube-virhe (koodi {code}: {meaning}). Tiedot lokissa: rivit [RiPlay-KCEF] / [RiPlay-YT].</string>
+    <string name="error.yt_2">virheellinen parametri tai video, jolla on pääsy-/ikärajoituksia, tai YouTuben anti-bot/suostumustarkistus (kirjautuminen vaaditaan)</string>
+    <string name="error.yt_5">HTML5-soitinvirhe (sisältö/koodekki/verkko)</string>
+    <string name="error.yt_100">videota ei löytynyt tai se on yksityinen</string>
+    <string name="error.yt_101_150">omistaja ei salli upotettua toistoa</string>
+    <string name="error.yt_152">upotettu konteksti hylätty YouTubessa: isäntäsivun Refereria ei hyväksytä</string>
+    <string name="error.yt_153">upotuspyyntö hylätty YouTubessa (player/referrer-asetukset puuttuvat)</string>
+    <string name="error.yt_unknown">tuntematon koodi</string>
+    <string name="error.local_unavailable">Paikallista kappaletta ei voi toistaa työpöydällä: tiedostopolku ei ole käytettävissä (alkuperä Android MediaStore tai siirretty tiedosto). Voit toistaa sen valitsemalla tiedoston koneelta alla olevan kansiopainikkeen kautta.</string>
+    <string name="error.manual_unsupported">Polkua ei löytynyt tai URL ei tuettu: \'{value}\'</string>
+    <string name="misc.playlist_cover">Soittolistan kansi</string>
+    <string name="settings.language">Kieli</string>
+    <string name="settings.system">Järjestelmän kieli</string>
+    <string name="titlebar.minimize">Pienennä</string>
+    <string name="titlebar.maximize">Suurenna</string>
+    <string name="titlebar.restore">Palauta</string>
+    <string name="titlebar.close">Sulje</string>
+    <string name="common.back">Takaisin</string>
+    <string name="common.songs_word">kappaletta</string>
+    <string name="overlay.playing">Toistaa nyt</string>
+    <string name="local.none_found_in">Äänitiedostoja ei löytynyt kohteesta \"{value}\"</string>
+    <string name="local.imported_from">Tuotiin {n} tiedostoa kohteesta \"{value}\"</string>
+</resources>

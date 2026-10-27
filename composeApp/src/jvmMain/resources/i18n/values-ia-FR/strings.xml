@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - English (values)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">Initio</string>
+    <string name="nav.search">Cercar</string>
+    <string name="nav.songs">Cantos</string>
+    <string name="nav.artists">Artistas</string>
+    <string name="nav.albums">Albumes</string>
+    <string name="nav.playlists">Listas</string>
+    <string name="nav.local">Files local</string>
+    <string name="queue.title">Caude de reproduction ({n})</string>
+    <string name="queue.open">aperi le caude de reproduction</string>
+    <string name="queue.clear">vacua le caude</string>
+    <string name="queue.close_panel">claude le pannello del caude</string>
+    <string name="queue.remove">remove del caude</string>
+    <string name="queue.drag">trahe pro reordinar</string>
+    <string name="queue.drag_handle">Trahe le ansa pro reordinar</string>
+    <string name="action.add_to_queue">adde al caude</string>
+    <string name="action.already_queued">jam in le caude</string>
+    <string name="action.enqueue_all">mitte toto in le caude</string>
+    <string name="action.enqueue_album">mitte le album integre in le caude</string>
+    <string name="action.enqueue_playlist">mitte le lista integre in le caude</string>
+    <string name="player.previous">canto precedente</string>
+    <string name="player.next">canto sequente</string>
+    <string name="player.play">reproducer</string>
+    <string name="player.pause">pausa</string>
+    <string name="player.volume_off">sono disactivate</string>
+    <string name="player.volume_low">volumen basse</string>
+    <string name="player.volume_high">volumen alte</string>
+    <string name="player.expand">expande le reproductor</string>
+    <string name="player.open_fullscreen">aperi le reproductor a schermo plen</string>
+    <string name="player.back_to_cover">retornar al copertura del canto</string>
+    <string name="player.watch_video">vider le video</string>
+    <string name="player.expand_video">expande le video al largor total del fenestra</string>
+    <string name="player.restore_video">restaurar le largor initial del video</string>
+    <string name="player.radio">radio: adde cantos simile al caude</string>
+    <string name="player.song_cover">copertura del canto</string>
+    <string name="player.online">In linea</string>
+    <string name="player.local">Local</string>
+    <string name="radio.none_found">Nulle canto similar trovate</string>
+    <string name="radio.added">Addite {n} cantos simile</string>
+    <string name="radio.unavailable">Radio non disponibile</string>
+    <string name="overlay.close_player">claude le reproductor</string>
+    <string name="overlay.queue_title">caude de reproduction</string>
+    <string name="overlay.queue_count">Caude ({n})</string>
+    <string name="overlay.no_song">Nulle canto in reproduction</string>
+    <string name="overlay.video_active_note">Video active in le pannello sinistre: claude lo pro vider lo hic</string>
+    <string name="overlay.video_active">video active in le pannello</string>
+    <string name="overlay.close_hint">Claude con le chevron in alto a sinistra o con ESC</string>
+    <string name="page.albums">Albumes ({n})</string>
+    <string name="page.artists">Artistas ({n})</string>
+    <string name="page.playlists">Listas ({n})</string>
+    <string name="page.songs">Cantos ({n})</string>
+    <string name="page.local">Files local ({n})</string>
+    <string name="page.followed_only">Solmente sequite</string>
+    <string name="page.followed">Sequite</string>
+    <string name="page.followed_artist">artista sequite</string>
+    <string name="page.home">Initio</string>
+    <string name="page.moods">Statos de animo e generes</string>
+    <string name="page.home_unavailable">Initio non disponibile (verifica le connexion e preme le icone de actualisation in alto).</string>
+    <string name="search.hint">Cercar cantos, albumes, artistas, listas...</string>
+    <string name="search.load_more">Cargar plus</string>
+    <string name="search.recent">Recercas recente</string>
+    <string name="search.suggestions">Suggestiones</string>
+    <string name="search.clear">rader le recerca</string>
+    <string name="local.add_folder">Adder dossier</string>
+    <string name="local.add_files">Adder files</string>
+    <string name="local.fallback_artist">File local</string>
+    <string name="local.imported">Importate {n} files</string>
+    <string name="local.scanning">Recerca de files audio...</string>
+    <string name="local.empty_hint">Nulle file local importate.\n\nUsa \"Adder dossier\" pro scannar un dossier del computator (subdossiers incluse) o \"Adder files\" pro seliger cantos individual. Le files importate se reproduce con le motor Local (VLCJ) e resta in le bibliotheca.</string>
+    <string name="local.input_hint">URL de YouTube o file / URL local (VLCJ)</string>
+    <string name="local.clear_url">rader le URL</string>
+    <string name="local.open_file">aperir file local</string>
+    <string name="detail.album_shuffle">reproducer le album in ordine aleatori</string>
+    <string name="detail.album_favorite_add">adder le album al favorites</string>
+    <string name="detail.album_favorite_ok">album in le favorites</string>
+    <string name="detail.artist_shuffle">reproducer le cantos del artista in ordine aleatori</string>
+    <string name="detail.artist_follow">sequer le artista</string>
+    <string name="detail.artist_followed">artista sequite</string>
+    <string name="detail.playlist_shuffle">reproducer le lista in ordine aleatori</string>
+    <string name="detail.playlist_favorite_add">salveguardar le lista inter le favorites</string>
+    <string name="detail.playlist_favorite_ok">lista in le favorites: clicca pro remover lo</string>
+    <string name="common.loading">cargamento...</string>
+    <string name="kcef.unavailable">Motor de reproduction KCEF non disponibile</string>
+    <string name="kcef.details_log">Detalios complete in le log/consola: lineas que comencia per [RiPlay-KCEF].</string>
+    <string name="kcef.retry">Retenta</string>
+    <string name="kcef.preparing">Preparation del motor de reproduction (KCEF)…</string>
+    <string name="kcef.downloading">Discargamento del navigator incorporate (solmente al prime initio)…</string>
+    <string name="kcef.extracting">Extraction del componentes…</string>
+    <string name="kcef.installing">Installation…</string>
+    <string name="kcef.starting">Initio del navigator incorporate…</string>
+    <string name="kcef.preparing_short">Preparation…</string>
+    <string name="kcef.jdk_conflict">Le JDK in uso contine un motor de navigator incorporate de un version incompatible con RiPlay. Post le discargamento le application se claudera: reaperi lo pro completar le installation.</string>
+    <string name="error.yt_with_code">Error de YouTube (codice {code}: {meaning}). Detalios in le log: lineas [RiPlay-KCEF] / [RiPlay-YT].</string>
+    <string name="error.yt_2">parametro invalide o video con restrictiones de accesso/etate o verification anti-bot/consentimento de YouTube (accesso requirite)</string>
+    <string name="error.yt_5">error del reproductor HTML5 (contento/codec/rete)</string>
+    <string name="error.yt_100">video non trovate o private</string>
+    <string name="error.yt_101_150">le proprietario non permisse reproduction incorporate</string>
+    <string name="error.yt_152">contexto incorporate rejectate per YouTube: le Referer del pagina hospite non es acceptate</string>
+    <string name="error.yt_153">requesta incorporate rejectate per YouTube (configuration player/referrer mancante)</string>
+    <string name="error.yt_unknown">codice incognite</string>
+    <string name="error.local_unavailable">Canto local non reproducibile sur le scriptorio: le camino del file non es accessibile (origine Android MediaStore o file displaciate). Tu pote reproducer lo seligente le file del computator con le button de dossier in le campo infra.</string>
+    <string name="error.manual_unsupported">Camino non trovate o URL non supportate: \'{value}\'</string>
+    <string name="misc.playlist_cover">Copertura de lista</string>
+    <string name="settings.language">Lingua</string>
+    <string name="settings.system">Lingua del systema</string>
+    <string name="titlebar.minimize">Minimisar</string>
+    <string name="titlebar.maximize">Maximisar</string>
+    <string name="titlebar.restore">Restaurar</string>
+    <string name="titlebar.close">Clauder</string>
+    <string name="common.back">Retro</string>
+    <string name="common.songs_word">cantos</string>
+    <string name="overlay.playing">Reproducente ora</string>
+    <string name="local.none_found_in">Nulle file audio trovate in \"{value}\"</string>
+    <string name="local.imported_from">Importate {n} files de \"{value}\"</string>
+</resources>
