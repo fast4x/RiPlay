@@ -1,7 +1,5 @@
 package it.fast4x.riplay.ui.screens.home
 
-import android.app.Activity
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
@@ -26,7 +24,6 @@ import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.Dependencies
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.commonutils.LOCAL_KEY_PREFIX
-import it.fast4x.riplay.LocalPlayerSheetState
 import it.fast4x.riplay.R
 import it.fast4x.riplay.data.models.toUiChip
 import it.fast4x.riplay.enums.CheckUpdateState
@@ -36,18 +33,13 @@ import it.fast4x.riplay.enums.HomePageMode
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.extensions.updater.UpdateDialog
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.ui.components.ScreenContainer
-import it.fast4x.riplay.ui.screens.home.homepages.HomePageLocal
 import it.fast4x.riplay.ui.screens.home.homepages.HomePageOnline
 import it.fast4x.riplay.ui.screens.home.homepages.HomePageMixed
 import it.fast4x.riplay.utils.CheckForNewVersion
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
-import kotlin.system.exitProcess
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,10 +53,8 @@ import kotlin.system.exitProcess
 @Composable
 fun HomeScreen(
     navController: NavController,
-    onPlaylistUrl: (String) -> Unit,
     miniPlayer: @Composable () -> Unit = {},
-    openTabFromShortcut: Int,
-    playerIsExpanded: Boolean
+    openTabFromShortcut: Int
 ) {
     val appSettingsManager = LocalAppSettingsManager.current
     val appSettings = appSettingsManager.activeSettings.collectAsState().value
@@ -141,7 +131,7 @@ fun HomeScreen(
 
         }
     ) { currentTabIndex ->
-        //saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {
+
             when (currentTabIndex) {
                 0 -> when(homePageType) {
                     HomePageMode.Mixed -> HomePageMixed(
@@ -310,7 +300,6 @@ fun HomeScreen(
                 )
 
             }
-        //}
     }
 
 
@@ -327,35 +316,4 @@ fun HomeScreen(
 
     }
 
-    // Exit app when user uses back
-    val context = LocalContext.current
-    var confirmCount by remember { mutableIntStateOf( 0 ) }
-    val playerSheetState = LocalPlayerSheetState.current
-    val closeWithBackButton = appSettings.closeWithBackButton
-    val isOnHome = NavRoutes.home.isHere(navController)
-    BackHandler(
-        enabled = isOnHome && (!playerSheetState.isExpanded || !playerIsExpanded)
-    ) {
-
-        if (closeWithBackButton) {
-            if (confirmCount == 0) {
-                SmartMessage(
-                    context.resources.getString(R.string.press_once_again_to_exit),
-                    context = context
-                )
-                confirmCount++
-
-                // Reset confirmCount after 5s
-                CoroutineScope(Dispatchers.Default).launch {
-                    delay(5000L)
-                    confirmCount = 0
-                }
-            } else {
-                val activity = context as? Activity
-                activity?.finishAffinity()
-                // Close app with exit 0 notify that no problem occurred
-                exitProcess(0)
-            }
-        }
-    }
 }

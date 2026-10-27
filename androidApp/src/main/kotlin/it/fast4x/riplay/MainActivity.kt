@@ -22,6 +22,7 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.WindowManager
 import android.widget.FrameLayout
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.PredictiveBackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -225,8 +226,10 @@ import it.fast4x.spotifymeta.SpotifyAlbumMeta
 import it.fast4x.spotifymeta.SpotifyArtistMeta
 import it.fast4x.spotifymeta.SpotifyMeta
 import it.fast4x.spotifymeta.SpotifyTrackMeta
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 
@@ -318,6 +321,8 @@ class MainActivity : AppCompatActivity() {
     private var showAutostartPermissionDialog = false
 
     var unplayableTracks: Set<String> = emptySet()
+
+    var confirmCount = 0
 
     override fun onStart() {
         super.onStart()
@@ -472,6 +477,35 @@ class MainActivity : AppCompatActivity() {
             // Esegue in background la pulizia delle preferenze non utilizzate
             cleanUpUnusedPreferences(applicationContext)
         }
+
+        // Registriamo un callback che verrà invocato quando l'utente preme il pulsante di indietro
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            // Il parametro 'true' significa che il callback è abilitato e *blocca* gli eventi di fallback.
+
+            override fun handleOnBackPressed() {
+                val closeWithBackButton = appSettingsManager.activeSettings.value.closeWithBackButton
+                if (closeWithBackButton) {
+
+                    if (confirmCount == 0) {
+                        SmartMessage(
+                            resources.getString(R.string.press_once_again_to_exit),
+                            context = this@MainActivity
+                        )
+                        confirmCount++
+
+                        // Reset confirmCount after 5s
+                        CoroutineScope(Dispatchers.Default).launch {
+                            delay(5000L.milliseconds)
+                            confirmCount = 0
+                        }
+
+                        return
+                    }
+
+                    finishAndRemoveTask()
+                }
+            }
+        })
 
     }
 
@@ -1211,7 +1245,6 @@ class MainActivity : AppCompatActivity() {
 
                                             AppNavigation(
                                                 onNavControllerInit = { navController = it },
-                                                playerIsExpanded = isPlayerExpanded.value,
                                                 miniPlayer = { artworkKey: String ->
                                                     if (useTvInterface) {
                                                         UnifiedMiniPlayer(
@@ -1892,7 +1925,6 @@ val LocalPlayerServiceState = staticCompositionLocalOf<PlayerState> { PlayerStat
 
 val LocalPlayerAwareWindowInsets = staticCompositionLocalOf<WindowInsets> { error("No window insets provided") }
 
-@OptIn(ExperimentalMaterial3Api::class)
 val LocalPlayerSheetState =
     staticCompositionLocalOf<BottomSheetState> { error("No sheet state provided") }
 

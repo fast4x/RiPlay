@@ -97,7 +97,6 @@ fun AppNavigation(
     miniPlayer: @Composable (artworkKey: String) -> Unit = {},
     openTabFromShortcut: Int,
     onNavControllerInit: (NavHostController) -> Unit,
-    playerIsExpanded: Boolean
 ) {
     val navController = rememberNavController()
     onNavControllerInit(navController)
@@ -270,10 +269,8 @@ fun AppNavigation(
         ) { backStackEntry ->
             HomeScreen(
                 navController = navController,
-                onPlaylistUrl = navigateToPlaylist,
                 miniPlayer = { miniPlayer("${NavRoutes.home.name}?tab={tab}") } ,
                 openTabFromShortcut = backStackEntry.arguments?.getInt("tab") ?: openTabFromShortcut,
-                playerIsExpanded = playerIsExpanded
             )
         }
 
