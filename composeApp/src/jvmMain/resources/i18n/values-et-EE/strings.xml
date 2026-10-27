@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RiPlay Desktop - English (values)
+  Lingue della UI desktop nel FORMATO ANDROID standard, gestibili con
+  Crowdin / Lokalise / Transifex (config: crowdin.yml alla radice del progetto;
+  istruzioni: composeApp/src/jvmMain/resources/i18n/README.md).
+
+  - l'attributo "name" e la chiave UI del desktop: NON modificarlo;
+  - i segnaposto ({n}, {code}, {meaning}, {value}) NON vanno tradotti ne' rimossi;
+  - una chiave mancante ricade automaticamente sull'inglese (values/strings.xml).
+-->
+<resources>
+    <string name="nav.home">Avaleht</string>
+    <string name="nav.search">Otsing</string>
+    <string name="nav.songs">Lood</string>
+    <string name="nav.artists">Artistid</string>
+    <string name="nav.albums">Albumid</string>
+    <string name="nav.playlists">Esitusloendid</string>
+    <string name="nav.local">Kohalikud failid</string>
+    <string name="queue.title">Mängimise järjekord ({n})</string>
+    <string name="queue.open">ava mängimise järjekord</string>
+    <string name="queue.clear">tühjenda järjekord</string>
+    <string name="queue.close_panel">sulge järjekorra paneel</string>
+    <string name="queue.remove">eemalda järjekorrast</string>
+    <string name="queue.drag">lohista ümberjärestamiseks</string>
+    <string name="queue.drag_handle">Lohista sangast ümberjärestamiseks</string>
+    <string name="action.add_to_queue">lisa järjekorda</string>
+    <string name="action.already_queued">juba järjekorras</string>
+    <string name="action.enqueue_all">lisa kõik järjekorda</string>
+    <string name="action.enqueue_album">lisa kogu album järjekorda</string>
+    <string name="action.enqueue_playlist">lisa kogu esitusloend järjekorda</string>
+    <string name="player.previous">eelmine lugu</string>
+    <string name="player.next">järgmine lugu</string>
+    <string name="player.play">mängi</string>
+    <string name="player.pause">paus</string>
+    <string name="player.volume_off">heli väljas</string>
+    <string name="player.volume_low">madal helivaljus</string>
+    <string name="player.volume_high">kõrge helivaljus</string>
+    <string name="player.expand">laienda mängijat</string>
+    <string name="player.open_fullscreen">ava mängija täisekraanil</string>
+    <string name="player.back_to_cover">tagasi loo kaanepildile</string>
+    <string name="player.watch_video">vaata videot</string>
+    <string name="player.expand_video">laienda video kogu akna laiusele</string>
+    <string name="player.restore_video">taasta video algne laius</string>
+    <string name="player.radio">raadio: lisa sarnased lood järjekorda</string>
+    <string name="player.song_cover">loo kaanepilt</string>
+    <string name="player.online">Võrgus</string>
+    <string name="player.local">Kohalik</string>
+    <string name="radio.none_found">Sarnaseid lugusid ei leitud</string>
+    <string name="radio.added">Lisati {n} sarnast lugu</string>
+    <string name="radio.unavailable">Raadio pole saadaval</string>
+    <string name="overlay.close_player">sulge mängija</string>
+    <string name="overlay.queue_title">mängimise järjekord</string>
+    <string name="overlay.queue_count">Järjekord ({n})</string>
+    <string name="overlay.no_song">Ükski lugu ei mängi</string>
+    <string name="overlay.video_active_note">Video on vasakul mängijapaneelis aktiivne: sulge see, et siin näha</string>
+    <string name="overlay.video_active">video aktiivne mängijapaneelis</string>
+    <string name="overlay.close_hint">Sulge vasakpoolse chevroniga või ESC-iga</string>
+    <string name="page.albums">Albumid ({n})</string>
+    <string name="page.artists">Artistid ({n})</string>
+    <string name="page.playlists">Esitusloendid ({n})</string>
+    <string name="page.songs">Lood ({n})</string>
+    <string name="page.local">Kohalikud failid ({n})</string>
+    <string name="page.followed_only">Ainult jälgitavad</string>
+    <string name="page.followed">Jälgitavad</string>
+    <string name="page.followed_artist">jälgitud artist</string>
+    <string name="page.home">Avaleht</string>
+    <string name="page.moods">Meeleolud ja žanrid</string>
+    <string name="page.home_unavailable">Avaleht pole saadaval (kontrolli ühendust ja vajuta ülal värskenduse ikooni).</string>
+    <string name="search.hint">Otsi lugusid, albumeid, artiste, esitusloendeid...</string>
+    <string name="search.load_more">Laadi veel</string>
+    <string name="search.recent">Hiljutised otsingud</string>
+    <string name="search.suggestions">Soovitused</string>
+    <string name="search.clear">tühjenda otsing</string>
+    <string name="local.add_folder">Lisa kaust</string>
+    <string name="local.add_files">Lisa faile</string>
+    <string name="local.fallback_artist">Kohalik fail</string>
+    <string name="local.imported">Imporditi {n} faili</string>
+    <string name="local.scanning">Otsin helifaile...</string>
+    <string name="local.empty_hint">Ühtegi kohalikku faili pole imporditud.\n\nKasuta \"Lisa kaust\", et skannida arvuti kausta (ka alamkaustad), või \"Lisa faile\", et valida üksikuid lugusid. Imporditud failid mängitakse kohaliku mootoriga (VLCJ) ja jäävad raamatukokku.</string>
+    <string name="local.input_hint">YouTube\'i URL või kohalik fail / URL (VLCJ)</string>
+    <string name="local.clear_url">tühjenda URL</string>
+    <string name="local.open_file">ava kohalik fail</string>
+    <string name="detail.album_shuffle">mängi albumit juhuslikus järjekorras</string>
+    <string name="detail.album_favorite_add">lisa album lemmikutesse</string>
+    <string name="detail.album_favorite_ok">album lemmikutes</string>
+    <string name="detail.artist_shuffle">mängi artisti lugusid juhuslikus järjekorras</string>
+    <string name="detail.artist_follow">jälgi artisti</string>
+    <string name="detail.artist_followed">artist jälgitud</string>
+    <string name="detail.playlist_shuffle">mängi esitusloendit juhuslikus järjekorras</string>
+    <string name="detail.playlist_favorite_add">salvesta esitusloend lemmikutesse</string>
+    <string name="detail.playlist_favorite_ok">esitusloend lemmikutes: eemaldamiseks klõpsa</string>
+    <string name="common.loading">laadimine...</string>
+    <string name="kcef.unavailable">KCEF mängumootor pole saadaval</string>
+    <string name="kcef.details_log">Täielikud üksikasjad logis/konsoolis: read, mis algavad [RiPlay-KCEF].</string>
+    <string name="kcef.retry">Proovi uuesti</string>
+    <string name="kcef.preparing">Valmistun mängumootorit (KCEF)…</string>
+    <string name="kcef.downloading">Laadin alla sisseehitatud brauserit (ainult esimesel käivitusel)…</string>
+    <string name="kcef.extracting">Pakin komponente lahti…</string>
+    <string name="kcef.installing">Paigaldan…</string>
+    <string name="kcef.starting">Käivitan sisseehitatud brauserit…</string>
+    <string name="kcef.preparing_short">Valmistun…</string>
+    <string name="kcef.jdk_conflict">Kasutatav JDK sisaldab sisseehitatud brauserimootorit versioonis, mis ei ühildu RiPlayga. Pärast allalaadimist suletakse rakendus: ava see uuesti, et paigaldus lõpule viia.</string>
+    <string name="error.yt_with_code">YouTube\'i viga (kood {code}: {meaning}). Üksikasjad logis: read [RiPlay-KCEF] / [RiPlay-YT].</string>
+    <string name="error.yt_2">vigane parameeter või video ligipääsu-/vanusepiirangutega või YouTube\'i robotivastane/nõusolekukontroll (vajalik sisselogimine)</string>
+    <string name="error.yt_5">HTML5-mängija viga (sisu/kodek/võrk)</string>
+    <string name="error.yt_100">videot ei leitud või on privaatne</string>
+    <string name="error.yt_101_150">omanik ei luba manustatud taasesitust</string>
+    <string name="error.yt_152">manustatud kontekst YouTube\'i poolt tagasi lükatud: majutava lehe Refererit ei aktsepteerita</string>
+    <string name="error.yt_153">manustamistaotlus YouTube\'i poolt tagasi lükatud (puudub player/referrer\'i seadistus)</string>
+    <string name="error.yt_unknown">tundmatu kood</string>
+    <string name="error.local_unavailable">Kohalikku lugu ei saa töölauas mängida: failitee pole ligipääsetav (päritolu Android MediaStore või teisaldatud fail). Saad seda mängida, valid faili arvutist alloleva kaustanupu kaudu.</string>
+    <string name="error.manual_unsupported">Teed ei leitud või URL ei toetata: \'{value}\'</string>
+    <string name="misc.playlist_cover">Esitusloendi kaanepilt</string>
+    <string name="settings.language">Keel</string>
+    <string name="settings.system">Süsteemi keel</string>
+    <string name="titlebar.minimize">Minimeeri</string>
+    <string name="titlebar.maximize">Maksimeeri</string>
+    <string name="titlebar.restore">Taasta</string>
+    <string name="titlebar.close">Sulge</string>
+    <string name="common.back">Tagasi</string>
+    <string name="common.songs_word">lugu</string>
+    <string name="overlay.playing">Mängib praegu</string>
+    <string name="local.none_found_in">Kaustast \"{value}\" ei leitud helifaile</string>
+    <string name="local.imported_from">Imporditi {n} faili asukohast \"{value}\"</string>
+</resources>
