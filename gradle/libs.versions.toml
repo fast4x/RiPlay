@@ -1,5 +1,5 @@
 [versions]
-compose-plugin = "1.11.0"
+compose-plugin = "1.12.2"
 agp = "9.2.1"
 kotlin = "2.4.10"
 kotlin-ksp = "2.3.10"
@@ -12,7 +12,7 @@ coil = "2.7.0"
 coil3 = "3.6.3"
 room = "2.8.5"
 sqlite = "2.7.1"
-media3 = "1.11.1" #1.10.1 ultima versione con webview in background
+media3 = "1.11.1"
 ktor = "3.6.0"
 brotli = "0.1.2"
 palette = "1.0.0"
@@ -56,8 +56,6 @@ camerax = "1.6.2"
 zxing = "3.5.4"
 splashscreen = "1.2.0"
 lifecycle-process = "2.11.0"
-runtimeVersion = "1.12.0"
-geckoview = "136.0.20250317200840" # Compatible with sdk 24
 
 #Lista delle dipendenze necessarie per mantenere la versione FOSS compatibile con sdk 23
 webkit = "1.15.0" #Compatibile con sdk 23 > versione foss
@@ -109,7 +107,6 @@ material-icon-desktop = {group = "org.jetbrains.compose.material", name = "mater
 material3 = {group = "androidx.compose.material3", name = "material3-android", version.ref = "material3"}
 androidmaterial = {group = "com.google.android.material", name = "material", version.ref = "androidmaterial"}
 constraintlayout = {group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintlayout"}
-#translator = { group = "com.github.therealbush", name = "translator", version.ref = "translator"}
 translator = { group = "com.github.rebelonion", name = "translator", version.ref = "translator"}
 kotlin-csv = { group = "com.github.doyaaaaaken", name = "kotlin-csv-jvm", version.ref = "kotlin-csv"}
 monetcompat = { group = "com.github.KieronQuinn", name = "MonetCompat", version.ref = "monetcompat"}
@@ -155,9 +152,6 @@ camerax-camera-view = { module = "androidx.camera:camera-view", version.ref = "c
 zxing-core = { module = "com.google.zxing:core", version.ref = "zxing"}
 splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "splashscreen"}
 lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "lifecycle-process"}
-
-#androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtimeVersion" }
-#geckoView = { group = "org.mozilla.geckoview", name = "geckoview", version.ref = "geckoview" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
