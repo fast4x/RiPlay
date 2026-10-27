@@ -392,26 +392,6 @@ kotlin {
             runtimeOnly("org.jogamp.jogl:jogl-all:2.6.0:natives-linux-amd64")
             runtimeOnly("org.jogamp.jogl:jogl-all:2.6.0:natives-macosx-universal")
 
-            // STEP 4 (build Mac/Linux): il classifier JavaFX segue il SISTEMA
-            // CHE COSTRUISCE (prima era "win" fisso: giusto solo per la build
-            // locale Windows dell'utente). Su Apple Silicon = mac-aarch64.
-            // JavaFX non e' importato dal codice desktop (resta nel classpath
-            // per compatibilita' con librerie che lo toccano a runtime).
-            val osName = System.getProperty("os.name").lowercase()
-            val osArch = System.getProperty("os.arch").lowercase()
-            val fxSuffix = when {
-                osName.contains("win") -> "win"
-                osName.contains("mac") || osName.contains("darwin") ->
-                    if (osArch.contains("aarch64") || osArch.contains("arm64")) "mac-aarch64" else "mac"
-                else -> "linux"
-            }
-            implementation("org.openjfx:javafx-base:21.0.5:${fxSuffix}")
-            implementation("org.openjfx:javafx-graphics:21.0.5:${fxSuffix}")
-            implementation("org.openjfx:javafx-controls:21.0.5:${fxSuffix}")
-            implementation("org.openjfx:javafx-swing:21.0.5:${fxSuffix}")
-            implementation("org.openjfx:javafx-web:21.0.5:${fxSuffix}")
-            implementation("org.openjfx:javafx-media:21.0.5:${fxSuffix}")
-
             implementation(libs.coil.network.okhttp)
             runtimeOnly(libs.kotlinx.coroutines.swing)
 
