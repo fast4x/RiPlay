@@ -77,6 +77,38 @@
 #    v3 ha overwrite_files: un re-run sullo stesso tag SOVRASCRIVE gli asset
 #    omonimi invece di fallire) e permissions: contents: write esplicite
 #    (con token di default read-only la release falliva con 403).
+#
+# STEP 3ab (macOS x86_64 + migrazione runner obbligata):
+#  - GITHUB HA RITIRATO l'immagine "macos-14" (changelog "macOS 14 runner
+#    image retirement", 2026-10-01; "macos-13" era gia' ritirato a fine
+#    2025): il vecchio job macos-dmg non riceverebbe piu' runner e la
+#    build mac morirebbe alla scelta della macchina.
+#  - MIGRAZIONE: macos-14 -> macos-15 (Apple Silicon arm64, 3 vCPU / 7 GB,
+#    stesso profilo del vecchio macos-14; i cap STEP 3w restano).
+#  - NUOVA BUILD INTEL (richiesta utente: "aggiungere la versione x86_64
+#    desktop per macOS"): esiste ancora un runner Intel gratuito,
+#    "macos-15-intel" (x86_64 nativo, 4 vCPU / 14 GB, gratis sui repo
+#    pubblici) -> nuovo job macos-dmg-x64. jpackage non fa cross-building:
+#    serve un runner della stessa arch del target, qui e' NATIVA (niente
+#    Rosetta).
+#  - SEED CEF: anche il bundle jbr_jcef segue l'arch del job (osx/aarch64
+#    per arm, osx/x64 per Intel) via fetch-kcef-bundle.sh (stessa logica
+#    di selezione di KCEFBuilder.GitHub, che a runtime scegliera' lo
+#    stesso archivio).
+#  - NOMI ASSET (cambia rispetto alle release precedenti): i due DMG sono
+#    distinguibili nel nome -> RiPlay-<tag>-macOS-arm64.dmg e
+#    RiPlay-<tag>-macOS-x86_64.dmg (prima: RiPlay-<tag>-macOS.dmg).
+#    Aggiornati rename, verifica asset attesi e testo release notes.
+#  - CANARINO ARCHITETTURA: nuovo step macOS-only dopo la build: lipo
+#    -archs su binario app image e runtime bundlato, con assert sull'arch
+#    attesa della matrix (arm64 / x86_64).
+#  - CANARINO KCEF: il canarino STEP 3x ora controlla anche la presenza
+#    del motore KCEF v44 (bootstrap "v44 (step3z)") nel codice eseguito:
+#    protegge dal regresso al motore v37 (bug chrome_elf su Linux ai
+#    riavvii + crash macOS).
+#  - DIAGNOSTICA jpackage: artifact rinominato per-job
+#    (macos-jpackage-diagnostics-<nome job>) perche' con due job mac un
+#    nome unico andrebbe in conflitto se entrambi fallissero nella run.
 # =============================================================================
 
 name: Build and Release RiPlay
@@ -292,16 +324,30 @@ jobs:
             seed_os: linux
             seed_arch: x64
             extra_flags: ''
+          # STEP 3ab: macos-14 RITIRATO da GitHub (1 ott 2026) -> macos-15
+          # (Apple Silicon arm64, 3 vCPU / 7 GB, stesso profilo)
           - name: macos-dmg
-            os: macos-14
+            os: macos-15
             tasks: :composeApp:packageDmg
             seed_os: osx
             seed_arch: aarch64
+            expect_arch: arm64
             # STEP 3u: jpackage --verbose (log completo dei comandi codesign
             # interni) + working dir preservata per la diagnostica post-fallimento
-            # STEP 3w: cap Kotlin daemon ridotto (runner macos-14 = 7GB; i cap
+            # STEP 3w: cap Kotlin daemon ridotto (runner mac arm = 7GB; i cap
             # teorici 4g+4g di gradle.properties sono pensati per i runner 16GB,
             # la compilazione desktop resta <1.5GB)
+            extra_flags: '-Pcompose.desktop.verbose=true -Pcompose.preserve.working.dir=true -Pkotlin.daemon.jvmargs=-Xmx2g'
+          # STEP 3ab: build Intel NATIVA (richiesta utente: versione x86_64
+          # desktop per macOS). macos-15-intel = runner x86_64 (4 vCPU /
+          # 14 GB, gratuito sui repo pubblici); jpackage non fa
+          # cross-building quindi serve un runner del target.
+          - name: macos-dmg-x64
+            os: macos-15-intel
+            tasks: :composeApp:packageDmg
+            seed_os: osx
+            seed_arch: x64
+            expect_arch: x86_64
             extra_flags: '-Pcompose.desktop.verbose=true -Pcompose.preserve.working.dir=true -Pkotlin.daemon.jvmargs=-Xmx2g'
     steps:
       - name: Checkout code
@@ -349,6 +395,15 @@ jobs:
             echo "OK: fix memoria Kotlin daemon (STEP 3w) PRESENTE"
           else
             echo "!! ATTENZIONE: fix memoria (kotlin.daemon.jvmargs=-Xmx4g) ASSENTE — run su codice vecchio !!"
+          fi
+          # STEP 3ab: il motore KCEF v44 vive SOLO nel repo utente (gli zip
+          # consegnati dalle sessioni successive potrebbero non includerlo):
+          # se questo grep fallisce la run gira col motore vecchio v37
+          # (bug chrome_elf su Linux ai riavvii, crash macOS non fixati)
+          if grep -n "v44 (step3z)" composeApp/src/jvmMain/kotlin/it/fast4x/riplay/player/kcef/KcefEngine.kt; then
+            echo "OK: motore KCEF v44 (step3z) PRESENTE"
+          else
+            echo "!! ATTENZIONE: motore KCEF v44 ASSENTE — run su motore v37 (bug Linux/macOS nota) !!"
           fi
 
       # Semina l'archivio jbr_jcef (stessa selezione della libreria KCEF) in
@@ -403,6 +458,41 @@ jobs:
           echo "❌ Build fallita dopo ${max_attempts} tentativi"
           exit 1
 
+      # STEP 3ab: canarino architettura — su macOS verifica che il binario
+      # dell'app (e il runtime bundlato da jpackage) sia dell'arch attesa
+      # della matrix (arm64 su macos-15, x86_64 su macos-15-intel): se il
+      # runner sbagliasse arch la build muore qui con log chiaro.
+      - name: Canarino architettura app image (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXPECT="${{ matrix.expect_arch }}"
+          APP_DIR=$(find composeApp/build/compose/binaries/main -maxdepth 2 -name 'RiPlay.app' -type d 2>/dev/null | head -1)
+          if [ -z "$APP_DIR" ]; then
+            echo "❌ RiPlay.app non trovata in binaries/main:"
+            find composeApp/build/compose/binaries -maxdepth 4 || true
+            exit 1
+          fi
+          BIN="$APP_DIR/Contents/MacOS/RiPlay"
+          archs=$(lipo -archs "$BIN")
+          echo "🔎 $BIN -> [$archs]"
+          case "$archs" in
+            *"$EXPECT"*) echo "✅ architettura attesa ($EXPECT) presente" ;;
+            *) echo "❌ architettura attesa ($EXPECT) ASSENTE in [$archs]"; exit 1 ;;
+          esac
+          JLI="$APP_DIR/Contents/runtime/lib/libjli.dylib"
+          if [ -e "$JLI" ]; then
+            jarch=$(lipo -archs "$JLI")
+            echo "🔎 runtime bundlato: $JLI -> [$jarch]"
+            case "$jarch" in
+              *"$EXPECT"*) echo "✅ runtime jpackage dell'arch attesa ($EXPECT)" ;;
+              *) echo "⚠️ runtime jpackage [$jarch] diverso dall'attesa ($EXPECT) (non bloccante)" ;;
+            esac
+          else
+            echo "⚠️ libjli.dylib non trovata in $APP_DIR/Contents/runtime/lib (skip check runtime)"
+          fi
+
       # STEP 3u: se macOS fallisce non voliamo più al buio -> stampiamo gli
       # argomenti esatti di jpackage e il Info.plist generato, e li alleghiamo
       # come artifact per l'analisi
@@ -435,7 +525,7 @@ jobs:
         if: failure() && runner.os == 'macOS'
         uses: actions/upload-artifact@v4
         with:
-          name: macos-jpackage-diagnostics
+          name: macos-jpackage-diagnostics-${{ matrix.name }}
           path: jpackage-diagnostics.txt
           if-no-files-found: ignore
           retention-days: 7
@@ -545,7 +635,8 @@ jobs:
           rename_artifact windows-msi    msi "RiPlay-${CURRENT_TAG}-Windows"
           rename_artifact linux-deb-rpm  deb "RiPlay-${CURRENT_TAG}-Linux"
           rename_artifact linux-deb-rpm  rpm "RiPlay-${CURRENT_TAG}-Linux"
-          rename_artifact macos-dmg      dmg "RiPlay-${CURRENT_TAG}-macOS"
+          rename_artifact macos-dmg      dmg "RiPlay-${CURRENT_TAG}-macOS-arm64"
+          rename_artifact macos-dmg-x64  dmg "RiPlay-${CURRENT_TAG}-macOS-x86_64"
 
           echo "📂 Dopo rinomina:"
           find . -maxdepth 1 -type f | sort
@@ -580,7 +671,8 @@ jobs:
               check "RiPlay-${CURRENT_TAG}-Windows*.msi" "MSI Windows"
               check "RiPlay-${CURRENT_TAG}-Linux*.deb"   "DEB Linux"
               check "RiPlay-${CURRENT_TAG}-Linux*.rpm"   "RPM Linux"
-              check "RiPlay-${CURRENT_TAG}-macOS*.dmg"   "DMG macOS"
+              check "RiPlay-${CURRENT_TAG}-macOS-arm64*.dmg"   "DMG macOS Apple Silicon"
+              check "RiPlay-${CURRENT_TAG}-macOS-x86_64*.dmg"  "DMG macOS Intel"
               ;;
             *) # all (push tag o dispatch 'all')
               check "RiPlay-${CURRENT_TAG}-Android-full*.apk" "APK full"
@@ -588,7 +680,8 @@ jobs:
               check "RiPlay-${CURRENT_TAG}-Windows*.msi" "MSI Windows"
               check "RiPlay-${CURRENT_TAG}-Linux*.deb"   "DEB Linux"
               check "RiPlay-${CURRENT_TAG}-Linux*.rpm"   "RPM Linux"
-              check "RiPlay-${CURRENT_TAG}-macOS*.dmg"   "DMG macOS"
+              check "RiPlay-${CURRENT_TAG}-macOS-arm64*.dmg"   "DMG macOS Apple Silicon"
+              check "RiPlay-${CURRENT_TAG}-macOS-x86_64*.dmg"  "DMG macOS Intel"
               ;;
           esac
           echo "Asset attesi mancanti: ${missing}"
@@ -689,12 +782,13 @@ jobs:
             echo "- **APK Full** (all features)"
             echo "- **APK FOSS** (all features less chromecast, check for updates, musicvault)"
             echo ""
-            echo "**Desktop native** (CEF included, no other downloads at first startup; VLC required for local files, install it if not installed)"
+            echo "**Desktop nativo** (CEF incluso, nessun download al primo avvio; VLC richiesto per i file locali)"
             echo "- **Windows** - MSI installer"
             echo "- **Linux** - DEB + RPM"
-            echo "- **macOS** - DMG (not signed: first start with right mouse button -> Open)"
+            echo "- **macOS Apple Silicon** - DMG (non firmato: primo avvio con tasto destro -> Apri)"
+            echo "- **macOS Intel** - DMG (non firmato: primo avvio con tasto destro -> Apri)"
             echo ""
-            echo "**Desktop distributions Android-based** (7z)"
+            echo "**Desktop distribuzioni Android-based** (7z)"
             echo "- **Desktop AVD** (Windows & Linux)"
             echo "- **Desktop WSA** (Windows only)"
             echo "- **Desktop WAYDROID** (Linux only)"
