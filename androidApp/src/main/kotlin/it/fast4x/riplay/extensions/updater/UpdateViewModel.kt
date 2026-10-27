@@ -18,6 +18,7 @@ import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 import androidx.core.net.toUri
+import timber.log.Timber
 
 data class UpdateState(
     val isChecking: Boolean = false,
@@ -37,7 +38,8 @@ class UpdateViewModel(application: Application) : AndroidViewModel(application) 
         "https://raw.githubusercontent.com/fast4x/RiPlay/main/updatedVersion/updatedVersionCode.ver"
 
     private val apkUrlPattern =
-        "https://github.com/fast4x/RiPlay/releases/download/v{updatedVersionName}/RiPlay-${BuildConfig.FLAVOR}-release-{updatedVersionName}.apk"
+        "https://github.com/fast4x/RiPlay/releases/download/v{updatedVersionName}/RiPlay-v{updatedVersionName}-Android-${BuildConfig.FLAVOR}.apk"
+        //"https://github.com/fast4x/RiPlay/releases/download/v{updatedVersionName}/RiPlay-${BuildConfig.FLAVOR}-release-{updatedVersionName}.apk"
 
     private var cachedApkUrl: String = ""
 
@@ -58,9 +60,9 @@ class UpdateViewModel(application: Application) : AndroidViewModel(application) 
                     val latestVersionCode = content.firstOrNull()?.toInt() ?: 0
                     val currentVersionCode = getCurrentVersionCode()
                     val updatedVersionName = content.getOrNull(1) ?: ""
-
+                    cachedApkUrl = apkUrlPattern.replace("{updatedVersionName}", updatedVersionName)
+                    Timber.d("checkForUpdate latestVersionCode $latestVersionCode currentVersionCode $currentVersionCode updatedVersionName $updatedVersionName cachedApkUrl $cachedApkUrl")
                     if (isNewerVersion(latestVersionCode, currentVersionCode)) {
-                        cachedApkUrl = apkUrlPattern.replace("{updatedVersionName}", updatedVersionName)
                         _updateState.value = _updateState.value.copy(
                             isChecking = false,
                             updateAvailable = true,
