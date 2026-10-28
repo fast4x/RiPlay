@@ -23,6 +23,9 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+// STEP 3ac: equalizzatore per il brano IN RIPRODUZIONE + icona auto-radio
+import androidx.compose.material.icons.filled.GraphicEq
+import androidx.compose.material.icons.filled.Radio
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.List
 import androidx.compose.runtime.Composable
@@ -69,6 +72,13 @@ fun PlayQueuePanel(
     onRemove: (Song) -> Unit,
     onClear: () -> Unit,
     onMove: (Long, Long) -> Unit,
+    // STEP 3ac: uid del brano attualmente IN RIPRODUZIONE (resta in coda
+    // marcato finche' la sua riproduzione non finisce)
+    playingUid: Long? = null,
+    // STEP 3ac: interruttore AUTO-RADIO del pannello (acceso di default:
+    // quando la coda sta per finire la radio aggiunge brani da sola)
+    autoRadioEnabled: Boolean = true,
+    onToggleAutoRadio: () -> Unit = {},
     onClose: () -> Unit,
     topPadding: Dp = 0.dp
 ) {
@@ -107,6 +117,21 @@ fun PlayQueuePanel(
                 fontWeight = FontWeight.SemiBold
             )
             Spacer(Modifier.weight(1f))
+            // STEP 3ac: interruttore AUTO-RADIO (radio automatica quando la
+            // coda sta per finire): accentato quando attivo, attenuato se spento
+            IconButton(
+                onClick = onToggleAutoRadio,
+                modifier = Modifier.size(30.dp)
+            ) {
+                Icon(
+                    Icons.Filled.Radio,
+                    contentDescription = if (autoRadioEnabled) ds("queue.autoradio_on")
+                    else ds("queue.autoradio_off"),
+                    tint = if (autoRadioEnabled) RiPlayAccent
+                    else Color.White.copy(alpha = 0.4f),
+                    modifier = Modifier.size(18.dp)
+                )
+            }
             if (queue.isNotEmpty()) {
                 IconButton(
                     onClick = onClear,
@@ -157,6 +182,9 @@ fun PlayQueuePanel(
                 modifier = Modifier.weight(1f)
             ) {
                 items(queue, key = { it.uid }) { queued ->
+                    // STEP 3ac: il brano marcato e' quello IN RIPRODUZIONE:
+                    // riga evidenziata + titolo accentato + equalizzatore
+                    val isPlaying = queued.uid == playingUid
                     ReorderableItem(
                         state = reorderableState,
                         key = queued.uid
@@ -167,8 +195,11 @@ fun PlayQueuePanel(
                                 .fillMaxWidth()
                                 .animateItem()
                                 .background(
-                                    if (isDragging) RiPlayAccent.copy(alpha = 0.12f)
-                                    else Color.Transparent,
+                                    when {
+                                        isDragging -> RiPlayAccent.copy(alpha = 0.12f)
+                                        isPlaying -> RiPlayAccent.copy(alpha = 0.08f)
+                                        else -> Color.Transparent
+                                    },
                                     RoundedCornerShape(10.dp)
                                 )
                                 .clickable { onPlay(queued.song) }
@@ -196,7 +227,7 @@ fun PlayQueuePanel(
                             Column(Modifier.weight(1f)) {
                                 Text(
                                     queued.song.title,
-                                    color = Color.White,
+                                    color = if (isPlaying) RiPlayAccent else Color.White,
                                     fontSize = 14.sp,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
@@ -210,6 +241,16 @@ fun PlayQueuePanel(
                                         overflow = TextOverflow.Ellipsis
                                     )
                                 }
+                            }
+                            // STEP 3ac: evidenza "in riproduzione"
+                            if (isPlaying) {
+                                Icon(
+                                    Icons.Filled.GraphicEq,
+                                    contentDescription = ds("queue.in_playback"),
+                                    tint = RiPlayAccent,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(Modifier.width(6.dp))
                             }
                             IconButton(
                                 onClick = { onRemove(queued.song) },

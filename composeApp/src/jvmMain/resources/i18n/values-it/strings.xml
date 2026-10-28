@@ -49,6 +49,11 @@
     <string name="radio.none_found">Nessun brano simile trovato</string>
     <string name="radio.added">Aggiunti {n} brani simili</string>
     <string name="radio.unavailable">Radio non disponibile</string>
+    <!-- STEP 3ac: auto-radio + marcatura coda -->
+    <string name="radio.auto_added">Auto-radio: aggiunti {n} brani simili</string>
+    <string name="queue.in_playback">In riproduzione</string>
+    <string name="queue.autoradio_on">Auto-radio attiva: aggiunge brani simili quando la coda sta per finire</string>
+    <string name="queue.autoradio_off">Auto-radio disattivata</string>
     <string name="overlay.close_player">chiudi il player</string>
     <string name="overlay.queue_title">coda di riproduzione</string>
     <string name="overlay.queue_count">Coda ({n})</string>
@@ -123,4 +128,6 @@
     <string name="overlay.playing">Riproduzione in corso</string>
     <string name="local.none_found_in">Nessun file audio trovato in \"{value}\"</string>
     <string name="local.imported_from">Importati {n} file da \"{value}\"</string>
+    <string name="podcast.episodes">episodi</string>
+    <string name="podcast.description">Descrizione</string>
 </resources>

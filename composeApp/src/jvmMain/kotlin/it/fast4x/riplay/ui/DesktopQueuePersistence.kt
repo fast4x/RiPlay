@@ -58,3 +58,38 @@ fun saveQueueIds(ids: List<String>) {
         // silenzioso
     }
 }
+
+/**
+ * STEP 3ac: preferenza dell'AUTO-RADIO nella coda (stesso file
+ * ~/.riplay/queue.properties, chiave "autoradio.enabled"). Default TRUE
+ * (scelta utente: interruttore acceso di default): se la chiave non c'e'
+ * o il file e' illeggibile la funzione resta attiva.
+ */
+fun loadAutoRadioEnabled(): Boolean = try {
+    val p = java.util.Properties()
+    if (queuePrefsFile.isFile) {
+        queuePrefsFile.inputStream().use { p.load(it) }
+    }
+    p.getProperty("autoradio.enabled", "true")?.trim()?.lowercase() != "false"
+} catch (t: Throwable) {
+    true
+}
+
+/**
+ * STEP 3ac: salvataggio dell'interruttore auto-radio. RICARICA il file
+ * esistente prima di scrivere, cosi' la coda salvata NON viene toccata
+ * (le due preferenze convivono nello stesso Properties). Errori silenziosi.
+ */
+fun saveAutoRadioEnabled(enabled: Boolean) {
+    try {
+        val p = java.util.Properties()
+        if (queuePrefsFile.isFile) {
+            queuePrefsFile.inputStream().use { p.load(it) }
+        }
+        p.setProperty("autoradio.enabled", enabled.toString())
+        queuePrefsFile.parentFile?.mkdirs()
+        queuePrefsFile.outputStream().use { p.store(it, "RiPlay desktop playback queue") }
+    } catch (t: Throwable) {
+        // silenzioso
+    }
+}

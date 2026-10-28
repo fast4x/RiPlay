@@ -49,6 +49,11 @@
     <string name="radio.none_found">No similar songs found</string>
     <string name="radio.added">Added {n} similar songs</string>
     <string name="radio.unavailable">Radio unavailable</string>
+    <!-- STEP 3ac: auto-radio + marcatura coda -->
+    <string name="radio.auto_added">Auto-radio: added {n} similar songs</string>
+    <string name="queue.in_playback">Now playing</string>
+    <string name="queue.autoradio_on">Auto-radio active: adds similar songs when the queue is about to end</string>
+    <string name="queue.autoradio_off">Auto-radio off</string>
     <string name="overlay.close_player">Close the player</string>
     <string name="overlay.queue_title">Playback queue</string>
     <string name="overlay.queue_count">Queue ({n})</string>
@@ -123,4 +128,6 @@
     <string name="overlay.playing">Now playing</string>
     <string name="local.none_found_in">No audio files found in \"{value}\"</string>
     <string name="local.imported_from">Imported {n} files from \"{value}\"</string>
+    <string name="podcast.episodes">episodes</string>
+    <string name="podcast.description">Description</string>
 </resources>

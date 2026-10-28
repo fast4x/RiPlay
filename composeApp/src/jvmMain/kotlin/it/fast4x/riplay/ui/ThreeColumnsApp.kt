@@ -54,6 +54,8 @@ import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.environment.Environment
 import it.fast4x.riplay.utils.asSong
+// STEP 3ac: prefisso degli id dei brani LOCALI (la radio non si applica)
+import it.fast4x.riplay.commonutils.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.styling.Dimensions.layoutColumnBottomPadding
 import it.fast4x.riplay.styling.Dimensions.layoutColumnTopPadding
 import it.fast4x.riplay.styling.Dimensions.layoutColumnsHorizontalPadding
@@ -73,6 +75,9 @@ import it.fast4x.riplay.ui.pages.LocalSongsPage
 // STEP 3o (richiesta utente n.4): CODA PERSISTENTE (salvataggio/ripristino)
 import it.fast4x.riplay.ui.loadSavedQueueIds
 import it.fast4x.riplay.ui.saveQueueIds
+// STEP 3ac: preferenza AUTO-RADIO (stesso file della coda)
+import it.fast4x.riplay.ui.loadAutoRadioEnabled
+import it.fast4x.riplay.ui.saveAutoRadioEnabled
 // STEP 3o (richiesta utente n.3): etichetta del player full SENZA nome motore
 import player.DesktopPlayerEngine
 import it.fast4x.riplay.ui.pages.PlaylistsPage
@@ -83,6 +88,7 @@ import it.fast4x.riplay.ui.screens.ArtistScreen
 import it.fast4x.riplay.ui.screens.DesktopPlayerOverlay
 import it.fast4x.riplay.ui.screens.MoodScreen
 import it.fast4x.riplay.ui.screens.PlaylistScreen
+import it.fast4x.riplay.ui.screens.PodcastScreen
 import it.fast4x.riplay.ui.RiPlayWindowTitleBar
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowScope
@@ -116,6 +122,20 @@ import riplay.composeapp.generated.resources.back
  * (onPlayCollection qui sotto) perche' valga ovunque allo stesso modo.
  */
 const val QUEUE_MAX_ITEMS = 50
+
+/**
+ * STEP 3ac (richiesta utente n.1): soglia dell'AUTO-RADIO. Quando nella
+ * coda restano <= questo numero di canzoni (o la coda si svuota) e c'e'
+ * un brano ONLINE in riproduzione, la radio viene richiamata DA SOLA e
+ * aggiunge brani simili in fondo. Soglia scelta = 3 (valutazione utente
+ * delegata): con 2 si arriva tardi (la coda finirebbe mentre la radio
+ * sta ancora caricando), con 5 si farebbero piu' chiamate del necessario;
+ * con 3 la radio (che tipicamente aggiunge 10-20 brani) ha margine largo.
+ */
+const val AUTO_RADIO_THRESHOLD = 3
+
+/** STEP 3ac: distanza minima tra due richieste auto-radio (anti-loop). */
+const val AUTO_RADIO_COOLDOWN_MS = 30_000L
 
 /**
  * STEP 3j: brano in coda con UID STABILE. Serve per il riordino con il
@@ -209,8 +229,10 @@ fun ThreeColumnsApp(
     // della coda (PlayerController.onEnded -> advanceQueue). I brani si
     // aggiungono col pulsante "+" accanto al titolo in TUTTE le liste
     // (Ricerca, Songs, album, artista, playlist, For You). Il click su un
-    // brano in coda (pannello Coda del player) lo rimuove dalla coda e lo
-    // suona ora.
+    // brano in coda (pannello Coda del player) lo suona ora.
+    // STEP 3ac: il brano NON viene piu' rimosso dalla coda quando parte:
+    // resta in coda MARCATO "in riproduzione" (playingUid) ed esce quando
+    // la sua riproduzione FINISCE (richiesta utente n.3).
     // STEP 3j (richiesta utente n.1): il CLICK su un brano dentro un album
     // (o una playlist YT) mette in coda l'INTERA lista (onPlayCollection).
     // STEP 3j (richiesta utente n.2): i brani in coda si RIORDINANO col
@@ -220,6 +242,12 @@ fun ThreeColumnsApp(
     val playQueue = remember { mutableStateListOf<QueuedSong>() }
     val queueUidCounter = remember { AtomicLong(0) }
     fun makeQueued(song: Song) = QueuedSong(queueUidCounter.incrementAndGet(), song)
+
+    // STEP 3ac: UID del brano in coda attualmente IN RIPRODUZIONE. Il brano
+    // NON esce piu' dalla coda quando parte (vecchia semantica): resta in
+    // coda MARCATO "in riproduzione" ed esce solo quando FINISCE
+    // (advanceQueue lo rimuove prima di far partire il successivo).
+    var playingUid by remember { mutableStateOf<Long?>(null) }
 
     // riferimento aggiornato alla funzione di avanzamento: i callback dei
     // player sono collegati UNA volta sola (remember), il lamda qui dentro
@@ -286,22 +314,39 @@ fun ThreeColumnsApp(
         }
     }
 
-    // STEP 3i: riproduci subito un brano della coda e toglilo dalla coda
+    // STEP 3i: riproduci subito un brano della coda.
+    // STEP 3ac (richiesta utente n.3): il brano NON esce piu' dalla coda
+    // quando PARTE: resta in coda MARCATO come "in riproduzione"
+    // (playingUid) ed esce solo quando la sua riproduzione FINISCE
+    // (advanceQueue). Cosi' l'utente vede sempre anche il brano che sta
+    // ascoltando dentro la coda, con l'evidenza grafica nel pannello.
     fun playFromQueue(song: Song) {
         val idx = playQueue.indexOfFirst { it.song.id == song.id }
-        if (idx >= 0) playQueue.removeAt(idx)
+        if (idx >= 0) playingUid = playQueue[idx].uid
         pushHistory(song.id)
         videoId = song.id
         coroutineScope.launch {
             db.upsert(song)
         }
-        println("ThreeColumnsApp playFromQueue videoId $videoId (coda: ${playQueue.size})")
+        println("ThreeColumnsApp playFromQueue videoId $videoId (coda: ${playQueue.size}, marcato: $playingUid)")
     }
 
     // STEP 3i: avanzamento automatico a fine brano: parte il primo brano
     // della coda (se presente). Se la coda e' vuota non fa nulla: il
     // player resta fermo sulla fine del video (comportamento attuale).
+    // STEP 3ac (richiesta utente n.3): il brano marcato "in riproduzione"
+    // esce dalla coda SOLO ORA (la sua riproduzione e' finita), NON quando
+    // e' partito. Confronto per id: se l'utente stava ascoltando ALTRO
+    // (cronologia/ricerca sopra la coda), il brano marcato resta in coda
+    // al suo posto e torna un semplice brano "in attesa".
     val advanceQueue: () -> Unit = {
+        val endedId = videoId
+        val markedIdx = playingUid
+            ?.let { uid -> playQueue.indexOfFirst { it.uid == uid } } ?: -1
+        if (markedIdx >= 0 && playQueue[markedIdx].song.id == endedId) {
+            playQueue.removeAt(markedIdx)
+            playingUid = null
+        }
         playQueue.firstOrNull()?.let { playFromQueue(it.song) }
     }
     autoAdvanceRef.value = advanceQueue
@@ -403,6 +448,14 @@ fun ThreeColumnsApp(
     // un brano = anche i restanti entrano in coda).
     val onPlayCollection: (List<Song>, Song) -> Unit = { songs, start ->
         playQueue.clear()
+        playingUid = null
+        // STEP 3ac: anche il brano di partenza entra in coda (IN CIMA,
+        // marcato "in riproduzione"): la sequenza di ascolto resta IDENTICA
+        // a prima (dopo il brano cliccato si continua con gli altri), ma
+        // ora il brano resta visibile in coda finche' non finisce.
+        val startItem = makeQueued(start)
+        playQueue.add(startItem)
+        playingUid = startItem.uid
         songs
             .filter { it.id != start.id }
             .distinctBy { it.id }
@@ -419,41 +472,112 @@ fun ThreeColumnsApp(
     // BRANI SIMILI al brano in riproduzione (Environment.nextPage = la
     // STESSA funzione della radio lato Android, automix inclusa). Evita i
     // duplicati di brani gia' in coda e mostra un piccolo feedback.
+    // STEP 3ac (richiesta utente n.1): la STESSA funzione viene richiamata
+    // IN AUTOMATICO (auto = true) quando la coda sta per finire
+    // (AUTO_RADIO_THRESHOLD): l'interruttore vive nel pannello coda e
+    // resta ACCESO di default (persistito in ~/.riplay/queue.properties).
     var radioLoading by remember { mutableStateOf(false) }
     var radioFeedback by remember { mutableStateOf<String?>(null) }
-    val onAddRadio: () -> Unit = {
-        val current = nowPlayingSong
-        if (current != null && !radioLoading) {
-            coroutineScope.launch {
-                radioLoading = true
-                try {
-                    val page = Environment.nextPage(NextBody(videoId = current.id))?.getOrNull()
-                    val similar = page?.itemsPage?.items
-                        .orEmpty()
-                        .map { it.asSong }
-                        .filter { it.id.isNotBlank() && it.id != current.id }
-                        .distinctBy { it.id }
-                        .filter { s -> playQueue.none { it.song.id == s.id } }
-                    similar.forEach { s ->
-                        playQueue.add(makeQueued(s))
-                        db.upsert(s)
-                    }
-                    radioFeedback =
-                        if (similar.isEmpty()) ds("radio.none_found")
-                        else ds("radio.added", "n" to similar.size)
-                    println("[RiPlay-Radio] +${similar.size} brani simili in coda (coda: ${playQueue.size})")
+
+    // STEP 3ac: interruttore auto-radio (default ACCESO, scelta utente)
+    var autoRadioEnabled by remember { mutableStateOf(true) }
+    LaunchedEffect(Unit) {
+        autoRadioEnabled = loadAutoRadioEnabled()
+        println("[RiPlay-AutoRadio] preferenza caricata: $autoRadioEnabled")
+    }
+    val onToggleAutoRadio: () -> Unit = {
+        autoRadioEnabled = !autoRadioEnabled
+        saveAutoRadioEnabled(autoRadioEnabled)
+        println("[RiPlay-AutoRadio] interruttore: $autoRadioEnabled")
+    }
+
+    fun requestRadioSongs(auto: Boolean) {
+        val current = nowPlayingSong ?: return
+        if (radioLoading) return
+        // la radio esiste solo per i brani ONLINE: i file locali (prefisso
+        // "local:") non hanno brani simili su YouTube Music
+        if (current.id.startsWith(LOCAL_KEY_PREFIX)) {
+            if (!auto) {
+                radioFeedback = ds("radio.unavailable")
+                coroutineScope.launch {
                     delay(3000)
                     radioFeedback = null
-                } catch (e: Exception) {
-                    println("[RiPlay-Radio] errore: $e")
+                }
+            }
+            return
+        }
+        coroutineScope.launch {
+            radioLoading = true
+            try {
+                val page = Environment.nextPage(NextBody(videoId = current.id))?.getOrNull()
+                val similar = page?.itemsPage?.items
+                    .orEmpty()
+                    .map { it.asSong }
+                    .filter { it.id.isNotBlank() && it.id != current.id }
+                    .distinctBy { it.id }
+                    // STEP 3ac: il brano in riproduzione ora e' IN CODA
+                    // (marcato): il filtro "non in coda" lo esclude gia';
+                    // il confronto esplicito resta per sicurezza
+                    .filter { s -> playQueue.none { it.song.id == s.id } && s.id != current.id }
+                similar.forEach { s ->
+                    playQueue.add(makeQueued(s))
+                    db.upsert(s)
+                }
+                radioFeedback =
+                    if (similar.isEmpty()) ds("radio.none_found")
+                    else if (auto) ds("radio.auto_added", "n" to similar.size)
+                    else ds("radio.added", "n" to similar.size)
+                println(
+                    "[RiPlay-Radio]" + (if (auto) " [AUTO]" else "") +
+                            " +${similar.size} brani simili in coda (coda: ${playQueue.size})"
+                )
+                // STEP 3ac: se la radio automatica ha riempito una coda
+                // VUOTA (il brano era finito e la musica si era fermata)
+                // la riproduzione riparte SUBITO col primo brano aggiunto
+                val enginePlaying = playerManager.active.state.value.isPlaying
+                if (auto && similar.isNotEmpty() && !enginePlaying) {
+                    println("[RiPlay-Radio] [AUTO] player fermo: riparte la riproduzione")
+                    advanceQueue()
+                }
+                delay(3000)
+                radioFeedback = null
+            } catch (e: Exception) {
+                println("[RiPlay-Radio] errore: $e")
+                if (!auto) {
                     radioFeedback = ds("radio.unavailable")
                     delay(3000)
                     radioFeedback = null
-                } finally {
-                    radioLoading = false
                 }
+            } finally {
+                radioLoading = false
             }
         }
+    }
+
+    val onAddRadio: () -> Unit = { requestRadioSongs(auto = false) }
+
+    // STEP 3ac: OSSERVATORE auto-radio. Riparte a ogni cambio di coda, di
+    // brano in riproduzione o dell'interruttore: quando le condizioni sono
+    // tutte vere (coda <= soglia, brano ONLINE che suona davvero, nessuna
+    // radio gia' in corso, cooldown rispettato) richiama la radio da solo.
+    val lastAutoRadioAtMs = remember { mutableStateOf(0L) }
+    LaunchedEffect(playQueue.size, videoId, autoRadioEnabled) {
+        if (!autoRadioEnabled) return@LaunchedEffect
+        // niente riproduzione attiva (avvio, brano in cue mai partito):
+        // l'auto-radio parte solo con la musica davvero in corso
+        if (videoId.isEmpty()) return@LaunchedEffect
+        val current = nowPlayingSong ?: return@LaunchedEffect
+        if (current.id.startsWith(LOCAL_KEY_PREFIX)) return@LaunchedEffect
+        if (playQueue.size > AUTO_RADIO_THRESHOLD) return@LaunchedEffect
+        if (radioLoading) return@LaunchedEffect
+        val now = System.currentTimeMillis()
+        if (now - lastAutoRadioAtMs.value < AUTO_RADIO_COOLDOWN_MS) return@LaunchedEffect
+        lastAutoRadioAtMs.value = now
+        println(
+            "[RiPlay-AutoRadio] coda=${playQueue.size} <= $AUTO_RADIO_THRESHOLD: " +
+                    "richiedo brani simili a '${current.title}'"
+        )
+        requestRadioSongs(auto = true)
     }
 
     fun openDetail(detail: DesktopDetail) {
@@ -555,8 +679,8 @@ fun ThreeColumnsApp(
     // la riproduzione e' VERA (isPlaying del motore attivo) e lo stato dell'app
     // non e' ancora allineato (videoId vuoto), allineiamo TUTTO in un punto
     // solo: conferma al manager (il route() con lo stesso videoId non dovra'
-    // ricaricare), uscita del brano dalla coda (e' ora "in riproduzione",
-    // stessa semantica di playFromQueue), cronologia e videoId (l'effetto
+    // ricaricare), MARCATURA del brano in coda come "in riproduzione"
+    // (STEP 3ac: il brano NON esce piu' dalla coda), cronologia e videoId (l'effetto
     // storico su videoId registra l'ascolto SOLO ora: un brano caricato ma
     // mai suonato non finisce nella cronologia).
     val activeEngineState by playerManager.active.state.collectAsState()
@@ -567,8 +691,10 @@ fun ThreeColumnsApp(
         val song = nowPlayingSong
         if (song == null || song.id != cued) return@LaunchedEffect
         playerManager.confirmCuedPlayback()
+        // STEP 3ac: il brano in cue e' partito: NON esce dalla coda, resta
+        // MARCATO "in riproduzione" (nuova semantica della coda)
         val idx = playQueue.indexOfFirst { it.song.id == cued }
-        if (idx >= 0) playQueue.removeAt(idx)
+        if (idx >= 0) playingUid = playQueue[idx].uid
         pushHistory(cued)
         videoId = cued
         println(
@@ -735,10 +861,23 @@ fun ThreeColumnsApp(
                                 onPlay = { song -> playFromQueue(song) },
                                 onRemove = { song ->
                                     val idx = playQueue.indexOfFirst { it.song.id == song.id }
-                                    if (idx >= 0) playQueue.removeAt(idx)
+                                    if (idx >= 0) {
+                                        // STEP 3ac: se si rimuove il brano
+                                        // marcato, la marcatura va pulita
+                                        if (playQueue[idx].uid == playingUid) playingUid = null
+                                        playQueue.removeAt(idx)
+                                    }
                                 },
-                                onClear = { playQueue.clear() },
+                                onClear = {
+                                    playingUid = null
+                                    playQueue.clear()
+                                },
                                 onMove = onQueueMove,
+                                // STEP 3ac: marcatura "in riproduzione" +
+                                // interruttore auto-radio del pannello
+                                playingUid = playingUid,
+                                autoRadioEnabled = autoRadioEnabled,
+                                onToggleAutoRadio = onToggleAutoRadio,
                                 // il pulsante X del pannello la fa rientrare
                                 // verso destra (stessa richiesta dell'utente)
                                 onClose = { queuePanelOpen = false },
@@ -795,11 +934,23 @@ fun ThreeColumnsApp(
                 onQueuePlay = { song -> playFromQueue(song) },
                 onQueueRemove = { song ->
                     val idx = playQueue.indexOfFirst { it.song.id == song.id }
-                    if (idx >= 0) playQueue.removeAt(idx)
+                    if (idx >= 0) {
+                        // STEP 3ac: se si rimuove il brano marcato, la
+                        // marcatura va pulita
+                        if (playQueue[idx].uid == playingUid) playingUid = null
+                        playQueue.removeAt(idx)
+                    }
                 },
-                onQueueClear = { playQueue.clear() },
+                onQueueClear = {
+                    playingUid = null
+                    playQueue.clear()
+                },
                 // STEP 3j: riordino col trascinamento + RADIO (brani simili)
                 onQueueMove = onQueueMove,
+                // STEP 3ac: marcatura "in riproduzione" + auto-radio
+                playingUid = playingUid,
+                autoRadioEnabled = autoRadioEnabled,
+                onToggleAutoRadio = onToggleAutoRadio,
                 onAddRadio = onAddRadio,
                 radioLoading = radioLoading,
                 radioFeedback = radioFeedback
@@ -1002,6 +1153,12 @@ fun DestinationPanel(
                             },
                             onPlaylistClick = {
                                 onOpenDetail(DesktopDetail.YtPlaylist(it))
+                            },
+                            // STEP 3ad: click su una riga PODCAST della
+                            // ricerca = apre il dettaglio podcast
+                            // (PodcastScreen, episodi via podcastPage)
+                            onPodcastClick = { browseId, title ->
+                                onOpenDetail(DesktopDetail.Podcast(browseId, title))
                             }
                         )
                     DesktopSection.SONGS ->
@@ -1028,7 +1185,12 @@ fun DestinationPanel(
                         PlaylistsPage(
                             onPlaylistClick = { preview ->
                                 val browseId = preview.playlist.browseId
-                                if (!browseId.isNullOrBlank())
+                                // STEP 3ad: i PODCAST salvati (isPodcast,
+                                // browseId MPSP) aprono PodcastScreen; con
+                                // YtPlaylist la lista episodi restava vuota
+                                if (preview.playlist.isPodcast && !browseId.isNullOrBlank())
+                                    onOpenDetail(DesktopDetail.Podcast(browseId, preview.playlist.name))
+                                else if (!browseId.isNullOrBlank())
                                     onOpenDetail(DesktopDetail.YtPlaylist(browseId))
                                 else
                                     onOpenDetail(DesktopDetail.LocalPlaylist(preview.playlist))
@@ -1144,6 +1306,20 @@ fun DetailContent(
                     onOpenDetail(DesktopDetail.YtPlaylist(it))
                 }
             )
+
+        // STEP 3ad: dettaglio PODCAST (episodi live via podcastPage)
+        is DesktopDetail.Podcast ->
+            ScrollColumn {
+                PodcastScreen(
+                    browseId = detail.browseId,
+                    fallbackTitle = detail.title,
+                    onSongClick = onSongClickOnline,
+                    onAddToQueue = onAddToQueue,
+                    onPlayCollection = onPlayCollection,
+                    onEnqueueAll = onEnqueueAll,
+                    onClosePage = onBackToSection
+                )
+            }
     }
 }
 
@@ -1173,4 +1349,13 @@ sealed interface DesktopDetail {
     data class YtPlaylist(val browseId: String) : DesktopDetail
     data class LocalPlaylist(val playlist: Playlist) : DesktopDetail
     data class Mood(val mood: Environment.Mood.Item) : DesktopDetail
+    // STEP 3ad: dettaglio PODCAST (show).browseId MPSP: NON e' una pagina
+    // playlist YT (PlaylistScreen/playlistPage non restituisce brani, era
+    // la causa della lista episodi vuota): usa PodcastScreen con
+    // Environment.podcastPage, lo stesso parser di Android. title = titolo
+    // di cortesia dai risultati di ricerca / playlist salvata.
+    data class Podcast(
+        val browseId: String,
+        val title: String? = null
+    ) : DesktopDetail
 }

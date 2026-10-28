@@ -24,8 +24,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Search
@@ -57,23 +60,32 @@ import it.fast4x.environment.Environment
 import it.fast4x.environment.models.bodies.ContinuationBody
 import it.fast4x.environment.models.bodies.SearchBody
 import it.fast4x.environment.models.bodies.SearchSuggestionsBody
+import it.fast4x.environment.models.bodies.BrowseBody
+import it.fast4x.environment.requests.playlistPage
 import it.fast4x.environment.requests.searchPage
 import it.fast4x.environment.requests.searchSuggestionsWithItems
 import it.fast4x.environment.utils.fromMusicShelfRenderer
 import it.fast4x.riplay.data.Database
+// STEP 3ac: preferiti playlist/podcast direttamente dai risultati
+import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.SearchQuery
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongEntity
+import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.items.AlbumItem
 import it.fast4x.riplay.items.ArtistItem
 import it.fast4x.riplay.items.PlaylistItem
 import it.fast4x.riplay.items.SongItem
 import it.fast4x.riplay.styling.Dimensions.albumThumbnailSize
 import it.fast4x.riplay.styling.Dimensions.artistThumbnailSize
+import it.fast4x.riplay.enums.PlaylistSortBy
+import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.styling.Dimensions.playlistThumbnailSize
 import it.fast4x.riplay.ui.components.Loader
 import it.fast4x.riplay.ui.components.RiPlayAccent
 import it.fast4x.riplay.utils.asSong
+import it.fast4x.riplay.utils.completed
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -88,7 +100,7 @@ import kotlinx.coroutines.launch
  *    Android via Environment.searchSuggestionsWithItems) + CRONOLOGIA delle
  *    ricerche (tabella SearchQuery del db, stessa di Android);
  *  - dopo l'invio: risultati divisi per filtri Canzoni / Video / Album /
- *    Artisti / Playlist (SearchFilter.InnerTube, come i tab di
+ *    Artisti / Playlist / Podcast (SearchFilter.InnerTube, come i tab di
  *    SearchResultsContent Android) con le STESE conversioni
  *    (fromMusicShelfRenderer);
  *  - i risultati supportano il caricamento a pagine (continuation, come
@@ -110,7 +122,10 @@ fun SearchPage(
     onPlayCollection: (List<Song>, Song) -> Unit,
     onAlbumClick: (String) -> Unit,
     onArtistClick: (String) -> Unit,
-    onPlaylistClick: (String) -> Unit
+    onPlaylistClick: (String) -> Unit,
+    // STEP 3ad: click su una riga PODCAST = apre il dettaglio podcast
+    // (DesktopDetail.Podcast -> PodcastScreen, episodi via podcastPage)
+    onPodcastClick: (browseId: String, title: String?) -> Unit = { _, _ -> }
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -126,6 +141,16 @@ fun SearchPage(
     var albumResult by remember { mutableStateOf<Environment.ItemsPage<Environment.AlbumItem>?>(null) }
     var artistResult by remember { mutableStateOf<Environment.ItemsPage<Environment.ArtistItem>?>(null) }
     var playlistResult by remember { mutableStateOf<Environment.ItemsPage<Environment.PlaylistItem>?>(null) }
+    // STEP 3ac: risultati PODCAST (show: stesso tipo PlaylistItem, come fa
+    // la ricerca Android con SearchFilter.Podcast)
+    var podcastResult by remember { mutableStateOf<Environment.ItemsPage<Environment.PlaylistItem>?>(null) }
+
+    // STEP 3ac: playlist/podcast GIA' salvati in libreria (il pulsante
+    // preferiti sulle righe consulta questo set; il Flow del db rende
+    // reattivo lo stato dopo ogni salvataggio/rimozione)
+    val savedPlaylists by Database.playlistPreviews(PlaylistSortBy.Name, SortOrder.Ascending)
+        .collectAsState(initial = emptyList())
+    val savedPlaylistIds = savedPlaylists.mapNotNull { it.playlist.browseId }.toSet()
 
     // suggerimenti live mentre si digita (debounce, come Android)
     var suggestions by remember { mutableStateOf<List<String>>(emptyList()) }
@@ -179,6 +204,13 @@ fun SearchPage(
                     SearchBody(query = submitted, params = Environment.SearchFilter.CommunityPlaylist.value),
                     Environment.PlaylistItem.Companion::fromMusicShelfRenderer
                 )?.getOrNull()
+
+                // STEP 3ac: STESSO renderer di Android (PlaylistItem ::
+                // fromMusicShelfRenderer) con il filtro Podcast di Innertube
+                SearchTab.PODCASTS -> podcastResult = Environment.searchPage(
+                    SearchBody(query = submitted, params = Environment.SearchFilter.Podcast.value),
+                    Environment.PlaylistItem.Companion::fromMusicShelfRenderer
+                )?.getOrNull()
             }
             println("[RiPlay-Search] '$submitted' [${activeTab.label}] caricata pagina 1")
         } finally {
@@ -192,6 +224,7 @@ fun SearchPage(
         SearchTab.ALBUMS -> albumResult?.items.orEmpty().size
         SearchTab.ARTISTS -> artistResult?.items.orEmpty().size
         SearchTab.PLAYLISTS -> playlistResult?.items.orEmpty().size
+        SearchTab.PODCASTS -> podcastResult?.items.orEmpty().size
     }
 
     fun currentContinuation(): String? = when (activeTab) {
@@ -200,6 +233,7 @@ fun SearchPage(
         SearchTab.ALBUMS -> albumResult?.continuation
         SearchTab.ARTISTS -> artistResult?.continuation
         SearchTab.PLAYLISTS -> playlistResult?.continuation
+        SearchTab.PODCASTS -> podcastResult?.continuation
     }
 
     // "Carica altri": appende la pagina successiva alla lista corrente
@@ -272,6 +306,20 @@ fun SearchPage(
                             continuation = more.continuation
                         )
                     }
+
+                    // STEP 3ac: pagine successive anche per i podcast
+                    SearchTab.PODCASTS -> {
+                        val page = podcastResult ?: return@launch
+                        val cont = page.continuation ?: return@launch
+                        val more = Environment.searchPage(
+                            ContinuationBody(continuation = cont),
+                            Environment.PlaylistItem.Companion::fromMusicShelfRenderer
+                        )?.getOrNull() ?: return@launch
+                        podcastResult = Environment.ItemsPage(
+                            items = (page.items.orEmpty() + more.items.orEmpty()).distinctBy { it.key },
+                            continuation = more.continuation
+                        )
+                    }
                 }
                 println("[RiPlay-Search] '$submitted' [${activeTab.label}] loadMore -> ${currentCount()} risultati")
             } finally {
@@ -288,6 +336,62 @@ fun SearchPage(
         submitted = t
         coroutineScope.launch {
             runCatching { Database.insert(SearchQuery(query = t)) }
+        }
+    }
+
+    // STEP 3ac: PREFERITI playlist/podcast dalla riga dei risultati (stessa
+    // semantica del bookmark nella pagina di dettaglio: la playlist entra
+    // nel db e i brani vengono scaricati in background.
+    // STEP 3ad: per i PODCAST (browseId MPSP) Environment.playlistPage NON
+    // restituisce brani (risposta twoColumnBrowseResultsRenderer, non una
+    // pagina playlist): niente import, la Playlist resta salvata con
+    // isPodcast = true e gli episodi si vedono dal dettaglio LIVE
+    // (PodcastScreen, Environment.podcastPage come su Android).
+    fun toggleSavedPlaylist(browseId: String, item: Environment.PlaylistItem) {
+        coroutineScope.launch(Dispatchers.IO) {
+            runCatching {
+                val existing = Database.playlistWithBrowseId(browseId)
+                if (existing != null) {
+                    Database.delete(existing)
+                    println("[RiPlay-Search] preferiti: rimossa '${existing.name}' ($browseId)")
+                } else {
+                    val isPodcast = activeTab == SearchTab.PODCASTS
+                    val title = item.title.orEmpty().ifBlank { browseId }
+                    val playlistId = Database.insert(
+                        Playlist(
+                            name = title,
+                            browseId = browseId,
+                            isYoutubePlaylist = true,
+                            isEditable = false,
+                            isPodcast = isPodcast
+                        )
+                    )
+                    println("[RiPlay-Search] preferiti: salvata '$title' ($browseId)")
+                    // brani in background (come il bookmark del dettaglio):
+                    // fallimenti silenziosi, la playlist resta in libreria
+                    if (!isPodcast) {
+                        val page = Environment.playlistPage(
+                            BrowseBody(browseId = browseId)
+                        )?.completed()?.getOrNull()
+                        val songs = page?.songsPage?.items
+                            .orEmpty()
+                            .map { it.asSong }
+                            .distinctBy { it.id }
+                        songs.forEachIndexed { index, song ->
+                            Database.upsert(song)
+                            Database.insert(
+                                SongPlaylistMap(
+                                    songId = song.id,
+                                    playlistId = playlistId,
+                                    position = index
+                                ).default()
+                            )
+                        }
+                    }
+                }
+            }.onFailure { e ->
+                println("[RiPlay-Search] preferiti '$browseId' errore: ${e.message}")
+            }
         }
     }
 
@@ -441,7 +545,7 @@ fun SearchPage(
                 if (history.isEmpty() && suggestions.isEmpty()) {
                     Spacer(Modifier.size(8.dp))
                     Text(
-                        "Digita per cercare brani, video, album, artisti e playlist su YouTube Music.\n\nLa cronologia delle ricerche viene salvata qui (come sull'app Android).",
+                        "Digita per cercare brani, video, album, artisti, playlist e podcast su YouTube Music.\n\nLa cronologia delle ricerche viene salvata qui (come sull'app Android).",
                         color = Color.White.copy(alpha = 0.4f),
                         fontSize = 13.sp,
                         lineHeight = 19.sp
@@ -556,14 +660,71 @@ fun SearchPage(
                         items = playlistResult?.items.orEmpty(),
                         key = { it.key }
                     ) { playlistItem ->
-                        PlaylistItem(
-                            playlist = playlistItem,
-                            thumbnailSizeDp = playlistThumbnailSize,
-                            alternative = true,
-                            showSongsCount = false,
-                            modifier = Modifier
-                                .clickable { onPlaylistClick(playlistItem.key) }
-                        )
+                        // STEP 3ac: PREFERITI sulla riga (come il bookmark del
+                        // dettaglio): un click salva in libreria, l'altro toglie
+                        val saved = playlistItem.key in savedPlaylistIds
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            PlaylistItem(
+                                playlist = playlistItem,
+                                thumbnailSizeDp = playlistThumbnailSize,
+                                alternative = true,
+                                showSongsCount = false,
+                                modifier = Modifier
+                                    .clickable { onPlaylistClick(playlistItem.key) }
+                                    .weight(1f)
+                            )
+                            IconButton(
+                                onClick = { toggleSavedPlaylist(playlistItem.key, playlistItem) },
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Icon(
+                                    if (saved) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder,
+                                    contentDescription = if (saved) ds("detail.playlist_favorite_ok")
+                                    else ds("detail.playlist_favorite_add"),
+                                    tint = if (saved) RiPlayAccent else Color.White.copy(alpha = 0.6f),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    // STEP 3ac (riveduto 3ad): risultati PODCAST (show).
+                    // La riga CLICCABILE apre il dettaglio podcast dedicato
+                    // (PodcastScreen via DesktopDetail.Podcast: i browseId
+                    // MPSP non sono pagine playlist, il parser desktop
+                    // playlistPage non li copre); il pulsante PREFERITI
+                    // salva il podcast in libreria (Playlist.isPodcast =
+                    // true), il dettaglio live mostra sempre gli episodi
+                    SearchTab.PODCASTS -> items(
+                        items = podcastResult?.items.orEmpty(),
+                        key = { it.key }
+                    ) { podcastItem ->
+                        val saved = podcastItem.key in savedPlaylistIds
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            PlaylistItem(
+                                playlist = podcastItem,
+                                thumbnailSizeDp = playlistThumbnailSize,
+                                alternative = true,
+                                showSongsCount = false,
+                                modifier = Modifier
+                                    .clickable {
+                                        onPodcastClick(podcastItem.key, podcastItem.title)
+                                    }
+                                    .weight(1f)
+                            )
+                            IconButton(
+                                onClick = { toggleSavedPlaylist(podcastItem.key, podcastItem) },
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Icon(
+                                    if (saved) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder,
+                                    contentDescription = if (saved) ds("detail.playlist_favorite_ok")
+                                    else ds("detail.playlist_favorite_add"),
+                                    tint = if (saved) RiPlayAccent else Color.White.copy(alpha = 0.6f),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -628,7 +789,9 @@ private enum class SearchTab(val label: String) {
     VIDEOS("Video"),
     ALBUMS("Album"),
     ARTISTS("Artisti"),
-    PLAYLISTS("Playlist")
+    PLAYLISTS("Playlist"),
+    // STEP 3ac: show podcast (stesso filtro Innertube della ricerca Android)
+    PODCASTS("Podcast")
 }
 
 /** conversione VideoItem -> Song (per il play e la coda, come i brani) */

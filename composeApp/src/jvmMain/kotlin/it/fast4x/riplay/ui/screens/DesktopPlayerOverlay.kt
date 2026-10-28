@@ -182,6 +182,11 @@ fun DesktopPlayerOverlay(
     onQueueClear: () -> Unit = {},
     // STEP 3j: riordino (from.uid -> to.uid, gestito dall'app sulla lista)
     onQueueMove: (Long, Long) -> Unit = { _, _ -> },
+    // STEP 3ac: uid del brano marcato "in riproduzione" nella coda +
+    // interruttore AUTO-RADIO del pannello coda (richieste utente step3ac)
+    playingUid: Long? = null,
+    autoRadioEnabled: Boolean = true,
+    onToggleAutoRadio: () -> Unit = {},
     // STEP 3j: RADIO (richiesta utente n.4): aggiunge i BRANI SIMILI in coda
     // (Environment.nextPage, la stessa funzione della radio Android)
     onAddRadio: () -> Unit = {},
@@ -602,6 +607,10 @@ fun DesktopPlayerOverlay(
                     onRemove = onQueueRemove,
                     onClear = onQueueClear,
                     onMove = onQueueMove,
+                    // STEP 3ac: marcatura "in riproduzione" + auto-radio
+                    playingUid = playingUid,
+                    autoRadioEnabled = autoRadioEnabled,
+                    onToggleAutoRadio = onToggleAutoRadio,
                     onClose = { queueOpen = false },
                     topPadding = 70.dp
                 )
