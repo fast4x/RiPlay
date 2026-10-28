@@ -1,5 +1,6 @@
 package it.fast4x.riplay.ui.pages
 
+import it.fast4x.riplay.i18n.DesktopI18n
 import it.fast4x.riplay.i18n.ds
 
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -101,6 +102,16 @@ import riplay.composeapp.generated.resources.refresh
  * della browse (il context DefaultWeb lo congela alla class-init) e
  * allineamento del visitorData al responseContext della home.
  *
+ * STEP 3ap (segnalazione utente v58: "la homepage non tiene conto della
+ * lingua selezionata"): il contenuto YouTube (sezioni + moods) era
+ * sempre in INGLESE perche' su desktop NESSUNO impostava Environment.locale
+ * (default hl="en") ne' LocalePreferences.preference. Fix a monte in
+ * DesktopI18n (syncEnvironmentLocale: stesso schema Android MainActivity).
+ * QUI: languageRevision (bump dal selettore lingua title bar) e' chiave
+ * del LaunchedEffect e invalida la cache come gia' fanno login/logout ->
+ * il cambio lingua RICARICA la home nella lingua scelta senza riavviare
+ * (il refresh manuale resta disponibile con l'icona refresh).
+ *
  * Rendering (parita' con Android HomePageOnline):
  *  - sezione di BRANI (almeno un SongItem) -> LazyHorizontalGrid a 3 righe
  *    con il "+" per la coda, identico alla griglia "For You" Android;
@@ -142,16 +153,30 @@ fun HomePageOnline(
     // e' uno stato Compose: senza questa chiave il reload dipendeva dal
     // caso). Chiave del LaunchedEffect insieme a ytLoggedIn.
     val loginRevision = DesktopLoginState.revision
+    // STEP 3ap: revisione osservabile della lingua (bump da
+    // DesktopI18n.setLanguageChoice): cambio lingua -> home ricaricata
+    // nella lingua scelta (Environment.locale gia' allineato da
+    // syncEnvironmentLocale), stesso schema di loginRevision.
+    val languageRevision = DesktopI18n.languageRevision
     // Stato login con cui la homePage in cache e' stata caricata: se
     // cambia (login/logout in tab Account) la cache non e' piu' valida.
     var ytLoadedLoggedIn by remember { mutableStateOf(false) }
+    // STEP 3ap: revisione lingua con cui la homePage in cache e' stata
+    // caricata: se cambia (selettore title bar) la cache non e' piu' valida.
+    var ytLoadedLanguageRevision by remember { mutableStateOf(0) }
 
     // Caricamento con 3 tentativi e backoff (stessa strategia della home
     // Android HomePageOnline.loadData): cache null -> retry 500/1000 ms.
     // STEP 3al: ytLoggedIn tra le chiavi -> cambio login ricarica la home.
     // STEP 3am: anche loginRevision (stato osservabile del login).
-    LaunchedEffect(reloadTick, ytLoggedIn, loginRevision) {
+    // STEP 3ap: anche languageRevision (cambio lingua -> reload).
+    LaunchedEffect(reloadTick, ytLoggedIn, loginRevision, languageRevision) {
         if (homePage != null && ytLoadedLoggedIn != ytLoggedIn) {
+            homePage = null
+        }
+        // STEP 3ap: cache invalida anche se e' cambiata la lingua con cui
+        // era stata caricata (sezioni e moods nella lingua selezionata).
+        if (homePage != null && ytLoadedLanguageRevision != languageRevision) {
             homePage = null
         }
         loading = true
@@ -160,6 +185,7 @@ fun HomePageOnline(
             while (homePage == null && attempts < 3) {
                 homePage = EnvironmentExt.getHomePage(setLogin = ytLoggedIn).getOrNull()
                 ytLoadedLoggedIn = ytLoggedIn
+                ytLoadedLanguageRevision = languageRevision
                 attempts++
                 if (homePage == null && attempts < 3) delay(500L * attempts)
             }

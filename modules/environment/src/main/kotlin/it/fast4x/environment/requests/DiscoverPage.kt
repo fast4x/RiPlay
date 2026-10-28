@@ -6,6 +6,7 @@ import io.ktor.client.request.setBody
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.BrowseResponse
 import it.fast4x.environment.models.Context.Companion.DefaultWeb
+import it.fast4x.environment.models.Context.Companion.DefaultWebWithLocale
 import it.fast4x.environment.models.MusicTwoRowItemRenderer
 import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.models.bodies.BrowseBodyWithLocale
@@ -20,6 +21,19 @@ suspend fun Environment.discoverPage(language: String, country: String) = runCat
 //                context = DefaultWeb.copy(
 //                    client = DefaultWeb.client.setLocale(language, country)
 //                ),
+                // STEP 3ap: contesto con hl/gl LIVE da Environment.locale
+                // (DesktopI18n.syncEnvironmentLocale): prima qui arrivava
+                // il DefaultWebWithLocale congelato alla class-init (sul
+                // desktop senza LocalePreferences = NESSUN hl) -> i moods
+                // della home restavano nella lingua dell avvio anche dopo
+                // un cambio lingua a runtime (le sezioni invece erano gia
+                // live via Environment.browse). Stesso schema del visitorData
+                // LIVE introdotto in Environment.browse (step3am).
+                context = DefaultWebWithLocale.copy(
+                    client = DefaultWebWithLocale.client.setLocale(
+                        Environment.locale.hl, Environment.locale.gl
+                    )
+                ),
                 browseId = "FEmusic_explore"
             )
         )
