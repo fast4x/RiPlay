@@ -123,4 +123,10 @@
     <string name="overlay.playing">Now playing</string>
     <string name="local.none_found_in">No audio files found in \"{value}\"</string>
     <string name="local.imported_from">Imported {n} files from \"{value}\"</string>
+    <string name="radio.auto_added">Uathraidió: cuireadh {n} amhrán den chineál céanna leis</string>
+    <string name="queue.in_playback">Á sheinm anois</string>
+    <string name="queue.autoradio_on">Uathraidió gníomhach: cuireann sé amhráin leis nuair atá an ciú ar tí críochnú</string>
+    <string name="queue.autoradio_off">Uathraidió as</string>
+    <string name="podcast.episodes">eipeasóid</string>
+    <string name="podcast.description">Tuairisc</string>
 </resources>

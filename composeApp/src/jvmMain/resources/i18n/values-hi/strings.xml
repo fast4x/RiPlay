@@ -123,4 +123,10 @@
     <string name="overlay.playing">अभी चल रहा है</string>
     <string name="local.none_found_in">\"{value}\" में कोई ऑडियो फ़ाइल नहीं मिली</string>
     <string name="local.imported_from">\"{value}\" से {n} फ़ाइलें आयात हुईं</string>
+    <string name="radio.auto_added">ऑटो-रेडियो: {n} समान गाने जोड़े गए</string>
+    <string name="queue.in_playback">अब चल रहा है</string>
+    <string name="queue.autoradio_on">ऑटो-रेडियो सक्रिय: कतार समाप्त होने से पहले समान गाने जोड़ता है</string>
+    <string name="queue.autoradio_off">ऑटो-रेडियो बंद</string>
+    <string name="podcast.episodes">एपिसोड</string>
+    <string name="podcast.description">विवरण</string>
 </resources>

@@ -123,4 +123,10 @@
     <string name="overlay.playing">Speel nou</string>
     <string name="local.none_found_in">Geen oudiolêers in \"{value}\" gevind nie</string>
     <string name="local.imported_from">{n} lêers uit \"{value}\" ingevoer</string>
+    <string name="radio.auto_added">Outoradio: {n} soortgelyke liedjies bygevoeg</string>
+    <string name="queue.in_playback">Speel nou</string>
+    <string name="queue.autoradio_on">Outoradio aktief: voeg soortgelyke liedjies by wanneer die tou amper klaar is</string>
+    <string name="queue.autoradio_off">Outoradio af</string>
+    <string name="podcast.episodes">episodes</string>
+    <string name="podcast.description">Beskrywing</string>
 </resources>

@@ -123,4 +123,10 @@
     <string name="overlay.playing">Nun ludata</string>
     <string name="local.none_found_in">Neniu sona dosiero trovita en \"{value}\"</string>
     <string name="local.imported_from">Importitaj {n} dosieroj el \"{value}\"</string>
+    <string name="radio.auto_added">Aŭtoradio: aldonis {n} similajn kantojn</string>
+    <string name="queue.in_playback">Nun ludiĝas</string>
+    <string name="queue.autoradio_on">Aŭtoradio aktiva: aldonas similajn kantojn kiam la vico preskaŭ finas</string>
+    <string name="queue.autoradio_off">Aŭtoradio malŝaltita</string>
+    <string name="podcast.episodes">epizodoj</string>
+    <string name="podcast.description">Priskribo</string>
 </resources>

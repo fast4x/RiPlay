@@ -123,4 +123,10 @@
     <string name="overlay.playing">Reproducindo agora</string>
     <string name="local.none_found_in">Ningún ficheiro de audio atopado en \"{value}\"</string>
     <string name="local.imported_from">Importáronse {n} ficheiros de \"{value}\"</string>
+    <string name="radio.auto_added">Autorradio: engadíronse {n} cancións semellantes</string>
+    <string name="queue.in_playback">Reproducindo agora</string>
+    <string name="queue.autoradio_on">Autorradio activo: engade cancións semellantes cando a cola está a piques de rematar</string>
+    <string name="queue.autoradio_off">Autorradio desactivado</string>
+    <string name="podcast.episodes">episodios</string>
+    <string name="podcast.description">Descrición</string>
 </resources>

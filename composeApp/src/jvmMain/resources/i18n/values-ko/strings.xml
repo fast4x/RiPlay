@@ -123,4 +123,10 @@
     <string name="overlay.playing">재생 중</string>
     <string name="local.none_found_in">\"{value}\"에서 오디오 파일을 찾지 못했습니다</string>
     <string name="local.imported_from">\"{value}\"에서 파일 {n}개를 가져왔습니다</string>
+    <string name="radio.auto_added">자동 라디오: 유사한 곡 {n}개가 추가되었습니다</string>
+    <string name="queue.in_playback">재생 중</string>
+    <string name="queue.autoradio_on">자동 라디오 활성: 대기열이 끝나기 전에 유사한 곡을 추가합니다</string>
+    <string name="queue.autoradio_off">자동 라디오 꺼짐</string>
+    <string name="podcast.episodes">에피소드</string>
+    <string name="podcast.description">설명</string>
 </resources>

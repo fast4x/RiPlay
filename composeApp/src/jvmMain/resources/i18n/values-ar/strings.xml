@@ -123,4 +123,10 @@
     <string name="overlay.playing">قيد التشغيل الآن</string>
     <string name="local.none_found_in">لم يتم العثور على ملفات صوتية في \"{value}\"</string>
     <string name="local.imported_from">تم استيراد {n} ملفاً من \"{value}\"</string>
+    <string name="radio.auto_added">الراديو التلقائي: تمت إضافة {n} أغانٍ مشابهة</string>
+    <string name="queue.in_playback">قيد التشغيل الآن</string>
+    <string name="queue.autoradio_on">الراديو التلقائي مفعّل: يضيف أغانٍ مشابهة عندما تقترب قائمة الانتظار من النهاية</string>
+    <string name="queue.autoradio_off">الراديو التلقائي متوقف</string>
+    <string name="podcast.episodes">حلقات</string>
+    <string name="podcast.description">الوصف</string>
 </resources>

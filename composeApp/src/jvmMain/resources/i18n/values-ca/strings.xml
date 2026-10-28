@@ -123,4 +123,10 @@
     <string name="overlay.playing">Reproduint ara</string>
     <string name="local.none_found_in">Cap fitxer d\'àudio trobat a \"{value}\"</string>
     <string name="local.imported_from">Importats {n} fitxers de \"{value}\"</string>
+    <string name="radio.auto_added">Ràdio automàtica: s'han afegit {n} cançons semblants</string>
+    <string name="queue.in_playback">S'està reproduint</string>
+    <string name="queue.autoradio_on">Ràdio automàtica activa: afegeix cançons semblants quan la cua està a punt d'acabar</string>
+    <string name="queue.autoradio_off">Ràdio automàtica desactivada</string>
+    <string name="podcast.episodes">episodis</string>
+    <string name="podcast.description">Descripció</string>
 </resources>

@@ -123,4 +123,10 @@
     <string name="overlay.playing">Se redă acum</string>
     <string name="local.none_found_in">Niciun fișier audio găsit în \"{value}\"</string>
     <string name="local.imported_from">S-au importat {n} fișiere din \"{value}\"</string>
+    <string name="radio.auto_added">Radio automat: s-au adăugat {n} melodii similare</string>
+    <string name="queue.in_playback">Redare în curs</string>
+    <string name="queue.autoradio_on">Radio automat activ: adaugă melodii similare când coada este pe punctul de a se termina</string>
+    <string name="queue.autoradio_off">Radio automat dezactivat</string>
+    <string name="podcast.episodes">episoade</string>
+    <string name="podcast.description">Descriere</string>
 </resources>

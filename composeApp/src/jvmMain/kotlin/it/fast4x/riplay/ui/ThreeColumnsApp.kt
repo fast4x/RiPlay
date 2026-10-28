@@ -82,6 +82,7 @@ import it.fast4x.riplay.ui.saveAutoRadioEnabled
 import player.DesktopPlayerEngine
 import it.fast4x.riplay.ui.pages.PlaylistsPage
 import it.fast4x.riplay.ui.pages.PlaylistSongsPage
+import it.fast4x.riplay.ui.pages.SettingsPage
 import it.fast4x.riplay.ui.pages.SongsPage
 import it.fast4x.riplay.ui.screens.AlbumScreen
 import it.fast4x.riplay.ui.screens.ArtistScreen
@@ -1206,6 +1207,11 @@ fun DestinationPanel(
                             onPlayCollection = onPlayCollection,
                             onAddToQueue = onAddToQueue
                         )
+
+                    // STEP 3ae: IMPOSTAZIONI (primo livello: tab Dati con
+                    // backup db + tab Account con login YT Music via KCEF)
+                    DesktopSection.SETTINGS ->
+                        SettingsPage()
                 }
             }
         }

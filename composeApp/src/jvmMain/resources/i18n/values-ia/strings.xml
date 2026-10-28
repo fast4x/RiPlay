@@ -123,4 +123,10 @@
     <string name="overlay.playing">Reproducente ora</string>
     <string name="local.none_found_in">Nulle file audio trovate in \"{value}\"</string>
     <string name="local.imported_from">Importate {n} files de \"{value}\"</string>
+    <string name="radio.auto_added">Auto-radio: addite {n} cantos simile</string>
+    <string name="queue.in_playback">Ora in reproduction</string>
+    <string name="queue.autoradio_on">Auto-radio active: adde cantos simile quando la cauda es pro finir</string>
+    <string name="queue.autoradio_off">Auto-radio disactivate</string>
+    <string name="podcast.episodes">episodios</string>
+    <string name="podcast.description">Description</string>
 </resources>

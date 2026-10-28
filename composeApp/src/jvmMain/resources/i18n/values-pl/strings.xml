@@ -123,4 +123,10 @@
     <string name="overlay.playing">Teraz odtwarzane</string>
     <string name="local.none_found_in">Nie znaleziono plików audio w \"{value}\"</string>
     <string name="local.imported_from">Zaimportowano {n} plików z \"{value}\"</string>
+    <string name="radio.auto_added">Autoradio: dodano {n} podobnych utworów</string>
+    <string name="queue.in_playback">Teraz odtwarzane</string>
+    <string name="queue.autoradio_on">Autoradio aktywne: dodaje podobne utwory, gdy kolejka zbliża się do końca</string>
+    <string name="queue.autoradio_off">Autoradio wyłączone</string>
+    <string name="podcast.episodes">odcinków</string>
+    <string name="podcast.description">Opis</string>
 </resources>

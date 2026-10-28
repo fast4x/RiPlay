@@ -123,4 +123,10 @@
     <string name="overlay.playing">இப்போது இயங்குகிறது</string>
     <string name="local.none_found_in">\"{value}\"-இல் எந்த ஆடியோ கோப்பும் கிடைக்கவில்லை</string>
     <string name="local.imported_from">\"{value}\"-இலிருந்து {n} கோப்புகள் இறக்குமதி செய்யப்பட்டன</string>
+    <string name="radio.auto_added">தானியங்கி வானொலி: {n} ஒத்த பாடல்கள் சேர்க்கப்பட்டன</string>
+    <string name="queue.in_playback">இப்போது இயங்குகிறது</string>
+    <string name="queue.autoradio_on">தானியங்கி வானொலி செயலில்: வரிசை முடியும் போது ஒத்த பாடல்களைச் சேர்க்கும்</string>
+    <string name="queue.autoradio_off">தானியங்கி வானொலி அணைக்கப்பட்டது</string>
+    <string name="podcast.episodes">எப்பிசோடுகள்</string>
+    <string name="podcast.description">விளக்கம்</string>
 </resources>

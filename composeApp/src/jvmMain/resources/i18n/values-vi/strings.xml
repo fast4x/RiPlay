@@ -123,4 +123,10 @@
     <string name="overlay.playing">Đang phát</string>
     <string name="local.none_found_in">Không tìm thấy tệp âm thanh nào trong \"{value}\"</string>
     <string name="local.imported_from">Đã nhập {n} tệp từ \"{value}\"</string>
+    <string name="radio.auto_added">Radio tự động: đã thêm {n} bài hát tương tự</string>
+    <string name="queue.in_playback">Đang phát</string>
+    <string name="queue.autoradio_on">Radio tự động đang bật: thêm bài hát tương tự khi hàng đợi sắp kết thúc</string>
+    <string name="queue.autoradio_off">Radio tự động đang tắt</string>
+    <string name="podcast.episodes">tập</string>
+    <string name="podcast.description">Mô tả</string>
 </resources>

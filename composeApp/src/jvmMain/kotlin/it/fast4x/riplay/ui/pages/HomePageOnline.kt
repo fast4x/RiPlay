@@ -32,6 +32,7 @@ import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.requests.HomePage
 import it.fast4x.environment.requests.discoverPage
+import it.fast4x.environment.utils.parseCookieString
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.items.AlbumItem
 import it.fast4x.riplay.items.ArtistItem
@@ -57,12 +58,48 @@ import riplay.composeapp.generated.resources.refresh
  * STEP 3m (richiesta utente n.3 "vorrei che la home della versione desktop
  * sia la stessa di quella caricata lato android da HomePageOnline"):
  * HOME desktop alimentata dalla STESSA API della home Android:
- *  - EnvironmentExt.getHomePage(setLogin = false): le SEZIONI REALI della
- *    home YouTube Music (carousel con etichetta + titolo), le stesse di
- *    HomePageOnline Android (che usa EnvironmentExt.getHomePage con la
- *    variabile isYtLoggedIn; il desktop non ha login -> sempre false);
+ *  - EnvironmentExt.getHomePage(setLogin = isYtLoggedIn()): le SEZIONI REALI
+ *    della home YouTube Music (carousel con etichetta + titolo), le stesse
+ *    di HomePageOnline Android (che usa EnvironmentExt.getHomePage con la
+ *    variabile isYtLoggedIn);
  *  - Environment.discoverPage("", ""): i MOODS & GENRES in fondo (come la
  *    sezione "Moods e generi" mostrata da Android quando showMoodsAndGenres).
+ *
+ * STEP 3al (segnalazione utente v55: "la homepage viene ritornata come se
+ * l'utente non e' autenticato" - Android mostra molte piu' sezioni): qui
+ * setLogin era CABLATO a false (allo step 3m il desktop non aveva login).
+ * Ora esiste il login desktop (step 3ae..3ak: cookie + pageId/authUser in
+ * Environment) e vale lo stesso schema di Android:
+ * setLogin = DesktopAccountManager.isYtLoggedIn() (true se il cookie attivo
+ * contiene SAPISID). Con setLogin=true Environment.kt aggiunge gli header
+ * Cookie + Authorization SAPISIDHASH + X-Goog-PageId/X-Goog-Authuser ->
+ * YouTube risponde con la home PERSONALIZZATA dell'utente (Listen again,
+ * Mixed for you, New releases, ...) invece di quella anonima. Lo stato
+ * login e' chiave del LaunchedEffect: login/logout in tab Account
+ * ricaricano la home anche mentre e' gia' in primo piano.
+ *
+ * STEP 3am (test v56: home ANCORA anonima nonostante il login): il test
+ * ha smascherato TRE divergenze residue rispetto ad Android, corrette a
+ * monte ma incatenate qui:
+ *  1. isYtLoggedIn() accettava SOLO il cookie "SAPISID" plain, mentre la
+ *     raccolta CEF da' OK anche con solo __Secure-1PAPISID/__Secure-3PAPISID
+ *     -> in quel caso setLogin restava false (NESSUN Cookie header -> home
+ *     anonima) mentre accountInfo continuava a funzionare ("connesso" in
+ *     tab Account + home anonima). Ora la famiglia PAPISID e' la stessa
+ *     dell'harvest (DesktopAccountManager.isYtLoggedIn).
+ *  2. pageId/authUser restavano null per sempre con un account singolo
+ *     (il selettore profili appare solo con piu' profili): su Android il
+ *     selettore gira SEMPRE -> X-Goog-Authuser/X-Goog-PageId sempre
+ *     presenti. Ora DesktopAccountManager.withDefaultProfile colma il gap
+ *     (isSelected/first, fallback authUser="0") e processHarvest
+ *     ri-applica ALL'Environment l'account completo.
+ *  3. lo stato login non era osservabile da Compose (Environment.cookie e'
+ *     un var qualsiasi): la home composta non si ricaricava al login.
+ *     Ora DesktopLoginState.revision e' chiave del LaunchedEffect.
+ * In più il modulo environment (CRLF) ora: SAPISIDHASH con fallback
+ * __Secure-*PAPISID (Environment.setLogin), visitorData LIVE nel body
+ * della browse (il context DefaultWeb lo congela alla class-init) e
+ * allineamento del visitorData al responseContext della home.
  *
  * Rendering (parita' con Android HomePageOnline):
  *  - sezione di BRANI (almeno un SongItem) -> LazyHorizontalGrid a 3 righe
@@ -94,21 +131,56 @@ fun HomePageOnline(
     var loading by remember { mutableStateOf(true) }
     var reloadTick by remember { mutableStateOf(0) }
 
+    // STEP 3al: stato login ALL'ATTO del caricamento (stesso schema di
+    // Android isYtLoggedIn()): true -> browse autenticato (cookie +
+    // SAPISIDHASH + PageId/Authuser) -> home personalizzata dell'utente;
+    // false -> home anonima (quick picks), come prima dello step 3al.
+    val ytLoggedIn = DesktopAccountManager.isYtLoggedIn()
+    // STEP 3am: revisione osservabile dello stato login (bump da
+    // applyToEnvironment/clear): rende il cambio login VISIBILE da Compose
+    // anche mentre la home e' gia' in primo piano (Environment.cookie non
+    // e' uno stato Compose: senza questa chiave il reload dipendeva dal
+    // caso). Chiave del LaunchedEffect insieme a ytLoggedIn.
+    val loginRevision = DesktopLoginState.revision
+    // Stato login con cui la homePage in cache e' stata caricata: se
+    // cambia (login/logout in tab Account) la cache non e' piu' valida.
+    var ytLoadedLoggedIn by remember { mutableStateOf(false) }
+
     // Caricamento con 3 tentativi e backoff (stessa strategia della home
     // Android HomePageOnline.loadData): cache null -> retry 500/1000 ms.
-    LaunchedEffect(reloadTick) {
+    // STEP 3al: ytLoggedIn tra le chiavi -> cambio login ricarica la home.
+    // STEP 3am: anche loginRevision (stato osservabile del login).
+    LaunchedEffect(reloadTick, ytLoggedIn, loginRevision) {
+        if (homePage != null && ytLoadedLoggedIn != ytLoggedIn) {
+            homePage = null
+        }
         loading = true
         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
             var attempts = 0
             while (homePage == null && attempts < 3) {
-                homePage = EnvironmentExt.getHomePage(setLogin = false).getOrNull()
+                homePage = EnvironmentExt.getHomePage(setLogin = ytLoggedIn).getOrNull()
+                ytLoadedLoggedIn = ytLoggedIn
                 attempts++
                 if (homePage == null && attempts < 3) delay(500L * attempts)
             }
             discover = Environment.discoverPage("", "").getOrNull()
         }
         loading = false
-        println("[RiPlay-Home] getHomePage sezioni=${homePage?.sections?.size ?: 0}")
+        // STEP 3am: diagnostica PRIVACY-SAFE completa (nomi cookie, mai
+        // valori): da questa riga si legge se la richiesta era autenticata
+        // (setLogin), con quali header di profilo (pageId/authUser) e con
+        // quale famiglia di cookie di autorizzazione e' partita.
+        val cookieNames = Environment.cookie
+            ?.takeIf { it.isNotBlank() }
+            ?.let { parseCookieString(it) }
+            ?.keys
+            ?.sorted()
+            ?.joinToString(",") ?: "NULL"
+        println(
+            "[RiPlay-Home] getHomePage setLogin=$ytLoggedIn sezioni=${homePage?.sections?.size ?: 0} " +
+                    "pageId=${!Environment.pageId.isNullOrBlank()} authUser=${!Environment.authUser.isNullOrBlank()} " +
+                    "visitorLen=${Environment.visitorData.length} cookieNames=$cookieNames"
+        )
     }
 
     Title2Actions(

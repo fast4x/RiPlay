@@ -123,4 +123,10 @@
     <string name="overlay.playing">İndi çalır</string>
     <string name="local.none_found_in">\"{value}\" içində audio fayl tapılmadı</string>
     <string name="local.imported_from">\"{value}\" qovluğundan {n} fayl idxal edildi</string>
+    <string name="radio.auto_added">Avtoradio: {n} oxşar mahnı əlavə edildi</string>
+    <string name="queue.in_playback">İndi oxunur</string>
+    <string name="queue.autoradio_on">Avtoradio aktivdir: növbə bitməzdən əvvəl oxşar mahnılar əlavə edir</string>
+    <string name="queue.autoradio_off">Avtoradio söndürülüb</string>
+    <string name="podcast.episodes">epizodlar</string>
+    <string name="podcast.description">Təsvir</string>
 </resources>

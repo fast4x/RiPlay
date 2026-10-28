@@ -123,4 +123,10 @@
     <string name="overlay.playing">Právě hraje</string>
     <string name="local.none_found_in">V \"{value}\" nebyly nalezeny žádné zvukové soubory</string>
     <string name="local.imported_from">Importováno {n} souborů z \"{value}\"</string>
+    <string name="radio.auto_added">Auto-rádio: přidáno {n} podobných skladeb</string>
+    <string name="queue.in_playback">Právě se přehrává</string>
+    <string name="queue.autoradio_on">Auto-rádio aktivní: přidává podobné skladby, když se fronta blíží ke konci</string>
+    <string name="queue.autoradio_off">Auto-rádio vypnuto</string>
+    <string name="podcast.episodes">epizodů</string>
+    <string name="podcast.description">Popis</string>
 </resources>

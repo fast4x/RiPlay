@@ -123,4 +123,10 @@
     <string name="overlay.playing">Most játszik</string>
     <string name="local.none_found_in">Nem található hangfájl itt: \"{value}\"</string>
     <string name="local.imported_from">{n} fájl importálva innen: \"{value}\"</string>
+    <string name="radio.auto_added">Automatikus rádió: {n} hasonló dal hozzáadva</string>
+    <string name="queue.in_playback">Most játszik</string>
+    <string name="queue.autoradio_on">Automatikus rádió aktív: hasonló dalokat ad hozzá, amikor a sor hamarosan véget ér</string>
+    <string name="queue.autoradio_off">Automatikus rádió ki</string>
+    <string name="podcast.episodes">epizód</string>
+    <string name="podcast.description">Leírás</string>
 </resources>

@@ -123,4 +123,10 @@
     <string name="overlay.playing">Now playing</string>
     <string name="local.none_found_in">No audio files found in \"{value}\"</string>
     <string name="local.imported_from">Imported {n} files from \"{value}\"</string>
+    <string name="radio.auto_added">Autoradio: lade till {n} liknande låtar</string>
+    <string name="queue.in_playback">Spelar nu</string>
+    <string name="queue.autoradio_on">Autoradio aktiv: lägger till liknande låtar när kön snart tar slut</string>
+    <string name="queue.autoradio_off">Autoradio av</string>
+    <string name="podcast.episodes">avsnitt</string>
+    <string name="podcast.description">Beskrivning</string>
 </resources>

@@ -123,4 +123,10 @@
     <string name="overlay.playing">Now playing</string>
     <string name="local.none_found_in">No audio files found in \"{value}\"</string>
     <string name="local.imported_from">Imported {n} files from \"{value}\"</string>
+    <string name="radio.auto_added">ഓട്ടോ-റേഡിയോ: {n} സമാന ഗാനങ്ങൾ ചേർത്തു</string>
+    <string name="queue.in_playback">ഇപ്പോൾ പ്ലേ ചെയ്യുന്നു</string>
+    <string name="queue.autoradio_on">ഓട്ടോ-റേഡിയോ സജീവം: ക്യൂ അവസാനിക്കും മുൻപ് സമാന ഗാനങ്ങൾ ചേർക്കുന്നു</string>
+    <string name="queue.autoradio_off">ഓട്ടോ-റേഡിയോ ഓഫ്</string>
+    <string name="podcast.episodes">എപ്പിസോഡുകൾ</string>
+    <string name="podcast.description">വിവരണം</string>
 </resources>

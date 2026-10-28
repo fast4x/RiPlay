@@ -123,4 +123,10 @@
     <string name="overlay.playing">Toistaa nyt</string>
     <string name="local.none_found_in">Äänitiedostoja ei löytynyt kohteesta \"{value}\"</string>
     <string name="local.imported_from">Tuotiin {n} tiedostoa kohteesta \"{value}\"</string>
+    <string name="radio.auto_added">Autoradio: lisäsi {n} samankaltaista kappaletta</string>
+    <string name="queue.in_playback">Toistetaan nyt</string>
+    <string name="queue.autoradio_on">Autoradio käytössä: lisää samankaltaisia kappaleita, kun jono on loppumassa</string>
+    <string name="queue.autoradio_off">Autoradio pois</string>
+    <string name="podcast.episodes">jaksoa</string>
+    <string name="podcast.description">Kuvaus</string>
 </resources>

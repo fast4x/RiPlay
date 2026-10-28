@@ -123,4 +123,10 @@
     <string name="overlay.playing">Now playing</string>
     <string name="local.none_found_in">No audio files found in \"{value}\"</string>
     <string name="local.imported_from">Imported {n} files from \"{value}\"</string>
+    <string name="radio.auto_added">Аутоматски радио: додато {n} сличних песама</string>
+    <string name="queue.in_playback">Тренутно се пушта</string>
+    <string name="queue.autoradio_on">Аутоматски радио активан: додаје сличне песме када се ред ближи крају</string>
+    <string name="queue.autoradio_off">Аутоматски радио искључен</string>
+    <string name="podcast.episodes">епизода</string>
+    <string name="podcast.description">Опис</string>
 </resources>

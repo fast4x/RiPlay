@@ -123,4 +123,10 @@
     <string name="overlay.playing">Kasalukuyang nagpe-play</string>
     <string name="local.none_found_in">Walang natagpuang audio file sa \"{value}\"</string>
     <string name="local.imported_from">Nag-import ng {n} file mula sa \"{value}\"</string>
+    <string name="radio.auto_added">Auto-radio: nagdagdag ng {n} katulad na kanta</string>
+    <string name="queue.in_playback">Kasalukuyang tugtugin</string>
+    <string name="queue.autoradio_on">Aktibo ang auto-radio: nagdaragdag ng katulad na kanta kapag malapit nang matapos ang pila</string>
+    <string name="queue.autoradio_off">Naka-off ang auto-radio</string>
+    <string name="podcast.episodes">episodyo</string>
+    <string name="podcast.description">Paglalarawan</string>
 </resources>

@@ -123,4 +123,10 @@
     <string name="overlay.playing">ఇప్పుడు ప్లే అవుతోంది</string>
     <string name="local.none_found_in">\"{value}\"లో ఏ ఆడియో ఫైల్‌లు కనుగొనబడలేదు</string>
     <string name="local.imported_from">\"{value}\" నుండి {n} ఫైల్‌లు దిగుమతి అయ్యాయి</string>
+    <string name="radio.auto_added">ఆటో రేడియో: {n} ఇలాంటి పాటలు జోడించాం</string>
+    <string name="queue.in_playback">ఇప్పుడు ప్లే అవుతోంది</string>
+    <string name="queue.autoradio_on">ఆటో రేడియో సక్రియంగా ఉంది: క్యూ ముగిసే ముందు ఇలాంటి పాటలను జోడిస్తుంది</string>
+    <string name="queue.autoradio_off">ఆటో రేడియో ఆఫ్</string>
+    <string name="podcast.episodes">ఎపిసోడ్లు</string>
+    <string name="podcast.description">వివరణ</string>
 </resources>

@@ -123,4 +123,10 @@
     <string name="overlay.playing">Sedang diputar</string>
     <string name="local.none_found_in">Tidak ada file audio ditemukan di \"{value}\"</string>
     <string name="local.imported_from">Mengimpor {n} file dari \"{value}\"</string>
+    <string name="radio.auto_added">Radio otomatis: menambahkan {n} lagu serupa</string>
+    <string name="queue.in_playback">Sedang diputar</string>
+    <string name="queue.autoradio_on">Radio otomatis aktif: menambahkan lagu serupa saat antrean hampir habis</string>
+    <string name="queue.autoradio_off">Radio otomatis mati</string>
+    <string name="podcast.episodes">episod</string>
+    <string name="podcast.description">Deskripsi</string>
 </resources>

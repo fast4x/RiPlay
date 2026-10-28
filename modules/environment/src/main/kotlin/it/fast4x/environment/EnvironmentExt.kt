@@ -133,6 +133,19 @@ object EnvironmentExt {
 
         var response = Environment.browse(browseId = "FEmusic_home", setLogin = setLogin, params = params).body<BrowseResponse>()
 
+        // STEP 3am: self-heal del visitorData dalla risposta. YouTube
+        // restituisce in responseContext il visitorId DELLA SESSIONE della
+        // richiesta: se differisce da quello in uso (es. desktop con
+        // visitorData anonimo salvato al login, o vuoto), allineamo
+        // l'Environment cosi' le richieste successive viaggiano coerenti
+        // con la sessione autenticata. No-op quando coincide (caso Android).
+        response.responseContext?.visitorData?.takeIf { it.isNotBlank() }?.let { vd ->
+            if (Environment.visitorData != vd) {
+                println("EnvironmentExt getHomePage: visitorData allineato al responseContext (len nuovo=${vd.length}, prima ${if (Environment.visitorData.isBlank()) "vuoto" else "diverso/len=${Environment.visitorData.length}"})")
+                Environment.visitorData = vd
+            }
+        }
+
 //        println("EnvironmentExt homePage() response sections: ${response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
 //            ?.tabRenderer?.content?.sectionListRenderer?.contents}" )
 

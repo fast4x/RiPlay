@@ -123,4 +123,10 @@
     <string name="overlay.playing">Orain erreproduzitzen</string>
     <string name="local.none_found_in">Ez da audio-fitxategirik aurkitu \"{value}\"(e)n</string>
     <string name="local.imported_from">{n} fitxategi inportatu dira \"{value}\"(t)ik</string>
+    <string name="radio.auto_added">Autorradio: {n} antzeko abesti gehitu dira</string>
+    <string name="queue.in_playback">Orain erreproduzitzen</string>
+    <string name="queue.autoradio_on">Autorradio aktibo: antzeko abestiak gehitzen ditu ilara amaitzear dagoenean</string>
+    <string name="queue.autoradio_off">Autorradio desaktibatuta</string>
+    <string name="podcast.episodes">atal</string>
+    <string name="podcast.description">Deskribapena</string>
 </resources>

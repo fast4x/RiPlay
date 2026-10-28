@@ -123,4 +123,10 @@
     <string name="overlay.playing">再生中</string>
     <string name="local.none_found_in">「{value}」にオーディオファイルが見つかりません</string>
     <string name="local.imported_from">「{value}」から{n}件のファイルを取り込みました</string>
+    <string name="radio.auto_added">オートラジオ: 類似の曲を{n}曲追加しました</string>
+    <string name="queue.in_playback">再生中</string>
+    <string name="queue.autoradio_on">オートラジオ有効：キューが終わる前に類似の曲を追加します</string>
+    <string name="queue.autoradio_off">オートラジオ オフ</string>
+    <string name="podcast.episodes">エピソード</string>
+    <string name="podcast.description">説明</string>
 </resources>

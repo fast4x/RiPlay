@@ -123,4 +123,10 @@
     <string name="overlay.playing">Παίζει τώρα</string>
     <string name="local.none_found_in">Δεν βρέθηκαν αρχεία ήχου στο \"{value}\"</string>
     <string name="local.imported_from">Εισήχθησαν {n} αρχεία από το \"{value}\"</string>
+    <string name="radio.auto_added">Αυτόματο ραδιόφωνο: προστέθηκαν {n} παρόμοια τραγούδια</string>
+    <string name="queue.in_playback">Παίζει τώρα</string>
+    <string name="queue.autoradio_on">Αυτόματο ραδιόφωνο ενεργό: προσθέτει παρόμοια τραγούδια όταν η ουρά πλησιάζει στο τέλος</string>
+    <string name="queue.autoradio_off">Αυτόματο ραδιόφωνο ανενεργό</string>
+    <string name="podcast.episodes">επεισόδια</string>
+    <string name="podcast.description">Περιγραφή</string>
 </resources>

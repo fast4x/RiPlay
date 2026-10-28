@@ -702,22 +702,46 @@ object Environment {
                         append("X-Goog-Authuser", it)
                 }
 
-                println("Environment setLogin pageId $pageId authUser $authUser")
-
-                cookie?.let { cookieData ->
+                val cookieData = cookie
+                if (cookieData == null) {
+                    // STEP 3am: diagnostica del caso "browse autenticata ma
+                    // nessun cookie nell'Environment" (prima usciva in
+                    // silenzio e la risposta tornava anonima senza spiegazioni)
+                    println("Environment setLogin login=true pageId=${!pageId.isNullOrBlank()} authUser=${!authUser.isNullOrBlank()} cookie=NULL -> richiesta SENZA Cookie (anonima)")
+                } else {
 
                     cookieMap = parseCookieString(cookieData)
 
 //                    append("X-Goog-Visitor-Id", visitorData ?: "")
                     append("Cookie", cookieData)
-                    if ("SAPISID" !in cookieMap) return@let
-                    val currentTime = System.currentTimeMillis() / 1000
-                    val sapisidCookie = cookieMap["SAPISID"]
-                    val sapisidHash = sha1("$currentTime $sapisidCookie $_XsHo8IdebO")
-//                    println("HttpRequestBuilder.setLogin currentTime ${currentTime}")
-//                    println("HttpRequestBuilder.setLogin sapisidCookie ${sapisidCookie}")
-//                    println("HttpRequestBuilder.setLogin sapisidHash ${sapisidHash}")
-                    append("Authorization", "SAPISIDHASH ${currentTime}_$sapisidHash")
+                    // STEP 3am (segnalazione utente v56: home ancora anonima
+                    // nonostante il login "funzioni"): SAPISIDHASH con
+                    // FALLBACK sui cookie __Secure-*PAPISID. La raccolta
+                    // desktop (harvest, hasSapisid) da' OK anche quando nel
+                    // profilo CEF esistono SOLO __Secure-1PAPISID/
+                    // __Secure-3PAPISID senza il SAPISID plain: in quel caso
+                    // qui non partiva NESSUN Authorization (il cookie header
+                    // da solo basta a accountMenu, ma la home personalizzata
+                    // no -> risposta anonima). I client web YouTube usano
+                    // esattamente questo ordine di fallback.
+                    val authCookieName = listOf(
+                        "SAPISID",
+                        "__Secure-1PAPISID",
+                        "__Secure-3PAPISID"
+                    ).firstOrNull { it in cookieMap }
+                    if (authCookieName == null) {
+                        println("Environment setLogin login=true Cookie presente ma NESSUN cookie di autorizzazione (attesi SAPISID/__Secure-1PAPISID/__Secure-3PAPISID) -> senza Authorization")
+                    } else {
+                        val currentTime = System.currentTimeMillis() / 1000
+                        val sapisidCookie = cookieMap[authCookieName]
+                        val sapisidHash = sha1("$currentTime $sapisidCookie $_XsHo8IdebO")
+                        append("Authorization", "SAPISIDHASH ${currentTime}_$sapisidHash")
+                        // STEP 3am: diagnostica PRIVACY-SAFE (solo
+                        // presenza/nomi, MAI valori di cookie o hash):
+                        // permette di capire dai log se la richiesta parte
+                        // davvero autenticata.
+                        println("Environment setLogin login=true pageId=${!pageId.isNullOrBlank()} authUser=${!authUser.isNullOrBlank()} cookieCount=${cookieMap.size} authCookie=$authCookieName cookieNames=${cookieMap.keys.sorted().joinToString(",")}")
+                    }
                 }
             }
         }
@@ -954,10 +978,21 @@ object Environment {
                 params = params,
                 continuation = continuation
             )
-            val bodyWithLocale = browseBody.copy(
-                context = browseBody.context.setLocale(locale.hl, locale.gl)
-            )
-            println("Environment browse hl = ${locale.hl} gl = ${locale.gl} browseBody $bodyWithLocale")
+            // STEP 3am: visitorData LIVE nel context. Context.DefaultWeb
+            // congela Environment.visitorData alla PRIMA class-init del
+            // companion (lezione step3ak sulle val): dopo un login
+            // in-session (o un ripristino account all'avvio) il body poteva
+            // uscire con visitorData vuoto/vecchio mentre i cookie erano
+            // gia' dell'utente -> correlazione sessione/utente rotta. Ora il
+            // body porta SEMPRE il visitorData corrente dell'Environment.
+            val contextWithLocale = browseBody.context.setLocale(locale.hl, locale.gl)
+            val contextLive = if (!visitorData.isBlank() && contextWithLocale.client.visitorData != visitorData)
+                contextWithLocale.copy(client = contextWithLocale.client.copy(visitorData = visitorData))
+            else contextWithLocale
+            val bodyWithLocale = browseBody.copy(context = contextLive)
+            // STEP 3am: log corto (il vecchio stampava TUTTO il body:
+            // rumore e valori sensibili in console)
+            println("Environment browse hl=${locale.hl} gl=${locale.gl} browseId=$browseId login=$setLogin visitorLen=${contextLive.client.visitorData?.length ?: 0}")
             setBody(bodyWithLocale)
             parameter("continuation", continuation)
             parameter("ctoken", continuation)

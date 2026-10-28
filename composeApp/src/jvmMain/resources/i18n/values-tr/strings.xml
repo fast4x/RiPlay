@@ -123,4 +123,10 @@
     <string name="overlay.playing">Şimdi çalıyor</string>
     <string name="local.none_found_in">\"{value}\" içinde ses dosyası bulunamadı</string>
     <string name="local.imported_from">\"{value}\" klasöründen {n} dosya içe aktarıldı</string>
+    <string name="radio.auto_added">Otomatik radyo: {n} benzer şarkı eklendi</string>
+    <string name="queue.in_playback">Şimdi çalıyor</string>
+    <string name="queue.autoradio_on">Otomatik radyo etkin: kuyruk bitmek üzereyken benzer şarkılar ekler</string>
+    <string name="queue.autoradio_off">Otomatik radyo kapalı</string>
+    <string name="podcast.episodes">bölüm</string>
+    <string name="podcast.description">Açıklama</string>
 </resources>

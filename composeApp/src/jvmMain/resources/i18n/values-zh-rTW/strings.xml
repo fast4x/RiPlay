@@ -123,4 +123,10 @@
     <string name="overlay.playing">正在播放</string>
     <string name="local.none_found_in">在「{value}」中找不到音訊檔案</string>
     <string name="local.imported_from">已從「{value}」匯入 {n} 個檔案</string>
+    <string name="radio.auto_added">自動電台：已新增 {n} 首相似歌曲</string>
+    <string name="queue.in_playback">正在播放</string>
+    <string name="queue.autoradio_on">自動電台已啟用：佇列即將播完時自動新增相似歌曲</string>
+    <string name="queue.autoradio_off">自動電台已關閉</string>
+    <string name="podcast.episodes">單集</string>
+    <string name="podcast.description">簡介</string>
 </resources>

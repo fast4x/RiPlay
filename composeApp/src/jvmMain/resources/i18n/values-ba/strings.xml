@@ -123,4 +123,10 @@
     <string name="overlay.playing">Хәҙер уйнай</string>
     <string name="local.none_found_in">\"{value}\" эсендә аудио файл табылманы</string>
     <string name="local.imported_from">\"{value}\" папкаһынан {n} файл индерелде</string>
+    <string name="radio.auto_added">Auto-radio: added {n} similar songs</string>
+    <string name="queue.in_playback">Now playing</string>
+    <string name="queue.autoradio_on">Auto-radio active: adds similar songs when the queue is about to end</string>
+    <string name="queue.autoradio_off">Auto-radio off</string>
+    <string name="podcast.episodes">эпизодтар</string>
+    <string name="podcast.description">Тасуирлама</string>
 </resources>

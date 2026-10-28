@@ -130,4 +130,45 @@
     <string name="local.imported_from">Importati {n} file da \"{value}\"</string>
     <string name="podcast.episodes">episodi</string>
     <string name="podcast.description">Descrizione</string>
+    <string name="nav.settings">Impostazioni</string>
+    <string name="settings.tab.data">Dati</string>
+    <string name="settings.tab.accounts">Account</string>
+        <string name="settings.data.info">Esporta o importa un backup del database della libreria (brani, playlist, cronologia e preferiti). Il backup è un singolo file .db, compatibile con Android; il ripristino viene completato al riavvio di RiPlay.</string>
+    <string name="settings.data.db_path">Database: {path}</string>
+    <string name="settings.data.export_backup">Esporta backup</string>
+    <string name="settings.data.export_done">Backup salvato: {path}</string>
+    <string name="settings.data.export_failed">Backup non riuscito: {error}</string>
+    <string name="settings.data.import_backup">Importa backup</string>
+    <string name="settings.data.import_done">Backup caricato: riavvia RiPlay per completare il ripristino</string>
+        <string name="settings.data.import_invalid">File di backup non valido</string>
+    <string name="settings.data.import_failed">Ripristino non riuscito: {error}</string>
+    <string name="settings.accounts.info">Accedi al tuo account YouTube Music per sincronizzare la libreria: playlist, brani preferiti e cronologia.</string>
+    <string name="settings.accounts.not_logged">Non connesso</string>
+    <string name="settings.accounts.logged_as">Connesso come {name}</string>
+    <string name="settings.accounts.verifying">Verifica account in corso...</string>
+    <string name="settings.accounts.verify_failed">Cookie raccolto, ma la verifica dell'account non è riuscita. Riprova ad accedere e controlla il log della console.</string>
+    <string name="settings.accounts.select_account">Scegli l'account da usare</string>
+    <string name="settings.accounts.keep_account">Mantieni l'account corrente</string>
+<string name="settings.accounts.poll_attempts">Tentativo {n}: {detail}</string>
+
+<string name="settings.accounts.poll_nomanager">gestore cookie del browser integrato non disponibile</string>
+
+<string name="settings.accounts.poll_none">nessun cookie trovato</string>
+
+<string name="settings.accounts.poll_noyt">cookie trovati ma nessuno di YouTube</string>
+
+<string name="settings.accounts.poll_noauth">cookie YouTube presenti ma senza credenziali SAPISID</string>
+
+<string name="settings.accounts.poll_found">cookie raccolto, verifica in corso...</string>
+
+<string name="settings.accounts.poll_visitrefused">il gestore cookie CEF ha rifiutato la lettura cookie (controlla il log console)</string>
+
+<string name="settings.accounts.verify_now">Verifica adesso</string>
+
+
+    <string name="settings.accounts.login">Accedi al tuo account YouTube Music</string>
+    <string name="settings.accounts.logout">Esci</string>
+    <string name="settings.accounts.login_instructions">Completa l'accesso nella finestra qui sotto. Quando YouTube Music si apre con il tuo account, la connessione viene salvata automaticamente.</string>
+    <string name="settings.accounts.kcef_not_ready">Il browser integrato non è ancora pronto ({state})</string>
+    <string name="settings.accounts.waiting_login">In attesa del completamento dell'accesso...</string>
 </resources>

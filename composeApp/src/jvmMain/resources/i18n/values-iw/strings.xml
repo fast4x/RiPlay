@@ -123,4 +123,10 @@
     <string name="overlay.playing">מתנגן כעת</string>
     <string name="local.none_found_in">לא נמצאו קבצי שמע ב\"{value}\"</string>
     <string name="local.imported_from">יובאו {n} קבצים מ\"{value}\"</string>
+    <string name="radio.auto_added">רדיו אוטומטי: נוספו {n} שירים דומים</string>
+    <string name="queue.in_playback">מתנגן כעת</string>
+    <string name="queue.autoradio_on">רדיו אוטומטי פעיל: מוסיף שירים דומים כשהתור עומד להסתיים</string>
+    <string name="queue.autoradio_off">רדיו אוטומטי כבוי</string>
+    <string name="podcast.episodes">פרקים</string>
+    <string name="podcast.description">תיאור</string>
 </resources>
