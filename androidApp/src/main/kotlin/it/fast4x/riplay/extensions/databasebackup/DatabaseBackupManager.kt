@@ -2,6 +2,13 @@ package it.fast4x.riplay.extensions.databasebackup
 
 import android.content.Context
 import android.net.Uri
+import android.database.Cursor
+import android.database.Cursor.FIELD_TYPE_BLOB
+import android.database.Cursor.FIELD_TYPE_FLOAT
+import android.database.Cursor.FIELD_TYPE_INTEGER
+import android.database.Cursor.FIELD_TYPE_NULL
+import android.database.Cursor.FIELD_TYPE_STRING
+import android.database.sqlite.SQLiteDatabase
 import androidx.room.Transactor
 import androidx.room.immediateTransaction
 import androidx.room.execSQL
@@ -89,50 +96,56 @@ class DatabaseBackupManager(
                 return@withContext
             }
 
+            var backupDb: SQLiteDatabase? = null
             try {
+                // 2. Apre il backup con una connessione DEDICATA read-only.
+                backupDb = SQLiteDatabase.openDatabase(
+                    internalBackupFile.absolutePath,
+                    null,
+                    SQLiteDatabase.OPEN_READONLY
+                )
+                val backup = checkNotNull(backupDb)
+
+                // 3. Integrity check sulla connessione dedicata
+                val ok = backup.readStringOrNull("PRAGMA integrity_check") == "ok"
+                if (!ok) throw IllegalStateException("Backup corrotto")
+
+                // 4. Elenco tabelle dal backup
+                val tables = backup.readStringList(
+                    "SELECT name FROM sqlite_master WHERE type='table' " +
+                            "AND name NOT LIKE 'sqlite_%' " +
+                            "AND name != 'room_master_table'"
+                )
+
+                // 5. Travaso in transazione: lettura righe dal backup
                 getDatabaseInitializer().useWriterConnection { db ->
-                    // 2. ATTACH sulla connessione di Room (no close!)
-                    db.usePrepared("ATTACH DATABASE ? AS backup_db") { stmt ->
-                        stmt.bindText(1, internalBackupFile.absolutePath)
-                        stmt.step()
-                    }
-
-                    // 3. Integrity check
-                    val ok = db.usePrepared("PRAGMA backup_db.integrity_check") { stmt ->
-                        stmt.step() && stmt.getText(0) == "ok"
-                    }
-                    if (!ok) throw IllegalStateException("Backup corrotto")
-
-                    // 4. Travaso in transazione
-                    db.immediateTransaction {
-                        val tables = db.usePrepared(
-                            "SELECT name FROM backup_db.sqlite_master " +
-                                    "WHERE type='table' AND name NOT LIKE 'sqlite_%' " +
-                                    "AND name != 'room_master_table'"
-                        ) { stmt ->
-                            buildList { while (stmt.step()) add(stmt.getText(0)) }
+                    db.execSQL("PRAGMA foreign_keys = OFF")
+                    try {
+                        db.immediateTransaction {
+                            for (table in tables) importTableData(db, backup, table, mode)
                         }
-
-                        for (table in tables) importTableData(db, table, mode)
+                    } finally {
+                        db.execSQL("PRAGMA foreign_keys = ON")
                     }
-                    Timber.d("smartRestore: travaso completato")
                 }
+                Timber.d("smartRestore: travaso completato")
             } catch (e: Exception) {
                 Timber.e("smartRestore fallito (rollback automatico): ${e.message}")
-                throw e    // propagate alla UI per il messaggio all'utente
+                throw e
             } finally {
-                runCatching {
-                    getDatabaseInitializer().useWriterConnection { conn ->
-                        conn.usePrepared("DETACH DATABASE backup_db") { it.step() }
-                    }
-                }
+                backupDb?.close()
                 internalBackupFile.delete()
             }
 
         }
     }
 
-    private suspend fun importTableData(db: Transactor, tableName: String, mode: RestoreMode) {
+    private suspend fun importTableData(
+        db: Transactor,
+        backupDb: SQLiteDatabase,
+        tableName: String,
+        mode: RestoreMode
+    ) {
         if (!tableName.matches(Regex("[A-Za-z0-9_]+"))) return    // whitelist
 
         val exists = db.usePrepared("SELECT name FROM sqlite_master WHERE type='table' AND name='$tableName'") {
@@ -150,9 +163,15 @@ class DatabaseBackupManager(
             }
         }
 
-        val currentColumns = getColumnNames(db, "main.`$tableName`")
-        val backupColumns = getColumnNames(db, "backup_db.`$tableName`")
+
+        val currentColumns = getColumnNames(db, tableName)
+        val backupColumns = getBackupColumnNames(backupDb, tableName)
         val commonColumns = currentColumns.intersect(backupColumns).toList()
+
+        if (currentColumns.isEmpty() || backupColumns.isEmpty()) {
+            Timber.w("Schema non leggibile per $tableName (main=${currentColumns.size}, backup=${backupColumns.size}), skip")
+            return
+        }
 
         if (commonColumns.isEmpty()) {
             Timber.d("Nessuna colonna in comune per $tableName, skip")
@@ -160,24 +179,59 @@ class DatabaseBackupManager(
         }
 
         val columnsStr = commonColumns.joinToString(",") { "`$it`" }
-        val insertSql = "INSERT INTO `$tableName` ($columnsStr) SELECT $columnsStr FROM backup_db.`$tableName`"
+        val placeholders = commonColumns.joinToString(",") { "?" }
+        val insertSql = "INSERT INTO `$tableName` ($columnsStr) VALUES ($placeholders)"
 
-        db.usePrepared(insertSql) { it.step() }
-
-        val count = db.usePrepared("SELECT COUNT(*) FROM `$tableName`") { stmt ->
-            stmt.step()
-            stmt.getLong(0).toInt()
+        var imported = 0
+        backupDb.rawQuery("SELECT $columnsStr FROM `$tableName`", null).use { cursor ->
+            db.usePrepared(insertSql) { stmt ->
+                while (cursor.moveToNext()) {
+                    for (i in commonColumns.indices) {
+                        when (cursor.getType(i)) {
+                            FIELD_TYPE_NULL -> stmt.bindNull(i + 1)
+                            FIELD_TYPE_INTEGER -> stmt.bindLong(i + 1, cursor.getLong(i))
+                            FIELD_TYPE_FLOAT -> stmt.bindDouble(i + 1, cursor.getDouble(i))
+                            FIELD_TYPE_STRING -> stmt.bindText(i + 1, cursor.getString(i))
+                            FIELD_TYPE_BLOB -> stmt.bindBlob(i + 1, cursor.getBlob(i))
+                            else -> stmt.bindNull(i + 1)
+                        }
+                    }
+                    stmt.step()
+                    stmt.reset()
+                    stmt.clearBindings()
+                    imported++
+                }
+            }
         }
-        Timber.d("Import OK [$tableName] -> $count record totali")
+        Timber.d("Import OK [$tableName] -> $imported righe importate")
     }
 
-    private suspend fun getColumnNames(db: Transactor, qualifiedTable: String): List<String> =
+    private suspend fun getColumnNames(db: Transactor, tableName: String): List<String> =
         runCatching {
-            db.usePrepared("PRAGMA table_info($qualifiedTable)") { stmt ->
+            db.usePrepared("PRAGMA table_info(`$tableName`)") { stmt ->
                 buildList {
-                    while (stmt.step()) add(stmt.getText(2))   // campo "name" in PRAGMA table_info
+                    while (stmt.step()) add(stmt.getText(1))
                 }
             }
         }.getOrElse { emptyList() }
+
+    private fun getBackupColumnNames(backupDb: SQLiteDatabase, tableName: String): List<String> =
+        runCatching {
+            backupDb.rawQuery("PRAGMA table_info(`$tableName`)", null).use { c ->
+                buildList {
+                    while (c.moveToNext()) add(c.getString(1))
+                }
+            }
+        }.getOrElse { emptyList() }
+
+    /** Prima riga, prima colonna (es. "ok" per PRAGMA integrity_check). */
+    private fun SQLiteDatabase.readStringOrNull(sql: String): String? =
+        rawQuery(sql, null).use { c -> if (c.moveToFirst()) c.getString(0) else null }
+
+    /** Prima colonna di tutte le righe (es. elenco tabelle da sqlite_master). */
+    private fun SQLiteDatabase.readStringList(sql: String): List<String> =
+        rawQuery(sql, null).use { c ->
+            buildList { while (c.moveToNext()) add(c.getString(0)) }
+        }
 
 }
