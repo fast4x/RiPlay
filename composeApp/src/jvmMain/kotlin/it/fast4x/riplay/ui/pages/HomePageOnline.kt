@@ -33,7 +33,6 @@ import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.requests.HomePage
 import it.fast4x.environment.requests.discoverPage
-import it.fast4x.environment.utils.parseCookieString
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.items.AlbumItem
 import it.fast4x.riplay.items.ArtistItem
@@ -49,6 +48,10 @@ import it.fast4x.riplay.ui.components.Loader
 import it.fast4x.riplay.ui.components.Title
 import it.fast4x.riplay.ui.components.Title2Actions
 import it.fast4x.riplay.utils.asSong
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 import riplay.composeapp.generated.resources.Res
@@ -59,58 +62,35 @@ import riplay.composeapp.generated.resources.refresh
  * STEP 3m (richiesta utente n.3 "vorrei che la home della versione desktop
  * sia la stessa di quella caricata lato android da HomePageOnline"):
  * HOME desktop alimentata dalla STESSA API della home Android:
- *  - EnvironmentExt.getHomePage(setLogin = isYtLoggedIn()): le SEZIONI REALI
- *    della home YouTube Music (carousel con etichetta + titolo), le stesse
- *    di HomePageOnline Android (che usa EnvironmentExt.getHomePage con la
- *    variabile isYtLoggedIn);
+ *  - EnvironmentExt.getHomePage(setLogin): le SEZIONI REALI della home
+ *    YouTube Music (carousel con etichetta + titolo), le stesse di
+ *    HomePageOnline Android; il login usa i cookie Environment (step3am),
+ *    la presenza del cookie decide setLogin;
  *  - Environment.discoverPage("", ""): i MOODS & GENRES in fondo (come la
  *    sezione "Moods e generi" mostrata da Android quando showMoodsAndGenres).
  *
- * STEP 3al (segnalazione utente v55: "la homepage viene ritornata come se
- * l'utente non e' autenticato" - Android mostra molte piu' sezioni): qui
- * setLogin era CABLATO a false (allo step 3m il desktop non aveva login).
- * Ora esiste il login desktop (step 3ae..3ak: cookie + pageId/authUser in
- * Environment) e vale lo stesso schema di Android:
- * setLogin = DesktopAccountManager.isYtLoggedIn() (true se il cookie attivo
- * contiene SAPISID). Con setLogin=true Environment.kt aggiunge gli header
- * Cookie + Authorization SAPISIDHASH + X-Goog-PageId/X-Goog-Authuser ->
- * YouTube risponde con la home PERSONALIZZATA dell'utente (Listen again,
- * Mixed for you, New releases, ...) invece di quella anonima. Lo stato
- * login e' chiave del LaunchedEffect: login/logout in tab Account
- * ricaricano la home anche mentre e' gia' in primo piano.
+ * STEP 3ap (lingua home): al cambio lingua a runtime la home si RI-CARICA
+ * nella nuova lingua (DesktopI18n.languageRevision e' bump-ata da
+ * setLanguageChoice, che allinea anche Environment.locale).
  *
- * STEP 3am (test v56: home ANCORA anonima nonostante il login): il test
- * ha smascherato TRE divergenze residue rispetto ad Android, corrette a
- * monte ma incatenate qui:
- *  1. isYtLoggedIn() accettava SOLO il cookie "SAPISID" plain, mentre la
- *     raccolta CEF da' OK anche con solo __Secure-1PAPISID/__Secure-3PAPISID
- *     -> in quel caso setLogin restava false (NESSUN Cookie header -> home
- *     anonima) mentre accountInfo continuava a funzionare ("connesso" in
- *     tab Account + home anonima). Ora la famiglia PAPISID e' la stessa
- *     dell'harvest (DesktopAccountManager.isYtLoggedIn).
- *  2. pageId/authUser restavano null per sempre con un account singolo
- *     (il selettore profili appare solo con piu' profili): su Android il
- *     selettore gira SEMPRE -> X-Goog-Authuser/X-Goog-PageId sempre
- *     presenti. Ora DesktopAccountManager.withDefaultProfile colma il gap
- *     (isSelected/first, fallback authUser="0") e processHarvest
- *     ri-applica ALL'Environment l'account completo.
- *  3. lo stato login non era osservabile da Compose (Environment.cookie e'
- *     un var qualsiasi): la home composta non si ricaricava al login.
- *     Ora DesktopLoginState.revision e' chiave del LaunchedEffect.
- * In più il modulo environment (CRLF) ora: SAPISIDHASH con fallback
- * __Secure-*PAPISID (Environment.setLogin), visitorData LIVE nel body
- * della browse (il context DefaultWeb lo congela alla class-init) e
- * allineamento del visitorData al responseContext della home.
- *
- * STEP 3ap (segnalazione utente v58: "la homepage non tiene conto della
- * lingua selezionata"): il contenuto YouTube (sezioni + moods) era
- * sempre in INGLESE perche' su desktop NESSUNO impostava Environment.locale
- * (default hl="en") ne' LocalePreferences.preference. Fix a monte in
- * DesktopI18n (syncEnvironmentLocale: stesso schema Android MainActivity).
- * QUI: languageRevision (bump dal selettore lingua title bar) e' chiave
- * del LaunchedEffect e invalida la cache come gia' fanno login/logout ->
- * il cambio lingua RICARICA la home nella lingua scelta senza riavviare
- * (il refresh manuale resta disponibile con l'icona refresh).
+ * STEP 3aq (fix "ricarica in loop senza mai completare" al cambio lingua):
+ * la vecchia effect usava confronti ytLoaded-ecc./reset distribuiti e letture
+ * dello state DENTRO il while di retry; con la cancellazione/ripartenza
+ * dell'effetto al cambio chiave (e getOrNull() che ingoia anche la
+ * CancellationException) il caricamento poteva restare appeso o ripartire
+ * senza mai completare. NUOVA macchina di caricamento, a prova di loop:
+ *  - UNA SOLA chiave composta (refresh|login|lingua): la effect riparte
+ *    solo quando serve davvero una ricarica;
+ *  - il risultato passa da una variabile LOCALE: lo state home viene
+ *    aggiornato SOLO a caricamento riuscito (durante la ricarica resta
+ *    visibile la pagina precedente, come Android; niente flash/schermo vuoto);
+ *  - TIMEOUT per tentativo (12s): una richiesta appesa non puo' piu'
+ *    tenere il loader per sempre;
+ *  - la CancellationException viene RILANCIATA (anti-zombie: getOrNull()
+ *    non deve ingoiare la cancellazione dell'effetto);
+ *  - loading = false in finally: il loader si chiude in OGNI scenario
+ *    (successo, 3 tentativi falliti, timeout, cambio lingua in corsa);
+ *  - log diagnostico [RiPlay-Home] con chiave, tentativi ed esito.
  *
  * Rendering (parita' con Android HomePageOnline):
  *  - sezione di BRANI (almeno un SongItem) -> LazyHorizontalGrid a 3 righe
@@ -118,9 +98,9 @@ import riplay.composeapp.generated.resources.refresh
  *  - altre sezioni -> carosello orizzontale (LazyRow) con SongItem (play),
  *    AlbumItem / ArtistItem / PlaylistItem (aprono il dettaglio desktop) e
  *    VideoItem (riprodotto come brano, stessa conversione di SearchPage);
- *  - l'aggiornamento avviene con l'icona refresh in alto (PullToRefreshBox
- *    di Android non esiste su desktop) con 3 tentativi e backoff, come il
- *    caricamento Android (retry 500/1000 ms).
+ *  - l'aggiornamento manuale avviene con l'icona refresh in alto
+ *    (PullToRefreshBox di Android non esiste su desktop) con 3 tentativi
+ *    e backoff, come il caricamento Android (retry 500/1000 ms).
  *
  * Lascia il posto alla home precedente (QuickPicsScreen) SENZA toccare la
  * catena di riproduzione: i click passano da onSongClick/onAddToQueue,
@@ -142,71 +122,88 @@ fun HomePageOnline(
     var loading by remember { mutableStateOf(true) }
     var reloadTick by remember { mutableStateOf(0) }
 
-    // STEP 3al: stato login ALL'ATTO del caricamento (stesso schema di
-    // Android isYtLoggedIn()): true -> browse autenticato (cookie +
-    // SAPISIDHASH + PageId/Authuser) -> home personalizzata dell'utente;
-    // false -> home anonima (quick picks), come prima dello step 3al.
-    val ytLoggedIn = DesktopAccountManager.isYtLoggedIn()
-    // STEP 3am: revisione osservabile dello stato login (bump da
-    // applyToEnvironment/clear): rende il cambio login VISIBILE da Compose
-    // anche mentre la home e' gia' in primo piano (Environment.cookie non
-    // e' uno stato Compose: senza questa chiave il reload dipendeva dal
-    // caso). Chiave del LaunchedEffect insieme a ytLoggedIn.
-    val loginRevision = DesktopLoginState.revision
-    // STEP 3ap: revisione osservabile della lingua (bump da
-    // DesktopI18n.setLanguageChoice): cambio lingua -> home ricaricata
-    // nella lingua scelta (Environment.locale gia' allineato da
-    // syncEnvironmentLocale), stesso schema di loginRevision.
-    val languageRevision = DesktopI18n.languageRevision
-    // Stato login con cui la homePage in cache e' stata caricata: se
-    // cambia (login/logout in tab Account) la cache non e' piu' valida.
-    var ytLoadedLoggedIn by remember { mutableStateOf(false) }
-    // STEP 3ap: revisione lingua con cui la homePage in cache e' stata
-    // caricata: se cambia (selettore title bar) la cache non e' piu' valida.
-    var ytLoadedLanguageRevision by remember { mutableStateOf(0) }
+    // STEP 3am: stato login = presenza dei cookie in Environment (impostati
+    // da DesktopAccountManager al restore/login). La home cosi' porta le
+    // SEZIONI AUTENTICATE come la Android (isYtLoggedIn).
+    val ytLoggedIn = !Environment.cookie.isNullOrEmpty()
 
-    // Caricamento con 3 tentativi e backoff (stessa strategia della home
-    // Android HomePageOnline.loadData): cache null -> retry 500/1000 ms.
-    // STEP 3al: ytLoggedIn tra le chiavi -> cambio login ricarica la home.
-    // STEP 3am: anche loginRevision (stato osservabile del login).
-    // STEP 3ap: anche languageRevision (cambio lingua -> reload).
-    LaunchedEffect(reloadTick, ytLoggedIn, loginRevision, languageRevision) {
-        if (homePage != null && ytLoadedLoggedIn != ytLoggedIn) {
-            homePage = null
-        }
-        // STEP 3ap: cache invalida anche se e' cambiata la lingua con cui
-        // era stata caricata (sezioni e moods nella lingua selezionata).
-        if (homePage != null && ytLoadedLanguageRevision != languageRevision) {
-            homePage = null
-        }
+    // STEP 3ap: revisione lingua (incrementata da DesktopI18n
+    // .setLanguageChoice a ogni cambio dal selettore title bar)
+    val languageRevision = DesktopI18n.languageRevision
+
+    // STEP 3aq: CHIAVE UNICA di caricamento. La effect riparte solo quando
+    // cambia davvero qualcosa (refresh manuale | login | lingua); dentro non
+    // ci sono piu' confronti con stati "loaded*" ne' reset distribuiti.
+    val loadKey = "$reloadTick|$ytLoggedIn|$languageRevision"
+
+    // Caricamento con 3 tentativi, backoff e TIMEOUT per tentativo (stessa
+    // strategia della home Android HomePageOnline.loadData: retry 500/1000 ms).
+    LaunchedEffect(loadKey) {
+        val startedAt = System.currentTimeMillis()
+        println("[RiPlay-Home] reload start key=$loadKey")
         loading = true
-        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-            var attempts = 0
-            while (homePage == null && attempts < 3) {
-                homePage = EnvironmentExt.getHomePage(setLogin = ytLoggedIn).getOrNull()
-                ytLoadedLoggedIn = ytLoggedIn
-                ytLoadedLanguageRevision = languageRevision
-                attempts++
-                if (homePage == null && attempts < 3) delay(500L * attempts)
+        try {
+            val page = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                var attempts = 0
+                var result: HomePage? = null
+                while (result == null && attempts < 3 && isActive) {
+                    attempts++
+                    result = try {
+                        withTimeout(12_000L) {
+                            EnvironmentExt.getHomePage(setLogin = ytLoggedIn).getOrNull()
+                        }
+                    } catch (t: TimeoutCancellationException) {
+                        println("[RiPlay-Home] getHomePage TIMEOUT (tentativo $attempts)")
+                        null
+                    } catch (t: CancellationException) {
+                        // anti-zombie: la cancellazione dell'effetto (es. cambio
+                        // lingua durante il load) NON va ingoiata da getOrNull
+                        throw t
+                    } catch (t: Throwable) {
+                        println("[RiPlay-Home] getHomePage errore (tentativo $attempts): ${t::class.simpleName}: ${t.message}")
+                        null
+                    }
+                    if (result == null && attempts < 3 && isActive) {
+                        delay(500L * attempts)
+                    }
+                }
+                result
             }
-            discover = Environment.discoverPage("", "").getOrNull()
+            // swap solo a caricamento riuscito: la pagina precedente resta
+            // visibile durante la ricarica (niente loader su schermo vuoto)
+            if (page != null) homePage = page
+
+            // MOODS & GENRES: facoltativi (timeout propio; se falliscono la
+            // home resta comunque utilizzabile, come gia' prima)
+            if (isActive) {
+                val disc = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    try {
+                        withTimeout(12_000L) {
+                            Environment.discoverPage("", "").getOrNull()
+                        }
+                    } catch (t: TimeoutCancellationException) {
+                        println("[RiPlay-Home] discoverPage TIMEOUT")
+                        null
+                    } catch (t: CancellationException) {
+                        throw t
+                    } catch (t: Throwable) {
+                        println("[RiPlay-Home] discoverPage errore: ${t::class.simpleName}: ${t.message}")
+                        null
+                    }
+                }
+                if (disc != null) discover = disc
+            }
+
+            println(
+                "[RiPlay-Home] reload done in ${System.currentTimeMillis() - startedAt} ms " +
+                "sezioni=${homePage?.sections?.size ?: 0} " +
+                "moods=${discover?.moods?.size ?: 0}"
+            )
+        } finally {
+            // STEP 3aq: in OGNI scenario il loader si chiude (successo,
+            // tentativi esauriti, timeout, cancellazione/nuovo reload)
+            loading = false
         }
-        loading = false
-        // STEP 3am: diagnostica PRIVACY-SAFE completa (nomi cookie, mai
-        // valori): da questa riga si legge se la richiesta era autenticata
-        // (setLogin), con quali header di profilo (pageId/authUser) e con
-        // quale famiglia di cookie di autorizzazione e' partita.
-        val cookieNames = Environment.cookie
-            ?.takeIf { it.isNotBlank() }
-            ?.let { parseCookieString(it) }
-            ?.keys
-            ?.sorted()
-            ?.joinToString(",") ?: "NULL"
-        println(
-            "[RiPlay-Home] getHomePage setLogin=$ytLoggedIn sezioni=${homePage?.sections?.size ?: 0} " +
-                    "pageId=${!Environment.pageId.isNullOrBlank()} authUser=${!Environment.authUser.isNullOrBlank()} " +
-                    "visitorLen=${Environment.visitorData.length} cookieNames=$cookieNames"
-        )
     }
 
     Title2Actions(

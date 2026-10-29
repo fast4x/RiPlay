@@ -18,17 +18,8 @@ suspend fun Environment.discoverPage(language: String, country: String) = runCat
     val response = client.post(_3djbhqyLpE) {
         setBody(
             BrowseBodyWithLocale(
-//                context = DefaultWeb.copy(
-//                    client = DefaultWeb.client.setLocale(language, country)
-//                ),
-                // STEP 3ap: contesto con hl/gl LIVE da Environment.locale
-                // (DesktopI18n.syncEnvironmentLocale): prima qui arrivava
-                // il DefaultWebWithLocale congelato alla class-init (sul
-                // desktop senza LocalePreferences = NESSUN hl) -> i moods
-                // della home restavano nella lingua dell avvio anche dopo
-                // un cambio lingua a runtime (le sezioni invece erano gia
-                // live via Environment.browse). Stesso schema del visitorData
-                // LIVE introdotto in Environment.browse (step3am).
+                // STEP 3ap: lingua LIVE (Context congela hl alla prima
+                // lettura: qui si ri-applica Environment.locale a ogni richiesta)
                 context = DefaultWebWithLocale.copy(
                     client = DefaultWebWithLocale.client.setLocale(
                         Environment.locale.hl, Environment.locale.gl

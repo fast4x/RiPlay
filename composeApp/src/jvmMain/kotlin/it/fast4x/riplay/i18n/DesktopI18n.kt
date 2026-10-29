@@ -38,24 +38,6 @@ import java.util.concurrent.ConcurrentHashMap
  *    Text passato per ds() si ricompone da solo; la scelta viene
  *    persistita subito nel file delle preferenze.
  *
- * STEP 3ap - LINGUA DEI CONTENUTI YOUTUBE (segnalazione utente v58:
- * "la homepage non tiene conto della lingua selezionata, probabile che
- * environment usa la lingua di default nel desktop, mentre in android
- * funziona"): la lingua selezionata pilotava SOLO le stringhe UI (ds()),
- * ma il contenuto YouTube della home (sezioni + moods) restava in
- * INGLESE. Cause: su desktop NESSUNO impostava mai Environment.locale
- * (Environment.browse lo applica live ma restava al default hl="en",
- * gl="US") ne' LocalePreferences.preference (Context.DefaultWebWithLocale
- * lo congela alla class-init -> discoverPage/moods senza hl). Android
- * invece li imposta in MainActivity (LocalePreferences.preference +
- * Environment.locale da appSettings.languageApp/system locale).
- * Ora initialize() e setLanguageChoice() chiamano syncEnvironmentLocale()
- * che replica ESATTAMENTE quello schema Android (initialize corre in
- * main.kt PRIMA di restoreAtStartup e della prima browse -> la class-init
- * di Context congela un hl GIUSTO). languageRevision (state osservabile,
- * bump a ogni cambio lingua) e' la chiave con cui HomePageOnline ricarica
- * la home anche mentre e' gia' in primo piano, come per il login.
- *
  * ds() NON richiede @Composable: dentro una composizione la lettura dello
  * state si iscrive alla ricomposizione, fuori (es. funzioni helper) restituisce
  * solo il valore corrente. I segnaposto restano nel formato {nome}:
@@ -71,13 +53,31 @@ object DesktopI18n {
     val languageState: MutableState<Languages> = mutableStateOf(Languages.English)
 
     /**
-     * STEP 3ap: revisione lingua osservabile (bump a ogni setLanguageChoice).
-     * La home desktop la usa come chiave del LaunchedEffect: cambio lingua
-     * -> ricarica il contenuto YouTube anche se la home e' gia' in primo
-     * piano (stesso schema di DesktopLoginState.revision per il login).
+     * STEP 3ap - revisione dello stato lingua/ambiente: bump a OGNI cambio
+     * lingua a runtime. Chi la legge in composizione (es. la home) puo'
+     * ri-caricare i dati dal server nella NUOVA lingua.
      */
     val languageRevisionState: MutableState<Int> = mutableStateOf(0)
     val languageRevision: Int get() = languageRevisionState.value
+
+    /**
+     * STEP 3ap - allinea la lingua DELLE RICHIESTE Environment (non solo
+     * quella dei testi UI):
+     *  - LocalePreferences.preference -> hl/gli del contesto "WithLocale"
+     *    (moods & genres, ecc.: vale il valore FROZEN alla prima lettura,
+     *    per questo va impostato PRIMA del primo accesso a Context);
+     *  - Environment.locale -> hl/gl applicati LIVE a ogni browse (home).
+     * Chiamata all'AVVIO (initialize, prima di KCEF/account/prima browse)
+     * e a OGNI cambio lingua (setLanguageChoice).
+     */
+    private fun syncEnvironmentLocale() {
+        val resolved = if (language == Languages.System) detectSystemLanguage() else language
+        val hl = resolved.code
+        val gl = Locale.getDefault().country.takeIf { it.isNotEmpty() } ?: "US"
+        LocalePreferences.preference = LocalePreferenceItem(hl = hl, gl = gl)
+        Environment.locale = EnvironmentLocale(hl = hl, gl = gl)
+        println("[RiPlay-I18n] Environment.locale hl=$hl gl=$gl (ui=$language -> $resolved)")
+    }
 
     var language: Languages
         get() = languageState.value
@@ -90,10 +90,9 @@ object DesktopI18n {
             null, Languages.System -> detectSystemLanguage()
             else -> saved
         }
-        // STEP 3ap: allinea la lingua dei CONTENUTI YouTube alla lingua
-        // risolta (scelta salvata o di sistema). Qui in main.kt corre PRIMA
-        // di restoreAtStartup/della prima browse: Context.DefaultWebWithLocale
-        // congela quindi un hl corretto (vedi syncEnvironmentLocale).
+        // STEP 3ap: hl/gl di Environment allineati SUBITO (il contesto
+        // "WithLocale" di Environment congela hl alla prima lettura: se
+        // arriva qui dopo, la lingua salvata non prende)
         syncEnvironmentLocale()
     }
 
@@ -132,33 +131,10 @@ object DesktopI18n {
     fun setLanguageChoice(choice: Languages) {
         language = choice
         saveLanguageChoice(choice)
-        // STEP 3ap: allinea Environment alla nuova lingua e bumpa la
-        // revisione -> la home (e ogni nuova request) usa la lingua scelta
-        // senza riavviare l'app.
+        // STEP 3ap: allinea le richieste Environment alla nuova lingua e
+        // avvisa gli osservatori (home) di ri-caricare i dati
         syncEnvironmentLocale()
         languageRevisionState.value = languageRevisionState.value + 1
-    }
-
-    /**
-     * STEP 3ap: replica lo schema Android (MainActivity):
-     *  - LocalePreferences.preference -> hl/gl dei body "WithLocale"
-     *    (DefaultWebWithLocale e' una val congelata alla class-init del
-     *    companion di Context: va impostata PRIMA della prima request,
-     *    da initialize() e' garantito);
-     *  - Environment.locale -> hl/gl APPLICATI LIVE da Environment.browse
-     *    a ogni request (e' la via con cui getHomePage carica la home).
-     * hl = codice lingua dell'enum (come Android: languageApp.code),
-     * "System" risolto con detectSystemLanguage(); gl = paese DEL SISTEMA
-     * (come Android senza contentCountry: locale.country fallback "US";
-     * il desktop non ha un selettore paese contenuto).
-     */
-    private fun syncEnvironmentLocale() {
-        val resolved = if (language == Languages.System) detectSystemLanguage() else language
-        val hl = resolved.code
-        val gl = Locale.getDefault().country.takeIf { it.isNotEmpty() } ?: "US"
-        LocalePreferences.preference = LocalePreferenceItem(hl = hl, gl = gl)
-        Environment.locale = EnvironmentLocale(hl = hl, gl = gl)
-        println("[RiPlay-I18n] Environment.locale hl=$hl gl=$gl (ui=$language -> $resolved)")
     }
 
     /**

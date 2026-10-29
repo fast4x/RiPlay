@@ -133,19 +133,6 @@ object EnvironmentExt {
 
         var response = Environment.browse(browseId = "FEmusic_home", setLogin = setLogin, params = params).body<BrowseResponse>()
 
-        // STEP 3am: self-heal del visitorData dalla risposta. YouTube
-        // restituisce in responseContext il visitorId DELLA SESSIONE della
-        // richiesta: se differisce da quello in uso (es. desktop con
-        // visitorData anonimo salvato al login, o vuoto), allineamo
-        // l'Environment cosi' le richieste successive viaggiano coerenti
-        // con la sessione autenticata. No-op quando coincide (caso Android).
-        response.responseContext?.visitorData?.takeIf { it.isNotBlank() }?.let { vd ->
-            if (Environment.visitorData != vd) {
-                println("EnvironmentExt getHomePage: visitorData allineato al responseContext (len nuovo=${vd.length}, prima ${if (Environment.visitorData.isBlank()) "vuoto" else "diverso/len=${Environment.visitorData.length}"})")
-                Environment.visitorData = vd
-            }
-        }
-
 //        println("EnvironmentExt homePage() response sections: ${response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
 //            ?.tabRenderer?.content?.sectionListRenderer?.contents}" )
 
@@ -169,7 +156,8 @@ object EnvironmentExt {
         val continuationsList = mutableListOf<String>()
 
         //var cont = 0
-        while (continuation != null) {
+        // STEP 3aq: cap di sicurezza (max 12 pagine di continuation)
+        while (continuation != null && continuationsList.size < 12) {
             //cont += 1
             //println("EnvironmentExt getHomepage() continuation PRE process cont $cont continuation $continuation")
             try {
@@ -180,6 +168,11 @@ object EnvironmentExt {
                     continuationsList.add(continuation)
                     response =
                         Environment.browse(continuation = continuation).body<BrowseResponse>()
+                } else {
+                    // STEP 3aq: token GIA' scaricato = nessun progresso
+                    // possibile: stop (prima il ciclo ripartiva dallo stesso
+                    // token all'infinito: loop muto, loader eterno in home)
+                    continuation = null
                 }
 
                 continuation = response.continuationContents?.sectionListContinuation?.continuations?.getContinuation()
