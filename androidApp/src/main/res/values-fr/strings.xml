@@ -1530,4 +1530,7 @@ Volume BAS : titre précédent</string>
     <string name="heat">Chaleur</string>
     <string name="stripy">Rayé</string>
     <string name="bubblerings">Anneaux de bulles</string>
+    <string name="swipe_to_next_settings_right_to_left">Right to left</string>
+    <string name="swipe_to_next_settings_left_to_right">Left to right</string>
+    <string name="swipe_to_next_with_miniplayer_title">Swipe to next with mini player</string>
 </resources>

@@ -34,14 +34,10 @@ import it.fast4x.riplay.enums.BackgroundProgress
 import it.fast4x.riplay.enums.CarouselSize
 import it.fast4x.riplay.enums.ColorPaletteMode
 import it.fast4x.riplay.enums.ColorPaletteName
-import it.fast4x.riplay.enums.FontType
 import it.fast4x.riplay.enums.IconLikeType
-import it.fast4x.riplay.enums.MenuStyle
-import it.fast4x.riplay.enums.MessageType
 import it.fast4x.riplay.enums.MiniPlayerType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.NavigationBarPosition
-import it.fast4x.riplay.enums.NavigationBarType
 import it.fast4x.riplay.enums.PlayerBackgroundColors
 import it.fast4x.riplay.enums.PlayerControlsType
 import it.fast4x.riplay.enums.PlayerPlayButtonType
@@ -54,7 +50,6 @@ import it.fast4x.riplay.enums.PlaylistSwipeAction
 import it.fast4x.riplay.enums.QueueSwipeAction
 import it.fast4x.riplay.enums.QueueType
 import it.fast4x.riplay.enums.ThumbnailType
-import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.extensions.appsettings.models.AppSettings
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
@@ -151,6 +146,7 @@ fun UiSettings(
     val showMiniPlayerInSettings = appSettings.showMiniPlayerInSettings
     val showUpNextSongInMiniPlayer = appSettings.showUpNextSongInMiniPlayer
     val loaderStyle = appSettings.loaderStyle
+    val swipeToNext = appSettings.swipeToNext
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -782,6 +778,23 @@ fun UiSettings(
                             valueText = { it.displayName }
                         )
                 }
+
+                if (search.input.isBlank() || stringResource(R.string.swipe_to_next_with_miniplayer_title).contains(
+                        search.input,
+                        true
+                    )
+                )
+                    EnumValueSelectorSettingsEntry(
+                        title = stringResource(R.string.swipe_to_next_with_miniplayer_title),
+                        selectedValue = swipeToNext,
+                        onValueSelected = {
+                            coroutineScope.launch {
+                                val new = appSettingsManager.activeSettings.value.copy(swipeToNext = it)
+                                appSettingsManager.updateSettings(new)
+                            }
+                        },
+                        valueText = { it.displayName }
+                    )
 
                 if (search.input.isBlank() || stringResource(R.string.show_upnext_in_miniplayer).contains(
                         search.input,

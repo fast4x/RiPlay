@@ -87,6 +87,7 @@ import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
 import it.fast4x.riplay.enums.AudioVisualizerBaseStyle
 import it.fast4x.riplay.enums.AudioVisualizerStyle
 import it.fast4x.riplay.enums.PlayerTransitionAnimation
+import it.fast4x.riplay.enums.SwipeToNext
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.extensions.nextvisualizer.modern.PlayerEqualizerSpectrum
 import it.fast4x.riplay.extensions.nextvisualizer.modern.PlayerEqualizerLevel
@@ -172,6 +173,8 @@ fun UnifiedMiniPlayer(
 
     val miniPlayerType = appearanceSettings.miniPlayerType
 
+    val swipeToNext = appSettings.swipeToNext
+
     val positionAndDurationState = rememberPlayerPositionAndDurationState(binder)
 
     var updateLike by rememberSaveable { mutableStateOf(false) }
@@ -224,12 +227,20 @@ fun UnifiedMiniPlayer(
                         updateLike = true
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                     } else {
-                        binder.hybridPlayer.seekToPrevious()
+                        if (swipeToNext == SwipeToNext.RightToLeft)
+                            binder.hybridPlayer.seekToPrevious()
+                        else
+                            binder.hybridPlayer.seekToNext()
+
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                     }
                 }
                 SwipeToDismissBoxValue.EndToStart -> {
-                    binder.hybridPlayer.seekToNext()
+                    if (swipeToNext == SwipeToNext.RightToLeft)
+                        binder.hybridPlayer.seekToNext()
+                    else
+                        binder.hybridPlayer.seekToPrevious()
+
                     hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
 
                 }

@@ -1534,4 +1534,7 @@
     <string name="heat">Heat</string>
     <string name="stripy">Stripy</string>
     <string name="bubblerings">Bubble Rings</string>
+    <string name="swipe_to_next_settings_right_to_left">Right to left</string>
+    <string name="swipe_to_next_settings_left_to_right">Left to right</string>
+    <string name="swipe_to_next_with_miniplayer_title">Swipe to next with mini player</string>
 </resources>

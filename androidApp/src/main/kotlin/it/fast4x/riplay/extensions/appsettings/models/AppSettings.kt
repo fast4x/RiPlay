@@ -57,6 +57,7 @@ import it.fast4x.riplay.enums.RewindThresholdDuration
 import it.fast4x.riplay.enums.SongSortBy
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.enums.StatisticsCategory
+import it.fast4x.riplay.enums.SwipeToNext
 import it.fast4x.riplay.enums.TopPlaylistPeriod
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.enums.UiType
@@ -288,5 +289,7 @@ data class AppSettings(
     val loaderStyle: LoaderStyle = LoaderStyle.Gradient,
     val lockOrientation: Boolean = false,
     val showUpNextSongInMiniPlayer: Boolean = true,
+    val swipeToNext: SwipeToNext = SwipeToNext.RightToLeft
+
 )
 
