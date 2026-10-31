@@ -1358,12 +1358,6 @@ fun LocalPlaylistSongs(
                                                     if (position > 0) position++ else position = 0
                                                     //Log.d("mediaItem", "next initial pos ${position}")
                                                     if (listMediaItems.isEmpty()) {
-                                                        val filteredPLSongs =
-                                                            playlistSongs.filterNot {
-                                                                it.asMediaItem.mediaId.startsWith(
-                                                                    LOCAL_KEY_PREFIX
-                                                                ) || it.song.thumbnailUrl == ""
-                                                            }
                                                         CoroutineScope(Dispatchers.IO).launch {
                                                             songsInTheToPlaylist =
                                                                 withContext(Dispatchers.IO) {
@@ -1371,8 +1365,8 @@ fun LocalPlaylistSongs(
                                                                         toPlaylistPreview.playlist.id
                                                                     )
                                                                 }
-                                                            var distinctSongs =
-                                                                filteredPLSongs.filterNot { it in songsInTheToPlaylist }
+                                                            val distinctSongs =
+                                                                playlistSongs.filterNot { it in songsInTheToPlaylist }
 
                                                             if ((distinctSongs.size + toPlaylistPreview.songCount) > 5000 && toPlaylistPreview.playlist.isYoutubePlaylist && isYtSyncEnabled()) {
                                                                 SmartMessage(
@@ -1437,12 +1431,6 @@ fun LocalPlaylistSongs(
                                                         }
                                                     } else {
                                                         CoroutineScope(Dispatchers.IO).launch {
-                                                            val filteredListMediaItems =
-                                                                listMediaItems.filterNot {
-                                                                    it.mediaId.startsWith(
-                                                                        LOCAL_KEY_PREFIX
-                                                                    ) || it.mediaMetadata.artworkUri.toString() == ""
-                                                                }
                                                             songsInTheToPlaylist =
                                                                 withContext(Dispatchers.IO) {
                                                                     Database.sortSongsPlaylistByPositionNoFlow(
@@ -1451,7 +1439,7 @@ fun LocalPlaylistSongs(
                                                                 }
 
                                                             val distinctSongs =
-                                                                filteredListMediaItems.filter { item -> item !in songsInTheToPlaylist.map { it.asMediaItem } }
+                                                                listMediaItems.filter { item -> item !in songsInTheToPlaylist.map { it.asMediaItem } }
                                                             if ((distinctSongs.size + toPlaylistPreview.songCount) > 5000 && toPlaylistPreview.playlist.isYoutubePlaylist && isYtSyncEnabled()) {
                                                                 SmartMessage(
                                                                     context.resources.getString(
