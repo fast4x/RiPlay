@@ -844,7 +844,7 @@ fun LocalPlaylistSongs(
                 val oldSize = jobs.size
                 jobs.removeIf{it.isCompleted}
                 songsMatched += oldSize - jobs.size
-                delay(10)
+                delay(10.milliseconds)
             }
 
             showGetAlbumVersionDialogue = false
@@ -856,18 +856,13 @@ fun LocalPlaylistSongs(
     var songsUpdated by remember { mutableIntStateOf(0) }
     var totalSongsToUpdate by remember { mutableIntStateOf(0) }
 
-    LaunchedEffect(Unit,playlistUpdateDialog){
-        Database.asyncTransaction {
-
-            totalSongsToUpdate = if (!isSpotifyPlaylist && !isDeezerPlaylist) playlistAllSongs.filter { it.song.thumbnailUrl?.startsWith("https://lh3.googleusercontent.com/") == true
-                    && !((songAlbumInfo(it.asMediaItem.mediaId)?.id != null)
-                    && songArtistInfo(it.asMediaItem.mediaId).isNotEmpty()
-                    && !it.song.artistsText.isNullOrBlank()) }.size
-            else playlistAllSongs.filter {
-                it.song.id.startsWith("spotify")
-                        || it.song.id.startsWith("deezer")
-            }.size
-        }
+    LaunchedEffect(Unit,playlistUpdateDialog) {
+        totalSongsToUpdate = if (!isSpotifyPlaylist && !isDeezerPlaylist)
+            playlistAllSongs.filter { !it.song.artistsText.isNullOrBlank()}.size
+        else playlistAllSongs.filter {
+            it.song.id.startsWith("spotify")
+                    || it.song.id.startsWith("deezer")
+        }.size
     }
 
     if (playlistUpdateDialog){
@@ -883,18 +878,13 @@ fun LocalPlaylistSongs(
             songsUpdated = 0
             val jobs = mutableListOf<Job>()
             if (!isSpotifyPlaylist && !isDeezerPlaylist) {
-                playlistAllSongs.filter {
-                    it.song.thumbnailUrl?.startsWith("https://lh3.googleusercontent.com/") == true
-                            && !((songAlbumInfo(it.asMediaItem.mediaId)?.id != null) && songArtistInfo(
-                        it.asMediaItem.mediaId
-                    ).isNotEmpty() && !it.song.artistsText.isNullOrBlank())
-                }.forEach { song ->
-
-                    jobs.add(
-                        coroutineScope.launch(Dispatchers.IO) {
-                            updateLocalPlaylist(song.song)
-                        }
-                    )
+                playlistAllSongs.filter { !it.song.artistsText.isNullOrBlank()}
+                    .forEach { song ->
+                        jobs.add(
+                            coroutineScope.launch(Dispatchers.IO) {
+                                updateLocalPlaylist(song.song)
+                            }
+                        )
                 }
             } //else {
                 //println("LocalPlaylistSongs Conversione playlist")
