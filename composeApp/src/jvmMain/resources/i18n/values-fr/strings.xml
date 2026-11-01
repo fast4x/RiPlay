@@ -51,8 +51,8 @@
     <string name="radio.unavailable">Radio indisponible</string>
     <!-- STEP 3ac: auto-radio + marcatura coda -->
     <string name="radio.auto_added">Autoradio : {n} morceaux similaires ajoutés</string>
-    <string name="queue.in_playback">Lecture en cours</string>
-    <string name="queue.autoradio_on">Autoradio actif : ajoute des morceaux similaires lorsque la file est presque terminée</string>
+    <string name="queue.in_playback">En cours de lecture</string>
+    <string name="queue.autoradio_on">Fonction « Auto-radio » : ajoute des morceaux similaires lorsque la file d\'attente touche à sa fin</string>
     <string name="queue.autoradio_off">Autoradio désactivé</string>
     <string name="overlay.close_player">Fermer le lecteur</string>
     <string name="overlay.queue_title">File d\'attente de lecture</string>
@@ -130,11 +130,11 @@
     <string name="local.imported_from">{n} fichiers ont été importés depuis « {value} »</string>
     <string name="podcast.episodes">épisodes</string>
     <string name="podcast.description">Description</string>
-    <string name="nav.settings">Settings</string>
-    <string name="settings.tab.data">Data</string>
-    <string name="settings.tab.accounts">Account</string>
-    <string name="settings.data.info">Export or import a backup of the library database (songs, playlists, history and favorites). The backup is a single .db file, compatible with Android; the restore completes when RiPlay restarts.</string>
-    <string name="settings.data.db_path">Database: {path}</string>
+    <string name="nav.settings">Paramètres</string>
+    <string name="settings.tab.data">Données</string>
+    <string name="settings.tab.accounts">Compte</string>
+    <string name="settings.data.info">Exportez ou importez une sauvegarde de la base de données de la bibliothèque (morceaux, playlists, historique et favoris). La sauvegarde se présente sous la forme d\'un seul fichier .db, compatible avec Android ; la restauration s\'effectue au redémarrage de RiPlay.</string>
+    <string name="settings.data.db_path">Base de données : {path}</string>
     <string name="settings.data.export_backup">Export backup</string>
     <string name="settings.data.export_done">Backup saved: {path}</string>
     <string name="settings.data.export_failed">Backup failed: {error}</string>
@@ -142,7 +142,7 @@
     <string name="settings.data.import_done">Backup loaded: restart RiPlay to complete the restore</string>
     <string name="settings.data.import_invalid">Invalid backup file</string>
     <string name="settings.data.import_failed">Restore failed: {error}</string>
-    <string name="settings.accounts.info">Sign in to your YouTube Music account to sync your library: playlists, liked songs and history.</string>
+    <string name="settings.accounts.info">Connectez-vous à votre compte YouTube Music pour synchroniser votre bibliothèque : playlists, titres favoris et historique.</string>
     <string name="settings.accounts.not_logged">Not signed in</string>
     <string name="settings.accounts.logged_as">Signed in as {name}</string>
     <string name="settings.accounts.verifying">Verifying account...</string>
@@ -159,7 +159,7 @@
     <string name="settings.accounts.verify_now">Verify now</string>
     <string name="settings.accounts.login">Sign in to your YouTube Music account</string>
     <string name="settings.accounts.logout">Sign out</string>
-    <string name="settings.accounts.login_instructions">Complete the sign-in in the window below. When YouTube Music opens with your account, the connection is saved automatically.</string>
-    <string name="settings.accounts.kcef_not_ready">The embedded browser is not ready yet ({state})</string>
-    <string name="settings.accounts.waiting_login">Waiting for the sign-in to complete...</string>
+    <string name="settings.accounts.login_instructions">Effectuez la connexion dans la fenêtre ci-dessous. Lorsque YouTube Music s\'ouvre avec votre compte, la connexion est enregistrée automatiquement.</string>
+    <string name="settings.accounts.kcef_not_ready">Le navigateur intégré n\'est pas encore prêt ({state})</string>
+    <string name="settings.accounts.waiting_login">En attente de la fin de la connexion...</string>
 </resources>
