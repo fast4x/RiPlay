@@ -1,166 +1,113 @@
 package it.fast4x.riplay.ui.widgets
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.util.Base64
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.glance.GlanceId
-import androidx.glance.GlanceTheme
-import androidx.glance.appwidget.GlanceAppWidget
-import androidx.glance.appwidget.GlanceAppWidgetReceiver
-import androidx.glance.appwidget.provideContent
-import androidx.glance.state.PreferencesGlanceStateDefinition
-import androidx.media3.common.util.UnstableApi
-import androidx.datastore.preferences.core.Preferences
+import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
-import androidx.glance.appwidget.action.actionRunCallback
+import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.cornerRadius
-import androidx.glance.background
-import androidx.glance.currentState
 import androidx.glance.layout.Alignment
+import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
+import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxHeight
-import androidx.glance.layout.fillMaxWidth
+import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.height
-import androidx.glance.layout.padding
+import androidx.glance.layout.size
 import androidx.glance.layout.width
-import androidx.glance.text.FontWeight
-import androidx.glance.text.Text
-import androidx.glance.text.TextStyle
+import androidx.glance.LocalSize
 import it.fast4x.riplay.MainActivity
-import it.fast4x.riplay.R
-import timber.log.Timber
 
-@UnstableApi
-class PlayerHorizontalWidgetReceiver : GlanceAppWidgetReceiver() {
-    override val glanceAppWidget: GlanceAppWidget = PlayerHorizontalWidget()
-}
+/**
+ * Widget orizzontale: copertina a sinistra, testi e controlli a destra.
+ * La copertina si adatta all'altezza reale del widget; se lo spazio
+ * orizzontale è sufficiente e l'opzione è attiva nelle impostazioni,
+ * mostra anche la barra di avanzamento del brano.
+ * I badge logo RiPlay e brani in coda sono sovrapposti agli angoli della
+ * copertina scelti nelle impostazioni: così non coprono mai testi,
+ * controlli o progress bar.
+ */
+class PlayerHorizontalWidget : RiPlayGlanceWidget() {
 
-@UnstableApi
-class PlayerHorizontalWidget : GlanceAppWidget() {
-
-    override val stateDefinition = PreferencesGlanceStateDefinition
-    override suspend fun provideGlance(
-        context: Context,
-        id: GlanceId
+    @Composable
+    override fun Content(
+        palette: WidgetPalette,
+        data: WidgetData,
+        cover: ImageProvider,
     ) {
-        
-        provideContent {
-            val prefs = currentState<Preferences>()
+        val size = LocalSize.current
+        val showProgressHere = data.showProgress && size.width >= 250.dp
+        val coverSize = when {
+            size.height >= 130.dp -> 110.dp
+            size.height >= 90.dp -> 88.dp
+            else -> 64.dp
+        }
 
-            val title = prefs[stringPreferencesKey("title")] ?: ""
-            val artist = prefs[stringPreferencesKey("artist")] ?: ""
-            val isPlaying = prefs[booleanPreferencesKey("isPlaying")] == true
-            val artworkBase64 = prefs[stringPreferencesKey("artworkBase64")]
-            //Timber.d("PlayerHorizontalWidget artworkBase64 lenght ${artworkBase64?.length}")
-            val safeBase64 = if (!artworkBase64.isNullOrEmpty() && artworkBase64.length > 2000) {
-                artworkBase64
-            } else {
-                null
+        Row(
+            modifier = GlanceModifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalAlignment = Alignment.Start
+        ) {
+            Box(
+                modifier = GlanceModifier.size(coverSize)
+            ) {
+                Image(
+                    provider = cover,
+                    contentDescription = "cover",
+                    modifier = GlanceModifier
+                        .fillMaxSize()
+                        .cornerRadius(12.dp)
+                        .clickable(actionStartActivity<MainActivity>())
+                )
+
+                CornerBadges(data, cornerPadding = 4.dp, logoSize = 14.dp, badgeTextSize = 8.sp)
             }
 
-            val coverProvider = if (safeBase64 != null) {
-                try {
-                    val decodedBytes = Base64.decode(safeBase64, Base64.DEFAULT)
-                    val rawBitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
-                    if (rawBitmap != null) {
-                        val safeBitmap = rawBitmap.copy(Bitmap.Config.ARGB_8888, true)
-                        rawBitmap.recycle()
-                        ImageProvider(safeBitmap)
-                    } else {
-                        ImageProvider(R.drawable.app_icon)
-                    }
-                } catch (e: Exception) {
-                    ImageProvider(R.drawable.app_icon)
-                }
-            } else {
-                ImageProvider(R.drawable.app_icon)
-            }
+            Spacer(modifier = GlanceModifier.width(12.dp))
 
-            GlanceTheme {
-                Row(
-                    modifier = GlanceModifier.fillMaxWidth()
-                        .cornerRadius(16.dp)
-                        .background(GlanceTheme.colors.widgetBackground)
-                        .padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Image(
-                        provider = coverProvider,
-                        contentDescription = "cover",
-                        modifier = GlanceModifier.padding(start = 5.dp, end = 5.dp)
-                            .width(120.dp).height(120.dp)
-                            .cornerRadius(8.dp)
-                            .clickable(actionStartActivity<MainActivity>())
-                    )
+            Column(
+                modifier = GlanceModifier.defaultWeight().fillMaxHeight(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                MediaText(
+                    palette = palette,
+                    data = data,
+                    titleSize = 13.sp,
+                    artistSize = 11.sp,
+                    centerAlign = true
+                )
 
-                    Column(
-                        modifier = GlanceModifier
-                            .defaultWeight()
-                            .fillMaxHeight()
-                            .padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = title,
-                            style = TextStyle(
-                                fontWeight = FontWeight.Bold,
-                                color = GlanceTheme.colors.onSurface
-                            ),
-                            maxLines = 1,
+                Spacer(modifier = GlanceModifier.height(8.dp))
 
-                        )
-                        Text(
-                            text = artist,
-                            style = TextStyle(
-                                fontWeight = FontWeight.Normal,
-                                // Un colore più "scialbo" per l'artista (dipende dal tuo tema,
-                                // ma di solito si usa un colore secondario)
-                                //color = GlanceTheme.colors.onSurface.copy(alpha = 0.7f)
-                            ),
-                            maxLines = 1
-                        )
+                ControlRow(
+                    palette = palette,
+                    data = data,
+                    iconSize = 18.dp,
+                    playIconSize = 26.dp,
+                    spacing = 10.dp
+                )
 
-
-                        Row(
-                            modifier = GlanceModifier.padding(vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Image(
-                                provider = ImageProvider(R.drawable.play_skip_back),
-                                contentDescription = "back",
-                                modifier = GlanceModifier.clickable((actionRunCallback(PreviousAction::class.java)))
-                            )
-
-                            Image(
-                                provider = ImageProvider(if (isPlaying) R.drawable.pause else R.drawable.play),
-                                contentDescription = "play/pause",
-                                modifier = GlanceModifier.padding(horizontal = 12.dp)
-                                    .clickable(if (isPlaying) actionRunCallback(PauseAction::class.java) else actionRunCallback(PlayAction::class.java))
-                            )
-
-                            Image(
-                                provider = ImageProvider(R.drawable.play_skip_forward),
-                                contentDescription = "next",
-                                modifier = GlanceModifier.clickable(actionRunCallback(NextAction::class.java))
-                            )
-                        }
-                    }
+                if (showProgressHere) {
+                    Spacer(modifier = GlanceModifier.height(8.dp))
+                    ProgressSection(palette = palette, data = data)
                 }
             }
         }
     }
+
+    companion object {
+        /** Istanza condivisa usata anche da [PlayerHorizontalWidgetReceiver] e [WidgetUpdater]. */
+        val instance = PlayerHorizontalWidget()
+    }
 }
 
-
+class PlayerHorizontalWidgetReceiver : GlanceAppWidgetReceiver() {
+    override val glanceAppWidget: GlanceAppWidget = PlayerHorizontalWidget.instance
+}

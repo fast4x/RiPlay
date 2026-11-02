@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Preview del widget compatto 4x1: logo a sinistra, pulsantiera stilizzata, coda a destra -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="250dp"
+    android:height="40dp"
+    android:viewportWidth="250"
+    android:viewportHeight="40">
+  <path
+      android:fillColor="#FF141414"
+      android:pathData="M8,0L242,0A8,8 0,0 1,250 8L250,32A8,8 0,0 1,242 40L8,40A8,8 0,0 1,0 32L0,8A8,8 0,0 1,8 0Z"/>
+  <!-- Logo RiPlay a sinistra -->
+  <path
+      android:fillColor="#B3000000"
+      android:pathData="M11,11h6a5,5 0,0 1,5,5v6a5,5 0,0 1,-5,5h-6a5,5 0,0 1,-5,-5v-6a5,5 0,0 1,5,-5z"/>
+  <path
+      android:fillColor="#FF58CC86"
+      android:pathData="M13.5,15.5l6.5,4.5l-6.5,4.5z"/>
+  <!-- Shuffle attenuato -->
+  <path
+      android:fillColor="#66FFFFFF"
+      android:pathData="M48,13h4v3h-4zM48,24h4v3h-4zM52,14.5l8,5.5l-8,5.5zM60,13h7v3h-7zM60,24h7v3h-7zM67,14.5l8,5.5l-8,5.5zM67,13h4v3h-4zM67,24h4v3h-4z"/>
+  <!-- Previous attenuato -->
+  <path
+      android:fillColor="#66FFFFFF"
+      android:pathData="M92,13l10,7l-10,7z"/>
+  <path
+      android:fillColor="#66FFFFFF"
+      android:pathData="M84,13h4v14h-4z"/>
+  <!-- Play -->
+  <path
+      android:fillColor="#FFFFFFFF"
+      android:pathData="M115,13l14,7l-14,7z"/>
+  <!-- Next attenuato -->
+  <path
+      android:fillColor="#66FFFFFF"
+      android:pathData="M162,13l10,7l-10,7z"/>
+  <path
+      android:fillColor="#66FFFFFF"
+      android:pathData="M174,13h4v14h-4z"/>
+  <!-- Like (cuore pieno accent) -->
+  <path
+      android:fillColor="#FFDE6433"
+      android:pathData="M198,28a8,8 0,0 1,-4.5 -1.4c-3.9,-2.7 -5.6,-4.5 -6.6,-5.6 -2,-2.4 -3,-5 -3,-7.7 0.1,-3.1 2.6,-5.6 5.6,-5.6 2.2,0 3.7,1.2 4.6,2.3a0.3,0.3 0,0 0,0.4 0c0.9,-1.1 2.4,-2.3 4.6,-2.3 3,0 5.5,2.5 5.6,5.6 0,2.7 -1,5.3 -3,7.7 -1,1.1 -2.7,2.9 -6.6,5.6A8,8 0,0 1,198 28Z"/>
+  <!-- Badge coda a destra -->
+  <path
+      android:fillColor="#B3000000"
+      android:pathData="M219,13h18a4,4 0,0 1,4,4v6a4,4 0,0 1,-4,4h-18a4,4 0,0 1,-4,-4v-6a4,4 0,0 1,4,-4z"/>
+  <path
+      android:fillColor="#FFFFFFFF"
+      android:pathData="M221,18h5v4h-5z"/>
+  <path
+      android:fillColor="#66FFFFFF"
+      android:pathData="M230,18h5v4h-5z"/>
+</vector>

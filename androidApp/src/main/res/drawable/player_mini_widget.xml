@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Preview del widget mini 2x2: shuffle/coda/like sopra, trasporto al centro, logo in basso -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="110dp"
+    android:height="110dp"
+    android:viewportWidth="110"
+    android:viewportHeight="110">
+  <path
+      android:fillColor="#FF141414"
+      android:pathData="M8,0L102,0A8,8 0,0 1,110 8L110,102A8,8 0,0 1,102 110L8,110A8,8 0,0 1,0 102L0,8A8,8 0,0 1,8 0Z"/>
+  <!-- Shuffle (riga superiore a sinistra) -->
+  <path
+      android:fillColor="#66FFFFFF"
+      android:pathData="M16,24h4v3h-4zM16,35h4v3h-4zM20,25.5l7,5.5l-7,5.5zM27,24h7v3h-7zM27,35h7v3h-7zM34,25.5l7,5.5l-7,5.5zM34,24h4v3h-4zM34,35h4v3h-4z"/>
+  <!-- Badge coda (riga superiore al centro) -->
+  <path
+      android:fillColor="#B3000000"
+      android:pathData="M47,26h16a4,4 0,0 1,4,4v2a4,4 0,0 1,-4,4h-16a4,4 0,0 1,-4,-4v-2a4,4 0,0 1,4,-4z"/>
+  <path
+      android:fillColor="#FFFFFFFF"
+      android:pathData="M49,29h4v4h-4z"/>
+  <path
+      android:fillColor="#66FFFFFF"
+      android:pathData="M57,29h4v4h-4z"/>
+  <!-- Like (riga superiore a destra) -->
+  <path
+      android:fillColor="#FFDE6433"
+      android:pathData="M81,45a8,8 0,0 1,-4.5 -1.4c-3.9,-2.7 -5.6,-4.5 -6.6,-5.6 -2,-2.4 -3,-5 -3,-7.7 0.1,-3.1 2.6,-5.6 5.6,-5.6 2.2,0 3.7,1.2 4.6,2.3a0.3,0.3 0,0 0,0.4 0c0.9,-1.1 2.4,-2.3 4.6,-2.3 3,0 5.5,2.5 5.6,5.6 0,2.7 -1,5.3 -3,7.7 -1,1.1 -2.7,2.9 -6.6,5.6A8,8 0,0 1,81 45Z"/>
+  <!-- Previous (riga di trasporto a sinistra) -->
+  <path
+      android:fillColor="#66FFFFFF"
+      android:pathData="M32,54l9,-6l0,12z"/>
+  <path
+      android:fillColor="#66FFFFFF"
+      android:pathData="M28,48h3.5v12L28,60z"/>
+  <!-- Play (riga di trasporto al centro) -->
+  <path
+      android:fillColor="#FFFFFFFF"
+      android:pathData="M53,68a5,5 0,0 1,-2.5 -0.7c-1.7,-1 -2.8,-3 -2.8,-4.9L47.7,46.6c0,-1.9 1.1,-3.9 2.8,-4.9a5.1,5.1 0,0 1,5.1 0l12.8,7.4a5.2,5.2 0,0 1,0 8.8L55.6,67.3A5.1,5.1 0,0 1,53 68Z"/>
+  <!-- Next (riga di trasporto a destra) -->
+  <path
+      android:fillColor="#66FFFFFF"
+      android:pathData="M82,48h3.5v12L82,60z"/>
+  <path
+      android:fillColor="#66FFFFFF"
+      android:pathData="M78,48l9,6l-9,6z"/>
+  <!-- Logo RiPlay (firma in basso al centro) -->
+  <path
+      android:fillColor="#B3000000"
+      android:pathData="M51,88h8a5,5 0,0 1,5,5v4a5,5 0,0 1,-5,5h-8a5,5 0,0 1,-5,-5v-4a5,5 0,0 1,5,-5z"/>
+  <path
+      android:fillColor="#FF58CC86"
+      android:pathData="M53,92l6,3.5l-6,3.5z"/>
+</vector>

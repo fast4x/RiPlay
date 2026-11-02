@@ -64,6 +64,10 @@ import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.enums.VideoContentMode
 import it.fast4x.riplay.enums.ViewType
 import it.fast4x.riplay.enums.WallpaperType
+import it.fast4x.riplay.enums.WidgetAccentColor
+import it.fast4x.riplay.enums.WidgetBackground
+import it.fast4x.riplay.enums.WidgetBadgePosition
+import it.fast4x.riplay.enums.WidgetTheme
 import it.fast4x.riplay.extensions.smoothloader.LoaderStyle
 import kotlinx.serialization.Serializable
 import java.net.Proxy
@@ -289,7 +293,17 @@ data class AppSettings(
     val loaderStyle: LoaderStyle = LoaderStyle.Gradient,
     val lockOrientation: Boolean = false,
     val showUpNextSongInMiniPlayer: Boolean = true,
-    val swipeToNext: SwipeToNext = SwipeToNext.RightToLeft
+    val swipeToNext: SwipeToNext = SwipeToNext.RightToLeft,
+
+    // ---- Widgets della home screen ----
+    val widgetTheme: WidgetTheme = WidgetTheme.System,
+    val widgetAccentColor: WidgetAccentColor = WidgetAccentColor.Default,
+    val widgetBackground: WidgetBackground = WidgetBackground.Solid,
+    val widgetBadgePosition: WidgetBadgePosition = WidgetBadgePosition.BottomEnd,
+    val widgetShowArtwork: Boolean = true,
+    val widgetShowLikeButton: Boolean = true,
+    val widgetShowShuffleButton: Boolean = true,
+    val widgetShowProgress: Boolean = true
 
 )
 

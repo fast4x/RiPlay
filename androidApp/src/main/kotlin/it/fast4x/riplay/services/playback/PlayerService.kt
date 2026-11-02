@@ -36,7 +36,6 @@ import android.os.Looper
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
-import android.util.Base64
 import android.view.LayoutInflater
 import androidx.annotation.OptIn
 import androidx.compose.runtime.Stable
@@ -175,15 +174,17 @@ import it.fast4x.riplay.musicvault.MusicVaultRepository
 import it.fast4x.riplay.musicvault.MusicVaultState
 import it.fast4x.riplay.services.helpers.AudioDRCHelper
 import it.fast4x.riplay.services.helpers.EqualizerHelper
-import it.fast4x.riplay.ui.widgets.PlayerHorizontalWidget
-import it.fast4x.riplay.ui.widgets.PlayerVerticalWidget
-import it.fast4x.riplay.ui.widgets.updateState
+import it.fast4x.riplay.ui.widgets.LikeState
+import it.fast4x.riplay.ui.widgets.PlayerWidgetSnapshot
+import it.fast4x.riplay.ui.widgets.WidgetArtworkCache
+import it.fast4x.riplay.ui.widgets.WidgetUpdater
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.isAtLeastAndroid7
 import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.mediaItems
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -235,7 +236,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import okhttp3.OkHttpClient
-import java.io.ByteArrayOutputStream
 import kotlin.time.Duration.Companion.milliseconds
 
 @UnstableApi
@@ -282,8 +282,6 @@ class PlayerService : MediaLibraryService(),
     // Forse richiesto su dispositivi auto legacy anche se media3 gestisce anche il pregresso
     var legacyActionReceiver: LegacyActionReceiver? = null
 
-    private val playerVerticalWidget = PlayerVerticalWidget()
-    private val playerHorizontalWidget = PlayerHorizontalWidget()
 
     private val currentMediaItemState = MutableStateFlow<MediaItem?>(null)
 
@@ -435,6 +433,11 @@ class PlayerService : MediaLibraryService(),
                     // NON CHIAMO initializeNormalizeVolume() QUI!
                     // Rischia di resettare il guadagno hardware a metà canzone.
 
+                    // Pipeline widget: a schermo spento è congelata, la riattivo
+                    // e allineo subito i widget allo stato più recente.
+                    runCatching { WidgetUpdater.setScreenInteractive(true) }
+                        .onFailure { Timber.e("PlayerService Screenreceiver: riattivazione widget fallita: ${it.message}") }
+
                     if (!isFading) {
                         this@PlayerService.serviceScope.launch(Dispatchers.Main) {
                             // Abbassiamo impercettibilmente il volume del player per un millisecondo
@@ -447,6 +450,12 @@ class PlayerService : MediaLibraryService(),
                             Timber.d("PlayerService: Hard refresh del volume eseguito con successo")
                         }
                     }
+                }
+
+                Intent.ACTION_SCREEN_OFF -> {
+                    Timber.d("PlayerService Screenreceiver: Schermo spento, congelamento pipeline widget")
+                    runCatching { WidgetUpdater.setScreenInteractive(false) }
+                        .onFailure { Timber.e("PlayerService Screenreceiver: congelamento widget fallito: ${it.message}") }
                 }
             }
         }
@@ -583,6 +592,8 @@ class PlayerService : MediaLibraryService(),
 
                 runCatching { initializeLegacyNotificationActionReceiver() }
                     .onFailure { Timber.e("PlayerService startup initializeLegacyNotificationActionReceiver failed: $it") }
+                runCatching { initializeWidgetUpdater() }
+                    .onFailure { Timber.e("PlayerService startup initializeWidgetUpdater failed: $it") }
                 runCatching { initializeAudioDeviceCallback() }
                     .onFailure { Timber.e("PlayerService startup initializeAudioDeviceCallback failed: $it") }
 
@@ -614,7 +625,12 @@ class PlayerService : MediaLibraryService(),
                     .onFailure { Timber.e("PlayerService startup setupPersistentQueueAndObservers failed: $it") }
 
                 runCatching {
-                    val filter = IntentFilter(Intent.ACTION_SCREEN_ON)
+                    // SCREEN_ON: refresh volume + riattivazione pipeline widget.
+                    // SCREEN_OFF: widget invisibili, ogni scrittura widget viene congelata.
+                    val filter = IntentFilter().apply {
+                        addAction(Intent.ACTION_SCREEN_ON)
+                        addAction(Intent.ACTION_SCREEN_OFF)
+                    }
                     registerReceiver(screenReceiver, filter)
                 }.onFailure { Timber.e("PlayerService startup registerReceiver screenReceiver failed: $it") }
 
@@ -649,25 +665,36 @@ class PlayerService : MediaLibraryService(),
         // Se l'app è già in foreground non facciamo nulla
         if (AppForegroundTracker.isAppInForeground) return
 
-        // Media3 dalla versione 1.11.1 ha probabilmente un bug con il foreground service automatico
-        // gestito dal suo default notification media provider
-        // Molto spesso non richiede il permesso di foreground service per far funzionare correttamente il playback
-        // Con questo metodo ci assicuriamo che venga richiesto il permesso di foreground service
-        val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-            .setContentTitle(getString(R.string.riplay_app_name))
-            .setSmallIcon(R.drawable.app_icon)
-            .setOngoing(true)
-            .build()
-        if (isAtLeastAndroid10) {
-            startForeground(
-                NOTIFICATION_ID, notification,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-            )
-        } else {
-            startForeground(NOTIFICATION_ID, notification)
-        }
+        // Questo metodo viene chiamato anche a schermo spento
+        // (app in background) durante la transizione al brano online. Su Android 12+,
+        // se il servizio era stato degradato da Media3, startForeground può lanciare
+        // ForegroundServiceStartNotAllowedException: un'eccezione qui ucciderebbe
+        // la catena dei listener del player e fermerebbe la musica. Un fallimento
+        // del placeholder è recuperabile (Media3 riprova con la sua notifica),
+        // quindi viene solo registrato.
+        runCatching {
+            // Media3 dalla versione 1.11.1 ha probabilmente un bug con il foreground service automatico
+            // gestito dal suo default notification media provider
+            // Molto spesso non richiede il permesso di foreground service per far funzionare correttamente il playback
+            // Con questo metodo ci assicuriamo che venga richiesto il permesso di foreground service
+            val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                .setContentTitle(getString(R.string.riplay_app_name))
+                .setSmallIcon(R.drawable.app_icon)
+                .setOngoing(true)
+                .build()
+            if (isAtLeastAndroid10) {
+                startForeground(
+                    NOTIFICATION_ID, notification,
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                )
+            } else {
+                startForeground(NOTIFICATION_ID, notification)
+            }
 
-        Timber.d("PlayerService FGS placeholder avviato prima del playback")
+            Timber.d("PlayerService FGS placeholder avviato prima del playback")
+        }.onFailure {
+            Timber.e("PlayerService FGS placeholder rifiutato dal sistema (playback non influenzato): ${it.javaClass.simpleName}: ${it.message}")
+        }
     }
 
     @kotlin.OptIn(ExperimentalSerializationApi::class, ExperimentalCoroutinesApi::class)
@@ -2413,6 +2440,8 @@ class PlayerService : MediaLibraryService(),
                 this@PlayerService.serviceScope.launch {
                     setWallpaper(this@PlayerService, bitmap)
                 }
+                // L'artwork è pronto: aggiorna subito i widget con la copertina vera
+                updateWidgetState()
             }
         }
 
@@ -3371,79 +3400,128 @@ class PlayerService : MediaLibraryService(),
         }
     }.setExtensionRendererMode(EXTENSION_RENDERER_MODE_PREFER) // prefer extension renderers to opus format
 
+    /**
+     * Raccoglie lo stato corrente del player e lo pubblica alla pipeline widget.
+     * Non scrive più direttamente nei datastore: il debounce, la deduplica e la
+     * scrittura su tutte le istanze sono delegati a WidgetUpdater.
+     */
     fun updateWidgetState() {
-        Timber.d("PlayerService updateWidgetState _playerState ${_playerState.value.isPlaying}")
+        // Correzione 2.1.1: qualunque eccezione qui dentro (lettura stato player durante
+        // una transizione, artwork, datastore) arrivava all'UncaughtExceptionHandler e
+        // uccideva l'intero processo: la musica si fermava, tipicamente a schermo spento
+        // quando gli eventi del player arrivano a raffica. I widget sono un consumer di
+        // sola lettura: un loro errore non deve MAI influire sulla riproduzione.
         this@PlayerService.serviceScope.launch {
-            if (!::exoPlayer.isInitialized) {
-                Timber.w("PlayerService updateWidgetState invocato ma il player non è ancora pronto. Salto l'aggiornamento.")
-                return@launch
-            }
-
-            val isPlaying = _playerState.value.isPlaying
-            val title = withContext(Dispatchers.Main) { cleanPrefix(exoPlayer.mediaMetadata.title.toString()) }
-            val artist = withContext(Dispatchers.Main) { exoPlayer.mediaMetadata.artist.toString() }
-
-            val artworkBase64 = getOptimizedArtworkBase64(bitmapProvider?.bitmap)
-
-            playerHorizontalWidget.updateState(
-                context = this@PlayerService,
-                title = title,
-                artist = artist,
-                isPlaying = isPlaying,
-                artworkBase64 = artworkBase64
-            )
-            playerVerticalWidget.updateState(
-                context = this@PlayerService,
-                title = title,
-                artist = artist,
-                isPlaying = isPlaying,
-                artworkBase64 = artworkBase64
-            )
+            runCatching { publishWidgetSnapshotSafely() }
+                .onFailure { e ->
+                    if (e is CancellationException) throw e
+                    Timber.e(e, "PlayerService updateWidgetState: pubblicazione widget saltata, riproduzione non influenzata")
+                }
         }
     }
 
-    private suspend fun getOptimizedArtworkBase64(bitmap: Bitmap?): String? {
-        return withContext(Dispatchers.IO) {
-            if (bitmap == null || bitmap.isRecycled) return@withContext null
+    private suspend fun publishWidgetSnapshotSafely() {
+        if (!::exoPlayer.isInitialized) {
+            Timber.w("PlayerService updateWidgetState invocato ma il player non è ancora pronto. Salto l'aggiornamento.")
+            return
+        }
 
-            if (bitmap.width < 20 || bitmap.height < 20) {
-                return@withContext null
+        val title = withContext(Dispatchers.Main) { cleanPrefix(exoPlayer.mediaMetadata.title.toString()) }
+        val artist = withContext(Dispatchers.Main) { exoPlayer.mediaMetadata.artist.toString() }
+        val mediaId = withContext(Dispatchers.Main) { exoPlayer.currentMediaItem?.mediaId }
+        val isPlaying = _playerState.value.isPlaying
+        val shuffleEnabled = withContext(Dispatchers.Main) { exoPlayer.shuffleModeEnabled }
+        // Posizione e durata dipendono dall'engine attivo: durante lo streaming
+        // ExoPlayer resta fermo, la fonte valida è il watcher interno (_currentSecond).
+        val positionMs = withContext(Dispatchers.Main) {
+            if (currentSong.value?.isLocal == true) exoPlayer.currentPosition.coerceAtLeast(0L)
+            else (_currentSecond.value * 1000f).toLong().coerceAtLeast(0L)
+        }
+        val durationMs = withContext(Dispatchers.Main) {
+            if (currentSong.value?.isLocal == true) (exoPlayer.duration.takeIf { it > 0 } ?: 0L)
+            else (_currentDuration.value * 1000f).toLong().coerceAtLeast(0L)
+        }
+        val queueIndex = withContext(Dispatchers.Main) { exoPlayer.currentMediaItemIndex }
+        val queueSize = withContext(Dispatchers.Main) { exoPlayer.mediaItemCount }
+
+        val likedState = when (currentSong.value?.likedAt) {
+            null -> LikeState.NONE
+            -1L -> LikeState.DISLIKED
+            else -> LikeState.LIKED
+        }
+
+        // La copertina ridimensionata viene salvata una sola volta in cache:
+        // nei widget viaggia solo il percorso del file.
+        // bitmapProvider.bitmap non è mai null: restituisce un placeholder tinta
+        // unita (bianco/nero) finché l'artwork non è caricato. Per i widget usiamo
+        // lastBitmap, che è null finché l'immagine vera non è pronta.
+        val artworkPath = WidgetArtworkCache.save(
+            context = this@PlayerService,
+            mediaId = mediaId,
+            source = bitmapProvider?.lastBitmap
+        )
+
+        WidgetUpdater.push(
+            PlayerWidgetSnapshot(
+                title = title,
+                artist = artist,
+                isPlaying = isPlaying,
+                artworkPath = artworkPath,
+                likedState = likedState,
+                shuffleEnabled = shuffleEnabled,
+                positionMs = positionMs,
+                durationMs = durationMs,
+                queueIndex = queueIndex,
+                queueSize = queueSize,
+            )
+        )
+    }
+
+    /**
+     * Collega la pipeline widget allo scope del servizio e avvia il ticker che
+     * aggiorna la posizione del brano (solo mentre il brano è in riproduzione
+     * e solo nel widget grande, se aggiunto alla home).
+     */
+    private fun initializeWidgetUpdater() {
+        WidgetUpdater.attach(
+            context = applicationContext,
+            scope = serviceScope,
+            settings = appSettingsManager.activeSettings
+        )
+
+        // Il like (da widget, notifica o UI) scrive sul database: currentSong è un
+        // flow live del DB e riemette il brano aggiornato, quindi ripubblichiamo
+        // subito lo stato senza aspettare un evento di pausa/riproduzione.
+        this@PlayerService.serviceScope.launch {
+            currentSong.collect { song ->
+                if (song != null) updateWidgetState()
             }
+        }
 
-            var safeBitmap: Bitmap? = null
-            try {
-                safeBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, false)
-
-                val maxSizePx = 200
-                val ratio = safeBitmap.width.toFloat() / safeBitmap.height.toFloat()
-                val width = if (safeBitmap.width >= safeBitmap.height) maxSizePx else (maxSizePx * ratio).toInt()
-                val height = if (safeBitmap.height >= safeBitmap.width) maxSizePx else (maxSizePx / ratio).toInt()
-
-                val resizedBitmap = Bitmap.createScaledBitmap(safeBitmap, width, height, true)
-
-                if (resizedBitmap != safeBitmap) safeBitmap.recycle()
-                safeBitmap = resizedBitmap
-
-                val byteArrayOutputStream = ByteArrayOutputStream()
-                safeBitmap.compress(Bitmap.CompressFormat.JPEG, 75, byteArrayOutputStream)
-                val byteArray = byteArrayOutputStream.toByteArray()
-
-                if (byteArray.size > 400_000) {
-                    safeBitmap.recycle()
-                    return@withContext null
+        // Ticker posizione: posizione e durata dipendono dall'engine attivo
+        // (ExoPlayer per i file locali, watcher interno per YouTube/Cast),
+        // altrimenti il tempo mostrato nei widget resta fermo durante lo streaming.
+        // Correzione 2.1.1: ogni iterazione è isolata; un errore qui non deve mai
+        // terminare né il ticker né il processo (il debounce delle scritture e il
+        // congelamento a schermo spento sono gestiti dentro WidgetUpdater).
+        this@PlayerService.serviceScope.launch(Dispatchers.Main) {
+            while (isActive) {
+                try {
+                    if (::exoPlayer.isInitialized && _playerState.value.isPlaying) {
+                        val isLocal = currentSong.value?.isLocal == true
+                        WidgetUpdater.pushPosition(
+                            positionMs = if (isLocal) exoPlayer.currentPosition.coerceAtLeast(0L)
+                                         else (_currentSecond.value * 1000f).toLong().coerceAtLeast(0L),
+                            durationMs = if (isLocal) (exoPlayer.duration.takeIf { it > 0 } ?: 0L)
+                                         else (_currentDuration.value * 1000f).toLong().coerceAtLeast(0L)
+                        )
+                    }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Timber.e(e, "PlayerService ticker posizione widget: iterazione saltata, riproduzione non influenzata")
                 }
-
-                val result = Base64.encodeToString(byteArray, Base64.NO_WRAP)
-
-                safeBitmap.recycle()
-
-                result
-
-            } catch (e: Exception) {
-                Timber.e(e, "Errore conversione Base64 Widget (Bitmap probabilmente riciclata da Media3)")
-                null
-            } finally {
-                safeBitmap?.recycle()
+                delay(1_000)
             }
         }
     }
@@ -3999,6 +4077,9 @@ class PlayerService : MediaLibraryService(),
                 withContext(Dispatchers.Main) {
                     hybridPlayer.shuffleModeEnabled.let { hybridPlayer.shuffleModeEnabled = !it }
                 }
+                // Ripubblica subito lo stato così l'icona shuffle nel widget
+                // cambia senza dover mettere in pausa e riprendere.
+                updateWidgetState()
             }
 
         }

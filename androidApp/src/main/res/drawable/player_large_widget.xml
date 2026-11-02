@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Preview del widget grande 4x3: copertina, testi, coda e progresso stilizzati -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="250dp"
+    android:height="180dp"
+    android:viewportWidth="250"
+    android:viewportHeight="180">
+  <path
+      android:fillColor="#FF141414"
+      android:pathData="M8,0L242,0A8,8 0,0 1,250 8L250,172A8,8 0,0 1,242 180L8,180A8,8 0,0 1,0 172L0,8A8,8 0,0 1,8 0Z"/>
+  <path
+      android:fillColor="#FF333333"
+      android:pathData="M16,16h90v90h-90z"/>
+  <path
+      android:fillColor="#FF444444"
+      android:pathData="M16,16h90v90h-90z"
+      android:strokeColor="#FF444444"/>
+  <path
+      android:fillColor="#FFFFFFFF"
+      android:pathData="M118,30h108v12h-108z"/>
+  <path
+      android:fillColor="#88FFFFFF"
+      android:pathData="M118,50h84v10h-84z"/>
+  <path
+      android:fillColor="#FFDE6433"
+      android:pathData="M118,74h52v16h-52z"/>
+  <path
+      android:fillColor="#66FFFFFF"
+      android:pathData="M132,82l16,0"/>
+  <path
+      android:fillColor="#66FFFFFF"
+      android:pathData="M138,140l10,0"/>
+  <path
+      android:fillColor="#FFFFFFFF"
+      android:pathData="M120,150l14,0"/>
+  <path
+      android:fillColor="#66FFFFFF"
+      android:pathData="M158,150l10,0"/>
+  <path
+      android:fillColor="#FFDE6433"
+      android:pathData="M16,158h60v6h-60z"/>
+  <path
+      android:fillColor="#FF333333"
+      android:pathData="M16,158h230v6h-230z"/>
+</vector>
