@@ -1715,7 +1715,7 @@ class MainActivity : AppCompatActivity() {
             LaunchedEffect(intentUriData) {
                 var uri = intentUriData ?: return@LaunchedEffect
 
-                Timber.d("MainActivity LaunchedEffect intentUriData uri $uri")
+                Timber.d("MainActivity LaunchedEffect intentUriData uri = $uri scheme = ${uri.scheme}")
 
                 if (uri.scheme == "riplay") {
                     val binder = snapshotFlow { binder }.filterNotNull().first()
@@ -1725,6 +1725,12 @@ class MainActivity : AppCompatActivity() {
 
                     return@LaunchedEffect
                 }
+
+                if (uri.scheme == "glance-action") {
+                    // Il famoso callback dovuto al click sul widget di RiPlay
+                    return@LaunchedEffect
+                }
+
 
                 Timber.d("MainActivity LaunchedEffect intentUriData $uri path ${uri.pathSegments.firstOrNull()} host ${uri.host}")
 
