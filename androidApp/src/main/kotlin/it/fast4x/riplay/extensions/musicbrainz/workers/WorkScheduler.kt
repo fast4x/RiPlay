@@ -13,6 +13,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 object WorkScheduler {
 
@@ -115,6 +116,38 @@ object WorkScheduler {
         )
 
 
+    }
+
+    /**
+     * Modalità TV: la pipeline MusicBrainz/profilo resta disattivata.
+     * WorkManager PERSISTE i job nel proprio database (sopravvivono a
+     * riavvii e aggiornamenti dell'app), quindi qui si annullano
+     * esplicitamente i job eventualmente schedulati in passato.
+     * Chiamato da MainApplication.onCreate al posto di scheduleAll.
+     */
+    fun cancelAllForTv(context: Context) {
+        val workManager = try {
+            WorkManager.getInstance(context)
+        } catch (e: Exception) {
+            Timber.e("WorkScheduler.cancelAllForTv: WorkManager non disponibile: $e")
+            return
+        }
+        listOf(
+            INITIAL_SETUP_WORK_NAME,
+            PROFILE_REBUILD_WORK_NAME,
+            MB_ALBUMS_WORK_NAME,
+            ARTIST_RELATIONS_WORK_NAME,
+            SONG_ARTIST_BACKFILL_WORK_NAME,
+            NEW_RELEASES_FETCH,
+            "force_profile_rebuild"
+        ).forEach { name ->
+            try {
+                workManager.cancelUniqueWork(name)
+                Timber.i("WorkScheduler: job '$name' annullato (modalità TV)")
+            } catch (e: Exception) {
+                Timber.e("WorkScheduler: annullamento '$name' fallito: $e")
+            }
+        }
     }
 
     private fun calculateDelayUntilMorning(): Long {

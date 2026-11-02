@@ -20,6 +20,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.shape.CircleShape
+import it.fast4x.riplay.ui.components.tv.tvFocusRing
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.ui.components.ActionPillButton
@@ -82,6 +84,12 @@ fun IconButton(
                 scaleX = scale.value
                 scaleY = scale.value
             }
+            // Indicatore di focus TV (prima del clickable)
+            .tvFocusRing(
+                shape = CircleShape,
+                focusedScale = 1.15f,
+                backgroundColor = color.copy(alpha = 0.14f)
+            )
             .combinedClickable(
                 indication = indication ?: ripple(bounded = false),
                 interactionSource = remember { MutableInteractionSource() },

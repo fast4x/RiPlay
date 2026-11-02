@@ -14,38 +14,77 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
+import it.fast4x.riplay.ui.components.tv.LocalIsTv
+import it.fast4x.riplay.ui.components.tv.tvFocusRing
 import it.fast4x.riplay.ui.styling.medium
 import it.fast4x.riplay.ui.styling.secondary
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
+import kotlinx.coroutines.android.awaitFrame
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
+
+/**
+ * Controller per il focus automatico della prima voce del menu su TV.
+ * La prima MenuEntry composta "rivendica" il requester; il Menu poi
+ * sposta il focus lì appena il menu è visibile.
+ */
+class TvMenuFocusController {
+    internal var claimed = false
+    internal val requester = FocusRequester()
+}
+
+val LocalTvMenuFocusController = staticCompositionLocalOf { TvMenuFocusController() }
 
 @Composable
-inline fun Menu(
+fun Menu(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Column(
-        modifier = modifier
-            //.padding(top = 12.dp)
-            .verticalScroll(rememberScrollState())
-            .fillMaxWidth()
-            .background(colorPalette().background1)
-            //.padding(top = 2.dp)
-            .padding(vertical = 8.dp)
-            .navigationBarsPadding(),
-        content = content
-    )
+    val isTv = LocalIsTv.current
+    val tvMenu = remember { TvMenuFocusController() }
+
+    // Su TV: porta il focus sulla prima voce appena il menu è composto,
+    // così il D-pad funziona subito senza un "colpo alla cieca".
+    LaunchedEffect(Unit) {
+        if (isTv) {
+            awaitFrame()
+            delay(50.milliseconds)
+            runCatching { tvMenu.requester.requestFocus() }
+        }
+    }
+
+    CompositionLocalProvider(LocalTvMenuFocusController provides tvMenu) {
+        Column(
+            modifier = modifier
+                //.padding(top = 12.dp)
+                .verticalScroll(rememberScrollState())
+                .fillMaxWidth()
+                .background(colorPalette().background1)
+                //.padding(top = 2.dp)
+                .padding(vertical = 8.dp)
+                .navigationBarsPadding(),
+            content = content
+        )
+    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -59,10 +98,20 @@ fun MenuEntry(
     enabled: Boolean = true,
     trailingContent: (@Composable () -> Unit)? = null
 ) {
+    val isTv = LocalIsTv.current
+    val tvMenu = LocalTvMenuFocusController.current
+    // La PRIMA voce composta rivendica il focus automatico (solo TV)
+    var entryModifier = Modifier
+        .tvFocusRing(shape = RoundedCornerShape(10.dp), focusedScale = 1f)
+    if (isTv && !tvMenu.claimed && enabled) {
+        tvMenu.claimed = true
+        entryModifier = entryModifier.focusRequester(tvMenu.requester)
+    }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(24.dp),
-        modifier = Modifier
+        modifier = entryModifier
             .combinedClickable(enabled = enabled, onClick = onClick, onLongClick = onLongClick)
             .fillMaxWidth()
             .alpha(if (enabled) 1f else 0.4f)

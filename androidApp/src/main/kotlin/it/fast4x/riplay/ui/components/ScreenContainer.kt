@@ -54,6 +54,8 @@ import it.fast4x.riplay.ui.components.navigation.header.AppHeader
 import it.fast4x.riplay.ui.components.navigation.nav.AbstractNavigationBar
 import it.fast4x.riplay.ui.components.navigation.nav.HorizontalNavigationBar
 import it.fast4x.riplay.ui.components.navigation.nav.VerticalNavigationBar
+import it.fast4x.riplay.ui.components.tv.LocalIsTv
+import it.fast4x.riplay.ui.components.tv.tvMiniPlayerVisible
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.transition
 import kotlin.math.abs
@@ -96,10 +98,15 @@ fun ScreenContainer(
         )
     )
 
-    val nestedScrollConnection = remember {
+    // ── TV: l'animazione di scomparsa delle barre è DISATTIVATA ───
+    // Le barre traslate fuori schermo restano nell'albero e focusabili:
+    val isTv = LocalIsTv.current
+
+    val nestedScrollConnection = remember(isTv) {
         object : NestedScrollConnection {
 
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (isTv) return Offset.Zero
 
                 if (available.y > 0 && toolbarOffsetHeightPx > 0) {
                     val consume = minOf(available.y, toolbarOffsetHeightPx)
@@ -114,6 +121,7 @@ fun ScreenContainer(
                 available: Offset,
                 source: NestedScrollSource
             ): Offset {
+                if (isTv) return Offset.Zero
 
                 if (consumed.y < 0) {
                     val maxOffset = maxOf(topBarHeightPx, bottomBarHeightPx)
@@ -209,22 +217,29 @@ fun ScreenContainer(
                 PaddingValues( Dp.Hairline )
 
         val layoutDirection = LocalLayoutDirection.current
+        // Su TV, con coda attiva il miniplayer copre la parte bassa
+        // del contenuto: riserviamo lo spazio necessario così
+        // l'elemento in focus non finisce mai nascosto dietro di esso.
+        val tvMiniPlayerPadding = if (isTv && tvMiniPlayerVisible.value) 80.dp else 0.dp
         val finalPadding = PaddingValues(
             start = sidePaddingValues.calculateStartPadding(layoutDirection),
             end = sidePaddingValues.calculateEndPadding(layoutDirection),
             top = topPaddingDp,
-            bottom = bottomPaddingDp
+            bottom = bottomPaddingDp + tvMiniPlayerPadding
         )
 
         Box(
             Modifier
-                .padding(finalPadding)
                 .fillMaxSize()
         ) {
+            // Il padding (incl. il padding extra TV per il miniplayer) e'
+            // applicato SOLO al contenuto: il miniplayer sotto non deve
+            // riceverlo, altrimenti "galleggia" sopra la bottom bar.
             Row(
                 Modifier
-                    .background(colorPalette().background0)
                     .fillMaxSize()
+                    .padding(finalPadding)
+                    .background(colorPalette().background0)
             ) {
                 if( NavigationBarPosition.Left.isCurrent() )
                     navigationBar.Draw()
@@ -249,10 +264,13 @@ fun ScreenContainer(
                 else
                     Alignment.BottomCenter
 
+            // Il miniplayer si posiziona subito SOPRA la bottom bar:
+            // riceve bottomPaddingDp (+ eventuale inset), NON il padding
+            // extra TV riservato al contenuto delle liste.
             Box(
                 Modifier
                     //.padding( vertical = 5.dp )
-                    .padding(bottom = bottomInset)
+                    .padding(bottom = bottomPaddingDp + bottomInset)
                     .align( playerAlignment ),
                 content = { miniPlayer?.invoke() }
             )

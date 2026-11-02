@@ -2,6 +2,7 @@ package it.fast4x.riplay.ui.components.navigation.nav
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.mutableStateListOf
@@ -17,6 +18,7 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.components.themed.Button
+import it.fast4x.riplay.ui.components.tv.tvFocusRing
 import it.fast4x.riplay.utils.colorPalette
 
 @SuppressLint("ComposableNaming")
@@ -92,7 +94,11 @@ internal class NavigationButton(
 ): Button( iconId, color, padding, size, forceWidth, modifier ) {
 
     fun clickEvent( event: (NavigationButton) -> Unit ) {
-        modifier = modifier.clickable { event(this@NavigationButton) }
+        // Indicatore di focus TV (prima del clickable: l'osservatore deve
+        // precedere il focus target nella catena dei modificatori)
+        modifier = modifier
+            .tvFocusRing(shape = CircleShape, focusedScale = 1.15f)
+            .clickable { event(this@NavigationButton) }
     }
 
     @Composable

@@ -184,6 +184,7 @@ import it.fast4x.riplay.utils.isExplicit
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.isVideo
 import it.fast4x.riplay.utils.mediaItems
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -509,13 +510,25 @@ class PlayerService : MediaLibraryService(),
             .build()
         setMediaNotificationProvider(mediaNotificationProvider)
 
-        // Carico le impostazioni prima di tutto
-        loadInitialSettingsFromDatabase()
+        // Carico le impostazioni prima di tutto.
+        // ROBUSTEZZA AVVIO (fondamentale su Android TV): ogni inizializzazione
+        // "periferica" è isolata con runCatching. Su alcuni TV box mancano
+        // sensori, HAL audio particolari o componenti di sistema: un errore
+        // qui non deve MAI bloccare l'avvio dell'app né impedire che il
+        // servizio dichiari "ready" (altrimenti l'app resta sul loader per
+        // sempre o — peggio — il processo muore e dal launcher l'app
+        // "lampeggia" a ciclo infinito).
+        runCatching { loadInitialSettingsFromDatabase() }
+            .onFailure { Timber.e("PlayerService.onCreate loadInitialSettingsFromDatabase failed: $it") }
 
         // Inizializzo l'hardware audio e la sessione Media3
-        initializeBitmapProvider()
+        runCatching { initializeBitmapProvider() }
+            .onFailure { Timber.e("PlayerService.onCreate initializeBitmapProvider failed: $it") }
+        // Cuore del player: volutamente NON isolato, senza questo l'app non
+        // può funzionare ed è meglio un crash esplicito che uno stato impair.
         initializeHybridPlayerAndSession()
-        initializeMediaItemState()
+        runCatching { initializeMediaItemState() }
+            .onFailure { Timber.e("PlayerService.onCreate initializeMediaItemState failed: $it") }
 
         // Uso il Main Looper per accodare la creazione di YouTube.
         // In questo modo la l'inizializzazione della webview e del player di youtube vengono fatte appena il servizio è pronto e non prima
@@ -542,57 +555,93 @@ class PlayerService : MediaLibraryService(),
 
         super.onCreate()
 
-        // Lancio tutto il resto delle configurazioni in background senza bloccare l'avvio nativo
-        this@PlayerService.serviceScope.launch(Dispatchers.Main) {
+        // Lancio tutto il resto delle configurazioni in background senza bloccare l'avvio nativo.
+        // ROBUSTEZZA AVVIO:
+        //  - CoroutineExceptionHandler: un'eccezione non deve mai uccidere il processo
+        //    (su Android TV il sintomo è l'app che "lampeggia" dal launcher);
+        //  - ogni step è isolato con runCatching: un errore non salta gli step successivi;
+        //  - _isServiceReady passa a true nel finally: l'Activity sblocca SEMPRE
+        //    il loader, anche se qualche inizializzazione è fallita.
+        val startupExceptionHandler = CoroutineExceptionHandler { _, e ->
+            Timber.e("PlayerService.onCreate: eccezione durante l'inizializzazione: $e")
+        }
+        this@PlayerService.serviceScope.launch(Dispatchers.Main + startupExceptionHandler) {
+            try {
+                runCatching { startObservingSettings() }
+                    .onFailure { Timber.e("PlayerService startup startObservingSettings failed: $it") }
 
-            startObservingSettings()
+                runCatching { startPlaybackWatchdog() }
+                    .onFailure { Timber.e("PlayerService startup startPlaybackWatchdog failed: $it") }
 
-            startPlaybackWatchdog()
+                runCatching { checkAndRestoreTimer() }
+                    .onFailure { Timber.e("PlayerService startup checkAndRestoreTimer failed: $it") }
 
-            checkAndRestoreTimer()
+                runCatching { initializeAudioManager() }
+                    .onFailure { Timber.e("PlayerService startup initializeAudioManager failed: $it") }
+                runCatching { initializeAudioVolumeObserver() }
+                    .onFailure { Timber.e("PlayerService startup initializeAudioVolumeObserver failed: $it") }
 
-            initializeAudioManager()
-            initializeAudioVolumeObserver()
+                runCatching { initializeLegacyNotificationActionReceiver() }
+                    .onFailure { Timber.e("PlayerService startup initializeLegacyNotificationActionReceiver failed: $it") }
+                runCatching { initializeAudioDeviceCallback() }
+                    .onFailure { Timber.e("PlayerService startup initializeAudioDeviceCallback failed: $it") }
 
-            initializeLegacyNotificationActionReceiver()
-            initializeAudioDeviceCallback()
+                // Ora che la webview e l'hybrid player sono stabili, calcolo il volume di normalizzazione
+                runCatching { initializeNormalizeVolume() }
+                    .onFailure { Timber.e("PlayerService startup initializeNormalizeVolume failed: $it") }
+                runCatching { initializeBassBoost() }
+                    .onFailure { Timber.e("PlayerService startup initializeBassBoost failed: $it") }
+                runCatching { initializeReverb() }
+                    .onFailure { Timber.e("PlayerService startup initializeReverb failed: $it") }
 
-            // Ora che la webview e l'hybrid player sono stabili, calcolo il volume di normalizzazione
-            initializeNormalizeVolume()
-            initializeBassBoost()
-            initializeReverb()
+                runCatching { initializeSensorListener() }
+                    .onFailure { Timber.e("PlayerService startup initializeSensorListener failed: $it") }
+                runCatching { initializeSongCoverInLockScreen() }
+                    .onFailure { Timber.e("PlayerService startup initializeSongCoverInLockScreen failed: $it") }
+                runCatching { initializeMedleyMode() }
+                    .onFailure { Timber.e("PlayerService startup initializeMedleyMode failed: $it") }
+                runCatching { applyPlaybackParameters() }
+                    .onFailure { Timber.e("PlayerService startup applyPlaybackParameters failed: $it") }
+                runCatching { initializeAudioDRCHelper() }
+                    .onFailure { Timber.e("PlayerService startup initializeAudioDRCHelper failed: $it") }
 
-            initializeSensorListener()
-            initializeSongCoverInLockScreen()
-            initializeMedleyMode()
-            applyPlaybackParameters()
-            initializeAudioDRCHelper()
+                runCatching { initializeRiTune() }
+                    .onFailure { Timber.e("PlayerService startup initializeRiTune failed: $it") }
+                runCatching { initializeDiscordPresence() }
+                    .onFailure { Timber.e("PlayerService startup initializeDiscordPresence failed: $it") }
 
-            initializeRiTune()
-            initializeDiscordPresence()
+                runCatching { setupPersistentQueueAndObservers() }
+                    .onFailure { Timber.e("PlayerService startup setupPersistentQueueAndObservers failed: $it") }
 
-            setupPersistentQueueAndObservers()
+                runCatching {
+                    val filter = IntentFilter(Intent.ACTION_SCREEN_ON)
+                    registerReceiver(screenReceiver, filter)
+                }.onFailure { Timber.e("PlayerService startup registerReceiver screenReceiver failed: $it") }
 
-            val filter = IntentFilter(Intent.ACTION_SCREEN_ON)
-            registerReceiver(screenReceiver, filter)
+                runCatching {
+                    // Registra l'observer sul ciclo di vita del processo
+                    ProcessLifecycleOwner.get().lifecycle.addObserver(processLifecycleObserver)
+                }.onFailure { Timber.e("PlayerService startup ProcessLifecycleOwner observer failed: $it") }
 
-            // Registra l'observer sul ciclo di vita del processo
-            ProcessLifecycleOwner.get().lifecycle.addObserver(processLifecycleObserver)
-
-            // Listener di appoggio per la ripresa della riproduzione al termine di una chiamata
-            serviceScope.launch {
-                var recoveryAttempts = 0
-                while (isActive) {
-                    delay(2000.milliseconds)
-                    if (!resumePending || hybridPlayer.activeEngine != ActiveEngine.YOUTUBE) continue
-                    if (audioManager.mode != AudioManager.MODE_NORMAL) continue   // chiamata ancora attiva
-                    if (recoveryAttempts++ > 5) { resumePending = false; recoveryAttempts = 0; continue }
-                    Timber.d("PlayerService YT: recovery playVideo() (tentativo $recoveryAttempts)")
-                    _internalYouTubePlayer.value?.play()
-                }
+                // Listener di appoggio per la ripresa della riproduzione al termine di una chiamata
+                runCatching {
+                    serviceScope.launch {
+                        var recoveryAttempts = 0
+                        while (isActive) {
+                            delay(2000.milliseconds)
+                            if (!resumePending || hybridPlayer.activeEngine != ActiveEngine.YOUTUBE) continue
+                            if (audioManager.mode != AudioManager.MODE_NORMAL) continue   // chiamata ancora attiva
+                            if (recoveryAttempts++ > 5) { resumePending = false; recoveryAttempts = 0; continue }
+                            Timber.d("PlayerService YT: recovery playVideo() (tentativo $recoveryAttempts)")
+                            _internalYouTubePlayer.value?.play()
+                        }
+                    }
+                }.onFailure { Timber.e("PlayerService startup call-recovery loop failed: $it") }
+            } finally {
+                // SEMPRE, anche se uno degli step è fallito: l'Activity (soprattutto
+                // su Android TV, dove il loader attende questo segnale) deve sbloccare.
+                _isServiceReady.value = true
             }
-
-            _isServiceReady.value = true
         }
     }
 

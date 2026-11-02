@@ -74,9 +74,6 @@ private fun HamburgerMenu(
     val enablePictureInPicture = appSettings.enablePictureInPicture
     val pipHandler = rememberPipHandler()
     val sheet = LocalGlobalSheetState.current
-    val equalizerType = appSettings.equalizerType
-    val internalEqualizer = LocalPlayerServiceBinder.current?.equalizer
-    val launchSystemEqualizer by rememberSystemEqualizerLauncher(audioSessionId = {0})
     val offlineModeEnabled = appSettings.offlineModeEnabled
     val lockOrientation = appSettings.lockOrientation
     val scope = rememberCoroutineScope()
@@ -101,28 +98,6 @@ private fun HamburgerMenu(
                 .padding(vertical = 8.dp)
         ) {
             Column(modifier = Modifier.padding(horizontal = 8.dp)) {
-
-                /*
-                ModernMenuItem(
-                    index = menuIndex++,
-                    iconRes = R.drawable.music_equalizer,
-                    textRes = R.string.equalizer,
-                    onClick = {
-                        if (equalizerType == EqualizerType.Internal) {
-                            internalEqualizer?.let {
-                                sheet.display {
-                                    SheetBody { InternalEqualizerScreen(it) }
-                                }
-                            }
-                        } else {
-                            launchSystemEqualizer()
-                        }
-                        onDismissRequest()
-                    }
-                )
-
-                 */
-
 
                 ModernMenuItem(
                     index = menuIndex++,

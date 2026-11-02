@@ -57,9 +57,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import it.fast4x.riplay.ui.components.tv.LocalIsTv
+import it.fast4x.riplay.ui.components.tv.LocalTvNavFocusSignal
+import it.fast4x.riplay.ui.components.tv.tvFocusRing
+import it.fast4x.riplay.ui.components.tv.tvStartupFocusDone
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.R
+import kotlinx.coroutines.android.awaitFrame
 import timber.log.Timber
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 // Shown when "Navigation bar position" is set to "top" or "bottom"
 class HorizontalNavigationBar(
@@ -101,6 +110,29 @@ class HorizontalNavigationBar(
     override fun add(buttons: @Composable (@Composable (Int, String, Int, Boolean) -> Unit) -> Unit) {
         val transition = updateTransition(targetState = tabIndex, label = null)
 
+        // ── Navigazione TV ─────────────────────────────────────────
+        val isTv = LocalIsTv.current
+        val tvSignal = LocalTvNavFocusSignal.current
+        val firstItemFocusRequester = remember { FocusRequester() }
+        // Flag fuori dal loop: solo la PRIMA voce visibile riceve il requester
+        var tvFirstAttached = false
+
+        // Focus recovery su segnale dell'Activity
+        LaunchedEffect(tvSignal.intValue) {
+            if (isTv && tvSignal.intValue > 0)
+                runCatching { firstItemFocusRequester.requestFocus() }
+        }
+
+        // Focus iniziale all'avvio (una sola volta per sessione)
+        LaunchedEffect(Unit) {
+            if (isTv && !tvStartupFocusDone) {
+                tvStartupFocusDone = true
+                awaitFrame()
+                delay(400.milliseconds)
+                runCatching { firstItemFocusRequester.requestFocus() }
+            }
+        }
+
         buttonList.clear()
 
         buttons { index, text, iconId, visible ->
@@ -116,8 +148,14 @@ class HorizontalNavigationBar(
                 else
                     TextIconButton(text, iconId, color, 0.dp, Dimensions.navigationRailIconOffset * 3)
 
-            val contentModifier = Modifier
+            var contentModifier = Modifier
                 .clip(getRoundnessShape())
+                .tvFocusRing(shape = getRoundnessShape(), focusedScale = 1.06f)
+            if (isTv && !tvFirstAttached) {
+                tvFirstAttached = true
+                contentModifier = contentModifier.focusRequester(firstItemFocusRequester)
+            }
+            contentModifier = contentModifier
                 .clickable(onClick = { onTabChanged(index) })
 
 

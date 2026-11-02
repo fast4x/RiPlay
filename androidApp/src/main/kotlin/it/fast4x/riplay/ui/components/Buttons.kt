@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import it.fast4x.riplay.ui.components.tv.tvFocusRing
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.getRoundnessShape
 import kotlinx.coroutines.launch
@@ -65,6 +66,12 @@ fun ActionPillButton(
             }
             .clip(getRoundnessShape())
             .background(bgColor)
+            // Indicatore di focus TV (prima del clickable)
+            .tvFocusRing(
+                shape = getRoundnessShape(),
+                focusedScale = 1.10f,
+                backgroundColor = color.copy(alpha = 0.14f)
+            )
             .combinedClickable(
                 enabled = enabled,
                 onClick = {
@@ -144,6 +151,12 @@ fun ActionPillButton(
             }
             .clip(getRoundnessShape())
             .background(bgColor)
+            // Indicatore di focus TV (prima del clickable)
+            .tvFocusRing(
+                shape = getRoundnessShape(),
+                focusedScale = 1.10f,
+                backgroundColor = tint.copy(alpha = 0.14f)
+            )
             .combinedClickable(
                 enabled = enabled,
                 onClick = {

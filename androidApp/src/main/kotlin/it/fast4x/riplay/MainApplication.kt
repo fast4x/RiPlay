@@ -37,6 +37,7 @@ import it.fast4x.riplay.extensions.musicbrainz.workers.WorkerDependencies
 import it.fast4x.riplay.musicvault.initializeMusicVault
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.utils.InitializeEnvironment
+import it.fast4x.riplay.utils.isTVDevice
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -106,6 +107,18 @@ class MainApplication : Application(), ImageLoaderFactory {
         )
 
         Dependencies.init(this)
+
+        // === Ottimizzazione avvio Android TV =========================================
+        // Rileva il device una sola volta (isTVDevice usa globalContext(), cioè
+        // Dependencies.application, disponibile da questo punto in poi).
+        // Su TV la pipeline MusicBrainz (worker periodici, rebuild profilo,
+        // raccomandazioni) resta disattivata: è funzionalità sperimentale destinata
+        // a sviluppi futuri
+        // Vantaggi su hardware TV: avvio più rapido, meno CPU/RAM/rete in background.
+        val isTvDevice = isTVDevice()
+        if (isTvDevice) {
+            Timber.i("MainApplication: modalità TV attiva — pipeline MusicBrainz/raccomandazioni disattivata")
+        }
         // Registro il builder del database v68 condiviso (KMP) per il target Android
         registerAndroidDatabase {
             androidx.room.Room.databaseBuilder(
@@ -165,32 +178,48 @@ class MainApplication : Application(), ImageLoaderFactory {
             profileRepository = profileRepository
         )
 
-        // Schedula job periodici
-        try {
-            WorkScheduler.scheduleAll(this)
-        } catch (e: Exception) {
-            Timber.e("MainApplication WorkScheduler.scheduleAll error...")
+        // Schedula job periodici (pipeline MusicBrainz/profilo).
+        // Su TV non si schedula nulla e si annullano i job eventualmente
+        // persistiti da versioni precedenti (WorkManager li conserva
+        // anche tra riavvii e aggiornamenti dell'app).
+        if (isTvDevice) {
+            try {
+                WorkScheduler.cancelAllForTv(this)
+            } catch (e: Exception) {
+                Timber.e("MainApplication WorkScheduler.cancelAllForTv error...")
+            }
+        } else {
+            try {
+                WorkScheduler.scheduleAll(this)
+            } catch (e: Exception) {
+                Timber.e("MainApplication WorkScheduler.scheduleAll error...")
+            }
         }
 
         // Avvia caricamento profilo + refresh UI
-        appScopeIO.launch {
-            profileRepository.loadFromDb()
+        // Su TV questo blocco è saltato: loadFromDb/rebuildFull/refreshAll
+        // lavorano per le raccomandazioni (non renderizzate su TV) e il
+        // rebuild è tra le operazioni più pesanti dell'avvio.
+        if (!isTvDevice) {
+            appScopeIO.launch {
+                profileRepository.loadFromDb()
 
-            // Se il profilo è vecchio (>24h) o non c'è, forza rebuild
-            val lastRefresh = profileRepository.profile.value?.lastRefreshedAt ?: 0L
-            val now = System.currentTimeMillis()
-            val oneDayMs = 24L * 3600 * 1000
+                // Se il profilo è vecchio (>24h) o non c'è, forza rebuild
+                val lastRefresh = profileRepository.profile.value?.lastRefreshedAt ?: 0L
+                val now = System.currentTimeMillis()
+                val oneDayMs = 24L * 3600 * 1000
 
-            if (now - lastRefresh > oneDayMs) {
-                profileRepository.rebuildFull()
+                if (now - lastRefresh > oneDayMs) {
+                    profileRepository.rebuildFull()
+                }
+
+                recommendationService.refreshAll()
+
+
+                //NewReleasesFetcher().fetch()
+                //profileRepository.rebuildFull()
+
             }
-
-            recommendationService.refreshAll()
-
-
-            //NewReleasesFetcher().fetch()
-            //profileRepository.rebuildFull()
-
         }
 
 
@@ -225,9 +254,12 @@ class MainApplication : Application(), ImageLoaderFactory {
 
          */
 
-        appScopeIO.launch {
-            profileRepository.loadFromDb()
-            recommendationService.refreshAll()
+        // Reload profilo + refresh UI successivo (su TV saltato)
+        if (!isTvDevice) {
+            appScopeIO.launch {
+                profileRepository.loadFromDb()
+                recommendationService.refreshAll()
+            }
         }
 
 

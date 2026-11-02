@@ -47,6 +47,7 @@ import androidx.navigation.NavController
 import it.fast4x.environment.Environment
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.requests.HomePage
+import it.fast4x.riplay.ui.components.tv.tvFocusRing
 import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.EXPLICIT_PREFIX
 import it.fast4x.riplay.data.Database
@@ -254,6 +255,7 @@ fun HomePageMixedSections(
                                 )
                             },
                             modifier = Modifier
+                                .tvFocusRing(focusedScale = 1f)
                                 .combinedClickable(
                                     onLongClick = {
                                         menuState.display {
@@ -323,6 +325,7 @@ fun HomePageMixedSections(
                                     fadeOutSpec = null
                                 )
                                 .width(itemInHorizontalGridWidth)
+                                .tvFocusRing(focusedScale = 1f)
                                 .combinedClickable(
                                     onLongClick = {
                                         menuState.display {
@@ -459,6 +462,7 @@ fun HomePageMixedSections(
                             thumbnailSizeDp = albumThumbnailSizeDp,
                             alternative = true,
                             modifier = Modifier
+                                .tvFocusRing(focusedScale = 1f)
                                 .clickable(onClick = { onAlbumClick(album.key) }),
                             disableScrollingText = disableScrollingText
                         )
@@ -485,6 +489,7 @@ fun HomePageMixedSections(
                             thumbnailSizeDp = artistThumbnailSizeDp,
                             alternative = true,
                             modifier = Modifier
+                                .tvFocusRing(focusedScale = 1f)
                                 .clickable(onClick = { onArtistClick(artist.key) }),
                             disableScrollingText = disableScrollingText
                         )
@@ -514,6 +519,7 @@ fun HomePageMixedSections(
                             alternative = true,
                             showSongsCount = false,
                             modifier = Modifier
+                                .tvFocusRing(focusedScale = 1f)
                                 .clickable(onClick = { onPlaylistClick(playlist.key) }),
                             disableScrollingText = disableScrollingText
                         )
@@ -703,6 +709,7 @@ fun MoodAndGenresPart(
                                         fadeOutSpec = null
                                     )
                                     .fillMaxSize()
+                                    .tvFocusRing(focusedScale = 1f)
                                     .clickable(onClick = { navController.navigate(route = "${NavRoutes.localPlaylist.name}/${playlist.playlist.id}") }),
                                 disableScrollingText = disableScrollingText,
                                 isYoutubePlaylist = playlist.playlist.isYoutubePlaylist,
@@ -762,6 +769,7 @@ fun MoodAndGenresPart(
                                 alternative = true,
                                 showSongsCount = false,
                                 modifier = Modifier
+                                    .tvFocusRing(focusedScale = 1f)
                                     .clickable(onClick = { onPlaylistClick(playlist.key) }),
                                 disableScrollingText = disableScrollingText
                             )
@@ -816,6 +824,7 @@ fun MoodAndGenresPart(
                                         thumbnailSizePx = songThumbnailSizePx,
                                         thumbnailSizeDp = songThumbnailSizeDp,
                                         modifier = Modifier
+                                            .tvFocusRing(focusedScale = 1f)
                                             .clickable(onClick = {
                                                 val mediaItem = song.asMediaItem
                                                 binder?.stopRadio()
@@ -875,6 +884,7 @@ fun MoodAndGenresPart(
                                         alternative = false,
                                         modifier = Modifier
                                             .width(200.dp)
+                                            .tvFocusRing(focusedScale = 1f)
                                             .clickable(onClick = { onArtistClick(artist.key) }),
                                         disableScrollingText = disableScrollingText
                                     )

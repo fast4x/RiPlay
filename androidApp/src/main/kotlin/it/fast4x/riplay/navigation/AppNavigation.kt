@@ -79,6 +79,7 @@ import it.fast4x.riplay.ui.screens.album.AlbumScreen
 import it.fast4x.riplay.ui.screens.artist.ArtistScreen
 import it.fast4x.riplay.ui.screens.moodandchip.ChipListScreen
 import it.fast4x.riplay.ui.screens.onboarding.OnboardingScreen
+import timber.log.Timber
 import it.fast4x.riplay.ui.screens.ondevice.OnDevicePlaylistScreen
 import it.fast4x.riplay.utils.MusicIdentifier
 import it.fast4x.riplay.utils.colorPalette
@@ -147,13 +148,20 @@ fun AppNavigation(
     //clearPreference(context, HOME_SCREEN_TAB_INDEX.key)
 
     //var showOnBoardingScreen by rememberPreference(SHOW_ON_BOARDING_SCREEN.key, true)
-    val showOnBoardingScreen = appSettings.showOnboardingScreen
+
+    // Qui il valore viene "congelato" alla prima composizione.
+    val startDestination = rememberSaveable {
+        if (appSettingsManager.activeSettings.value.showOnboardingScreen)
+            NavRoutes.onBoarding.name
+        else
+            NavRoutes.home.name
+    }
 
     val isNetworkConnected = rememberIsNetworkConnected()
 
     NavHost(
         navController = navController,
-        startDestination = if (showOnBoardingScreen) NavRoutes.onBoarding.name else NavRoutes.home.name,
+        startDestination = startDestination,
         enterTransition = {
             when (transitionEffect) {
                 TransitionEffect.None -> EnterTransition.None
@@ -275,14 +283,23 @@ fun AppNavigation(
         }
 
         composable(route = NavRoutes.onBoarding.name) {
-            OnboardingScreen{
-                coroutineScope.launch {
-                    appSettingsManager.updateSettings (
-                        appSettingsManager.activeSettings.value.copy(showOnboardingScreen = false)
-                    )
-                    navController.navigate(route = NavRoutes.home.name)
+            OnboardingScreen {
+                navController.navigate(route = NavRoutes.home.name) {
+                    // L'onboarding non resta nello stack: BACK non
+                    // deve poter tornare alla schermata di benvenuto.
+                    popUpTo(NavRoutes.onBoarding.name) { inclusive = true }
+                    launchSingleTop = true
                 }
 
+                coroutineScope.launch {
+                    runCatching {
+                        appSettingsManager.updateSettings(
+                            appSettingsManager.activeSettings.value.copy(showOnboardingScreen = false)
+                        )
+                    }.onFailure {
+                        Timber.e(it, "AppNavigation: salvataggio completamento onboarding fallito")
+                    }
+                }
             }
         }
 

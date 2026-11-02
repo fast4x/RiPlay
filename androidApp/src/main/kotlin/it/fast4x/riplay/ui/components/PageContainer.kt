@@ -65,6 +65,8 @@ import it.fast4x.riplay.enums.PlayerPosition
 import it.fast4x.riplay.enums.TransitionEffect
 import it.fast4x.riplay.enums.UiType
 import it.fast4x.riplay.ui.components.navigation.header.AppHeader
+import it.fast4x.riplay.ui.components.tv.LocalIsTv
+import it.fast4x.riplay.ui.components.tv.tvMiniPlayerVisible
 import it.fast4x.riplay.utils.colorPalette
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -115,10 +117,15 @@ fun PageContainer(
     val topPaddingDp = with(density) { currentTopPaddingPx.toDp() }
     val bottomPaddingDp = with(density) { currentBottomPaddingPx.toDp() }
 
-    val nestedScrollConnection = remember {
+    // ── TV: l'animazione di scomparsa della top bar è DISATTIVATA ─
+    // Vedi ScreenContainer: su TV le barre restano sempre visibili.
+    val isTv = LocalIsTv.current
+
+    val nestedScrollConnection = remember(isTv) {
         object : NestedScrollConnection {
 
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (isTv) return Offset.Zero
 
                 if (available.y > 0 && toolbarOffsetHeightPx > 0) {
                     val consume = minOf(available.y, toolbarOffsetHeightPx)
@@ -133,6 +140,7 @@ fun PageContainer(
                 available: Offset,
                 source: NestedScrollSource
             ): Offset {
+                if (isTv) return Offset.Zero
 
                 if (consumed.y < 0) {
                     val maxOffset = maxOf(topBarHeightPx, bottomBarHeightPx)
@@ -168,24 +176,29 @@ fun PageContainer(
              else
                  PaddingValues( Dp.Hairline )
          val layoutDirection = LocalLayoutDirection.current
+         // Su TV riserviamo lo spazio del miniplayer (se visibile)
+         // così l'elemento in focus resta sempre scoperto.
+         val tvMiniPlayerPadding = if (isTv && tvMiniPlayerVisible.value) 80.dp else 0.dp
          val finalPadding = PaddingValues(
              start = sidePaddingValues.calculateStartPadding(layoutDirection),
              end = sidePaddingValues.calculateEndPadding(layoutDirection),
              top = topPaddingDp,
-             bottom = bottomPaddingDp
+             bottom = bottomPaddingDp + tvMiniPlayerPadding
          )
 
         //**
         Box(
             modifier = Modifier
-                .padding(finalPadding)
                 .fillMaxSize()
         ) {
 
+            // Padding (incl. extra TV miniplayer) SOLO al contenuto:
+            // il miniplayer non deve riceverlo (vedi ScreenContainer).
             Row(
                 modifier = Modifier
-                    .background(colorPalette().background0)
                     .fillMaxSize()
+                    .padding(finalPadding)
+                    .background(colorPalette().background0)
             ) {
                 val topPadding = if ( UiType.ViMusic.isCurrent() ) 30.dp else 0.dp
 
@@ -251,10 +264,12 @@ fun PageContainer(
                 )
             }
             //**
+            // Miniplayer subito sopra l'header/toolbar inferiore, senza
+            // il padding extra TV riservato alle liste.
             Box(
                 modifier = Modifier
                     .padding(vertical = 5.dp)
-                    .padding(bottom = bottomInset)
+                    .padding(bottom = bottomPaddingDp + bottomInset)
                     .align(if (playerPosition == PlayerPosition.Top) Alignment.TopCenter
                     else Alignment.BottomCenter)
             ) {

@@ -74,6 +74,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.ui.focus.onFocusEvent
+import androidx.compose.ui.platform.LocalFocusManager
+import it.fast4x.riplay.ui.components.tv.LocalIsTv
+import it.fast4x.riplay.ui.components.tv.LocalTvNavFocusSignal
+import it.fast4x.riplay.ui.components.tv.tvMiniPlayerEnabled
+import it.fast4x.riplay.ui.components.tv.tvQueueToggleRequest
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -161,8 +169,11 @@ import it.fast4x.riplay.utils.isAtLeastAndroid8
 import it.fast4x.riplay.utils.isValidHttpUrl
 import it.fast4x.riplay.utils.isValidIP
 import it.fast4x.riplay.utils.playNext
+import it.fast4x.riplay.utils.playPrevious
 import it.fast4x.riplay.utils.setDefaultPalette
 import it.fast4x.riplay.commonutils.toThumbnail
+import it.fast4x.riplay.extensions.crashreporter.CrashReporter
+import it.fast4x.riplay.extensions.crashreporter.CrashReporterActivity
 import it.fast4x.riplay.extensions.databasebackup.BackupViewModel
 import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
 import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
@@ -252,6 +263,34 @@ class MainActivity : AppCompatActivity() {
     }
 
     private var binder by mutableStateOf<PlayerService.Binder?>(null)
+
+    // ── Navigazione TV (telecomando / D-pad) ──────────────────────────
+    /** true se l'app sta girando con l'interfaccia TV (sincronizzato dalla composizione) */
+    @Volatile
+    private var isTvInterface: Boolean = false
+
+    /** true quando il player TV (bottom sheet) è espanso */
+    @Volatile
+    private var tvPlayerExpanded: Boolean = false
+
+    /** true se QUALSIASI nodo della composizione ha il focus (aggiornato via onFocusEvent) */
+    @Volatile
+    private var tvAnyNodeFocused: Boolean = false
+
+    /**
+     * Segnale incrementale per il "focus recovery": quando il D-pad viene
+     * premuto senza alcun nodo in focus, l'Activity incrementa questo
+     * contatore e la navbar riprende il focus sulla prima voce.
+     */
+    private val tvNavFocusSignal = mutableIntStateOf(0)
+
+    /**
+     * Riferimento allo stato dello sheet del player TV, aggiornato dalla
+     * composizione (SideEffect). Serve ai tasti globali del telecomando
+     * (MENU / INFO / PROG_RED / PROG_GREEN) per aprire e chiudere il player
+     * da dispatchKeyEvent, dove non e' possibile leggere lo stato Compose.
+     */
+    private var tvPlayerSheetRef: BottomSheetState? = null
     private var intentUriData by mutableStateOf<Uri?>(null)
 
     private var sensorManager: SensorManager? = null
@@ -358,6 +397,12 @@ class MainActivity : AppCompatActivity() {
         splashScreen.setKeepOnScreenCondition { false }
         super.onCreate(savedInstanceState)
 
+        // Anti "lampeggio" su Android TV: se l'avvio precedente è terminato
+        // con un crash, mostra SUBITO il report con lo stack trace reale
+        // invece di ripartire in loop senza spiegazioni. Il report appare
+        // una sola volta e solo se il crash è avvenuto negli ultimi 5 minuti.
+        showLastCrashIfNeeded()
+
 //        if (BuildConfig.DEBUG) {
 //            StrictMode.setThreadPolicy(
 //                StrictMode.ThreadPolicy.Builder()
@@ -408,6 +453,22 @@ class MainActivity : AppCompatActivity() {
         }
 
         // 3. La logica di monitoraggio della creazione e disponibilità del service
+        // 2-bis. Watchdog di avvio: il loader NON deve mai restare a schermo
+        // per sempre. Su alcuni Android TV box il PlayerService può non
+        // diventare mai "ready" (HAL audio assenti, sensori mancanti, prima
+        // creazione del DB lenta...): dopo 20 s forza comunque l'ingresso
+        // nell'app — UI degradata ma funzionante, niente app bloccata che
+        // "lampeggia". (Il PlayerService ora isola comunque ogni sua
+        // inizializzazione: questo watchdog è l'ultima rete di sicurezza.)
+        lifecycleScope.launch {
+            delay(20.seconds)
+            if (isLoading) {
+                Timber.w("Startup watchdog: loader ancora attivo dopo 20s (PlayerService non ready?), forzo l'ingresso nell'app")
+                isLoading = false
+            }
+        }
+
+
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 PlayerService.isServiceReady.collect { isReady ->
@@ -545,6 +606,34 @@ class MainActivity : AppCompatActivity() {
 //            actionBar?.hide()
 //        }
 
+    }
+
+    /**
+     * Anti crash-loop (il "lampeggio" di MainActivity su Android TV):
+     * il CrashReporter, a ogni crash, salva in SharedPreferences lo stack
+     * trace e un contatore. Al prossimo avvio, se il crash è recente
+     * (ultimi 5 minuti), il report viene mostrato UNA sola volta tramite
+     * CrashReporterActivity: così l'errore reale è leggibile direttamente
+     * sul TV anche senza collegare adb.
+     */
+    private fun showLastCrashIfNeeded() {
+        try {
+            val prefs = getSharedPreferences(CrashReporter.PREF_STARTUP_GUARD, MODE_PRIVATE)
+            val count = prefs.getInt(CrashReporter.KEY_CRASH_COUNT, 0)
+            val stack = prefs.getString(CrashReporter.KEY_LAST_STACK, null)
+            val ts = prefs.getLong(CrashReporter.KEY_LAST_CRASH_TS, 0L)
+            val isRecent = ts > 0L && (System.currentTimeMillis() - ts) < 5 * 60_000L
+            if (count > 0 && isRecent && !stack.isNullOrBlank()) {
+                // Reset immediato: il report appare una sola volta per crash
+                prefs.edit()
+                    .putInt(CrashReporter.KEY_CRASH_COUNT, 0)
+                    .putString(CrashReporter.KEY_LAST_STACK, null)
+                    .apply()
+                CrashReporterActivity.start(this, stack)
+            }
+        } catch (e: Throwable) {
+            Timber.e("showLastCrashIfNeeded failed: $e")
+        }
     }
 
     private fun checkIfAppIsRunningInBackground() {
@@ -1192,6 +1281,14 @@ class MainActivity : AppCompatActivity() {
                                 // Se l'animazione non è attiva, la mostriamo in modalità swipe down
                                 val sts = if (playerTransitionsEnabled) this else null
 
+                                // ── Rilevamento TV: calcolato UNA volta e fornito a tutta la UI ──
+                                val useTvInterface = isTvMode()
+                                SideEffect { isTvInterface = useTvInterface }
+
+                                // TV: aggiorna il riferimento allo sheet del player per i
+                                // tasti globali del telecomando (MENU / INFO / PROG_RED / GREEN)
+                                SideEffect { tvPlayerSheetRef = localPlayerSheetState }
+
                                 CompositionLocalProvider(
                                     LocalSharedTransitionScope provides this,
                                     LocalAppearance provides appearance,
@@ -1202,6 +1299,8 @@ class MainActivity : AppCompatActivity() {
                                     LocalPlayerServiceState provides playerState,
                                     LocalPlayerAwareWindowInsets provides playerAwareWindowInsets,
                                     LocalLayoutDirection provides LayoutDirection.Ltr,
+                                    LocalIsTv provides useTvInterface,
+                                    LocalTvNavFocusSignal provides tvNavFocusSignal,
                                     LocalPlayerSheetState provides localPlayerSheetState,
                                     //LocalMonetCompat provides localMonet,
                                     LocalSelectedQueue provides selectedQueue,
@@ -1220,7 +1319,13 @@ class MainActivity : AppCompatActivity() {
                                     //LocalInternetAvailable provides isInternetAvailable
                                 ) {
 
-                                    Box(Modifier.fillMaxSize()) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            // Traccia se QUALSIASI nodo ha il focus: su TV permette
+                                            // a dispatchKeyEvent di rilevare lo stato "morto" del D-pad
+                                            .onFocusEvent { tvAnyNodeFocused = it.hasFocus }
+                                    ) {
 
                                         if (intent.action == action_rescuecenter) {
                                             RescueScreen(
@@ -1241,18 +1346,32 @@ class MainActivity : AppCompatActivity() {
                                                 }
                                             )
                                         } else {
-                                            val useTvInterface = isTvMode()
+                                            // useTvInterface è calcolato sopra e fornito via LocalIsTv
 
                                             AppNavigation(
                                                 onNavControllerInit = { navController = it },
                                                 miniPlayer = { artworkKey: String ->
                                                     if (useTvInterface) {
-                                                        UnifiedMiniPlayer(
-                                                            showPlayer = { localPlayerSheetState.expandSoft() },
-                                                            hidePlayer = { localPlayerSheetState.collapseSoft() },
-                                                            navController = navController,
-                                                            artworkKeySuffix = artworkKey,
-                                                        )
+                                                        // ── TV: miniplayer DISATTIVATO ──────────────
+                                                        // Su TV il miniplayer ha poco senso e risultava
+                                                        // disallineato rispetto alla bottom bar (riceveva
+                                                        // per errore anche il padding extra da 80 dp
+                                                        // riservato alle liste). Il player si apre ora
+                                                        // direttamente col telecomando:
+                                                        //   MENU / INFO → apre il player
+                                                        //   PROG_GREEN  → apre/chiude la coda
+                                                        //   PROG_RED    → apre/chiude il player
+                                                        // Per riattivare il miniplayer su TV basta
+                                                        // impostare tvMiniPlayerEnabled = true in
+                                                        // ui/components/tv/TvFocus.kt.
+                                                        if (tvMiniPlayerEnabled) {
+                                                            UnifiedMiniPlayer(
+                                                                showPlayer = { localPlayerSheetState.expandSoft() },
+                                                                hidePlayer = { localPlayerSheetState.collapseSoft() },
+                                                                navController = navController,
+                                                                artworkKeySuffix = artworkKey,
+                                                            )
+                                                        }
                                                     } else {
                                                         val hasCurrentMedia =
                                                             LocalPlayerServiceState.current.mediaInfo?.mediaItem != null
@@ -1342,6 +1461,20 @@ class MainActivity : AppCompatActivity() {
                                                 }
                                             } else {
                                                 // TV
+                                                val tvFocusManager = LocalFocusManager.current
+
+                                                // Sincronizza lo stato "player espanso" verso l'Activity
+                                                // (usato da dispatchKeyEvent) e libera il focus quando il
+                                                // player si richiude: evita che il D-pad navighi dentro il
+                                                // player nascosto e riattiva il "focus recovery" della navbar.
+                                                LaunchedEffect(Unit) {
+                                                    snapshotFlow { localPlayerSheetState.isExpanded }
+                                                        .collect { isExpanded ->
+                                                            tvPlayerExpanded = isExpanded
+                                                            if (!isExpanded) tvFocusManager.clearFocus()
+                                                        }
+                                                }
+
                                                 BottomSheet(
                                                     state = localPlayerSheetState,
                                                     collapsedContent = { Box(Modifier.fillMaxSize()) },
@@ -1772,7 +1905,148 @@ class MainActivity : AppCompatActivity() {
 
 
     }
+     */
 
+    // ════════════════════════════════════════════════════════════════
+    // Navigazione TV (telecomando / D-pad) — RIATTIVATA (fix 3ª sessione)
+    // ════════════════════════════════════════════════════════════════
+
+    /**
+     * Intercettazione globale dei tasti del telecomando, ATTIVA SOLO su TV:
+     *
+     * 1. Tasti multimediali (play/pausa/skip/ff/rew): instradati al player
+     *    anche FUORI dal player TV (home, ricerca, menu), per un'esperienza
+     *    "couch friendly" completa. Quando il player TV è espanso l'evento
+     *    viene lasciato passare: lo gestisce già l'onPreviewKeyEvent del
+     *    TvUnifiedPlayer (evita il doppio handling).
+     *
+     * 2. D-pad senza nessun nodo in focus (stato "morto", tipico dopo
+     *    chiusure di sheet/dialog): emette il segnale di rifocus che porta
+     *    il focus sulla prima voce della navbar.
+     *
+     * NB: i tasti volume e BACK non vengono toccati.
+     */
+    override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
+        if (isTvInterface && event.action == android.view.KeyEvent.ACTION_DOWN) {
+            when (event.keyCode) {
+                // ── Tasti multimediali ──
+                android.view.KeyEvent.KEYCODE_MEDIA_PLAY,
+                android.view.KeyEvent.KEYCODE_MEDIA_PAUSE,
+                android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE,
+                android.view.KeyEvent.KEYCODE_MEDIA_STOP,
+                -> {
+                    if (!tvPlayerExpanded && event.repeatCount == 0) {
+                        handleTvMediaKey(event.keyCode)
+                        return true
+                    }
+                }
+
+                android.view.KeyEvent.KEYCODE_MEDIA_NEXT -> {
+                    if (!tvPlayerExpanded && event.repeatCount == 0) {
+                        binder?.hybridPlayer?.playNext()
+                        return true
+                    }
+                }
+
+                android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
+                    if (!tvPlayerExpanded && event.repeatCount == 0) {
+                        binder?.hybridPlayer?.playPrevious()
+                        return true
+                    }
+                }
+
+                android.view.KeyEvent.KEYCODE_MEDIA_FAST_FORWARD -> {
+                    if (!tvPlayerExpanded && event.repeatCount == 0) {
+                        binder?.hybridPlayer?.seekTo(tvRelativeSeek(10_000L))
+                        return true
+                    }
+                }
+
+                android.view.KeyEvent.KEYCODE_MEDIA_REWIND -> {
+                    if (!tvPlayerExpanded && event.repeatCount == 0) {
+                        binder?.hybridPlayer?.seekTo(tvRelativeSeek(-10_000L))
+                        return true
+                    }
+                }
+
+                // ── Tasti "funzione" del telecomando ─────────────────────
+                // MENU / INFO: con player CHIUSO APRONO il player; con player
+                // aperto:
+                //  - MENU non viene consumato qui: lo gestisce il TvUnifiedPlayer
+                //    (apre la coda; se il focus e' su una riga della coda, la riga
+                //    stessa apre il proprio menu contestuale);
+                //  - INFO commuta l'overlay della coda (segnale tvQueueToggleRequest).
+                android.view.KeyEvent.KEYCODE_MENU,
+                android.view.KeyEvent.KEYCODE_INFO,
+                -> {
+                    if (event.repeatCount == 0) {
+                        if (!tvPlayerExpanded) {
+                            tvPlayerSheetRef?.expandSoft()
+                            return true
+                        }
+                        if (event.keyCode == android.view.KeyEvent.KEYCODE_INFO) {
+                            tvQueueToggleRequest.intValue++
+                            return true
+                        }
+                        // MENU con player aperto: prosegue verso la composizione
+                    }
+                }
+
+                // PROG_RED (tasto rosso): apre/chiude il player
+                android.view.KeyEvent.KEYCODE_PROG_RED -> {
+                    if (event.repeatCount == 0) {
+                        if (tvPlayerExpanded) tvPlayerSheetRef?.collapseSoft()
+                        else tvPlayerSheetRef?.expandSoft()
+                        return true
+                    }
+                }
+
+                // PROG_GREEN (tasto verde): apre/chiude la CODA.
+                // Da player chiuso apre prima il player: la coda compare
+                // appena il player diventa visibile.
+                android.view.KeyEvent.KEYCODE_PROG_GREEN -> {
+                    if (event.repeatCount == 0) {
+                        if (!tvPlayerExpanded) tvPlayerSheetRef?.expandSoft()
+                        tvQueueToggleRequest.intValue++
+                        return true
+                    }
+                }
+
+                // ── D-pad "morto": nessun elemento ha il focus ──
+                android.view.KeyEvent.KEYCODE_DPAD_UP,
+                android.view.KeyEvent.KEYCODE_DPAD_DOWN,
+                android.view.KeyEvent.KEYCODE_DPAD_LEFT,
+                android.view.KeyEvent.KEYCODE_DPAD_RIGHT,
+                android.view.KeyEvent.KEYCODE_DPAD_CENTER,
+                android.view.KeyEvent.KEYCODE_ENTER,
+                -> {
+                    if (!tvAnyNodeFocused && event.repeatCount == 0) {
+                        tvNavFocusSignal.intValue++
+                        return true
+                    }
+                }
+            }
+        }
+        return super.dispatchKeyEvent(event)
+    }
+
+    /** Seek relativo: posizione corrente del player (già corretta per YouTube/locale) + delta */
+    private fun tvRelativeSeek(deltaMs: Long): Long {
+        val player = binder?.hybridPlayer ?: return 0L
+        return (player.currentPosition + deltaMs).coerceAtLeast(0L)
+    }
+
+    private fun handleTvMediaKey(keyCode: Int) {
+        val player = binder?.hybridPlayer ?: return
+        when (keyCode) {
+            android.view.KeyEvent.KEYCODE_MEDIA_PLAY -> player.play()
+            android.view.KeyEvent.KEYCODE_MEDIA_PAUSE -> player.pause()
+            android.view.KeyEvent.KEYCODE_MEDIA_STOP -> player.pause()
+            else -> if (player.isPlaying) player.pause() else player.play()
+        }
+    }
+
+    /*
     private val mediaRouterCallback = object : MediaRouter.Callback() {
         override fun onRouteSelected(
             router: MediaRouter,

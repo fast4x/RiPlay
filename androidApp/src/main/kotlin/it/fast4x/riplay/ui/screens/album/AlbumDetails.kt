@@ -1,6 +1,8 @@
 package it.fast4x.riplay.ui.screens.album
 
-import it.fast4x.riplay.data.update
+import it.fast4x.riplay.ui.components.tv.tvFocusRing
+import it.fast4x.riplay.ui.components.tv.LocalIsTv
+import androidx.compose.ui.focus.FocusRequester
 import it.fast4x.riplay.data.insert
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
@@ -160,10 +162,12 @@ import it.fast4x.riplay.utils.cleanWikipediaText
 import it.fast4x.riplay.utils.globalContext
 import it.fast4x.riplay.utils.mediaItemSetLiked
 import it.fast4x.riplay.utils.isPrimaryAction
+import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
+import kotlin.time.Duration.Companion.milliseconds
 
 @ExperimentalSerializationApi
 @OptIn(ExperimentalMaterial3Api::class)
@@ -361,6 +365,24 @@ fun AlbumDetails(
     val thumbnailAlbumSizePx = thumbnailAlbumSizeDp.px
 
     val lazyListState = rememberLazyListState()
+
+    // ── TV: focus iniziale sull'azione principale (Play) ─────────
+    // Entrando nella pagina dell'album il D-pad deve partire subito dai
+    // controlli "Play adesso / Riproduzione casuale" nell'header, senza
+    // andare alla cieca tra QR, share e toolbar.
+    val isTv = LocalIsTv.current
+    val playActionsFocusRequester = remember { FocusRequester() }
+    LaunchedEffect(isTv, album != null, songs.isNotEmpty()) {
+        if (!isTv || album == null || songs.isEmpty()) return@LaunchedEffect
+        awaitFrame()
+        repeat(10) {
+            // requestFocus fallisce (IllegalStateException) finché il
+            // FocusRequester non e' agganciato: si ripete finche' non attacca.
+            if (runCatching { playActionsFocusRequester.requestFocus() }.isSuccess)
+                return@LaunchedEffect
+            delay(100.milliseconds)
+        }
+    }
 
     var listMediaItems = remember {
         mutableListOf<MediaItem>()
@@ -662,6 +684,7 @@ fun AlbumDetails(
                                     )
 
                                     FastPlayActionsBar(
+                                        playButtonFocusRequester = playActionsFocusRequester,
                                         modifier = Modifier
                                             .fillMaxWidth(.5f)
                                             .align(Alignment.BottomCenter)
@@ -1123,6 +1146,7 @@ fun AlbumDetails(
                                         modifier = Modifier
                                             .padding(bottom = 8.dp)
                                             .fillMaxWidth()
+                                            .tvFocusRing(focusedScale = 1f)
                                             .clickable {
                                                 readMore = !readMore
                                             }
@@ -1270,6 +1294,7 @@ fun AlbumDetails(
                                         )
                                     },
                                     modifier = Modifier
+                                        .tvFocusRing(focusedScale = 1f)
                                         .combinedClickable(
                                             onLongClick = {
                                                 menuState.display {
@@ -1373,6 +1398,7 @@ fun AlbumDetails(
                                         thumbnailSizePx = thumbnailAlbumSizePx,
                                         thumbnailSizeDp = thumbnailAlbumSizeDp,
                                         modifier = Modifier
+                                            .tvFocusRing(focusedScale = 1f)
                                             .clickable {
                                                 onNavigateTo()
                                                 navController.navigate(route = "${NavRoutes.album.name}/${album.key}")

@@ -52,6 +52,7 @@ import it.fast4x.environment.Environment
 import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.requests.discoverPage
+import it.fast4x.riplay.ui.components.tv.tvFocusRing
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.Database
@@ -397,6 +398,7 @@ fun HomePageOnline(
                                                         fadeOutSpec = null
                                                     )
                                                     .width(itemInHorizontalGridWidth)
+                                                    .tvFocusRing(focusedScale = 1f)
                                                     .combinedClickable(
                                                         onLongClick = {
                                                             menuState.display {
@@ -515,6 +517,7 @@ fun HomePageOnline(
                                                 thumbnailSizePx = songThumbnailSizePx,
                                                 thumbnailSizeDp = songThumbnailSizeDp,
                                                 modifier = Modifier.width(300.dp)
+                                                    .tvFocusRing(focusedScale = 1f)
                                                     .clickable(onClick = {
                                                         binder?.hybridPlayer?.forcePlay(item.asMediaItem)
                                                     })

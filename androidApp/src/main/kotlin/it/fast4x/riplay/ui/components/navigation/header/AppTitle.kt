@@ -29,6 +29,7 @@ import it.fast4x.riplay.extensions.appviewmodel.LocalAppViewModel
 import it.fast4x.riplay.extensions.appviewmodel.toIcon
 import it.fast4x.riplay.ui.styling.favoritesIcon
 import it.fast4x.riplay.ui.components.themed.Button
+import it.fast4x.riplay.ui.components.tv.LocalIsTv
 import it.fast4x.riplay.utils.GlobalSharedData
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
@@ -102,6 +103,7 @@ fun AppTitle(
     val networkState by appViewModel.networkState.collectAsStateWithLifecycle()
     val offlineModeEnabled = appSettings.offlineModeEnabled
     val isAndroidAutoConnected by GlobalSharedData.androidAutoConnected
+    val isTv = LocalIsTv.current
 
     Row(
         horizontalArrangement = Arrangement.spacedBy( 5.dp ),
@@ -140,7 +142,7 @@ fun AppTitle(
 
 
             val isEqualizerEnabled = appSettings.eqEnabled
-            if (isEqualizerEnabled) {
+            if (isEqualizerEnabled && !isTv) {
                 Image(
                     painter = painterResource(R.drawable.music_equalizer),
                     contentDescription = null,

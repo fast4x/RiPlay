@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import it.fast4x.riplay.ui.components.tv.tvFocusRing
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -54,6 +56,7 @@ fun Title(
                     tint = colorPalette().text,
                     modifier = Modifier
                         .size(22.dp)
+                        .tvFocusRing(shape = CircleShape, focusedScale = 1.15f)
                         .clickable {
                                 onClick.invoke()
                         }
@@ -120,6 +123,7 @@ fun Title2Actions(
                     contentDescription = null,
                     tint = colorPalette().text,
                     modifier = Modifier
+                        .tvFocusRing(shape = CircleShape, focusedScale = 1.15f)
                         .clickable {
                             onClick2.invoke()
                         }
@@ -134,6 +138,7 @@ fun Title2Actions(
                     contentDescription = null,
                     tint = colorPalette().text,
                     modifier = Modifier
+                        .tvFocusRing(shape = CircleShape, focusedScale = 1.15f)
                         .clickable {
                             onClick1.invoke()
                         }

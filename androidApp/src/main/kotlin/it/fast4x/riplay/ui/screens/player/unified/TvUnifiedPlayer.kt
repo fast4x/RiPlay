@@ -35,12 +35,14 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SnapshotMutationPolicy
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -50,6 +52,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
@@ -84,6 +87,7 @@ import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.LocalPlayerServiceState
+import it.fast4x.riplay.LocalPlayerSheetState
 import it.fast4x.riplay.R
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
 import it.fast4x.riplay.commonutils.toThumbnail
@@ -99,6 +103,7 @@ import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.services.playback.common.PlayerState
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
+import it.fast4x.riplay.ui.components.tv.tvFocusRing
 import it.fast4x.riplay.ui.components.themed.PlayerMenu
 import it.fast4x.riplay.ui.components.themed.Turntable
 import it.fast4x.riplay.ui.screens.player.common.Lyrics
@@ -127,6 +132,7 @@ import it.fast4x.riplay.utils.setQueueLoopState
 import it.fast4x.riplay.utils.shuffleQueue
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -277,22 +283,74 @@ fun TvUnifiedPlayer(
     // ── Focus management ─────────────────────────────────────────
     val playPauseFocusRequester = remember { FocusRequester() }
     val seekBarFocusRequester = remember { FocusRequester() }
-    val topRowFocusRequester = remember { FocusRequester() }
-    val bottomRowFocusRequester = remember { FocusRequester() }
 
-    // ── Gestione Focus Iniziale Sicura ───────────────────────────
-    LaunchedEffect(Unit) {
-        // 1. Aspetta un piccolissimo delay per dare tempo all'activity e alla UI di stabilizzarsi
-        delay(150.milliseconds)
-        // 2. Richiedi il focus in modo prioritario sul thread principale
-        playPauseFocusRequester.requestFocus()
+    // Stato "il play/pause ha il focus": usato per fermare il retry
+    // del focus iniziale appena il focus è effettivamente atterrato.
+    var playPauseFocused by remember { mutableStateOf(false) }
+
+    // Il player TV vive dentro una BottomSheet che resta composta SEMPRE
+    // (anche da chiusa, tradotta fuori dallo schermo). Senza questa soglia
+    // i suoi bottoni restavano focusabili anche da nascosti: il D-pad ci
+    // finiva dentro "alla cieca" e il focus iniziale veniva rubato alla
+    // Home. Il player diventa "attivo" a metà della sua apertura.
+    val playerSheetState = LocalPlayerSheetState.current
+    val playerVisible by remember { derivedStateOf { playerSheetState.progress > 0.5f } }
+
+    /**
+     * Focus iniziale robusto (SOLO a player aperto):
+     *  - attende un frame di composizione prima del primo tentativo;
+     *  - ripete il requestFocus finché il focus NON è realmente atterrato
+     *    sul bottone play/pause (max ~1.2s), gestendo il caso in cui il
+     *    FocusRequester non sia ancora attaccato (IllegalStateException);
+     *  - si ferma appena l'utente inizia a navigare col D-pad;
+     *  - scatta a OGNI riapertura della sheet: il focus è quindi sempre
+     *    visibile appena il player appare (niente più click alla cieca).
+     */
+    LaunchedEffect(playerVisible) {
+        if (!playerVisible) return@LaunchedEffect
+        awaitFrame()
+        repeat(12) {
+            if (playPauseFocused) return@LaunchedEffect
+            runCatching { playPauseFocusRequester.requestFocus() }
+            delay(100.milliseconds)
+        }
     }
 
+    /**
+     * Ripristino del focus quando si chiudono overlay/sheet (queue, menu
+     * globale, testi, visualizer): senza questo il focus resta "orfano"
+     * e il D-pad sembra morto finché non si naviga alla cieca.
+     * Attivo solo a player visibile.
+     */
+    LaunchedEffect(
+        playerVisible,
+        showQueue,
+        isShowingLyrics,
+        isShowingVisualizer,
+        menuState.isDisplayed
+    ) {
+        if (playerVisible &&
+            !showQueue && !isShowingLyrics && !isShowingVisualizer && !menuState.isDisplayed
+        ) {
+            // attende la chiusura animata della sheet prima di riprendere il focus
+            delay(250.milliseconds)
+            runCatching { playPauseFocusRequester.requestFocus() }
+        }
+    }
 
-    // ── TV Focus indicator modifier ──────────────────────────────
-    val tvFocusModifier: Modifier = Modifier.tvFocusIndicator()
-
+    // ── Back "a strati": overlay → coda → player ─────────────────
+    // NB: l'ordine di registrazione conta: l'ULTIMO BackHandler abilitato
+    // ha la precedenza. Registriamo prima quello base (player) e poi quelli
+    // degli overlay, così Back chiude prima lyrics/visualizer, poi la coda,
+    // e solo per ultimo il player.
     BackHandler(onBack = onDismiss)
+    BackHandler(enabled = showQueue) {
+        showQueue = false
+    }
+    BackHandler(enabled = isShowingLyrics || isShowingVisualizer) {
+        isShowingLyrics = false
+        isShowingVisualizer = false
+    }
 
     // ── Background ───────────────────────────────────────────────
     val blurStrength = appearanceSettings.blurStrength
@@ -313,15 +371,41 @@ fun TvUnifiedPlayer(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            // Da player chiuso l'intero sottoalbero NON è più focusabile:
+            // il D-pad non può più "sparire" dentro i controlli nascosti
+            // (la sheet resta composta anche da collassata).
+            .then(
+                if (playerVisible) Modifier
+                else Modifier.focusProperties { canFocus = false }
+            )
             .background(color.background1)
             .onPreviewKeyEvent { keyEvent ->
                 // Usiamo onPreviewKeyEvent per intercettare i tasti hard-coded del telecomando
                 // PRIMA che tocchino i componenti figli, ma solo per i tasti multimediali dedicati!
                 if (keyEvent.type == KeyEventType.KeyDown) {
                     when (keyEvent.key) {
+                        // Guardia anti-repeat: tenendo premuto il tasto l'azione non si ripete
                         Key.MediaPlay, Key.MediaPause, Key.MediaPlayPause -> {
-                            if (playerState.isPlaying) binder.hybridPlayer?.pause() else binder.hybridPlayer?.play()
+                            if (keyEvent.nativeKeyEvent.repeatCount == 0) {
+                                if (playerState.isPlaying) binder.hybridPlayer?.pause() else binder.hybridPlayer?.play()
+                            }
                             true // Consumato, non passa ai figli
+                        }
+
+                        // Traccia successiva/precedente direttamente dal telecomando:
+                        // molti remote TV dedicano i tasti «skip» ai canali CH+/CH-
+                        Key.MediaNext -> {
+                            if (keyEvent.nativeKeyEvent.repeatCount == 0) {
+                                binder.hybridPlayer.playNext()
+                            }
+                            true
+                        }
+
+                        Key.MediaPrevious -> {
+                            if (keyEvent.nativeKeyEvent.repeatCount == 0) {
+                                binder.hybridPlayer.playPrevious()
+                            }
+                            true
                         }
 
                         Key.MediaFastForward -> {
@@ -441,6 +525,10 @@ fun TvUnifiedPlayer(
                     positionAndDuration = Pair(positionAndDurationState.value.first, positionAndDurationState.value.second),
                     //jumpPrevious = jumpPrevious,
                     playPauseFocusRequester = playPauseFocusRequester,
+                    // Traccia quando il focus atterra davvero su Play/Pausa:
+                    // ferma il retry del focus iniziale (prima mancava il
+                    // collegamento e il retry girava sempre a vuoto).
+                    onPlayPauseFocusedChange = { playPauseFocused = it },
                     modifier = Modifier.padding(bottom = 24.dp)
                 )
 
@@ -682,6 +770,9 @@ private fun TrackInfoSection(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
                     .applyIfWhenComposable(!disableScrollingText) { basicMarquee() }
+                    // Focus visibile quando si raggiunge il nome col D-pad
+                    .clip(RoundedCornerShape(6.dp))
+                    .tvFocusRing(shape = RoundedCornerShape(6.dp), focusedScale = 1.02f)
                     .clickable {
                         // Navigate to artist
                         artistIds?.firstOrNull()?.id?.let { artistId ->
@@ -710,9 +801,10 @@ private fun TrackInfoSection(
 
 /**
  * TV-friendly seek bar: focusable, left/right D-pad steps, large thumb.
- */
-/**
- * TV-friendly seek bar: focusable, left/right D-pad steps, large thumb.
+ *
+ * Ordine dei modificatori (corretto): `focusRequester` e `onFocusChanged`
+ * DEVONO precedere `focusable`, altrimenti l'osservatore non riceve gli
+ * eventi di focus e il bordo di focus non appare mai.
  */
 @Composable
 private fun TvSeekBar(
@@ -726,6 +818,11 @@ private fun TvSeekBar(
     var isFocused by remember { mutableStateOf(false) }
     val stepMs = 5000f // 5 secondi per ogni pressione del D-pad
 
+    // Sempre gli ultimi valori in chiusura: con l'auto-repeat tenendo
+    // premuta la freccia il valore in closure risulterebbe stantio.
+    val currentPosition by rememberUpdatedState(position)
+    val currentDuration by rememberUpdatedState(duration)
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
@@ -736,27 +833,26 @@ private fun TvSeekBar(
             modifier = Modifier.width(64.dp)
         )
 
-        // Usiamo un normale Box: l'ordine corretto dei modificatori stabilizza il focus
         Box(
             modifier = Modifier
                 .weight(1f)
                 .height(32.dp)
-                // 1. Rendiamo il componente focalizzabile prima di tutto il resto
-                .focusable()
-                // 2. Agganciamo il requester e gli eventi di ascolto dello stato
+                // 1. Agganciamo il requester e l'osservatore PRIMA di rendere focusabile
                 .focusRequester(focusRequester)
                 .onFocusChanged { isFocused = it.isFocused }
+                // 2. Rendiamo il componente focalizzabile
+                .focusable()
                 // 3. Gestiamo gli input del telecomando in modo prioritario
                 .onKeyEvent { keyEvent ->
                     if (keyEvent.type != KeyEventType.KeyDown) return@onKeyEvent false
                     when (keyEvent.key) {
                         Key.DirectionLeft -> {
-                            onSeek((position - stepMs).coerceAtLeast(0f))
+                            onSeek((currentPosition - stepMs).coerceAtLeast(0f))
                             true // Consuma l'evento: il focus resta inchiodato sulla seekbar
                         }
 
                         Key.DirectionRight -> {
-                            onSeek((position + stepMs).coerceAtMost(duration))
+                            onSeek((currentPosition + stepMs).coerceAtMost(currentDuration))
                             true // Consuma l'evento: il focus resta inchiodato sulla seekbar
                         }
                         // Freccia Su e Freccia Giù NON vengono intercettati qui,
@@ -818,7 +914,8 @@ private fun MainControlsRow(
     playerState: PlayerState,
     mediaItem: MediaItem,
     positionAndDuration: Pair<Long, Long>,
-    playPauseFocusRequester: FocusRequester, // Teniamo solo questo per il focus iniziale all'avvio
+    playPauseFocusRequester: FocusRequester,
+    onPlayPauseFocusedChange: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val riTuneClient = binder.riTuneCastClient
@@ -879,7 +976,8 @@ private fun MainControlsRow(
                 }
             },
             focusRequester = playPauseFocusRequester,
-            isPrimary = true
+            isPrimary = true,
+            onFocusedChange = onPlayPauseFocusedChange
         )
 
         // Forward 10s
@@ -1018,10 +1116,15 @@ fun TvPlayerButton(
     focusRequester: FocusRequester? = null,
     tint: Color = colorPalette().text,
     isPrimary: Boolean = false,
+    onFocusedChange: (Boolean) -> Unit = {},
 ) {
     val color = colorPalette()
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
+
+    LaunchedEffect(isFocused) {
+        onFocusedChange(isFocused)
+    }
 
     val scale by animateFloatAsState(
         targetValue = if (isFocused) 1.22f else 1f,
@@ -1035,12 +1138,13 @@ fun TvPlayerButton(
             .size(if (isPrimary) 74.dp else 54.dp)
             .scale(scale)
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
-            .onFocusChanged { /* Lo stato è già gestito da interactionSource */ }
             // 1. Rendiamo il componente focalizzabile in modo nativo
             .focusable(interactionSource = interactionSource)
-            // 2. SOSTITUIAMO .clickable CON UN COMFORTAVOLE KEY EVENT HANDLER PER IL CLICK IMMEDIATO
+            // 2. CLICK del telecomando: OK/Enter al KeyDown, SOLO al primo evento
+            //    (guardia su repeatCount: tenendo premuto OK non si ripete l'azione)
             .onKeyEvent { keyEvent ->
                 if (keyEvent.type == KeyEventType.KeyDown &&
+                    keyEvent.nativeKeyEvent.repeatCount == 0 &&
                     (keyEvent.key == Key.DirectionCenter || keyEvent.key == Key.Enter || keyEvent.key == Key.NumPadEnter)
                 ) {
                     onClick() // Esegue l'azione IMMEDIATAMENTE al primo colpo
@@ -1081,14 +1185,6 @@ fun TvPlayerButton(
 
 
 
-
-/**
- * Focus indicator modifier for TV: adds a glow/border on focus.
- */
-fun Modifier.tvFocusIndicator(): Modifier = this.onFocusChanged { state ->
-    // The actual visual indicator is applied via border/background in composables.
-    // This modifier is a hook for haptic feedback or logging if needed.
-}
 
 /**
  * Simplified lyrics overlay for TV — full-screen left panel

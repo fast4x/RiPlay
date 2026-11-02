@@ -11,6 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.R
@@ -21,6 +23,8 @@ import it.fast4x.riplay.utils.globalContext
 @Composable
 fun FastPlayActionsBar(
     modifier: Modifier = Modifier,
+    // Su TV: FocusRequester per portare il focus iniziale sul pulsante Play
+    playButtonFocusRequester: FocusRequester? = null,
     onPlayNowClick: (() -> Unit)? = null,
     onShufflePlayClick: (() -> Unit)? = null,
     onSmartRecommendationClick: (() -> Unit)? = null,
@@ -41,6 +45,7 @@ fun FastPlayActionsBar(
             HeaderIconButton(
                 icon = R.drawable.play_now,
                 color = colorPalette().text,
+                modifier = playButtonFocusRequester?.let { Modifier.focusRequester(it) } ?: Modifier,
                 onClick = onPlayNowClick,
                 onLongClick = {
                     SmartMessage(

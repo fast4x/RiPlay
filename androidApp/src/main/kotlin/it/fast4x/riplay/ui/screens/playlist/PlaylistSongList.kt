@@ -1,5 +1,6 @@
 package it.fast4x.riplay.ui.screens.playlist
 
+import it.fast4x.riplay.ui.components.tv.tvFocusRing
 import it.fast4x.riplay.data.update
 import it.fast4x.riplay.data.insert
 import android.annotation.SuppressLint
@@ -1042,6 +1043,7 @@ fun PlaylistSongList(
                                     modifier = Modifier
                                         .padding(all = 8.dp)
                                         .size(18.dp)
+                                        .tvFocusRing(focusedScale = 1f)
                                         .combinedClickable(
                                             onClick = {
                                                 translateEnabled = !translateEnabled
@@ -1150,6 +1152,7 @@ fun PlaylistSongList(
                                 thumbnailSizePx = songThumbnailSizePx,
                                 thumbnailSizeDp = songThumbnailSizeDp,
                                 modifier = Modifier
+                                    .tvFocusRing(focusedScale = 1f)
                                     .combinedClickable(
                                         onLongClick = {
                                             menuState.display {

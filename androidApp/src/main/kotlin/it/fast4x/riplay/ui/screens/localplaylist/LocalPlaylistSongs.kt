@@ -1,6 +1,7 @@
 package it.fast4x.riplay.ui.screens.localplaylist
 
 
+import it.fast4x.riplay.ui.components.tv.tvFocusRing
 import it.fast4x.riplay.data.update
 import it.fast4x.riplay.data.insert
 import android.annotation.SuppressLint
@@ -1759,6 +1760,7 @@ fun LocalPlaylistSongs(
                                 onClick = {},
                                 modifier = Modifier
                                     .offset(0.dp, 2.5.dp)
+                                    .tvFocusRing(focusedScale = 1f)
                                     .clickable(
                                         interactionSource = remember { MutableInteractionSource() },
                                         indication = null,
@@ -2240,6 +2242,7 @@ fun LocalPlaylistSongs(
                                                 )
                                         },
                                         modifier = Modifier
+                                            .tvFocusRing(focusedScale = 1f)
                                             .combinedClickable(
                                                 //enabled = isReorderDisabled,
                                                 onLongClick = {

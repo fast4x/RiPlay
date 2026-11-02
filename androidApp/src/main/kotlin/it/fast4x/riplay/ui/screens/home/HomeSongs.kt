@@ -1,6 +1,8 @@
 package it.fast4x.riplay.ui.screens.home
 
 
+import it.fast4x.riplay.ui.components.tv.LocalIsTv
+import it.fast4x.riplay.ui.components.tv.tvFocusRing
 import it.fast4x.riplay.data.icon
 import it.fast4x.riplay.data.menuItem
 import it.fast4x.riplay.data.titleId
@@ -717,9 +719,12 @@ fun HomeSongs(
                             var isSortExpanded by remember { mutableStateOf(false) }
 
                             // Timer automatico per la chiusura
+                            val isTvForSort = LocalIsTv.current
                             LaunchedEffect(isSortExpanded) {
                                 if (isSortExpanded) {
-                                    delay(3000) // Aspetta 3 secondi
+                                    // Su TV il chip resta aperto più a lungo: col telecomando
+                                    // 3 secondi non bastano per raggiungere e premere la voce.
+                                    delay(if (isTvForSort) 10000L else 3000L)
                                     isSortExpanded = false // Chiudi il chip
                                 }
                             }
@@ -1126,6 +1131,7 @@ fun HomeSongs(
                                 FolderItem(
                                     folder = folderItem, thumbnailSizeDp = thumbnailSizeDp,
                                     modifier = Modifier
+                                        .tvFocusRing(focusedScale = 1f)
                                         .combinedClickable(onClick = {
                                             currentFolderPath =
                                                 currentFolderPath.removeSuffix("/")
@@ -1147,6 +1153,7 @@ fun HomeSongs(
                             FolderItem(
                                 folder = folder, thumbnailSizeDp = thumbnailSizeDp,
                                 modifier = Modifier
+                                    .tvFocusRing(focusedScale = 1f)
                                     .combinedClickable(
                                         onLongClick = {
                                             menuState.display {
@@ -1237,6 +1244,7 @@ fun HomeSongs(
                                     else checkedState.value = false
                                 },
                                 modifier = Modifier
+                                    .tvFocusRing(focusedScale = 1f)
                                     .combinedClickable(
                                         onLongClick = {
                                             menuState.display {
@@ -1380,6 +1388,7 @@ fun HomeSongs(
                                 else checkedState.value = false
                             },
                             modifier = Modifier
+                                .tvFocusRing(focusedScale = 1f)
                                 .combinedClickable(
                                     onLongClick = {
                                         menuState.display {

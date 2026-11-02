@@ -23,6 +23,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import it.fast4x.riplay.ui.components.tv.LocalIsTv
+import it.fast4x.riplay.ui.components.tv.LocalTvNavFocusSignal
+import kotlinx.coroutines.delay
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -32,6 +41,8 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isIgnoringBatteryOptimizations
+import kotlinx.coroutines.android.awaitFrame
+import kotlin.time.Duration.Companion.milliseconds
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -210,6 +221,36 @@ fun OnboardingScreen(
         }
     }
 
+    // ── TV: focus sempre visibile sul bottone "Start RiPlay" ──────
+    // Su touch non serve nulla; su TV il telecomando deve trovare il
+    // bottone già in focus (niente click "alla cieca") e il D-pad si
+    // deve riprendere anche dopo i dialog di sistema dei permessi
+    // (che ricostruiscono la lista e fanno perdere il focus).
+    val isTv = LocalIsTv.current
+    val tvSignal = LocalTvNavFocusSignal.current
+    val startButtonFocusRequester = remember { FocusRequester() }
+    val startInteractionSource = remember { MutableInteractionSource() }
+    val startButtonFocused by startInteractionSource.collectIsFocusedAsState()
+
+    // Focus iniziale sul bottone (con retry: la UI può impiegare
+    // qualche frame a essere pronta)
+    LaunchedEffect(Unit) {
+        if (!isTv) return@LaunchedEffect
+        awaitFrame()
+        repeat(12) {
+            if (startButtonFocused) return@LaunchedEffect
+            runCatching { startButtonFocusRequester.requestFocus() }
+            delay(100.milliseconds)
+        }
+    }
+
+    // Recovery: D-pad premuto senza nessun nodo in focus (segnale
+    // dell'Activity) → il focus torna sul bottone Start
+    LaunchedEffect(tvSignal.intValue) {
+        if (!isTv || tvSignal.intValue == 0) return@LaunchedEffect
+        runCatching { startButtonFocusRequester.requestFocus() }
+    }
+
     Scaffold { padding ->
         Column(
             modifier = modifier
@@ -251,7 +292,18 @@ fun OnboardingScreen(
 
             Button(
                 onClick = { onComplete() },
-                modifier = Modifier.fillMaxWidth()
+                interactionSource = startInteractionSource,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(startButtonFocusRequester)
+                    // Bordo di focus ben visibile in TV: il ripple di
+                    // default col telecomando non basta
+                    .border(
+                        width = if (startButtonFocused) 3.dp else 0.dp,
+                        color = if (startButtonFocused) MaterialTheme.colorScheme.primary
+                        else Color.Transparent,
+                        shape = MaterialTheme.shapes.large
+                    )
             ) {
                 Text(stringResource(R.string.onboard_start_riplay))
             }

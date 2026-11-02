@@ -1,5 +1,6 @@
 package it.fast4x.riplay.ui.screens.artist
 
+import it.fast4x.riplay.ui.components.tv.tvFocusRing
 import it.fast4x.riplay.data.update
 import it.fast4x.riplay.data.insert
 import android.annotation.SuppressLint
@@ -416,6 +417,7 @@ fun ArtistOverviewItems(
                                 thumbnailSizeDp = songThumbnailSizeDp,
                                 thumbnailSizePx = songThumbnailSizePx,
                                 modifier = Modifier
+                                    .tvFocusRing(focusedScale = 1f)
                                     .combinedClickable(
                                         onLongClick = {
                                             menuState.display {

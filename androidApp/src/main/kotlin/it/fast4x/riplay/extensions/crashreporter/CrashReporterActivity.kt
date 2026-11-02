@@ -39,11 +39,19 @@ class CrashReporterActivity : ComponentActivity() {
         const val EXTRA_STACK_TRACE = "extra_stack_trace"
 
         fun start(context: Context, stackTrace: String) {
-            val intent = Intent(context, CrashReporterActivity::class.java).apply {
-                putExtra(EXTRA_STACK_TRACE, stackTrace)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            try {
+                val intent = Intent(context, CrashReporterActivity::class.java).apply {
+                    putExtra(EXTRA_STACK_TRACE, stackTrace)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                }
+                context.startActivity(intent)
+            } catch (e: Exception) {
+                // Su alcuni dispositivi (Android 10+/TV) l'avvio di un'activity
+                // da un contesto non-Activity o in background può essere bloccato
+                // dal sistema: non deve MAI far crashare il chiamante (soprattutto
+                // quando start() è invocato dall'handler di crash).
+                android.util.Log.e("CrashReporter", "Impossibile mostrare il report del crash", e)
             }
-            context.startActivity(intent)
         }
     }
 }

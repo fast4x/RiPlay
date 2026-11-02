@@ -59,6 +59,7 @@ import it.fast4x.environment.models.NavigationEndpoint
 import it.fast4x.environment.models.bodies.NextBody
 import it.fast4x.environment.requests.discoverPage
 import it.fast4x.environment.requests.relatedPage
+import it.fast4x.riplay.ui.components.tv.tvFocusRing
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.LocalPlayerAwareWindowInsets
 import it.fast4x.riplay.LocalPlayerServiceBinder
@@ -570,6 +571,7 @@ fun HomePageLocal(
                                         )
                                     },
                                     modifier = Modifier
+                                        .tvFocusRing(focusedScale = 1f)
                                         .combinedClickable(
                                             onLongClick = {
                                                 menuState.display {
@@ -641,6 +643,7 @@ fun HomePageLocal(
                                         fadeOutSpec = null
                                     )
                                     .width(itemInHorizontalGridWidth)
+                                    .tvFocusRing(focusedScale = 1f)
                                     .combinedClickable(
                                         onLongClick = {
                                             menuState.display {

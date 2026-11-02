@@ -16,10 +16,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
@@ -35,10 +41,17 @@ import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.isLandscape
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.ui.components.themed.Button
+import it.fast4x.riplay.ui.components.tv.LocalIsTv
+import it.fast4x.riplay.ui.components.tv.LocalTvNavFocusSignal
+import it.fast4x.riplay.ui.components.tv.tvFocusRing
+import it.fast4x.riplay.ui.components.tv.tvStartupFocusDone
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.showSearchIconInNav
 import it.fast4x.riplay.utils.typography
+import kotlinx.coroutines.android.awaitFrame
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 fun Modifier.vertical(enabled: Boolean = true) =
     if (!enabled) this
@@ -78,6 +91,31 @@ class VerticalNavigationBar(
     override fun add(buttons: @Composable (@Composable (Int, String, Int, Boolean) -> Unit) -> Unit ) {
         val transition = updateTransition( targetState = tabIndex, label = null )
         val isLandscape: Boolean = isLandscape
+
+        // ── Navigazione TV ─────────────────────────────────────────
+        val isTv = LocalIsTv.current
+        val tvSignal = LocalTvNavFocusSignal.current
+        val firstItemFocusRequester = remember { FocusRequester() }
+        // Flag fuori dal loop: solo la PRIMA voce visibile riceve il requester
+        var tvFirstAttached = false
+
+        // Focus recovery: l'Activity segnala "D-pad premuto senza focus"
+        // → riprende il focus sulla prima voce della navbar
+        LaunchedEffect(tvSignal.intValue) {
+            if (isTv && tvSignal.intValue > 0)
+                runCatching { firstItemFocusRequester.requestFocus() }
+        }
+
+        // Focus iniziale all'avvio dell'app (una sola volta per sessione):
+        // senza di esso il primo movimento del D-pad non fa nulla.
+        LaunchedEffect(Unit) {
+            if (isTv && !tvStartupFocusDone) {
+                tvStartupFocusDone = true
+                awaitFrame()
+                delay(400.milliseconds)
+                runCatching { firstItemFocusRequester.requestFocus() }
+            }
+        }
 
         buttonList.clear()
 
@@ -130,7 +168,18 @@ class VerticalNavigationBar(
                             }
                 }
             val button = Button( iconId, textColor, 0.dp, 0.dp, Dp.Unspecified, buttonModifier )
-            val contentModifier = Modifier.clip( getRoundnessShape() )
+            // Ordine: clip → tvFocusRing (osservatore) → focusRequester (solo
+            // per la prima voce visibile, usato dal focus recovery TV) → clickable
+            var contentModifier = Modifier.clip( getRoundnessShape() )
+                                          .tvFocusRing(
+                                              shape = getRoundnessShape(),
+                                              focusedScale = 1.06f
+                                          )
+            if (isTv && !tvFirstAttached) {
+                tvFirstAttached = true
+                contentModifier = contentModifier.focusRequester( firstItemFocusRequester )
+            }
+            contentModifier = contentModifier
                                           .clickable( onClick = { onTabChanged(index) } )
                                           .padding( vertical = 8.dp )
             val result: @Composable () -> Unit = {

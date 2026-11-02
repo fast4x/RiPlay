@@ -1,5 +1,6 @@
 package it.fast4x.riplay.ui.screens.artist
 
+import it.fast4x.riplay.ui.components.tv.tvFocusRing
 import it.fast4x.riplay.data.icon
 import it.fast4x.riplay.data.menuItem
 import it.fast4x.riplay.data.titleId
@@ -271,6 +272,7 @@ fun ArtistLibrarySongs(
                                 thumbnailSizeDp = songThumbnailSizeDp,
                                 thumbnailSizePx = songThumbnailSizePx,
                                 modifier = Modifier
+                                    .tvFocusRing(focusedScale = 1f)
                                     .combinedClickable(
                                         onLongClick = {
                                             menuState.display {

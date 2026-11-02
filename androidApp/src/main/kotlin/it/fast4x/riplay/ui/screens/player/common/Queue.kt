@@ -80,6 +80,11 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -127,6 +132,9 @@ import it.fast4x.riplay.enums.QueueType
 import it.fast4x.riplay.extensions.exporter.Exporter
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
+import it.fast4x.riplay.ui.components.tv.LocalIsTv
+import it.fast4x.riplay.ui.components.tv.tvFocusRing
+import it.fast4x.riplay.ui.components.tv.tvQueueRowFocused
 import it.fast4x.riplay.ui.components.SwipeableQueueItem
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.EditQueueDialog
@@ -166,6 +174,7 @@ import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.utils.windows
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -200,6 +209,8 @@ private fun ActionIconButton(
             .size((size + 12).dp)
             .clip(CircleShape)
             .background(if (active) accent.copy(alpha = 0.14f) else Color.Transparent)
+            // Indicatore di focus visibile col telecomando (prima del clickable)
+            .tvFocusRing(shape = CircleShape, focusedScale = 1.12f)
             .then(
                 if (onLongClick != null)
                     Modifier.combinedClickable(
@@ -316,6 +327,11 @@ fun Queue(
     val hazeState = remember { HazeState() }
     val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
+    // ── TV: modalità "leggera" della coda ────────────────────────
+    // Sui TV box la GPU e' debole: blur (haze), animazioni di
+    // riordino per-riga e log in composizione vengono disattivati.
+    val isTv = LocalIsTv.current
+
 
     if (showConfirmDeleteAllDialog) {
         ConfirmationDialog(
@@ -414,7 +430,8 @@ fun Queue(
         contentColor = if (queueType == QueueType.Modern) colorPalette().background2.copy(alpha = 0.5f) else colorPalette().background2,
         modifier = Modifier
             .fillMaxWidth()
-            .applyIfWhenComposable(queueType == QueueType.Modern) { hazeEffect(state = hazeState) },
+            // TV: niente blur (haze) — molto costoso sulle GPU dei TV box
+            .applyIfWhenComposable(queueType == QueueType.Modern && !isTv) { hazeEffect(state = hazeState) },
         dragHandle = {
             Surface(
                 modifier = Modifier.padding(vertical = 0.dp),
@@ -434,6 +451,8 @@ fun Queue(
                 .fillMaxSize()
         ) {
             val lazyListState = rememberLazyListState()
+            // FocusRequester per il brano corrente: su TV il focus parte da qui all'apertura
+            val currentItemFocusRequester = remember { FocusRequester() }
             // Lista di appoggio che esiste SOLO durante il drag, altrimenti null
 
 
@@ -921,7 +940,8 @@ fun Queue(
                     // ─── Song items ─────────────────────────────────────────────────
                     items(
                         displayList,
-                        key = { window -> window.uid.toString() }
+                        key = { window -> window.uid.toString() },
+                        contentType = { "song" }
                     ) { window ->
 
                         ReorderableItem(
@@ -935,6 +955,32 @@ fun Queue(
                             val isPlayingThisMediaItem =
                                 binderPlayer.currentMediaItemIndex == window.firstPeriodIndex
 
+                            // Menu contestuale dell'item: condiviso tra long-press (touch)
+                            // e tasto Menu del telecomando (D-pad)
+                            val openQueuedItemMenu = {
+                                menuState.display {
+                                    QueuedMediaItemMenu(
+                                        navController = navController,
+                                        mediaItem = window.mediaItem,
+                                        indexInQueue = if (isPlayingThisMediaItem) null else window.firstPeriodIndex,
+                                        onDismiss = {
+                                            menuState.hide()
+                                            updateWindowsList = !updateWindowsList
+                                        },
+                                        onInfo = {},
+                                        disableScrollingText = disableScrollingText,
+                                        onBlacklist = {
+                                            insertOrUpdateBlacklist(
+                                                window.mediaItem.asSong
+                                            )
+                                        }
+                                    )
+                                }
+                                hapticFeedback.performHapticFeedback(
+                                    HapticFeedbackType.LongPress
+                                )
+                            }
+
 
                             // Spring-based scale when dragging
                             val itemScale by animateFloatAsState(
@@ -946,7 +992,8 @@ fun Queue(
                             Column(                                              // ← L'IMPILATORE
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .animateItem()
+                                    // TV: niente animazioni di placement per-riga (snellimento)
+                                    .then(if (isTv) Modifier else Modifier.animateItem())
                                     .graphicsLayer {
                                         scaleX = itemScale; scaleY = itemScale
                                         shadowElevation = if (isDragging) 24f else 0f
@@ -956,7 +1003,7 @@ fun Queue(
 
                                 // Etichetta prossimo brano
                                 if (window.uid.toString() == upNextKey && !isDragging) {
-                                    Timber.d("REORDER - NEXT UP: ${window.mediaItem.mediaMetadata.title}")
+                                    // NB: nessun log qui dentro — girava a OGNI recomposizione
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -976,7 +1023,7 @@ fun Queue(
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .animateItem()
+                                        .then(if (isTv) Modifier else Modifier.animateItem())
                                         .graphicsLayer {
                                             scaleX = itemScale
                                             scaleY = itemScale
@@ -991,7 +1038,7 @@ fun Queue(
                                         verticalAlignment = Alignment.CenterVertically,
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .animateItem()
+                                            .then(if (isTv) Modifier else Modifier.animateItem())
                                             .graphicsLayer {
                                                 scaleX = itemScale; scaleY = itemScale
                                             }
@@ -1079,31 +1126,28 @@ fun Queue(
                                                         else checkedState.value = false
                                                     },
                                                     modifier = Modifier
-                                                        .combinedClickable(
-                                                            onLongClick = {
-                                                                menuState.display {
-                                                                    QueuedMediaItemMenu(
-                                                                        navController = navController,
-                                                                        mediaItem = window.mediaItem,
-                                                                        indexInQueue = if (isPlayingThisMediaItem) null else window.firstPeriodIndex,
-                                                                        onDismiss = {
-                                                                            menuState.hide()
-                                                                            updateWindowsList =
-                                                                                !updateWindowsList
-                                                                        },
-                                                                        onInfo = {},
-                                                                        disableScrollingText = disableScrollingText,
-                                                                        onBlacklist = {
-                                                                            insertOrUpdateBlacklist(
-                                                                                window.mediaItem.asSong
-                                                                            )
-                                                                        }
-                                                                    )
-                                                                }
-                                                                hapticFeedback.performHapticFeedback(
-                                                                    HapticFeedbackType.LongPress
-                                                                )
-                                                            },
+                                                    .tvFocusRing(
+                                                        shape = thumbnailRoundness.shape(),
+                                                        focusedScale = 1.01f
+                                                    )
+                                                    // Segnala al player TV che una riga della coda ha
+                                                    // il focus (routing del tasto MENU del telecomando)
+                                                    .onFocusChanged { tvQueueRowFocused.value = it.isFocused }
+                                                    // Su TV: aggancio del focus al brano corrente
+                                                    .then(
+                                                        if (isPlayingThisMediaItem)
+                                                            Modifier.focusRequester(currentItemFocusRequester)
+                                                        else Modifier
+                                                    )
+                                                    // Tasto Menu del telecomando: apre il menu contestuale
+                                                    .onKeyEvent { keyEvent ->
+                                                        if (keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.Menu) {
+                                                            openQueuedItemMenu()
+                                                            true
+                                                        } else false
+                                                    }
+                                                    .combinedClickable(
+                                                            onLongClick = openQueuedItemMenu,
                                                             onClick = {
                                                                 if (!selectQueueItems) {
                                                                     if (isPlayingThisMediaItem) {
@@ -1203,26 +1247,33 @@ fun Queue(
             val currentListIndex = finalFilteredWindows
                 .indexOfFirst { it.uid == binderPlayer.currentWindow?.uid }
 
-            // apertura: scroll alla corrente
-            LaunchedEffect(
-                Unit
-                //finalFilteredWindows
-            ) {
-                if (!lazyListState.isScrollInProgress && currentListIndex >= 0) {
-                    lazyListState.scrollToItem(currentListIndex.coerceAtMost(0), 0)
-                    // oppure animateScrollToItem(-300)
+            // ── Scroll iniziale e follow del brano corrente ───────────────
+            // apertura: scroll istantaneo alla posizione del brano corrente.
+            val isTv = LocalIsTv.current
+            LaunchedEffect(Unit) {
+                if (currentListIndex >= 0 && !lazyListState.isScrollInProgress) {
+                    runCatching { lazyListState.scrollToItem(currentListIndex, -300) }
+                }
+                initialScrollDone = true
+
+                // Su TV: porta il focus sul brano corrente, così il D-pad
+                // parte subito dal punto giusto senza navigare alla cieca.
+                if (isTv && currentListIndex >= 0) {
+                    awaitFrame()
+                    runCatching { currentItemFocusRequester.requestFocus() }
                 }
             }
 
-            // cambio brano a coda aperta: segue SOLO se il brano non è visibile
+            // cambio brano a coda aperta: segue SOLO se il brano non è visibile.
+            // FIX: prima il guard era invertito (if (initialScrollDone) return) e
+            // il follow non funzionava mai dopo la prima esecuzione.
             LaunchedEffect(mediaItemIndex) {
-                if (initialScrollDone) return@LaunchedEffect
+                if (!initialScrollDone) return@LaunchedEffect
                 if (lazyListState.isScrollInProgress || currentListIndex < 0) return@LaunchedEffect
                 val visible = lazyListState.layoutInfo.visibleItemsInfo.any {
                     it.key == binderPlayer.currentWindow?.uid.toString()
                 }
-                if (!visible) lazyListState.animateScrollToItem(currentListIndex, -300)
-                initialScrollDone = true
+                if (!visible) runCatching { lazyListState.animateScrollToItem(currentListIndex, -300) }
             }
 
 //            LaunchedEffect(Unit) {
@@ -1393,6 +1444,7 @@ fun Queue(
                             modifier = Modifier
                                 .size(34.dp)
                                 .clip(CircleShape)
+                                .tvFocusRing(shape = CircleShape, focusedScale = 1.12f)
                                 .clickable(enabled = windows?.isNotEmpty() == true) {
                                     menuState.display {
                                         PlaylistsItemMenu(

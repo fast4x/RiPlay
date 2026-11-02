@@ -37,6 +37,7 @@ import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -94,6 +95,8 @@ import it.fast4x.riplay.extensions.nextvisualizer.modern.PlayerEqualizerLevel
 import it.fast4x.riplay.extensions.smoothloader.Loader
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.themed.IconButton
+import it.fast4x.riplay.ui.components.tv.LocalIsTv
+import it.fast4x.riplay.ui.components.tv.tvMiniPlayerVisible
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
@@ -162,6 +165,19 @@ fun UnifiedMiniPlayer(
     val shouldBePlaying = playerState.isPlaying
 
     val mediaItem = playerState.mediaInfo?.mediaItem ?: return // nullableMediaItem ?: return
+
+    // ── TV: segnala ai container (ScreenContainer / PageContainer) che
+    // il miniplayer sta occupando lo spazio in basso, così le liste
+    // aggiungono il padding e l'elemento in focus non finisce mai
+    // nascosto dietro di esso. Quando il miniplayer esce dalla
+    // composizione (coda svuotata) il flag torna false.
+    val isTvMini = LocalIsTv.current
+    if (isTvMini) {
+        DisposableEffect(Unit) {
+            tvMiniPlayerVisible.value = true
+            onDispose { tvMiniPlayerVisible.value = false }
+        }
+    }
 
     var likedAt by rememberSaveable {
         mutableStateOf<Long?>(null)

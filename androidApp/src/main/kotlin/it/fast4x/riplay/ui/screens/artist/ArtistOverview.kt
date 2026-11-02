@@ -69,6 +69,10 @@ import it.fast4x.environment.models.BrowseEndpoint
 import it.fast4x.environment.requests.ArtistPage
 import it.fast4x.environment.utils.ArtistDiscographyType
 import it.fast4x.environment.utils.completed
+import it.fast4x.riplay.ui.components.tv.tvFocusRing
+import it.fast4x.riplay.ui.components.tv.LocalIsTv
+import androidx.compose.ui.focus.FocusRequester
+import kotlinx.coroutines.delay
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.Database
@@ -141,12 +145,14 @@ import it.fast4x.riplay.utils.forcePlayFromBeginning
 import it.fast4x.riplay.utils.isPrimaryAction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.milliseconds
 
 @ExperimentalSerializationApi
 @OptIn(ExperimentalMaterial3Api::class)
@@ -213,6 +219,21 @@ fun ArtistOverview(
     var showFastShare by remember { mutableStateOf(false) }
 
     val coroutineScope = rememberCoroutineScope()
+
+    // ── TV: focus iniziale sull'azione principale (Play) ─────────
+    // Come per l'album: il D-pad parte dai controlli Play/Shuffle
+    // nell'header della pagina artista.
+    val isTv = LocalIsTv.current
+    val playActionsFocusRequester = remember { FocusRequester() }
+    LaunchedEffect(isTv, artistPage != null) {
+        if (!isTv || artistPage == null) return@LaunchedEffect
+        awaitFrame()
+        repeat(10) {
+            if (runCatching { playActionsFocusRequester.requestFocus() }.isSuccess)
+                return@LaunchedEffect
+            delay(100.milliseconds)
+        }
+    }
 
     LoaderScreen(show = artistPage == null)
 
@@ -458,6 +479,7 @@ fun ArtistOverview(
                         )
 
                         FastPlayActionsBar(
+                            playButtonFocusRequester = playActionsFocusRequester,
                             modifier = Modifier
                                 .fillMaxWidth(.5f)
                                 .align(Alignment.BottomCenter)
@@ -671,6 +693,7 @@ fun ArtistOverview(
                                 modifier = Modifier
                                     .padding(bottom = 8.dp)
                                     .fillMaxWidth()
+                                    .tvFocusRing(focusedScale = 1f)
                                     .clickable {
                                         readMore = !readMore
                                     }
@@ -866,6 +889,7 @@ fun ArtistOverview(
                                             thumbnailSizePx = songThumbnailSizePx,
                                             thumbnailSizeDp = songThumbnailSizeDp,
                                             modifier = Modifier
+                                                .tvFocusRing(focusedScale = 1f)
                                                 .combinedClickable(
                                                     onLongClick = {
                                                         menuState.display {
@@ -957,7 +981,9 @@ fun ArtistOverview(
                                                 thumbnailSizeDp = albumThumbnailSizeDp,
                                                 disableScrollingText = disableScrollingText,
                                                 isYoutubeAlbum = albumById?.isYoutubeAlbum == true,
-                                                modifier = Modifier.clickable(onClick = {
+                                                modifier = Modifier
+                                                    .tvFocusRing(focusedScale = 1f)
+                                                    .clickable(onClick = {
                                                     onNavigateTo()
                                                     navController.navigate("${NavRoutes.album.name}/${item.key}")
                                                 })
@@ -984,7 +1010,9 @@ fun ArtistOverview(
                                                 thumbnailSizeDp = artistThumbnailSizeDp,
                                                 disableScrollingText = disableScrollingText,
                                                 isYoutubeArtist = artistById?.isYoutubeArtist == true,
-                                                modifier = Modifier.clickable(onClick = {
+                                                modifier = Modifier
+                                                    .tvFocusRing(focusedScale = 1f)
+                                                    .clickable(onClick = {
                                                     onNavigateTo()
                                                     navController.navigate("${NavRoutes.artist.name}/${item.key}")
                                                 })
@@ -1012,7 +1040,9 @@ fun ArtistOverview(
                                                 thumbnailSizeDp = playlistThumbnailSizeDp,
                                                 disableScrollingText = disableScrollingText,
                                                 isYoutubePlaylist = playlistById?.isYoutubePlaylist == true,
-                                                modifier = Modifier.clickable(onClick = {
+                                                modifier = Modifier
+                                                    .tvFocusRing(focusedScale = 1f)
+                                                    .clickable(onClick = {
                                                     onNavigateTo()
                                                     navController.navigate("${NavRoutes.playlist.name}/${item.key}")
                                                 })
