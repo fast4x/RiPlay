@@ -481,6 +481,77 @@ class PlayerService : MediaLibraryService(),
     @Volatile private var resumePending = false
     @Volatile var userInitiatedPause = false
 
+    // Istante dell'ultimo comando di pausa DAVVERO richiesto dall'utente.
+    // userInitiatedPause da solo non basta: viene azzerato solo quando arriva
+    // l'evento PAUSED, ma quella conferma può non arrivare MAI (pausa durante
+    // il buffering, WebView assente, iframe morto). Senza il timestamp un flag
+    // "stale" fa scambiare l'ECO della pausa di connettività per una pausa
+    // dell'utente, annullando l'auto-ripresa (bug verificato in test).
+    @Volatile private var userPauseRequestedAtMs = 0L
+
+    /** Registra un comando di pausa proveniente DAVVERO dall'utente (UI, notifica, media button). */
+    fun markUserPauseRequested() {
+        userInitiatedPause = true
+        userPauseRequestedAtMs = System.currentTimeMillis()
+    }
+
+    /**
+     * La volontà di pausa dell'utente è ancora attribuibile all'evento PAUSED
+     * in corso? Solo un comando di pausa arrivato da pochissimo (vedi
+     * USER_PAUSE_EVENT_WINDOW_MS) può essere la causa di un PAUSED.
+     */
+    private fun isUserPauseIntentFresh(): Boolean {
+        if (!userInitiatedPause) return false
+        val age = System.currentTimeMillis() - userPauseRequestedAtMs
+        return age in 0..USER_PAUSE_EVENT_WINDOW_MS
+    }
+
+    /** Azzera l'intenzione di pausa dell'utente (consumata o superata da un play/skip). */
+    private fun clearUserPauseIntent() {
+        userInitiatedPause = false
+        userPauseRequestedAtMs = 0L
+    }
+
+    // ═══════════ GESTIONE CONNETTIVITÀ ONLINE (motore AYP) ═══════════
+    // Monitor robusto della rete + policy di pausa/ripresa/stallo.
+    // La policy vive qui perché è l'unico proprietario dello stato del player ibrido.
+    val onlineConnectivityMonitor by lazy { OnlineConnectivityMonitor(this) }
+    private var connectivityListener: OnlineConnectivityMonitor.Listener? = null
+    private var networkGraceJob: Job? = null          // finestra di grazia sull'handover WiFi<->Cellulare
+    private var connectivityResumeJob: Job? = null    // ripresa post-ripristino con stabilizzazione
+    private var onlineStallWatchdogJob: Job? = null   // watchdog anti-stallo del motore online
+
+    // true = siamo stati NOI a mettere in pausa per assenza di rete
+    // (bypassa YouTubeControlImpl, quindi NON alza userInitiatedPause)
+    @Volatile private var pausedForConnectivity = false
+
+    // true = la riproduzione era attiva (o desiderata) quando la rete è caduta:
+    // al ritorno della rete va ripresa automaticamente
+    @Volatile private var resumeDesiredAfterConnectivity = false
+
+    @Volatile private var lastNetworkLostAtMs = 0L
+    @Volatile private var lastNetworkRestoredAtMs = 0L
+
+    // Load di recovery in attesa che la WebView torni pronta (onReady)
+    private var pendingRecoveryLoadVideoId: String? = null
+    private var pendingRecoveryLoadSecond = 0f
+
+    // Watchdog anti-stallo del motore online
+    private var lastProgressSecond = -1f
+    private var lastProgressAtMs = 0L
+    private var onlineRecoveryLevel = 0               // 0=nessuno, 1=seek, 2=loadVideo, 3=ricrea WebView
+    private var onlineRecoveryNextAtMs = 0L
+    private var onlineRecoveryMediaId: String? = null
+
+    private val NETWORK_LOSS_GRACE_MS = 2500L         // tolleranza handover WiFi<->Cellulare
+    private val NETWORK_STABILIZE_MS = 1200L          // attesa post-ritorno rete prima della ripresa
+    private val USER_PAUSE_EVENT_WINDOW_MS = 2000L    // un PAUSED è attribuibile all'utente solo se il comando è più recente di così
+    private val TRANSIENT_ERROR_WINDOW_MS = 15000L    // finestra in cui un HTML_5_PLAYER è considerato transitorio
+    private val ONLINE_STALL_THRESHOLD_MS = 12000L    // posizione ferma oltre questa soglia = stallo
+    private val ONLINE_RECOVERY_STEP_DELAY_MS = 8000L // attesa tra un livello e il successivo di escalation
+    private val ONLINE_RECREATE_STEP_DELAY_MS = 12000L
+    // ═════════════════════════════════════════════════════════════════
+
     private var eqSetupDone = false
 
     private var consecutivePermanentErrors = 0
@@ -581,6 +652,10 @@ class PlayerService : MediaLibraryService(),
 
                 runCatching { startPlaybackWatchdog() }
                     .onFailure { Timber.e("PlayerService startup startPlaybackWatchdog failed: $it") }
+
+                // Osservazione della rete + policy di pausa/ripresa/stallo per il motore online
+                runCatching { initializeOnlineConnectivityHandling() }
+                    .onFailure { Timber.e("PlayerService startup initializeOnlineConnectivityHandling failed: $it") }
 
                 runCatching { checkAndRestoreTimer() }
                     .onFailure { Timber.e("PlayerService startup checkAndRestoreTimer failed: $it") }
@@ -960,7 +1035,7 @@ class PlayerService : MediaLibraryService(),
                 //if (currentSong.value?.isLocal == true) exoPlayer.play() else _internalYouTubePlayer.value?.play()
             }
             Action.pause.value -> {
-                userInitiatedPause = true
+                markUserPauseRequested()
                 hybridPlayer.pause()
                // if (currentSong.value?.isLocal == true) exoPlayer.pause() else _internalYouTubePlayer.value?.pause()
             }
@@ -1461,6 +1536,26 @@ class PlayerService : MediaLibraryService(),
                     }
                 }
 
+                // ── Connettività: load di recovery rimasto in sospeso (WebView mai pronta
+                //    perché partita offline, o ricreata dal watchdog di livello 3) ──
+                val pendingRecoveryId = pendingRecoveryLoadVideoId
+                if (pendingRecoveryId != null && currentSong.value?.isLocal == false) {
+                    pendingRecoveryLoadVideoId = null
+                    val pendingSecond = pendingRecoveryLoadSecond
+                    Timber.i("PlayerService Connettività: onReady esegue il load di recovery id=$pendingRecoveryId second=$pendingSecond resumeDesired=$resumeDesiredAfterConnectivity")
+                    if (resumeDesiredAfterConnectivity) {
+                        youTubePlayer.loadVideo(pendingRecoveryId, pendingSecond)
+                        hybridPlayer.youtubePlayWhenReady = true
+                        hybridPlayer.invalidateYouTubePlayPause()
+                    } else {
+                        youTubePlayer.cueVideo(pendingRecoveryId, pendingSecond)
+                    }
+                }
+
+                // Nuova base temporale per il watchdog anti-stallo online
+                lastProgressSecond = -1f
+                lastProgressAtMs = System.currentTimeMillis()
+
                 firstTimeStarted = false
 
             }
@@ -1601,9 +1696,23 @@ class PlayerService : MediaLibraryService(),
                         setLoadPending(LoadPhase.NONE, "onStateChange PLAYING")
                         resumePending = false
 
+                        // Il motore è tornato a suonare: qualunque vecchia intenzione
+                        // di pausa dell'utente è superata e non deve più inquinare i
+                        // successivi eventi PAUSED (flag stale)
+                        clearUserPauseIntent()
+
                         //lastError = null  // reset errore dopo riproduzione riuscita
                         onlineNearEndTicks = 0
                         Timber.d("PlayerService YT: Evento PLAYING")
+
+                        // ── Connettività: il motore online è davvero ripartito,
+                        //    chiudiamo qualunque ciclo di pausa/ripresa o recovery ──
+                        if (pausedForConnectivity || onlineRecoveryLevel > 0 || resumeDesiredAfterConnectivity) {
+                            Timber.i("PlayerService Connettività: PLAYING ricevuto, reset completo dello stato di recovery")
+                            pausedForConnectivity = false
+                            resumeDesiredAfterConnectivity = false
+                            resetOnlineRecoveryState("onStateChange PLAYING")
+                        }
 
                         hybridPlayer.youtubePlayWhenReady = true// Non invia a AYP il comando di play perchè il load invoca già il play
 
@@ -1614,11 +1723,53 @@ class PlayerService : MediaLibraryService(),
                     }
                     PlayerConstants.PlayerState.PAUSED -> {
                         val inCall = audioManager.mode != AudioManager.MODE_NORMAL
-                        if (inCall && !userInitiatedPause && hybridPlayer.activeEngine == ActiveEngine.YOUTUBE) {
+                        if (inCall && !isUserPauseIntentFresh() && hybridPlayer.activeEngine == ActiveEngine.YOUTUBE) {
                             resumePending = true
                             Timber.d("PlayerService YT: pausa esterna durante chiamata (mode=${audioManager.mode}) → resumePending")
                         }
-                        userInitiatedPause = false
+
+                        // ── Connettività: distinguiamo CHI ha messo in pausa ──
+                        // userInitiatedPause viene onorato SOLO se un comando di pausa
+                        // utente è arrivato da pochissimo (USER_PAUSE_EVENT_WINDOW_MS).
+                        // Due falsi positivi da evitare:
+                        //   1) l'ECO della nostra stessa pausa per connettività (arriva
+                        //      ~50-300ms dopo il nostro pause diretto sull'iframe)
+                        //   2) un flag STALE di una vecchia pausa il cui evento PAUSED
+                        //      non è mai arrivato (pausa durante il buffering, WebView
+                        //      assente, iframe morto)
+                        // hadPendingUserPause = è arrivato un comando di pausa utente che
+                        // questo PAUSED sta per consumare; blocca l'auto-arm di riprese
+                        // basate su una pausa che in realtà l'utente HA richiesto.
+                        val hadPendingUserPause = userInitiatedPause
+
+                        if (userInitiatedPause && !isUserPauseIntentFresh()) {
+                            val age = System.currentTimeMillis() - userPauseRequestedAtMs
+                            Timber.w("PlayerService Connettività: flag pausa-utente STALE ignorato (età=${age}ms, non può essere la causa di questo PAUSED)")
+                        }
+
+                        if (isUserPauseIntentFresh()) {
+                            // Pausa appena richiesta dall'utente (anche durante un'interruzione
+                            // di rete): annulliamo qualunque auto-ripresa programmata
+                            if (pausedForConnectivity || resumeDesiredAfterConnectivity) {
+                                Timber.i("PlayerService Connettività: pausa dell'utente durante l'interruzione, auto-ripresa annullata")
+                            }
+                            pausedForConnectivity = false
+                            resumeDesiredAfterConnectivity = false
+                        } else if (pausedForConnectivity && !hadPendingUserPause) {
+                            // Eco della pausa eseguita da NOI per l'assenza di rete:
+                            // l'auto-ripresa programmata resta valida
+                            Timber.d("PlayerService Connettività: PAUSED = eco della pausa di connettività, auto-ripresa confermata (resumeDesired=$resumeDesiredAfterConnectivity)")
+                        } else if (!hadPendingUserPause && !inCall &&
+                            hybridPlayer.activeEngine == ActiveEngine.YOUTUBE &&
+                            !onlineConnectivityMonitor.isNetworkAvailable
+                        ) {
+                            // L'iframe si è auto-pausato per l'assenza di rete:
+                            // ricordiamo la volontà di riprendere al ritorno della rete
+                            Timber.i("PlayerService Connettività: pausa dell'iframe per rete assente, ripresa programmata al ritorno")
+                            resumeDesiredAfterConnectivity = true
+                        }
+
+                        clearUserPauseIntent() // il flag è one-shot: consumato da questo PAUSED
                         Timber.d("PlayerService YT: Evento PAUSED (inCall = $inCall audioManager.mode=${audioManager.mode})")
 
                         hybridPlayer.youtubePlayWhenReady = false // Non invia a AYP il comando di pause, in questo modo il ciclo di riproduzione continua al ricevimento del focus
@@ -1654,6 +1805,11 @@ class PlayerService : MediaLibraryService(),
                 youTubePlayer: YouTubePlayer,
                 error: PlayerConstants.PlayerError
             ) {
+                // Connettività: ricordiamo se stava suonando PRIMA DI azzerare lo stato.
+                // Serve anche youtubePlayWhenReady: con la rete caduta l'iframe passa
+                // prima in BUFFERING (isPlaying=false) e poi emette l'errore.
+                val wasPlayingWhenError = _playerState.value.isPlaying || hybridPlayer.youtubePlayWhenReady
+
                 // Nessun errore può lasciare la sessione "playing"
                 hybridPlayer.youtubePlayWhenReady = false
                 hybridPlayer.invalidateYouTubePlayPause()
@@ -1682,6 +1838,20 @@ class PlayerService : MediaLibraryService(),
                     }
 
                 //clearWebViewData()
+
+                // ── Connettività: errore TRANSITORIO causato dall'assenza di rete ──
+                // HTML_5_PLAYER durante (o poco dopo) un'interruzione NON è un problema
+                // del brano: niente skip, niente marcatura "unplayable". Mettiamo in pausa
+                // e lasciamo che la ripresa della rete riavvii il playback.
+                val networkDownRecently = !onlineConnectivityMonitor.isNetworkAvailable ||
+                        System.currentTimeMillis() - lastNetworkLostAtMs in 0..TRANSIENT_ERROR_WINDOW_MS
+                if (networkDownRecently && error == PlayerConstants.PlayerError.HTML_5_PLAYER) {
+                    Timber.w("PlayerService Connettività: errore $error TRANSITORIO (rete assente o appena rientrata). Pausa + attesa ripresa, nessuno skip")
+                    pausedForConnectivity = true
+                    resumeDesiredAfterConnectivity = wasPlayingWhenError
+                    updatePlayerState(PlayerConstants.PlayerState.PAUSED)
+                    return
+                }
 
                 val isNotPlaybalePermanent = error == PlayerConstants.PlayerError.VIDEO_NOT_PLAYABLE_IN_EMBEDDED_PLAYER
                         || error == PlayerConstants.PlayerError.VIDEO_NOT_FOUND
@@ -1855,6 +2025,12 @@ class PlayerService : MediaLibraryService(),
             enableAutomaticInitialization = false
 
             enableBackgroundPlayback(true)
+
+            // Connettività: la ripresa al ritorno della rete è gestita dal Service
+            // (OnlineConnectivityMonitor + policy dedicata). Il PlaybackResumer
+            // interno della libreria parte con canLoad=false e senza lifecycle non
+            // potrebbe mai riprendere davvero: lo disattiviamo per evitare conflitti.
+            setInternalPlaybackResumeEnabled(false)
 
             keepScreenOn = appSettings.keepScreenEnabled
 
@@ -2075,6 +2251,13 @@ class PlayerService : MediaLibraryService(),
             volumeNormalizationJob?.cancel()
             settingsObserverJob?.cancel()
 
+            // Rilascio della gestione connettività online
+            onlineStallWatchdogJob?.cancel()
+            networkGraceJob?.cancel()
+            connectivityResumeJob?.cancel()
+            connectivityListener?.let { onlineConnectivityMonitor.removeListener(it) }
+            onlineConnectivityMonitor.stop()
+
             AudioDRCHelper.restoreDRC()
 
             // non chiamare notificationManager?.cancelAll()
@@ -2265,6 +2448,12 @@ class PlayerService : MediaLibraryService(),
         Timber.d("PlayerService onMediaItemTransition mediaId=${mediaItem?.mediaId} uri=${mediaItem?.localConfiguration?.uri} musicVaultState=${mediaItem?.mediaMetadata?.extras?.getString("musicVaultState")} musicVaultFileName=${mediaItem?.mediaMetadata?.extras?.getString("musicVaultFileName")}")
 
         if (mediaItem == null) return
+
+        // ── Connettività: cambio traccia = nuovo ciclo, azzeriamo pausa e recovery ──
+        pausedForConnectivity = false
+        resumeDesiredAfterConnectivity = false
+        clearUserPauseIntent() // anche una vecchia intenzione di pausa non deve sopravvivere al cambio traccia
+        resetOnlineRecoveryState("onMediaItemTransition")
 
         // Ferma il fade out se era in corso (es. l'utente ha premuto "Next" a metà brano)
         //stopPlaybackWatchdog()
@@ -2780,7 +2969,7 @@ class PlayerService : MediaLibraryService(),
         }
 
         override fun pause() {
-            userInitiatedPause = true
+            markUserPauseRequested()
             _internalYouTubePlayer.value?.pause()
         }
 
@@ -2843,7 +3032,7 @@ class PlayerService : MediaLibraryService(),
             binder.let {
                 when (intent.action) {
                     Action.pause.value -> {
-                        userInitiatedPause = true
+                        markUserPauseRequested()
 
                         if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus.value != RiTuneConnectionStatus.Connected)
                             hybridPlayer.pause()
@@ -3188,6 +3377,340 @@ class PlayerService : MediaLibraryService(),
         isFading = false // Sblocchiamo il fading
         //Timber.d("PlayerService PlaybackWatchdog: Cancello crossfadeJob")
     }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // ═══ GESTIONE CONNETTIVITÀ ONLINE: PAUSA / RIPRESA / RECOVERY ══════════
+    // ═══════════════════════════════════════════════════════════════════════
+    //
+    // Obiettivi:
+    //  1. Rete assente -> pausa ONESTA del motore online (la notifica e l'UI
+    //     mostrano "pausa" invece di fingere di suonare)
+    //  2. Rete ritornata -> ripresa AUTOMATICA dal secondo esatto in cui si era
+    //     fermato, SOLO se la riproduzione era attiva/desiderata
+    //  3. Handover WiFi<->Cellulare -> tollerato con una finestra di grazia
+    //     (non fermiamo se la rete rientra da sola entro pochi secondi)
+    //  4. Stalli residui (iframe morto, buffering infinito, WebView uccisa)
+    //     -> escalation graduale: seek -> loadVideo -> ricreazione WebView
+    //  5. Errori HTML_5_PLAYER durante un'interruzione -> TRANSITORI:
+    //     nessuno skip della coda, nessuna marcatura "unplayable"
+    //  6. La volontà dell'utente ha SEMPRE la precedenza: se mette in pausa
+    //     durante un'interruzione, non riprendiamo al ritorno della rete
+    //
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /** True se il playback è guidato da un cast (RiTune/Chromecast): la rete
+     *  del dispositivo non governa il player remoto, non interveniamo. */
+    private fun isCastDrivingPlayback(): Boolean {
+        if (GlobalSharedData.riTuneCastActive &&
+            riTuneCastClient.connectionStatus.value == RiTuneConnectionStatus.Connected
+        ) return true
+        return CastHelper.isCastAvailable &&
+                appSettings.castType !in listOf(CastType.NONE, CastType.RITUNECAST)
+    }
+
+    /** True se c'è una chiamata in corso (il ciclo resumePending dedicato alle
+     *  chiamate ha già la sua gestione, non la duplichiamo). */
+    private fun isPhoneCallActive(): Boolean =
+        ::audioManager.isInitialized && audioManager.mode != AudioManager.MODE_NORMAL
+
+    /** Registra il monitor di connettività e avvia il watchdog anti-stallo. */
+    private fun initializeOnlineConnectivityHandling() {
+        if (connectivityListener != null) return // già inizializzato
+
+        val listener = object : OnlineConnectivityMonitor.Listener {
+            override fun onNetworkLost() {
+                // I callback di sistema arrivano su un thread dedicato:
+                // riposizioniamo la policy sul Main thread del service
+                serviceScope.launch(Dispatchers.Main) { handleNetworkLost() }
+            }
+
+            override fun onNetworkRestored() {
+                serviceScope.launch(Dispatchers.Main) { handleNetworkRestored() }
+            }
+        }
+
+        connectivityListener = listener
+        onlineConnectivityMonitor.addListener(listener)
+        onlineConnectivityMonitor.start()
+
+        startOnlineStallWatchdog()
+    }
+
+    /** Rete appena perduta: valutiamo se fermare il motore online. */
+    private fun handleNetworkLost() {
+        lastNetworkLostAtMs = System.currentTimeMillis()
+
+        if (isCastDrivingPlayback()) return
+
+        val song = currentSong.value
+        if (song == null || song.isLocal) return
+
+        // EXOPLAYER su sorgente remota (WebDAV): pausa preventiva invece di
+        // lasciare Media3 stantuffare in buffering fino all'errore IO
+        if (hybridPlayer.activeEngine == ActiveEngine.EXOPLAYER) {
+            if (song.isWebDav && hybridPlayer.isPlaying) {
+                pausedForConnectivity = true
+                resumeDesiredAfterConnectivity = true
+                Timber.w("PlayerService Connettività: rete persa su stream WebDAV, pausa preventiva di ExoPlayer")
+                runCatching { exoPlayer.pause() }
+                    .onFailure { Timber.e("PlayerService Connettività: pausa ExoPlayer fallita: ${it.message}") }
+            }
+            return
+        }
+
+        // Interviene solo se la riproduzione era attiva o desiderata
+        val wantsPlayback = hybridPlayer.youtubePlayWhenReady || _playerState.value.isPlaying
+        if (!wantsPlayback) {
+            Timber.d("PlayerService Connettività: rete persa ma il player era fermo, nessuna azione")
+            return
+        }
+
+        // FINESTRA DI GRAZIA: l'handover WiFi<->Cellulare genera onLost+onAvailable
+        // ravvicinati. Se la rete rientra da sola entro la finestra, il playback
+        // prosegue indenne; se la finestra scade senza rete, pausa onesta.
+        networkGraceJob?.cancel()
+        networkGraceJob = serviceScope.launch(Dispatchers.Main) {
+            delay(NETWORK_LOSS_GRACE_MS.milliseconds)
+            if (!onlineConnectivityMonitor.isNetworkAvailable && !isCastDrivingPlayback()) {
+                pauseForConnectivityLoss()
+            }
+        }
+    }
+
+    /** Pausa ONESTA del motore online dopo la conferma di assenza di rete. */
+    private fun pauseForConnectivityLoss() {
+        if (pausedForConnectivity) return
+        pausedForConnectivity = true
+
+        resumeDesiredAfterConnectivity =
+            hybridPlayer.youtubePlayWhenReady || _playerState.value.isPlaying
+
+        // Congeliamo la baseline del watchdog: mentre siamo offline niente escalation
+        lastProgressAtMs = System.currentTimeMillis()
+        onlineRecoveryLevel = 0
+        onlineRecoveryNextAtMs = 0L
+
+        Timber.w("PlayerService Connettività: rete assente CONFERMATA, pausa del motore online (resumeDesired=$resumeDesiredAfterConnectivity, second=${_currentSecond.value})")
+
+        // Pausa DIRETTA del player AYP: bypassa YouTubeControlImpl così
+        // userInitiatedPause NON viene alzato e nel PAUSED riusciamo a
+        // distinguere la nostra pausa da quella dell'utente
+        runCatching { _internalYouTubePlayer.value?.pause() }
+            .onFailure { Timber.e("PlayerService Connettività: pausa AYP fallita: ${it.message}") }
+
+        hybridPlayer.youtubePlayWhenReady = false
+        if (::hybridPlayer.isInitialized) hybridPlayer.invalidateYouTubePlayPause()
+
+        // Notifica/widget/Android Auto aggiornati allo stato REALE (pausa)
+        updatePlayerState(PlayerConstants.PlayerState.PAUSED)
+    }
+
+    /** Rete appena ritornata: programmiamo la ripresa con stabilizzazione. */
+    private fun handleNetworkRestored() {
+        lastNetworkRestoredAtMs = System.currentTimeMillis()
+
+        // La finestra di grazia non serve più: la rete è rientrata
+        networkGraceJob?.cancel()
+
+        if (isCastDrivingPlayback()) return
+        // Interveniamo se abbiamo messo in pausa NOI, se l'iframe si è auto-pausato
+        // per la rete assente (resumeDesired) o se c'è un load di recovery in attesa
+        if (!pausedForConnectivity && !resumeDesiredAfterConnectivity && pendingRecoveryLoadVideoId == null) return
+
+        // STABILIZZAZIONE: il callback di sistema arriva PRIMA che la rete sia
+        // realmente utilizzabile (DHCP/DNS/registrazione radio). Un play lanciato
+        // subito qui farebbe fallire la rinegoziazione dello stream.
+        connectivityResumeJob?.cancel()
+        connectivityResumeJob = serviceScope.launch(Dispatchers.Main) {
+            delay(NETWORK_STABILIZE_MS.milliseconds)
+
+            // Doppio controllo anti-flapping: se durante l'attesa è ricaduta, esce
+            if (!onlineConnectivityMonitor.isNetworkAvailable) return@launch
+            resumeAfterConnectivityRestored()
+        }
+    }
+
+    /** Ripresa automatica dopo il ripristino della rete. */
+    private fun resumeAfterConnectivityRestored() {
+        // Ricopre entrambi i casi: pausa eseguita dal Service (pausedForConnectivity)
+        // o auto-pausa dell'iframe per rete assente (resumeDesiredAfterConnectivity)
+        if (!pausedForConnectivity && !resumeDesiredAfterConnectivity) return
+        pausedForConnectivity = false
+
+        val song = currentSong.value
+        if (song == null || song.isLocal) return
+
+        Timber.i("PlayerService Connettività: rete ripristinata, ripresa del playback online (resumeDesired=$resumeDesiredAfterConnectivity, mediaId=${song.id}, second=${_currentSecond.value})")
+
+        if (hybridPlayer.activeEngine == ActiveEngine.EXOPLAYER) {
+            // Era lo stream WebDAV messo in pausa per la mancanza di rete
+            if (resumeDesiredAfterConnectivity) {
+                runCatching { exoPlayer.play() }
+                    .onFailure { Timber.e("PlayerService Connettività: play ExoPlayer fallito: ${it.message}") }
+            }
+            return
+        }
+
+        if (!resumeDesiredAfterConnectivity) {
+            // L'utente ha messo in pausa durante l'interruzione: solo ripristino flag
+            Timber.i("PlayerService Connettività: nessuna auto-ripresa, l'utente ha messo in pausa")
+            return
+        }
+
+        val videoId = song.id
+        val positionSecond = _currentSecond.value.coerceAtLeast(0f)
+
+        if (_internalYouTubePlayer.value == null) {
+            // WebView mai pronta (avvio offline) o ricreata dal watchdog:
+            // il load partirà da onReady appena l'IFrame API sarà caricata
+            pendingRecoveryLoadVideoId = videoId
+            pendingRecoveryLoadSecond = positionSecond
+            setLoadPending(LoadPhase.PENDING, "network-restored: in attesa di onReady della WebView")
+            return
+        }
+
+        // KICK MORBIDO: seekTo sulla posizione esatta + play(). L'iframe riparte
+        // dal punto in cui si era fermato rinegoziando lo stream. Gli stalli
+        // residui li intercetta il watchdog con escalation graduale.
+        setLoadPending(LoadPhase.PENDING, "network-restored kick")
+        runOnlineRecoveryKick(positionSecond, "rete-ripristinata")
+    }
+
+    /** Kick di ripresa sul motore YouTube (da chiamare sul Main thread). */
+    private fun runOnlineRecoveryKick(positionSecond: Float, reason: String) {
+        val player = _internalYouTubePlayer.value ?: return
+        Timber.i("PlayerService Connettività: kick online ($reason) a ${positionSecond}s")
+
+        runCatching {
+            player.seekTo(positionSecond)
+            player.play()
+        }.onFailure { Timber.e("PlayerService Connettività: kick fallito ($reason): ${it.message}") }
+
+        hybridPlayer.youtubePlayWhenReady = true
+        if (::hybridPlayer.isInitialized) hybridPlayer.invalidateYouTubePlayPause()
+
+        // Nuova baseline: da qui il watchdog misura di nuovo la quiete
+        lastProgressSecond = positionSecond
+        lastProgressAtMs = System.currentTimeMillis()
+    }
+
+    /** Watchdog dedicato agli stalli del motore online (tick 2s). */
+    private fun startOnlineStallWatchdog() {
+        onlineStallWatchdogJob?.cancel()
+        onlineStallWatchdogJob = serviceScope.launch(Dispatchers.Main) {
+            while (isActive) {
+                delay(2000.milliseconds)
+                evaluateOnlineStall()
+            }
+        }
+    }
+
+    /**
+     * Rileva il classico stallo mobile: la rete c'è, il player "vuole" suonare,
+     * ma la posizione webview non avanza da ONLINE_STALL_THRESHOLD_MS (buffering
+     * infinito dopo handover, iframe morto, renderer ucciso dal sistema...).
+     * Interviene con escalation graduale, MAI con loop infiniti:
+     *  livello 1: seekTo(posizione)+play() (kick morbido)
+     *  livello 2: loadVideo(id, posizione) (rinegoziazione completa dello stream)
+     *  livello 3: ricreazione della WebView + load dall'onReady
+     */
+    private fun evaluateOnlineStall() {
+        val now = System.currentTimeMillis()
+
+        // 1. Aggiorniamo la traccia dell'avanzamento della posizione webview
+        val second = _currentSecond.value
+        if (second != lastProgressSecond) {
+            lastProgressSecond = second
+            lastProgressAtMs = now
+        }
+
+        if (isCastDrivingPlayback()) return
+        if (pausedForConnectivity) return
+        if (!onlineConnectivityMonitor.isNetworkAvailable) return
+        if (isPhoneCallActive()) return
+        if (isFading) return
+
+        val song = currentSong.value ?: return
+        if (song.isLocal) return
+        if (hybridPlayer.activeEngine != ActiveEngine.YOUTUBE) return
+
+        // Interviene solo se la riproduzione è desiderata (anche ferma in buffering)
+        if (!hybridPlayer.youtubePlayWhenReady && !_playerState.value.isPlaying) return
+
+        val duration = _currentDuration.value
+        // Niente escalation negli ultimi 4 secondi: l'ENDED arriverà da solo
+        if (duration > 0f && second >= duration - 4f) return
+
+        val stalledFor = now - lastProgressAtMs
+        if (stalledFor < ONLINE_STALL_THRESHOLD_MS) {
+            // Stiamo avanzando normalmente: azzera la catena di escalation
+            if (onlineRecoveryLevel != 0) resetOnlineRecoveryState("posizione in avanzamento")
+            return
+        }
+
+        // Se siamo passati a un'altra traccia riparte la catena da zero.
+        // Il primo kick scatta SUBITO alla rilevazione (la soglia di stallo
+        // è già maturata): le attese valgono solo tra i livelli successivi.
+        if (onlineRecoveryMediaId != song.id) {
+            onlineRecoveryMediaId = song.id
+            onlineRecoveryLevel = 0
+            onlineRecoveryNextAtMs = now
+        }
+
+        if (onlineRecoveryLevel >= 3) {
+            // WebView già ricreata: aspettiamo onReady, niente loop infiniti
+            return
+        }
+
+        if (now < onlineRecoveryNextAtMs) return
+
+        when (onlineRecoveryLevel) {
+            0 -> {
+                Timber.w("PlayerService Connettività: STALLO online da ${stalledFor / 1000}s (second=$second, id=${song.id}). Livello 1: seek+play")
+                onlineRecoveryLevel = 1
+                onlineRecoveryNextAtMs = now + ONLINE_RECOVERY_STEP_DELAY_MS
+                setLoadPending(LoadPhase.PENDING, "watchdog-livello1-seek")
+                runOnlineRecoveryKick(second, "watchdog-livello1-seek")
+            }
+
+            1 -> {
+                Timber.w("PlayerService Connettività: stallo persiste dopo il seek. Livello 2: loadVideo id=${song.id} a ${second}s")
+                onlineRecoveryLevel = 2
+                onlineRecoveryNextAtMs = now + ONLINE_RECOVERY_STEP_DELAY_MS
+                setLoadPending(LoadPhase.PENDING, "watchdog-livello2-loadVideo")
+                runCatching { _internalYouTubePlayer.value?.loadVideo(song.id, second) }
+                    .onFailure { Timber.e("PlayerService Connettività: loadVideo fallito: ${it.message}") }
+                hybridPlayer.youtubePlayWhenReady = true
+                lastProgressAtMs = now
+            }
+
+            else -> {
+                Timber.e("PlayerService Connettività: stallo persiste dopo il loadVideo. Livello 3: ricreazione WebView")
+                onlineRecoveryLevel = 3
+                onlineRecoveryNextAtMs = now + ONLINE_RECREATE_STEP_DELAY_MS
+                setLoadPending(LoadPhase.PENDING, "watchdog-livello3-recreate")
+                pendingRecoveryLoadVideoId = song.id
+                pendingRecoveryLoadSecond = second
+                recreateOnlinePlayerView()
+            }
+        }
+    }
+
+    /** Azzera lo stato di recovery: su PLAYING, cambio traccia, posizione che avanza. */
+    private fun resetOnlineRecoveryState(reason: String) {
+        if (onlineRecoveryLevel != 0 || pendingRecoveryLoadVideoId != null) {
+            Timber.d("PlayerService Connettività: reset stato recovery ($reason)")
+        }
+        onlineRecoveryLevel = 0
+        onlineRecoveryNextAtMs = 0L
+        onlineRecoveryMediaId = null
+        pendingRecoveryLoadVideoId = null
+        pendingRecoveryLoadSecond = 0f
+        lastProgressSecond = -1f
+        lastProgressAtMs = System.currentTimeMillis()
+    }
+
+    // ═════════════════ fine gestione connettività online ═════════════════
 
     private fun startFadeIn() {
         if (appSettings.crossfadeDuration == CrossfadeDuration.Off) return
@@ -4357,6 +4880,12 @@ class PlayerService : MediaLibraryService(),
     fun requestSmoothPause() {
         //Timber.d("EXECUTE_SMOOTH_PAUSE stack:\n${Exception().stackTraceToString()}")
 
+        // L'utente richiede esplicitamente la pausa: disattiviamo qualunque
+        // auto-ripresa programmata dalla gestione connettività
+        pausedForConnectivity = false
+        resumeDesiredAfterConnectivity = false
+        markUserPauseRequested()
+
         if (!_playerState.value.isPlaying || isFading) {
             hybridPlayer.executeActualPause()
             return
@@ -4388,6 +4917,18 @@ class PlayerService : MediaLibraryService(),
     }
 
     fun requestSmoothPlay() {
+        // L'utente richiede esplicitamente il play: qualunque vecchia intenzione
+        // di pausa è superata e le gestioni automatiche in corso vengono chiuse
+        clearUserPauseIntent()
+        pausedForConnectivity = false
+        pendingRecoveryLoadVideoId = null
+
+        // Se la rete è ASSENTE, il play dell'utente esprime la volontà di partire
+        // appena possibile: teniamolo a memoria così al ritorno della rete la
+        // ripresa è automatica (invece di lasciare il brano fermo)
+        resumeDesiredAfterConnectivity = !onlineConnectivityMonitor.isNetworkAvailable &&
+                !isCastDrivingPlayback()
+
         if (_playerState.value.isPlaying) return
 
         // ADATTAMENTO DINAMICO IN RISALITA

@@ -37,6 +37,16 @@ internal class LegacyYouTubePlayerView(
   private val networkObserver = NetworkObserver(context.applicationContext)
   private val playbackResumer = PlaybackResumer()
 
+  /**
+   * Se true (default per retrocompatibilita') il PlaybackResumer interno reagisce
+   * al ritorno della rete richiamando il video con loadOrCueVideo.
+   * L'host (es. PlayerService) puo' disattivarlo quando gestisce la propria
+   * policy di connettivita': il resumer interno parte con canLoad=false e,
+   * senza lifecycle agganciato alla view, non puo' mai chiamare loadVideo,
+   * quindi la ripresa dopo un'interruzione non avverrebbe mai.
+   */
+  internal var enableInternalPlaybackResume = true
+
   internal var isYouTubePlayerReady = false
   private var initialize = { }
   private val youTubePlayerCallbacks = mutableSetOf<YouTubePlayerCallback>()
@@ -76,7 +86,7 @@ internal class LegacyYouTubePlayerView(
         if (!isYouTubePlayerReady) {
           initialize()
         }
-        else {
+        else if (enableInternalPlaybackResume) {
           playbackResumer.resume(webViewYouTubePlayer.youtubePlayer)
         }
       }

@@ -198,6 +198,15 @@ class YouTubePlayerView(
    */
   fun enableBackgroundPlayback(enable: Boolean) = legacyTubePlayerView.enableBackgroundPlayback(enable)
 
+  /**
+   * Abilita/disabilita il PlaybackResumer interno (ripresa automatica al ritorno
+   * della rete gestita dalla libreria). Da disattivare quando l'host gestisce
+   * la propria policy di connettivita' (es. PlayerService di RiPlay).
+   */
+  fun setInternalPlaybackResumeEnabled(enable: Boolean) {
+    legacyTubePlayerView.enableInternalPlaybackResume = enable
+  }
+
   override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
     when (event) {
       Lifecycle.Event.ON_RESUME -> onResume()
