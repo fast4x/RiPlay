@@ -67,7 +67,7 @@ import java.io.File
 import java.awt.Window
 
 /**
- * STEP 12 (richiesta utente): MODALITA' MINIMALE, stile "picture-in-picture"
+ * MODALITA' MINIMALE, stile "picture-in-picture"
  * di Android.
  *
  * Come funziona (tutto derivato, nessun servizio in thread separati):
