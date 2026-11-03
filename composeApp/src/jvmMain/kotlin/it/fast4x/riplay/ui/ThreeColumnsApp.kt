@@ -86,10 +86,17 @@ import it.fast4x.riplay.ui.pages.SettingsPage
 import it.fast4x.riplay.ui.pages.SongsPage
 import it.fast4x.riplay.ui.screens.AlbumScreen
 import it.fast4x.riplay.ui.screens.ArtistScreen
+// STEP 3aq: schermata "VEDI TUTTO" delle sezioni della pagina artista
+import it.fast4x.riplay.ui.screens.ArtistItemsScreen
+import it.fast4x.riplay.ui.screens.ArtistSectionRequest
 import it.fast4x.riplay.ui.screens.DesktopPlayerOverlay
 import it.fast4x.riplay.ui.screens.MoodScreen
 import it.fast4x.riplay.ui.screens.PlaylistScreen
 import it.fast4x.riplay.ui.screens.PodcastScreen
+// STEP 3aq: clip + rottondeggiatura del pannello overlay view all
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.ui.RiPlayWindowTitleBar
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowScope
@@ -1238,25 +1245,92 @@ fun DetailContent(
     onOpenDetail: (DesktopDetail) -> Unit
 ) {
     when (detail) {
-        is DesktopDetail.Artist ->
-            ScrollColumn {
-                ArtistScreen(
-                    browseId = detail.browseId,
-                    onSongClick = onSongClickOnline,
-                    onAddToQueue = onAddToQueue,
-                    onPlayCollection = onPlayCollection,
-                    onEnqueueAll = onEnqueueAll,
-                    onPlaylistClick = {
-                        onOpenDetail(DesktopDetail.YtPlaylist(it))
-                    },
-                    onViewAllAlbumsClick = {},
-                    onViewAllSinglesClick = {},
-                    onAlbumClick = {
-                        onOpenDetail(DesktopDetail.Album(it))
-                    },
-                    onClosePage = onBackToSection
-                )
+        is DesktopDetail.Artist -> {
+            // STEP 3aq (richiesta utente: "procedi con la view all come
+            // avviene in android"): lo stato della VIEW ALL aperta da
+            // una sezione della pagina artista. Su Android e' un
+            // CustomModalBottomSheet SOPRA la pagina (ArtistOverviewItems):
+            // qui e' lo stesso overlay DENTRO il pannello contenuti, ma
+            // FUORI dallo ScrollColumn (cosi' la lista completa scrolla
+            // da sola con vincoli di altezza reali invece che infinite).
+            // Click sullo sfondo o sulla freccia in alto = chiudi, e la
+            // pagina artista resta esattamente dov'era.
+            // Chiave remember = browseId: cambiando artista l'overlay si
+            // chiude da solo.
+            var viewAllRequest by remember(detail.browseId) {
+                mutableStateOf<ArtistSectionRequest?>(null)
             }
+            Box(modifier = Modifier.fillMaxSize()) {
+                ScrollColumn {
+                    ArtistScreen(
+                        browseId = detail.browseId,
+                        onSongClick = onSongClickOnline,
+                        onAddToQueue = onAddToQueue,
+                        onPlayCollection = onPlayCollection,
+                        onEnqueueAll = onEnqueueAll,
+                        onPlaylistClick = {
+                            onOpenDetail(DesktopDetail.YtPlaylist(it))
+                        },
+                        // STEP 3aq: la pagina artista chiede l'apertura
+                        // della view all di una sezione (Brani / Albums /
+                        // Singles / Playlists con moreEndpoint)
+                        onViewAllSection = { viewAllRequest = it },
+                        onAlbumClick = {
+                            onOpenDetail(DesktopDetail.Album(it))
+                        },
+                        onClosePage = onBackToSection
+                    )
+                }
+
+                viewAllRequest?.let { request ->
+                    // sfondo oscurato: click = chiudi (l'equivalente del
+                    // dismiss del bottom sheet di Android)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.55f))
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) { viewAllRequest = null }
+                    )
+                    // pannello lista completa: stesso colore del pannello
+                    // coda (0xF2101110), angoli arrotondati Heavy
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 32.dp, vertical = 20.dp)
+                            .clip(ThumbnailRoundness.Heavy.shape())
+                            .background(Color(0xF2101110))
+                    ) {
+                        ArtistItemsScreen(
+                            request = request,
+                            onSongClick = onSongClickOnline,
+                            // click su un brano = riparte da li' con la
+                            // lista COMPLETA in coda (forcePlayAtIndex)
+                            onPlayCollection = onPlayCollection,
+                            onAddToQueue = onAddToQueue,
+                            onEnqueueAll = onEnqueueAll,
+                            // apertura dettaglio = chiude l'overlay e
+                            // naviga (come Android che chiude il sheet)
+                            onAlbumClick = {
+                                viewAllRequest = null
+                                onOpenDetail(DesktopDetail.Album(it))
+                            },
+                            onArtistClick = {
+                                viewAllRequest = null
+                                onOpenDetail(DesktopDetail.Artist(it))
+                            },
+                            onPlaylistClick = {
+                                viewAllRequest = null
+                                onOpenDetail(DesktopDetail.YtPlaylist(it))
+                            },
+                            onDismiss = { viewAllRequest = null }
+                        )
+                    }
+                }
+            }
+        }
 
         is DesktopDetail.Album ->
             ScrollColumn {

@@ -39,6 +39,7 @@ import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongAlbumMap
 import dev.rebelonion.translator.Translator
 import it.fast4x.environment.Environment
+import it.fast4x.environment.EnvironmentExt
 import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.requests.albumPage
 import it.fast4x.riplay.commonutils.MODIFIED_PREFIX
@@ -78,6 +79,24 @@ import riplay.composeapp.generated.resources.from_wikipedia_cca
 import riplay.composeapp.generated.resources.information
 import riplay.composeapp.generated.resources.songs
 import riplay.composeapp.generated.resources.translate
+import kotlinx.serialization.ExperimentalSerializationApi
+
+/**
+ * Dati UI della pagina album, popolati dalla STESSA sorgente di Android
+ * (AlbumDetails -> EnvironmentExt.getAlbum): header moderno
+ * musicResponsiveHeaderRenderer (titolo/anno/autori/thumbnail), descrizione
+ * inclusa, brani presi dalla playlist VL dell'album e versioni alternative.
+ */
+private data class AlbumUiData(
+    val title: String?,
+    val year: String?,
+    val thumbnailUrl: String?,
+    val authorsText: String?,
+    val songs: List<Environment.SongItem>,
+    val otherVersions: List<Environment.AlbumItem>,
+    val description: String?,
+    val shareUrl: String?
+)
 
 /**
  * STEP 3o (richiesta utente n.2 "modificare la pagina di dettaglio di
@@ -95,9 +114,26 @@ import riplay.composeapp.generated.resources.translate
  *      lista Android: thumbnailContent = "${index + 1}"),
  *      le versioni alternative e la descrizione (Information).
  *
+ * FIX (richiesta utente: "non vedo tutto cio' che e' presente in android"):
+ * la pagina NON usa piu' Environment.albumPage -> playlistPage, che
+ *  - POSTava il body con Context.DefaultWeb (senza hl/gl di
+ *    Environment.locale, a differenza di Environment.browse usato da
+ *    Android) e quindi riceveva campi localizzati in modo diverso;
+ *  - nel layout NUOVO a due colonne non leggeva la descrizione
+ *    (description = null nel modulo) e l'anno dal runs index fisso 2;
+ *  - passava da urlCanonical -> VL playlist con doppia chiamata fragile.
+ * Ora usiamo la STESSA chiamata di AlbumDetails Android:
+ *  - EnvironmentExt.getAlbum(browseId): browse locale-aware, header
+ *    musicResponsiveHeaderRenderer, descrizione, brani via
+ *    getAlbumSongs(VL playlist), versioni alternative.
+ * La vecchia Environment.albumPage resta solo come FALLBACK se la chiamata
+ * primaria fallisce.
+ *
  * Le funzioni (salvataggio album nel db, bookmark preferiti, traduzione,
- * click = album intero in coda) restano IDENTICHE: cambia solo il layout.
+ * click = album intero in coda) restano IDENTICHE: cambia solo la sorgente
+ * dati e il layout resta quello gia' allineato ad Android.
  */
+@OptIn(ExperimentalSerializationApi::class)
 @Composable
 fun AlbumScreen(
     browseId: String,
@@ -117,58 +153,88 @@ fun AlbumScreen(
 
     var album by remember { mutableStateOf<Album?>(null) }
 
-    val albumPage = remember { mutableStateOf<Environment.PlaylistOrAlbumPage?>(null) }
+    val albumUi = remember { mutableStateOf<AlbumUiData?>(null) }
     LaunchedEffect(browseId) {
         Database.album(browseId).collect { currentAlbum ->
             album = currentAlbum
 
-            if (albumPage.value == null)
-                Environment.albumPage(BrowseBody(browseId = browseId))
-                    ?.onSuccess { currentAlbumPage ->
-                        albumPage.value = currentAlbumPage
+            if (albumUi.value == null) {
+                // ─────────────────────────────────────────────────────
+                // STESSA SORGENTE DATI DI ANDROID (AlbumDetails):
+                // EnvironmentExt.getAlbum(browseId)
+                // ─────────────────────────────────────────────────────
+                val page = EnvironmentExt.getAlbum(browseId).getOrNull()
 
-                        println("browseId: $browseId albumPage: ${albumPage.value}")
-
-                        coroutineScope.launch {
-                            Database.upsert(
-                                Album(
-                                    id = browseId,
-                                    title = if (currentAlbum?.title?.startsWith(MODIFIED_PREFIX) == true) currentAlbum.title else currentAlbumPage.title,
-                                    thumbnailUrl = if (currentAlbum?.thumbnailUrl?.startsWith(
-                                            MODIFIED_PREFIX
-                                        ) == true
-                                    ) currentAlbum.thumbnailUrl else currentAlbumPage.thumbnail?.url,
-                                    year = currentAlbumPage.year,
-                                    authorsText = if (currentAlbum?.authorsText?.startsWith(
-                                            MODIFIED_PREFIX
-                                        ) == true
-                                    ) currentAlbum.authorsText else currentAlbumPage.authors
-                                        ?.joinToString("") { it.name ?: "" },
-                                    shareUrl = currentAlbumPage.url,
-                                    timestamp = System.currentTimeMillis(),
-                                    bookmarkedAt = currentAlbum?.bookmarkedAt
-                                )
-                            )
-
-                            currentAlbumPage
-                                .songsPage
-                                ?.items
-                                ?.map(Environment.SongItem::asSong)
-                                ?.onEach {
-                                    Database.upsert(it)
-                                }
-                                ?.mapIndexed { position, song ->
-                                    Database.upsert(
-                                        SongAlbumMap(
-                                            songId = song.id,
-                                            albumId = browseId,
-                                            position = position
-                                        )
-                                    )
-                                }
-                        }
-
+                val ui = page?.let {
+                    AlbumUiData(
+                        title = it.album.info?.name,
+                        year = it.album.year,
+                        thumbnailUrl = it.album.thumbnail?.url,
+                        authorsText = it.album.authors?.joinToString("") { a -> a.name ?: "" },
+                        songs = it.songs,
+                        otherVersions = it.otherVersions,
+                        description = it.description,
+                        shareUrl = it.url
+                    )
+                } ?: Environment.albumPage(BrowseBody(browseId = browseId))
+                    ?.getOrNull()
+                    ?.let { legacy ->
+                        // FALLBACK (solo se getAlbum fallisce): vecchia
+                        // chiamata Environment.albumPage
+                        AlbumUiData(
+                            title = legacy.title,
+                            year = legacy.year,
+                            thumbnailUrl = legacy.thumbnail?.url,
+                            authorsText = legacy.authors?.joinToString("") { a -> a.name ?: "" },
+                            songs = legacy.songsPage?.items.orEmpty(),
+                            otherVersions = legacy.otherVersions.orEmpty(),
+                            description = legacy.description,
+                            shareUrl = legacy.url
+                        )
                     }
+
+                println("browseId: $browseId albumUi: ${ui?.title} songs=${ui?.songs?.size}")
+
+                if (ui != null) {
+                    albumUi.value = ui
+
+                    coroutineScope.launch {
+                        Database.upsert(
+                            Album(
+                                id = browseId,
+                                title = if (currentAlbum?.title?.startsWith(MODIFIED_PREFIX) == true) currentAlbum.title else ui.title,
+                                thumbnailUrl = if (currentAlbum?.thumbnailUrl?.startsWith(
+                                        MODIFIED_PREFIX
+                                    ) == true
+                                ) currentAlbum.thumbnailUrl else ui.thumbnailUrl,
+                                year = ui.year,
+                                authorsText = if (currentAlbum?.authorsText?.startsWith(
+                                        MODIFIED_PREFIX
+                                    ) == true
+                                ) currentAlbum.authorsText else ui.authorsText,
+                                shareUrl = ui.shareUrl,
+                                timestamp = System.currentTimeMillis(),
+                                bookmarkedAt = currentAlbum?.bookmarkedAt
+                            )
+                        )
+
+                        ui.songs
+                            .map(Environment.SongItem::asSong)
+                            .onEach {
+                                Database.upsert(it)
+                            }
+                            .mapIndexed { position, song ->
+                                Database.upsert(
+                                    SongAlbumMap(
+                                        songId = song.id,
+                                        albumId = browseId,
+                                        position = position
+                                    )
+                                )
+                            }
+                    }
+                }
+            }
         }
 
     }
@@ -181,8 +247,8 @@ fun AlbumScreen(
     val languageDestination = languageDestination()
 
     // lista brani dell'album (per shuffle / metti in coda tutto / click)
-    val allAlbumSongs = albumPage.value
-        ?.songsPage?.items
+    val allAlbumSongs = albumUi.value
+        ?.songs
         .orEmpty()
         .map { it.asSong }
         .distinctBy { it.id }
@@ -205,9 +271,9 @@ fun AlbumScreen(
                     .fillMaxWidth(0.4f)
                     .aspectRatio(1f)
             ) {
-                albumPage.value?.let {
+                albumUi.value?.let {
                     AsyncImage(
-                        model = albumPage.value!!.thumbnail?.url?.resize(1200, 1200),
+                        model = albumUi.value!!.thumbnailUrl?.resize(1200, 1200),
                         contentDescription = ds("common.loading"),
                         contentScale = androidx.compose.ui.layout.ContentScale.Crop,
                         modifier = Modifier
@@ -232,7 +298,7 @@ fun AlbumScreen(
 
                 // TITOLO grande centrato (Android: AutoResizeText 32..38sp
                 // in fondo all'header, qui in testa alla colonna destra)
-                albumPage.value?.let {
+                albumUi.value?.let {
                     if (!it.title.isNullOrEmpty())
                         AutoResizeText(
                             text = it.title.toString(),
@@ -251,7 +317,7 @@ fun AlbumScreen(
 
                     // RIGA INFO centrata (Android: "anno - N songs - durata")
                     Text(
-                        text = "${it.year ?: ""}${if (it.year != null) " - " else ""}${it.songsPage?.items?.size ?: 0} "
+                        text = "${it.year ?: ""}${if (it.year != null) " - " else ""}${it.songs.size} "
                                 + ds("common.songs_word"),
                         color = Color.White.copy(alpha = 0.6f),
                         fontSize = 13.sp,
@@ -315,7 +381,7 @@ fun AlbumScreen(
                     )
                 }
 
-                if (albumPage.value != null) {
+                if (albumUi.value != null) {
 
                     // BRANI con NUMERO DI TRACCIA al posto della miniatura
                     // (come la lista Android: BasicText("${index + 1}"))
@@ -364,7 +430,7 @@ fun AlbumScreen(
                         )
                     }
 
-                    albumPage.value!!.otherVersions?.let { otherVersion ->
+                    albumUi.value!!.otherVersions.takeIf { it.isNotEmpty() }?.let { otherVersion ->
                         Row(
                             verticalAlignment = Alignment.Bottom,
                             horizontalArrangement = Arrangement.Start,
@@ -403,7 +469,7 @@ fun AlbumScreen(
 
                 // DESCRIZIONE (Information): in fondo alla colonna destra,
                 // come la sezione "Info & community" di Android
-                albumPage.value?.description?.let { description ->
+                albumUi.value?.description?.let { description ->
                     val attributionsIndex = description.lastIndexOf("\n\nFrom Wikipedia")
 
                     Title(

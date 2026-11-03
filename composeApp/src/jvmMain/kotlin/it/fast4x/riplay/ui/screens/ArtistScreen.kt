@@ -43,8 +43,12 @@ import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.environment.Environment
+import it.fast4x.environment.EnvironmentExt
+import it.fast4x.environment.models.BrowseEndpoint
 import it.fast4x.environment.models.bodies.BrowseBody
 import it.fast4x.environment.requests.artistPage
+import it.fast4x.environment.utils.ArtistDiscographyType
+import it.fast4x.environment.utils.completed
 import it.fast4x.riplay.items.AlbumItem
 import it.fast4x.riplay.items.PlaylistItem
 import it.fast4x.riplay.items.SongItem
@@ -86,7 +90,43 @@ import riplay.composeapp.generated.resources.playlists
 import riplay.composeapp.generated.resources.singles
 import riplay.composeapp.generated.resources.songs
 import riplay.composeapp.generated.resources.translate
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlin.random.Random
+
+/**
+ * Dati UI della pagina artista, popolati dalla STESSA sorgente di Android:
+ * EnvironmentExt.getArtistPage (parsing delle sezioni INDIPENDENTE dai
+ * titoli localizzati) + getArtistDiscography (Album/Single) per la
+ * discografia completa + getArtistItemsPage(...).completed() per la lista
+ * brani integrale.
+ */
+private data class ArtistUiData(
+    val name: String?,
+    val thumbnailUrl: String?,
+    val subscribersText: String?,
+    val description: String?,
+    val songs: List<Environment.SongItem>,
+    val playlists: List<Environment.PlaylistItem>,
+    val albums: List<Environment.AlbumItem>,
+    val singles: List<Environment.AlbumItem>,
+    // endpoint "vedi tutti" della sezione brani (per il caricamento
+    // COMPLETO come fa Android su click)
+    val songsBrowseId: String? = null,
+    val songsParams: String? = null,
+    // STEP 3aq (richiesta utente: "procedi con la view all come avviene
+    // in android"): gli endpoint "vedi tutto" delle ALTRE sezioni. Su
+    // Android OGNI sezione con moreEndpoint apre la lista completa
+    // (ArtistOverviewItems): qui catturiamo gli stessi endpoint.
+    // Nota albums/singles: YT Music mette le sezioni disco con item
+    // AlbumItem in ordine (prima ALBUM poi SINGOLI): la prima sezione
+    // AlbumItem e' quella degli album, la seconda quella dei singoli.
+    val albumsBrowseId: String? = null,
+    val albumsParams: String? = null,
+    val singlesBrowseId: String? = null,
+    val singlesParams: String? = null,
+    val playlistsBrowseId: String? = null,
+    val playlistsParams: String? = null
+)
 
 /**
  * STEP 3o (richiesta utente n.2 "modificare la pagina di dettaglio di
@@ -97,19 +137,35 @@ import kotlin.random.Random
  *    iscritti centrata, RIGA DI AZIONI (Segui artista / shuffle brani),
  *    poi Brani, Playlists, Albums, Singles e descrizione (Information).
  *
+ * FIX (richiesta utente: "in desktop si vedono solo gli album"): la pagina
+ * NON usa piu' Environment.artistPage (che matchava i titoli delle sezioni
+ * con stringhe INGLESI hardcoded "Songs"/"Albums"/"Singles"/"Playlists" e
+ * leggeva solo singleColumnBrowseResultsRenderer: con le risposte
+ * localizzate o a due colonne brani/singoli/playlist sparivano). Ora usiamo
+ * le STESSHE chiamate di ArtistOverview Android:
+ *  - EnvironmentExt.getArtistPage(browseId)      -> sezioni per TIPO item
+ *  - EnvironmentExt.getArtistDiscography(...Album)  -> album COMPLETI
+ *  - EnvironmentExt.getArtistDiscography(...Single) -> singoli COMPLETI
+ *  - EnvironmentExt.getArtistItemsPage(...).completed() -> brani integrali
+ * Il vecchio Environment.artistPage resta solo come FALLBACK se la
+ * chiamata primaria fallisce.
+ *
  * Le funzioni restano IDENTICHE: salvataggio dell'artista nel db al load,
  * SEGUI (bookmarkedAt come gli album preferiti, step3i), traduzione della
- * biografia. NUOVO (richiesta utente n.2): shuffle dei brani dell'artista
- * (tutta la lista in coda in ordine casuale e parte il primo).
+ * biografia, shuffle dei brani dell'artista.
  */
-@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@OptIn(ExperimentalSerializationApi::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun ArtistScreen(
     browseId: String,
     onSongClick: (Song) -> Unit,
     onPlaylistClick: (String) -> Unit,
-    onViewAllAlbumsClick: () -> Unit,
-    onViewAllSinglesClick: () -> Unit,
+    // STEP 3aq: "VEDI TUTTO" di una sezione (come Android che apre
+    // ArtistOverviewItems nel bottom sheet): la schermata riceve la
+    // richiesta completa (endpoint della sezione + nome artista/sezione
+    // + item gia' caricati come fallback) e la gestisce con l'overlay
+    // ArtistItemsScreen. null = l'app non gestisce la view all.
+    onViewAllSection: ((ArtistSectionRequest) -> Unit)? = null,
     onAlbumClick: (String) -> Unit,
     onClosePage: () -> Unit,
     // STEP 3i: azione "aggiungi alla coda" sui brani dell'artista
@@ -121,7 +177,13 @@ fun ArtistScreen(
     // artista lo lascia ai singoli pulsanti "+" dei brani)
     onEnqueueAll: ((List<Song>) -> Unit)? = null
 ) {
-    val artistPage = remember { mutableStateOf<Environment.ArtistInfoPage?>(null) }
+    val artistUi = remember { mutableStateOf<ArtistUiData?>(null) }
+
+    // lista brani COMPLETI dell'artista (per lo shuffle): parte dai brani
+    // della sezione e viene poi sostituita dal fetch integrale (completed)
+    var allArtistSongsItems by remember {
+        mutableStateOf<List<Environment.SongItem>>(emptyList())
+    }
 
     // STEP 3i - ARTISTA SEGUITO: lo stato dell'artista nel db (se esiste,
     // con bookmarkedAt = "seguito") arriva reattivo dal Flow
@@ -129,45 +191,189 @@ fun ArtistScreen(
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(browseId) {
-        Environment.artistPage(BrowseBody(browseId = browseId))
-            ?.onSuccess {
-                artistPage.value = it
-                // STEP 3i: SALVA L'ARTISTA nel db (stesso schema di
-                // AlbumScreen per gli album): cosi' l'artista VISITATO
-                // compare nella pagina Artists e PUO' essere seguito con
-                // il bookmark qui sotto. Se l'artista esisteva gia' (con
-                // generi/biografia/bookmark) i dati esistenti sono
-                // PRESERVATI: si aggiornano solo nome e thumbnail.
-                runCatching {
-                    val existing = Database.artist(browseId).first()
-                    val toSave = if (existing != null)
-                        existing.copy(
-                            name = it.name ?: existing.name,
-                            thumbnailUrl = it.thumbnail?.url ?: existing.thumbnailUrl
-                        )
-                    else
-                        Artist(
-                            id = browseId,
-                            name = it.name,
-                            thumbnailUrl = it.thumbnail?.url,
-                            timestamp = System.currentTimeMillis(),
-                            isYoutubeArtist = true
-                        )
-                    if (existing == null ||
-                        existing.name != toSave.name ||
-                        existing.thumbnailUrl != toSave.thumbnailUrl
-                    ) {
-                        Database.upsert(toSave)
-                    }
-                }.onFailure { e -> println("[RiPlay-Artista] salvataggio artista fallito: ${e.message}") }
-            }
-    }
-    val artist = artistPage.value
+        // ─────────────────────────────────────────────────────────────
+        // STESSA SORGENTE DATI DI ANDROID (ArtistOverview):
+        // EnvironmentExt.getArtistPage -> parsing per tipo item, non per
+        // titolo: funziona con qualunque lingua e con layout a 1 o 2 colonne
+        // ─────────────────────────────────────────────────────────────
+        val page = EnvironmentExt.getArtistPage(browseId = browseId).getOrNull()
 
-    // lista brani dell'artista (per lo shuffle)
-    val allArtistSongs = artistPage.value
-        ?.songs
-        .orEmpty()
+        if (page != null) {
+            val sectionSongs = page.sections
+                .flatMap { it.items.filterIsInstance<Environment.SongItem>() }
+                .distinctBy { it.key }
+            val sectionPlaylists = page.sections
+                .flatMap { it.items.filterIsInstance<Environment.PlaylistItem>() }
+                .distinctBy { it.key }
+            val sectionAlbums = page.sections
+                .flatMap { it.items.filterIsInstance<Environment.AlbumItem>() }
+                .distinctBy { it.key }
+            val songsSection = page.sections
+                .firstOrNull { it.items.firstOrNull() is Environment.SongItem }
+
+            // STEP 3aq: sezioni con item AlbumItem (albums + singles) e
+            // PlaylistItem: i loro moreEndpoint alimentano la view all
+            val albumSections = page.sections
+                .filter { it.items.firstOrNull() is Environment.AlbumItem }
+            val playlistsSection = page.sections
+                .firstOrNull { it.items.firstOrNull() is Environment.PlaylistItem }
+
+            artistUi.value = ArtistUiData(
+                name = page.artist.info?.name,
+                thumbnailUrl = page.artist.thumbnail?.url,
+                subscribersText = page.subscribers ?: page.artist.subscribersCountText,
+                description = page.description,
+                songs = sectionSongs,
+                playlists = sectionPlaylists,
+                // provvisorio: sotto vengono sostituiti dalla discografia completa
+                albums = sectionAlbums,
+                singles = emptyList(),
+                songsBrowseId = songsSection?.moreEndpoint?.browseId,
+                songsParams = songsSection?.moreEndpoint?.params,
+                albumsBrowseId = albumSections.getOrNull(0)?.moreEndpoint?.browseId,
+                albumsParams = albumSections.getOrNull(0)?.moreEndpoint?.params,
+                singlesBrowseId = albumSections.getOrNull(1)?.moreEndpoint?.browseId,
+                singlesParams = albumSections.getOrNull(1)?.moreEndpoint?.params,
+                playlistsBrowseId = playlistsSection?.moreEndpoint?.browseId,
+                playlistsParams = playlistsSection?.moreEndpoint?.params
+            )
+            allArtistSongsItems = sectionSongs
+
+            // STEP 3i: SALVA L'ARTISTA nel db (stesso schema di
+            // AlbumScreen per gli album): cosi' l'artista VISITATO
+            // compare nella pagina Artists e PUO' essere seguito con
+            // il bookmark qui sotto. Se l'artista esisteva gia' (con
+            // generi/biografia/bookmark) i dati esistenti sono
+            // PRESERVATI: si aggiornano solo nome e thumbnail.
+            runCatching {
+                val existing = Database.artist(browseId).first()
+                val toSave = if (existing != null)
+                    existing.copy(
+                        name = page.artist.info?.name ?: existing.name,
+                        thumbnailUrl = page.artist.thumbnail?.url ?: existing.thumbnailUrl
+                    )
+                else
+                    Artist(
+                        id = browseId,
+                        name = page.artist.info?.name,
+                        thumbnailUrl = page.artist.thumbnail?.url,
+                        timestamp = System.currentTimeMillis(),
+                        isYoutubeArtist = true
+                    )
+                if (existing == null ||
+                    existing.name != toSave.name ||
+                    existing.thumbnailUrl != toSave.thumbnailUrl
+                ) {
+                    Database.upsert(toSave)
+                }
+            }.onFailure { e -> println("[RiPlay-Artista] salvataggio artista fallito: ${e.message}") }
+
+            // ─────────────────────────────────────────────────────────
+            // DISCOGRAFIA COMPLETA (come Android): albums e SINGOLI dalla
+            // discografia ufficiale (browse MPAD) cosi' si vedono ENTRAMBI
+            // anche quando la home dell'artista non espone il carosello
+            // ─────────────────────────────────────────────────────────
+            val albumsDiscography = runCatching {
+                EnvironmentExt.getArtistDiscography(browseId, ArtistDiscographyType.Album)
+                    .getOrNull()
+                    ?.items
+                    ?.filterIsInstance<Environment.AlbumItem>()
+                    .orEmpty()
+                    .distinctBy { it.key }
+            }.getOrDefault(emptyList())
+
+            val singlesDiscography = runCatching {
+                EnvironmentExt.getArtistDiscography(browseId, ArtistDiscographyType.Single)
+                    .getOrNull()
+                    ?.items
+                    ?.filterIsInstance<Environment.AlbumItem>()
+                    .orEmpty()
+                    .distinctBy { it.key }
+            }.getOrDefault(emptyList())
+
+            if (albumsDiscography.isNotEmpty() || singlesDiscography.isNotEmpty()) {
+                artistUi.value = artistUi.value?.copy(
+                    albums = albumsDiscography.ifEmpty { sectionAlbums },
+                    singles = singlesDiscography
+                )
+            }
+
+            // ─────────────────────────────────────────────────────────
+            // BRANI INTEGRALI (come Android su click): getArtistItemsPage
+            // + completed() segue le pagine di continuazione
+            // ─────────────────────────────────────────────────────────
+            val songsBrowseId = artistUi.value?.songsBrowseId
+            if (!songsBrowseId.isNullOrBlank()) {
+                val fullSongs = runCatching {
+                    EnvironmentExt.getArtistItemsPage(
+                        BrowseEndpoint(
+                            browseId = songsBrowseId,
+                            // FIX (correzione utente): songsParams (non
+                            // songsToParams): e' il nome del campo del
+                            // data class ArtistUiData
+                            params = artistUi.value?.songsParams
+                        )
+                    ).completed()
+                        .getOrNull()
+                        ?.items
+                        ?.filterIsInstance<Environment.SongItem>()
+                        .orEmpty()
+                        .distinctBy { it.key }
+                }.getOrDefault(emptyList())
+
+                if (fullSongs.isNotEmpty())
+                    allArtistSongsItems = fullSongs
+            }
+        } else {
+            // FALLBACK (solo se getArtistPage fallisce): vecchia chiamata
+            // Environment.artistPage (parsing per titolo, meno affidabile)
+            Environment.artistPage(BrowseBody(browseId = browseId))
+                ?.onSuccess { legacy ->
+                    artistUi.value = ArtistUiData(
+                        name = legacy.name,
+                        thumbnailUrl = legacy.thumbnail?.url,
+                        subscribersText = legacy.subscriberCountText,
+                        description = legacy.description,
+                        songs = legacy.songs.orEmpty().distinctBy { it.key },
+                        playlists = legacy.playlists.orEmpty().distinctBy { it.key },
+                        albums = legacy.albums.orEmpty().distinctBy { it.key },
+                        singles = legacy.singles.orEmpty().distinctBy { it.key },
+                        songsBrowseId = legacy.songsEndpoint?.browseId,
+                        songsParams = legacy.songsEndpoint?.params
+                    )
+                    allArtistSongsItems = legacy.songs.orEmpty().distinctBy { it.key }
+
+                    runCatching {
+                        val existing = Database.artist(browseId).first()
+                        val toSave = if (existing != null)
+                            existing.copy(
+                                name = legacy.name ?: existing.name,
+                                thumbnailUrl = legacy.thumbnail?.url ?: existing.thumbnailUrl
+                            )
+                        else
+                            Artist(
+                                id = browseId,
+                                name = legacy.name,
+                                thumbnailUrl = legacy.thumbnail?.url,
+                                timestamp = System.currentTimeMillis(),
+                                isYoutubeArtist = true
+                            )
+                        if (existing == null ||
+                            existing.name != toSave.name ||
+                            existing.thumbnailUrl != toSave.thumbnailUrl
+                        ) {
+                            Database.upsert(toSave)
+                        }
+                    }.onFailure { e ->
+                        println("[RiPlay-Artista] salvataggio artista fallito: ${e.message}")
+                    }
+                }
+        }
+    }
+    val artist = artistUi.value
+
+    // lista brani dell'artista (per lo shuffle), mappata al modello Song
+    val allArtistSongs = allArtistSongsItems
         .map { it.asSong }
         .distinctBy { it.id }
 
@@ -195,9 +401,9 @@ fun ArtistScreen(
                     .fillMaxWidth(0.4f)
                     .aspectRatio(1f)
             ) {
-                artistPage.value?.let {
+                artistUi.value?.let {
                     AsyncImage(
-                        model = artistPage.value!!.thumbnail?.url?.resize(1200, 1200),
+                        model = artistUi.value!!.thumbnailUrl?.resize(1200, 1200),
                         contentDescription = ds("common.loading"),
                         contentScale = androidx.compose.ui.layout.ContentScale.Crop,
                         modifier = Modifier
@@ -220,7 +426,7 @@ fun ArtistScreen(
                     .fillMaxSize()
             ) {
 
-                artistPage.value?.let {
+                artistUi.value?.let {
                     // NOME grande centrato (Android: AutoResizeText 32..38sp)
                     if (!it.name.isNullOrEmpty())
                         AutoResizeText(
@@ -239,7 +445,7 @@ fun ArtistScreen(
                         )
 
                     // RIGA INFO: iscritti (Android: subscriberCountText)
-                    it.subscriberCountText?.let { subscribers ->
+                    it.subscribersText?.let { subscribers ->
                         Text(
                             text = String.format(
                                 stringResource(Res.string.artist_subscribers),
@@ -302,14 +508,21 @@ fun ArtistScreen(
                     )
                 }
 
-                if (artistPage.value != null) {
+                if (artistUi.value != null) {
 
-                    artistPage.value!!.songs?.let { allSongs ->
+                    artistUi.value!!.songs.takeIf { it.isNotEmpty() }?.let { allSongs ->
 
                         val parentalControlEnabled = false
 
                         val songs = if (parentalControlEnabled)
                             allSongs.filter { !it.explicit } else allSongs
+
+                        // STEP 3aq: "VEDI TUTTO" dei BRANI (come Android:
+                        // Title cliccabile quando la sezione ha un
+                        // moreEndpoint). Il titolo va letto FUORI dalla
+                        // lambda di click (stringResource e' composable)
+                        val songsTitle = stringResource(Res.string.songs)
+                        val songsViewAllBrowseId = artistUi.value?.songsBrowseId
                         Row(
                             verticalAlignment = Alignment.Bottom,
                             horizontalArrangement = Arrangement.Start,
@@ -318,7 +531,23 @@ fun ArtistScreen(
                                 .padding(horizontal = 16.dp)
                         ) {
                             Title(
-                                title = stringResource(Res.string.songs)
+                                title = songsTitle,
+                                onClick = songsViewAllBrowseId?.let { bid ->
+                                    {
+                                        onViewAllSection?.invoke(
+                                            ArtistSectionRequest(
+                                                artistName = artistUi.value?.name,
+                                                sectionName = songsTitle,
+                                                browseId = bid,
+                                                params = artistUi.value?.songsParams,
+                                                // i brani gia' caricati
+                                                // (fetch integrale a
+                                                // pag load) come fallback
+                                                fallbackItems = allArtistSongsItems
+                                            )
+                                        )
+                                    }
+                                }
                             )
                         }
 
@@ -340,7 +569,13 @@ fun ArtistScreen(
                         }
                     }
 
-                    artistPage.value!!.playlists?.let { playlists ->
+                    artistUi.value!!.playlists.takeIf { it.isNotEmpty() }?.let { playlists ->
+
+                        // STEP 3aq: "VEDI TUTTO" delle PLAYLIST (come
+                        // Android: ogni sezione con moreEndpoint apre la
+                        // lista completa)
+                        val playlistsTitle = stringResource(Res.string.playlists)
+                        val playlistsViewAllBrowseId = artistUi.value?.playlistsBrowseId
                         Row(
                             verticalAlignment = Alignment.Bottom,
                             horizontalArrangement = Arrangement.Start,
@@ -349,7 +584,20 @@ fun ArtistScreen(
                                 .padding(horizontal = 16.dp)
                         ) {
                             Title(
-                                title = stringResource(Res.string.playlists)
+                                title = playlistsTitle,
+                                onClick = playlistsViewAllBrowseId?.let { bid ->
+                                    {
+                                        onViewAllSection?.invoke(
+                                            ArtistSectionRequest(
+                                                artistName = artistUi.value?.name,
+                                                sectionName = playlistsTitle,
+                                                browseId = bid,
+                                                params = artistUi.value?.playlistsParams,
+                                                fallbackItems = playlists
+                                            )
+                                        )
+                                    }
+                                }
                             )
                         }
 
@@ -375,7 +623,14 @@ fun ArtistScreen(
                         }
                     }
 
-                    artistPage.value!!.albums?.let { albums ->
+                    artistUi.value!!.albums.takeIf { it.isNotEmpty() }?.let { albums ->
+
+                        // STEP 3aq: "VEDI TUTTO" degli ALBUM: il piu'
+                        // apre la lista COMPLETA della sezione via
+                        // moreEndpoint (stesso flusso di Android);
+                        // fallback = discografia gia' caricata
+                        val albumsTitle = stringResource(Res.string.albums)
+                        val albumsViewAllBrowseId = artistUi.value?.albumsBrowseId
                         Row(
                             verticalAlignment = Alignment.Bottom,
                             horizontalArrangement = Arrangement.Start,
@@ -384,17 +639,30 @@ fun ArtistScreen(
                                 .padding(horizontal = 16.dp)
                         ) {
                             Title2Actions(
-                                title = stringResource(Res.string.albums),
-                                onClick1 = {
-                                    onViewAllAlbumsClick()
+                                title = albumsTitle,
+                                onClick1 = albumsViewAllBrowseId?.let { bid ->
+                                    {
+                                        onViewAllSection?.invoke(
+                                            ArtistSectionRequest(
+                                                artistName = artistUi.value?.name,
+                                                sectionName = albumsTitle,
+                                                browseId = bid,
+                                                params = artistUi.value?.albumsParams,
+                                                fallbackItems = albums
+                                            )
+                                        )
+                                    }
                                 },
                                 icon2 = Res.drawable.dice,
                                 onClick2 = {
+                                    if (albums.isEmpty()) return@Title2Actions
                                     val albumId = albums.get(
-                                        Random(System.currentTimeMillis()).nextInt(
-                                            0,
-                                            albums.size - 1
-                                        )
+                                        if (albums.size > 1)
+                                            Random(System.currentTimeMillis()).nextInt(
+                                                0,
+                                                albums.size - 1
+                                            )
+                                        else 0
                                     ).key
                                     onAlbumClick(albumId)
                                 }
@@ -420,7 +688,13 @@ fun ArtistScreen(
                         }
                     }
 
-                    artistPage.value!!.singles?.let { singles ->
+                    artistUi.value!!.singles.takeIf { it.isNotEmpty() }?.let { singles ->
+
+                        // STEP 3aq: "VEDI TUTTO" dei SINGOLI: stessa
+                        // meccanica degli album (moreEndpoint della
+                        // sezione, fallback = discografia singoli)
+                        val singlesTitle = stringResource(Res.string.singles)
+                        val singlesViewAllBrowseId = artistUi.value?.singlesBrowseId
                         Row(
                             verticalAlignment = Alignment.Bottom,
                             horizontalArrangement = Arrangement.Start,
@@ -428,8 +702,34 @@ fun ArtistScreen(
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp)
                         ) {
-                            Title(
-                                title = stringResource(Res.string.singles)
+                            Title2Actions(
+                                title = singlesTitle,
+                                onClick1 = singlesViewAllBrowseId?.let { bid ->
+                                    {
+                                        onViewAllSection?.invoke(
+                                            ArtistSectionRequest(
+                                                artistName = artistUi.value?.name,
+                                                sectionName = singlesTitle,
+                                                browseId = bid,
+                                                params = artistUi.value?.singlesParams,
+                                                fallbackItems = singles
+                                            )
+                                        )
+                                    }
+                                },
+                                icon2 = Res.drawable.dice,
+                                onClick2 = {
+                                    if (singles.isEmpty()) return@Title2Actions
+                                    val albumId = singles.get(
+                                        if (singles.size > 1)
+                                            Random(System.currentTimeMillis()).nextInt(
+                                                0,
+                                                singles.size - 1
+                                            )
+                                        else 0
+                                    ).key
+                                    onAlbumClick(albumId)
+                                }
                             )
                         }
 
@@ -457,7 +757,7 @@ fun ArtistScreen(
                 }
 
                 // BIOGRAFIA (Information) in fondo alla colonna destra
-                artistPage.value?.description?.let { description ->
+                artistUi.value?.description?.let { description ->
                     val attributionsIndex = description.lastIndexOf("\n\nFrom Wikipedia")
 
                     Title(
