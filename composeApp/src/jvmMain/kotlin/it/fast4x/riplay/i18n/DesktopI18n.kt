@@ -83,8 +83,16 @@ object DesktopI18n {
         get() = languageState.value
         private set(value) { languageState.value = value }
 
+    /** STEP 4g: guardia run-once (il richiamo ripetuto e' no-op). */
+    private var initializeCalled = false
+
     /** Chiamare UNA volta all'avvio (main.kt) PRIMA della prima UI. */
     fun initialize() {
+        if (initializeCalled) {
+            println("[RiPlay-I18n] initialize gia' eseguito: skip (guardia run-once)")
+            return
+        }
+        initializeCalled = true
         val saved = readSavedLanguage()
         language = when (saved) {
             null, Languages.System -> detectSystemLanguage()

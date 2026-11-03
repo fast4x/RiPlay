@@ -57,6 +57,23 @@ internal class KcefPlayerHostPanel : JPanel(null) {
     }
 
     /**
+     * STEP 4g (fix "sfondo bianco al posto della cover"): quando il pannello
+     * viene agganciato alla gerarchia AWT il suo contenitore e' il wrapper
+     * di interop di SwingPanel (un JPanel che di default ha sfondo CHIARO).
+     * Se per un frame il figlio fosse coperto/nascosto, il wrapper mostra
+     * il PROPRI sfondo: fino a ora veniva colorato di nero solo dall'update
+     * di SwingPanel (che gira alla prima ricomposizione). Qui il nero viene
+     * impostato SUBITO, alla aggiunta in gerarchia: nessun lampeggio bianco.
+     */
+    override fun addNotify() {
+        super.addNotify()
+        runCatching {
+            (parent as? JPanel)?.background = Color.BLACK
+            (parent as? JPanel)?.isOpaque = true
+        }
+    }
+
+    /**
      * Inserisce il browser SOTTO la canvas della cover. Z-order AWT: il
      * componente con indice MINORE e' disegnato SOPRA; la cover va quindi
      * forzata all'indice 0 e il browser all'indice 1.

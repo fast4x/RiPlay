@@ -83,6 +83,7 @@
     <string name="local.imported">Imported {n} files</string>
     <string name="local.scanning">Searching for audio files...</string>
     <string name="local.empty_hint">No local files imported.\n\nUse \"Add folder\" to scan a computer folder (subfolders included) or \"Add files\" to pick individual songs. Imported files are played by the Local engine (VLCJ) and remain in the library.</string>
+    <string name="local.removed_missing">Removed {n} local entries whose file no longer exists</string>
     <string name="local.input_hint">YouTube URL or local file / URL (VLCJ)</string>
     <string name="local.clear_url">Clear URL</string>
     <string name="local.open_file">Open local file</string>
@@ -133,6 +134,7 @@
     <string name="nav.settings">Settings</string>
     <string name="settings.tab.data">Data</string>
     <string name="settings.tab.accounts">Account</string>
+    <string name="settings.tab.about">About</string>
     <string name="settings.data.info">Export or import a backup of the library database (songs, playlists, history and favorites). The backup is a single .db file, compatible with Android; the restore completes when RiPlay restarts.</string>
     <string name="settings.data.db_path">Database: {path}</string>
     <string name="settings.data.export_backup">Export backup</string>
@@ -172,4 +174,20 @@
     <string name="settings.accounts.login_instructions">Complete the sign-in in the window below. When YouTube Music opens with your account, the connection is saved automatically.</string>
     <string name="settings.accounts.kcef_not_ready">The embedded browser is not ready yet ({state})</string>
     <string name="settings.accounts.waiting_login">Waiting for the sign-in to complete...</string>
+    <string name="settings.about.tagline">RiPlay {version} (Desktop) by fast4x</string>
+    <string name="settings.about.social">Social</string>
+    <string name="settings.about.telegram">Telegram</string>
+    <string name="settings.about.telegram_info">Official RiPlay group</string>
+    <string name="settings.about.reddit">Reddit</string>
+    <string name="settings.about.reddit_info">Community of RiPlay users</string>
+    <string name="settings.about.project">Project</string>
+    <string name="settings.about.github">GitHub</string>
+    <string name="settings.about.github_info">View the source code</string>
+    <string name="settings.about.releases">Latest version</string>
+    <string name="settings.about.releases_info">Download the latest desktop release from GitHub</string>
+    <string name="settings.about.troubleshooting">Troubleshooting</string>
+    <string name="settings.about.report_issue">Report an issue</string>
+    <string name="settings.about.request_feature">Request a feature or suggest an idea</string>
+    <string name="settings.about.github_redirect">You will be redirected to GitHub</string>
+    <string name="splash.loading">Loading...</string>
 </resources>

@@ -83,6 +83,7 @@
     <string name="local.imported">Importati {n} file</string>
     <string name="local.scanning">Ricerca file audio in corso...</string>
     <string name="local.empty_hint">Nessun file locale importato.\n\nUsa \"Aggiungi cartella\" per scansionare una cartella del computer (cerca anche nelle sottocartelle) oppure \"Aggiungi file\" per scegliere i singoli brani. I file importati vengono riprodotti dal motore Locale (VLCJ) e restano nella libreria.</string>
+    <string name="local.removed_missing">Rimossi {n} brani locali il cui file non esiste più</string>
     <string name="local.input_hint">URL YouTube oppure file / URL locale (VLCJ)</string>
     <string name="local.clear_url">cancella l\'URL</string>
     <string name="local.open_file">apri file locale</string>
@@ -133,6 +134,7 @@
     <string name="nav.settings">Impostazioni</string>
     <string name="settings.tab.data">Dati</string>
     <string name="settings.tab.accounts">Account</string>
+    <string name="settings.tab.about">Info</string>
     <string name="settings.data.info">Esporta o importa un backup del database della libreria (brani, playlist, cronologia e preferiti). Il backup è un singolo file .db, compatibile con Android; il ripristino viene completato al riavvio di RiPlay.</string>
     <string name="settings.data.db_path">Database: {path}</string>
     <string name="settings.data.export_backup">Esporta backup</string>
@@ -162,4 +164,20 @@
     <string name="settings.accounts.login_instructions">Completa l\'accesso nella finestra qui sotto. Quando YouTube Music si apre con il tuo account, la connessione viene salvata automaticamente.</string>
     <string name="settings.accounts.kcef_not_ready">Il browser integrato non è ancora pronto ({state})</string>
     <string name="settings.accounts.waiting_login">In attesa del completamento dell\'accesso...</string>
+    <string name="settings.about.tagline">RiPlay {version} (Desktop) by fast4x</string>
+    <string name="settings.about.social">Social</string>
+    <string name="settings.about.telegram">Telegram</string>
+    <string name="settings.about.telegram_info">Gruppo ufficiale di RiPlay</string>
+    <string name="settings.about.reddit">Reddit</string>
+    <string name="settings.about.reddit_info">Community degli utenti RiPlay</string>
+    <string name="settings.about.project">Progetto</string>
+    <string name="settings.about.github">GitHub</string>
+    <string name="settings.about.github_info">Vedi il codice sorgente</string>
+    <string name="settings.about.releases">Ultima versione</string>
+    <string name="settings.about.releases_info">Scarica l\'ultima versione desktop da GitHub</string>
+    <string name="settings.about.troubleshooting">Risoluzione dei problemi</string>
+    <string name="settings.about.report_issue">Segnala un problema</string>
+    <string name="settings.about.request_feature">Richiedi una funzione o suggerisci un\'idea</string>
+    <string name="settings.about.github_redirect">Verrai reindirizzato a GitHub</string>
+    <string name="splash.loading">Caricamento...</string>
 </resources>

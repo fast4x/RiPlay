@@ -399,8 +399,16 @@ object DesktopAccountManager {
         }
     }
 
+    /** STEP 4g: guardia run-once (il richiamo ripetuto e' no-op). */
+    private var restoreCalled = false
+
     /** Carica l'account salvato nell'Environment (chiamato da main.kt). */
     fun restoreAtStartup() {
+        if (restoreCalled) {
+            println("[RiPlay-Account] restoreAtStartup gia' eseguito: skip (guardia run-once)")
+            return
+        }
+        restoreCalled = true
         val stored = load() ?: run {
             println("[RiPlay-Account] nessun account salvato: client YT Music anonimo")
             return

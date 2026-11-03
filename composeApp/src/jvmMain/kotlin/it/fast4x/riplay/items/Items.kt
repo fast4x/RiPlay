@@ -49,6 +49,7 @@ import it.fast4x.riplay.commonutils.MONTHLY_PREFIX
 import it.fast4x.riplay.commonutils.PINNED_PREFIX
 import it.fast4x.riplay.commonutils.PIPED_PREFIX
 import it.fast4x.riplay.commonutils.cleanPrefix
+import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.enums.ThumbnailRoundness
 import it.fast4x.riplay.ui.components.RiPlayAccent
 import it.fast4x.riplay.utils.LoadImage
@@ -402,9 +403,20 @@ fun ArtistItem(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
     ) {
+        // STEP 4e (richiesta utente n.5): la copertina dell'artista nella
+        // lista risultava TAGLIATA. Desktop passava l'URL GREZZO (miniatura
+        // come arriva da YouTube Music: quadrata piccola o ritagliata con
+        // proporzioni proprie) mentre Android richiede SEMPRE una miniatura
+        // QUADRATA della dimensione giusta con toThumbnail(size)
+        // (CommonUtils, gia' in commonMain). Ora come Android:
+        //  - toThumbnail(240) chiede al CDN una miniatura quadrata 240px
+        //    (nitida fino a 60-120dp e retrocompatibile con tutti gli usi);
+        //  - ContentScale.Crop esplicito: il quadrato riempie esattamente
+        //    la casella senza deformare e senza tagli fuori dal box.
         AsyncImage(
-            model = thumbnailUrl,
+            model = thumbnailUrl?.toThumbnail(240),
             contentDescription = null,
+            contentScale = ContentScale.Crop,
             modifier = Modifier
                 .clip(ThumbnailRoundness.Medium.shape())
                 .requiredSize(thumbnailSizeDp)

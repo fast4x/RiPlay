@@ -48,6 +48,7 @@ import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.items.SongItem
 import it.fast4x.riplay.styling.Dimensions.layoutColumnBottomSpacer
 import it.fast4x.riplay.ui.components.RiPlayAccent
+import kotlinx.coroutines.flow.first
 import upload.LOCAL_AUDIO_EXTENSIONS
 import upload.pickLocalAudioFiles
 import upload.pickLocalFolder
@@ -89,18 +90,40 @@ fun LocalSongsPage(
 ) {
 
     val songs = remember { SnapshotStateList<Song>() }
-    LaunchedEffect(Unit) {
-        Database.getLocalSongs().collect {
-            songs.clear()
-            songs += it
-        }
-    }
 
     // richiesta di importazione: "folder" oppure "files" (un tick = una
     // apertura del picker, one-shot dentro LaunchedEffect come PlayerInput)
     var scanRequest by remember { mutableStateOf<Int?>(null) }
     var scanning by remember { mutableStateOf(false) }
     var feedback by remember { mutableStateOf<String?>(null) }
+
+    // STEP 4d (richiesta utente n.4): PULIZIA dei brani locali SENZA file
+    // fisico. La lista legge TUTTI i brani "local:..." dal db: possono
+    // puntare a file non piu' esistenti (spostati/eliminati dal PC) e, nel
+    // caso tipico di un backup ripristinato dalla versione ANDROID, a
+    // percorsi che sul desktop NON possono esistere ("/storage/emulated/0/..."
+    // o URI "content://" di MediaStore). Questi orfani vengono RIMOSSI dal
+    // database PRIMA della prima lettura della lista (una sola volta a ogni
+    // apertura della pagina, su thread IO) con un feedback visibile.
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            val all = runCatching { Database.getLocalSongs().first() }
+                .getOrDefault(emptyList())
+            val orphans = all.filter { isOrphanLocalSong(it) }
+            var removed = 0
+            orphans.forEach { song ->
+                if (runCatching { Database.delete(song) }.isSuccess) removed++
+            }
+            if (removed > 0) {
+                feedback = ds("local.removed_missing", "n" to removed)
+                println("[RiPlay-Locali] rimossi $removed brani senza file fisico esistente")
+            }
+        }
+        Database.getLocalSongs().collect {
+            songs.clear()
+            songs += it
+        }
+    }
 
     fun importSong(file: File): Song = Song(
         id = LOCAL_KEY_PREFIX + file.absolutePath,
@@ -161,7 +184,6 @@ fun LocalSongsPage(
     }
 
     val lazyListState = rememberLazyListState()
-
     Column(
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Top,
@@ -266,6 +288,29 @@ fun LocalSongsPage(
             }
         }
     }
+}
+
+/**
+ * STEP 4d: TRUE se il brano locale punta a un file che NON esiste su questo
+ * computer (o che non PUO' esistere sul desktop). Stessa risoluzione del
+ * percorso usata in riproduzione (localMediaPath in DesktopVideoSource):
+ *  - URI "content://" e id numerici MediaStore = esistono solo sul dispositivo
+ *    Android -> orfani sul desktop (caso backup ripristinato);
+ *  - stream http/rtsp/file: = non sono file, non si giudicano orfani;
+ *  - percorso reale = orfano se il file non esiste piu' (o non e' un file).
+ * Percorsi non giudicabili (vuoti) restano: non si cancella alla cieca.
+ */
+private fun isOrphanLocalSong(song: Song): Boolean {
+    val raw = (song.mediaId ?: song.id).trim()
+    val path = raw.removePrefix(LOCAL_KEY_PREFIX).trim()
+    if (path.isEmpty()) return false
+    if (path.startsWith("content://")) return true
+    if (path.toLongOrNull() != null) return true
+    if (path.startsWith("http", true) ||
+        path.startsWith("rtsp", true) ||
+        path.startsWith("file:", true)
+    ) return false
+    return !File(path).isFile
 }
 
 /** Pill compatta dei due comandi di importazione (stile pill "Coda"/"Radio"). */

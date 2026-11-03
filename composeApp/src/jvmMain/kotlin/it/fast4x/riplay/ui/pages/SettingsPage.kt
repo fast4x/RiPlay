@@ -43,6 +43,7 @@ import it.fast4x.environment.models.responses.CachedAccountProfile
 import it.fast4x.riplay.player.kcef.KcefEngine
 import it.fast4x.riplay.player.kcef.KcefState
 import it.fast4x.riplay.ui.components.RiPlayAccent
+import it.fast4x.riplay.utils.DesktopAppInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -114,6 +115,7 @@ fun SettingsPage() {
         when (activeTab) {
             SettingsTab.DATA -> DataTab(coroutineScope)
             SettingsTab.ACCOUNTS -> AccountsTab()
+            SettingsTab.ABOUT -> AboutTab()
         }
     }
 }
@@ -784,8 +786,105 @@ private fun kcefStateLabel(s: KcefState): String = when (s) {
     else -> ds("kcef.preparing_short")
 }
 
-/** tab delle Impostazioni (stessa partizione di Android: Dati, Account) */
+/** tab delle Impostazioni (stessa partizione di Android: Dati, Account, Info) */
 enum class SettingsTab(val labelKey: String) {
     DATA("settings.tab.data"),
-    ACCOUNTS("settings.tab.accounts")
+    ACCOUNTS("settings.tab.accounts"),
+    ABOUT("settings.tab.about")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TAB ABOUT (STEP 4b, richiesta utente n.2): replica della schermata About
+// di Android (ui/screens/settings/About.kt): versione, social, pagina del
+// progetto, troubleshooting. I link aprono il browser di sistema.
+// ─────────────────────────────────────────────────────────────────────────────
+
+@Composable
+private fun AboutTab() {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+
+        // Riga di presentazione (Android: "RiPlay <versione> by fast4x")
+        Text(
+            text = ds("settings.about.tagline", "version" to DesktopAppInfo.VERSION),
+            color = Color.White.copy(alpha = 0.85f),
+            fontSize = 14.sp
+        )
+
+        AboutSectionTitle(ds("settings.about.social"))
+        AboutEntry(
+            title = ds("settings.about.telegram"),
+            subtitle = ds("settings.about.telegram_info"),
+            url = "https://t.me/riplay_app"
+        )
+        AboutEntry(
+            title = ds("settings.about.reddit"),
+            subtitle = ds("settings.about.reddit_info"),
+            url = "https://www.reddit.com/r/RiMusicApp/"
+        )
+
+        AboutSectionTitle(ds("settings.about.project"))
+        AboutEntry(
+            title = ds("settings.about.github"),
+            subtitle = ds("settings.about.github_info"),
+            url = "https://github.com/fast4x/RiPlay"
+        )
+        AboutEntry(
+            title = ds("settings.about.releases"),
+            subtitle = ds("settings.about.releases_info"),
+            url = "https://github.com/fast4x/RiPlay/releases/latest"
+        )
+
+        AboutSectionTitle(ds("settings.about.troubleshooting"))
+        AboutEntry(
+            title = ds("settings.about.report_issue"),
+            subtitle = ds("settings.about.github_redirect"),
+            url = "https://github.com/fast4x/RiPlay/issues/new?assignees=&labels=bug&template=bug_report.yaml"
+        )
+        AboutEntry(
+            title = ds("settings.about.request_feature"),
+            subtitle = ds("settings.about.github_redirect"),
+            url = "https://github.com/fast4x/RiPlay/issues/new?assignees=&labels=enhancement&template=feature_request.yaml"
+        )
+    }
+}
+
+@Composable
+private fun AboutSectionTitle(text: String) {
+    Text(
+        text = text,
+        color = RiPlayAccent,
+        fontSize = 13.sp,
+        fontWeight = FontWeight.SemiBold,
+        modifier = Modifier.padding(top = 6.dp)
+    )
+}
+
+/** voce cliccabile della tab About (equivalente desktop di SettingsEntry Android) */
+@Composable
+private fun AboutEntry(title: String, subtitle: String, url: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.White.copy(alpha = 0.06f))
+            .clickable { openInBrowser(url) }
+            .padding(horizontal = 12.dp, vertical = 10.dp)
+    ) {
+        Text(title, color = Color.White, fontSize = 14.sp)
+        if (subtitle.isNotBlank())
+            Text(subtitle, color = Color.White.copy(alpha = 0.55f), fontSize = 12.sp)
+    }
+}
+
+/**
+ * Apre l'URL nel browser predefinito del sistema (l'equivalente desktop di
+ * LocalUriHandler.openUri su Android). Best-effort: in mancanza di un
+ * browser configurabile l'errore va in console e non blocca la UI.
+ */
+private fun openInBrowser(url: String) {
+    runCatching {
+        val desktop = java.awt.Desktop.getDesktop()
+        if (desktop.isSupported(java.awt.Desktop.Action.BROWSE))
+            desktop.browse(java.net.URI(url))
+    }.onFailure { it.printStackTrace() }
 }

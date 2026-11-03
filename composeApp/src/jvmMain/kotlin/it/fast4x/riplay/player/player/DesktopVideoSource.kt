@@ -2,6 +2,12 @@ package player
 
 import it.fast4x.riplay.i18n.ds
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -45,7 +51,17 @@ import it.fast4x.riplay.player.vlcj.VlcjFrameController
 import it.fast4x.riplay.ui.bars.DefaultBottomBar
 import it.fast4x.riplay.utils.hiResCoverUrl
 import player.frame.FrameContainer
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import java.io.File
+import java.util.concurrent.atomic.AtomicLong
+
+/**
+ * STEP 4c (richiesta utente n.3): in modalita' video espanso (teatro) i
+ * controlli spariscono dopo questo tempo senza movimenti del mouse e
+ * tornano al primo movimento: look immersivo (come i player YouTube/VLC).
+ */
+private const val THEATER_CONTROLS_HIDE_DELAY_MS = 3_000L
 
 /**
  * STEP 3: sorgente video desktop SENZA tab di debug, con SELEZIONE
@@ -458,6 +474,87 @@ fun DesktopVideoSource(
 ) {
     val manualInput = remember { mutableStateOf("") }
 
+    // STEP 4c (richiesta utente n.3): VISIBILITA' dei controlli in modalita'
+    // video espanso. TRUE di default; quando widened passa a gestire il
+    // timer qui sotto (nascosti dopo THEATER_CONTROLS_HIDE_DELAY_MS senza
+    // mouse, tornano al movimento). Fuori dal teatro restano sempre visibili.
+    var theaterControlsVisible by remember { mutableStateOf(true) }
+    // ultimo movimento del mouse visto nell'app (scritto dal listener AWT)
+    val lastPointerActivityMs = remember { AtomicLong(0L) }
+    // STEP 4g (fix loop controlli): coordinate schermo dell'ultimo evento di
+    // movimento (Long.MIN_VALUE = nessun evento ancora visto)
+    val lastPointerX = remember { AtomicLong(Long.MIN_VALUE) }
+    val lastPointerY = remember { AtomicLong(Long.MIN_VALUE) }
+
+    // MOUSE MOVE via AWT: a video espanso la superficie e' il browser KCEF
+    // nativo (SwingPanel) o il frame VLCJ: sopra di lui gli eventi pointer
+    // di Compose NON arrivano (vengono consumati da Swing/CEF). Un listener
+    // AWT di tipo MOUSE_MOTION vede OGNI movimento del mouse dentro la
+    // finestra (Compose E Swing) e aggiorna solo un contatore atomico:
+    // nessun lavoro di composizione sull'EDT. Rimosso alla disposal.
+    //
+    // STEP 4g (fix "controlli nascosti e subito rimessi, in loop"): Windows
+    // RIGENERA un MOUSE_MOVED con le STESSSIME coordinate fisiche quando,
+    // sotto il cursore immobile, cambia il componente esposto (z-order
+    // lightweight/heavyweight: es. la barra che si nasconde sopra il browser
+    // KCEF, l'animazione AnimatedVisibility). Senza filtro accadeva:
+    // nascondi -> "movimento" sintetico -> mostra -> timer -> nascondi ->
+    // "movimento" -> ... all'infinito. Il filtro confronta le coordinate
+    // SCHERMO (getLocationOnScreen: i redispatch dello stesso punto fisico
+    // sono identici anche se consegnati a componenti diversi) e conta come
+    // attivita' SOLO un evento che CAMBIA davvero posizione: un vero
+    // movimento del mouse produce sempre coordinate nuove.
+    DisposableEffect(Unit) {
+        val listener = java.awt.event.AWTEventListener { event ->
+            if (event is java.awt.event.MouseEvent &&
+                (event.id == java.awt.event.MouseEvent.MOUSE_MOVED ||
+                        event.id == java.awt.event.MouseEvent.MOUSE_DRAGGED)
+            ) {
+                val p = runCatching { event.locationOnScreen }.getOrNull()
+                if (p != null) {
+                    val x = p.x.toLong()
+                    val y = p.y.toLong()
+                    val prevX = lastPointerX.getAndSet(x)
+                    val prevY = lastPointerY.getAndSet(y)
+                    if (x != prevX || y != prevY) {
+                        lastPointerActivityMs.set(System.currentTimeMillis())
+                    }
+                } else {
+                    // posizione non disponibile (componente non mostrato):
+                    // conta come attivita' come prima, non e' un redispatch
+                    lastPointerActivityMs.set(System.currentTimeMillis())
+                }
+            }
+        }
+        java.awt.Toolkit.getDefaultToolkit()
+            .addAWTEventListener(listener, java.awt.AWTEvent.MOUSE_MOTION_EVENT_MASK)
+        onDispose {
+            java.awt.Toolkit.getDefaultToolkit().removeAWTEventListener(listener)
+        }
+    }
+
+    // Timer dei controlli: attivo SOLO a video espanso. Entrando nel teatro
+    // i controlli partono VISIBILI e spariscono dopo il delay senza mouse;
+    // il primo movimento li riporta (lastPointerActivityMs aggiornato dal
+    // listener AWT). Tornando alla larghezza normale la visibilita' viene
+    // riportata a TRUE senza dipendere dal timer.
+    LaunchedEffect(widened) {
+        if (!widened) {
+            theaterControlsVisible = true
+            return@LaunchedEffect
+        }
+        lastPointerActivityMs.set(System.currentTimeMillis())
+        while (isActive) {
+            delay(200)
+            val idleFor = System.currentTimeMillis() - lastPointerActivityMs.get()
+            theaterControlsVisible = idleFor < THEATER_CONTROLS_HIDE_DELAY_MS
+        }
+    }
+
+    // Fuori dal teatro i controlli sono SEMPRE visibili (comportamento
+    // invariato); dentro: dipende dal timer.
+    val controlsVisible = !widened || theaterControlsVisible
+
     // Routing automatico del motore + caricamento media. Gli input sono gli
     // stessi valori che il routing consuma: ogni variazione (click su una
     // canzone, canzone risolta dal db, input manuale debounced) riesegue
@@ -498,6 +595,8 @@ fun DesktopVideoSource(
                 widened, widenCallback,
                 // STEP 3o: navigazione brani anche nel miniplayer
                 onPrevious, onNext, canGoPrevious, canGoNext,
+                // STEP 4c: visibilita' controlli (teatro auto-hide)
+                controlsVisible,
                 Modifier.weight(1f)
             )
             DesktopPlayerEngine.LOCAL -> LocalVlcjPane(
@@ -506,6 +605,8 @@ fun DesktopVideoSource(
                 widened, widenCallback,
                 // STEP 3o: navigazione brani anche nel miniplayer
                 onPrevious, onNext, canGoPrevious, canGoNext,
+                // STEP 4c: visibilita' controlli (teatro auto-hide)
+                controlsVisible,
                 Modifier.weight(1f)
             )
         }
@@ -539,6 +640,8 @@ private fun YoutubeKcefPane(
     onNext: (() -> Unit)?,
     canGoPrevious: Boolean,
     canGoNext: Boolean,
+    // STEP 4c: TRUE = mostrare la barra di controllo (teatro auto-hide)
+    controlsVisible: Boolean,
     modifier: Modifier = Modifier
 ) {
     // Al passaggio all'altro motore il browser viene rilasciato (come nei
@@ -585,27 +688,39 @@ private fun YoutubeKcefPane(
             // STEP 3n: onToggleVideo/onAddRadio sono gia' GATATI a monte
             // (null = pulsante nascosto quando il media non e' video)
             // STEP 3o: anche avanti/indietro
-            DefaultBottomBar(
-                Modifier.fillMaxWidth(),
-                manager.kcef,
-                videoVisible = manager.videoVisible,
-                onToggleVideo = onToggleVideo?.let { cb -> { cb(!manager.videoVisible) } },
-                onAddRadio = onAddRadio,
-                radioLoading = radioLoading,
-                radioFeedback = radioFeedback,
-                onExpand = onExpand,
-                widened = widened,
-                onToggleWiden = onToggleWiden,
-                onPrevious = onPrevious,
-                onNext = onNext,
-                canGoPrevious = canGoPrevious,
-                canGoNext = canGoNext,
-                // STEP 3q: titolo+artista nel miniplayer
-                title = song?.title,
-                artist = song?.artistsText
-            )
+            // STEP 4c: in modalita' teatro la barra esce/rientra con
+            // l'animazione in base ai movimenti del mouse
+            AnimatedVisibility(
+                visible = controlsVisible,
+                enter = expandVertically(tween(220)) + fadeIn(tween(220)),
+                exit = shrinkVertically(tween(220)) + fadeOut(tween(160))
+            ) {
+                DefaultBottomBar(
+                    Modifier.fillMaxWidth(),
+                    manager.kcef,
+                    videoVisible = manager.videoVisible,
+                    onToggleVideo = onToggleVideo?.let { cb -> { cb(!manager.videoVisible) } },
+                    onAddRadio = onAddRadio,
+                    radioLoading = radioLoading,
+                    radioFeedback = radioFeedback,
+                    onExpand = onExpand,
+                    widened = widened,
+                    onToggleWiden = onToggleWiden,
+                    onPrevious = onPrevious,
+                    onNext = onNext,
+                    canGoPrevious = canGoPrevious,
+                    canGoNext = canGoNext,
+                    // STEP 3q: titolo+artista nel miniplayer
+                    title = song?.title,
+                    artist = song?.artistsText
+                )
+            }
         }
-        EngineBadge(DesktopPlayerEngine.YOUTUBE)
+        // STEP 4c: anche il badge del motore si nasconde con i controlli
+        // (scomparirebbe comunque sotto il video a tutta larghezza)
+        if (controlsVisible) {
+            EngineBadge(DesktopPlayerEngine.YOUTUBE)
+        }
     }
 }
 
@@ -628,6 +743,8 @@ private fun LocalVlcjPane(
     onNext: (() -> Unit)?,
     canGoPrevious: Boolean,
     canGoNext: Boolean,
+    // STEP 4c: TRUE = mostrare la barra di controllo (teatro auto-hide)
+    controlsVisible: Boolean,
     modifier: Modifier = Modifier
 ) {
     // Al passaggio all'altro motore VLCJ viene fermato (il controller resta
@@ -687,27 +804,39 @@ private fun LocalVlcjPane(
             // STEP 3l: anche il toggle video a tutta larghezza finestra
             // STEP 3n: onToggleVideo/onAddRadio gia' GATATI a monte
             // STEP 3o: anche avanti/indietro
-            DefaultBottomBar(
-                Modifier.fillMaxWidth(),
-                manager.vlcj,
-                videoVisible = manager.videoVisible,
-                onToggleVideo = onToggleVideo?.let { cb -> { cb(!manager.videoVisible) } },
-                onAddRadio = onAddRadio,
-                radioLoading = radioLoading,
-                radioFeedback = radioFeedback,
-                onExpand = onExpand,
-                widened = widened,
-                onToggleWiden = onToggleWiden,
-                onPrevious = onPrevious,
-                onNext = onNext,
-                canGoPrevious = canGoPrevious,
-                canGoNext = canGoNext,
-                // STEP 3q: titolo+artista nel miniplayer
-                title = song?.title,
-                artist = song?.artistsText
-            )
+            // STEP 4c: in modalita' teatro la barra esce/rientra con
+            // l'animazione in base ai movimenti del mouse
+            AnimatedVisibility(
+                visible = controlsVisible,
+                enter = expandVertically(tween(220)) + fadeIn(tween(220)),
+                exit = shrinkVertically(tween(220)) + fadeOut(tween(160))
+            ) {
+                DefaultBottomBar(
+                    Modifier.fillMaxWidth(),
+                    manager.vlcj,
+                    videoVisible = manager.videoVisible,
+                    onToggleVideo = onToggleVideo?.let { cb -> { cb(!manager.videoVisible) } },
+                    onAddRadio = onAddRadio,
+                    radioLoading = radioLoading,
+                    radioFeedback = radioFeedback,
+                    onExpand = onExpand,
+                    widened = widened,
+                    onToggleWiden = onToggleWiden,
+                    onPrevious = onPrevious,
+                    onNext = onNext,
+                    canGoPrevious = canGoPrevious,
+                    canGoNext = canGoNext,
+                    // STEP 3q: titolo+artista nel miniplayer
+                    title = song?.title,
+                    artist = song?.artistsText
+                )
+            }
         }
-        EngineBadge(DesktopPlayerEngine.LOCAL)
+        // STEP 4c: anche il badge del motore si nasconde con i controlli
+        // (nel pannello VLCJ e' l'unico indicatore: accompagna la barra)
+        if (controlsVisible) {
+            EngineBadge(DesktopPlayerEngine.LOCAL)
+        }
     }
 }
 
