@@ -11,6 +11,7 @@ import it.fast4x.riplay.ui.ThreeColumnsApp
 import it.fast4x.riplay.ui.initialWindowState
 import it.fast4x.riplay.ui.saveDesktopWindowPrefs
 import it.fast4x.riplay.ui.theme.DesktopTheme
+import it.fast4x.riplay.styling.DesktopAccent
 import it.fast4x.riplay.commonutils.initializeEnvironment
 import it.fast4x.riplay.player.kcef.KcefEngine
 import it.fast4x.riplay.player.kcef.KcefState
@@ -53,21 +54,7 @@ import it.fast4x.riplay.ui.components.RiPlayAccent
 
 @OptIn(ExperimentalCoilApi::class)
 fun main() {
-    // STEP 4g (fix "log all'infinito"): TUTTA l'inizializzazione e' qui,
-    // nel main() PIANO, PRIMA di application{}: gira ESATTAMENTE una volta
-    // per processo. Prima (fino allo step4f) le stesse chiamate stavano
-    // dentro il content di application{}, che e' un AMBIENTE COMPOSABLE:
-    // la lambda viene RIESeguita a ogni ricomposizione dello scope radice.
-    // Con la splashscreen (step4f) lo scope si ricompone piu' spesso e, in
-    // alcune condizioni su Windows, in continuazione: il risultato era
-    //  - il blocco [RiPlay-Identity]/[RiPlay-Env]/[RiPlay-I18n]/[RiPlay-Account]
-    //    stampato all'infinito nel log;
-    //  - restoreAtStartup()/DesktopI18n eseguiti in loop (ricarichi continui
-    //    di home e player, KCEF sotto pressione: copertina bianca nel
-    //    miniplayer, controlli del video che lampeggiano).
-    // In piu' ogni bootstrap e' IDEMPOTENTE (guardie run-once dentro le
-    // singole funzioni): anche uno richiamo accidentale non puo' ripetere
-    // gli effetti.
+
     bootstrapDesktopApp()
 
     application {
@@ -78,12 +65,8 @@ fun main() {
             getAsyncImageLoader(context)
         }
 
-        // STEP 3h (migliorie visive): la finestra RICORDA come era stata
-        // lasciata (massimizzata o con la sua dimensione). Il salvataggio
-        // avviene alla chiusura (pulsante chiudi della title bar o Alt+F4:
-        // entrambi passano da onCloseRequest).
-        val windowState = remember { initialWindowState() }
 
+        val windowState = remember { initialWindowState() }
 
         var windowVisible by remember { mutableStateOf(true) }
 
@@ -113,14 +96,7 @@ fun main() {
             }
         }
 
-        // STEP 4f (richiesta utente n.6): SPLASHSCREEN di avvio. Finestra
-        // senza bordi SEMPRE OPACA (niente transparent: su alcune
-        // configurazioni Windows la trasparenza non e' supportata e mostra
-        // uno sfondo bianco; opaca e' garantita ovunque) con logo, nome e
-        // versione: copre la fase di composizione/primo caricamento.
-        // La finestra principale viene resa visibile SUBITO (compone sotto
-        // la splash, che e' alwaysOnTop) e la splash esce dopo
-        // SPLASH_MIN_VISIBLE_MS dall'avvio.
+
         var splashVisible by remember { mutableStateOf(true) }
         var mainVisible by remember { mutableStateOf(false) }
 
@@ -198,11 +174,14 @@ private fun bootstrapDesktopApp() {
 
     DesktopI18n.initialize()
 
+    DesktopAccent.initialize()
+
     DesktopTray.start()
 
     KcefEngine.start()
 
     it.fast4x.riplay.ui.pages.DesktopAccountManager.restoreAtStartup()
+
 
     Thread {
         runCatching {
@@ -213,10 +192,10 @@ private fun bootstrapDesktopApp() {
                 Thread.sleep(1_000L)
             }
             WindowsAppIdentity.reassertAfterCef()
-
+            // ultima verifica a freddo (l'utente puo' aver gia' avviato un
+            // brano: qui l'identita' del processo deve essere quella giusta)
             Thread.sleep(30_000L)
             WindowsAppIdentity.reassertAfterCef()
-
             Thread.sleep(15_000L)
             WindowsAppIdentity.runSmtcSessionDiagnostic("45s")
             Thread.sleep(60_000L)

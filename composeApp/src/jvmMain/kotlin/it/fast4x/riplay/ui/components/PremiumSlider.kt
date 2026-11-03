@@ -34,44 +34,16 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import it.fast4x.riplay.styling.DesktopAccent
+
+
+val RiPlayAccent: Color get() = DesktopAccent.accent
 
 /**
- * STEP 3h (migliorie visive): SLIDER PREMIUM per timeline e volume.
- *
- * Perche' custom e non material3.Slider: lo slider Material ha un thumb
- * ingombrante, track fissa e nessuna informazione di anteprima; per un
- * player desktop l'aspettativa e' lo stile dei player "chic" (YouTube/
- * Spotify): track sottile che SI INGRANDISCE al passaggio del mouse,
- * riempimento a gradiente, thumb bianco con alone che si anima, e sulla
- * timeline una BOLLA con il tempo del punto puntato (anteprima del seek
- * PRIMA di confermarlo col click).
- *
- * Comportamenti chiave:
- *  - DRAG LOCALE: durante il trascinamento il valore mostrato e' LOCALE
- *    (dragValue); l'esterno non fa "saltare" il cursore. La callback
- *    [onValueChange] riceve il valore continuo (utile per il volume) e
- *    [onValueChangeFinished] il valore alla RILASCIO (utile per la
- *    timeline: UN solo seekTo alla fine, non decine di comandi JS al
- *    bridge KCEF durante il drag);
- *  - CLICK = SEEK immediato: premere in un punto della track porta gia'
- *    il cursore li' e al rilascio conferma (come YouTube);
- *  - BUBBLA TEMPO: con [showTimeBubble] al passaggio mouse/drag appare
- *    sopra il puntatore il tempo formattato del punto puntato
- *    (formattazione compatta h:mm:ss / m:ss, diversa da formatTimestamp
- *    che scrive sempre 00:mm:ss).
- *
- * Disegno (Canvas, nessuna dipendenza extra):
- *  - track arrotondata bianca al 20% su fondo scuro;
- *  - parte attiva a GRADIENTE (RiPlayAccentLight -> [accent]);
- *  - thumb bianco con alone dell'accento (glow) che appare/scala con
- *    animazioni; l'intera area e' cliccabile (40dp di altezza).
+ * Testa del gradiente della parte attiva: DERIVATA dall'accent (mix col
+ * bianco), cosi' segue automaticamente il colore scelto dall'utente.
  */
-
-/** Accento premium dell'app (verde brillante, usato da slider/barre/player). */
-val RiPlayAccent = Color(0xFF30D158)
-
-/** Testa del gradiente della parte attiva (verde piu' chiaro). */
-val RiPlayAccentLight = Color(0xFF6BE894)
+val RiPlayAccentLight: Color get() = DesktopAccent.accentLight
 
 /**
  * Tempo compatto per la bolla: 2:34 invece di 00:02:34 (piu' leggibile
@@ -134,9 +106,6 @@ fun PremiumSlider(
 
     BoxWithConstraints(modifier.height(40.dp)) {
         val wPx = constraints.maxWidth.toFloat()
-        // STEP 3h: maxWidth capturato a livello BoxWithConstraints: dentro
-        // il Box interno l'implicit receiver cambierebbe (BoxScope) e
-        // maxWidth non sarebbe piu' accessibile
         val maxWDp = maxWidth
 
         // Zona interattiva (tutto il box, 40dp di bersaglio)
