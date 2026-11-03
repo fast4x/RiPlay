@@ -3,6 +3,7 @@ package it.fast4x.riplay.ui.pages
 import it.fast4x.riplay.i18n.ds
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,11 +15,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Backup
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -44,6 +51,8 @@ import it.fast4x.riplay.player.kcef.KcefEngine
 import it.fast4x.riplay.player.kcef.KcefState
 import it.fast4x.riplay.ui.components.RiPlayAccent
 import it.fast4x.riplay.utils.DesktopAppInfo
+// STEP 5d: check AGGIORNAMENTI desktop (stesso file .ver di Android)
+import it.fast4x.riplay.utils.DesktopUpdateChecker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -52,21 +61,7 @@ import kotlinx.coroutines.withContext
 import org.cef.browser.CefRendering
 import dev.datlag.kcef.KCEFBrowser
 
-/**
- * STEP 3ae: PRIMO LIVELLO di IMPOSTAZIONI del desktop, con le tab
- * organizzate come la parte Android (ui/screens/settings/SettingsScreen.kt):
- *
- *  - tab DATI (come DataSettings Android): esporta/importa un BACKUP del
- *    database della libreria (zip del db Room, struttura identica tra
- *    desktop e Android: stessi modelli e migrazioni). Vedi DesktopBackup.
- *  - tab ACCOUNT (come AccountsSettings Android): login YouTube Music con
- *    il browser integrato KCEF, replica di AccountLogin Android
- *    (WebView -> cookie -> Environment.cookie + accountInfo). Vedi
- *    DesktopAccountManager.
- *
- * La struttura e' pensata per ACCOGLIERE NUOVE TAB in futuro (aspetto,
- * player, ecc.) seguendo l'evoluzione delle impostazioni Android.
- */
+
 @Composable
 fun SettingsPage() {
     val coroutineScope = rememberCoroutineScope()
@@ -89,26 +84,43 @@ fun SettingsPage() {
             modifier = Modifier.padding(bottom = 4.dp)
         )
 
-        // ── Tab (stile SearchPage: chip accent) ─────────────────────────
+
         Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 10.dp)
+                .padding(top = 10.dp, bottom = 14.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color.White.copy(alpha = 0.06f))
+                .border(1.dp, Color.White.copy(alpha = 0.10f), RoundedCornerShape(16.dp))
+                .padding(4.dp)
         ) {
             SettingsTab.values().forEach { tab ->
                 val active = tab == activeTab
-                Text(
-                    text = ds(tab.labelKey),
-                    color = if (active) Color.Black else Color.White.copy(alpha = 0.8f),
-                    fontSize = 13.sp,
-                    fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(if (active) RiPlayAccent else Color.White.copy(alpha = 0.08f))
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(if (active) RiPlayAccent else Color.Transparent)
                         .clickable { activeTab = tab }
-                        .padding(horizontal = 14.dp, vertical = 7.dp)
-                )
+                        .padding(vertical = 9.dp)
+                ) {
+                    Icon(
+                        imageVector = tab.icon,
+                        contentDescription = null,
+                        tint = if (active) Color.Black else Color.White.copy(alpha = 0.65f),
+                        modifier = Modifier.size(15.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        text = ds(tab.labelKey),
+                        color = if (active) Color.Black else Color.White.copy(alpha = 0.85f),
+                        fontSize = 13.sp,
+                        fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal
+                    )
+                }
             }
         }
 
@@ -787,14 +799,14 @@ private fun kcefStateLabel(s: KcefState): String = when (s) {
 }
 
 /** tab delle Impostazioni (stessa partizione di Android: Dati, Account, Info) */
-enum class SettingsTab(val labelKey: String) {
-    DATA("settings.tab.data"),
-    ACCOUNTS("settings.tab.accounts"),
-    ABOUT("settings.tab.about")
+enum class SettingsTab(val labelKey: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
+    DATA("settings.tab.data", Icons.Filled.Backup),
+    ACCOUNTS("settings.tab.accounts", Icons.Filled.AccountCircle),
+    ABOUT("settings.tab.about", Icons.Filled.Info)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TAB ABOUT (STEP 4b, richiesta utente n.2): replica della schermata About
+// TAB ABOUT : replica della schermata About
 // di Android (ui/screens/settings/About.kt): versione, social, pagina del
 // progetto, troubleshooting. I link aprono il browser di sistema.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -809,6 +821,9 @@ private fun AboutTab() {
             color = Color.White.copy(alpha = 0.85f),
             fontSize = 14.sp
         )
+
+
+        UpdatesSection()
 
         AboutSectionTitle(ds("settings.about.social"))
         AboutEntry(
@@ -845,6 +860,100 @@ private fun AboutTab() {
             subtitle = ds("settings.about.github_redirect"),
             url = "https://github.com/fast4x/RiPlay/issues/new?assignees=&labels=enhancement&template=feature_request.yaml"
         )
+    }
+}
+
+
+@Composable
+private fun UpdatesSection() {
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    var result by remember { mutableStateOf<DesktopUpdateChecker.UpdateCheckResult?>(null) }
+
+    Column {
+        AboutSectionTitle(ds("settings.about.updates"))
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color.White.copy(alpha = 0.06f))
+                .clickable {
+                    if (result is DesktopUpdateChecker.UpdateCheckResult.Checking) return@clickable
+                    result = DesktopUpdateChecker.UpdateCheckResult.Checking
+                    scope.launch {
+                        result = DesktopUpdateChecker.check()
+                    }
+                }
+                .padding(horizontal = 12.dp, vertical = 10.dp)
+        ) {
+            Text(ds("settings.about.check_updates"), color = Color.White, fontSize = 14.sp)
+            Text(
+                ds("settings.about.check_updates_info", "version" to DesktopAppInfo.VERSION),
+                color = Color.White.copy(alpha = 0.55f),
+                fontSize = 12.sp
+            )
+        }
+
+        // esito del controllo (in attesa / aggiornata / nuova versione)
+        when (val r = result) {
+            is DesktopUpdateChecker.UpdateCheckResult.Checking -> Text(
+                ds("settings.about.update_checking"),
+                color = Color.White.copy(alpha = 0.55f),
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 4.dp, top = 6.dp)
+            )
+            is DesktopUpdateChecker.UpdateCheckResult.UpToDate -> Text(
+                ds("settings.about.update_uptodate"),
+                color = Color(0xFF63D66E),
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 4.dp, top = 6.dp)
+            )
+            is DesktopUpdateChecker.UpdateCheckResult.Available -> Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(top = 6.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(RiPlayAccent.copy(alpha = 0.12f))
+                    .padding(horizontal = 10.dp, vertical = 6.dp)
+            ) {
+                Text(
+                    ds("settings.about.update_available", "version" to r.versionName),
+                    color = RiPlayAccent,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(Modifier.width(8.dp))
+                // STEP 6c (richiesta utente n.3): download DIRETTO dell'installer
+                // per il SO corrente (msi/deb/rpm/dmg), URL verificato prima
+                // dell'apertura; in caso di problemi si apre la pagina releases
+                Text(
+                    ds("settings.about.update_download"),
+                    color = RiPlayAccent,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { DesktopUpdateChecker.openInstallerDownload(r.versionName) }
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    ds("settings.about.update_open_releases"),
+                    color = Color.White.copy(alpha = 0.7f),
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { DesktopUpdateChecker.openReleasesPage() }
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                )
+            }
+            is DesktopUpdateChecker.UpdateCheckResult.Failed, null -> if (result != null) Text(
+                ds("settings.about.update_failed"),
+                color = Color.White.copy(alpha = 0.45f),
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 4.dp, top = 6.dp)
+            )
+        }
     }
 }
 

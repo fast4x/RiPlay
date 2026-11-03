@@ -47,6 +47,7 @@ import it.fast4x.riplay.styling.Dimensions.playlistThumbnailSize
 import it.fast4x.riplay.ui.components.Loader
 import it.fast4x.riplay.ui.components.Title
 import it.fast4x.riplay.ui.components.Title2Actions
+import it.fast4x.riplay.ui.components.wheelToHorizontalScroll
 import it.fast4x.riplay.utils.asSong
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
@@ -58,54 +59,7 @@ import riplay.composeapp.generated.resources.Res
 import riplay.composeapp.generated.resources.moods_and_genres
 import riplay.composeapp.generated.resources.refresh
 
-/**
- * STEP 3m (richiesta utente n.3 "vorrei che la home della versione desktop
- * sia la stessa di quella caricata lato android da HomePageOnline"):
- * HOME desktop alimentata dalla STESSA API della home Android:
- *  - EnvironmentExt.getHomePage(setLogin): le SEZIONI REALI della home
- *    YouTube Music (carousel con etichetta + titolo), le stesse di
- *    HomePageOnline Android; il login usa i cookie Environment (step3am),
- *    la presenza del cookie decide setLogin;
- *  - Environment.discoverPage("", ""): i MOODS & GENRES in fondo (come la
- *    sezione "Moods e generi" mostrata da Android quando showMoodsAndGenres).
- *
- * STEP 3ap (lingua home): al cambio lingua a runtime la home si RI-CARICA
- * nella nuova lingua (DesktopI18n.languageRevision e' bump-ata da
- * setLanguageChoice, che allinea anche Environment.locale).
- *
- * STEP 3aq (fix "ricarica in loop senza mai completare" al cambio lingua):
- * la vecchia effect usava confronti ytLoaded-ecc./reset distribuiti e letture
- * dello state DENTRO il while di retry; con la cancellazione/ripartenza
- * dell'effetto al cambio chiave (e getOrNull() che ingoia anche la
- * CancellationException) il caricamento poteva restare appeso o ripartire
- * senza mai completare. NUOVA macchina di caricamento, a prova di loop:
- *  - UNA SOLA chiave composta (refresh|login|lingua): la effect riparte
- *    solo quando serve davvero una ricarica;
- *  - il risultato passa da una variabile LOCALE: lo state home viene
- *    aggiornato SOLO a caricamento riuscito (durante la ricarica resta
- *    visibile la pagina precedente, come Android; niente flash/schermo vuoto);
- *  - TIMEOUT per tentativo (12s): una richiesta appesa non puo' piu'
- *    tenere il loader per sempre;
- *  - la CancellationException viene RILANCIATA (anti-zombie: getOrNull()
- *    non deve ingoiare la cancellazione dell'effetto);
- *  - loading = false in finally: il loader si chiude in OGNI scenario
- *    (successo, 3 tentativi falliti, timeout, cambio lingua in corsa);
- *  - log diagnostico [RiPlay-Home] con chiave, tentativi ed esito.
- *
- * Rendering (parita' con Android HomePageOnline):
- *  - sezione di BRANI (almeno un SongItem) -> LazyHorizontalGrid a 3 righe
- *    con il "+" per la coda, identico alla griglia "For You" Android;
- *  - altre sezioni -> carosello orizzontale (LazyRow) con SongItem (play),
- *    AlbumItem / ArtistItem / PlaylistItem (aprono il dettaglio desktop) e
- *    VideoItem (riprodotto come brano, stessa conversione di SearchPage);
- *  - l'aggiornamento manuale avviene con l'icona refresh in alto
- *    (PullToRefreshBox di Android non esiste su desktop) con 3 tentativi
- *    e backoff, come il caricamento Android (retry 500/1000 ms).
- *
- * Lascia il posto alla home precedente (QuickPicsScreen) SENZA toccare la
- * catena di riproduzione: i click passano da onSongClick/onAddToQueue,
- * le stesse callback usate da tutte le altre schermate desktop.
- */
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomePageOnline(
@@ -253,13 +207,15 @@ fun HomePageOnline(
                 // griglia a 3 righe dei BRANI (come la griglia Quick picks
                 // di Android): items misti, ma i NON brani della sezione
                 // sono comunque cliccabili secondo il loro tipo
+                val gridState = rememberLazyGridState()
                 LazyHorizontalGrid(
-                    state = rememberLazyGridState(),
+                    state = gridState,
                     rows = GridCells.Fixed(3),
                     flingBehavior = ScrollableDefaults.flingBehavior(),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(itemsVerticalPadding * 3 * 9)
+                        .wheelToHorizontalScroll(gridState)
                 ) {
                     items(items = items, key = { it.key }) { item ->
                         when (item) {
@@ -303,10 +259,14 @@ fun HomePageOnline(
                 }
             } else {
                 // carosello orizzontale (come le LazyRow di Android)
+                // STEP 8: la rotella del mouse scorre il carosello IN ORIZZONTALE
+                val rowState = rememberLazyListState()
                 LazyRow(
                     flingBehavior = ScrollableDefaults.flingBehavior(),
-                    state = rememberLazyListState(),
-                    modifier = Modifier.padding(vertical = 4.dp)
+                    state = rowState,
+                    modifier = Modifier
+                        .padding(vertical = 4.dp)
+                        .wheelToHorizontalScroll(rowState)
                 ) {
                     items(items = items, key = { it.key }) { item ->
                         when (item) {

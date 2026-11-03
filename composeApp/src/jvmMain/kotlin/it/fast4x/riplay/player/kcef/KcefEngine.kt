@@ -1,6 +1,7 @@
 package it.fast4x.riplay.player.kcef
 
 import it.fast4x.riplay.i18n.ds
+import it.fast4x.riplay.utils.WindowsAppIdentity
 
 import dev.datlag.kcef.KCEF
 import dev.datlag.kcef.KCEFClient
@@ -1527,39 +1528,19 @@ object KcefEngine {
                     KCEF.initBlocking(
                         builder = {
                             installDir(installDir)
-                            // STEP 2p: nessun AppHandler custom (rimosso quello
-                            // step2m per il factory https://youtube.com: canale
-                            // di intercettazione abolito). KCEF usa il SUO
-                            // AppHandler predefinito (factory file:// standard).
-                            // FIX 5: rendering software: su molte configurazioni
-                            // Windows (GPU integrata/driver datati/VM/Remote
-                            // Desktop) il processo GPU non parte ("GPU process
-                            // launch failed") e Chromium esce con FATAL "GPU
-                            // process isn't usable". Con disable-gpu il processo
-                            // GPU non viene richiesto; KCEF salta anche il
-                            // preloading delle librerie GPU nel percorso runtime.
-                            // STEP 2i: --autoplay-policy=no-user-gesture-required
-                            // (l'app chiama loadVideoById via JS senza gesto
-                            // utente nel frame: senza questo flag la policy
-                            // autoplay di Chromium puo' bloccare la partenza);
-                            // --disable-quic (reti aziendali bloccano UDP/443:
-                            // gli stream googlevideo.com su QUIC falliscono con
-                            // "An error occurred" nel player YT; su TCP funziona).
+
                             args(
                                 "--disable-gpu",
                                 "--disable-gpu-compositing",
                                 "--no-sandbox",
                                 "--autoplay-policy=no-user-gesture-required",
-                                "--disable-quic"
+                                "--disable-quic",
+                                "--app-user-model-id=" + WindowsAppIdentity.AUMID
                             )
                             log("builder args: --disable-gpu --disable-gpu-compositing --no-sandbox " +
-                                    "--autoplay-policy=no-user-gesture-required --disable-quic")
-                            // FIX 2 (STEP 2e): settings esplicite. Se il bundle e'
-                            // presente -> path verso il bundle; se NON e' ancora
-                            // stato estratto -> campi a STRINGA VUOTA: KCEF
-                            // (CefInitializer) autofilla i campi vuoti verso
-                            // installDir, invece di lasciare i default del JDK
-                            // (JCefAppConfig -> java.home -> subprocess sbagliati).
+                                    "--autoplay-policy=no-user-gesture-required --disable-quic " +
+                                    "--app-user-model-id=" + WindowsAppIdentity.AUMID)
+
                             settings {
                                 cachePath = cacheDir.absolutePath
                                 windowlessRenderingEnabled = false
@@ -1570,10 +1551,7 @@ object KcefEngine {
                                 val helper = bundleHelperFile
                                 val libcef = bundleLibcefFile
                                 if (isMacOS) {
-                                    // STEP 3z (macOS): subprocess = eseguibile
-                                    // interno a jcef_helper.app; risorse/locales
-                                    // = directory Resources del framework CEF
-                                    // (accanto all'helper su mac NON ci sono i pak).
+
                                     val fwRes = bundleCefResourcesDir
                                     browserSubProcessPath = helper?.absolutePath ?: ""
                                     resourcesDirPath = fwRes?.absolutePath ?: ""

@@ -43,13 +43,17 @@
     <string name="player.expand_video">Expand the video to the full width of the window</string>
     <string name="player.restore_video">Restore the video to the initial width</string>
     <string name="player.radio">Radio: add similar songs to the queue</string>
+    <string name="tray.show">Show RiPlay</string>
+    <string name="tray.quit">Quit RiPlay</string>
+    <string name="sleeptimer.title">Sleep timer</string>
+    <string name="sleeptimer.min">{n} min</string>
+    <string name="sleeptimer.cancel">Cancel the timer</string>
     <string name="player.song_cover">Song cover</string>
     <string name="player.online">Online</string>
     <string name="player.local">Local</string>
     <string name="radio.none_found">No similar songs found</string>
     <string name="radio.added">Added {n} similar songs</string>
     <string name="radio.unavailable">Radio unavailable</string>
-    <!-- STEP 3ac: auto-radio + marcatura coda -->
     <string name="radio.auto_added">Auto-radio: added {n} similar songs</string>
     <string name="queue.in_playback">Now playing</string>
     <string name="queue.autoradio_on">Auto-radio active: adds similar songs when the queue is about to end</string>
@@ -129,6 +133,15 @@
     <string name="overlay.playing">Now playing</string>
     <string name="local.none_found_in">No audio files found in \"{value}\"</string>
     <string name="local.imported_from">Imported {n} files from \"{value}\"</string>
+    <string name="local.delete">Remove song</string>
+    <string name="local.delete_title">Remove local song</string>
+    <string name="local.delete_text">\"{title}\" will be removed from the RiPlay library. You can also delete the audio file from your computer.</string>
+    <string name="local.delete_keep_library">Remove from library</string>
+    <string name="local.delete_also_file">Delete also the file</string>
+    <string name="local.delete_cancel">Cancel</string>
+    <string name="local.delete_done">Removed: {title}</string>
+    <string name="local.delete_file_failed">Removed from the library, but the file could not be deleted (in use?)</string>
+    <string name="local.delete_failed">Deletion failed: {error}</string>
     <string name="podcast.episodes">episodes</string>
     <string name="podcast.description">Description</string>
     <string name="nav.settings">Settings</string>
@@ -190,4 +203,31 @@
     <string name="settings.about.request_feature">Request a feature or suggest an idea</string>
     <string name="settings.about.github_redirect">You will be redirected to GitHub</string>
     <string name="splash.loading">Loading...</string>
+
+<string name="overlay.lyrics_toggle">Lyrics</string>
+<string name="overlay.visualizer_toggle">Visualizer</string>
+<string name="lyrics.title">Lyrics</string>
+<string name="lyrics.idle">Open to search this song\'s lyrics</string>
+<string name="lyrics.loading">Searching lyrics...</string>
+<string name="lyrics.not_found">No lyrics found for this song.\nTry the reload button: the search uses title and artist.</string>
+<string name="lyrics.reload">Reload lyrics</string>
+<string name="lyrics.close_panel">Close the lyrics panel</string>
+
+<string name="visualizer.spectrum">Spectrum</string>
+<string name="visualizer.level">Level</string>
+<string name="visualizer.off">Visualizer off</string>
+
+<string name="update.banner_available">New version available: {version}</string>
+<string name="update.banner_open_releases">Open releases</string>
+<string name="update.banner_download">Download</string>
+<string name="update.banner_close">Close</string>
+<string name="settings.about.updates">Updates</string>
+<string name="settings.about.check_updates">Check for updates</string>
+<string name="settings.about.check_updates_info">Current version {version} - same update file used by the Android app</string>
+<string name="settings.about.update_checking">Checking...</string>
+<string name="settings.about.update_uptodate">You are up to date</string>
+<string name="settings.about.update_available">New version: {version}</string>
+<string name="settings.about.update_download">download installer</string>
+<string name="settings.about.update_open_releases">open releases</string>
+<string name="settings.about.update_failed">Check failed (no connection?)</string>
 </resources>

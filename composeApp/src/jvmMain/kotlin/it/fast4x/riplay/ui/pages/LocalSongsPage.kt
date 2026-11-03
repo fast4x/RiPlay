@@ -24,13 +24,18 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Audiotrack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -49,62 +54,49 @@ import it.fast4x.riplay.items.SongItem
 import it.fast4x.riplay.styling.Dimensions.layoutColumnBottomSpacer
 import it.fast4x.riplay.ui.components.RiPlayAccent
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import upload.LOCAL_AUDIO_EXTENSIONS
 import upload.pickLocalAudioFiles
 import upload.pickLocalFolder
 import java.io.File
 
-/**
- * STEP 3m (richiesta utente n.2 "manca la parte di caricamento dei files
- * locali presenti nel pc che poi vengono riprodotti con il motore vlcj"):
- * pagina dei FILE LOCALI del computer.
- *
- * Comportamento:
- *  - "Aggiungi cartella": picker nativo di una directory, scansione
- *    RICORSIVA dei file audio (mp3, m4a, flac, ogg, opus, wav, ...) e
- *    inserimento nel db come brani locali (id = "local:<percorso>",
- *    Song.folder = cartella, artistsText = nome della cartella);
- *  - "Aggiungi file": picker nativo MULTI-selezione di singoli file;
- *  - la lista elenca TUTTI i brani locali del db (ordine alfabetico per
- *    titolo) e si AGGIORNA DA SOLA (Flow) dopo ogni importazione;
- *  - click su un brano = parte col motore VLCJ (il routing automatico
- *    di DesktopPlayerManager invia gli id "local:..." a VLCJ) e ANCHE I
- *    RESTANTI brani della lista entrano in coda (STEP 3n, richiesta
- *    utente n.5, stesso comportamento degli album: la lista completa e'
- *    passata a onPlayCollection, che applica il cap di QUEUE_MAX_ITEMS);
- *  - "+" = aggiunge il SOLO brano alla coda di riproduzione.
- *
- * L'upsert e' IDEMPOTENTE (stesso percorso = stesso id): reimportare la
- * stessa cartella non crea duplicati, aggiorna solo le righe esistenti.
- */
+
 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun LocalSongsPage(
-    // STEP 3n (richiesta utente n.5 "dalla scheda Locali se clicco su una
-    // canzone le restanti non vengono aggiunte in coda"): il click passa
-    // da onPlayCollection = brano cliccato parte subito + RESTO della
-    // lista in coda (i brani locali sono gia' nel db: l'upsert dentro
-    // onPlayCollection e' idempotente e non crea duplicati)
     onPlayCollection: (List<Song>, Song) -> Unit,
     onAddToQueue: (Song) -> Unit
 ) {
 
     val songs = remember { SnapshotStateList<Song>() }
 
-    // richiesta di importazione: "folder" oppure "files" (un tick = una
-    // apertura del picker, one-shot dentro LaunchedEffect come PlayerInput)
+
+    var deleteCandidate by remember { mutableStateOf<Song?>(null) }
+    val deleteScope = rememberCoroutineScope()
+
+    fun performDelete(song: Song, alsoFile: Boolean) {
+        deleteCandidate = null
+        deleteScope.launch {
+            val res = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                val dbOk = runCatching { Database.delete(song) }.isSuccess
+                // rimozione file: solo se richiesta E il percorso e' risolvibile
+                val fileDeleted = if (alsoFile && dbOk) {
+                    val path = (song.mediaId ?: song.id).removePrefix(LOCAL_KEY_PREFIX).trim()
+                    val f = File(path)
+                    if (path.isNotEmpty() && f.isFile) runCatching { f.delete() }.getOrDefault(false) else null
+                } else null
+                dbOk to fileDeleted
+            }
+            println("[RiPlay-Locali] eliminazione '${song.title}' (anche file=$alsoFile): db=${res.first} file=${res.second}")
+        }
+    }
+
+
     var scanRequest by remember { mutableStateOf<Int?>(null) }
     var scanning by remember { mutableStateOf(false) }
     var feedback by remember { mutableStateOf<String?>(null) }
 
-    // STEP 4d (richiesta utente n.4): PULIZIA dei brani locali SENZA file
-    // fisico. La lista legge TUTTI i brani "local:..." dal db: possono
-    // puntare a file non piu' esistenti (spostati/eliminati dal PC) e, nel
-    // caso tipico di un backup ripristinato dalla versione ANDROID, a
-    // percorsi che sul desktop NON possono esistere ("/storage/emulated/0/..."
-    // o URI "content://" di MediaStore). Questi orfani vengono RIMOSSI dal
-    // database PRIMA della prima lettura della lista (una sola volta a ogni
-    // apertura della pagina, su thread IO) con un feedback visibile.
+
     LaunchedEffect(Unit) {
         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
             val all = runCatching { Database.getLocalSongs().first() }
@@ -268,25 +260,77 @@ fun LocalSongsPage(
                 items = songs,
                 key = { _, song -> song.id }
             ) { index, song ->
-                SongItem(
-                    songEntity = SongEntity(song = song),
-                    modifier = Modifier
-                        .padding(horizontal = 12.dp)
-                        .padding(vertical = 4.dp)
-                        .combinedClickable(
-                            onLongClick = {},
-                            // STEP 3n: il click mette in coda ANCHE i restanti
-                            // brani della lista (cap 50 in onPlayCollection)
-                            onClick = { onPlayCollection(songs.toList(), song) }
-                        ),
-                    onAddToQueue = { onAddToQueue(song) }
-                )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    SongItem(
+                        songEntity = SongEntity(song = song),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 12.dp)
+                            .padding(vertical = 4.dp)
+                            .combinedClickable(
+                                onLongClick = {},
+                                onClick = { onPlayCollection(songs.toList(), song) }
+                            ),
+                        onAddToQueue = { onAddToQueue(song) }
+                    )
+                    IconButton(
+                        onClick = { deleteCandidate = song },
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .size(34.dp)
+                    ) {
+                        Icon(
+                            Icons.Filled.Delete,
+                            contentDescription = ds("local.delete"),
+                            tint = Color.White.copy(alpha = 0.5f),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
             }
 
             item(key = "bottom") {
                 Spacer(modifier = Modifier.height(layoutColumnBottomSpacer))
             }
         }
+    }
+
+
+    deleteCandidate?.let { candidate ->
+        AlertDialog(
+            onDismissRequest = { deleteCandidate = null },
+            title = {
+                Text(ds("local.delete_title"), color = Color.White)
+            },
+            text = {
+                Text(
+                    ds("local.delete_text", "title" to candidate.title),
+                    color = Color.White.copy(alpha = 0.85f)
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { performDelete(candidate, false) }) {
+                    Text(ds("local.delete_keep_library"), color = Color.White)
+                }
+            },
+            dismissButton = {
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    TextButton(onClick = { performDelete(candidate, true) }) {
+                        Text(
+                            ds("local.delete_also_file"),
+                            color = androidx.compose.material3.MaterialTheme.colorScheme.error
+                        )
+                    }
+                    TextButton(onClick = { deleteCandidate = null }) {
+                        Text(ds("local.delete_cancel"), color = Color.White.copy(alpha = 0.6f))
+                    }
+                }
+            }
+        )
     }
 }
 

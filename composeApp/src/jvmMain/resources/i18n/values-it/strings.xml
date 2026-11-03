@@ -43,13 +43,20 @@
     <string name="player.expand_video">espandi il video a tutta larghezza della finestra</string>
     <string name="player.restore_video">riporta il video alla larghezza iniziale</string>
     <string name="player.radio">radio: aggiungi brani simili in coda</string>
+
+    <string name="tray.show">Mostra RiPlay</string>
+    <string name="tray.quit">Esci da RiPlay</string>
+
+    <string name="sleeptimer.title">Timer di spegnimento</string>
+    <string name="sleeptimer.min">{n} min</string>
+    <string name="sleeptimer.cancel">Annulla il timer</string>
     <string name="player.song_cover">cover del brano</string>
     <string name="player.online">Online</string>
     <string name="player.local">Locale</string>
     <string name="radio.none_found">Nessun brano simile trovato</string>
     <string name="radio.added">Aggiunti {n} brani simili</string>
     <string name="radio.unavailable">Radio non disponibile</string>
-    <!-- STEP 3ac: auto-radio + marcatura coda -->
+
     <string name="radio.auto_added">Auto-radio: aggiunti {n} brani simili</string>
     <string name="queue.in_playback">In riproduzione</string>
     <string name="queue.autoradio_on">Auto-radio attiva: aggiunge brani simili quando la coda sta per finire</string>
@@ -129,6 +136,15 @@
     <string name="overlay.playing">Riproduzione in corso</string>
     <string name="local.none_found_in">Nessun file audio trovato in \"{value}\"</string>
     <string name="local.imported_from">Importati {n} file da \"{value}\"</string>
+    <string name="local.delete">Rimuovi brano</string>
+    <string name="local.delete_title">Rimuovi brano locale</string>
+    <string name="local.delete_text">\"{title}\" verrà rimosso dalla libreria di RiPlay. Puoi anche eliminare il file audio dal computer.</string>
+    <string name="local.delete_keep_library">Rimuovi dalla libreria</string>
+    <string name="local.delete_also_file">Elimina anche il file</string>
+    <string name="local.delete_cancel">Annulla</string>
+    <string name="local.delete_done">Rimosso: {title}</string>
+    <string name="local.delete_file_failed">Rimosso dalla libreria, ma il file non è eliminabile (in uso?)</string>
+    <string name="local.delete_failed">Eliminazione fallita: {error}</string>
     <string name="podcast.episodes">episodi</string>
     <string name="podcast.description">Descrizione</string>
     <string name="nav.settings">Impostazioni</string>
@@ -180,4 +196,32 @@
     <string name="settings.about.request_feature">Richiedi una funzione o suggerisci un\'idea</string>
     <string name="settings.about.github_redirect">Verrai reindirizzato a GitHub</string>
     <string name="splash.loading">Caricamento...</string>
+
+
+<string name="overlay.lyrics_toggle">Testo</string>
+<string name="overlay.visualizer_toggle">Visualizer</string>
+<string name="lyrics.title">Testo</string>
+<string name="lyrics.idle">Apri per cercare il testo di questo brano</string>
+<string name="lyrics.loading">Ricerca del testo in corso...</string>
+<string name="lyrics.not_found">Nessun testo trovato per questo brano.\nProva il pulsante ricarica: la ricerca usa titolo e artista.</string>
+<string name="lyrics.reload">Ricarica il testo</string>
+<string name="lyrics.close_panel">Chiudi il pannello testi</string>
+
+<string name="visualizer.spectrum">Spettro</string>
+<string name="visualizer.level">Livello</string>
+<string name="visualizer.off">Visualizer spento</string>
+
+<string name="update.banner_available">Nuova versione disponibile: {version}</string>
+<string name="update.banner_open_releases">Apri releases</string>
+<string name="update.banner_download">Scarica</string>
+<string name="update.banner_close">Chiudi</string>
+<string name="settings.about.updates">Aggiornamenti</string>
+<string name="settings.about.check_updates">Controlla aggiornamenti</string>
+<string name="settings.about.check_updates_info">Versione attuale {version} - stesso file usato dall\'app Android</string>
+<string name="settings.about.update_checking">Controllo in corso...</string>
+<string name="settings.about.update_uptodate">Sei aggiornato all\'ultima versione</string>
+<string name="settings.about.update_available">Nuova versione: {version}</string>
+<string name="settings.about.update_download">scarica installer</string>
+<string name="settings.about.update_open_releases">apri releases</string>
+<string name="settings.about.update_failed">Controllo non riuscito (nessuna connessione?)</string>
 </resources>

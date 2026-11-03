@@ -13,7 +13,9 @@ import it.fast4x.riplay.ui.saveDesktopWindowPrefs
 import it.fast4x.riplay.ui.theme.DesktopTheme
 import it.fast4x.riplay.commonutils.initializeEnvironment
 import it.fast4x.riplay.player.kcef.KcefEngine
+import it.fast4x.riplay.player.kcef.KcefState
 import it.fast4x.riplay.utils.DesktopAppInfo
+import it.fast4x.riplay.utils.DesktopTray
 import it.fast4x.riplay.utils.WindowsAppIdentity
 import org.jetbrains.compose.resources.painterResource
 import riplay.composeapp.generated.resources.Res
@@ -82,6 +84,35 @@ fun main() {
         // entrambi passano da onCloseRequest).
         val windowState = remember { initialWindowState() }
 
+
+        var windowVisible by remember { mutableStateOf(true) }
+
+        // Callback per il tray: registrate UNA volta (remember). showWindow
+        // riporta la finestra visibile, de-minimizzata e in primo piano;
+        // requestExit e' l'uscita completa (salva le preferenze finestra).
+        remember {
+            DesktopTray.showWindow = {
+                windowVisible = true
+                windowState.isMinimized = false
+                DesktopTray.bringToFrontLater()
+            }
+            DesktopTray.requestExit = {
+                saveDesktopWindowPrefs(windowState)
+                exitApplication()
+            }
+            true
+        }
+
+        fun closeWindowOrHide() {
+            saveDesktopWindowPrefs(windowState)
+            if (DesktopTray.running) {
+                // nasconde nel tray: la riproduzione prosegue
+                windowVisible = false
+            } else {
+                exitApplication()
+            }
+        }
+
         // STEP 4f (richiesta utente n.6): SPLASHSCREEN di avvio. Finestra
         // senza bordi SEMPRE OPACA (niente transparent: su alcune
         // configurazioni Windows la trasparenza non e' supportata e mostra
@@ -119,11 +150,8 @@ fun main() {
 
         Window(
             icon = painterResource(Res.drawable.app_icon),
-            visible = mainVisible,
-            onCloseRequest = {
-                saveDesktopWindowPrefs(windowState)
-                exitApplication()
-            },
+            visible = mainVisible && windowVisible,
+            onCloseRequest = { closeWindowOrHide() },
             state = windowState,
             title = "RiPlay",
             undecorated = true
@@ -144,8 +172,7 @@ fun main() {
                         saveDesktopWindowPrefs(windowState)
                     },
                     onClose = {
-                        saveDesktopWindowPrefs(windowState)
-                        exitApplication()
+                        closeWindowOrHide()
                     }
                 )
             }
@@ -156,20 +183,7 @@ fun main() {
 /** durata minima visiva dello splashscreen (STEP 4f) */
 private const val SPLASH_MIN_VISIBLE_MS = 1_600L
 
-/**
- * STEP 4g: bootstrap NON-composable dell'app, una sola volta per processo
- * (guardia atomica: chiamata ripetuta = no-op). L'ORDINE e' lo stesso che
- * aveva l'inizializzazione dentro application{}:
- *  1. WindowsAppIdentity.setup(): AUMID + DisplayName di registro per la
- *     notifica multimediale di Windows ("app sconosciuta" -> "RiPlay");
- *  2. initializeEnvironment(): DEVE precedere QUALUNQUE accesso
- *     all'object Environment (bug "login perso" / host vuoto: vedi
- *     commento storico step3ak) - qui e' ancora piu' presto di prima;
- *  3. DesktopI18n.initialize(): lingua UI = scelta salvata o di sistema,
- *     prima della prima UI;
- *  4. KcefEngine.start(): installazione/inizializzazione KCEF in background;
- *  5. restoreAtStartup(): account YouTube Music salvato -> Environment.cookie.
- */
+
 private val BOOTSTRAP_DONE = java.util.concurrent.atomic.AtomicBoolean(false)
 
 private fun bootstrapDesktopApp() {
@@ -184,18 +198,38 @@ private fun bootstrapDesktopApp() {
 
     DesktopI18n.initialize()
 
+    DesktopTray.start()
+
     KcefEngine.start()
 
     it.fast4x.riplay.ui.pages.DesktopAccountManager.restoreAtStartup()
+
+    Thread {
+        runCatching {
+            val deadline = System.currentTimeMillis() + 120_000L
+            while (System.currentTimeMillis() < deadline) {
+                val s = KcefEngine.state.value
+                if (s is KcefState.Ready || s is KcefState.Failed) break
+                Thread.sleep(1_000L)
+            }
+            WindowsAppIdentity.reassertAfterCef()
+
+            Thread.sleep(30_000L)
+            WindowsAppIdentity.reassertAfterCef()
+
+            Thread.sleep(15_000L)
+            WindowsAppIdentity.runSmtcSessionDiagnostic("45s")
+            Thread.sleep(60_000L)
+            WindowsAppIdentity.runSmtcSessionDiagnostic("105s")
+        }.onFailure { it.printStackTrace() }
+    }.apply {
+        name = "riplay-identity-watch"
+        isDaemon = true
+        start()
+    }
 }
 
-/**
- * STEP 4f/4g: contenuto dello splashscreen: sfondo scuro PIASTRELLATO a
- * tutta finestra (la finestra e' OPACA: nessuna dipendenza dal supporto
- * trasparenza del sistema) con card arrotondata, logo, nome, versione e
- * indicatore di caricamento. Nessun accesso a Environment o al database:
- * la splash e' puramente visiva.
- */
+
 @androidx.compose.runtime.Composable
 private fun DesktopSplash() {
     Box(

@@ -44,20 +44,21 @@ import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.rounded.PlayArrow
-// STEP 3i: icone del pannello coda di riproduzione
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.List
-// STEP 3j: maniglia di trascinamento + icona RADIO (brani simili in coda)
-import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.Radio
+import androidx.compose.material.icons.filled.Lyrics
+import androidx.compose.material.icons.filled.Bedtime
+import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -84,16 +85,20 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import extension.formatTimestamp
 import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.player.lyrics.DesktopLyricsRepository
+import it.fast4x.riplay.player.lyrics.LyricsUiState
 import it.fast4x.riplay.ui.components.PremiumSlider
 import it.fast4x.riplay.ui.components.RiPlayAccent
-// STEP 3m: pannello coda estratto in ui/components (ora usato anche nella
-// colonna destra della finestra principale, senza aprire il player full)
+import it.fast4x.riplay.ui.components.AudioVisualizer
+import it.fast4x.riplay.ui.components.LyricsPanel
+import it.fast4x.riplay.ui.components.VisualizerStyle
 import it.fast4x.riplay.ui.components.PlayQueuePanel
-// STEP 3j: wrapper del brano in coda con uid stabile (serve al drag&drop)
 import it.fast4x.riplay.ui.QueuedSong
-// STEP 3n: cover alla risoluzione alta (richiesta utente n.7)
+import it.fast4x.riplay.utils.DesktopSleepTimer
 import it.fast4x.riplay.utils.hiResCoverUrl
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import player.PlayerController
 import player.PlayerState
@@ -102,93 +107,27 @@ import riplay.composeapp.generated.resources.app_icon
 import riplay.composeapp.generated.resources.chevron_down
 import kotlin.math.roundToLong
 
-/**
- * STEP 3c: PLAYER ESPANDIBILE in stile Android (l'equivalente desktop della
- * PlayerScreen Android che si apre dal mini player). Si apre a FINESTRA
- * INTERA sopra tutto (scaffold, barre incluse) con animazione dal basso e
- * contiene cio' che il pannello player non puo' mostrare comodamente:
- *  - la COVER GRANDE del brano (o attenuata quando il video e' attivo, con
- *    l'indicazione che il video resta visibile nel pannello player);
- *  - titolo e artista;
- *  - la TIMELINA con seek (slider) e i due timestamp;
- *  - i pulsanti AVANTI/INDIETRO (STEP 3d: cronologia dei brani ascoltati
- *    nella sessione), play/pausa, mute e volume;
- *  - l'interruttore video/cover (stessa semantica del db isAudioOnly);
- *  - la chiusura: pulsante in alto a sinistra oppure il tasto ESC.
- *
- * STEP 3d (correzioni dalla prova utente):
- *  - CHIUSURA AFFIDABILE: il chevron ora e' un pulsante circolare ben
- *    visibile (prima un'immagine 24dp difficile da colpire) e il tasto ESC
- *    funziona davvero: l'overlay RICHIEDE il focus quando si apre
- *    (prima onPreviewKeyEvent non riceveva mai gli eventi, senza focus);
- *  - I CLICK NON PASSANO PIU' ATTRAVERSO: le aree vuote dell'overlay
- *    consumano i tocchi (prima un click accanto alla cover finiva sulla
- *    pagina sottostante e faceva partire un altro brano);
- *  - PULSANTI AVANTI/INDIETRO visibili accanto a play/pausa.
- *
- * STEP 3g (dalla prova utente: "aggiungere uno chevron down in alto nel
- * player full per chiuderlo"): il chevron c'era gia' (in alto a sinistra)
- * ma era piccolo e poco contrastato (cerchio bianco al 14% su nero) e la
- * parte bassa restava coperta dal pannello bianco del browser (fix nel
- * KcefVideoSurface). Ora e' un bersaglio chiaro: cerchio 48dp al 22%,
- * icona 28dp, e il suggerimento in basso lo nomina esplicitamente.
- *
- * Il motore di riproduzione NON viene toccato: l'audio prosegue con
- * l'overlay aperto (il livello Swing del pannello player viene solo
- * nascosto sotto di esso, vedi KcefVideoSurface.overlayOpen).
- *
- * STEP 3h (migliorie visive, richiesta utente "slider orizzontali della
- * timeline e del volume piu' premium" + polish):
- *  - SLIDER PREMIUM (PremiumSlider): track sottile che si ingrandisce
- *    al passaggio del mouse, riempimento a gradiente, thumb bianco con
- *    alone, bolla del tempo sull'anteprima del seek; la timeline fa UN
- *    solo seekTo al rilascio (prima lo Slider material chiamava seekTo
- *    continuamente durante il drag);
- *  - ENTRATA PIU' MORBIDA: slide + fade + leggero scale; la cover grande
- *    appare con una piccola animazione di scala a molla e angoli
- *    arrotondati con ombra;
- *  - SFONDO con sfumatura sottile (non piu' nero piatto);
- *  - PLAY/PAUSA dentro un cerchio d'accento (come i player chic);
- *  - accento unificato (RiPlayAccent) su icone e cursori.
- */
+
 @Composable
 fun DesktopPlayerOverlay(
     visible: Boolean,
     song: Song?,
     controller: PlayerController?,
     videoVisible: Boolean,
-    // STEP 3k (richiesta utente n.3): il pulsante audio/video e' RIMOSSO
-    // dal player full (per guardare il video si deve comunque tornare alla
-    // home: il toggle vive solo nella barra del player di sinistra).
-    // [videoVisible] resta: decide se la cover appare attenuata con la nota
-    // "video attivo nel pannello player".
     engineLabel: String,
     onCollapse: () -> Unit,
-    // STEP 3d: navigazione tra i brani ascoltati (cronologia di sessione)
     canGoPrevious: Boolean = false,
     canGoNext: Boolean = false,
     onPrevious: () -> Unit = {},
     onNext: () -> Unit = {},
-    // STEP 3i: CODA DI RIPRODUZIONE. Il pannello (icona in alto a destra)
-    // elenca i brani in coda: click = riproduci subito, X = rimuovi,
-    // cestino = svuota, MANIGLIA = trascina per riordinare (STEP 3j).
-    // L'AVANZAMENTO AUTOMATICO alla fine del brano e' gestito dall'app
-    // (ThreeColumnsApp via PlayerController.onEnded).
-    // STEP 3j: la coda ora e' List<QueuedSong> (uid stabile per item: serve
-    // alle chiavi del drag&drop anche con brani duplicati).
     queue: List<QueuedSong> = emptyList(),
     onQueuePlay: (Song) -> Unit = {},
     onQueueRemove: (Song) -> Unit = {},
     onQueueClear: () -> Unit = {},
-    // STEP 3j: riordino (from.uid -> to.uid, gestito dall'app sulla lista)
     onQueueMove: (Long, Long) -> Unit = { _, _ -> },
-    // STEP 3ac: uid del brano marcato "in riproduzione" nella coda +
-    // interruttore AUTO-RADIO del pannello coda (richieste utente step3ac)
     playingUid: Long? = null,
     autoRadioEnabled: Boolean = true,
     onToggleAutoRadio: () -> Unit = {},
-    // STEP 3j: RADIO (richiesta utente n.4): aggiunge i BRANI SIMILI in coda
-    // (Environment.nextPage, la stessa funzione della radio Android)
     onAddRadio: () -> Unit = {},
     radioLoading: Boolean = false,
     radioFeedback: String? = null
@@ -199,7 +138,7 @@ fun DesktopPlayerOverlay(
         s
     } else PlayerState()
 
-    // STEP 3d: focus per il tasto ESC (onPreviewKeyEvent senza focus non
+    // focus per il tasto ESC (onPreviewKeyEvent senza focus non
     // riceve mai eventi: per questo la chiusura non funzionava)
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) {
@@ -207,8 +146,33 @@ fun DesktopPlayerOverlay(
         runCatching { focusRequester.requestFocus() }
     }
 
-    // STEP 3i: pannello coda aperto/chiuso (toggle con l'icona in alto a destra)
+    // Pannello coda aperto/chiuso (toggle con l'icona in alto a destra)
     var queueOpen by remember { mutableStateOf(false) }
+
+    // pannello TESTI aperto/
+    // chiuso (toggle con l'icona "Testo" in alto a destra, accanto alla coda).
+    var lyricsOpen by remember { mutableStateOf(false) }
+
+    // Visualizer del player. Parte con lo
+    // SPETTRO; il pulsante in alto CICLA gli stili (spettro -> livello -> off).
+    var visualizerStyle by remember { mutableStateOf(VisualizerStyle.SPECTRUM) }
+
+    // Stato del testo del brano corrente, osservato dal repository
+    // (fetch cache db -> LRCLIB -> KuGou attivato quando il pannello si apre).
+    // Il flow di fallback (Idle) serve quando l'overlay e' composto senza brano.
+    val lyricsFlow = remember(song?.id) {
+        song?.let { DesktopLyricsRepository.stateFor(it.id) }
+            ?: MutableStateFlow<LyricsUiState>(LyricsUiState.Idle)
+    }
+    val lyricsState by lyricsFlow.collectAsState()
+    val overlayScope = rememberCoroutineScope()
+
+    // Scarica il testo quando il pannello si apre (o cambia brano):
+    // niente rete finche' l'utente non lo chiede, e solo UNA volta per brano
+    // (le successive letture vengono dalla cache del repository/db).
+    LaunchedEffect(lyricsOpen, song?.id) {
+        if (lyricsOpen && song != null) DesktopLyricsRepository.load(song)
+    }
 
     AnimatedVisibility(
         visible = visible,
@@ -222,7 +186,7 @@ fun DesktopPlayerOverlay(
         Box(
             Modifier
                 .fillMaxSize()
-                // STEP 3h: sfumatura sottile invece del nero piatto
+                // Sfumatura sottile invece del nero piatto
                 .background(
                     Brush.verticalGradient(
                         listOf(Color(0xFF060606), Color(0xFF0E100D), Color(0xFF050505))
@@ -239,9 +203,8 @@ fun DesktopPlayerOverlay(
                         true
                     } else false
                 }
-                // STEP 3d: le aree vuote CONSUMANO i tap: niente click che
-                // passano alla pagina sottostante (prima un click accanto
-                // alla cover faceva partire il brano di un item sotto)
+                // Le aree vuote CONSUMANO i tap: niente click che
+                // passano alla pagina sottostante
                 .pointerInput(Unit) { detectTapGestures { } }
         ) {
             Column(
@@ -283,7 +246,7 @@ fun DesktopPlayerOverlay(
                         fontSize = 11.sp
                     )
                     Spacer(Modifier.width(12.dp))
-                    // STEP 3j: pulsante RADIO: aggiunge i BRANI SIMILI del
+                    // Pulsante RADIO: aggiunge i BRANI SIMILI del
                     // brano in riproduzione in fondo alla coda (come la
                     // funzione radio di Android). Feedback inline.
                     Row(
@@ -316,7 +279,7 @@ fun DesktopPlayerOverlay(
                         )
                     }
                     Spacer(Modifier.width(8.dp))
-                    // STEP 3i: toggle del pannello CODA DI RIPRODUZIONE
+                    // Toggle del pannello CODA DI RIPRODUZIONE
                     // (icona lista + contatore brani in coda)
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -340,6 +303,65 @@ fun DesktopPlayerOverlay(
                             fontWeight = if (queueOpen) FontWeight.SemiBold else FontWeight.Normal
                         )
                     }
+                    Spacer(Modifier.width(8.dp))
+                    // STEP 5a: toggle del pannello TESTI (stessa identita' del
+                    // pulsante coda: pill con icona + contatore/etichetta)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .clickable { lyricsOpen = !lyricsOpen }
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color.White.copy(alpha = if (lyricsOpen) 0.16f else 0.08f))
+                            .padding(horizontal = 12.dp, vertical = 7.dp)
+                    ) {
+                        Icon(
+                            Icons.Filled.Lyrics,
+                            contentDescription = ds("overlay.lyrics_toggle"),
+                            tint = if (lyricsOpen) RiPlayAccent else Color.White.copy(alpha = 0.8f),
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(7.dp))
+                        Text(
+                            ds("overlay.lyrics_toggle"),
+                            color = if (lyricsOpen) RiPlayAccent else Color.White.copy(alpha = 0.8f),
+                            fontSize = 13.sp,
+                            fontWeight = if (lyricsOpen) FontWeight.SemiBold else FontWeight.Normal
+                        )
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    // VISUALIZER: il click CICLA gli stili (spettro ->
+                    // livello -> off -> spettro). L'etichetta mostra lo stile attivo.
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .clickable { visualizerStyle = visualizerStyle.next() }
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color.White.copy(alpha = if (visualizerStyle != VisualizerStyle.NONE) 0.16f else 0.08f))
+                            .padding(horizontal = 12.dp, vertical = 7.dp)
+                    ) {
+                        Icon(
+                            Icons.Filled.GraphicEq,
+                            contentDescription = ds("overlay.visualizer_toggle"),
+                            tint = if (visualizerStyle != VisualizerStyle.NONE) RiPlayAccent
+                            else Color.White.copy(alpha = 0.8f),
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(7.dp))
+                        Text(
+                            ds(
+                                when (visualizerStyle) {
+                                    VisualizerStyle.SPECTRUM -> "visualizer.spectrum"
+                                    VisualizerStyle.LEVEL -> "visualizer.level"
+                                    VisualizerStyle.NONE -> "visualizer.off"
+                                }
+                            ),
+                            color = if (visualizerStyle != VisualizerStyle.NONE) RiPlayAccent
+                            else Color.White.copy(alpha = 0.8f),
+                            fontSize = 13.sp,
+                            fontWeight = if (visualizerStyle != VisualizerStyle.NONE) FontWeight.SemiBold
+                            else FontWeight.Normal
+                        )
+                    }
                 }
 
                 Spacer(Modifier.weight(1f))
@@ -347,11 +369,6 @@ fun DesktopPlayerOverlay(
                 // Cover grande (Android mostra la copertina quando il brano
                 // non e' un video). Con il video attivo la cover resta come
                 // sfondo d'arte attenuata + nota sulla posizione del video.
-                // STEP 3h: ingresso con scala a molla + angoli arrotondati
-                // e ombra (profondita', stile player chic).
-                // STEP 3n (richiesta utente n.7): copertina alla RISOLUZIONE
-                // ALTA (la cover qui arriva a >50% della finestra: la
-                // miniatura 120px era ancora piu' visibilmente sfocata)
                 if (song?.thumbnailUrl != null) {
                     val hiResCover = remember(song.id) { song.thumbnailUrl?.hiResCoverUrl() }
                     val coverScale = remember { Animatable(0.88f) }
@@ -433,11 +450,21 @@ fun DesktopPlayerOverlay(
 
                 Spacer(Modifier.weight(1f))
 
-                // TIMELINA (seek) + timestamp, come la PlayerScreen Android
-                // STEP 3h: SLIDER PREMIUM con bolla del tempo sull'anteprima
-                // e UN solo seekTo al RILASCIO (prima lo Slider material
-                // chiamava seekTo a ogni pixel di drag: decine di comandi
-                // JS al bridge KCEF e cursor che saltava).
+                // VISUALIZER tra il titolo e la timeline (si attiva e
+                // cambia stile col pulsante nella barra superiore). E' pura
+                // UI: non tocca il motore di riproduzione.
+                if (visualizerStyle != VisualizerStyle.NONE) {
+                    Spacer(Modifier.height(12.dp))
+                    AudioVisualizer(
+                        style = visualizerStyle,
+                        isPlaying = state.isPlaying,
+                        seed = song?.id ?: "riplay",
+                        modifier = Modifier
+                            .fillMaxWidth(0.86f)
+                            .height(if (visualizerStyle == VisualizerStyle.LEVEL) 22.dp else 58.dp)
+                    )
+                }
+
                 val animatedTimestamp by animateFloatAsState(state.timestamp.toFloat())
 
                 PremiumSlider(
@@ -484,8 +511,7 @@ fun DesktopPlayerOverlay(
                         )
                     }
 
-                    // STEP 3h: play/pausa dentro un cerchio d'accento
-                    // (pulsante principale, come nei player chic)
+                    // SPlay/pausa dentro un cerchio d'accento
                     IconButton(
                         onClick = {
                             if (state.isPlaying) controller?.pause() else controller?.play()
@@ -562,18 +588,87 @@ fun DesktopPlayerOverlay(
                         onValueChange = { controller?.setVolume(it) },
                         modifier = Modifier.width(280.dp)
                     )
+
+                    // TIMER DI SPEGNIMENTO
+                    var sleepMenuOpen by remember { mutableStateOf(false) }
+                    val sleepEndsAt = DesktopSleepTimer.endsAtMs
+                    var sleepNowMs by remember { mutableStateOf(System.currentTimeMillis()) }
+                    if (sleepEndsAt != null) {
+                        LaunchedEffect(sleepEndsAt) {
+                            while (DesktopSleepTimer.endsAtMs != null) {
+                                sleepNowMs = System.currentTimeMillis()
+                                delay(1_000L)
+                            }
+                        }
+                    }
+                    IconButton(onClick = { sleepMenuOpen = true }) {
+                        Icon(
+                            Icons.Filled.Bedtime, ds("sleeptimer.title"),
+                            tint = if (sleepEndsAt != null) RiPlayAccent
+                                   else Color.White.copy(alpha = 0.8f),
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                    if (sleepEndsAt != null) {
+                        val remainingSec =
+                            ((sleepEndsAt - sleepNowMs).coerceAtLeast(0L)) / 1_000L
+                        Text(
+                            "%d:%02d".format(remainingSec / 60, remainingSec % 60),
+                            color = RiPlayAccent,
+                            fontSize = 12.sp,
+                            modifier = Modifier.width(46.dp)
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = sleepMenuOpen,
+                        onDismissRequest = { sleepMenuOpen = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    ds("sleeptimer.title"),
+                                    color = Color.White.copy(alpha = 0.5f),
+                                    fontSize = 12.sp
+                                )
+                            },
+                            onClick = {},
+                            enabled = false
+                        )
+                        listOf(15, 30, 45, 60, 90).forEach { minutes ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        ds("sleeptimer.min", "n" to minutes),
+                                        color = Color.White,
+                                        fontSize = 14.sp
+                                    )
+                                },
+                                onClick = {
+                                    DesktopSleepTimer.start(minutes)
+                                    sleepMenuOpen = false
+                                }
+                            )
+                        }
+                        if (sleepEndsAt != null) {
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        ds("sleeptimer.cancel"),
+                                        color = Color(0xFFFF6B6B),
+                                        fontSize = 14.sp
+                                    )
+                                },
+                                onClick = {
+                                    DesktopSleepTimer.cancel()
+                                    sleepMenuOpen = false
+                                }
+                            )
+                        }
+                    }
                 }
 
                 Spacer(Modifier.height(10.dp))
 
-                // STEP 3k (richiesta utente n.3): l'interruttore video/cover
-                // e' stato RIMOSSO dal player full: la copertina attenuata con
-                // la nota qui sopra resta come stato informativo, mentre lo
-                // switch vero si usa nella barra del player di sinistra
-                // (per guardare il video si deve comunque tornare alla home).
-
-                // Suggerimento di chiusura (dalla prova: la via d'uscita
-                // non era evidente)
                 Text(
                     ds("overlay.close_hint"),
                     color = Color.White.copy(alpha = 0.3f),
@@ -583,24 +678,13 @@ fun DesktopPlayerOverlay(
                 Spacer(Modifier.weight(1f))
             }
 
-            // STEP 3i: PANNELLO CODA DI RIPRODUZIONE, agganciato al bordo
-            // destro del player a tutto schermo (si apre/chiude con l'icona
-            // "Coda" in alto a destra). Click su un brano = riproduci ora,
-            // X = rimuovi dalla coda, cestino = svuota tutto.
-            // STEP 3k (richiesta utente n.5): una volta aperto NON si poteva
-            // piu' chiudere: il pannello copriva l'intera altezza INCLUSA
-            // la barra in alto a destra col pulsante "Coda". Ora (a) il
-            // pannello inizia SOTTO la barra superiore (il pulsante Coda
-            // resta cliccabile) e (b) ha un pulsante X proprio nell'intestazione.
-            androidx.compose.animation.AnimatedVisibility(
+            AnimatedVisibility(
                 visible = queueOpen,
                 enter = fadeIn(tween(200)),
                 exit = fadeOut(tween(150)),
                 modifier = Modifier.align(Alignment.CenterEnd)
             ) {
-                // STEP 3m: il pannello e' il componente PUBBLICO condiviso con
-                // la colonna coda della finestra principale (topPadding 70.dp:
-                // inizia sotto la barra superiore, fix step3k n.5)
+
                 PlayQueuePanel(
                     queue = queue,
                     onPlay = onQueuePlay,
@@ -612,6 +696,28 @@ fun DesktopPlayerOverlay(
                     autoRadioEnabled = autoRadioEnabled,
                     onToggleAutoRadio = onToggleAutoRadio,
                     onClose = { queueOpen = false },
+                    topPadding = 70.dp
+                )
+            }
+
+            AnimatedVisibility(
+                visible = lyricsOpen,
+                enter = fadeIn(tween(200)),
+                exit = fadeOut(tween(150)),
+                modifier = Modifier.align(Alignment.CenterStart)
+            ) {
+                LyricsPanel(
+                    state = lyricsState,
+                    timestampMs = state.timestamp,
+                    isPlaying = state.isPlaying,
+                    onSeek = { ms -> controller?.seekTo(ms.coerceAtLeast(0L)) },
+                    onReload = {
+                        song?.let { s ->
+                            overlayScope.launch { DesktopLyricsRepository.load(s, force = true) }
+                        }
+                    },
+                    onClose = { lyricsOpen = false },
+                    // sotto la barra superiore, come il pannello coda
                     topPadding = 70.dp
                 )
             }
