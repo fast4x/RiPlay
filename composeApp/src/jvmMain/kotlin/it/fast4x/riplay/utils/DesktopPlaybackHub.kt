@@ -3,7 +3,22 @@ package it.fast4x.riplay.utils
 import player.DesktopPlayerManager
 import player.PlayerController
 
-
+/**
+ * STEP 9: ponte tra la composizione (ThreeColumnsApp) e i servizi GLOBALI
+ * che vivono FUORI dall'albero Compose (tray icon, sleep timer).
+ *
+ * Il DesktopPlayerManager e' "remember" dentro ThreeColumnsApp e i comandi
+ * di navigazione (avanti/indietro tra i brani) sono chiusure locali di
+ * quella funzione: il tray e il timer però devono funzionare anche con la
+ * finestra NASCOSTA (chiusa nel tray mentre la musica suona). All'avvio
+ * ThreeColumnsApp registra qui i riferimenti (remember, una sola volta) e
+ * da quel momento i servizi li richiamano a qualunque ora.
+ *
+ * Tutti i campi sono @Volatile: scritti una volta dalla composizione,
+ * letti da thread AWT/coroutine. I lambda catturano oggetti di stato
+ * remember (stabili per tutta la vita dell'app), quindi leggere l'istanza
+ * registrata alla prima composizione equivale a leggere lo stato corrente.
+ */
 object DesktopPlaybackHub {
 
     /** Gestore dei due motori (KCEF/VLCJ) registrato da ThreeColumnsApp. */
@@ -28,4 +43,13 @@ object DesktopPlaybackHub {
     /** Titolo del brano in riproduzione (per il tooltip del tray). */
     @Volatile
     var currentSongTitle: () -> String? = { null }
+
+    /**
+     * STEP 12 (mini player stile PiP): URL della copertina del brano in
+     * riproduzione. Chiusura ritardata (lambda) come le altre voci: la mini
+     * la legge a ogni ricomposizione/sondaggio, cosi' cambia brano anche
+     * senza eventi del player.
+     */
+    @Volatile
+    var currentSongThumbnail: () -> String? = { null }
 }

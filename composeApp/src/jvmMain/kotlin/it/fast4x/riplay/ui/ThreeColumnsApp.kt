@@ -245,8 +245,11 @@ fun ThreeColumnsApp(
         DesktopPlaybackHub.onNext = onHistoryNext
         DesktopPlaybackHub.onPrevious = onHistoryPrevious
         DesktopPlaybackHub.currentSongTitle = { nowPlayingSong?.title }
+
+        DesktopPlaybackHub.currentSongThumbnail = { nowPlayingSong?.thumbnailUrl }
         true
     }
+
 
     val onToggleVideoMode: (Boolean) -> Unit = { show ->
         playerManager.videoVisible = show
@@ -362,9 +365,6 @@ fun ThreeColumnsApp(
                     .map { it.asSong }
                     .filter { it.id.isNotBlank() && it.id != current.id }
                     .distinctBy { it.id }
-                    // STEP 3ac: il brano in riproduzione ora e' IN CODA
-                    // (marcato): il filtro "non in coda" lo esclude gia';
-                    // il confronto esplicito resta per sicurezza
                     .filter { s -> playQueue.none { it.song.id == s.id } && s.id != current.id }
                 similar.forEach { s ->
                     playQueue.add(makeQueued(s))

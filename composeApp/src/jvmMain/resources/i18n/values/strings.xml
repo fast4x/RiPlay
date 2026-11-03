@@ -50,6 +50,14 @@
     <string name="sleeptimer.title">Sleep timer</string>
     <string name="sleeptimer.min">{n} min</string>
     <string name="sleeptimer.cancel">Cancel the timer</string>
+    <!-- STEP 12: mini player (modalita' minimale stile PiP) -->
+    <string name="miniplayer.restore">Back to the main window</string>
+    <string name="settings.tab.general">General</string>
+    <string name="settings.miniplayer.title">Minimal mode (Picture-in-Picture)</string>
+    <string name="settings.miniplayer.desc">When enabled, minimizing the main window shows a small always-on-top player with the song cover, play/pause, next/previous and a seekable timeline. Clicking the cover brings the main window back.</string>
+    <!-- STEP 12b: optional close-to-tray (default OFF) -->
+    <string name="settings.closetotray.title">Tray icon on close</string>
+    <string name="settings.closetotray.desc">When enabled, closing the window with the X (or Alt+F4) does not quit RiPlay: it stays in the notification area and keeps playing; double-click the icon to reopen the window, use "Quit RiPlay" in its menu to exit for real. When disabled (default), the X closes the app.</string>
     <string name="player.song_cover">Song cover</string>
     <string name="player.online">Online</string>
     <string name="player.local">Local</string>
@@ -151,12 +159,6 @@
     <string name="settings.tab.data">Data</string>
     <string name="settings.tab.accounts">Account</string>
     <string name="settings.tab.about">About</string>
-    <string name="settings.tab.appearance">Appearance</string>
-    <string name="settings.appearance.accent">Accent color</string>
-    <string name="settings.appearance.accent_info">Used by the player, sliders, buttons and highlights. The change is immediate and is kept on the next start.</string>
-    <string name="settings.appearance.accent_custom">Custom color</string>
-    <string name="settings.appearance.accent_custom_info">Drag in the square to set saturation and brightness, use the bar for the hue, or type the hex code (#RRGGBB).</string>
-    <string name="settings.appearance.accent_reset">Restore default</string>
     <string name="settings.data.info">Export or import a backup of the library database (songs, playlists, history and favorites). The backup is a single .db file, compatible with Android; the restore completes when RiPlay restarts.</string>
     <string name="settings.data.db_path">Database: {path}</string>
     <string name="settings.data.export_backup">Export backup</string>

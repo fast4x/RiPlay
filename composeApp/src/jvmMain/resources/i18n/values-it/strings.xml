@@ -50,6 +50,14 @@
     <string name="sleeptimer.title">Timer di spegnimento</string>
     <string name="sleeptimer.min">{n} min</string>
     <string name="sleeptimer.cancel">Annulla il timer</string>
+    <!-- STEP 12: mini player (modalità minimale stile PiP) -->
+    <string name="miniplayer.restore">Torna alla finestra principale</string>
+    <string name="settings.tab.general">Generale</string>
+    <string name="settings.miniplayer.title">Modalità minimale (Picture-in-Picture)</string>
+    <string name="settings.miniplayer.desc">Se attiva, riducendo a icona la finestra principale compare un piccolo player sempre in primo piano con la copertina, play/pausa, successivo/precedente e la timeline trascinabile. Un click sulla copertina riporta la finestra principale.</string>
+    <!-- STEP 12b: icona nel tray alla chiusura (opzionale, default OFF) -->
+    <string name="settings.closetotray.title">Icona nel tray alla chiusura</string>
+    <string name="settings.closetotray.desc">Se attiva, chiudendo la finestra con la X (o Alt+F4) RiPlay non esce: resta nell\'area di notifica e continua a suonare; doppio click sull\'icona per riaprire la finestra, "Esci da RiPlay" nel suo menu per terminare davvero. Se disattiva (predefinito), la X chiude l\'app.</string>
     <string name="player.song_cover">cover del brano</string>
     <string name="player.online">Online</string>
     <string name="player.local">Locale</string>
@@ -151,12 +159,6 @@
     <string name="settings.tab.data">Dati</string>
     <string name="settings.tab.accounts">Account</string>
     <string name="settings.tab.about">Info</string>
-    <string name="settings.tab.appearance">Aspetto</string>
-    <string name="settings.appearance.accent">Colore accent</string>
-    <string name="settings.appearance.accent_info">Usato da player, slider, pulsanti ed evidenziazioni. Il cambio è immediato e resta al prossimo avvio.</string>
-    <string name="settings.appearance.accent_custom">Colore personalizzato</string>
-    <string name="settings.appearance.accent_custom_info">Trascina nel riquadro per regolare saturazione e luminosità, usa la barra per la tonalità, oppure digita il codice esadecimale (#RRGGBB).</string>
-    <string name="settings.appearance.accent_reset">Ripristina predefinito</string>
     <string name="settings.data.info">Esporta o importa un backup del database della libreria (brani, playlist, cronologia e preferiti). Il backup è un singolo file .db, compatibile con Android; il ripristino viene completato al riavvio di RiPlay.</string>
     <string name="settings.data.db_path">Database: {path}</string>
     <string name="settings.data.export_backup">Esporta backup</string>

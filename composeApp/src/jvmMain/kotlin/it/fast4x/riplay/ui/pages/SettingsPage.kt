@@ -21,12 +21,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Backup
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -52,6 +54,8 @@ import it.fast4x.riplay.player.kcef.KcefEngine
 import it.fast4x.riplay.player.kcef.KcefState
 import it.fast4x.riplay.ui.components.RiPlayAccent
 import it.fast4x.riplay.utils.DesktopAppInfo
+import it.fast4x.riplay.utils.DesktopCloseToTray
+import it.fast4x.riplay.utils.DesktopMiniPlayer
 // STEP 5d: check AGGIORNAMENTI desktop (stesso file .ver di Android)
 import it.fast4x.riplay.utils.DesktopUpdateChecker
 import kotlinx.coroutines.Dispatchers
@@ -62,7 +66,21 @@ import kotlinx.coroutines.withContext
 import org.cef.browser.CefRendering
 import dev.datlag.kcef.KCEFBrowser
 
-
+/**
+ * STEP 3ae: PRIMO LIVELLO di IMPOSTAZIONI del desktop, con le tab
+ * organizzate come la parte Android (ui/screens/settings/SettingsScreen.kt):
+ *
+ *  - tab DATI (come DataSettings Android): esporta/importa un BACKUP del
+ *    database della libreria (zip del db Room, struttura identica tra
+ *    desktop e Android: stessi modelli e migrazioni). Vedi DesktopBackup.
+ *  - tab ACCOUNT (come AccountsSettings Android): login YouTube Music con
+ *    il browser integrato KCEF, replica di AccountLogin Android
+ *    (WebView -> cookie -> Environment.cookie + accountInfo). Vedi
+ *    DesktopAccountManager.
+ *
+ * La struttura e' pensata per ACCOGLIERE NUOVE TAB in futuro (aspetto,
+ * player, ecc.) seguendo l'evoluzione delle impostazioni Android.
+ */
 @Composable
 fun SettingsPage() {
     val coroutineScope = rememberCoroutineScope()
@@ -85,7 +103,12 @@ fun SettingsPage() {
             modifier = Modifier.padding(bottom = 4.dp)
         )
 
-
+        // ── Barra delle tab: SEGMENTED CONTROL a larghezza piena ────────
+        // STEP 7b (richiesta utente n.2): i chip staccati sembravano pulsanti
+        // inseriti indipendentemente. Ora e' UNA barra unica: contenitore
+        // arrotondato con bordo sottile, segmenti EQUI-estesi (weight 1f),
+        // icona + etichetta, segmento attivo evidenziato dall'accent dentro
+        // la barra. Occhio subito al gruppo: "sono una toolbar di tab".
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             modifier = Modifier
@@ -126,11 +149,101 @@ fun SettingsPage() {
         }
 
         when (activeTab) {
+            SettingsTab.GENERAL -> GeneralTab()
             SettingsTab.DATA -> DataTab(coroutineScope)
-            SettingsTab.APPEARANCE -> AppearanceTab()
             SettingsTab.ACCOUNTS -> AccountsTab()
             SettingsTab.ABOUT -> AboutTab()
         }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────────
+// TAB GENERALE (STEP 12/12b): opzioni di comportamento della finestra desktop.
+//  - MODALITA' MINIMALE (step 12): mini player stile PiP quando la
+//    principale viene iconificata (logica in DesktopMiniPlayer, utils);
+//  - ICONA NEL TRAY ALLA CHIUSURA (step 12b): la X nasconde l'app nel tray
+//    invece di uscire (logica in DesktopCloseToTray + main.kt).
+// Qui solo i toggle: la card e' condivisa (GeneralSwitchCard).
+// ─────────────────────────────────────────────────────────────────────────────────
+
+@Composable
+private fun GeneralTab() {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+
+        // STEP 12: il toggle legge/scrive DesktopMiniPlayer.enabled (stato
+        // Compose + persistenza immediata su disco): main.kt reagisce
+        // all'istante (se la principale e' minimizzata, la mini appare/scompare).
+        GeneralSwitchCard(
+            title = ds("settings.miniplayer.title"),
+            description = ds("settings.miniplayer.desc"),
+            checked = DesktopMiniPlayer.enabled,
+            onChecked = { DesktopMiniPlayer.setEnabledMiniPlayer(it) }
+        )
+
+        // STEP 12b (richiesta utente): ON -> la X nasconde l'app nel tray
+        // (musica prosegue, doppio click sull'icona per riaprirla, "Esci da
+        // RiPlay" nel menu del tray esce davvero); OFF (default) -> la X
+        // esce dall'app. main.kt legge DesktopCloseToTray.enabled alla
+        // chiusura e decide.
+        GeneralSwitchCard(
+            title = ds("settings.closetotray.title"),
+            description = ds("settings.closetotray.desc"),
+            checked = DesktopCloseToTray.enabled,
+            onChecked = { DesktopCloseToTray.setEnabledCloseToTray(it) }
+        )
+    }
+}
+
+/**
+ * Card standard della tab Generale (STEP 12/12b): titolo + descrizione a
+ * sinistra, interruttore a destra. Il titolo e' colorato con l'accento
+ * quando l'opzione e' attiva. Il cambio e' IMMEDIATO (clic su tutta la
+ * card o direttamente sull'interruttore, nessun "salva").
+ */
+@Composable
+private fun GeneralSwitchCard(
+    title: String,
+    description: String,
+    checked: Boolean,
+    onChecked: (Boolean) -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color.White.copy(alpha = 0.06f))
+            .border(1.dp, Color.White.copy(alpha = 0.10f), RoundedCornerShape(14.dp))
+            .clickable { onChecked(!checked) }
+            .padding(horizontal = 14.dp, vertical = 12.dp)
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                color = if (checked) RiPlayAccent else Color.White,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = description,
+                color = Color.White.copy(alpha = 0.55f),
+                fontSize = 12.sp,
+                lineHeight = 17.sp
+            )
+        }
+        Spacer(Modifier.width(12.dp))
+        Switch(
+            checked = checked,
+            onCheckedChange = onChecked,
+            colors = SwitchDefaults.colors(
+                checkedTrackColor = RiPlayAccent,
+                checkedThumbColor = Color(0xFF0B0B10),
+                uncheckedTrackColor = Color.White.copy(alpha = 0.12f),
+                uncheckedThumbColor = Color.White.copy(alpha = 0.75f),
+                uncheckedBorderColor = Color.White.copy(alpha = 0.18f)
+            )
+        )
     }
 }
 
@@ -248,24 +361,37 @@ private fun AccountsTab() {
     var verifying by remember { mutableStateOf(false) }
     var loginActive by remember { mutableStateOf(false) }
     var loginBrowser by remember { mutableStateOf<KCEFBrowser?>(null) }
-
+    // STEP 3aj: client KCEF DEDICATO al login (con cattura header Cookie).
+    // Null finche' non e' pronto: l'area mostra il messaggio "in preparazione"
+    // e POI crea il browser su questo client. Se la creazione fallisse, la
+    // factory ricade sul client del motore (resta l'enumerazione nativa).
     var loginClientReady by remember { mutableStateOf<KCEFClient?>(null) }
-
+    // FIX step3af: esito della verifica dell'account (null = nessun
+    // messaggio, false = cookie raccolto ma verifica non riuscita)
     var loginStatus by remember { mutableStateOf<Boolean?>(null) }
     val kcefState by KcefEngine.state.collectAsState()
 
-
+    // STEP 3ah: URL corrente del browser di login (loginUrl iniziale o
+    // signinUrl del profilo scelto). key(loginUrl) ricrea il browser KCEF
+    // quando cambia (stesso effetto del webView.loadUrl(signinUrl) Android,
+    // usando SOLO le API gia' usate qui: createBrowser + dispose).
     var loginUrl by remember { mutableStateOf(DesktopAccountManager.loginUrl()) }
-
+    // STEP 3ah: cache profili per il selettore (come ytCachedAccounts Android)
     var cachedAccounts by remember { mutableStateOf<List<CachedAccountProfile>>(emptyList()) }
     var showSelector by remember { mutableStateOf(false) }
     // true dopo la PRIMA scelta di profilo in questa sessione di login:
     // evita di riproporre il selettore a ogni raccolta cookie
     var switchedOnce by remember { mutableStateOf(false) }
-
+    // STEP 3ah: dopo lo switch aspetta che il cookie raccolto sia DIVERSO
+    // dal precedente (la navigazione su signinUrl richiede qualche secondo;
+    // il primo harvest puo' ancora vedere il vecchio profilo)
     var pendingSwitchWait by remember { mutableStateOf(false) }
     var lastHarvestedCookie by remember { mutableStateOf("") }
 
+    // STEP 3ai: diagnostica di polling VISIBILE in UI. Prima i log finivano
+    // solo in console: un harvest che falliva in silenzio lasciava la tab su
+    // "In attesa del completamento dell'accesso..." per sempre, senza alcun
+    // indizio su cosa stesse succedendo.
     var pollCount by remember { mutableStateOf(0) }
     var pollDiag by remember { mutableStateOf<DesktopAccountManager.HarvestDiag?>(null) }
     // guardia anti-doppia-esecuzione: polling e bottone "Verifica adesso"
@@ -277,7 +403,11 @@ private fun AccountsTab() {
     // ogni 2 s (churn di rete inutile: salva/verifica/lista profili)
     var lastProcessedCookie by remember { mutableStateOf<String?>(null) }
 
-
+    // STEP 3ai: elaborazione di UN ciclo raccolta+verifica, condivisa dal
+    // polling (ogni 2 s) e dal bottone "Verifica adesso" (forzata). Prima
+    // la logica viveva SOLO dentro LaunchedEffect: un'eccezione non catturata
+    // uccideva la coroutine e la tab restava "In attesa..." senza feedback.
+    // runCatching nel loop + try/finally qui = nessuna via d'uscita silenziosa.
     suspend fun processHarvest(force: Boolean) {
         if (processing) return
         processing = true
@@ -290,7 +420,9 @@ private fun AccountsTab() {
                 println("[RiPlay-Account] ciclo polling: ${result.diag} (visitate ${result.visitedCookies}, youtube ${result.ytCookies})")
                 return
             }
-
+            // STEP 3ah: dopo lo switch di profilo, ignora i cicli che vedono
+            // ancora il VECCHIO cookie (la navigazione su signinUrl sta girando)
+            // e accetta comunque dopo ~30 cicli (60 s) per non bloccare l'area
             if (pendingSwitchWait) {
                 if (cookie == lastHarvestedCookie && switchWaitCycles < 30) {
                     switchWaitCycles++
@@ -299,12 +431,21 @@ private fun AccountsTab() {
                 pendingSwitchWait = false
                 switchWaitCycles = 0
             }
-
+            // STEP 3ai: cookie gia' elaborato in questa sessione (es. selettore
+            // profili aperto): nessuna ri-verifica finche' non arriva un NUOVO
+            // cookie (o il bottone forza una ri-verifica)
             if (!force && cookie == lastProcessedCookie) return
             lastProcessedCookie = cookie
             lastHarvestedCookie = cookie
             println("[RiPlay-Account] cookie di login raccolto (${cookie.length} caratteri)")
-
+            // FIX step3af: SALVA SUBITO il cookie e imposta Environment PRIMA
+            // della verifica, cosi' accountInfo e tutte le chiamate girano da
+            // utente autenticato (stesso ordine di Android) e, anche se la
+            // verifica fallisse, il cookie resta su disco e viene ripristinato
+            // al prossimo avvio
+            // STEP 3ah: il profilo scelto in precedenza (pageId/authUser) viene
+            // portato AVANTI (come Android: il nuovo login NON cancella
+            // ytPageId/ytAuthUser finche' il selettore non sceglie un profilo)
             val prev = account
             val provisional = DesktopAccountManager.StoredAccount(
                 cookie = cookie,
@@ -315,7 +456,8 @@ private fun AccountsTab() {
             DesktopAccountManager.applyToEnvironment(provisional)
             val visitor = DesktopAccountManager.fetchVisitorData()
             val info = DesktopAccountManager.fetchAccountInfo()
-
+            // STEP 3ah: profili dell'utente (getAccountsList, come Android) ->
+            // in cache: alimenta il selettore in questa e nelle prossime sessioni
             val accounts = DesktopAccountManager.fetchAccountsList()
             if (!accounts.isNullOrEmpty())
                 cachedAccounts = accounts
@@ -327,14 +469,31 @@ private fun AccountsTab() {
                 thumbnailUrl = info?.thumbnailUrl ?: prev?.thumbnailUrl,
                 cachedAccounts = accounts ?: prev?.cachedAccounts
             )
-
+            // STEP 3am (home ancora anonima nonostante il login): se il
+            // profilo non e' mai stato scelto (account singolo: il selettore
+            // appare solo con piu' profili) auto-seleziona il profilo di
+            // default ESATTAMENTE come fa Android (dove il selettore gira
+            // sempre e ytPageId/ytAuthUser sono sempre impostati): senza,
+            // le browse autenticate uscivano senza X-Goog-PageId/
+            // X-Goog-Authuser, divergenza reale dalla home Android.
             val complete = DesktopAccountManager.withDefaultProfile(completeBase)
             DesktopAccountManager.save(complete)
-
+            // STEP 3am: ri-applica ALL'Environment l'account COMPLETO
+            // (pageId/authUser/visitorData inclusi: prima veniva applicato
+            // solo il provisional col solo cookie) - e aggiorna lo stato
+            // login osservabile per la home online.
             DesktopAccountManager.applyToEnvironment(complete)
             account = complete
             loginStatus = info?.name != null
-
+            // STEP 3ah: se ci sono piu' profili e non ne e' stato scelto
+            // nessuno in questa sessione, resta aperto e mostra il selettore
+            // (come CachedAccountsSelectorDialog Android); alla scelta il
+            // browser naviga su signinUrl e il polling raccoglie il NUOVO
+            // cookie del profilo scelto, poi l'area si chiude.
+            // FIX step3ai: mentre il selettore e' aperto l'area di login NON
+            // disegna piu' il browser (vedi sotto): il pannello di scelta
+            // prende il suo posto invece di restare schiacciato vicino al
+            // browser da 420 dp.
             if (!switchedOnce && cachedAccounts.size > 1) {
                 showSelector = true
             } else {
@@ -370,8 +529,10 @@ private fun AccountsTab() {
     }
 
     // POLLING di raccolta cookie durante il login (ogni 2 s), come la
-    // WebViewClient Android che raccoglie i cookie all'arrivo
-
+    // WebViewClient Android che raccoglie i cookie all'arrivo su music.youtube.com
+    // STEP 3aj: all'apertura dell'area attiva ANCHE la cattura header Cookie e
+    // crea il client KCEF dedicato al login (chiave d'effetto anche su
+    // kcefState: il client viene creato solo con CEF pronto).
     LaunchedEffect(loginActive, kcefState) {
         if (!loginActive) return@LaunchedEffect
         println("[RiPlay-Account] attesa login nel browser integrato...")
@@ -383,7 +544,8 @@ private fun AccountsTab() {
         }
         while (isActive && loginActive) {
             delay(2000)
-
+            // STEP 3ai: runCatching per ciclo - NESSUNA eccezione puo' piu'
+            // uccidere il loop lasciando la UI in attesa senza spiegazioni
             runCatching { processHarvest(force = false) }
                 .onFailure { println("[RiPlay-Account] ciclo polling errore: ${it.message}") }
         }
@@ -510,7 +672,9 @@ private fun AccountsTab() {
             }
         }
 
-
+        // FIX step3af: feedback VISIBILE quando il cookie e' stato raccolto
+        // ma la verifica dell'account non e' riuscita (prima l'utente non
+        // riceveva nessun segnale e sembrava che il login fosse ignorato)
         if (loginStatus == false) {
             Text(
                 text = ds("settings.accounts.verify_failed"),
@@ -520,7 +684,12 @@ private fun AccountsTab() {
             )
         }
 
-
+        // STEP 3ah: SCELTA DEL PROFILO (come CachedAccountsSelectorDialog
+        // Android, resa come pannello inline della tab). Appare quando la
+        // cache dei profili (getAccountsList) contiene piu' di un account.
+        // Alla scelta: pageId/authUser + info profilo persistiti, Environment
+        // impostato, il browser naviga su signinUrl e il NUOVO cookie viene
+        // raccolto e persistito dal polling (stesso flusso Android).
         if (showSelector && cachedAccounts.isNotEmpty()) {
             Text(
                 text = ds("settings.accounts.select_account"),
@@ -610,7 +779,11 @@ private fun AccountsTab() {
         }
 
         // ── AREA DI LOGIN (browser KCEF incorporato) ────────────────────
-
+        // FIX step3ai: mentre il selettore di profili e' aperto il browser
+        // NON viene disegnato: il pannello di scelta prende il suo posto
+        // (come il CachedAccountsSelectorDialog Android) invece di restare
+        // accanto/sotto la finestra da 420 dp, con la dicitura "In attesa..."
+        // che sembrava non finire mai.
         if (loginActive && !showSelector) {
             Text(
                 text = ds("settings.accounts.login_instructions"),
@@ -621,7 +794,11 @@ private fun AccountsTab() {
 
             when (val s = kcefState) {
                 is KcefState.Ready -> key(loginUrl) {
-
+                    // STEP 3aj: il browser di login vive su un client KCEF
+                    // DEDICATO (slot handler propri: la cattura header Cookie
+                    // non tocca il client del player). Finche' non e' pronto
+                    // si mostra "in preparazione"; se la creazione fallisse
+                    // la factory ricade sul client del motore.
                     val dedicatedClient: KCEFClient? = loginClientReady
                     if (dedicatedClient == null) {
                         Text(
@@ -676,6 +853,12 @@ private fun AccountsTab() {
                 modifier = Modifier.fillMaxWidth()
             )
 
+            // STEP 3ai: diagnostica LIVE del polling (prima solo in console).
+            // Se la riga resta ferma su "nessun cookie trovato" mentre nel
+            // browser YouTube Music e' gia' aperto con l'account, il problema
+            // e' nella lettura cookie di JCEF e si manda il log console; se
+            // dice "cookie presenti ma senza SAPISID" l'accesso nel browser
+            // non e' ancora andato a buon fine.
             if (pollCount > 0) {
                 val detail = when (pollDiag) {
                     DesktopAccountManager.HarvestDiag.NO_MANAGER -> ds("settings.accounts.poll_nomanager")
@@ -695,7 +878,9 @@ private fun AccountsTab() {
                 )
             }
 
-
+            // STEP 3ai: verifica manuale immediata (il polling ogni 2 s resta
+            // attivo): forza un ciclo di raccolta+verifica e aggiorna anche la
+            // diagnostica, utile se l'accesso nel browser e' gia' completato.
             Text(
                 text = ds("settings.accounts.verify_now"),
                 color = Color.White,
@@ -728,17 +913,18 @@ private fun kcefStateLabel(s: KcefState): String = when (s) {
     else -> ds("kcef.preparing_short")
 }
 
-/** tab delle Impostazioni (stessa partizione di Android: Dati, Account, Info) */
+/** tab delle Impostazioni: Generale (opzioni finestra, STEP 12), Dati, Account, Info */
 enum class SettingsTab(val labelKey: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
+    GENERAL("settings.tab.general", Icons.Filled.Tune),
     DATA("settings.tab.data", Icons.Filled.Backup),
-    // STEP 11: tab Aspetto (colore accent personalizzato)
-    APPEARANCE("settings.tab.appearance", Icons.Filled.Palette),
     ACCOUNTS("settings.tab.accounts", Icons.Filled.AccountCircle),
     ABOUT("settings.tab.about", Icons.Filled.Info)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TAB ABOUT
+// TAB ABOUT (STEP 4b, richiesta utente n.2): replica della schermata About
+// di Android (ui/screens/settings/About.kt): versione, social, pagina del
+// progetto, troubleshooting. I link aprono il browser di sistema.
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
@@ -752,7 +938,10 @@ private fun AboutTab() {
             fontSize = 14.sp
         )
 
-
+        // STEP 5d (richiesta utente n.1): sezione AGGIORNAMENTI con controllo
+        // MANUALE. L'file .ver e' lo stesso letto da Android; l'esito appare
+        // subito sotto il pulsante (in attesa / aggiornata / nuova versione
+        // con link diretto alla pagina releases).
         UpdatesSection()
 
         AboutSectionTitle(ds("settings.about.social"))
@@ -793,7 +982,11 @@ private fun AboutTab() {
     }
 }
 
-
+/**
+ * STEP 5d: sezione "Aggiornamenti" della tab About: controllo manuale con
+ * feedback inline (stessa logica del check automatico all'avvio, che vive in
+ * ThreeColumnsApp). Il risultato "nuova versione" apre la pagina releases.
+ */
 @Composable
 private fun UpdatesSection() {
     val scope = androidx.compose.runtime.rememberCoroutineScope()
@@ -853,7 +1046,9 @@ private fun UpdatesSection() {
                     fontWeight = FontWeight.SemiBold
                 )
                 Spacer(Modifier.width(8.dp))
-
+                // STEP 6c (richiesta utente n.3): download DIRETTO dell'installer
+                // per il SO corrente (msi/deb/rpm/dmg), URL verificato prima
+                // dell'apertura; in caso di problemi si apre la pagina releases
                 Text(
                     ds("settings.about.update_download"),
                     color = RiPlayAccent,
