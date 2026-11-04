@@ -7,7 +7,11 @@ import io.ktor.client.plugins.BrowserUserAgent
 import io.ktor.client.plugins.compression.ContentEncoding
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.request.headers
+import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import it.fast4x.simpmusiclyrics.utils.ProxyPreferences
 import it.fast4x.simpmusiclyrics.utils.getProxy
@@ -52,9 +56,28 @@ object SimpMusicClient {
         }
     }
 
+    private fun HttpRequestBuilder.buildDefaultHeaders(
+        timestamp: String? = null,
+        hmac: String? = null,
+    ) {
+        headers {
+            header(HttpHeaders.Accept, "application/json")
+            header(HttpHeaders.UserAgent, "SimpMusicLyrics/1.0")
+            header(HttpHeaders.ContentType, "application/json")
+            timestamp?.let {
+                header("X-Timestamp", it)
+            }
+            hmac?.let {
+                header("X-HMAC", it)
+            }
+        }
+    }
 
     private suspend fun queryLyrics(mediaId: String): LyricsResponse {
-        val response = client.get(mediaId).body<LyricsResponse>()
+        val response = client.get(mediaId){
+            buildDefaultHeaders()
+        }.body<LyricsResponse>()
+
         println("SimpMusicClient queryLyrics response $response")
         return response
     }
