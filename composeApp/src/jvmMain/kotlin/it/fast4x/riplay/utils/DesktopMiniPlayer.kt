@@ -1,5 +1,10 @@
 package it.fast4x.riplay.utils
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,6 +19,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -38,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -45,6 +52,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,6 +64,7 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberWindowState
 import coil3.compose.AsyncImage
 import it.fast4x.riplay.i18n.ds
+import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.ui.components.PremiumSlider
 import it.fast4x.riplay.ui.components.RiPlayAccent
 import it.fast4x.riplay.ui.components.formatShortTime
@@ -67,8 +79,7 @@ import java.io.File
 import java.awt.Window
 
 /**
- * MODALITA' MINIMALE, stile "picture-in-picture"
- * di Android.
+ * MODALITA' MINIMALE, stile "picture-in-picture" di Android.
  *
  * Come funziona (tutto derivato, nessun servizio in thread separati):
  *  - l'interruttore vive nelle Impostazioni -> tab Generale
@@ -76,28 +87,36 @@ import java.awt.Window
  *  - main.kt compone [DesktopMiniPlayerWindow] SOLO quando la finestra
  *    principale e' ICONIFICATA (windowState.isMinimized, stato Compose
  *    osservabile) e il toggle e' attivo: appena la principale viene
- *    RIPRISTINATA (taskbar, doppio click sul tray, click sulla copertina
- *    della mini) la condizione torna falsa e la mini esce dalla
+ *    RIPRISTINATA la condizione torna falsa e la mini esce dalla
  *    composizione -> si chiude da sola. Nessun contatore, nessuna gara.
- *  - la mini e' una finestra Compose SEPARATA: senza bordi, SEMPRE IN
- *    PRIMO PIANO, non ridimensionabile, NON che prende il focus quando
- *    compare (focusable = false: l'utente sta lavorando, il PiP non deve
- *    rubare l'attivazione alla finestra corrente);
- *  - DENTRO: copertina del brano (click = torna alla finestra principale),
- *    tasti precedente / play-pausa / successivo e la TIMELINA PREMIUM con
- *    seek (un solo seekTo al RILASCIO, come nel player full);
- *  - TRASCINAMENTO: la stessa formula della title bar (step 3o: posizione
- *    assoluta del mouse, nessun accumulo -> nessuno sfarfallio), con un
- *    guard in piu' per non litigare con lo slider (se un figlio sta gia'
- *    consumando il movimento, la finestra non si muove);
- *  - la POSIZIONE della mini viene RICORDATA in ~/.riplay/miniplayer.properties
- *    (salvataggio debounced durante il trascinamento + al momento del
- *    restore); alla prima apertura compare in basso a destra dello schermo.
+ *  - finestra Compose SEPARATA: senza bordi, SEMPRE IN PRIMO PIANO,
+ *    non prende il focus quando compare (focusable = false: l'utente
+ *    sta lavorando, la mini non deve rubare l'attivazione);
+ *  - DENTRO: copertina del brano (click = torna alla finestra principale)
+ *    e timeline con tempi sempre visibili; al passaggio del mouse compaiono
+ *    i tasti precedente / play-pausa / successivo e il selettore di
+ *    dimensione S/M/L (ricordato su disco); il volume e' lasciato ai
+ *    controlli di sistema; l'etichetta a destra della timeline alterna con
+ *    un click tempo totale e rimanente;
+ *  - TRASCINAMENTO: la stessa formula della title bar (posizione assoluta
+ *    del mouse, nessun accumulo -> nessuno sfarfallio), con un guard per
+ *    non litigare con gli slider (se un figlio sta gia' consumando il
+ *    movimento, la finestra non si muove);
+ *  - POSIZIONE e DIMENSIONE ricordate in ~/.riplay/miniplayer.properties
+ *    (salvataggio debounced durante il trascinamento + al restore); alla
+ *    prima apertura compare in basso a destra dello schermo.
  *
  * Tip: la voce taskbar della mini viene rimossa dove il sistema lo
  * consente (java.awt.Window.Type.UTILITY, tipo "palettina"): su alcuni
  * window manager puo' restare comunque visibile, nessun danno.
  */
+/** Dimensioni predefinite della mini, rapporto ~3:2. */
+enum class MiniSize(val widthDp: Int, val heightDp: Int) {
+    SMALL(240, 160),
+    MEDIUM(300, 200),
+    LARGE(380, 254)
+}
+
 object DesktopMiniPlayer {
 
     private val prefsFile: File
@@ -106,6 +125,8 @@ object DesktopMiniPlayer {
     private const val KEY_ENABLED = "enabled"
     private const val KEY_POS_X = "posX"
     private const val KEY_POS_Y = "posY"
+    private const val KEY_SIZE = "size"
+    private const val KEY_SHOW_REMAINING = "showRemainingTime"
 
     /**
      * Toggle delle impostazioni (tab Generale). Stato Compose: il cambio
@@ -122,30 +143,70 @@ object DesktopMiniPlayer {
         persistEnabled(value)
     }
 
+    private fun loadPrefs(): java.util.Properties = try {
+        java.util.Properties().also { p ->
+            if (prefsFile.isFile) prefsFile.inputStream().use { p.load(it) }
+        }
+    } catch (t: Throwable) {
+        java.util.Properties()
+    }
+
+    private fun savePrefs(p: java.util.Properties) = try {
+        prefsFile.parentFile?.mkdirs()
+        prefsFile.outputStream().use { p.store(it, "RiPlay desktop mini player") }
+    } catch (t: Throwable) {
+        // persistenza silenziosa: mai bloccare la UI per un file di preferenze
+    }
+
     private fun readEnabled(): Boolean = try {
-        val p = java.util.Properties()
-        if (prefsFile.isFile) prefsFile.inputStream().use { p.load(it) }
-        p.getProperty(KEY_ENABLED, "false").trim().equals("true", ignoreCase = true)
+        loadPrefs().getProperty(KEY_ENABLED, "false").trim().equals("true", ignoreCase = true)
     } catch (t: Throwable) {
         false
     }
 
     private fun persistEnabled(value: Boolean) {
-        try {
-            val p = java.util.Properties()
-            if (prefsFile.isFile) prefsFile.inputStream().use { p.load(it) }
-            p.setProperty(KEY_ENABLED, value.toString())
-            prefsFile.parentFile?.mkdirs()
-            prefsFile.outputStream().use { p.store(it, "RiPlay desktop mini player") }
-        } catch (t: Throwable) {
-            // persistenza silenziosa: mai bloccare la UI per un file di preferenze
+        savePrefs(loadPrefs().also { it.setProperty(KEY_ENABLED, value.toString()) })
+    }
+
+    /** Dimensione della mini (S/M/L), selezionabile in hover e ricordata. */
+    var size: MiniSize by mutableStateOf(readSize())
+        private set
+
+    fun setSizeMiniPlayer(value: MiniSize) {
+        if (size == value) return
+        size = value
+        savePrefs(loadPrefs().also { it.setProperty(KEY_SIZE, value.name) })
+    }
+
+    private fun readSize(): MiniSize = try {
+        when (loadPrefs().getProperty(KEY_SIZE, MiniSize.MEDIUM.name).trim().uppercase()) {
+            MiniSize.SMALL.name -> MiniSize.SMALL
+            MiniSize.LARGE.name -> MiniSize.LARGE
+            else -> MiniSize.MEDIUM
         }
+    } catch (t: Throwable) {
+        MiniSize.MEDIUM
+    }
+
+    /** Etichetta destra della timeline: true = tempo rimanente. */
+    var showRemainingTime: Boolean by mutableStateOf(readShowRemainingTime())
+        private set
+
+    fun setShowRemainingTimeMiniPlayer(value: Boolean) {
+        if (showRemainingTime == value) return
+        showRemainingTime = value
+        savePrefs(loadPrefs().also { it.setProperty(KEY_SHOW_REMAINING, value.toString()) })
+    }
+
+    private fun readShowRemainingTime(): Boolean = try {
+        loadPrefs().getProperty(KEY_SHOW_REMAINING, "false").trim().equals("true", ignoreCase = true)
+    } catch (t: Throwable) {
+        false
     }
 
     /** Ultima posizione ricordata della mini (null = mai trascinata). */
     fun lastPosition(): WindowPosition? = try {
-        val p = java.util.Properties()
-        if (prefsFile.isFile) prefsFile.inputStream().use { p.load(it) }
+        val p = loadPrefs()
         val x = p.getProperty(KEY_POS_X)?.toFloatOrNull()
         val y = p.getProperty(KEY_POS_Y)?.toFloatOrNull()
         if (x != null && y != null &&
@@ -160,12 +221,12 @@ object DesktopMiniPlayer {
     fun rememberPosition(position: WindowPosition) {
         try {
             if (!position.isSpecified) return
-            val p = java.util.Properties()
-            if (prefsFile.isFile) prefsFile.inputStream().use { p.load(it) }
-            p.setProperty(KEY_POS_X, position.x.value.toString())
-            p.setProperty(KEY_POS_Y, position.y.value.toString())
-            prefsFile.parentFile?.mkdirs()
-            prefsFile.outputStream().use { p.store(it, "RiPlay desktop mini player") }
+            savePrefs(
+                loadPrefs().also {
+                    it.setProperty(KEY_POS_X, position.x.value.toString())
+                    it.setProperty(KEY_POS_Y, position.y.value.toString())
+                }
+            )
         } catch (t: Throwable) {
             // silenzioso
         }
@@ -181,12 +242,19 @@ object DesktopMiniPlayer {
 fun DesktopMiniPlayerWindow(onRestore: () -> Unit) {
 
     // Stato della finestra: la POSIZIONE parte dall'ultima ricordata
-    // (o in basso a destra alla prima apertura). rememberWindowState e'
-    // per-sito-di-composizione: a ogni riapertura della mini riparte da qui.
+    // (o in basso a destra alla prima apertura) e la dimensione dal preset
+    // corrente. rememberWindowState e' per-sito-di-composizione: a ogni
+    // riapertura della mini riparte da qui.
+    val preset = DesktopMiniPlayer.size
     val miniState = rememberWindowState(
-        size = DpSize(300.dp, 200.dp),
+        size = DpSize(preset.widthDp.dp, preset.heightDp.dp),
         position = DesktopMiniPlayer.lastPosition() ?: WindowPosition(Alignment.BottomEnd)
     )
+
+    // Il selettore S/M/L ridimensiona la finestra al volo.
+    LaunchedEffect(preset) {
+        miniState.size = DpSize(preset.widthDp.dp, preset.heightDp.dp)
+    }
 
     // Ripristino = torna la principale E la posizione corrente della mini
     // viene fissata (il debounce del trascinamento puo' non aver salvato
@@ -266,20 +334,29 @@ private fun DesktopMiniPlayerContent(
     }
     val coverUrl = remember(thumbnail) { thumbnail?.hiResCoverUrl() }
 
+    // Brano corrente (titolo/artista mostrati in hover): stesso poll lento.
+    var song by remember { mutableStateOf<Song?>(null) }
+    LaunchedEffect(Unit) {
+        while (isActive) {
+            song = DesktopPlaybackHub.currentSong()
+            delay(800)
+        }
+    }
+
+    // Hover sull'intera finestra: mostra i tasti e il selettore di dimensione.
+    var hovered by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF0B0B10))
-            // trascinamento dalla QUALSIASI zona libera (formula step 3o)
+            .miniHover { hovered = it }
+            // trascinamento dalla qualunque zona libera
             .miniPlayerWindowDrag(window)
     ) {
-        // ── Copertina a TUTTA FINESTRA (STEP 12c, richiesta utente) ─────
-        // Evoluzione della miniatura centrata dello step 12b: la copertina
-        // ORA RIEMPIE l'intera mini-finestra (stile PiP di Android / YouTube
-        // Music): i tasti e la timeline "galleggiano" sopra, su un velo
-        // sfumato che garantisce la leggibilita'. Il ritaglio alto/basso
-        // torna ad esistere MA e' voluto e molto piu' ampio di prima:
-        // l'artwork occupa tutta la finestra, non un quadratino al centro.
+        // ── Copertina a tutta finestra (stile PiP) ─────────────────────
+        // I tasti e la timeline "galleggiano" sopra l'artwork, su un velo
+        // sfumato che garantisce la leggibilita'.
         // Senza copertina: fondo scuro + logo RiPlay grande al centro.
         if (coverUrl != null) {
             AsyncImage(
@@ -329,10 +406,9 @@ private fun DesktopMiniPlayerContent(
                         indication = null
                     ) { onRestore() }
             ) {
-                // ── Logo dell'app (STEP 12c): piccola targhetta in alto a
-                // sinistra SOPRA la copertina, con fondo semitrasparente
-                // per restare visibile su qualsiasi artwork. Solo quando
-                // c'e' una copertina vera: nel fallback il logo e' gia'
+                // ── Logo dell'app: targhetta sopra la copertina con fondo
+                // semitrasparente, resta leggibile su qualsiasi artwork.
+                // Solo con copertina vera: nel fallback il logo e' gia'
                 // quello grande al centro.
                 if (coverUrl != null) {
                     Row(
@@ -350,47 +426,58 @@ private fun DesktopMiniPlayerContent(
                         )
                     }
                 }
-                // Suggerimento al passaggio del mouse: e' cliccabile.
-                MiniCoverHoverHint()
+                // Al passaggio del mouse: info brano + suggerimento restore.
+                MiniCoverHoverHint(
+                    title = song?.title,
+                    artist = song?.artistsText
+                )
             }
 
             // ── Controlli: precedente / play-pausa / successivo ─────────
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 2.dp)
+            // Al riposo restano solo tempi e timeline: i tasti compaiono
+            // al passaggio del mouse e liberano lo spazio che occupano.
+            AnimatedVisibility(
+                visible = hovered,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
             ) {
-                MiniControlIcon(
-                    icon = Icons.Filled.SkipPrevious,
-                    label = ds("player.previous"),
-                    size = 26.dp,
-                    enabled = true
-                ) { DesktopPlaybackHub.onPrevious?.invoke() }
-
-                Spacer(Modifier.width(26.dp))
-
-                MiniControlIcon(
-                    icon = if (state.isPlaying) Icons.Filled.Pause else Icons.Rounded.PlayArrow,
-                    label = ds(if (state.isPlaying) "player.pause" else "player.play"),
-                    size = 32.dp,
-                    enabled = true
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 2.dp)
                 ) {
-                    val c = DesktopPlaybackHub.activeController
-                    if (c != null) {
-                        if (state.isPlaying) c.pause() else c.play()
+                    MiniControlIcon(
+                        icon = Icons.Filled.SkipPrevious,
+                        label = ds("player.previous"),
+                        size = 26.dp,
+                        enabled = true
+                    ) { DesktopPlaybackHub.onPrevious?.invoke() }
+
+                    Spacer(Modifier.width(26.dp))
+
+                    MiniControlIcon(
+                        icon = if (state.isPlaying) Icons.Filled.Pause else Icons.Rounded.PlayArrow,
+                        label = ds(if (state.isPlaying) "player.pause" else "player.play"),
+                        size = 32.dp,
+                        enabled = true
+                    ) {
+                        val c = DesktopPlaybackHub.activeController
+                        if (c != null) {
+                            if (state.isPlaying) c.pause() else c.play()
+                        }
                     }
+
+                    Spacer(Modifier.width(26.dp))
+
+                    MiniControlIcon(
+                        icon = Icons.Filled.SkipNext,
+                        label = ds("player.next"),
+                        size = 26.dp,
+                        enabled = true
+                    ) { DesktopPlaybackHub.onNext?.invoke() }
                 }
-
-                Spacer(Modifier.width(26.dp))
-
-                MiniControlIcon(
-                    icon = Icons.Filled.SkipNext,
-                    label = ds("player.next"),
-                    size = 26.dp,
-                    enabled = true
-                ) { DesktopPlaybackHub.onNext?.invoke() }
             }
 
             // ── Timeline trascinabile con seek (un seekTo al rilascio) ──
@@ -418,12 +505,57 @@ private fun DesktopMiniPlayerContent(
                     modifier = Modifier.weight(1f)
                 )
                 Text(
-                    text = formatShortTime(state.duration),
+                    // Click = alterna tempo totale / rimanente (ricordato).
+                    text = if (DesktopMiniPlayer.showRemainingTime && state.duration > 0L)
+                        "-" + formatShortTime((state.duration - state.timestamp).coerceAtLeast(0L))
+                    else formatShortTime(state.duration),
                     color = Color.White.copy(alpha = 0.62f),
                     fontSize = 10.sp,
-                    modifier = Modifier.width(34.dp),
-                    textAlign = androidx.compose.ui.text.style.TextAlign.End
+                    modifier = Modifier
+                        .width(44.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .clickable {
+                            DesktopMiniPlayer.setShowRemainingTimeMiniPlayer(!DesktopMiniPlayer.showRemainingTime)
+                        },
+                    textAlign = TextAlign.End
                 )
+            }
+        }
+
+        // ── Selettore di dimensione (S/M/L), solo in hover ─────────────
+        // Ultimo livello della finestra: resta sopra il velo con titolo e
+        // artista e i suoi tasti sono sempre raggiungibili.
+        if (hovered) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(10.dp)
+                    .background(Color.Black.copy(alpha = 0.35f), RoundedCornerShape(8.dp))
+                    .border(1.dp, Color.White.copy(alpha = 0.18f), RoundedCornerShape(8.dp))
+                    .padding(horizontal = 4.dp, vertical = 2.dp)
+                    .semantics { contentDescription = ds("miniplayer.size") }
+                    // la pillola assorbe i passaggi del mouse: le fessure tra
+                    // le lettere non devono finire sulla copertina
+                    .pointerInput(Unit) {
+                        awaitPointerEventScope {
+                            while (true) awaitPointerEvent()
+                        }
+                    }
+            ) {
+                MiniSize.values().forEach { s ->
+                    val active = s == DesktopMiniPlayer.size
+                    Text(
+                        text = s.name.first().toString(),
+                        color = if (active) RiPlayAccent else Color.White.copy(alpha = 0.85f),
+                        fontSize = 11.sp,
+                        fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .clickable { DesktopMiniPlayer.setSizeMiniPlayer(s) }
+                            .padding(horizontal = 7.dp, vertical = 2.dp)
+                    )
+                }
             }
         }
     }
@@ -453,14 +585,16 @@ private fun MiniControlIcon(
 }
 
 /**
- * Velo che compare sulla copertina quando il mouse ci passa sopra: icona
- * "espandi" + hint testuale ("click = torna alla finestra principale").
- * Pura UI: pointerInput con loop continuo sugli eventi (stesso approccio
- * dello slider premium), NON consuma nulla: il click resta alla copertina
- * e il trascinamento resta alla finestra.
+ * Velo che compare sulla copertina quando il mouse ci passa sopra: titolo e
+ * artista del brano, icona "espandi" e suggerimento di restore. Pura UI:
+ * NON consuma nulla, il click resta alla copertina e il trascinamento alla
+ * finestra.
  */
 @Composable
-private fun MiniCoverHoverHint() {
+private fun MiniCoverHoverHint(
+    title: String?,
+    artist: String?
+) {
     var hover by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier
@@ -479,13 +613,13 @@ private fun MiniCoverHoverHint() {
             }
     ) {
         if (hover) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color(0xFF000000).copy(alpha = 0.42f))
-                    .padding(bottom = 10.dp)
+                    .padding(horizontal = 10.dp)
             ) {
                 Icon(
                     Icons.Filled.OpenInFull,
@@ -493,11 +627,31 @@ private fun MiniCoverHoverHint() {
                     tint = Color.White.copy(alpha = 0.85f),
                     modifier = Modifier.size(15.dp)
                 )
-                Spacer(Modifier.width(6.dp))
+                Spacer(Modifier.height(6.dp))
+                if (!title.isNullOrBlank()) {
+                    Text(
+                        text = title,
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        textAlign = TextAlign.Center,
+                        maxLines = 1
+                    )
+                }
+                if (!artist.isNullOrBlank()) {
+                    Text(
+                        text = artist,
+                        color = Color.White.copy(alpha = 0.65f),
+                        fontSize = 10.sp,
+                        textAlign = TextAlign.Center,
+                        maxLines = 1
+                    )
+                }
+                Spacer(Modifier.height(6.dp))
                 Text(
                     text = ds("miniplayer.restore"),
-                    color = Color.White.copy(alpha = 0.85f),
-                    fontSize = 11.sp,
+                    color = Color.White.copy(alpha = 0.70f),
+                    fontSize = 10.sp,
                     maxLines = 1
                 )
             }
@@ -506,12 +660,12 @@ private fun MiniCoverHoverHint() {
 }
 
 /**
- * Trascinamento della finestra mini SENZA title bar: STESSA formula della
- * title bar (step 3o, nessun accumulo, posizione = funzione pura del mouse
- * sullo schermo) con due differenze:
+ * Trascinamento della finestra mini senza title bar (stessa formula della
+ * title bar: posizione = funzione pura del mouse sullo schermo), con due
+ * differenze:
  *  - niente doppio click (il click sulla copertina e' il restore);
- *  - se un figlio sta gia' CONSUMANDO il movimento (lo slider durante un
- *    seek) il trascinamento non parte e non si inietta nel gesto.
+ *  - se un figlio sta gia' CONSUMANDO il movimento (slider durante un seek)
+ *    il trascinamento non parte.
  */
 private fun Modifier.miniPlayerWindowDrag(window: Window): Modifier = pointerInput(window) {
     awaitPointerEventScope {
@@ -554,6 +708,19 @@ private fun Modifier.miniPlayerWindowDrag(window: Window): Modifier = pointerInp
                     }
                     change.consume()
                 }
+            }
+        }
+    }
+}
+
+/** tracciamento hover dell'intera finestra (controlli extra al passaggio del mouse) */
+private fun Modifier.miniHover(onHover: (Boolean) -> Unit): Modifier = pointerInput(Unit) {
+    awaitPointerEventScope {
+        while (true) {
+            val event = awaitPointerEvent()
+            when (event.type) {
+                PointerEventType.Enter -> onHover(true)
+                PointerEventType.Exit -> onHover(false)
             }
         }
     }

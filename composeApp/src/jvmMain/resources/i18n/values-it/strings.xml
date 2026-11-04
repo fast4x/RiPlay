@@ -50,18 +50,27 @@
     <string name="sleeptimer.title">Timer di spegnimento</string>
     <string name="sleeptimer.min">{n} min</string>
     <string name="sleeptimer.cancel">Annulla il timer</string>
-    <!-- STEP 12: mini player (modalità minimale stile PiP) -->
+    <!-- mini player (modalità minimale stile PiP) -->
     <string name="miniplayer.restore">Torna alla finestra principale</string>
+    <string name="miniplayer.size">Dimensione della mini player</string>
     <string name="settings.tab.general">Generale</string>
     <string name="settings.miniplayer.title">Modalità minimale (Picture-in-Picture)</string>
-    <string name="settings.miniplayer.desc">Se attiva, riducendo a icona la finestra principale compare un piccolo player sempre in primo piano con la copertina, play/pausa, successivo/precedente e la timeline trascinabile. Un click sulla copertina riporta la finestra principale.</string>
-    <!-- STEP 12b: icona nel tray alla chiusura (opzionale, default OFF) -->
+    <string name="settings.miniplayer.desc">Se attiva, riducendo a icona la finestra principale compare un piccolo player sempre in primo piano con la copertina, play/pausa, successivo/precedente e la timeline trascinabile. Al passaggio del mouse compaiono le info del brano, il volume e il selettore di dimensione (S/M/L); un click sulla copertina riporta la finestra principale.</string>
+    <!-- icona nel tray alla chiusura (opzionale, default OFF) -->
     <string name="settings.closetotray.title">Icona nel tray alla chiusura</string>
     <string name="settings.closetotray.desc">Se attiva, chiudendo la finestra con la X (o Alt+F4) RiPlay non esce: resta nell\'area di notifica e continua a suonare; doppio click sull\'icona per riaprire la finestra, "Esci da RiPlay" nel suo menu per terminare davvero. Se disattiva (predefinito), la X chiude l\'app.</string>
-    <!-- STEP 13: overlay karaoke (opzionale, default OFF) -->
+    <!-- overlay karaoke (opzionale, default OFF) -->
     <string name="settings.karaoke.title">Overlay karaoke</string>
-    <string name="settings.karaoke.desc">Se attiva, una piccola finestra sempre in primo piano mostra la riga del testo corrente (e la successiva) sincronizzata con la riproduzione. Si trascina ovunque e ricorda la posizione; richiede testi sincronizzati (LRCLIB/KuGou), altrimenti mostra titolo e artista del brano.</string>
+    <string name="settings.karaoke.desc">Se attiva, una piccola finestra sempre in primo piano mostra la riga del testo corrente (e la successiva) sincronizzata con la riproduzione, con evidenza a riga intera o parola per parola (selettore al passaggio del mouse). Si trascina ovunque e ricorda la posizione; regola la dimensione del testo con i pulsanti A-/A+ e accendi o spegni con Ctrl+Maiusc+K. Richiede testi sincronizzati (LRCLIB/KuGou), altrimenti mostra titolo e artista del brano.</string>
     <string name="karaoke.no_synced">Testo sincronizzato non disponibile</string>
+    <string name="karaoke.mode.line">Riga</string>
+    <string name="karaoke.mode.word">Parola</string>
+    <!-- tab Aspetto: colore accent -->
+    <string name="settings.appearance.accent">Colore accent</string>
+    <string name="settings.appearance.accent_info">Il colore identità dell\'app: barra di navigazione, barre del player, slider, pulsanti e tab. Le modifiche si applicano in tempo reale.</string>
+    <string name="settings.appearance.accent_custom">Colore personalizzato</string>
+    <string name="settings.appearance.accent_custom_info">Trascina nel riquadro per regolare saturazione e luminosità, scegli la tonalità nella barra oppure incolla un codice #RRGGBB.</string>
+    <string name="settings.appearance.accent_reset">Ripristina</string>
     <string name="player.song_cover">cover del brano</string>
     <string name="player.online">Online</string>
     <string name="player.local">Locale</string>
@@ -160,6 +169,7 @@
     <string name="podcast.episodes">episodi</string>
     <string name="podcast.description">Descrizione</string>
     <string name="nav.settings">Impostazioni</string>
+    <string name="settings.tab.appearance">Aspetto</string>
     <string name="settings.tab.data">Dati</string>
     <string name="settings.tab.accounts">Account</string>
     <string name="settings.tab.about">Info</string>

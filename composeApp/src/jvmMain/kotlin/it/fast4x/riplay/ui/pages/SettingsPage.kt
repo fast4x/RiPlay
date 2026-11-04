@@ -28,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Backup
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -151,6 +152,7 @@ fun SettingsPage() {
 
         when (activeTab) {
             SettingsTab.GENERAL -> GeneralTab()
+            SettingsTab.ASPETTO -> AppearanceTab()
             SettingsTab.DATA -> DataTab(coroutineScope)
             SettingsTab.ACCOUNTS -> AccountsTab()
             SettingsTab.ABOUT -> AboutTab()
@@ -895,9 +897,10 @@ private fun kcefStateLabel(s: KcefState): String = when (s) {
     else -> ds("kcef.preparing_short")
 }
 
-/** tab delle Impostazioni: Generale (opzioni finestra, STEP 12), Dati, Account, Info */
+/** tab delle Impostazioni: Generale, Aspetto, Dati, Account, Info */
 enum class SettingsTab(val labelKey: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
     GENERAL("settings.tab.general", Icons.Filled.Tune),
+    ASPETTO("settings.tab.appearance", Icons.Filled.Palette),
     DATA("settings.tab.data", Icons.Filled.Backup),
     ACCOUNTS("settings.tab.accounts", Icons.Filled.AccountCircle),
     ABOUT("settings.tab.about", Icons.Filled.Info)

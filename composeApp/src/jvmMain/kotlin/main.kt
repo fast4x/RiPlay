@@ -230,6 +230,28 @@ fun main() {
 private const val SPLASH_MIN_VISIBLE_MS = 1_600L
 
 /**
+ * Scorciatoia globale dell'app Ctrl+Maiusc+K: accende/spegne l'overlay
+ * karaoke (stesso effetto del toggle in Impostazioni). Installata una sola
+ * volta via KeyboardFocusManager: intercetta i tasti in qualunque finestra
+ * dell'app che ha il focus.
+ */
+private fun installKaraokeShortcut() {
+    runCatching {
+        java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager()
+            .addKeyEventDispatcher { event ->
+                if (event.id == java.awt.event.KeyEvent.KEY_PRESSED &&
+                    event.isControlDown && event.isShiftDown &&
+                    event.keyCode == java.awt.event.KeyEvent.VK_K
+                ) {
+                    DesktopKaraokeOverlay.setEnabledKaraokeOverlay(!DesktopKaraokeOverlay.enabled)
+                    true
+                } else {
+                    false
+                }
+            }
+    }
+}
+/**
  * Bootstrap NON-composable dell'app, una sola volta per processo
  * (guardia atomica: chiamata ripetuta = no-op). L'ORDINE e' lo stesso che
  * aveva l'inizializzazione dentro application{}:
@@ -256,6 +278,12 @@ private fun bootstrapDesktopApp() {
         println("[RiPlay-Env] ATTENZIONE: host vuoto -> controllare le chiavi env_* (es. CrQ0JjAXgv) in gradle.properties")
 
     DesktopI18n.initialize()
+
+    // Colore accent salvato: PRIMA della prima UI
+    it.fast4x.riplay.styling.DesktopAccent.initialize()
+
+    // Scorciatoia Ctrl+Maiusc+K per l'overlay karaoke
+    installKaraokeShortcut()
 
     // Icona nel TRAY con mini-controlli (parte qui: DesktopI18n e'
     // gia' pronto per le etichette; i comandi player arrivano piu' tardi

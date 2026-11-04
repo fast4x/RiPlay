@@ -50,18 +50,27 @@
     <string name="sleeptimer.title">Sleep timer</string>
     <string name="sleeptimer.min">{n} min</string>
     <string name="sleeptimer.cancel">Cancel the timer</string>
-    <!-- STEP 12: mini player (modalita' minimale stile PiP) -->
+    <!-- mini player (minimal PiP-like mode) -->
     <string name="miniplayer.restore">Back to the main window</string>
+    <string name="miniplayer.size">Mini player size</string>
     <string name="settings.tab.general">General</string>
     <string name="settings.miniplayer.title">Minimal mode (Picture-in-Picture)</string>
-    <string name="settings.miniplayer.desc">When enabled, minimizing the main window shows a small always-on-top player with the song cover, play/pause, next/previous and a seekable timeline. Clicking the cover brings the main window back.</string>
-    <!-- STEP 12b: optional close-to-tray (default OFF) -->
+    <string name="settings.miniplayer.desc">When enabled, minimizing the main window shows a small always-on-top player with the song cover, play/pause, next/previous and a seekable timeline. Hovering shows the song info, the volume slider and the size selector (S/M/L); clicking the cover brings the main window back.</string>
+    <!-- optional close-to-tray (default OFF) -->
     <string name="settings.closetotray.title">Tray icon on close</string>
     <string name="settings.closetotray.desc">When enabled, closing the window with the X (or Alt+F4) does not quit RiPlay: it stays in the notification area and keeps playing; double-click the icon to reopen the window, use "Quit RiPlay" in its menu to exit for real. When disabled (default), the X closes the app.</string>
-    <!-- STEP 13: karaoke overlay (optional, default OFF) -->
+    <!-- karaoke overlay (optional, default OFF) -->
     <string name="settings.karaoke.title">Karaoke overlay</string>
-    <string name="settings.karaoke.desc">When enabled, a small always-on-top window shows the current lyrics line (and the next one) synced with playback. Drag it anywhere, the position is remembered; it needs synced lyrics (LRCLIB/KuGou), otherwise it shows the song title and artist.</string>
+    <string name="settings.karaoke.desc">When enabled, a small always-on-top window shows the current lyrics line (and the next one) synced with playback, with whole-line or word-by-word highlighting (selector on mouse hover). Drag it anywhere, the position is remembered; resize the text with the A-/A+ buttons and toggle it with Ctrl+Shift+K. It needs synced lyrics (LRCLIB/KuGou), otherwise it shows the song title and artist.</string>
     <string name="karaoke.no_synced">No synced lyrics available</string>
+    <string name="karaoke.mode.line">Line</string>
+    <string name="karaoke.mode.word">Word</string>
+    <!-- appearance tab: accent color -->
+    <string name="settings.appearance.accent">Accent color</string>
+    <string name="settings.appearance.accent_info">The identity color of the app: navigation bar, player bars, sliders, buttons and tabs. Changes apply instantly.</string>
+    <string name="settings.appearance.accent_custom">Custom color</string>
+    <string name="settings.appearance.accent_custom_info">Drag in the box to set saturation and brightness, pick the hue on the bar, or paste a #RRGGBB code.</string>
+    <string name="settings.appearance.accent_reset">Reset</string>
     <string name="player.song_cover">Song cover</string>
     <string name="player.online">Online</string>
     <string name="player.local">Local</string>
@@ -160,6 +169,7 @@
     <string name="podcast.episodes">episodes</string>
     <string name="podcast.description">Description</string>
     <string name="nav.settings">Settings</string>
+    <string name="settings.tab.appearance">Appearance</string>
     <string name="settings.tab.data">Data</string>
     <string name="settings.tab.accounts">Account</string>
     <string name="settings.tab.about">About</string>
