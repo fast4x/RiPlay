@@ -2569,6 +2569,9 @@ class PlayerService : MediaLibraryService(),
                 hybridPlayer.switchToYoutube()
                 playFromSecond = 0f // Resettiamo la posizione iniziale perchè passiamo al successivo
 
+                // Forza il volume al massimo
+                _internalYouTubePlayer.value?.setVolume(getSystemMediaVolume())
+
                 startForegroundPlaceholder()
 
                 if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus.value != RiTuneConnectionStatus.Connected) {
@@ -2587,9 +2590,6 @@ class PlayerService : MediaLibraryService(),
                             )
                         )
                     }
-
-                // Forza il volume al massimo
-                _internalYouTubePlayer.value?.setVolume(getSystemMediaVolume())
 
                 // Recupera genere
                 val mbclient = MusicBrainz()
@@ -4869,7 +4869,12 @@ class PlayerService : MediaLibraryService(),
 
                 // Facciamo ripartire la rampa di risalita morbida dell'audio!
                 // Questa funzione al termine della risalita metterà regolarmente 'isFading = false', sbloccando l'app!
+                // Parte solo se fade è abilitato
                 startFadeIn()
+                //Se fade è disattivo, ci assicuriamo che il volume sia ripristinato subito
+                if (appSettings.crossfadeDuration == CrossfadeDuration.Off) {
+                    _internalYouTubePlayer.value?.setVolume(getSystemMediaVolume())
+                }
 
             } else {
                 Timber.d("PlayerService UX: Canzone all'inizio (<$rewindThreshold). Salto regolarmente al BRANO PRECEDENTE.")
