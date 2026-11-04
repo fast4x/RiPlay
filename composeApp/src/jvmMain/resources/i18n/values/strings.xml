@@ -58,6 +58,10 @@
     <!-- STEP 12b: optional close-to-tray (default OFF) -->
     <string name="settings.closetotray.title">Tray icon on close</string>
     <string name="settings.closetotray.desc">When enabled, closing the window with the X (or Alt+F4) does not quit RiPlay: it stays in the notification area and keeps playing; double-click the icon to reopen the window, use "Quit RiPlay" in its menu to exit for real. When disabled (default), the X closes the app.</string>
+    <!-- STEP 13: karaoke overlay (optional, default OFF) -->
+    <string name="settings.karaoke.title">Karaoke overlay</string>
+    <string name="settings.karaoke.desc">When enabled, a small always-on-top window shows the current lyrics line (and the next one) synced with playback. Drag it anywhere, the position is remembered; it needs synced lyrics (LRCLIB/KuGou), otherwise it shows the song title and artist.</string>
+    <string name="karaoke.no_synced">No synced lyrics available</string>
     <string name="player.song_cover">Song cover</string>
     <string name="player.online">Online</string>
     <string name="player.local">Local</string>

@@ -2,9 +2,10 @@ package it.fast4x.riplay.utils
 
 import player.DesktopPlayerManager
 import player.PlayerController
+import it.fast4x.riplay.data.models.Song
 
 /**
- * STEP 9: ponte tra la composizione (ThreeColumnsApp) e i servizi GLOBALI
+ * Ponte tra la composizione (ThreeColumnsApp) e i servizi GLOBALI
  * che vivono FUORI dall'albero Compose (tray icon, sleep timer).
  *
  * Il DesktopPlayerManager e' "remember" dentro ThreeColumnsApp e i comandi
@@ -44,12 +45,9 @@ object DesktopPlaybackHub {
     @Volatile
     var currentSongTitle: () -> String? = { null }
 
-    /**
-     * STEP 12 (mini player stile PiP): URL della copertina del brano in
-     * riproduzione. Chiusura ritardata (lambda) come le altre voci: la mini
-     * la legge a ogni ricomposizione/sondaggio, cosi' cambia brano anche
-     * senza eventi del player.
-     */
     @Volatile
     var currentSongThumbnail: () -> String? = { null }
+
+    @Volatile
+    var currentSong: () -> Song? = { null }
 }

@@ -16,8 +16,11 @@ import it.fast4x.riplay.player.kcef.KcefEngine
 import it.fast4x.riplay.player.kcef.KcefState
 import it.fast4x.riplay.utils.DesktopAppInfo
 import it.fast4x.riplay.utils.DesktopCloseToTray
+import it.fast4x.riplay.utils.DesktopKaraokeOverlay
+import it.fast4x.riplay.utils.DesktopKaraokeOverlayWindow
 import it.fast4x.riplay.utils.DesktopMiniPlayer
 import it.fast4x.riplay.utils.DesktopMiniPlayerWindow
+import it.fast4x.riplay.utils.DesktopPlaybackHub
 import it.fast4x.riplay.utils.DesktopTray
 import it.fast4x.riplay.utils.WindowsAppIdentity
 import org.jetbrains.compose.resources.painterResource
@@ -56,21 +59,7 @@ import it.fast4x.riplay.ui.components.RiPlayAccent
 
 @OptIn(ExperimentalCoilApi::class)
 fun main() {
-    // STEP 4g (fix "log all'infinito"): TUTTA l'inizializzazione e' qui,
-    // nel main() PIANO, PRIMA di application{}: gira ESATTAMENTE una volta
-    // per processo. Prima (fino allo step4f) le stesse chiamate stavano
-    // dentro il content di application{}, che e' un AMBIENTE COMPOSABLE:
-    // la lambda viene RIESeguita a ogni ricomposizione dello scope radice.
-    // Con la splashscreen (step4f) lo scope si ricompone piu' spesso e, in
-    // alcune condizioni su Windows, in continuazione: il risultato era
-    //  - il blocco [RiPlay-Identity]/[RiPlay-Env]/[RiPlay-I18n]/[RiPlay-Account]
-    //    stampato all'infinito nel log;
-    //  - restoreAtStartup()/DesktopI18n eseguiti in loop (ricarichi continui
-    //    di home e player, KCEF sotto pressione: copertina bianca nel
-    //    miniplayer, controlli del video che lampeggiano).
-    // In piu' ogni bootstrap e' IDEMPOTENTE (guardie run-once dentro le
-    // singole funzioni): anche uno richiamo accidentale non puo' ripetere
-    // gli effetti.
+    // Inizializzazione completa prima di tutto
     bootstrapDesktopApp()
 
     application {
@@ -81,13 +70,13 @@ fun main() {
             getAsyncImageLoader(context)
         }
 
-        // STEP 3h (migliorie visive): la finestra RICORDA come era stata
+        // La finestra RICORDA come era stata
         // lasciata (massimizzata o con la sua dimensione). Il salvataggio
         // avviene alla chiusura (pulsante chiudi della title bar o Alt+F4:
         // entrambi passano da onCloseRequest).
         val windowState = remember { initialWindowState() }
 
-        // STEP 9 (richiesta utente): TRAY ICON. La visibilita' della finestra
+        // TRAY ICON. La visibilita' della finestra
         // e' ora uno stato: chiudere (X della title bar o Alt+F4) NASCONDE
         // l'app nel tray (la musica continua, come nei player desktop), il
         // doppio click sull'icona o "Mostra RiPlay" la riapre, "Esci da
@@ -119,7 +108,7 @@ fun main() {
         fun closeWindowOrHide() {
             saveDesktopWindowPrefs(windowState)
             if (DesktopCloseToTray.enabled && DesktopTray.running) {
-                // STEP 12b: opzione ATTIVA -> nasconde nel tray: la
+                // opzione ATTIVA -> nasconde nel tray: la
                 // riproduzione prosegue, il doppio click sull'icona riapre
                 windowVisible = false
             } else {
@@ -129,8 +118,7 @@ fun main() {
             }
         }
 
-        // STEP 4f (richiesta utente n.6): SPLASHSCREEN di avvio. Finestra
-        // senza bordi SEMPRE OPACA (niente transparent: su alcune
+        // SPLASHSCREEN di avvio. Finestra senza bordi SEMPRE OPACA (niente transparent: su alcune
         // configurazioni Windows la trasparenza non e' supportata e mostra
         // uno sfondo bianco; opaca e' garantita ovunque) con logo, nome e
         // versione: copre la fase di composizione/primo caricamento.
@@ -195,7 +183,7 @@ fun main() {
         }
 
         // ─────────────────────────────────────────────────────────────
-        // STEP 12 (richiesta utente): MODALITA' MINIMALE stile PiP.
+        // MODALITA' MINIMALE stile PiP.
         // La mini player esiste SOLO quando:
         //  - l'opzione e' attiva nelle Impostazioni (tab Generale, default OFF);
         //  - la finestra principale e' ICONIFICATA (windowState.isMinimized
@@ -218,6 +206,23 @@ fun main() {
                 }
             )
         }
+
+        // ─────────────────────────────────────────────────────────────
+        // OVERLAY KARAOKE. Finestra flottante
+        // sempre in primo piano con la riga di testo corrente (+ la
+        // successiva) sincronizzata sul timestamp del player. Esiste SOLO
+        // quando:
+        //  - l'opzione e' attiva (Impostazioni -> Generale, default OFF);
+        //  - c'e' un brano caricato: la lambda DesktopPlaybackHub.currentSong
+        //    legge lo stato Compose `nowPlayingSong` di ThreeColumnsApp e
+        //    invocarla QUI in composizione iscrive QUESTO scope ai suoi
+        //    cambiamenti -> la finestra appare quando parte la musica e
+        //    sparisce da sola se non c'e' nulla in riproduzione.
+        // Indipendente da minimizzazione/tray: con l'app ridotta a icona
+        // (o nascosta nel tray) l'overlay resta: e' li' che serve.
+        if (DesktopKaraokeOverlay.enabled && DesktopPlaybackHub.currentSong() != null) {
+            DesktopKaraokeOverlayWindow()
+        }
     }
 }
 
@@ -225,7 +230,7 @@ fun main() {
 private const val SPLASH_MIN_VISIBLE_MS = 1_600L
 
 /**
- * STEP 4g: bootstrap NON-composable dell'app, una sola volta per processo
+ * Bootstrap NON-composable dell'app, una sola volta per processo
  * (guardia atomica: chiamata ripetuta = no-op). L'ORDINE e' lo stesso che
  * aveva l'inizializzazione dentro application{}:
  *  1. WindowsAppIdentity.setup(): AUMID + DisplayName di registro per la
@@ -252,7 +257,7 @@ private fun bootstrapDesktopApp() {
 
     DesktopI18n.initialize()
 
-    // STEP 9: icona nel TRAY con mini-controlli (parte qui: DesktopI18n e'
+    // Icona nel TRAY con mini-controlli (parte qui: DesktopI18n e'
     // gia' pronto per le etichette; i comandi player arrivano piu' tardi
     // da ThreeColumnsApp via DesktopPlaybackHub, la finestra si aggancia
     // nella composizione qui sotto)
@@ -262,8 +267,7 @@ private fun bootstrapDesktopApp() {
 
     it.fast4x.riplay.ui.pages.DesktopAccountManager.restoreAtStartup()
 
-    // STEP 5e (diagnosi "app sconosciuta" tornata): quando l'init CEF
-    // completa, KCEF/Chromium puo' aver RISCRITTO l'AUMID del processo.
+    // Quando l'init CEF completa, KCEF/Chromium puo' aver RISCRITTO l'AUMID del processo.
     // Un thread daemon attende lo stato Ready (o un timeout generoso) e poi
     // VERIFICA con GetCurrentProcessExplicitAppUserModelID che l'AUMID sia
     // ancora il nostro, ripristinandolo se e' cambiato (log chiaro nel
@@ -281,7 +285,7 @@ private fun bootstrapDesktopApp() {
             // brano: qui l'identita' del processo deve essere quella giusta)
             Thread.sleep(30_000L)
             WindowsAppIdentity.reassertAfterCef()
-            // STEP 7a: diagnostica delle sessioni SMTC REALI di sistema: enumera
+            // Diagnostica delle sessioni SMTC REALI di sistema: enumera
             // le sessioni multimediali e stampa il SourceAppUserModelId di ognuna
             // (l'AUMID che Windows usa per cercare il nome dell'app nella
             // notifica). Con un brano in riproduzione vediamo l'id effettivo
@@ -300,7 +304,7 @@ private fun bootstrapDesktopApp() {
 }
 
 /**
- * STEP 4f/4g: contenuto dello splashscreen: sfondo scuro PIASTRELLATO a
+ * Contenuto dello splashscreen: sfondo scuro PIASTRELLATO a
  * tutta finestra (la finestra e' OPACA: nessuna dipendenza dal supporto
  * trasparenza del sistema) con card arrotondata, logo, nome, versione e
  * indicatore di caricamento. Nessun accesso a Environment o al database:

@@ -29,7 +29,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
-
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.QueueMusic
@@ -38,7 +37,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -59,31 +57,19 @@ import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.environment.Environment
 import it.fast4x.riplay.utils.asSong
-// STEP 3ac: prefisso degli id dei brani LOCALI (la radio non si applica)
 import it.fast4x.riplay.commonutils.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.styling.Dimensions.layoutColumnBottomPadding
 import it.fast4x.riplay.styling.Dimensions.layoutColumnTopPadding
 import it.fast4x.riplay.styling.Dimensions.layoutColumnsHorizontalPadding
 import it.fast4x.riplay.ui.bars.DesktopSection
 import it.fast4x.riplay.ui.bars.DesktopNavigationBar
-// STEP 3m: pannello coda PUBBLICO condiviso col player full screen
 import it.fast4x.riplay.ui.components.PlayQueuePanel
-// STEP 3n (richiesta utente n.6): id dei brani in coda per la SPUNTA sul "+"
 import it.fast4x.riplay.items.LocalQueuedSongIds
 import it.fast4x.riplay.ui.components.RiPlayAccent
 import it.fast4x.riplay.ui.pages.AlbumsPage
 import it.fast4x.riplay.ui.pages.ArtistsPage
-// STEP 3m (richiesta utente n.3): home desktop = HomePageOnline Android
 import it.fast4x.riplay.ui.pages.HomePageOnline
-// STEP 3m (richiesta utente n.2): pagina dei FILE LOCALI (VLCJ)
 import it.fast4x.riplay.ui.pages.LocalSongsPage
-// STEP 3o (richiesta utente n.4): CODA PERSISTENTE (salvataggio/ripristino)
-import it.fast4x.riplay.ui.loadSavedQueueIds
-import it.fast4x.riplay.ui.saveQueueIds
-// STEP 3ac: preferenza AUTO-RADIO (stesso file della coda)
-import it.fast4x.riplay.ui.loadAutoRadioEnabled
-import it.fast4x.riplay.ui.saveAutoRadioEnabled
-// STEP 3o (richiesta utente n.3): etichetta del player full SENZA nome motore
 import player.DesktopPlayerEngine
 import it.fast4x.riplay.ui.pages.PlaylistsPage
 import it.fast4x.riplay.ui.pages.PlaylistSongsPage
@@ -91,18 +77,15 @@ import it.fast4x.riplay.ui.pages.SettingsPage
 import it.fast4x.riplay.ui.pages.SongsPage
 import it.fast4x.riplay.ui.screens.AlbumScreen
 import it.fast4x.riplay.ui.screens.ArtistScreen
-// STEP 3aq: schermata "VEDI TUTTO" delle sezioni della pagina artista
 import it.fast4x.riplay.ui.screens.ArtistItemsScreen
 import it.fast4x.riplay.ui.screens.ArtistSectionRequest
 import it.fast4x.riplay.ui.screens.DesktopPlayerOverlay
 import it.fast4x.riplay.ui.screens.MoodScreen
 import it.fast4x.riplay.ui.screens.PlaylistScreen
 import it.fast4x.riplay.ui.screens.PodcastScreen
-// STEP 3aq: clip + rottondeggiatura del pannello overlay view all
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import it.fast4x.riplay.enums.ThumbnailRoundness
-import it.fast4x.riplay.ui.RiPlayWindowTitleBar
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowScope
 import androidx.compose.ui.window.WindowState
@@ -111,11 +94,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-
 import it.fast4x.riplay.utils.DesktopUpdateChecker
 import it.fast4x.riplay.utils.DesktopPlaybackHub
 import java.util.concurrent.atomic.AtomicLong
-
 import it.fast4x.environment.models.bodies.NextBody
 import it.fast4x.environment.requests.nextPage
 import it.fast4x.riplay.ui.pages.SearchPage
@@ -124,7 +105,6 @@ import org.jetbrains.compose.resources.stringResource
 import player.DesktopVideoSource
 import player.DesktopPlayerManager
 import riplay.composeapp.generated.resources.Res
-
 import riplay.composeapp.generated.resources.arrow_left
 import riplay.composeapp.generated.resources.back
 
@@ -139,7 +119,9 @@ data class QueuedSong(
     val song: Song
 )
 
-
+/**
+ * Navigazione desktop in stile ANDROID.
+ */
 @Composable
 fun ThreeColumnsApp(
     windowScope: WindowScope? = null,
@@ -546,34 +528,24 @@ fun ThreeColumnsApp(
                 PlayerPanel(widened = videoWidened) {
                     DesktopVideoSource(
                         modifier = Modifier.fillMaxWidth().fillMaxHeight(),
-
                         videoId = videoId,
-
                         song = nowPlayingSong,
-
                         manager = playerManager,
-
                         browserHiddenByOverlay = playerExpanded,
-
                         onCoverClick = {
                             if (nowPlayingSong != null) playerExpanded = true
                         },
-
                         onToggleVideo = onToggleVideoMode,
-
                         onAddRadio = onAddRadio,
                         radioLoading = radioLoading,
                         radioFeedback = radioFeedback,
-
                         onPrevious = onHistoryPrevious,
                         onNext = onHistoryNext,
                         canGoPrevious = historyIndex > 0,
                         canGoNext = historyIndex < songHistory.lastIndex || playQueue.isNotEmpty(),
-
                         onExpand = {
                             if (nowPlayingSong != null) playerExpanded = true
                         },
-
                         widened = videoWidened,
                         onToggleWiden = { videoWidened = !videoWidened }
                     )
@@ -1002,12 +974,7 @@ fun DestinationPanel(
     }
 }
 
-/**
- * Schermate di dettaglio aperte sopra la sezione (come la navigazione
- * Android artista/album/playlist/mood). Le schermate online hanno bisogno
- * dello scroll verticale (non lo gestiscono da sole); le pagine con
- * LazyColumn (playlist locale, mood) scrollano da sole.
- */
+
 @Composable
 fun DetailContent(
     detail: DesktopDetail,
@@ -1015,25 +982,12 @@ fun DetailContent(
     onSongClickOnline: (Song) -> Unit,
     onSongClickFromDb: (Song) -> Unit,
     onAddToQueue: (Song) -> Unit,
-    // STEP 3j: click su un brano di album/playlist YT = intera lista in coda
     onPlayCollection: (List<Song>, Song) -> Unit,
-    // STEP 3o (richiesta utente n.2): "metti in coda tutto" senza avviare
     onEnqueueAll: (List<Song>) -> Unit,
     onOpenDetail: (DesktopDetail) -> Unit
 ) {
     when (detail) {
         is DesktopDetail.Artist -> {
-            // STEP 3aq (richiesta utente: "procedi con la view all come
-            // avviene in android"): lo stato della VIEW ALL aperta da
-            // una sezione della pagina artista. Su Android e' un
-            // CustomModalBottomSheet SOPRA la pagina (ArtistOverviewItems):
-            // qui e' lo stesso overlay DENTRO il pannello contenuti, ma
-            // FUORI dallo ScrollColumn (cosi' la lista completa scrolla
-            // da sola con vincoli di altezza reali invece che infinite).
-            // Click sullo sfondo o sulla freccia in alto = chiudi, e la
-            // pagina artista resta esattamente dov'era.
-            // Chiave remember = browseId: cambiando artista l'overlay si
-            // chiude da solo.
             var viewAllRequest by remember(detail.browseId) {
                 mutableStateOf<ArtistSectionRequest?>(null)
             }
@@ -1048,9 +1002,6 @@ fun DetailContent(
                         onPlaylistClick = {
                             onOpenDetail(DesktopDetail.YtPlaylist(it))
                         },
-                        // STEP 3aq: la pagina artista chiede l'apertura
-                        // della view all di una sezione (Brani / Albums /
-                        // Singles / Playlists con moreEndpoint)
                         onViewAllSection = { viewAllRequest = it },
                         onAlbumClick = {
                             onOpenDetail(DesktopDetail.Album(it))
@@ -1115,9 +1066,7 @@ fun DetailContent(
                     browseId = detail.browseId,
                     onSongClick = onSongClickOnline,
                     onAddToQueue = onAddToQueue,
-                    // STEP 3j: click su un brano = TUTTO L'ALBUM in coda
                     onPlayCollection = onPlayCollection,
-                    // STEP 3o: metti in coda tutto (stile Android)
                     onEnqueueAll = onEnqueueAll,
                     onAlbumClick = {
                         onOpenDetail(DesktopDetail.Album(it))
@@ -1131,9 +1080,7 @@ fun DetailContent(
                     browseId = detail.browseId,
                     onSongClick = onSongClickOnline,
                     onAddToQueue = onAddToQueue,
-                    // STEP 3j: click su un brano = TUTTA la PLAYLIST in coda
                     onPlayCollection = onPlayCollection,
-                    // STEP 3o: metti in coda tutto (stile Android)
                     onEnqueueAll = onEnqueueAll,
                     onAlbumClick = {
                         onOpenDetail(DesktopDetail.Album(it))
@@ -1164,7 +1111,7 @@ fun DetailContent(
                 }
             )
 
-        // STEP 3ad: dettaglio PODCAST (episodi live via podcastPage)
+        // Dettaglio PODCAST (episodi live via podcastPage)
         is DesktopDetail.Podcast ->
             ScrollColumn {
                 PodcastScreen(
@@ -1196,7 +1143,7 @@ private fun ScrollColumn(content: @Composable () -> Unit) {
 }
 
 /**
- * STEP 3b: dettaglio aperto sopra la sezione corrente. Ogni voce e' una
+ * Dettaglio aperto sopra la sezione corrente. Ogni voce e' una
  * destinazione della navigazione (equivalente desktop delle rotte
  * NavRoutes.artist/album/playlist/mood di Android).
  */
@@ -1206,11 +1153,6 @@ sealed interface DesktopDetail {
     data class YtPlaylist(val browseId: String) : DesktopDetail
     data class LocalPlaylist(val playlist: Playlist) : DesktopDetail
     data class Mood(val mood: Environment.Mood.Item) : DesktopDetail
-    // STEP 3ad: dettaglio PODCAST (show).browseId MPSP: NON e' una pagina
-    // playlist YT (PlaylistScreen/playlistPage non restituisce brani, era
-    // la causa della lista episodi vuota): usa PodcastScreen con
-    // Environment.podcastPage, lo stesso parser di Android. title = titolo
-    // di cortesia dai risultati di ricerca / playlist salvata.
     data class Podcast(
         val browseId: String,
         val title: String? = null

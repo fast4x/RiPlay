@@ -58,6 +58,10 @@
     <!-- STEP 12b: icona nel tray alla chiusura (opzionale, default OFF) -->
     <string name="settings.closetotray.title">Icona nel tray alla chiusura</string>
     <string name="settings.closetotray.desc">Se attiva, chiudendo la finestra con la X (o Alt+F4) RiPlay non esce: resta nell\'area di notifica e continua a suonare; doppio click sull\'icona per riaprire la finestra, "Esci da RiPlay" nel suo menu per terminare davvero. Se disattiva (predefinito), la X chiude l\'app.</string>
+    <!-- STEP 13: overlay karaoke (opzionale, default OFF) -->
+    <string name="settings.karaoke.title">Overlay karaoke</string>
+    <string name="settings.karaoke.desc">Se attiva, una piccola finestra sempre in primo piano mostra la riga del testo corrente (e la successiva) sincronizzata con la riproduzione. Si trascina ovunque e ricorda la posizione; richiede testi sincronizzati (LRCLIB/KuGou), altrimenti mostra titolo e artista del brano.</string>
+    <string name="karaoke.no_synced">Testo sincronizzato non disponibile</string>
     <string name="player.song_cover">cover del brano</string>
     <string name="player.online">Online</string>
     <string name="player.local">Locale</string>
