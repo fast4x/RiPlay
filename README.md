@@ -161,7 +161,7 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 
 - Pull requests welcome under GPL3.0 license  
 - Develop new features or fix bugs  
-- Translate or improve translations via [Crowdin](https://crwd.in/rimusic/37f0755f4e2cf99351844c27c86df0f12540778)
+- Translate or improve translations via [Crowdin](https://crowdin.com/project/rimusic/invite?h=f9d75909a48e4b58089a1577ba88651e2929565)
 
 ---
 

@@ -818,8 +818,8 @@
     <string name="no_thumbnail_present">Nessuna Copertina Presente</string>
     <string name="removed_thumbnail">Copertina Rimossa</string>
     <string name="failed_to_remove_thumbnail">Impossibile rimuovere la copertina</string>
-    <string name="settings_enable_pip">Abilita immagine nell\'immagine</string>
-    <string name="settings_enable_pip_auto">Abilita immagine automatica in immagine</string>
+    <string name="settings_enable_pip">Abilita picture in picture</string>
+    <string name="settings_enable_pip_auto">Abilita picture in picture automatico</string>
     <string name="pipmodule_cover">Copertina</string>
     <string name="pipmodule_lyrics">Testo</string>
     <string name="pip_action_play">Riproduci</string>
@@ -832,7 +832,7 @@
     <string name="floating_lyrics_permission_missing">Concedi il permesso \"Mostra sopra altre app\" per attivare l\'overlay dei testi</string>
     <string name="floating_lyrics_mode_line">Riga</string>
     <string name="floating_lyrics_mode_word">Parola</string>
-    <string name="menu_go_to_picture_in_picture">PIP</string>
+    <string name="menu_go_to_picture_in_picture">Picture in picture</string>
     <string name="pip_info_from_android_12_pip_can_be_automatically_enabled">Da Android 12 pip può essere abilitato automaticamente</string>
     <string name="showsecondline">Mostra traduzione nella seconda riga</string>
     <string name="enter_the_value">Inserisci Il Valore</string>
