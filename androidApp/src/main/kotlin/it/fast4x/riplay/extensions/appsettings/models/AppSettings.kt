@@ -208,6 +208,7 @@ data class AppSettings(
     val currentVisualizer: Int = 0,
     val enablePictureInPicture: Boolean = false,
     val enablePictureInPictureAuto: Boolean = false,
+    val enableFloatingLyricsOverlay: Boolean = false,
     val qrCodeToActions: Boolean = false,
     val autoBackupFolder: String = "",
     val showOnboardingScreen: Boolean = true,

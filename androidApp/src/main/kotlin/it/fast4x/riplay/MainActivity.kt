@@ -145,6 +145,7 @@ import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.extensions.audiotag.AudioTagViewModel
 import it.fast4x.riplay.navigation.AppNavigation
+import it.fast4x.riplay.services.lyricsoverlay.LyricsOverlayManager
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.BottomSheet
 import it.fast4x.riplay.ui.components.BottomSheetState
@@ -1240,7 +1241,10 @@ class MainActivity : AppCompatActivity() {
                     }
                 )
 
-                val pipModule = appSettings.pipModule
+                // Con l'overlay testi attivo il PiP mostra la copertina:
+                // il testo e' gia' sulla finestra fluttuante sopra le altre app
+                val pipModule =
+                    if (LyricsOverlayManager.active) PipModule.Cover else appSettings.pipModule
 
                 // Parametri della finestra PiP sempre allineati allo stato del player:
                 // tasti come azioni remote, rapporto d'aspetto per modulo e auto-enter

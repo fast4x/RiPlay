@@ -174,6 +174,7 @@ import it.fast4x.riplay.musicvault.MusicVaultRepository
 import it.fast4x.riplay.musicvault.MusicVaultState
 import it.fast4x.riplay.services.helpers.AudioDRCHelper
 import it.fast4x.riplay.services.helpers.EqualizerHelper
+import it.fast4x.riplay.services.lyricsoverlay.LyricsOverlayManager
 import it.fast4x.riplay.ui.widgets.LikeState
 import it.fast4x.riplay.ui.widgets.PlayerWidgetSnapshot
 import it.fast4x.riplay.ui.widgets.WidgetArtworkCache
@@ -392,7 +393,7 @@ class PlayerService : MediaLibraryService(),
     val relatedItemsService: RelatedItemsService = RelatedItemsService()
 
     private var settingsObserverJob: Job? = null
-    private val appSettingsManager: AppSettingsManager by lazy {
+    val appSettingsManager: AppSettingsManager by lazy {
         (appContext() as MainApplication).appSettingsManager
     }
     var appSettings = appSettingsManager.activeSettings.value
@@ -669,6 +670,11 @@ class PlayerService : MediaLibraryService(),
                     .onFailure { Timber.e("PlayerService startup initializeLegacyNotificationActionReceiver failed: $it") }
                 runCatching { initializeWidgetUpdater() }
                     .onFailure { Timber.e("PlayerService startup initializeWidgetUpdater failed: $it") }
+
+                // Overlay testi fluttuante: la finestra viene mostrata/nascosta
+                // osservando preferenza, permesso, PiP e brano corrente
+                runCatching { LyricsOverlayManager.initialize(this@PlayerService) }
+                    .onFailure { Timber.e("PlayerService startup lyrics overlay failed: $it") }
                 runCatching { initializeAudioDeviceCallback() }
                     .onFailure { Timber.e("PlayerService startup initializeAudioDeviceCallback failed: $it") }
 
@@ -2193,6 +2199,9 @@ class PlayerService : MediaLibraryService(),
         Timber.d("PlayerService: onDestroy STARTED")
         //Timber.d("SCOPES PlayerService.serviceScope CANCELLED (was ${this@PlayerService.serviceScope.hashCode()})")
         _isServiceReady.value = false
+
+        runCatching { LyricsOverlayManager.release() }
+            .onFailure { Timber.e("PlayerService onDestroy lyrics overlay release failed: $it") }
 
         stopPlaybackWatchdog()
 

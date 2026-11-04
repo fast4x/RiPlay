@@ -827,6 +827,11 @@
     <string name="pip_action_previous">Precedente</string>
     <string name="pip_action_next">Successiva</string>
     <string name="settings_pip_module">Modulo Pip</string>
+    <string name="settings_floating_lyrics">Overlay testi fluttuante</string>
+    <string name="settings_floating_lyrics_info">Mostra una piccola finestra trascinabile sopra le altre app con la riga del testo corrente (e la successiva) sincronizzata con la riproduzione. Richiede il permesso \"Mostra sopra altre app\" e testi sincronizzati.</string>
+    <string name="floating_lyrics_permission_missing">Concedi il permesso \"Mostra sopra altre app\" per attivare l\'overlay dei testi</string>
+    <string name="floating_lyrics_mode_line">Riga</string>
+    <string name="floating_lyrics_mode_word">Parola</string>
     <string name="menu_go_to_picture_in_picture">PIP</string>
     <string name="pip_info_from_android_12_pip_can_be_automatically_enabled">Da Android 12 pip può essere abilitato automaticamente</string>
     <string name="showsecondline">Mostra traduzione nella seconda riga</string>

@@ -167,6 +167,7 @@ fun GeneralSettings(
 
     val enablePictureInPicture = appSettings.enablePictureInPicture
     val enablePictureInPictureAuto = appSettings.enablePictureInPictureAuto
+    val enableFloatingLyrics = appSettings.enableFloatingLyricsOverlay
     val pipModule = appSettings.pipModule
     val rewindThresholdDuration = appSettings.rewindThresholdDuration
 
@@ -1226,6 +1227,43 @@ fun GeneralSettings(
                             }
 
                         }
+                    }
+
+                    if (search.input.isBlank() || stringResource(R.string.settings_floating_lyrics).contains(
+                            search.input,
+                            true
+                        )
+                    ) {
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.settings_floating_lyrics),
+                            text = stringResource(R.string.settings_floating_lyrics_info),
+                            isChecked = enableFloatingLyrics,
+                            onCheckedChange = { checked ->
+                                if (checked && !Settings.canDrawOverlays(context)) {
+                                    SmartMessage(
+                                    context.resources.getString(R.string.floating_lyrics_permission_missing),
+                                        type = PopupType.Warning,
+                                        context = context
+                                    )
+                                    runCatching {
+                                        context.startActivity(
+                                            Intent(
+                                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                                "package:${context.packageName}".toUri()
+                                            )
+                                        )
+                                    }
+                                } else {
+                                    coroutineScope.launch {
+                                        appSettingsManager.updateSettings(
+                                            appSettingsManager.activeSettings.value.copy(
+                                                enableFloatingLyricsOverlay = checked
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        )
                     }
 
                     if (search.input.isBlank() || stringResource(R.string.equalizer).contains(
