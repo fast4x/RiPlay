@@ -53,6 +53,7 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberWindowState
 import it.fast4x.riplay.i18n.ds
 import it.fast4x.riplay.player.lyrics.DesktopLyricsRepository
+import it.fast4x.riplay.player.lyrics.LyricWord
 import it.fast4x.riplay.player.lyrics.LyricsUiState
 import it.fast4x.riplay.ui.components.RiPlayAccent
 import kotlinx.coroutines.delay
@@ -118,7 +119,7 @@ object DesktopKaraokeOverlay {
     var textScale: Float by mutableStateOf(readTextScale())
         private set
 
-    fun changeTextScale(delta: Float) = setTextScaleKaraokeOverlay(textScale + delta)
+    fun changeTextScaleKaraokeOverlay(delta: Float) = setTextScaleKaraokeOverlay(textScale + delta)
 
     fun setTextScaleKaraokeOverlay(value: Float) {
         val v = value.coerceIn(MIN_SCALE, MAX_SCALE)
@@ -316,9 +317,6 @@ fun DesktopKaraokeOverlayWindow() {
     }
 }
 
-/** Una parola della riga corrente con il suo intervallo di tempo (ms). */
-private data class KaraokeWord(val text: String, val startMs: Long, val endMs: Long)
-
 /**
  * Pagina karaoke di un istante: parole della riga corrente + testo successivo,
  * come snapshot DENTRO la chiave di transizione (il blocco in uscita continua
@@ -327,18 +325,19 @@ private data class KaraokeWord(val text: String, val startMs: Long, val endMs: L
 private data class KaraokePage(
     val songId: String?,
     val lineIndex: Int,
-    val words: List<KaraokeWord>,
+    val words: List<LyricWord>,
     val next: String?
 )
 
 /**
- * Ripartisce le parole lungo la durata della riga, in proporzione alla
- * lunghezza: karaoke senza timestamp parola-per-parola nel sorgente LRC.
+ * Euristica di ripartizione delle parole lungo la durata della riga, in
+ * proporzione alla lunghezza: usata quando il sorgente non ha tempi reali
+ * per parola (rich sync non disponibile dal provider).
  */
-private fun karaokeWords(text: String, startMs: Long, endMs: Long): List<KaraokeWord> {
+private fun karaokeWords(text: String, startMs: Long, endMs: Long): List<LyricWord> {
     val words = text.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
     if (words.isEmpty()) return emptyList()
-    if (words.size == 1) return listOf(KaraokeWord(words[0], startMs, endMs))
+    if (words.size == 1) return listOf(LyricWord(words[0], startMs, endMs))
     val duration = (endMs - startMs).coerceAtLeast(600L).toFloat()
     val weights = words.map { it.length + 1 }
     val total = weights.sum().toFloat()
@@ -346,7 +345,7 @@ private fun karaokeWords(text: String, startMs: Long, endMs: Long): List<Karaoke
     return words.mapIndexed { i, w ->
         val s = startMs + (acc / total * duration).toLong()
         acc += weights[i]
-        KaraokeWord(w, s, startMs + (acc / total * duration).toLong())
+        LyricWord(w, s, startMs + (acc / total * duration).toLong())
     }
 }
 
@@ -419,17 +418,21 @@ private fun DesktopKaraokeOverlayContent(
         ) {
             if (lines != null) {
                 val currentText = (lines.getOrNull(currentIndex)?.text ?: "").ifBlank { "\u266A" }
+                // tempi reali per parola (rich sync) se presenti, altrimenti
+                // ripartizione euristica lungo la durata della riga
+                val currentLine = lines.getOrNull(currentIndex)
+                val pageWords = currentLine?.words?.takeIf { it.isNotEmpty() }
+                    ?: karaokeWords(
+                        currentText,
+                        currentLine?.timeMs ?: 0L,
+                        lines.getOrNull(currentIndex + 1)?.timeMs
+                            ?: ((currentLine?.timeMs ?: 0L) + 6_000L)
+                    )
                 AnimatedContent(
                     targetState = KaraokePage(
                         songId = currentSong?.id,
                         lineIndex = currentIndex,
-                        words = karaokeWords(
-                            currentText,
-                            lines.getOrNull(currentIndex)?.timeMs ?: 0L,
-                            lines.getOrNull(currentIndex + 1)?.timeMs ?: (
-                                (lines.getOrNull(currentIndex)?.timeMs ?: 0L) + 6_000L
-                                )
-                        ),
+                        words = pageWords,
                         next = lines.getOrNull(currentIndex + 1)?.text?.ifBlank { "\u266A" }
                     ),
                     transitionSpec = {
@@ -540,14 +543,14 @@ private fun DesktopKaraokeOverlayContent(
                     active = DesktopKaraokeOverlay.mode == KaraokeMode.WORD
                 ) { DesktopKaraokeOverlay.setKaraokeMode(KaraokeMode.WORD) }
                 Spacer(Modifier.width(10.dp))
-                OverlayChip("A\u2212") { DesktopKaraokeOverlay.changeTextScale(-0.1f) }
+                OverlayChip("A\u2212") { DesktopKaraokeOverlay.changeTextScaleKaraokeOverlay(-0.1f) }
                 Text(
                     text = "${(DesktopKaraokeOverlay.textScale * 100).toInt()}%",
                     color = Color.White.copy(alpha = 0.85f),
                     fontSize = 10.sp,
                     modifier = Modifier.padding(horizontal = 5.dp)
                 )
-                OverlayChip("A+") { DesktopKaraokeOverlay.changeTextScale(+0.1f) }
+                OverlayChip("A+") { DesktopKaraokeOverlay.changeTextScaleKaraokeOverlay(+0.1f) }
             }
         }
     }
@@ -561,7 +564,7 @@ private fun DesktopKaraokeOverlayContent(
  */
 @Composable
 private fun CurrentLineText(
-    words: List<KaraokeWord>,
+    words: List<LyricWord>,
     wordMode: Boolean,
     fontSize: TextUnit,
     lineHeight: TextUnit,

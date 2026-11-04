@@ -393,6 +393,7 @@ kotlin {
             runtimeOnly("org.jogamp.jogl:jogl-all:2.6.0:natives-macosx-universal")
 
             implementation(libs.coil.network.okhttp)
+            implementation(projects.simpmusiclyrics)
             runtimeOnly(libs.kotlinx.coroutines.swing)
 
         }

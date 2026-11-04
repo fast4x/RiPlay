@@ -3,6 +3,7 @@ package it.fast4x.riplay.player.lyrics
 import it.fast4x.lrclib.utils.runCatchingCancellable
 import it.fast4x.kugou.KuGou
 import it.fast4x.lrclib.LrcLib
+import it.fast4x.simpmusiclyrics.SimpMusicClient
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Lyrics
 import it.fast4x.riplay.data.models.Song
@@ -10,13 +11,26 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import java.util.concurrent.ConcurrentHashMap
 
 /** una riga di testo sincronizzato: istante di inizio (ms) + contenuto */
 data class LyricLine(
     val timeMs: Long,
-    val text: String
+    val text: String,
+    /** parole con tempi reali (rich sync); vuota = euristica sulla durata riga */
+    val words: List<LyricWord> = emptyList()
 )
+
+/** una parola della riga con il proprio intervallo di tempo (ms) */
+data class LyricWord(
+    val text: String,
+    val startMs: Long,
+    val endMs: Long
+)
+
+/** limite di attesa per il provider rich sync */
+private const val RICH_SYNC_TIMEOUT_MS = 15_000L
 
 /** stato del testo per un brano (osservato dalla UI del player full) */
 sealed interface LyricsUiState {
@@ -57,10 +71,15 @@ object DesktopLyricsRepository {
     }
 
     private suspend fun resolve(song: Song): LyricsUiState {
-        // 1) CACHE LOCALE: tabella Lyrics (songId, fixed, synced)
+        // 1) CACHE LOCALE: tabella Lyrics (songId, fixed, synced, lrcSynced);
+        //    il rich sync (tempi reali per parola) ha la precedenza sulle righe
         runCatchingCancellable {
             Database.lyrics(song.id).first()
         }?.getOrNull()?.let { cached ->
+            if (!cached.lrcSynced.isNullOrBlank()) {
+                val rich = parseRichSyncLyrics(cached.lrcSynced)
+                if (rich.isNotEmpty()) return LyricsUiState.Synced(rich)
+            }
             val fromDb = parseLyricsModel(cached.fixed, cached.synced)
             if (fromDb != null) return fromDb
         }
@@ -70,7 +89,20 @@ object DesktopLyricsRepository {
         if (artist.isBlank() || title.isBlank())
             return LyricsUiState.NotFound
 
-        // 2) LRCLIB: ricerca completa (restituisce tutti i brani trovati con
+        // 2) SIMPMUSIC: rich sync parola per parola con tempi reali; senza
+        //    match o senza rich si prosegue con la catena a righe
+        val simp = runCatchingCancellable {
+            withTimeout(RICH_SYNC_TIMEOUT_MS) { SimpMusicClient.lyrics(song.id) }
+        }?.getOrNull()?.getOrNull()?.data?.firstOrNull()
+        if (simp != null && simp.richSyncLyrics.isNotBlank()) {
+            val rich = parseRichSyncLyrics(simp.richSyncLyrics)
+            if (rich.isNotEmpty()) {
+                save(song, simp.plainLyric, simp.syncedLyrics, simp.richSyncLyrics)
+                return LyricsUiState.Synced(rich)
+            }
+        }
+
+        // 3) LRCLIB: ricerca completa (restituisce tutti i brani trovati con
         //    plain e synced); si sceglie il migliore: sincronizzato > fisso
         val lrclib = runCatchingCancellable {
             LrcLib.lyrics(artist = artist, title = title)
@@ -87,7 +119,7 @@ object DesktopLyricsRepository {
             }
         }
 
-        // 3) KUGOU: fallback (ricerca keyword + durata; il modulo restituisce
+        // 4) KUGOU: fallback (ricerca keyword + durata; il modulo restituisce
         //    gia' LRC normalizzato)
         val durationSec = song.durationText?.toSecondsOrNull() ?: 0L
         val kugou = runCatchingCancellable {
@@ -104,10 +136,23 @@ object DesktopLyricsRepository {
         return LyricsUiState.NotFound
     }
 
-    private suspend fun save(song: Song, fixed: String?, synced: String?) {
-        if (fixed == null && synced == null) return
+    private suspend fun save(
+        song: Song, fixed: String?, synced: String?, lrcSynced: String? = null
+    ) {
+        if (fixed == null && synced == null && lrcSynced == null) return
         runCatching {
-            Database.upsert(Lyrics(songId = song.id, fixed = fixed, synced = synced))
+            // un rich sync gia' in cache non viene perso aggiornando le righe
+            val keepRich = lrcSynced ?: runCatchingCancellable {
+                Database.lyrics(song.id).first()
+            }?.getOrNull()?.lrcSynced
+            Database.upsert(
+                Lyrics(
+                    songId = song.id,
+                    fixed = fixed,
+                    synced = synced,
+                    lrcSynced = keepRich
+                )
+            )
         }.onFailure {
             println("[RiPlay-Lyrics] cache non salvata per '${song.id}': ${it.message}")
         }.onSuccess {
@@ -216,5 +261,65 @@ object DesktopLyricsRepository {
             .sortedBy { it.timeMs }
             .map { if (offsetMs != 0L) it.copy(timeMs = it.timeMs - offsetMs) else it }
             .toList()
+    }
+
+    /**
+     * Parser rich sync (LRC "enhanced"): righe "[mm:ss.xx]" con parole
+     * "<mm:ss.xx>parola" e entita' HTML decodificate. Ogni parola termina
+     * all'inizio della successiva; l'ultima di ogni riga termina all'inizio
+     * della riga dopo (o +6s per l'ultima riga del brano).
+     * Restituisce le righe ordinate per istante di inizio.
+     */
+    internal fun parseRichSyncLyrics(raw: String): List<LyricLine> {
+        val lineRegex = Regex("""^\[(\d{1,2}):(\d{2})(?:[.,](\d{1,3}))?]""")
+        val wordRegex = Regex("""<(\d{1,2}):(\d{2})(?:[.,](\d{1,3}))?>([^<\n]*)""")
+
+        fun toMs(min: String, sec: String, frac: String?): Long {
+            val ms = frac?.padEnd(3, '0')?.toLongOrNull() ?: 0L
+            return min.toLong() * 60_000L + sec.toLong() * 1_000L + ms
+        }
+
+        fun decodeEntities(text: String): String =
+            text.replace("&quot;", "\"")
+                .replace("&#x27;", "'")
+                .replace("&apos;", "'")
+                .replace("&amp;", "&")
+                .replace("&lt;", "<")
+                .replace("&gt;", ">")
+
+        val parsed = ArrayList<LyricLine>()
+        raw.trim().lines().forEach { sourceLine ->
+            val head = lineRegex.find(sourceLine) ?: return@forEach
+            val body = sourceLine.substring(head.range.last + 1)
+            val words = wordRegex.findAll(body).map { m ->
+                LyricWord(
+                    text = decodeEntities(m.groupValues[4]).trim(),
+                    startMs = toMs(m.groupValues[1], m.groupValues[2], m.groupValues[3]),
+                    endMs = 0L
+                )
+            }.filter { it.text.isNotEmpty() }.toList()
+            val text = if (words.isEmpty()) decodeEntities(body.replace(wordRegex, "")).trim()
+            else words.joinToString(" ") { it.text }
+            val timeMs = toMs(head.groupValues[1], head.groupValues[2], head.groupValues[3])
+            parsed.add(LyricLine(timeMs = timeMs, text = text, words = words))
+        }
+
+        val sorted = parsed.sortedBy { it.timeMs }
+        return sorted.mapIndexed { i, line ->
+            val ws = line.words
+            if (ws.isEmpty()) return@mapIndexed line
+            val last = ws.size - 1
+            val lineEnd = sorted.getOrNull(i + 1)?.timeMs ?: (line.timeMs + 6_000L)
+            LyricLine(
+                timeMs = line.timeMs,
+                text = line.text,
+                words = ws.mapIndexed { j, w ->
+                    when {
+                        j < last -> w.copy(endMs = ws[j + 1].startMs.coerceAtLeast(w.startMs))
+                        else -> w.copy(endMs = lineEnd.coerceAtLeast(w.startMs))
+                    }
+                }
+            )
+        }
     }
 }
