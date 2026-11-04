@@ -2,7 +2,12 @@ package it.fast4x.riplay.ui.components
 
 import it.fast4x.riplay.i18n.ds
 import it.fast4x.riplay.player.lyrics.LyricLine
+import it.fast4x.riplay.player.lyrics.LyricWord
 import it.fast4x.riplay.player.lyrics.LyricsUiState
+import it.fast4x.riplay.utils.DesktopKaraokeOverlay
+import it.fast4x.riplay.utils.KaraokeMode
+import it.fast4x.riplay.utils.OverlayChip
+import it.fast4x.riplay.utils.karaokeWords
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -36,6 +41,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -79,6 +86,25 @@ fun LyricsPanel(
                 fontWeight = FontWeight.SemiBold
             )
             Spacer(Modifier.weight(1f))
+            // Selettore Riga/Parola: la stessa preferenza dell'overlay
+            // karaoke (cambiarlo qui lo cambia anche li). Con testo
+            // sincronizzato, l'unica modalita' che lo usa.
+            if (state is LyricsUiState.Synced) {
+                OverlayChip(
+                    label = ds("karaoke.mode.line"),
+                    active = DesktopKaraokeOverlay.mode == KaraokeMode.LINE
+                ) { DesktopKaraokeOverlay.setKaraokeMode(KaraokeMode.LINE) }
+                Text(
+                    text = "\u00B7",
+                    color = Color.White.copy(alpha = 0.40f),
+                    fontSize = 11.sp
+                )
+                OverlayChip(
+                    label = ds("karaoke.mode.word"),
+                    active = DesktopKaraokeOverlay.mode == KaraokeMode.WORD
+                ) { DesktopKaraokeOverlay.setKaraokeMode(KaraokeMode.WORD) }
+                Spacer(Modifier.width(6.dp))
+            }
             // ricarica: utile quando il match LRCLIB era sbagliato
             if (state is LyricsUiState.Synced || state is LyricsUiState.Fixed || state is LyricsUiState.NotFound) {
                 IconButton(
@@ -163,6 +189,7 @@ fun LyricsPanel(
                     lines = state.lines,
                     timestampMs = timestampMs,
                     isPlaying = isPlaying,
+                    wordMode = DesktopKaraokeOverlay.mode == KaraokeMode.WORD,
                     onSeek = onSeek,
                     listState = listState
                 )
@@ -180,6 +207,7 @@ private fun SyncedLyricsList(
     lines: List<LyricLine>,
     timestampMs: Long,
     isPlaying: Boolean,
+    wordMode: Boolean,
     onSeek: (Long) -> Unit,
     listState: androidx.compose.foundation.lazy.LazyListState
 ) {
@@ -221,24 +249,89 @@ private fun SyncedLyricsList(
                 animationSpec = tween(320)
             )
 
-            Text(
-                text = line.text.ifBlank { "\u266A" }, // riga vuota = interludio
-                color = color,
-                fontSize = if (isCurrent) 19.sp else 15.sp,
-                fontWeight = if (isCurrent) FontWeight.SemiBold else FontWeight.Normal,
-                lineHeight = if (isCurrent) 26.sp else 22.sp,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    // click sulla riga = SEEK a quell'istante
-                    .clickable(enabled = line.timeMs > 0) { onSeek(line.timeMs) }
-                    .padding(horizontal = 8.dp, vertical = 6.dp)
-                    .alpha(if (isCurrent) 1f else 0.95f)
-            )
+            // in modalita' parola la riga corrente mostra tempi reali per
+            // parola (rich sync) se presenti, altrimenti la ripartizione
+            // euristica lungo la durata della riga (come l'overlay karaoke)
+            val lineWords = if (isCurrent && wordMode) {
+                line.words.takeIf { it.isNotEmpty() }
+                    ?: karaokeWords(
+                        line.text,
+                        line.timeMs,
+                        lines.getOrNull(index + 1)?.timeMs ?: (line.timeMs + 6_000L)
+                    )
+            } else emptyList()
+
+            val lineModifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(10.dp))
+                // click sulla riga = SEEK a quell'istante
+                .clickable(enabled = line.timeMs > 0) { onSeek(line.timeMs) }
+                .padding(horizontal = 8.dp, vertical = 6.dp)
+                .alpha(if (isCurrent) 1f else 0.95f)
+
+            if (isCurrent && lineWords.size > 1) {
+                WordByWordText(
+                    words = lineWords,
+                    timestampMs = timestampMs,
+                    playing = isPlaying,
+                    modifier = lineModifier
+                )
+            } else {
+                Text(
+                    text = line.text.ifBlank { "\u266A" }, // riga vuota = interludio
+                    color = color,
+                    fontSize = if (isCurrent) 19.sp else 15.sp,
+                    fontWeight = if (isCurrent) FontWeight.SemiBold else FontWeight.Normal,
+                    lineHeight = if (isCurrent) 26.sp else 22.sp,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = lineModifier
+                )
+            }
         }
         // coda: respiro sotto l'ultima riga
         item { Spacer(Modifier.height(48.dp)) }
     }
+}
+
+/**
+ * Riga corrente in evidenza parola per parola: le parole gia' cantate sono
+ * in accento, quella attiva ha lo sfondo accent, le future restano attenuate.
+ * Stessa resa dell'overlay karaoke, adattata alla lista del pannello.
+ */
+@Composable
+private fun WordByWordText(
+    words: List<LyricWord>,
+    timestampMs: Long,
+    playing: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val accent = RiPlayAccent
+    val annotated = buildAnnotatedString {
+        words.forEachIndexed { i, w ->
+            if (i > 0) append(" ")
+            val from = length
+            append(w.text)
+            addStyle(
+                when {
+                    timestampMs >= w.endMs -> SpanStyle(color = accent)
+                    timestampMs >= w.startMs -> SpanStyle(
+                        color = accent,
+                        background = accent.copy(alpha = 0.22f)
+                    )
+                    else -> SpanStyle(color = Color.White.copy(alpha = if (playing) 0.55f else 0.40f))
+                },
+                from, length
+            )
+        }
+    }
+    Text(
+        text = annotated,
+        fontSize = 19.sp,
+        fontWeight = FontWeight.SemiBold,
+        lineHeight = 26.sp,
+        maxLines = 3,
+        overflow = TextOverflow.Ellipsis,
+        modifier = modifier
+    )
 }

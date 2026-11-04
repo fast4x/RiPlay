@@ -119,7 +119,7 @@ object DesktopKaraokeOverlay {
     var textScale: Float by mutableStateOf(readTextScale())
         private set
 
-    fun changeTextScaleKaraokeOverlay(delta: Float) = setTextScaleKaraokeOverlay(textScale + delta)
+    fun changeTextScale(delta: Float) = setTextScaleKaraokeOverlay(textScale + delta)
 
     fun setTextScaleKaraokeOverlay(value: Float) {
         val v = value.coerceIn(MIN_SCALE, MAX_SCALE)
@@ -332,9 +332,10 @@ private data class KaraokePage(
 /**
  * Euristica di ripartizione delle parole lungo la durata della riga, in
  * proporzione alla lunghezza: usata quando il sorgente non ha tempi reali
- * per parola (rich sync non disponibile dal provider).
+ * per parola (rich sync non disponibile dal provider). Condivisa anche col
+ * pannello testi del player.
  */
-private fun karaokeWords(text: String, startMs: Long, endMs: Long): List<LyricWord> {
+internal fun karaokeWords(text: String, startMs: Long, endMs: Long): List<LyricWord> {
     val words = text.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
     if (words.isEmpty()) return emptyList()
     if (words.size == 1) return listOf(LyricWord(words[0], startMs, endMs))
@@ -543,14 +544,14 @@ private fun DesktopKaraokeOverlayContent(
                     active = DesktopKaraokeOverlay.mode == KaraokeMode.WORD
                 ) { DesktopKaraokeOverlay.setKaraokeMode(KaraokeMode.WORD) }
                 Spacer(Modifier.width(10.dp))
-                OverlayChip("A\u2212") { DesktopKaraokeOverlay.changeTextScaleKaraokeOverlay(-0.1f) }
+                OverlayChip("A\u2212") { DesktopKaraokeOverlay.changeTextScale(-0.1f) }
                 Text(
                     text = "${(DesktopKaraokeOverlay.textScale * 100).toInt()}%",
                     color = Color.White.copy(alpha = 0.85f),
                     fontSize = 10.sp,
                     modifier = Modifier.padding(horizontal = 5.dp)
                 )
-                OverlayChip("A+") { DesktopKaraokeOverlay.changeTextScaleKaraokeOverlay(+0.1f) }
+                OverlayChip("A+") { DesktopKaraokeOverlay.changeTextScale(+0.1f) }
             }
         }
     }
@@ -612,9 +613,12 @@ private fun CurrentLineText(
     )
 }
 
-/** Voce dei controlli in hover; attiva = evidenziata dall'accento. */
+/**
+ * Voce dei selettori (overlay karaoke e pannello testi);
+ * attiva = evidenziata dall'accento.
+ */
 @Composable
-private fun OverlayChip(
+internal fun OverlayChip(
     label: String,
     active: Boolean = false,
     onClick: () -> Unit

@@ -43,29 +43,22 @@
     <string name="player.expand_video">Expand the video to the full width of the window</string>
     <string name="player.restore_video">Restore the video to the initial width</string>
     <string name="player.radio">Radio: add similar songs to the queue</string>
-    <!-- STEP 9: tray icon -->
     <string name="tray.show">Show RiPlay</string>
     <string name="tray.quit">Quit RiPlay</string>
-    <!-- STEP 9: timer di spegnimento -->
     <string name="sleeptimer.title">Sleep timer</string>
     <string name="sleeptimer.min">{n} min</string>
     <string name="sleeptimer.cancel">Cancel the timer</string>
-    <!-- mini player (minimal PiP-like mode) -->
     <string name="miniplayer.restore">Back to the main window</string>
-    <string name="miniplayer.size">Mini player size</string>
     <string name="settings.tab.general">General</string>
     <string name="settings.miniplayer.title">Minimal mode (Picture-in-Picture)</string>
-    <string name="settings.miniplayer.desc">When enabled, minimizing the main window shows a small always-on-top player with the song cover, play/pause, next/previous and a seekable timeline. Hovering shows the song info, the volume slider and the size selector (S/M/L); clicking the cover brings the main window back.</string>
-    <!-- optional close-to-tray (default OFF) -->
+    <string name="settings.miniplayer.desc">When enabled, minimizing the main window shows a small always-on-top player with the song cover, play/pause, next/previous and a seekable timeline. Clicking the cover brings the main window back.</string>
     <string name="settings.closetotray.title">Tray icon on close</string>
     <string name="settings.closetotray.desc">When enabled, closing the window with the X (or Alt+F4) does not quit RiPlay: it stays in the notification area and keeps playing; double-click the icon to reopen the window, use "Quit RiPlay" in its menu to exit for real. When disabled (default), the X closes the app.</string>
-    <!-- karaoke overlay (optional, default OFF) -->
     <string name="settings.karaoke.title">Karaoke overlay</string>
-    <string name="settings.karaoke.desc">When enabled, a small always-on-top window shows the current lyrics line (and the next one) synced with playback, with whole-line or word-by-word highlighting (selector on mouse hover). Drag it anywhere, the position is remembered; resize the text with the A-/A+ buttons and toggle it with Ctrl+Shift+K. It needs synced lyrics (LRCLIB/KuGou), otherwise it shows the song title and artist.</string>
+    <string name="settings.karaoke.desc">When enabled, a small always-on-top window shows the current lyrics line (and the next one) synced with playback. Drag it anywhere, the position is remembered; it needs synced lyrics (LRCLIB/KuGou), otherwise it shows the song title and artist.</string>
     <string name="karaoke.no_synced">No synced lyrics available</string>
     <string name="karaoke.mode.line">Line</string>
     <string name="karaoke.mode.word">Word</string>
-    <!-- appearance tab: accent color -->
     <string name="settings.appearance.accent">Accent color</string>
     <string name="settings.appearance.accent_info">The identity color of the app: navigation bar, player bars, sliders, buttons and tabs. Changes apply instantly.</string>
     <string name="settings.appearance.accent_custom">Custom color</string>
@@ -77,7 +70,6 @@
     <string name="radio.none_found">No similar songs found</string>
     <string name="radio.added">Added {n} similar songs</string>
     <string name="radio.unavailable">Radio unavailable</string>
-    <!-- STEP 3ac: auto-radio + marcatura coda -->
     <string name="radio.auto_added">Auto-radio: added {n} similar songs</string>
     <string name="queue.in_playback">Now playing</string>
     <string name="queue.autoradio_on">Auto-radio active: adds similar songs when the queue is about to end</string>
@@ -190,23 +182,13 @@
     <string name="settings.accounts.select_account">Choose the account to use</string>
     <string name="settings.accounts.keep_account">Keep the current account</string>
 <string name="settings.accounts.poll_attempts">Attempt {n}: {detail}</string>
-
 <string name="settings.accounts.poll_nomanager">embedded browser cookie manager unavailable</string>
-
 <string name="settings.accounts.poll_none">no cookies found yet</string>
-
 <string name="settings.accounts.poll_noyt">cookies found but none from YouTube yet</string>
-
 <string name="settings.accounts.poll_noauth">YouTube cookies found but without SAPISID credentials yet</string>
-
 <string name="settings.accounts.poll_found">cookie collected, verifying...</string>
-
 <string name="settings.accounts.poll_visitrefused">CEF cookie manager refused the cookie read (check the console log)</string>
-
 <string name="settings.accounts.verify_now">Verify now</string>
-
-
-
     <string name="settings.accounts.login">Sign in to your YouTube Music account</string>
     <string name="settings.accounts.logout">Sign out</string>
     <string name="settings.accounts.login_instructions">Complete the sign-in in the window below. When YouTube Music opens with your account, the connection is saved automatically.</string>
@@ -228,8 +210,6 @@
     <string name="settings.about.request_feature">Request a feature or suggest an idea</string>
     <string name="settings.about.github_redirect">You will be redirected to GitHub</string>
     <string name="splash.loading">Loading...</string>
-
-<!-- STEP 5a: lyrics panel in the expanded player -->
 <string name="overlay.lyrics_toggle">Lyrics</string>
 <string name="overlay.visualizer_toggle">Visualizer</string>
 <string name="lyrics.title">Lyrics</string>
@@ -238,13 +218,9 @@
 <string name="lyrics.not_found">No lyrics found for this song.\nTry the reload button: the search uses title and artist.</string>
 <string name="lyrics.reload">Reload lyrics</string>
 <string name="lyrics.close_panel">Close the lyrics panel</string>
-
-<!-- STEP 5c: visualizer styles -->
 <string name="visualizer.spectrum">Spectrum</string>
 <string name="visualizer.level">Level</string>
 <string name="visualizer.off">Visualizer off</string>
-
-<!-- STEP 5d: desktop update check (same .ver file as Android) -->
 <string name="update.banner_available">New version available: {version}</string>
 <string name="update.banner_open_releases">Open releases</string>
 <string name="update.banner_download">Download</string>

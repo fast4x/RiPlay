@@ -43,29 +43,22 @@
     <string name="player.expand_video">espandi il video a tutta larghezza della finestra</string>
     <string name="player.restore_video">riporta il video alla larghezza iniziale</string>
     <string name="player.radio">radio: aggiungi brani simili in coda</string>
-    <!-- STEP 9: icona nel tray -->
     <string name="tray.show">Mostra RiPlay</string>
     <string name="tray.quit">Esci da RiPlay</string>
-    <!-- STEP 9: timer di spegnimento -->
     <string name="sleeptimer.title">Timer di spegnimento</string>
     <string name="sleeptimer.min">{n} min</string>
     <string name="sleeptimer.cancel">Annulla il timer</string>
-    <!-- mini player (modalità minimale stile PiP) -->
     <string name="miniplayer.restore">Torna alla finestra principale</string>
-    <string name="miniplayer.size">Dimensione della mini player</string>
     <string name="settings.tab.general">Generale</string>
     <string name="settings.miniplayer.title">Modalità minimale (Picture-in-Picture)</string>
-    <string name="settings.miniplayer.desc">Se attiva, riducendo a icona la finestra principale compare un piccolo player sempre in primo piano con la copertina, play/pausa, successivo/precedente e la timeline trascinabile. Al passaggio del mouse compaiono le info del brano, il volume e il selettore di dimensione (S/M/L); un click sulla copertina riporta la finestra principale.</string>
-    <!-- icona nel tray alla chiusura (opzionale, default OFF) -->
+    <string name="settings.miniplayer.desc">Se attiva, riducendo a icona la finestra principale compare un piccolo player sempre in primo piano con la copertina, play/pausa, successivo/precedente e la timeline trascinabile. Un click sulla copertina riporta la finestra principale.</string>
     <string name="settings.closetotray.title">Icona nel tray alla chiusura</string>
     <string name="settings.closetotray.desc">Se attiva, chiudendo la finestra con la X (o Alt+F4) RiPlay non esce: resta nell\'area di notifica e continua a suonare; doppio click sull\'icona per riaprire la finestra, "Esci da RiPlay" nel suo menu per terminare davvero. Se disattiva (predefinito), la X chiude l\'app.</string>
-    <!-- overlay karaoke (opzionale, default OFF) -->
     <string name="settings.karaoke.title">Overlay karaoke</string>
-    <string name="settings.karaoke.desc">Se attiva, una piccola finestra sempre in primo piano mostra la riga del testo corrente (e la successiva) sincronizzata con la riproduzione, con evidenza a riga intera o parola per parola (selettore al passaggio del mouse). Si trascina ovunque e ricorda la posizione; regola la dimensione del testo con i pulsanti A-/A+ e accendi o spegni con Ctrl+Maiusc+K. Richiede testi sincronizzati (LRCLIB/KuGou), altrimenti mostra titolo e artista del brano.</string>
+    <string name="settings.karaoke.desc">Se attiva, una piccola finestra sempre in primo piano mostra la riga del testo corrente (e la successiva) sincronizzata con la riproduzione. Si trascina ovunque e ricorda la posizione; richiede testi sincronizzati (LRCLIB/KuGou), altrimenti mostra titolo e artista del brano.</string>
     <string name="karaoke.no_synced">Testo sincronizzato non disponibile</string>
     <string name="karaoke.mode.line">Riga</string>
     <string name="karaoke.mode.word">Parola</string>
-    <!-- tab Aspetto: colore accent -->
     <string name="settings.appearance.accent">Colore accent</string>
     <string name="settings.appearance.accent_info">Il colore identità dell\'app: barra di navigazione, barre del player, slider, pulsanti e tab. Le modifiche si applicano in tempo reale.</string>
     <string name="settings.appearance.accent_custom">Colore personalizzato</string>
@@ -77,7 +70,6 @@
     <string name="radio.none_found">Nessun brano simile trovato</string>
     <string name="radio.added">Aggiunti {n} brani simili</string>
     <string name="radio.unavailable">Radio non disponibile</string>
-    <!-- STEP 3ac: auto-radio + marcatura coda -->
     <string name="radio.auto_added">Auto-radio: aggiunti {n} brani simili</string>
     <string name="queue.in_playback">In riproduzione</string>
     <string name="queue.autoradio_on">Auto-radio attiva: aggiunge brani simili quando la coda sta per finire</string>
@@ -218,8 +210,6 @@
     <string name="settings.about.request_feature">Richiedi una funzione o suggerisci un\'idea</string>
     <string name="settings.about.github_redirect">Verrai reindirizzato a GitHub</string>
     <string name="splash.loading">Caricamento...</string>
-
-<!-- STEP 5a: pannello testi nel player espanso -->
 <string name="overlay.lyrics_toggle">Testo</string>
 <string name="overlay.visualizer_toggle">Visualizer</string>
 <string name="lyrics.title">Testo</string>
@@ -228,13 +218,9 @@
 <string name="lyrics.not_found">Nessun testo trovato per questo brano.\nProva il pulsante ricarica: la ricerca usa titolo e artista.</string>
 <string name="lyrics.reload">Ricarica il testo</string>
 <string name="lyrics.close_panel">Chiudi il pannello testi</string>
-
-<!-- STEP 5c: stili del visualizer -->
 <string name="visualizer.spectrum">Spettro</string>
 <string name="visualizer.level">Livello</string>
 <string name="visualizer.off">Visualizer spento</string>
-
-<!-- STEP 5d: check aggiornamenti desktop (stesso file .ver di Android) -->
 <string name="update.banner_available">Nuova versione disponibile: {version}</string>
 <string name="update.banner_open_releases">Apri releases</string>
 <string name="update.banner_download">Scarica</string>
