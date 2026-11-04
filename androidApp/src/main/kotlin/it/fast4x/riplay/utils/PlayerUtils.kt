@@ -481,6 +481,24 @@ fun rememberPlayerPositionAndDurationState(
     }
 }
 
+/**
+ * Posizione e durata campionate a circa 30Hz direttamente dall'hybrid player:
+ * mantiene l'evidenziazione karaoke allineata all'audio.
+ */
+@OptIn(UnstableApi::class)
+@Composable
+fun rememberPrecisePositionAndDurationState(
+    binder: PlayerService.Binder?
+): State<Pair<Long, Long>> {
+    val player = binder?.hybridPlayer
+    return produceState(0L to 0L, player) {
+        while (isActive) {
+            value = if (player == null) 0L to 0L else player.currentPosition to player.duration
+            delay(33)
+        }
+    }
+}
+
 /*
 @OptIn(UnstableApi::class)
 @Composable

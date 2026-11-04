@@ -31,6 +31,7 @@ import androidx.core.graphics.toRect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
+import it.fast4x.riplay.enums.PipModule
 import it.fast4x.riplay.extensions.persist.findActivityNullable
 import it.fast4x.riplay.utils.ActionReceiver
 import it.fast4x.riplay.utils.findActivity
@@ -49,12 +50,58 @@ val isPipSupported = if (isAtLeastAndroid8)
     appContext().packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
 else false
 
+// Ultima configurazione applicata: l'ingresso manuale in PiP riusa gli stessi
+// parametri (azioni remote e rapporto d'aspetto) senza ricostruirli
+private var lastPipAspectRatio: Pair<Int, Int> = 1 to 1
+private var lastPipActions: List<RemoteAction>? = null
+
+/** Rapporto d'aspetto della finestra PiP in base al modulo mostrato. */
+fun PipModule.pipAspectRatio(): Pair<Int, Int> = when (this) {
+    PipModule.Cover -> 1 to 1
+    PipModule.Lyrics -> 16 to 9
+}
+
+/**
+ * Imposta i parametri completi della finestra PiP e li conserva per
+ * l'ingresso manuale: rapporto d'aspetto, azioni remote (tasti del
+ * player dentro la finestra) e auto-enter su Android 12+.
+ */
+fun Activity.setPipConfiguration(
+    numerator: Int,
+    denominator: Int,
+    actions: List<RemoteAction>?,
+    autoEnterIfPossible: Boolean = false
+) {
+    lastPipAspectRatio = numerator to denominator
+    lastPipActions = actions
+    if (!isAtLeastAndroid8) return
+    runCatching {
+        setPictureInPictureParams(
+            PictureInPictureParams.Builder()
+                .setAspectRatio(Rational(numerator, denominator))
+                .apply {
+                    actions?.let { setActions(it) }
+                    if (isAtLeastAndroid12) {
+                        setAutoEnterEnabled(autoEnterIfPossible)
+                        setSeamlessResizeEnabled(true)
+                    }
+                }
+                .build()
+        )
+    }.onFailure(::logError)
+}
+
 @Suppress("DEPRECATION")
 fun Activity.maybeEnterPip() = when {
     !isAtLeastAndroid7 -> false
     !packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE) -> false
     else -> runCatching {
-        if (isAtLeastAndroid8) enterPictureInPictureMode(PictureInPictureParams.Builder().build())
+        if (isAtLeastAndroid8) enterPictureInPictureMode(
+            PictureInPictureParams.Builder()
+                .setAspectRatio(Rational(lastPipAspectRatio.first, lastPipAspectRatio.second))
+                .apply { lastPipActions?.let { setActions(it) } }
+                .build()
+        )
         else enterPictureInPictureMode()
     }.onFailure(::logError).isSuccess
 }
@@ -143,8 +190,6 @@ fun isInPip(
             activity.removeOnPictureInPictureModeChangedListener(listener)
         }
     }
-
-    println("isInPIp pip: $pip")
 
     return pip
 }

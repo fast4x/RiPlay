@@ -135,6 +135,8 @@ import it.fast4x.riplay.enums.PipModule
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.pip.PipModuleContainer
 import it.fast4x.riplay.extensions.pip.PipModuleCover
+import it.fast4x.riplay.extensions.pip.PipModuleLyrics
+import it.fast4x.riplay.extensions.pip.PipRemoteActions
 import it.fast4x.riplay.extensions.pip.isInPip
 import it.fast4x.riplay.extensions.pip.maybeEnterPip
 import it.fast4x.riplay.extensions.pip.maybeExitPip
@@ -164,6 +166,7 @@ import it.fast4x.riplay.ui.styling.typographyOf
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.invokeOnReady
+import it.fast4x.riplay.utils.isAtLeastAndroid12
 import it.fast4x.riplay.utils.isAtLeastAndroid6
 import it.fast4x.riplay.utils.isAtLeastAndroid8
 import it.fast4x.riplay.utils.isValidHttpUrl
@@ -650,15 +653,6 @@ class MainActivity : AppCompatActivity() {
     ) {
         pipState.value = isInPictureInPictureMode
 
-        // todo improve pip
-//        if (isAtLeastAndroid8 && isInPictureInPictureMode)
-//            setPictureInPictureParams(
-//                PictureInPictureParams.Builder()
-//                    .setActions(mutableListOf<RemoteAction?>(null))
-//                    //.setAutoEnterEnabled(true)
-//                    .build()
-//            )
-
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
 
     }
@@ -681,7 +675,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
+        // Su Android 12+ la transizione e' gestita da setAutoEnterEnabled
+        if (isAtLeastAndroid12) return
+
         if (
+            appSettingsManager.activeSettings.value.enablePictureInPicture &&
             appSettingsManager.activeSettings.value.enablePictureInPictureAuto && binder?.hybridPlayer?.isPlaying == true
         ) maybeEnterPip()
     }
@@ -1242,32 +1240,54 @@ class MainActivity : AppCompatActivity() {
                     }
                 )
 
+                val pipModule = appSettings.pipModule
+
+                // Parametri della finestra PiP sempre allineati allo stato del player:
+                // tasti come azioni remote, rapporto d'aspetto per modulo e auto-enter
+                // su Android 12+ durante la riproduzione
+                PipRemoteActions(
+                    module = pipModule,
+                    isPlaying = isPlaying,
+                    enabled = appSettings.enablePictureInPicture,
+                    autoEnter = appSettings.enablePictureInPictureAuto,
+                    onPlayPause = {
+                        binder?.hybridPlayer?.let { player ->
+                            if (player.isPlaying) player.pause() else player.play()
+                        }
+                    },
+                    onPrevious = { binder?.hybridPlayer?.seekToPrevious() },
+                    onNext = { binder?.hybridPlayer?.seekToNext() }
+                )
+
                 CrossfadeContainer(
                     state = pip
                 ) { isCurrentInPip ->
-                    //Timber.d("MainActivity pipState ${pipState.value} CrossfadeContainer isCurrentInPip $isCurrentInPip ")
-                    //val pipModule by rememberPreference(PIP_MODULE.key, PipModule.Cover)
-                    val pipModule = appSettings.pipModule
                     if (isCurrentInPip) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .background(Color.Transparent)
                         ) {
-                            when (pipModule) {
-                                PipModule.Cover -> {
-                                    PipModuleContainer {
-                                        // Implement pip mode with video
-                                        //if (mediaItemIsLocal.value) {
-                                        PipModuleCover(
-                                            url = binder?.hybridPlayer?.currentMediaItem?.mediaMetadata?.artworkUri.toString()
-                                                .toThumbnail(1200).toString()
-                                        )
-//                                        } else {
-//                                            PipModuleCore(
-//                                                onlineCore = onlineCore
-//                                            )
-//                                        }
+                            // Il ramo PiP resta fuori dal provider globale del tema: forniamo qui LocalAppearance
+                            CompositionLocalProvider(LocalAppearance provides appearance) {
+                                when (pipModule) {
+                                    PipModule.Cover -> {
+                                        PipModuleContainer {
+                                            PipModuleCover(
+                                                url = binder?.hybridPlayer?.currentMediaItem?.mediaMetadata?.artworkUri.toString()
+                                                    .toThumbnail(1200).toString()
+                                            )
+                                        }
+                                    }
+                                    PipModule.Lyrics -> {
+                                        PipModuleContainer {
+                                            PipModuleLyrics(
+                                                mediaId = binder?.hybridPlayer?.currentMediaItem?.mediaId,
+                                                binder = binder,
+                                                isShowingSynchronizedLyrics = appearanceSettings.isShowingSynchronizedLyrics,
+                                                isShowingWordByWord = appearanceSettings.isShowingSynchronizedWordByWordLyrics
+                                            )
+                                        }
                                     }
                                 }
                             }
