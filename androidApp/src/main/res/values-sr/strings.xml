@@ -821,7 +821,17 @@
     <string name="settings_enable_pip">Омогући Слику у Слици</string>
     <string name="settings_enable_pip_auto">Омогући Аутоматски Слику у Слици</string>
     <string name="pipmodule_cover">Омот</string>
+    <string name="pipmodule_lyrics">Lyrics</string>
+    <string name="pip_action_play">Play</string>
+    <string name="pip_action_pause">Pause</string>
+    <string name="pip_action_previous">Previous</string>
+    <string name="pip_action_next">Next</string>
     <string name="settings_pip_module">Пип модул</string>
+    <string name="settings_floating_lyrics">Floating lyrics overlay</string>
+    <string name="settings_floating_lyrics_info">Shows a small draggable window over other apps with the current lyrics line (and the next one) synced with playback. Needs the \"Display over other apps\" permission and synced lyrics.</string>
+    <string name="floating_lyrics_permission_missing">Grant the \"Display over other apps\" permission to enable the floating lyrics</string>
+    <string name="floating_lyrics_mode_line">Line</string>
+    <string name="floating_lyrics_mode_word">Word</string>
     <string name="menu_go_to_picture_in_picture">ПИП</string>
     <string name="pip_info_from_android_12_pip_can_be_automatically_enabled">Од Андроид 12 пип се може аутоматски омогућити</string>
     <string name="showsecondline">Прикажи Превод у Другом Реду</string>

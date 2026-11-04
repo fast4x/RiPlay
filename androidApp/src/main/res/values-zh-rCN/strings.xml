@@ -821,7 +821,17 @@
     <string name="settings_enable_pip">启用画中画</string>
     <string name="settings_enable_pip_auto">启用画中画动画</string>
     <string name="pipmodule_cover">封面</string>
+    <string name="pipmodule_lyrics">Lyrics</string>
+    <string name="pip_action_play">Play</string>
+    <string name="pip_action_pause">Pause</string>
+    <string name="pip_action_previous">Previous</string>
+    <string name="pip_action_next">Next</string>
     <string name="settings_pip_module">画中画模块</string>
+    <string name="settings_floating_lyrics">Floating lyrics overlay</string>
+    <string name="settings_floating_lyrics_info">Shows a small draggable window over other apps with the current lyrics line (and the next one) synced with playback. Needs the \"Display over other apps\" permission and synced lyrics.</string>
+    <string name="floating_lyrics_permission_missing">Grant the \"Display over other apps\" permission to enable the floating lyrics</string>
+    <string name="floating_lyrics_mode_line">Line</string>
+    <string name="floating_lyrics_mode_word">Word</string>
     <string name="menu_go_to_picture_in_picture">画中画</string>
     <string name="pip_info_from_android_12_pip_can_be_automatically_enabled">从安卓12开始画中画可以自动启用</string>
     <string name="showsecondline">在第二行显示翻译</string>
