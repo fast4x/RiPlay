@@ -227,8 +227,8 @@ fun ThreeColumnsApp(
         DesktopPlaybackHub.onNext = onHistoryNext
         DesktopPlaybackHub.onPrevious = onHistoryPrevious
         DesktopPlaybackHub.currentSongTitle = { nowPlayingSong?.title }
-
         DesktopPlaybackHub.currentSongThumbnail = { nowPlayingSong?.thumbnailUrl }
+        DesktopPlaybackHub.currentSong = { nowPlayingSong }
         true
     }
 
