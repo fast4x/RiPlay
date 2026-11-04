@@ -772,8 +772,8 @@
     <string name="no_thumbnail_present">Nessuna Copertina Presente</string>
     <string name="removed_thumbnail">Copertina Rimossa</string>
     <string name="failed_to_remove_thumbnail">Impossibile rimuovere la copertina</string>
-    <string name="settings_enable_pip">Abilita immagine nell\'immagine</string>
-    <string name="settings_enable_pip_auto">Abilita immagine automatica in immagine</string>
+    <string name="settings_enable_pip">Abilita picture in picture</string>
+    <string name="settings_enable_pip_auto">Abilita picture in picture automatico</string>
     <string name="pipmodule_cover">Copertina</string>
     <string name="settings_pip_module">Modulo Pip</string>
     <string name="menu_go_to_picture_in_picture">PIP</string>
