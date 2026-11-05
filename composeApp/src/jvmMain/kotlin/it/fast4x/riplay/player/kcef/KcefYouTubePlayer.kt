@@ -25,7 +25,7 @@ private data class KcefJsState(
     val d: Float = 0f,
     val v: Int = 100,
     val m: Boolean = false,
-    // STEP 2i: ultimo codice onError del player YT (0 = nessun errore)
+    // Ultimo codice onError del player YT (0 = nessun errore)
     val err: Int = 0
 )
 
@@ -33,7 +33,7 @@ private data class KcefJsState(
  * Motore YouTube desktop: browser CEF (KCEF) che carica la pagina
  * IFrame Player API ([PlayerHtmlServer]) e la pilota via JavaScript.
  *
- * STEP 2r: replica del meccanismo Android (WebViewYouTubePlayer.initWebView,
+ * Replica del meccanismo Android (WebViewYouTubePlayer.initWebView,
  * fork AYP) con contesto embed ACCETTATO da YouTube: l'HTML del player e'
  * generato QUI con i parametri interni SOSTITUITI PRIMA del caricamento
  * (<<injectedVideoId>> con il videoId in attesa, <<injectedPlayerVars>> con
@@ -41,7 +41,7 @@ private data class KcefJsState(
  * loopback LOCALE caricandolo come http://localhost:PORT/player.html (il
  * NOME localhost e' accettato dalla politica embed di YouTube: l'IP
  * 127.0.0.1 e www.youtube.com producono errore 152 su tutti i video,
- * verifica empirica step2r). Sopra le richieste /embed/ KcefEngine impone
+ * verifica empirica). Sopra le richieste /embed/ KcefEngine impone
  * il Referer apex youtube.com (contesto Android loadDataWithBaseURL).
  * Mentre la pagina non e' ancora ATTIVA il videoId richiesto resta in
  * attesa ([pendingVideoId]) e viene:
@@ -63,7 +63,7 @@ class KcefYouTubePlayer(
     override val state: StateFlow<PlayerState> = _state.asStateFlow()
 
     /**
-     * STEP 2i: ultimo codice errore segnalato dal player YouTube (0 = nessuno).
+     * Ultimo codice errore segnalato dal player YouTube (0 = nessuno).
      * Esposto alla UI ([KcefVideoSurface] mostra codice + significato) e al log
      * con il significato: e' la chiave per diagnosticare "An error occurred".
      */
@@ -73,9 +73,6 @@ class KcefYouTubePlayer(
     @Volatile private var lastLoggedYtErr = 0
 
     @Volatile private var browser: KCEFBrowser? = null
-    // STEP 3d: pannello ospite Swing (browser SOTTO + cover/segnaposto SOPRA).
-    // Nasconderlo non serve piu' per la cover (vedi KcefPlayerHostPanel); viene
-    // nascosto SOLO quando l'overlay espanso e' aperto, con l'audio gia' avviato.
     @Volatile private var hostPanel: KcefPlayerHostPanel? = null
     @Volatile private var pendingVideoId: String? = null
     @Volatile private var pendingStart: Float = 0f
@@ -83,19 +80,12 @@ class KcefYouTubePlayer(
     @Volatile private var muted = false
     private var pollJob: Job? = null
 
-    // STEP 3e (dal test v22: "il tasto play non ha alcun effetto"): robustezza
-    // della catena di caricamento. Questa app ha una STORIA documentata di
-    // chiamate JS perse (commento STEP 2g di KcefEngine) e le versioni 3c/3d
-    // hanno manipolato finestre native attorno al browser (hide AWT, canvas di
-    // copertura): qualunque perdita silenziosa (riplayLoad non consegnato,
-    // pagina persa/crash del renderer, client assente alla factory del
-    // SwingPanel) lasciava il player MUTO e il tasto play inerte, senza
     // NESSUN errore visibile. Da qui:
     //  - lastVideoId: l'ultimo id richiesto, base di ogni recupero;
     //  - watchdog: se il video non parte entro 12 s (niente play, niente
     //    durata, niente errore) re-invia riplayLoad (pagina viva) oppure
     //    RICREA il browser ri-cuocendo il videoId nell'HTML (pagina morta:
-    //    e' il meccanismo autoplay step2r, il piu' affidabile validato);
+    //    e' il meccanismo autoplay, il piu' affidabile validato);
     //  - play(): se non c'e' nessun video attivo (durata 0) ARMA il recupero
     //    invece di restare muto: il tasto play ha SEMPRE un effetto.
     @Volatile private var lastVideoId: String? = null
@@ -103,36 +93,11 @@ class KcefYouTubePlayer(
     private var watchdogJob: Job? = null
     @Volatile private var recreatingBrowser = false
     private val browserLock = Any()
-
-    // STEP 3f (dal test v23: log utente "stato: 3 -> -1"): AUTOPOLICY YT. Il
-    // log del test mostra la sequenza -1 -> 3 (buffering) -> -1 (unstarted):
-    // Chromium ANNULLA la riproduzione avviata senza gesto utente (autoplay
-    // policy / user activation). Prima di v21 il browser era esposto e
-    // l'utente cliccava il play DI YOUTUBE dentro il browser (gesto REALE);
-    // con la cover Swing sopra il browser quel gesto non esiste piu' e le
-    // chiamate JS da Kotlin (evaluateJavaScript) NON sono un gesto: YouTube
-    // le ignora. Il flag --autoplay-policy=no-user-gesture-required, previsto
-    // da step2i, NON basta (verifica empirica: la riproduzione non e' MAI
-    // partita da loadVideoById in nessuna versione, sempre col click manuale
-    // nel browser). Contromisure (a strati, indipendenti dal flag):
-    //  - lastRawYtState: l'ultimo stato YT GREZZO (-1/0/1/2/3/5): serve a non
-    //    mandare il click sintetico quando il video STA gia' suonando o sta
-    //    bufferizzando (un click lo metterebbe in pausa);
-    //  - injectUserActivation: CLICK REALE via sendMouseEvent (input nativo
-    //    CEF, identico all'input hardware): genera USER ACTIVATION sticky
-    //    sull'iframe YouTube e, sul video unstarted, e' lui stesso il
-    //    toggle-play: e' lo STESSO gesto che prima faceva partire il video;
-    //  - autoplay kick (3 s dal load): se il video non e' partito da solo,
-    //    click + riplayPlay PRIMA del watchdog (12 s);
-    //  - watchdog 3f: riconosce l'AUTOPLAY BLOCCATO (durata nota MA stato
-    //    unstarted: i metadati arrivano col buffering anche quando poi la
-    //    partenza viene annullata) e ci risponde con activation+play invece
-    //    di uscire (bug v23: usciva su duration>0 e non interveniva MAI).
     @Volatile private var lastRawYtState: Int = -99
     private var kickJob: Job? = null
 
     /**
-     * STEP 3i: callback di FINE BRANO naturale (stato YT 0 = ENDED). E' il
+     * Callback di FINE BRANO naturale (stato YT 0 = ENDED). E' il
      * gancio dell'AVANZAMENTO AUTOMATICO della coda di riproduzione: quando
      * il video finisce da solo (NON con stop/pausa/nuovo load) il player
      * notifica l'app, che avvia il brano successivo della coda.
@@ -142,28 +107,32 @@ class KcefYouTubePlayer(
     var onEnded: (() -> Unit)? = null
     @Volatile private var endedFiredForVideo: String? = null
 
+    @Volatile private var stateForVideoId: String? = null
+    @Volatile private var consecutiveTimeReached = 0
+    private var hiddenEndJob: Job? = null
+
+    /**
+     * SINGOLO punto di emissione della FINE BRANO NATURALE.
+     * Dedup per videoId (una sola emissione per brano, gara tra i percorsi
+     * risolta dal primo che arriva) e log con il motivo: yt-state-0 (stato
+     * YT 0 = ENDED, il percorso storico), tempo-raggiunto (poll vivo ma
+     * stato page frozen: clock media a fine durata),
+     * watchdog-finestra-nascosta (poll morto: stima a tempo reale).
+     */
+    private fun fireNaturalEnd(reason: String) {
+        val current = lastVideoId
+        if (current == null || current.isBlank()) return
+        synchronized(this) {
+            if (endedFiredForVideo == current) return
+            endedFiredForVideo = current
+        }
+        KcefEngine.logKcef("fine brano naturale ($reason): videoId='$current' -> avanza la coda")
+        onEnded?.invoke()
+    }
+
     /**
      * Crea (una volta sola) il browser CEF e restituisce il componente
      * AWT da incorporare. Chiamare dal thread EDT (SwingPanel factory).
-     *
-     * STEP 2r: il browser parte DIRETTAMENTE sulla pagina player del
-     * server locale raggiunta come http://localhost ([PlayerHtmlServer.
-     * ensureLocalServer], origine onesta accettata dalla politica embed
-     * YouTube); il provider fornisce l'HTML del player con i parametri
-     * interni sostituiti (meccanismo Android).
-     *
-     * STEP 3d: restituisce il PANNELLO OSPITE (browser SOTTO + cover/
-     * segnaposto SOPRA, vedi KcefPlayerHostPanel) e non piu' il browser
-     * nudo. Finche' il client non e' pronto il pannello mostra solo lo
-     * sfondo NERO (prima tornava un JPanel bianco).
-     *
-     * STEP 3e: NON cachea piu' uno stato "vuoto". La 3d creava il pannello
-     * e, se il client KCEF non era ancora pronto, lo restituiva SENZA
-     * browser e lo CACHEDAVA: ogni chiamata successiva riusava il pannello
-     * vuoto PER SEMPRE (player muto, play inerte, nessun errore: esattamente
-     * il sintomo visto in prova). Ora la creazione del browser e' separata
-     * ([ensureBrowser]) e RIPETIBILE: la factory, il watchdog e il recupero
-     * del play vi convergono e un client arrivato tardi viene colto al volo.
      */
     fun attachBrowser(): java.awt.Component {
         val host = hostPanel ?: KcefPlayerHostPanel().also { hostPanel = it }
@@ -172,7 +141,7 @@ class KcefYouTubePlayer(
     }
 
     /**
-     * STEP 3e: crea il browser SE MANCA (idempotente, thread-safe). Puo'
+     * Cea il browser SE MANCA (idempotente, thread-safe). Puo'
      * essere richiamato piu' volte: dalla factory del SwingPanel, dal
      * watchdog e dal recupero del play. Se il client non e' ancora pronto
      * esce SENZA mettere nulla in cache: il watchdog riprovera'.
@@ -209,11 +178,8 @@ class KcefYouTubePlayer(
     }
 
     /**
-     * STEP 3e/3f: invio del videoId in attesa alla conferma della pagina,
-     * seguito dal kick autoplay (il video caricato in questo momento e'
-     * soggetto alla policy: se non parte da solo, dopo 3 s arriva il click
-     * di attivazione). NB: la pagina e' APPENA attiva: l'iframe YT nasce
-     * quando l'IFrame API e' arrivata: il kick gestisce entrambe le corsa.
+     * Invio del videoId in attesa alla conferma della pagina,
+     * seguito dal kick autoplay
      */
     private fun confirmPending() {
         val id = pendingVideoId
@@ -227,13 +193,8 @@ class KcefYouTubePlayer(
     }
 
     /**
-     * STEP 3f: KICK AUTOPLAY. Un loadVideoById su pagina attiva parte da
-     * solo SOLO se la policy lo consente (flag efficace + activation):
-     * l'esperienza dimostra che non e' così (stato -1 -> 3 -> -1 nel log:
-     * buffering annullato). Dopo 3 s dal load, se il video non e' NE' in
-     * play NE' in buffering NE' in errore, arrivano il CLICK di attivazione
-     * (user activation reale sull'iframe) + riplayPlay. Un solo kick per
-     * load: il watchdog resta la rete di sicurezza a 12 s.
+     * KICK AUTOPLAY. Un loadVideoById su pagina attiva parte da
+     * SOLO se la policy lo consente
      */
     private fun scheduleAutoplayKick(videoId: String) {
         kickJob?.cancel()
@@ -254,22 +215,9 @@ class KcefYouTubePlayer(
     }
 
     /**
-     * STEP 3f: iniezione di USER ACTIVATION nel browser. YouTube accetta
+     * Iniezione di USER ACTIVATION nel browser. YouTube accetta
      * playVideo() (e l'autoplay) solo se la pagina/iframe ha avuto un GESTO
-     * UTENTE reale (user activation policy di Chromium; il flag
-     * no-user-gesture-required previsto da step2i si e' rivelato
-     * INEFFICACE: la riproduzione non e' mai partita da JS, vedi v23).
-     * Il click e' inviato come INPUT NATIVO CEF (sendMouseEvent, identico
-     * all'input hardware: genera activation TRUSTED), NON come evento AWT
-     * sintetico sul canvas (in rendering windowed gli eventi AWT non
-     * attraversano: la finestra nativa del browser riceve l'input da CEF).
-     * Coordinate: angolo alto-sinistra (2,2) del canvas = dentro l'IFRAME
-     * YT, area non interattiva (il grande pulsante play e' al centro):
-     * YouTube lo interpreta come toggle play/pause: su un video unstarted
-     * E' LUI STESSO ad avviare la riproduzione (il gesto che prima faceva
-     * partire il video col browser esposto). Guard: niente click se il
-     * video STA gia' suonando (1) o sta bufferizzando (3): un click lo
-     * metterebbe in pausa.
+     * UTENTE reale (user activation policy di Chromium;
      */
     private fun injectUserActivation(reason: String) {
         val b = browser ?: return
@@ -316,10 +264,8 @@ class KcefYouTubePlayer(
     }
 
     /**
-     * STEP 3e: ricostruzione del browser (STESSO pannello ospite) quando la
+     * Ricostruzione del browser (STESSO pannello ospite) quando la
      * pagina risulta morta o mai attiva: il videoId viene ri-cotto nell'HTML
-     * (meccanismo autoplay step2r, il piu' affidabile validato) e la pagina
-     * ricomincia da zero. EDT-safe: le operazioni native girano sull'EDT.
      */
     private fun recreateBrowser(reason: String, videoId: String, attempt: Int, allowPlayRecovery: Boolean = true) {
         if (recreatingBrowser) {
@@ -344,11 +290,6 @@ class KcefYouTubePlayer(
                 pollJob?.cancel()
                 pollJob = null
                 pendingVideoId = videoId
-                // STEP 3p: pendingIsCue NON viene piu' azzerato qui: riflette
-                // l'ULTIMO intento richiesto (loadVideoById=false /
-                // cueVideoById=true, impostato sempre da entrambi): se il
-                // browser muore mentre e' in coda un cue, la pagina nuova
-                // dovra' RICUEare il brano (non caricarlo/avviarlo)
                 java.awt.EventQueue.invokeAndWait {
                     runCatching { old?.dispose() }
                     PlayerHtmlServer.resetPageSession()
@@ -377,19 +318,11 @@ class KcefYouTubePlayer(
     }
 
     /**
-     * STEP 3e: vigilanza sul caricamento. Se entro 12 s il video non e' ne'
+     * Vigilanza sul caricamento. Se entro 12 s il video non e' ne'
      * in riproduzione, ne' caricato (durata nota), ne' in errore, la catena
      * si e' persa da qualche parte: re-invio del load (pagina viva) oppure
      * RICREAZIONE del browser con videoId ri-cotto nell'HTML (pagina morta).
      * Massimo 3 tentativi, ognuno con log puntuale dello stato della catena.
-     *
-     * STEP 3p: [allowPlayRecovery] = false per i video caricati in CUE
-     * (cueVideoById, primo brano della coda all'avvio): in quel caso
-     * "durata nota MA non in riproduzione" e' lo stato ATTESO (brano
-     * pronto in attesa del play dell'utente) e NON va recuperato con
-     * activation+play (il vecchio comportamento lo avrebbe AVVIATO da
-     * solo dopo 12 s, vanificando il cue). Il recupero del cue tocca
-     * solo il caso "niente durata" (metadati mai arrivati): ri-cue.
      */
     private fun armWatchdog(videoId: String, attempt: Int = 0, allowPlayRecovery: Boolean = true) {
         watchdogJob?.cancel()
@@ -419,21 +352,15 @@ class KcefYouTubePlayer(
                 recreateBrowser("pagina player non risponde o assente", videoId, attempt, allowPlayRecovery)
             } else if (st.duration > 0L || raw == 5 || raw == 1) {
                 if (!allowPlayRecovery) {
-                    // STEP 3p: video in CUE pronto: i metadati sono arrivati
+                    // video in CUE pronto: i metadati sono arrivati
                     // (durata nota) ma la riproduzione e' volutamente ferma
                     // in attesa del play dell'utente: NESSUN intervento
-                    // (il vecchio recupero autoplay l'avrebbe avviato da solo)
                     KcefEngine.logKcef(
                         "watchdog: video in CUE pronto e fermo (attesa del play dell'utente): nessun recupero"
                     )
                     return@launch
                 }
-                // STEP 3f (bug v23): durata > 0 MA stato unstarted = AUTOPLAY
-                // BLOCCATO (i metadati arrivano col buffering anche quando
-                // Chromium annulla poi la partenza: stato 3 -> -1 nel log del
-                // test v23, con il watchdog che usciva su duration>0 senza
-                // intervenire). Il video e' GIA' caricato: niente ri-load che
-                // lo farebbe ripartire da zero: CLICK di attivazione + play.
+
                 KcefEngine.logKcef(
                     "watchdog: video caricato ma NON partito (autoplay bloccato): " +
                             "click di attivazione + play"
@@ -445,7 +372,7 @@ class KcefYouTubePlayer(
                 }
                 armWatchdog(videoId, attempt + 1, allowPlayRecovery)
             } else if (!allowPlayRecovery) {
-                // STEP 3p: il cue non ha prodotto niente (niente durata):
+                // il cue non ha prodotto niente (niente durata):
                 // ri-invio del CUE (NON del load, che avvierebbe il brano)
                 KcefEngine.logKcef("watchdog: pagina viva, re-invio riplayCue('$videoId')")
                 evaluate("window.riplayCue && riplayCue('$videoId', ${pendingStart})")
@@ -471,16 +398,11 @@ class KcefYouTubePlayer(
      * CONSUMATO (parte da solo con l'aplay=1 dei playerVars); se non c'e'
      * nessun video in attesa la pagina nasce con undefined, identica ad
      * AYP quando initialize riceve videoId null.
-     *
-     * STEP 3p: se il videoId in attesa era un CUE (cueVideoById: carica
-     * senza avviare, primo brano della coda ripristinata all'avvio) la
-     * pagina viene cotta con autoplay=0: il player nasce col brano
-     * caricato e FERMO, in attesa del play dell'utente.
      */
     private fun buildPlayerPageHtml(): String {
         val id = pendingVideoId?.let { extractYouTubeVideoId(it) }
         if (id != null) {
-            // STEP 3p: il flag cue va letto PRIMA di consumare l'attesa
+            // il flag cue va letto PRIMA di consumare l'attesa
             val wasCue = pendingIsCue
             pendingVideoId = null
             pendingIsCue = false
@@ -511,10 +433,6 @@ class KcefYouTubePlayer(
             return
         }
         if (raw != 1) {
-            // STEP 3f: activation PRIMA del play: YouTube accetta playVideo
-            // solo con un gesto reale (user activation). Il click arriva
-            // (EDT), poi il play: su un video unstarted il click da solo e'
-            // gia' il toggle-play di YT; riplayPlay e' la conferma.
             KcefEngine.logKcef("play: activation (stato YT=$raw) poi riplayPlay")
             injectUserActivation("play richiesto dall'utente")
             scope.launch {
@@ -524,11 +442,7 @@ class KcefYouTubePlayer(
         } else {
             evaluate("window.riplayPlay && riplayPlay()")
         }
-        // STEP 3e/3f: il tasto play deve SEMPRE avere un effetto. Se non c'e'
-        // nessun video attivo (mai caricato, non in pausa/buffering, nessun
-        // errore) il click arma il recupero: il watchdog re-invia il load o
-        // ricrea il browser, e il brano parte anche quando il load originale
-        // si e' perso.
+
         val st = _state.value
         val id = lastVideoId
         if (id != null && !st.isPlaying && _ytError.value == 0 && raw != 2) {
@@ -550,10 +464,12 @@ class KcefYouTubePlayer(
         kickJob = null
         pollJob?.cancel()
         pollJob = null
+        hiddenEndJob?.cancel()
+        hiddenEndJob = null
+        stateForVideoId = null
+        consecutiveTimeReached = 0
         val b = browser
         browser = null
-        // STEP 3d: il pannello ospite muore con la composizione (al ritorno
-        // su KCEF attachBrowser lo ricrea insieme al browser)
         val host = hostPanel
         hostPanel = null
         runCatching { host?.removeAll() }
@@ -581,10 +497,7 @@ class KcefYouTubePlayer(
     // ---- YouTubeControl ----
 
     override fun loadVideoById(videoId: String, startSeconds: Float) {
-        // STEP 2k: sanitizza l'id con YouTubeUtils: accetta l'id nudo o lo
-        // estrae da un URL. Un id sporco/assente fa rispondere YouTube con
-        // l'errore code=2 "parametro non valido": qui lo blocchiamo PRIMA,
-        // con log chiaro del valore rifiutato.
+
         val id = extractYouTubeVideoId(videoId) ?: run {
             KcefEngine.logKcef(
                 "loadVideoById IGNORATO: '$videoId' non contiene un videoId YouTube valido (11 caratteri)"
@@ -593,21 +506,21 @@ class KcefYouTubePlayer(
         }
         pendingStart = startSeconds
         muted = false
-        // STEP 3p: flag SEMPRE aggiornato (non solo quando la pagina non e'
-        // attiva): se il browser verra' ricreato (watchdog), la pagina nuova
-        // deve sapere che l'ultimo intento era un LOAD (autoplay=1)
         pendingIsCue = false
         resetYtError()
-        // STEP 2i/2k: log dell'id ESATTO che arriva al player (differenziato
-        // dal valore richiesto, per diagnosticare id corrotti o URL interi)
+
         KcefEngine.logKcef("loadVideoById: videoId='$id' (richiesto: '$videoId') start=$startSeconds")
         // reset tempo/durata: la nuova traccia parte da zero
         _state.value = _state.value.copy(isPlaying = false, timestamp = 0L, duration = 0L)
-        // STEP 3i: il nuovo video puo' di nuovo notificare la fine naturale
+        // il nuovo video puo' di nuovo notificare la fine naturale
         endedFiredForVideo = null
+        // la rilevazione del tempo-raggiunto riparte da zero e lo
+        // state osservato non e' piu' attribuibile al nuovo videoId
+        consecutiveTimeReached = 0
+        stateForVideoId = null
         lastVideoId = id
         dispatchLoad(id, startSeconds, cue = false)
-        // STEP 3f: kick autoplay a 3 s (il video caricato su pagina attiva
+        // kick autoplay a 3 s (il video caricato su pagina attiva
         // parte da solo SOLO se la policy lo consente: l'esperienza dice di
         // no) + watchdog a 12 s come rete di sicurezza.
         scheduleAutoplayKick(id)
@@ -615,7 +528,7 @@ class KcefYouTubePlayer(
     }
 
     override fun cueVideoById(videoId: String, startSeconds: Float) {
-        // STEP 2k: stessa sanitizzazione di loadVideoById
+
         val id = extractYouTubeVideoId(videoId) ?: run {
             KcefEngine.logKcef(
                 "cueVideoById IGNORATO: '$videoId' non contiene un videoId YouTube valido (11 caratteri)"
@@ -623,39 +536,39 @@ class KcefYouTubePlayer(
             return
         }
         pendingStart = startSeconds
-        // STEP 3p: flag SEMPRE aggiornato: un eventuale ricrea-browser
+        // flag SEMPRE aggiornato: un eventuale ricrea-browser
         // (watchdog) dovra' ricueare, non caricare
         pendingIsCue = true
         resetYtError()
         KcefEngine.logKcef("cueVideoById: videoId='$id' (richiesto: '$videoId') start=$startSeconds")
+        // stesso azzeramento di loadVideoById (dedup/attribuzione)
+        endedFiredForVideo = null
+        consecutiveTimeReached = 0
+        stateForVideoId = null
         lastVideoId = id
         dispatchLoad(id, startSeconds, cue = true)
-        // STEP 3e/3p: anche il cue e' vigilato, ma in modalita' CUE-SAFE:
+        // anche il cue e' vigilato, ma in modalita' CUE-SAFE:
         // "caricato ma non avviato" e' lo stato ATTESO (il brano aspetta il
-        // play dell'utente): il watchdog NON deve mai forzare il play
-        // (niente kick autoplay, niente activation+play); recupera solo se
+        // play dell'utente): il watchdog recupera solo se
         // il cue non ha prodotto niente (niente durata = metadati mancati).
         armWatchdog(id, 0, allowPlayRecovery = false)
     }
 
     /**
-     * STEP 2r: instradamento del videoId verso la pagina.
+     * Instradamento del videoId verso la pagina.
      *  - browser assente oppure pagina non ancora ATTIVA (non ancora
      *    caricata/confermata): il videoId resta in attesa e viene consumato
      *    dalla SOSTITUZIONE nell'HTML (se la pagina non e' ancora stata
      *    servita) oppure dall'invio automatico alla conferma
      *    ([PlayerHtmlServer.onPageConfirmed]);
      *  - pagina attiva: invio diretto via riplayLoad/riplayCue.
-     * Niente invii ottimistici che si perdono (prima del fix un riplayLoad
-     * valutato su una pagina non pronta veniva silenziosamente scartato).
      */
     private fun dispatchLoad(id: String, startSeconds: Float, cue: Boolean) {
         val b = browser
         if (b == null || !PlayerHtmlServer.pageActive) {
             pendingVideoId = id
             pendingIsCue = cue
-            // STEP 3e: log esplicito dell'attesa (prima era silenziosa: nel
-            // log non si capiva se il load era stato inviato o no)
+            // log esplicito dell'attesa
             KcefEngine.logKcef(
                 "load in attesa: pagina non ancora attiva (browser=${b != null} " +
                         "pageActive=${PlayerHtmlServer.pageActive}): videoId='$id' sara' inviato " +
@@ -667,7 +580,7 @@ class KcefYouTubePlayer(
         else evaluate("window.riplayLoad && riplayLoad('$id', $startSeconds)")
     }
 
-    /** STEP 2i: azzera l'errore YT corrente quando parte un nuovo video. */
+    /** azzera l'errore corrente quando parte un nuovo video. */
     private fun resetYtError() {
         lastLoggedYtErr = 0
         _ytError.value = 0
@@ -721,25 +634,67 @@ class KcefYouTubePlayer(
                     timestamp = (s.t * 1000).toLong(),
                     duration = (s.d * 1000).toLong()
                 )
-                // STEP 3e: la pagina risponde (polling OK) + il play effettivo
-                // disarma il watchdog (il recupero serve solo quando NULLA parte)
+
+                stateForVideoId = lastVideoId
                 lastPollOkAt = System.currentTimeMillis()
-                // STEP 3f: stato YT GREZZO per i guard dell'activation
+
                 lastRawYtState = s.s
                 if (s.s == 1) disarmWatchdog()
                 // STEP 3i: FINE BRANO NATURALE (stato YT 0 = ENDED): una sola
-                // volta per video (lo stato puo' restare 0 per minuti). Un
-                // videoId in riproduzione e' richiesto: senza, e' il player
-                // vuoto a pagina appena pronta (non e' una fine reale).
+                // volta per video (lo stato puo' restare 0 per minuti).
                 if (s.s == 0) {
-                    val current = lastVideoId
-                    if (current != null && current.isNotBlank() &&
-                        endedFiredForVideo != current
-                    ) {
-                        endedFiredForVideo = current
-                        KcefEngine.logKcef("fine brano naturale (YT state=0): videoId='$current' -> avanza la coda")
-                        onEnded?.invoke()
-                    }
+                    fireNaturalEnd("yt-state-0")
+                }
+                // PERCORSO 1 - TEMPO RAGGIUNTO (poll vivo, stato
+                // page frozen a finestra nascosta): lastState e' la cache di
+                // riplayState, ma getCurrentTime() e' il clock VIVO del media
+                // element: se il brano "in play" raggiunge la durata per DUE
+                // poll consecutivi, e' finito davvero anche se lo stato resta
+                // 1. Con la finestra visibile lo stato 0 arriva al medesimo
+                // istante: gara risolta dal dedup.
+                if (s.s == 1 && s.t > 0f && s.d > 0f && s.t >= s.d - 0.20f) {
+                    consecutiveTimeReached++
+                    if (consecutiveTimeReached >= 2) fireNaturalEnd("tempo-raggiunto")
+                } else {
+                    consecutiveTimeReached = 0
+                }
+            }
+        }
+        // PERCORSO 2 - watchdog a finestra nascosta (stesso ciclo
+        // vitale del poll: parte/riparte con lui, muore col dispose)
+        startHiddenEndWatch()
+    }
+
+    /**
+     * PERCORSO 2 - WATCHDOG "FINE BRANO A FINESTRA NASCOSTA".
+     * Caso peggiore: a finestra nascosta nel tray DEGENERA anche
+     * evaluateJavaScriptBlocking (poll morto: lastPollOkAt resta indietro)
+     * e NESSUN segnale arriva piu' dalla pagina. Se l'ultimo stato noto e'
+     * "in play" con durata nota, la posizione e' STIMATA col tempo reale
+     * trascorso dall'ultimo poll (il clock dell'audio prosegue anche con la
+     * pagina degradata: e' il sintomo osservato): raggiunta la fine
+     * nominale si emette la fine naturale lo stesso, la coda avanza e il
+     * brano successivo viene caricato (se anche l'invio e' perso, il
+     * watchdog ricrea il browser con il videoId inserito nell'HTML).
+     * Guard: lo staoe osservato deve appartenere al video CORRENTE
+     * (stateForVideoId) e il poll deve essere fermo da >3 s (con la pagina
+     * viva si impegnano i percorsi normali, senza stime).
+     */
+    private fun startHiddenEndWatch() {
+        hiddenEndJob?.cancel()
+        hiddenEndJob = scope.launch {
+            while (isActive) {
+                delay(1_000L)
+                val current = lastVideoId
+                if (current == null || current.isBlank()) continue
+                if (stateForVideoId != current) continue
+                val st = _state.value
+                if (!st.isPlaying || st.duration <= 0L || st.timestamp <= 0L) continue
+                val now = System.currentTimeMillis()
+                if (now - lastPollOkAt < 3_000L) continue
+                val estimated = st.timestamp + (now - lastPollOkAt)
+                if (estimated >= st.duration - 350L) {
+                    fireNaturalEnd("watchdog-finestra-nascosta")
                 }
             }
         }

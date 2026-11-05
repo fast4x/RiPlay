@@ -44,6 +44,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -97,6 +98,7 @@ import kotlinx.coroutines.launch
 import it.fast4x.riplay.utils.DesktopUpdateChecker
 import it.fast4x.riplay.utils.DesktopPlaybackHub
 import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
 import it.fast4x.environment.models.bodies.NextBody
 import it.fast4x.environment.requests.nextPage
 import it.fast4x.riplay.ui.pages.SearchPage
@@ -212,6 +214,45 @@ fun ThreeColumnsApp(
         playQueue.firstOrNull()?.let { playFromQueue(it.song) }
     }
     autoAdvanceRef.value = advanceQueue
+
+    // Il routing verso il motore non deve dipendere dalla composizione:
+    // con la finestra nascosta nel tray la ricomposizione si congela e il
+    // brano successivo non verrebbe mai inviato a KCEF/VLCJ. Questo watcher
+    // osserva gli stessi input fuori dalla composizione e chiama il medesimo
+    // route() idempotente: a finestra visibile si deduplica con l'effetto di
+    // DesktopVideoSource, a finestra nascosta invia lui il brano successivo.
+    val watcherLastVideoId = remember { AtomicReference<String?>(null) }
+    remember(playerManager) {
+        coroutineScope.launch {
+            snapshotFlow { videoId to nowPlayingSong }
+                .collect { (vid, song) ->
+                    val prev = watcherLastVideoId.getAndSet(vid)
+                    if (vid.isNotBlank() && vid != prev) {
+                        println(
+                            "[RiPlay-Queue] invio al motore indipendente dalla finestra: " +
+                                    "'${prev ?: ""}' -> '$vid'"
+                        )
+                    }
+                    // primo route: immediato (la Song serve solo ai brani locali)
+                    playerManager.route(song, vid, "")
+                    if (vid.isNotBlank()) {
+                        // secondo route: con la Song letta dal db (percorsi e UI)
+                        var resolved = song
+                        var tries = 0
+                        while ((resolved == null || resolved.id != vid) && tries < 4) {
+                            delay(300)
+                            resolved = db.getSong(vid)
+                            tries++
+                        }
+                        if (resolved != null && resolved.id == vid) {
+                            if (nowPlayingSong?.id != vid) nowPlayingSong = resolved
+                            playerManager.route(resolved, vid, "")
+                        }
+                    }
+                }
+        }
+        true
+    }
 
     val onHistoryNext: () -> Unit = {
         if (historyIndex < songHistory.lastIndex) {

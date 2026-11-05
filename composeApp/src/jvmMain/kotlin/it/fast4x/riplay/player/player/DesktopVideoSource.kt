@@ -57,32 +57,17 @@ import java.io.File
 import java.util.concurrent.atomic.AtomicLong
 
 /**
- * STEP 4c (richiesta utente n.3): in modalita' video espanso (teatro) i
+ * In modalita' video espanso (teatro) i
  * controlli spariscono dopo questo tempo senza movimenti del mouse e
- * tornano al primo movimento: look immersivo (come i player YouTube/VLC).
+ * tornano al primo movimento: look immersivo
  */
 private const val THEATER_CONTROLS_HIDE_DELAY_MS = 3_000L
 
 /**
- * STEP 3: sorgente video desktop SENZA tab di debug, con SELEZIONE
+ * Sorgente video desktop SENZA tab di debug, con SELEZIONE
  * AUTOMATICA del motore (come fa Android PlayerService/HybridPlayer con
  * Song.isLocal: "if (currentSong.value?.isLocal == true) switchToExo()
  * else switchToYoutube()").
- *
- * Regole di routing ([DesktopPlayerManager.route]):
- *  - input manuale YouTube (URL o id a 11 caratteri) -> motore KCEF;
- *  - input manuale file locale/stream (percorso esistente, http/rtsp) -> motore VLCJ;
- *  - brano con id "local:..." (Song.isLocal) -> motore VLCJ (se il
- *    percorso del file e' risolvibile; i brani MediaStore di Android non
- *    hanno un percorso desktop accessibile e vengono segnalati in UI);
- *  - brano online (Song.id = videoId YouTube) -> motore KCEF;
- *  - nessun media -> superficie KCEF in attesa (comportamento step2k).
- *
- * Al cambio motore l'altro motore viene messo in PAUSA (stessa igiene di
- * Android: exoPlayer.pause() quando si va su YT, _internalYouTubePlayer
- * .pause() quando si torna su ExoPlayer). La superficie KCEF al ritorno
- * ricrea il browser e il videoId in attesa viene iniettato nell'HTML
- * (meccanismo Android <<injectedVideoId>> gia' validato in step2r).
  */
 enum class DesktopPlayerEngine(val label: String) {
     YOUTUBE("YouTube (KCEF)"),
@@ -90,12 +75,8 @@ enum class DesktopPlayerEngine(val label: String) {
 }
 
 /**
- * STEP 3n (richiesta utente n.1 "se non e' video non mostrare il pulsante
- * video"): estensioni di file che contengono davvero una traccia video.
+ * Estensioni di file che contengono davvero una traccia video.
  * I brani locali importati dalla pagina Locali sono SOLO audio
- * (LOCAL_AUDIO_EXTENSIONS in upload): per loro l'interruttore a/v non ha
- * senso e viene nascosto; resta invece visibile se l'utente carica a mano
- * un file video (mp4, mkv, ...) che VLCJ puo' mostrare.
  */
 val LOCAL_VIDEO_EXTENSIONS = setOf(
     "mp4", "mkv", "webm", "avi", "mov", "m4v", "mpg", "mpeg", "wmv", "ts", "3gp"
@@ -123,11 +104,6 @@ private fun String.isStreamUrl(): Boolean =
  * Gestore del motore attivo del player desktop. Un'unica istanza vive per
  * tutta l'app (remember in ThreeColumnsApp): contiene i DUE controller
  * (KCEF e VLCJ), il motore selezionato e fa il routing automatico.
- *
- * [engine] e' stato Compose: la UI (video pane, MiniPlayer, barre) si
- * ricompone quando cambia. [active] restituisce il controller del motore
- * attivo, cosi' TUTTE le barre di controllo sono sempre agganciate a
- * cio' che sta effettivamente suonando.
  */
 class DesktopPlayerManager(
     val kcef: KcefYouTubePlayer = KcefYouTubePlayer(),
@@ -138,7 +114,7 @@ class DesktopPlayerManager(
         private set
 
     /**
-     * STEP 3d: TRUE = nessun media in riproduzione (avvio dell'app): la
+     * TRUE = nessun media in riproduzione (avvio dell'app): la
      * superficie KCEF mostra il SEGNAPOSTO RiPlay invece del browser nudo
      * (in prova si vedeva la pagina player come pannello bianco/grigio).
      * route() lo azzera appena viene caricato qualunque media.
@@ -151,35 +127,22 @@ class DesktopPlayerManager(
         private set
 
     /**
-     * STEP 3p (richiesta utente: "dato che la coda viene salvata, sarebbe
-     * opportuno che all'avvio oltre a caricare la cosa, venga caricato il
-     * primo brano della cosa nel player, in modo che se l'utente preme
-     * invio va in riproduzione il primo"): videoId del brano caricato in
-     * CUE all'avvio (caricato ma NON avviato). Null = nessun cue attivo
-     * (qualsiasi load vero lo azzera).
-     *
-     * Serve a route() per NON ricaricare il brano quando la UI allinea lo
-     * stato (videoId = brano in cue dopo il play): un reload farebbe
-     * RIPARTIRE il brano da zero poco dopo l'avvio.
+     * VideoId del brano caricato in CUE all'avvio (caricato ma NON avviato). Null = nessun cue attivo
      */
     @Volatile
     var cuedVideoId: String? = null
         private set
 
     /**
-     * STEP 3p: TRUE quando il brano in cue e' REALMENTE partito (l'utente
-     * ha premuto play e il motore ha iniziato a suonare): il route()
-     * successivo con lo stesso videoId deve deduplicarsi (registra la
-     * chiave e basta) invece di ricaricare il brano. Distinto dal solo
-     * "videoId == cuedVideoId" perche' il click ESPLICITO sul brano in cue
-     * (lista/coda) mentre e' fermo DEVE invece riprodurlo da zero.
+     * TRUE quando il brano in cue e' REALMENTE partito (l'utente
+     * ha premuto play e il motore ha iniziato a suonare)
      */
     @Volatile
     var cuePlaybackConfirmed: Boolean = false
         private set
 
     /**
-     * STEP 3p: chiamata dall'app quando il brano in cue comincia davvero a
+     * Chiamata dall'app quando il brano in cue comincia davvero a
      * suonare (transizione isPlaying osservata sulla UI): sblocca il dedup
      * di route() per lo stesso videoId.
      */
@@ -188,14 +151,8 @@ class DesktopPlayerManager(
     }
 
     /**
-     * STEP 3c: TRUE = il player (video) e' VISIBILE; FALSE = sopra il player
-     * viene mostrata la COVER del brano. L'audio NON si interrompe mai: il
-     * motore resta attivo sotto la cover, esattamente come Android dove la
-     * UI mostra la copertina ("if (!mediaItem.isVideo) Image(coverPainter)")
-     * mentre il player suona. Default TRUE (nessuna sorpresa quando non c'e'
-     * ancora un brano); [route] lo azzera per ogni NUOVO brano in base a
-     * Song.isVideo (campo db isAudioOnly, stessa semantica Android) e il
-     * toggle nella UI lo cambia a richiesta dell'utente.
+     * TRUE = il player (video) e' VISIBILE; FALSE = sopra il player
+     * viene mostrata la COVER del brano.
      */
     var videoVisible: Boolean
         get() = _videoVisible
@@ -225,32 +182,20 @@ class DesktopPlayerManager(
 
     /**
      * Routing automatico: sceglie il motore e carica il media giusto.
-     * Chiamato da [DesktopVideoSource] quando cambiano i suoi input.
+     * Chiamato dal LaunchedEffect di [DesktopVideoSource] (finestra visibile)
+     * e dal watcher di ThreeColumnsApp (anche a finestra nascosta):
+     * @Synchronized rende atomico il check-then-act su [lastRouteKey] cosi'
+     * le chiamate concorrenti si deduplicano senza doppiare il load.
      */
+    @Synchronized
     fun route(song: Song?, videoId: String, manualInput: String) {
         localUnavailableReason = null
         val manual = manualInput.trim()
         val localPath = song?.let { localMediaPath(it) }
-        // STEP 3e: il percorso locale entra nella chiave SOLO per i brani
-        // LOCALI (risolti in due passate, perche' la Song col mediaId arriva
-        // dopo il click). Per i brani ONLINE localMediaPath restituisce
-        // l'id stesso (Song.id e' un videoId, non un percorso): includerlo
-        // faceva cambiare la chiave tra la passata senza Song e quella con
-        // Song -> loadVideoById eseguito DUE volte -> il brano ripartiva da
         // zero poco dopo l'avvio.
         val localKey = if (videoId.startsWith(LOCAL_KEY_PREFIX)) (localPath ?: "") else ""
         val key = "$manual|$videoId|$localKey"
         if (key == lastRouteKey) return
-        // STEP 3p: rispetto del brano caricato in CUE all'avvio (primo
-        // brano della coda ripristinata). (a) La UI non ha ancora una
-        // selezione (videoId vuoto: route risalito a una ricomposizione,
-        // es. la Song che si risolve dal db): NON toccare il cue (un route
-        // "nessun media" rimetterebbe il segnaposto e coprirebbe il brano
-        // caricato). (b) videoId uguale al brano in cue E il cue e' davvero
-        // partito (l'utente ha premuto play, l'app ha confermato): dedup
-        // puro (registra la chiave): ricaricare ripartirebbe da zero. Un
-        // CLICK esplicito sul brano in cue mentre e' ancora fermo non ha
-        // la conferma e ricade nel load normale = riproduzione da zero.
         val cued = cuedVideoId
         if (cued != null && manual.isEmpty()) {
             if (videoId.isEmpty()) return
@@ -268,8 +213,8 @@ class DesktopPlayerManager(
         idle = false
 
         when {
-            // 1) input manuale YouTube (URL o id nudo): l'utente ha incollato
-            //    un video da guardare -> player visibile (come prima dello step 3c)
+            // 1) input manuale (URL o id nudo): l'utente ha incollato
+            //    un video da guardare -> player visibile
             manual.isNotEmpty() && extractYouTubeVideoId(manual) != null -> {
                 KcefEngine.logKcef("motore automatico: YouTube (input manuale)")
                 selectEngine(DesktopPlayerEngine.YOUTUBE)
@@ -363,7 +308,7 @@ class DesktopPlayerManager(
     }
 
     /**
-     * STEP 3p: CARICA UN BRANO NEL PLAYER SENZA AVVIARLO (cue). All'avvio
+     * CARICA UN BRANO NEL PLAYER SENZA AVVIARLO (cue). All'avvio
      * dell'app, con la coda ripristinata dalla persistenza, l'app chiama
      * questa funzione col PRIMO brano della coda: il player lo mostra
      * (titolo/cover/durata) pronto a partire col play dell'utente.
@@ -426,14 +371,6 @@ class DesktopPlayerManager(
  * Area video desktop automatica (niente tab): mostra il motore scelto da
  * [DesktopPlayerManager] e sotto una sola barra di controllo agganciata al
  * motore attivo + l'input manuale (URL YouTube oppure file/URL locale).
- *
- * STEP 3c/3d: quando un brano audio e' in riproduzione la COVER del brano
- * copre il player (logica Android, audio invariato); quando l'app e' senza
- * brano ([DesktopPlayerManager.idle]) la superficie mostra il segnaposto
- * RiPlay. La cover/segnaposto e' CLICCABILE ([onCoverClick]) e apre il
- * player espandibile. Con [browserHiddenByOverlay] aperto il player
- * espandibile copre l'intera finestra e il livello Swing viene nascosto
- * (l'audio prosegue).
  */
 @Composable
 fun DesktopVideoSource(
@@ -443,67 +380,28 @@ fun DesktopVideoSource(
     manager: DesktopPlayerManager,
     browserHiddenByOverlay: Boolean = false,
     onCoverClick: () -> Unit = {},
-    // STEP 3k (richiesta utente n.1): SWITCH AUDIO/VIDEO anche nella barra
-    // del player di sinistra (prima esisteva solo nel player full).
     onToggleVideo: (Boolean) -> Unit = {},
-    // STEP 3k (richiesta utente n.4): pulsante RADIO nella barra del player
-    // di sinistra in home (stessa funzione del Radio nel player full).
     onAddRadio: (() -> Unit)? = null,
     radioLoading: Boolean = false,
     radioFeedback: String? = null,
-    // STEP 3k (richiesta utente n.2): pulsante ESPANDI per aprire il player
-    // full screen anche quando la cover NON e' visibile (video in riproduzione).
     onExpand: (() -> Unit)? = null,
-    // STEP 3o (richiesta utente n.5): AVANTI/INDIETRO nel miniplayer della
-    // home (cronologia di sessione + coda, stessa navigazione del player
-    // full). Null = pulsanti nascosti.
     onPrevious: (() -> Unit)? = null,
     onNext: (() -> Unit)? = null,
     canGoPrevious: Boolean = false,
     canGoNext: Boolean = false,
-    // STEP 3l (richiesta utente): TRUE = VIDEO A TUTTA LARGHEZZA FINESTRA
-    // (modalita' teatro). Cambia SOLO il layout attorno allo stesso
-    // SwingPanel (il browser non viene ricreato ne' riappeso: la
-    // riproduzione prosegue come durante un resize della finestra); a
-    // video espanso l'input manuale in fondo e' nascosto per un look
-    // immersivo e la barra mostra il pulsante per TORNARE alla larghezza
-    // iniziale.
     widened: Boolean = false,
-    // STEP 3l: toggle espandi/ripristina larghezza (null = pulsante nascosto)
     onToggleWiden: (() -> Unit)? = null
 ) {
     val manualInput = remember { mutableStateOf("") }
 
-    // STEP 4c (richiesta utente n.3): VISIBILITA' dei controlli in modalita'
-    // video espanso. TRUE di default; quando widened passa a gestire il
-    // timer qui sotto (nascosti dopo THEATER_CONTROLS_HIDE_DELAY_MS senza
-    // mouse, tornano al movimento). Fuori dal teatro restano sempre visibili.
+    // VISIBILITA' dei controlli in modalita' video espanso. TRUE di default;
     var theaterControlsVisible by remember { mutableStateOf(true) }
     // ultimo movimento del mouse visto nell'app (scritto dal listener AWT)
     val lastPointerActivityMs = remember { AtomicLong(0L) }
-    // STEP 4g (fix loop controlli): coordinate schermo dell'ultimo evento di
-    // movimento (Long.MIN_VALUE = nessun evento ancora visto)
+
     val lastPointerX = remember { AtomicLong(Long.MIN_VALUE) }
     val lastPointerY = remember { AtomicLong(Long.MIN_VALUE) }
 
-    // MOUSE MOVE via AWT: a video espanso la superficie e' il browser KCEF
-    // nativo (SwingPanel) o il frame VLCJ: sopra di lui gli eventi pointer
-    // di Compose NON arrivano (vengono consumati da Swing/CEF). Un listener
-    // AWT di tipo MOUSE_MOTION vede OGNI movimento del mouse dentro la
-    // finestra (Compose E Swing) e aggiorna solo un contatore atomico:
-    // nessun lavoro di composizione sull'EDT. Rimosso alla disposal.
-    //
-    // STEP 4g (fix "controlli nascosti e subito rimessi, in loop"): Windows
-    // RIGENERA un MOUSE_MOVED con le STESSSIME coordinate fisiche quando,
-    // sotto il cursore immobile, cambia il componente esposto (z-order
-    // lightweight/heavyweight: es. la barra che si nasconde sopra il browser
-    // KCEF, l'animazione AnimatedVisibility). Senza filtro accadeva:
-    // nascondi -> "movimento" sintetico -> mostra -> timer -> nascondi ->
-    // "movimento" -> ... all'infinito. Il filtro confronta le coordinate
-    // SCHERMO (getLocationOnScreen: i redispatch dello stesso punto fisico
-    // sono identici anche se consegnati a componenti diversi) e conta come
-    // attivita' SOLO un evento che CAMBIA davvero posizione: un vero
-    // movimento del mouse produce sempre coordinate nuove.
     DisposableEffect(Unit) {
         val listener = java.awt.event.AWTEventListener { event ->
             if (event is java.awt.event.MouseEvent &&
@@ -533,11 +431,7 @@ fun DesktopVideoSource(
         }
     }
 
-    // Timer dei controlli: attivo SOLO a video espanso. Entrando nel teatro
-    // i controlli partono VISIBILI e spariscono dopo il delay senza mouse;
-    // il primo movimento li riporta (lastPointerActivityMs aggiornato dal
-    // listener AWT). Tornando alla larghezza normale la visibilita' viene
-    // riportata a TRUE senza dipendere dal timer.
+    // Timer dei controlli: attivo SOLO a video espanso.
     LaunchedEffect(widened) {
         if (!widened) {
             theaterControlsVisible = true
@@ -551,28 +445,21 @@ fun DesktopVideoSource(
         }
     }
 
-    // Fuori dal teatro i controlli sono SEMPRE visibili (comportamento
-    // invariato); dentro: dipende dal timer.
+
     val controlsVisible = !widened || theaterControlsVisible
 
-    // Routing automatico del motore + caricamento media. Gli input sono gli
-    // stessi valori che il routing consuma: ogni variazione (click su una
-    // canzone, canzone risolta dal db, input manuale debounced) riesegue
-    // [DesktopPlayerManager.route] in modo idempotente.
+    // Routing automatico del motore + caricamento media, a finestra visibile.
+    // Con la finestra nascosta nel tray la composizione si congela: in quel
+    // caso il load lo invia il watcher snapshotFlow di ThreeColumnsApp, che
+    // chiama lo stesso [manager.route]; la chiave deduplica i due percorsi.
     LaunchedEffect(videoId, song, manualInput.value) {
         manager.route(song, videoId.orEmpty(), manualInput.value)
     }
 
-    // STEP 3l: il pulsante fullscreen della barra ha senso solo con un
+    // il pulsante fullscreen della barra ha senso solo con un
     // media effettivamente caricato (a riposo c'e' solo il segnaposto).
     val widenCallback = if (manager.idle) null else onToggleWiden
 
-    // STEP 3n (richiesta utente n.1): l'interruttore AUDIO/VIDEO esiste SOLO
-    // se il media in riproduzione PUO' avere un video:
-    //  - motore YouTube (KCEF): sempre (ogni brano YT ha il video);
-    //  - motore locale (VLCJ): solo se il file ha un'estensione video
-    //    (i brani importati dalla pagina Locali sono solo audio);
-    //  - a riposo (nessun media): nascosto (non c'e' nulla da mostrare).
     val isLocalEngine = manager.engine == DesktopPlayerEngine.LOCAL
     val localPath = song?.let { localMediaPath(it) }
     val localFileIsVideo = isLocalEngine && localPath != null && !localPath.isStreamUrl() &&
@@ -580,10 +467,6 @@ fun DesktopVideoSource(
     val videoSwitchCallback: ((Boolean) -> Unit)? =
         if (!manager.idle && (!isLocalEngine || localFileIsVideo)) onToggleVideo else null
 
-    // STEP 3n: anche il pulsante RADIO (brani simili) ha senso SOLO per i
-    // brani YouTube: con un brano locale chiamerebbe l'API YT con un id
-    // "local:..." (risposta impossibile). Nascosto sul motore locale e
-    // a riposo.
     val radioCallback: (() -> Unit)? =
         if (!manager.idle && !isLocalEngine) onAddRadio else null
 
@@ -593,9 +476,9 @@ fun DesktopVideoSource(
                 manager, song, browserHiddenByOverlay, onCoverClick,
                 videoSwitchCallback, radioCallback, radioLoading, radioFeedback, onExpand,
                 widened, widenCallback,
-                // STEP 3o: navigazione brani anche nel miniplayer
+                // navigazione brani anche nel miniplayer
                 onPrevious, onNext, canGoPrevious, canGoNext,
-                // STEP 4c: visibilita' controlli (teatro auto-hide)
+                // visibilita' controlli (teatro auto-hide)
                 controlsVisible,
                 Modifier.weight(1f)
             )
@@ -603,14 +486,14 @@ fun DesktopVideoSource(
                 manager, song, onCoverClick,
                 videoSwitchCallback, radioCallback, radioLoading, radioFeedback, onExpand,
                 widened, widenCallback,
-                // STEP 3o: navigazione brani anche nel miniplayer
+                // navigazione brani anche nel miniplayer
                 onPrevious, onNext, canGoPrevious, canGoNext,
-                // STEP 4c: visibilita' controlli (teatro auto-hide)
+                // visibilita' controlli (teatro auto-hide)
                 controlsVisible,
                 Modifier.weight(1f)
             )
         }
-        // STEP 3l: a video espanso l'input manuale e' nascosto (solo video
+        // a video espanso l'input manuale e' nascosto (solo video
         // + barra di controllo, look teatro). E' un campo Compose: puo'
         // uscire/rientrare nella composizione senza toccare il browser,
         // che vive nel pane sopra.
@@ -626,21 +509,17 @@ private fun YoutubeKcefPane(
     song: Song?,
     overlayOpen: Boolean,
     onCoverClick: () -> Unit,
-    // STEP 3n: GIA' GATATI (null = pulsante nascosto: media non video / locale)
     onToggleVideo: ((Boolean) -> Unit)?,
     onAddRadio: (() -> Unit)?,
     radioLoading: Boolean,
     radioFeedback: String?,
     onExpand: (() -> Unit)?,
-    // STEP 3l: video a tutta larghezza finestra (teatro)
     widened: Boolean,
     onToggleWiden: (() -> Unit)?,
-    // STEP 3o: avanti/indietro nel miniplayer (null = nascosti)
     onPrevious: (() -> Unit)?,
     onNext: (() -> Unit)?,
     canGoPrevious: Boolean,
     canGoNext: Boolean,
-    // STEP 4c: TRUE = mostrare la barra di controllo (teatro auto-hide)
     controlsVisible: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -651,17 +530,12 @@ private fun YoutubeKcefPane(
         onDispose { manager.kcef.dispose() }
     }
 
-    // STEP 3d: logica display ANDROID (UnifiedPlayer: "if (!mediaItem.isVideo)
+    // logica display ANDROID (UnifiedPlayer: "if (!mediaItem.isVideo)
     // Image(coverPainter)") a livello SWING. Il browser KCEF RESTA ATTIVO E
     // VISIBILE sotto la cover (l'audio non si interrompe, come ExoPlayer su
-    // Android); la cover e' la Canvas di KcefPlayerHostPanel sopra di lui.
-    // Con idle (nessun brano) al posto della pagina player nuda si vede il
-    // segnaposto RiPlay. Se il player YT segnala un errore la canvas mostra
-    // il messaggio (il vecchio banner Compose era coperto dal browser nativo).
+    // Android)
     val ytErr by manager.kcef.ytError.collectAsState()
-    // STEP 3n (richiesta utente n.7): la cover del player viene caricata alla
-    // RISOLUZIONE PIU' ALTA disponibile (prima arrivava il miniaturizzato
-    // 120px e risultava sfocata nel pannello player)
+    // la cover del player viene caricata alla RISOLUZIONE PIU' ALTA disponibile
     val coverUrl = song?.thumbnailUrl?.hiResCoverUrl()
     val showCoverArt = manager.idle || (song != null && !manager.videoVisible)
     val errorText = ytErr.takeIf { it != 0 }?.let { code ->
@@ -683,13 +557,7 @@ private fun YoutubeKcefPane(
                 errorText = errorText,
                 onCoverClick = onCoverClick
             )
-            // STEP 3k: switch audio/video + radio + espandi passano alla barra
-            // STEP 3l: anche il toggle video a tutta larghezza finestra
-            // STEP 3n: onToggleVideo/onAddRadio sono gia' GATATI a monte
-            // (null = pulsante nascosto quando il media non e' video)
-            // STEP 3o: anche avanti/indietro
-            // STEP 4c: in modalita' teatro la barra esce/rientra con
-            // l'animazione in base ai movimenti del mouse
+
             AnimatedVisibility(
                 visible = controlsVisible,
                 enter = expandVertically(tween(220)) + fadeIn(tween(220)),
@@ -710,14 +578,13 @@ private fun YoutubeKcefPane(
                     onNext = onNext,
                     canGoPrevious = canGoPrevious,
                     canGoNext = canGoNext,
-                    // STEP 3q: titolo+artista nel miniplayer
+                    // titolo+artista nel miniplayer
                     title = song?.title,
                     artist = song?.artistsText
                 )
             }
         }
-        // STEP 4c: anche il badge del motore si nasconde con i controlli
-        // (scomparirebbe comunque sotto il video a tutta larghezza)
+        // anche il badge del motore si nasconde con i controlli
         if (controlsVisible) {
             EngineBadge(DesktopPlayerEngine.YOUTUBE)
         }
@@ -729,21 +596,17 @@ private fun LocalVlcjPane(
     manager: DesktopPlayerManager,
     song: Song?,
     onCoverClick: () -> Unit,
-    // STEP 3n: GIA' GATATI (null = pulsante nascosto: media non video / locale)
     onToggleVideo: ((Boolean) -> Unit)?,
     onAddRadio: (() -> Unit)?,
     radioLoading: Boolean,
     radioFeedback: String?,
     onExpand: (() -> Unit)?,
-    // STEP 3l: video a tutta larghezza finestra (teatro)
     widened: Boolean,
     onToggleWiden: (() -> Unit)?,
-    // STEP 3o: avanti/indietro nel miniplayer (null = nascosti)
     onPrevious: (() -> Unit)?,
     onNext: (() -> Unit)?,
     canGoPrevious: Boolean,
     canGoNext: Boolean,
-    // STEP 4c: TRUE = mostrare la barra di controllo (teatro auto-hide)
     controlsVisible: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -756,12 +619,10 @@ private fun LocalVlcjPane(
     val size by manager.vlcj.size.collectAsState(null)
     val bytes by manager.vlcj.bytes.collectAsState(null)
 
-    // STEP 3c: stessa logica display Android del pannello KCEF. Il frame VLCJ
+    // stessa logica display Android del pannello KCEF. Il frame VLCJ
     // e' un'immagine Compose: la cover e' disegnata SOPRA con lo z-order
-    // normale (niente trucchi AWT). Il messaggio di errore resta visibile
-    // perche' la cover lascia posto a lui.
-    // STEP 3d: la cover e' CLICCABILE come nel pannello KCEF.
-    // STEP 3n: cover alla risoluzione piu' alta disponibile (come pannello KCEF)
+    // normale (niente trucchi AWT).
+
     val coverUrl = song?.thumbnailUrl?.hiResCoverUrl()
     val showCover = song != null && !manager.videoVisible &&
             !coverUrl.isNullOrEmpty() && manager.localUnavailableReason == null
@@ -800,12 +661,7 @@ private fun LocalVlcjPane(
                     )
                 }
             }
-            // STEP 3k: switch audio/video + radio + espandi passano alla barra
-            // STEP 3l: anche il toggle video a tutta larghezza finestra
-            // STEP 3n: onToggleVideo/onAddRadio gia' GATATI a monte
-            // STEP 3o: anche avanti/indietro
-            // STEP 4c: in modalita' teatro la barra esce/rientra con
-            // l'animazione in base ai movimenti del mouse
+
             AnimatedVisibility(
                 visible = controlsVisible,
                 enter = expandVertically(tween(220)) + fadeIn(tween(220)),
@@ -826,14 +682,12 @@ private fun LocalVlcjPane(
                     onNext = onNext,
                     canGoPrevious = canGoPrevious,
                     canGoNext = canGoNext,
-                    // STEP 3q: titolo+artista nel miniplayer
                     title = song?.title,
                     artist = song?.artistsText
                 )
             }
         }
-        // STEP 4c: anche il badge del motore si nasconde con i controlli
-        // (nel pannello VLCJ e' l'unico indicatore: accompagna la barra)
+
         if (controlsVisible) {
             EngineBadge(DesktopPlayerEngine.LOCAL)
         }
