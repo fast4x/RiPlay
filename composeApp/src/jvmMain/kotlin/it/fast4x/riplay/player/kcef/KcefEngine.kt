@@ -530,6 +530,27 @@ sealed interface KcefState {
  *     best-effort). Windows/Linux: comportamento precedente INTATTO (tutte
  *     le diramazioni nuove sono gate isMacOS); unica eccezione cross-OS:
  *     chrome_elf ora e' richiesta solo su Windows (fix anche per Linux).
+ *
+ *     32) v45 (step3y, FIX CRASH Linux):
+ *     (1) PRELOAD_WHITELIST_LINUX dedicata = libcef + libjcef (+ jcef per
+ *         layout alternativi): il ponte JNI del bundle ora viene
+ *         pre-caricato e la verifica obbligatoria lo trova (niente piu'
+ *         abort "assenti: jcef"); il preload vincola anche loadLibrary
+ *         alle natives del bundle;
+ *     (2) verifica Linux del ponte JNI: libjcef.so deve essere presente
+ *         nel bundle (bundle incompleto altrimenti) e caricare senza
+ *         errori (stessa severita' di libcef);
+ *     (3) il fallimento di caricamento di libcef.so/libjcef.so su Linux
+ *         include ora il testo dell'UnsatisfiedLinkError: su Linux il
+ *         System.load fallisce per dipendenze DI SISTEMA mancanti (es.
+ *         "libXss.so.1: cannot open shared object file", libnss3,
+ *         libatk-bridge...) e il messaggio dice QUALE libreria installare
+ *         (hint nel report + riga di log dedicata);
+ *     (4) fixBundleExecPermissions esteso a Linux: il lettore tar di
+ *         fallback Kotlin NON preserva il bit +x -> jcef_helper (il
+ *         subprocess CEF Linux, file senza estensione) non partiva;
+ *     (5) log diagnostico del bundle Linux (ponte JNI + libcef) come per
+ *         macOS. Windows e macOS: comportamento invariato.
  */
 object KcefEngine {
 
@@ -537,7 +558,7 @@ object KcefEngine {
      * Marker di versione del bootstrap: SE NEI LOG NON APPARE QUESTA RIGA,
      * il processo sta eseguendo una build NON aggiornata.
      */
-    const val BOOTSTRAP_VERSION = "v44 (step3z)"
+    const val BOOTSTRAP_VERSION = "v45 (step3y)"
 
     private const val TAG = "[RiPlay-KCEF]"
 
@@ -830,6 +851,10 @@ object KcefEngine {
      * reali). La catena richiesta da CEF/init e' SOLO jawt (del JDK,
      * caricata sotto) -> chrome_elf -> libcef -> jcef. Le librerie GPU sono
      * saltate da KCEF stesso quando riconosce --disable-gpu.
+     *
+     * STEP 3y: questa lista e' SOLO di WINDOWS (chrome_elf e' una libreria
+     * Windows-specifica: CefApp.startupAsync del fork jcef usato da KCEF la
+     * carica solo dentro OS.isWindows() e nel bundle Linux non esiste).
      */
     private val PRELOAD_WHITELIST = listOf("chrome_elf", "libcef", "jcef")
 
@@ -842,6 +867,29 @@ object KcefEngine {
     private val PRELOAD_WHITELIST_MAC = listOf(
         "chromium embedded framework",
         "libjcef"
+    )
+
+    /**
+     * STEP 3y (Linux): whitelist dedicata. Nel bundle Linux (jbr_jcef):
+     *  - "libcef.so"    = motore CEF (dipendenza del ponte JNI: si carica
+     *                     PRIMA, vedi nativePriority);
+     *  - "libjcef.so"   = ponte JNI (equivalente di jcef.dll Windows). Il
+     *                     prefisso e' "lib": la vecchia voce "jcef" della
+     *                     whitelist Windows NON lo matchava -> era il bug
+     *                     che escludeva il ponte JNI dal preload e faceva
+     *                     abortire l'init su JBR con "assenti: jcef";
+     *  - "jcef"         = copertura di layout alternativi (jcef.so): NON
+     *                     matcha "jcef_helper" (escluso a parte dal filtro);
+     *  - "chrome_elf"   = NON PRESENTE E MAI RICHIESTA su Linux.
+     * Pre-caricare ENTRAMBE le .so del bundle con System.load le vincola
+     * anche ai successivi System.loadLibrary (dlopen risolve per SONAME
+     * gia' mappato): su un JBR con JCEF integrato l'init "runtime" di KCEF
+     * finisce sulle natives del BUNDLE e non su quelle del JDK.
+     */
+    private val PRELOAD_WHITELIST_LINUX = listOf(
+        "libcef",
+        "libjcef",
+        "jcef"
     )
 
     private fun preloadBundleNativeLibraries(): PreloadReport {
@@ -869,7 +917,15 @@ object KcefEngine {
         // STEP 3z: su macOS whitelist dedicata (framework CEF + libjcef):
         // il bundle mac contiene un intero runtime Java le cui dylib NON
         // vanno caricate nel processo host (equivalente step2h su Windows).
-        val whitelist = if (isMacOS) PRELOAD_WHITELIST_MAC else PRELOAD_WHITELIST
+        // STEP 3y: su Linux whitelist dedicata (libcef.so + libjcef.so):
+        // la lista Windows conteneva chrome_elf (inesistente su Linux) e
+        // ESCLUDEVA il ponte JNI "libjcef.so" (il prefisso "jcef" non
+        // matcha il nome con "lib").
+        val whitelist = when {
+            isMacOS -> PRELOAD_WHITELIST_MAC
+            isLinuxOS -> PRELOAD_WHITELIST_LINUX
+            else -> PRELOAD_WHITELIST
+        }
         val natives = bundleNativeFiles.filter { f ->
             val n = f.name.lowercase()
             !n.startsWith("jcef_helper") && whitelist.any { n.startsWith(it) }
@@ -879,25 +935,43 @@ object KcefEngine {
             return report
         }
         val failed = mutableListOf<File>()
+        // STEP 3y: messaggio dell'errore di load per nome file: su Linux
+        // l'UnsatisfiedLinkError di System.load nomina la dipendenza DI
+        // SISTEMA mancante (es. "libXss.so.1: cannot open shared object
+        // file") e va riportato nel messaggio d'abort (prima veniva scartato).
+        val loadErrors = mutableMapOf<String, String>()
         for (f in natives) {
-            val ok = runCatching { System.load(f.absolutePath) }.isSuccess
-            if (ok) report.loaded += f.name else failed += f
+            runCatching { System.load(f.absolutePath) }
+                .onSuccess { report.loaded += f.name }
+                .onFailure { t ->
+                    failed += f
+                    loadErrors[f.name] = t.message ?: t.javaClass.simpleName
+                }
         }
         // Seconda passata: le dipendenze mappate in prima passata possono
         // sbloccare i caricamenti falliti (ordini di dipendenza residui).
         for (f in failed) {
-            if (runCatching { System.load(f.absolutePath) }.isSuccess) {
+            val ok = runCatching { System.load(f.absolutePath) }
+                .onFailure { t -> loadErrors[f.name] = t.message ?: t.javaClass.simpleName }
+                .isSuccess
+            if (ok) {
                 report.loaded += f.name
             } else if (isOptionalGpuLibrary(f.name)) {
                 log("preload: ${f.name} non caricata (GPU opzionale, non bloccante con --disable-gpu)")
             } else {
-                log("preload: ${f.name} non caricata (non bloccante)")
+                // STEP 3y: su win/linux le natives in whitelist sono TUTTE
+                // obbligatorie: l'eventuale blocco arriva dalla verifica qui
+                // sotto, quindi nel log riportiamo subito il motivo reale.
+                log("preload: ${f.name} non caricata${loadErrors[f.name]?.let { ": $it" } ?: ""}")
             }
         }
         // Verifica delle librerie OBBLIGATORIE (prefisso basename).
         // STEP 3z: "chrome_elf" esiste SOLO su Windows (prima era richiesta
         // anche su mac/linux e l'init abortiva sempre); "libcef" su macOS e'
         // il binario del framework (nome diverso: check via effectiveLibcef).
+        // STEP 3y: su Linux "chrome_elf" non viene MAI richiesta (il fork
+        // jcef di KCEF la carica solo su Windows): la catena obbligatoria
+        // Linux e' jawt (del JDK, caricata sopra) -> libcef.so -> libjcef.so.
         if (isWindowsOS) {
             val present = natives.any { it.name.lowercase().startsWith("chrome_elf") }
             val loadedOk = report.loaded.any { it.lowercase().startsWith("chrome_elf") }
@@ -915,7 +989,33 @@ object KcefEngine {
             // @rpath a modo suo e comunque KCEF fa SystemBootstrap da
             // installDir): non blocchiamo l'init se il preload non va a segno.
             if (!libcefLoadedOk && !isMacOS) {
-                report.failed += "libcef (caricamento non riuscito)"
+                report.failed += mandatoryLoadFailure(
+                    "libcef",
+                    effectiveLibcefFile()?.name,
+                    loadErrors,
+                    linuxSystemDepsHint = true
+                )
+            }
+        }
+        // STEP 3y (Linux): il ponte JNI del bundle e' "libjcef.so" (prefisso
+        // "lib"): DEVE arrivare dal bundle su OGNI JDK perche' e' lui a
+        // esporre le JNI usate dalle classi org.cef del jar KCEF e deve
+        // restare coerente con il libcef.so del bundle appena pre-caricato
+        // (su un JBR con JCEF integrato quella del JDK e' di versione diversa).
+        if (isLinuxOS) {
+            val bridge = natives.firstOrNull { isJniBridgeName(it.name) }
+            if (bridge == null) {
+                report.missing += "libjcef.so (assente dal bundle)"
+            } else {
+                val bridgeLoadedOk = report.loaded.any { isJniBridgeName(it) }
+                if (!bridgeLoadedOk) {
+                    report.failed += mandatoryLoadFailure(
+                        "libjcef.so",
+                        bridge.name,
+                        loadErrors,
+                        linuxSystemDepsHint = true
+                    )
+                }
             }
         }
         // Il ponte JNI deve coincidere con le classi org.cef: su un JDK
@@ -935,6 +1035,45 @@ object KcefEngine {
             else if (!loadedOk) report.failed += "jcef (caricamento non riuscito)"
         }
         return report
+    }
+
+    /**
+     * STEP 3y: il nome (basename) e' quello del ponte JNI di JCEF?
+     * Su Linux il ponte si chiama "libjcef.so" (prefisso "lib"), su
+     * layout alternativi "jcef.so"; "jcef_helper" e' il SUBPROCESS e NON
+     * e' il ponte. Usato sia dal filtro di verifica Linux sia dal log.
+     */
+    private fun isJniBridgeName(name: String): Boolean {
+        val n = name.lowercase()
+        if (n.startsWith("jcef_helper")) return false
+        return n.startsWith("libjcef") || n.startsWith("jcef")
+    }
+
+    /**
+     * STEP 3y: messaggio per una libreria obbligatoria che non si e'
+     * caricata. Su Linux l'UnsatisfiedLinkError di System.load riporta la
+     * dipendenza DI SISTEMA mancante ("libXxx.so.1: cannot open shared
+     * object file"): includerlo nel messaggio d'abort dice all'utente
+     * QUALE pacchetto installare (il bundle KCEF e' autocontenido, le
+     * dipendenze X11/NSS/audio di sistema no: e' la causa tipica del
+     * fallimento JCEF su Linux, vedi documentazione JetBrains).
+     */
+    private fun mandatoryLoadFailure(
+        label: String,
+        fileName: String?,
+        loadErrors: Map<String, String>,
+        linuxSystemDepsHint: Boolean
+    ): String = buildString {
+        append(label).append(" (caricamento non riuscito")
+        val err = fileName?.let { loadErrors[it] }.orEmpty()
+        if (err.isNotEmpty()) append(": ").append(err.take(200))
+        append(")")
+        if (linuxSystemDepsHint && isLinuxOS) {
+            append(" - su Linux installa le librerie di sistema richieste da CEF ")
+                .append("(es. libnss3, libatk-bridge2.0-0, libatk1.0-0, libcups2, libxkbcommon0, ")
+                .append("libxcomposite1, libxdamage1, libxfixes3, libxrandr2, libgbm1, ")
+                .append("libpango-1.0-0, libcairo2, libasound2, libxss1)")
+        }
     }
 
     /** Sorgente delle classi org.cef effettivamente sul classpath. */
@@ -958,6 +1097,14 @@ object KcefEngine {
             log("bundle mac: framework=${bundleCefFrameworkFile?.path ?: "ASSENTE"} " +
                     "arch=${bundleCefFrameworkFile?.let { machoArch(it) } ?: "n/d"} " +
                     "resources=${bundleCefResourcesDir?.path ?: "ASSENTE"}")
+        }
+        // STEP 3y (Linux): ponte JNI e libcef del bundle nel log, come per
+        // macOS: e' la prima cosa da verificare nei log utente quando su
+        // Linux il player non parte.
+        if (isLinuxOS) {
+            val bridge = bundleNativeFiles.firstOrNull { isJniBridgeName(it.name) }
+            log("bundle linux: bridge=${bridge?.path ?: "ASSENTE"} " +
+                    "libcef=${bundleLibcefFile?.path ?: "ASSENTE"}")
         }
         log("install.lock: ${File(installDir, "install.lock").isFile}")
     }
@@ -1081,6 +1228,34 @@ object KcefEngine {
             log("pre-seed FALLITA (${t.javaClass.simpleName}: ${t.message}): fallback COMPLETO al download KCEF")
             runCatching { installDir.deleteRecursively() }
             runCatching { stampFile.delete() }
+        } finally {
+            // STEP 3y: logEnvironment/preseed hanno gia' popolato la cache di
+            // scansione (con il bundle ANCORA assente al primo avvio): senza
+            // un reset, bundleInstalled() restava falso anche dopo
+            // l'estrazione -> install.lock non ricreato, preload saltato e
+            // KCEFBuilder.install cancellava e RI-SCARICAVA il bundle appena
+            // estratto (~200MB) a ogni primo avvio (tutti i sistemi, incluso
+            // Linux). Stessa cosa nel percorso di aggiornamento (bundle
+            // sostituito: le cache devono puntare ai file nuovi).
+            resetBundleScanCache()
+        }
+    }
+
+    /**
+     * STEP 3y: invalida le cache di scansione del bundle. Da richiamare
+     * OGNI volta che il contenuto di [installDir] cambia a runtime
+     * (estrazione pre-seed, aggiornamento, pulizia): scanBundle() memoizza
+     * il primo risultato e senza reset le difese (lock, preload, verifica)
+     * lavorerebbero su uno stato non piu' esistente.
+     */
+    private fun resetBundleScanCache() {
+        synchronized(this) {
+            bundleScanned = false
+            bundleHelperFile = null
+            bundleLibcefFile = null
+            bundleCefFrameworkFile = null
+            bundleCefResourcesDir = null
+            bundleNativeFiles = emptyList()
         }
     }
 
@@ -1294,6 +1469,14 @@ object KcefEngine {
     private val isWindowsOS: Boolean
         get() = System.getProperty("os.name").lowercase().contains("win")
 
+    /**
+     * STEP 3y: rami dedicati al bundle Linux (libcef.so + libjcef.so,
+     * permessi di esecuzione, log dedicato). Stessa rilevazione di KCEF
+     * (Platform.OS.LINUX: valori "linux"), case-insensitive.
+     */
+    private val isLinuxOS: Boolean
+        get() = System.getProperty("os.name").lowercase().contains("linux")
+
     /** Antenato ".framework" entro 6 livelli (binario dentro un bundle macOS). */
     private fun hasFrameworkAncestor(f: File): Boolean {
         var d: File? = f.parentFile
@@ -1437,13 +1620,18 @@ object KcefEngine {
                     // problema = fallback COMPLETO al download normale.
                     preSeedPackagedBundle()
 
-                    // STEP 3z (macOS): permessi di esecuzione e quarantena
+                    // STEP 3z: permessi di esecuzione e quarantena
                     // PRIMA di qualunque uso del bundle (il tar di fallback
                     // Kotlin non preserva i bit +x; Gatekeeper ucciderebbe i
                     // subprocess con SIGKILL silenzioso).
-                    if (isMacOS && bundleInstalled()) {
+                    // STEP 3y: i permessi di esecuzione servono ANCHE su
+                    // Linux (il lettore tar di fallback Kotlin non preserva
+                    // il bit +x: il subprocess "jcef_helper" Linux, file
+                    // senza estensione, non partiva -> subprocess CEF morti).
+                    // La quarantena e' solo macOS (Gatekeeper/xattr).
+                    if (!isWindowsOS && bundleInstalled()) {
                         fixBundleExecPermissions()
-                        removeBundleQuarantine()
+                        if (isMacOS) removeBundleQuarantine()
                     }
 
                     // STEP 2h: KCEFBuilder.install cancella l'INTERA installDir
@@ -1952,13 +2140,8 @@ object KcefEngine {
         log("retry richiesto dalla UI")
         synchronized(this) {
             started = false
-            bundleScanned = false
-            bundleHelperFile = null
-            bundleLibcefFile = null
-            bundleCefFrameworkFile = null
-            bundleCefResourcesDir = null
-            bundleNativeFiles = emptyList()
         }
+        resetBundleScanCache()
         start()
     }
 
