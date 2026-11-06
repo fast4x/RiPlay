@@ -2569,16 +2569,28 @@ class PlayerService : MediaLibraryService(),
                 hybridPlayer.switchToYoutube()
                 playFromSecond = 0f // Resettiamo la posizione iniziale perchè passiamo al successivo
 
-                // Forza il volume al massimo
-                _internalYouTubePlayer.value?.setVolume(getSystemMediaVolume())
+                // ═══ FIX PICCO DI VOLUME ALL'AVVIO DI UN BRANO ═══
+                // Non forzare il volume direttamente su _internalYouTubePlayer.value?.setVolume(getSystemMediaVolume())
+                // per non bypassare il pipeline centralizzato di HybridPlayer (fadeMultiplier + normalizzazione loudness).
+                hybridPlayer.setFadeVolume(0f)
 
                 startForegroundPlaceholder()
 
                 if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus.value != RiTuneConnectionStatus.Connected) {
                     Timber.d("PlayerService [AYP JS YT-BRIDGE] onMediaItemTransition mediaItem not local video cued id = ${it.mediaId} playFromSecond $playFromSecond")
                     _internalYouTubePlayer.value?.loadVideo(it.mediaId, 0f) // Si parte sempre dall'inizio perchè è il successivo
-                    // Avvia il fade in per il nuovo brano appena parte il play
-                    startFadeIn()
+
+                    if (appSettings.crossfadeDuration == CrossfadeDuration.Off) {
+                        // Con crossfade disattivo startFadeIn() esce subito senza toccare il volume:
+                        // ripristiniamo subito il livello corretto SEMPRE via pipeline (rispetta la
+                        // normalizzazione), senza forzature immediate al 100%.
+                        // La normalizzazione definitiva del brano arriverà comunque da
+                        // setYtLoudnessDb() non appena il DB fornirà il loudness corretto.
+                        hybridPlayer.setFadeVolume(1.0f)
+                    } else {
+                        // Avvia il fade in per il nuovo brano appena parte il play se il fade/crossfade è attivo
+                        startFadeIn()
+                    }
                     Timber.d("PlayerService onMediaItemTransition mediaItem not local video cued id = ${it.mediaId} playFromSecond $playFromSecond")
                 } else
                     this@PlayerService.serviceScope.launch {
