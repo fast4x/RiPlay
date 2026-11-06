@@ -3365,6 +3365,17 @@ class PlayerService : MediaLibraryService(),
             QueueLoopType.RepeatOne -> {
                 isFading = true
                 hybridPlayer.seekTo(0)
+
+                // FIX: il riavvio del brano qui NON passa da onMediaItemTransition né da un
+                // nuovo evento PLAYING affidabile, quindi il volume va ripristinato con lo
+                // stesso schema del playPrevious: con crossfade attivo fa la rampa startFadeIn()
+                // (che al termine azzera isFading), senza crossfade si ripristina subito il
+                // volume ATTRAVERSO HybridPlayer.
+                startFadeIn()
+                if (appSettings.crossfadeDuration == CrossfadeDuration.Off) {
+                    hybridPlayer.setFadeVolume(1.0f)
+                    isFading = false
+                }
                 return true
             }
 
@@ -4871,9 +4882,16 @@ class PlayerService : MediaLibraryService(),
                 // Questa funzione al termine della risalita metterà regolarmente 'isFading = false', sbloccando l'app!
                 // Parte solo se fade è abilitato
                 startFadeIn()
-                //Se fade è disattivo, ci assicuriamo che il volume sia ripristinato subito
+
+                // FIX volume azzerato sul riavvio del brano (playPrevious online):
+                // con crossfade OFF startFadeIn() esce subito senza toccare nulla, quindi
+                // il volume DEVE essere ripristinato ATTRAVERSO HybridPlayer con
+                // setFadeVolume(1.0f), che riallinea fadeMultiplier, rispetta la
+                // normalizzazione (ytLoudnessDb) e vale per entrambi i motori.
                 if (appSettings.crossfadeDuration == CrossfadeDuration.Off) {
-                    _internalYouTubePlayer.value?.setVolume(getSystemMediaVolume())
+                    hybridPlayer.setFadeVolume(1.0f)
+                    isFading = false
+                    Timber.d("PlayerService UX: riavvio brano senza crossfade, volume ripristinato via HybridPlayer (fadeMultiplier=1.0, isFading=false)")
                 }
 
             } else {
