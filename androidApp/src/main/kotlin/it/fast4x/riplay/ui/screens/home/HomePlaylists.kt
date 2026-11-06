@@ -288,56 +288,62 @@ fun HomePlaylists(
     var time by remember { mutableStateOf("") }
     val formattedDate = currentDateTime.format(formatter)
 
-    /*
+
     val importPlaylistSpotifyDialog = ImportSongsFromSpotifyCSV.init(
         beforeTransaction = { _, row, pname ->
             time = formattedDate
             val playlistName = row["PlaylistName"] ?: "${pname?.substringBeforeLast('.')} $time"
             plistId = playlistName.let {
-                Database.playlistExistByName(it)
+                runBlocking { Database.playlistExistByName(it) }
             }
 
             if (plistId == 0L)
                 plistId = playlistName.let {
-                    Database.insert(Playlist(plistId, it, row["PlaylistBrowseId"]))
+                    runBlocking { Database.insert(Playlist(plistId, it, row["PlaylistBrowseId"])) }
                 }
         },
         afterTransaction = { index, song, album, artists ->
             if (song.id.isBlank()) return@init
 
-            Database.insert(song)
-            Database.insert(
-                SongPlaylistMap(
-                    songId = song.id,
-                    playlistId = plistId,
-                    position = index
-                ).default()
-            )
-
-            if (album.id != "") {
+            runBlocking { Database.insert(song) }
+            runBlocking {
                 Database.insert(
-                    album,
-                    SongAlbumMap(
+                    SongPlaylistMap(
                         songId = song.id,
-                        albumId = album.id,
-                        position = null
-                    )
+                        playlistId = plistId,
+                        position = index
+                    ).default()
                 )
             }
-            if (artists.isNotEmpty()) {
-                Database.insert(
-                    artists,
-                    artists.map { artist ->
-                        SongArtistMap(
+
+            if (album.id != "") {
+                runBlocking {
+                    Database.insert(
+                        album,
+                        SongAlbumMap(
                             songId = song.id,
-                            artistId = artist.id
+                            albumId = album.id,
+                            position = null
                         )
-                    }
-                )
+                    )
+                }
+            }
+            if (artists.isNotEmpty()) {
+                runBlocking {
+                    Database.insert(
+                        artists,
+                        artists.map { artist ->
+                            SongArtistMap(
+                                songId = song.id,
+                                artistId = artist.id
+                            )
+                        }
+                    )
+                }
             }
         }
     )
-    */
+
 
     val importPlaylistDeezerDialog = ImportSongsFromDeezerCSV.init(
         beforeTransaction = { _, row, pname ->
@@ -453,7 +459,7 @@ fun HomePlaylists(
                 }
                 when(selected) {
                     ImportPlaylistType.Riplay -> importPlaylistDialog.onShortClick()
-                    //ImportPlaylistType.ExportifyNet -> importPlaylistSpotifyDialog.onShortClick()
+                    ImportPlaylistType.ExportifyNet -> importPlaylistSpotifyDialog.onShortClick()
                     ImportPlaylistType.TuneMyMusicDeezer -> importPlaylistDeezerDialog.onShortClick()
                     ImportPlaylistType.SpotifyUrl -> showSpotifyUrlImport = true
                 }
