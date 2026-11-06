@@ -36,7 +36,9 @@ import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.typography
 import it.fast4x.spotifymeta.SpotifyPlaylist
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 private enum class SpotifyImportPhase { INPUT, IMPORTING, DONE }
 
@@ -45,6 +47,11 @@ private enum class SpotifyImportPhase { INPUT, IMPORTING, DONE }
  *
  * L'utente incolla il link, la playlist viene letta da Spotify e per ogni brano viene
  * cercato il corrispondente su YouTube Music: i brani che non si trovano vengono saltati.
+ *
+ * Robustezza: sia il parsing dell'url che l'importazione sono protetti. Qualunque errore
+ * viene segnalato all'utente (SmartMessage e dialogo di esito) senza mai crashare l'app;
+ * la fase DONE viene raggiunta anche in caso di errore, cosi' il dialogo di progresso
+ * non resta mai bloccato.
  */
 @Composable
 fun ImportPlaylistFromSpotifyUrlDialog(
@@ -64,7 +71,10 @@ fun ImportPlaylistFromSpotifyUrlDialog(
             value = url,
             placeholder = stringResource(R.string.spotify_playlist_url_placeholder),
             setValue = { newUrl ->
-                if (SpotifyPlaylist.parseId(newUrl) == null) {
+                // parseId protetto: un url malformato non deve crashare l'app
+                val parsedId = runCatching { SpotifyPlaylist.parseId(newUrl) }.getOrNull()
+
+                if (parsedId == null) {
                     SmartMessage(
                         appContext().resources.getString(R.string.spotify_playlist_url_invalid),
                         context = appContext()
@@ -73,9 +83,29 @@ fun ImportPlaylistFromSpotifyUrlDialog(
                     url = newUrl
                     phase = SpotifyImportPhase.IMPORTING
                     coroutineScope.launch {
-                        val importResult = SpotifyPlaylistImporter.import(newUrl) { current ->
-                            progress = current
+                        val importResult = try {
+                            SpotifyPlaylistImporter.import(newUrl) { current ->
+                                progress = current
+                            }
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (e: Exception) {
+                            // errore inatteso: l'app non deve crashare, l'utente viene
+                            // informato e il dialogo di esito viene comunque mostrato
+                            Timber.e(e, "ImportPlaylistFromSpotifyUrl: unexpected import error")
+                            SmartMessage(
+                                appContext().resources.getString(
+                                    R.string.importing_spotify_playlist_failed
+                                ),
+                                context = appContext()
+                            )
+                            SpotifyImportResult(
+                                error = appContext().resources.getString(
+                                    R.string.importing_spotify_playlist_failed
+                                )
+                            )
                         }
+
                         result = importResult
                         phase = SpotifyImportPhase.DONE
                     }

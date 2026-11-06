@@ -133,12 +133,14 @@ import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.data.models.WebDavAccount
 import it.fast4x.riplay.data.models.defaultQueue
+import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
+import it.fast4x.riplay.utils.appContext
 import it.fast4x.riplay.utils.asMediaItem
 import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.isValidHex
@@ -148,6 +150,7 @@ import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.getUpdateDownloadUrl
 import it.fast4x.riplay.utils.isLocal
 import it.fast4x.riplay.utils.thumbnailShape
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
@@ -1957,14 +1960,12 @@ fun InProgressDialog(
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
 fun SongMatchingDialog(
-    songToRematch : Song,
-    playlistId : Long,
-    position : Int,
-    playlist : Playlist?,
+    songToRematch: Song,
+    playlistId: Long,
+    position: Int,
+    playlist: Playlist?,
     onDismiss: (() -> Unit)
 ) {
-    val coroutineScope = rememberCoroutineScope()
-
     Dialog(
         onDismissRequest = { onDismiss() },
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -1976,7 +1977,7 @@ fun SongMatchingDialog(
                 .fillMaxHeight(if (isLandscape) 0.9f else 0.7f)
                 .background(color = colorPalette().background1, shape = RoundedCornerShape(8.dp))
         ) {
-            fun filteredText(text : String): String{
+            fun filteredText(text: String): String {
                 val filteredText = text
                     .lowercase()
                     .replace("(", " ")
@@ -1986,18 +1987,18 @@ fun SongMatchingDialog(
                     .replace("vevo", "")
                     .replace(" hd", "")
                     .replace("official video", "")
-                    .filter {it.isLetterOrDigit() || it.isWhitespace() || it == '\'' || it == ',' }
+                    .filter { it.isLetterOrDigit() || it.isWhitespace() || it == '\'' || it == ',' }
                     .replace(Regex("\\s+"), " ")
                 return filteredText
             }
+
             var songsList by remember { mutableStateOf<List<Environment.SongItem?>>(emptyList()) }
-            var searchText by remember {mutableStateOf(filteredText("${cleanPrefix(songToRematch.title)} ${songToRematch.artistsText}"))}
+            var searchText by remember { mutableStateOf(filteredText("${cleanPrefix(songToRematch.title)} ${songToRematch.artistsText}")) }
             var startSearch by remember { mutableStateOf(false) }
-            val binder = LocalPlayerServiceBinder.current
             val songThumbnailSizeDp = Dimensions.thumbnails.song
             val songThumbnailSizePx = songThumbnailSizeDp.px
 
-            LaunchedEffect(Unit,startSearch) {
+            LaunchedEffect(Unit, startSearch) {
                 withContext(Dispatchers.IO) {
                     val searchQuery = Environment.searchPage(
                         body = SearchBody(
@@ -2011,13 +2012,13 @@ fun SongMatchingDialog(
                     startSearch = false
                 }
             }
+
             SongItem(
                 song = songToRematch,
                 thumbnailSizeDp = songThumbnailSizeDp,
                 thumbnailSizePx = songThumbnailSizePx,
-                //disableScrollingText = disableScrollingText,
-                //isNowPlaying = binder?.player?.isNowPlaying(songToRematch.id) ?: false
             )
+
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -2049,6 +2050,7 @@ fun SongMatchingDialog(
                         .weight(0.1f)
                 )
             }
+
             if (songsList.isNotEmpty()) {
                 LazyColumn {
                     itemsIndexed(songsList) { _, song ->
@@ -2056,110 +2058,157 @@ fun SongMatchingDialog(
                         val artistsIds = song?.authors?.filter { it.endpoint != null }?.map { it.endpoint?.browseId }
                         val artistNameString = song?.asMediaItem?.mediaMetadata?.artist?.toString() ?: ""
                         if (song != null) {
-                            Row(horizontalArrangement = Arrangement.Start,
+                            Row(
+                                horizontalArrangement = Arrangement.Start,
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 SongItem(
                                     song = song,
                                     thumbnailSizePx = songThumbnailSizePx,
                                     thumbnailSizeDp = songThumbnailSizeDp,
-                                    //disableScrollingText = disableScrollingText,
-                                    //isNowPlaying = false,
-                                    //forceRecompose = false,
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(horizontal = 10.dp)
                                         .clickable(onClick = {
                                             Database.asyncTransaction {
-                                                if (isYtSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable) {
-                                                    coroutineScope.launch {
-                                                        if (removeYTSongFromPlaylist(
-                                                                songToRematch.id,
-                                                                playlist.browseId ?: "",
-                                                                playlistId
-                                                            )
-                                                        )
-                                                            deleteSongFromPlaylist(
-                                                                songToRematch.id,
-                                                                playlistId
-                                                            )
-                                                    }
-                                                } else {
-                                                    deleteSongFromPlaylist(
-                                                        songToRematch.id,
-                                                        playlistId
-                                                    )
-                                                }
+                                                val context = appContext().applicationContext
+                                                var errorMessageResId: Int? = null
 
-                                                if (songExist(song.asSong.id) == 0) {
-                                                    Database.insert(song.asMediaItem)
-                                                }
-
-                                                insert(
-                                                    SongPlaylistMap(
-                                                        songId = song.asMediaItem.mediaId,
-                                                        playlistId = playlistId,
-                                                        position = position
-                                                    ).default()
-                                                )
-                                                insert(
-                                                    Album(
-                                                        id = song.album?.endpoint?.browseId ?: "",
-                                                        title = song.asMediaItem.mediaMetadata.albumTitle?.toString()
-                                                    ),
-                                                    SongAlbumMap(
-                                                        songId = song.asMediaItem.mediaId,
-                                                        albumId = song.album?.endpoint?.browseId
-                                                            ?: "",
-                                                        position = null
-                                                    )
-                                                )
-                                                coroutineScope.launch {
-                                                    val album = Database.album(
-                                                        song.album?.endpoint?.browseId ?: ""
-                                                    ).firstOrNull()
-                                                    album?.copy(thumbnailUrl = song.thumbnail?.url)
-                                                        ?.let { update(it) }
-
+                                                try {
+                                                    // 1. Rimozione del vecchio collegamento
                                                     if (isYtSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable) {
-                                                        EnvironmentExt.addToPlaylist(
-                                                            playlist.browseId ?: "",
-                                                            song.asMediaItem.mediaId
+                                                        // Chiamata di rete YT, protetta: un errore non deve
+                                                        // interrompere il rematch locale
+                                                        try {
+                                                            if (removeYTSongFromPlaylist(
+                                                                    songToRematch.id,
+                                                                    playlist.browseId ?: "",
+                                                                    playlistId
+                                                                )
+                                                            )
+                                                                deleteSongFromPlaylist(
+                                                                    songToRematch.id,
+                                                                    playlistId
+                                                                )
+                                                        } catch (e: Exception) {
+                                                            Timber.w(e, "SongMatchingDialog: YT song removal failed")
+                                                        }
+                                                    } else {
+                                                        deleteSongFromPlaylist(
+                                                            songToRematch.id,
+                                                            playlistId
                                                         )
                                                     }
-                                                }
-                                                if ((artistsNames != null) && (artistsIds != null)) {
-                                                    artistsNames.let { artistNames ->
-                                                        artistsIds.let { artistIds ->
-                                                            if (artistNames.size == artistIds.size) {
-                                                                insert(
-                                                                    artistNames.mapIndexed { index, artistName ->
-                                                                        Artist(
-                                                                            id = (artistIds[index])
-                                                                                ?: "",
-                                                                            name = artistName
-                                                                        )
-                                                                    },
-                                                                    artistIds.map { artistId ->
-                                                                        SongArtistMap(
-                                                                            songId = song.asMediaItem.mediaId,
-                                                                            artistId = (artistId)
-                                                                                ?: ""
-                                                                        )
-                                                                    }
-                                                                )
+
+                                                    // 2. Inserimento della song solo se assente
+                                                    if (songExist(song.asSong.id) == 0) {
+                                                        Database.insert(song.asMediaItem)
+                                                    }
+
+                                                    // 3. Nuova associazione song-playlist
+                                                    insert(
+                                                        SongPlaylistMap(
+                                                            songId = song.asMediaItem.mediaId,
+                                                            playlistId = playlistId,
+                                                            position = position
+                                                        ).default()
+                                                    )
+
+                                                    // 4. Album + associazione song-album SOLO se il browseId è valido:
+                                                    //    con id vuoto si aveva un insert di Album con id "" che alla
+                                                    //    seconda occorrenza violava il constraint UNIQUE/FK -> crash
+                                                    val albumBrowseId = song.album?.endpoint?.browseId
+                                                    if (!albumBrowseId.isNullOrBlank()) {
+                                                        insert(
+                                                            Album(
+                                                                id = albumBrowseId,
+                                                                title = song.asMediaItem.mediaMetadata.albumTitle?.toString()
+                                                            ),
+                                                            SongAlbumMap(
+                                                                songId = song.asMediaItem.mediaId,
+                                                                albumId = albumBrowseId,
+                                                                position = null
+                                                            )
+                                                        )
+                                                    }
+
+                                                    // 5. Aggiornamento copertina album (prima girava sul main thread)
+                                                    runCatching {
+                                                        if (!albumBrowseId.isNullOrBlank()) {
+                                                            Database.album(albumBrowseId).firstOrNull()?.let { album ->
+                                                                update(album.copy(thumbnailUrl = song.thumbnail?.url))
                                                             }
                                                         }
+                                                    }.onFailure { e ->
+                                                        Timber.w(e, "SongMatchingDialog: album cover update failed")
                                                     }
+
+                                                    // 6. Aggiunta alla playlist YT (chiamata di rete, protetta)
+                                                    if (isYtSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable) {
+                                                        runCatching {
+                                                            EnvironmentExt.addToPlaylist(
+                                                                playlist.browseId ?: "",
+                                                                song.asMediaItem.mediaId
+                                                            )
+                                                        }.onFailure { e ->
+                                                            Timber.w(e, "SongMatchingDialog: YT addToPlaylist failed")
+                                                        }
+                                                    }
+
+                                                    // 7. Artisti: solo coppie nome/id valide e coerenti
+                                                    if (artistsNames != null && artistsIds != null && artistsNames.size == artistsIds.size) {
+                                                        val artistsToInsert = artistsNames
+                                                            .mapIndexed { index, artistName ->
+                                                                artistName to (artistsIds.getOrNull(index) ?: "")
+                                                            }
+                                                            .filter { (_, artistId) -> artistId.isNotBlank() }
+                                                        if (artistsToInsert.isNotEmpty()) {
+                                                            insert(
+                                                                artistsToInsert.map { (artistName, artistId) ->
+                                                                    Artist(
+                                                                        id = artistId,
+                                                                        name = artistName
+                                                                    )
+                                                                },
+                                                                artistsToInsert.map { (_, artistId) ->
+                                                                    SongArtistMap(
+                                                                        songId = song.asMediaItem.mediaId,
+                                                                        artistId = artistId
+                                                                    )
+                                                                }
+                                                            )
+                                                        }
+                                                    }
+
+                                                    // 8. Testo artista
+                                                    runCatching {
+                                                        Database.updateSongArtist(
+                                                            song.asMediaItem.mediaId,
+                                                            artistNameString
+                                                        )
+                                                    }.onFailure { e ->
+                                                        Timber.w(e, "SongMatchingDialog: updateSongArtist failed")
+                                                    }
+                                                } catch (e: CancellationException) {
+                                                    throw e
+                                                } catch (e: Throwable) {
+                                                    Timber.e(e, "SongMatchingDialog: rematch failed for ${songToRematch.title}")
+                                                    errorMessageResId = R.string.error_song_rematch_failed
                                                 }
-                                                Database.updateSongArtist(
-                                                    song.asMediaItem.mediaId,
-                                                    artistNameString
-                                                )
+
+                                                // Feedback all'utente, sempre sul main thread
+                                                withContext(Dispatchers.Main) {
+                                                    val failureResId = errorMessageResId
+                                                    SmartMessage(
+                                                        context.getString(failureResId ?: R.string.info_song_rematch_completed),
+                                                        type = if (failureResId != null) PopupType.Warning else PopupType.Success,
+                                                        context = context
+                                                    )
+                                                }
                                             }
+
                                             onDismiss()
-                                        }
-                                        )
+                                        })
                                 )
                             }
                         }

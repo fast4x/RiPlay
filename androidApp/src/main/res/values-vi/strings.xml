@@ -1616,4 +1616,6 @@
     <string name="error_import_failed">Unable to complete the operation: an unexpected error occurred during the import.</string>
     <string name="info_import_completed">Import completed. Tracks imported: %1$d</string>
     <string name="info_import_completed_with_skipped">Import completed with warnings. Tracks imported: %1$d, skipped: %2$d</string>
+    <string name="error_song_rematch_failed">Unable to complete the operation: an error occurred while updating the song.</string>
+    <string name="info_song_rematch_completed">Song updated successfully.</string>
 </resources>
