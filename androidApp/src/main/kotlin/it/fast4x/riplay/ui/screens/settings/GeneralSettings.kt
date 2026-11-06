@@ -68,14 +68,16 @@ import it.fast4x.riplay.services.helpers.AudioDRCHelper
 import it.fast4x.riplay.services.playback.MediaLibraryServiceCallback
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
-import it.fast4x.riplay.ui.components.themed.settingsItem
-import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.utils.CheckForNewVersion
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.isIgnoringBatteryOptimizations
 import it.fast4x.riplay.utils.restartApp
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import it.fast4x.riplay.ui.components.themed.settingsHeaderItem
+import it.fast4x.riplay.ui.components.themed.settingsGroupHeader
+import it.fast4x.riplay.ui.components.themed.settingsGroupCard
+import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 
 
 @ExperimentalAnimationApi
@@ -138,7 +140,7 @@ fun GeneralSettings(
     val maxSongsInQueue = appSettings.maxSongsInQueue
     val filterContentType = appSettings.filterContentType
 
-    val search = Search.init()
+    val search = Search.init(alwaysVisible = true)
 
     val shakeEventEnabled = appSettings.shakeEventEnabled
     val crossfadeDuration = appSettings.crossfadeDuration
@@ -283,7 +285,7 @@ fun GeneralSettings(
                 state = state,
                 contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer)
             ) {
-                settingsItem {
+                settingsHeaderItem {
                     HeaderWithIcon(
                         title = stringResource(R.string.tab_general),
                         iconId = R.drawable.app_icon,
@@ -295,19 +297,18 @@ fun GeneralSettings(
                     )
                 }
 
+
                 settingsSearchBarItem {
-                    search.ToolBarButton()
                     search.SearchBar(this)
                 }
 
                 if (BuildConfig.FLAVOR == "full") {
-                    settingsItem(
-                        isHeader = true
-                    ) {
-                        SettingsEntryGroupText(title = stringResource(R.string.check_update))
-                    }
+                    if (search.matchesAny(R.string.info_no_update_available, R.string.enable_check_for_update, R.string.when_enabled_a_new_version_is_checked_and_notified_during_startup, R.string.check_update, R.string.info_check_update_now)) {
+                    settingsGroupHeader(title = context.resources.getString(R.string.check_update))
 
-                    settingsItem {
+
+                    settingsGroupCard {
+
                         var checkUpdateNow by remember { mutableStateOf(false) }
                         if (checkUpdateNow) {
                             if (checkUpdateState == CheckUpdateState.Enabled)
@@ -336,7 +337,7 @@ fun GeneralSettings(
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
-                            valueText = { it.displayName }
+                            valueText = { it.displayName }, icon = R.drawable.update,
                         )
                         SettingsDescription(text = stringResource(R.string.when_enabled_a_new_version_is_checked_and_notified_during_startup))
                         AnimatedVisibility(visible = checkUpdateState != CheckUpdateState.Disabled) {
@@ -357,24 +358,22 @@ fun GeneralSettings(
                             }
                         }
                         Spacer(modifier = Modifier.height(16.dp))
+                    
+                }
                     }
+
                 }
 
 
-                settingsItem(
-                    isHeader = true
-                ) {
-                    SettingsEntryGroupText(title = stringResource(R.string.languages))
-                }
+                if (search.matchesAny(R.string.system_language, R.string.app_language)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.languages))
 
-                settingsItem {
+
+                settingsGroupCard {
+
                     //SettingsDescription(text = stringResource(R.string.system_language) + ": $systemLocale")
 
-                    if (search.input.isBlank() || stringResource(R.string.app_language).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                    if (search.matchesAny(R.string.app_language)) {
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.app_language),
                             selectedValue = languageApp,
@@ -387,7 +386,7 @@ fun GeneralSettings(
                             },
                             valueText = {
                                 languageToName(it)
-                            }
+                            }, icon = R.drawable.globe,
                         )
 
                         EnumValueSelectorSettingsEntry(
@@ -403,19 +402,17 @@ fun GeneralSettings(
                             valueText = { if (it == Countries.XX) "System Country" else it.countryName }
                         )
                     }
+                
+                }
                 }
 
-                settingsItem(
-                    isHeader = true
-                ) {
-                    SettingsEntryGroupText(title = stringResource(R.string.title_qrcode_to_actions))
-                }
-                settingsItem {
-                    if (search.input.isBlank() || stringResource(R.string.title_qrcode_to_actions).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+
+                if (search.matchesAny(R.string.title_qrcode_to_actions, R.string.enable_create_and_read_qrcode, R.string.info_create_and_read_qr_code_for_artist_album_playlist_song)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.title_qrcode_to_actions))
+
+                settingsGroupCard {
+
+                    if (search.matchesAny(R.string.title_qrcode_to_actions)) {
                         SwitchSettingEntry(
                             title = stringResource(R.string.enable_create_and_read_qrcode),
                             text = stringResource(R.string.info_create_and_read_qr_code_for_artist_album_playlist_song),
@@ -425,16 +422,17 @@ fun GeneralSettings(
                                     val new = appSettingsManager.activeSettings.value.copy(qrCodeToActions = it)
                                     appSettingsManager.updateSettings(new)
                                 }
-                            }
+                            }, icon = R.drawable.qr_code_reader,
                         )
                     }
+                
+                }
                 }
 
-                settingsItem(
-                    isHeader = true
-                ) {
-                    SettingsEntryGroupText(title = stringResource(R.string.title_network))
-                }
+
+                if (search.matchesAny(R.string.use_alternative_dns, R.string.use_dns_over_https_title, R.string.custom_dns_over_https_server, R.string.info_aternative_dns_server, R.string.enable_proxy, R.string.restarting_riplay_is_required, R.string.proxy_mode, R.string.proxy_host, R.string.proxy_port)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.title_network))
+
 
 
 
@@ -449,14 +447,11 @@ fun GeneralSettings(
 //                    if (it)
 //                        audioQualityFormat = AudioQualityFormat.Auto
 //                }
-//            )
+//, icon = R.drawable.datamobile,            )
 
-                settingsItem {
-                    if (search.input.isBlank() || stringResource(R.string.use_alternative_dns).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                settingsGroupCard {
+
+                    if (search.matchesAny(R.string.use_alternative_dns)) {
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.use_dns_over_https_title),
                             selectedValue = useDnsOverHttpsType,
@@ -467,7 +462,7 @@ fun GeneralSettings(
                                 }
                                 restartActivity = true
                             },
-                            valueText = { it.textName }
+                            valueText = { it.textName }, icon = R.drawable.shield_checkmark,
                         )
 
                         AnimatedVisibility(visible = useDnsOverHttpsType == DnsOverHttpsType.Custom) {
@@ -483,7 +478,7 @@ fun GeneralSettings(
                                         }
                                         restartActivity = true
                                     },
-                                    validationType = ValidationType.Url
+                                    validationType = ValidationType.Url, icon = R.drawable.server,
                                 )
                                 RestartActivity(
                                     restartActivity,
@@ -501,11 +496,7 @@ fun GeneralSettings(
 
                     }
 
-                    if (search.input.isBlank() || stringResource(R.string.enable_proxy).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                    if (search.matchesAny(R.string.enable_proxy)) {
                         SwitchSettingEntry(
                             title = stringResource(R.string.enable_proxy),
                             text = "",
@@ -515,7 +506,7 @@ fun GeneralSettings(
                                     val new = appSettingsManager.activeSettings.value.copy(proxyEnabled = it)
                                     appSettingsManager.updateSettings(new)
                                 }
-                            }
+                            }, icon = R.drawable.cloud,
                         )
                         SettingsDescription(text = stringResource(R.string.restarting_riplay_is_required))
 
@@ -530,7 +521,7 @@ fun GeneralSettings(
                                             appSettingsManager.updateSettings(new)
                                         }
                                     },
-                                    valueText = { it.name }
+                                    valueText = { it.name }, icon = R.drawable.sort,
                                 )
                                 TextDialogSettingEntry(
                                     title = stringResource(R.string.proxy_host),
@@ -542,7 +533,7 @@ fun GeneralSettings(
                                             appSettingsManager.updateSettings(new)
                                         }
                                     },
-                                    validationType = ValidationType.Ip
+                                    validationType = ValidationType.Ip, icon = R.drawable.server,
                                 )
                                 TextDialogSettingEntry(
                                     title = stringResource(R.string.proxy_port),
@@ -553,22 +544,23 @@ fun GeneralSettings(
                                             val new = appSettingsManager.activeSettings.value.copy(proxyPort = it.toIntOrNull() ?: 1080)
                                             appSettingsManager.updateSettings(new)
                                         }
-                                    }
+                                    }, icon = R.drawable.server,
                                 )
                             }
                         }
                     }
 
+                
+                }
                 }
 
-                settingsItem(
-                    isHeader = true
-                ) {
-                    SettingsGroupSpacer()
-                    SettingsEntryGroupText(title = stringResource(R.string.service_lifetime))
-                }
 
-                settingsItem {
+                if (search.matchesAny(R.string.keep_screen_on, R.string.prevents_screen_timeout, R.string.ignore_battery_optimizations, R.string.battery_optimizations_applied, R.string.is_android12, R.string.not_find_battery_optimization_settings, R.string.already_unrestricted, R.string.disable_background_restrictions, R.string.enable_voice_input, R.string.require_mic_permission)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.service_lifetime))
+
+
+                settingsGroupCard {
+
                     val context = LocalContext.current
                     val isKeepScreenOnEnabled = appSettings.keepScreenEnabled
                     var isIgnoringBatteryOptimizations by remember {
@@ -579,11 +571,7 @@ fun GeneralSettings(
                             isIgnoringBatteryOptimizations = context.isIgnoringBatteryOptimizations()
                         }
 
-                    if (search.input.isBlank() || stringResource(R.string.keep_screen_on).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                    if (search.matchesAny(R.string.keep_screen_on)) {
                         SwitchSettingEntry(
                             title = stringResource(R.string.keep_screen_on),
                             text = stringResource(R.string.prevents_screen_timeout),
@@ -593,14 +581,10 @@ fun GeneralSettings(
                                     val new = appSettingsManager.activeSettings.value.copy(keepScreenEnabled = it)
                                     appSettingsManager.updateSettings(new)
                                 }
-                            }
+                            }, icon = R.drawable.eye,
                         )
                     }
-                    if (search.input.isBlank() || stringResource(R.string.ignore_battery_optimizations).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                    if (search.matchesAny(R.string.ignore_battery_optimizations)) {
                         ImportantSettingsDescription(text = stringResource(R.string.battery_optimizations_applied))
 
                         if (isAtLeastAndroid12) {
@@ -640,16 +624,12 @@ fun GeneralSettings(
                                         )
                                     }
                                 }
-                            }
+                            }, icon = R.drawable.battery_charging,
                         )
                     }
 
 
-                    if (search.input.isBlank() || stringResource(R.string.enable_voice_input).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                    if (search.matchesAny(R.string.enable_voice_input)) {
                         SwitchSettingEntry(
                             title = stringResource(R.string.enable_voice_input),
                             text = stringResource(R.string.require_mic_permission),
@@ -659,26 +639,23 @@ fun GeneralSettings(
                                     val new = appSettingsManager.activeSettings.value.copy(enableVoiceInput = it)
                                     appSettingsManager.updateSettings(new)
                                 }
-                            }
+                            }, icon = R.drawable.mic,
                         )
                     }
 
+                
+                }
                 }
 
-                settingsItem(
-                    isHeader = true
-                ) {
-                    SettingsGroupSpacer()
-                    SettingsEntryGroupText(stringResource(R.string.self_closing))
-                }
 
-                settingsItem {
+                if (search.matchesAny(R.string.close_background_player, R.string.when_app_swipe_out_from_task_manager)) {
+                settingsGroupHeader(context.resources.getString(R.string.self_closing))
 
-                    if (search.input.isBlank() || stringResource(R.string.close_background_player).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+
+                settingsGroupCard {
+
+
+                    if (search.matchesAny(R.string.close_background_player)) {
 
                             EnumValueSelectorSettingsEntry(
                                 title = stringResource(R.string.when_app_swipe_out_from_task_manager),
@@ -690,27 +667,22 @@ fun GeneralSettings(
                                         appSettingsManager.updateSettings(new)
                                     }
                                 },
-                                valueText = { it.displayName }
+                                valueText = { it.displayName }, icon = R.drawable.exit,
                             )
 
 
                     }
+                
+                }
                 }
 
-                settingsItem(
-                    isHeader = true
-                ) {
-                    SettingsGroupSpacer()
-                    SettingsEntryGroupText(stringResource(R.string.player))
-                }
 
-                settingsItem {
+                if (search.matchesAny(R.string.video_content_mode_title, R.string.video_content_mode_description, R.string.jump_previous_title, R.string.jump_previous_description, R.string.min_listening_time, R.string.is_min_list_time_for_tips_or_quick_pics, R.string.exclude_songs_with_duration_limit, R.string.exclude_songs_with_duration_limit_description, R.string.pause_between_songs, R.string.player_pause_on_volume_zero, R.string.info_pauses_player_when_volume_zero, R.string.player_auto_load_songs_in_queue, R.string.player_auto_load_songs_in_queue_description, R.string.max_songs_in_queue, R.string.filter_content_type, R.string.persistent_queue, R.string.save_and_restore_playing_songs, R.string.resume_playback_on_start, R.string.resume_automatically_when_app_opens, R.string.close_app_with_back_button, R.string.when_you_use_the_back_button_from_the_home_page, R.string.skip_media_on_error, R.string.skip_media_on_error_description, R.string.skip_silence, R.string.skip_silent_parts_during_playback, R.string.minimum_silence_length, R.string.minimum_silence_length_description, R.string.format_ms, R.string.parental_control, R.string.info_prevent_play_songs_with_age_limitation, R.string.event_shake, R.string.shake_to_change_song)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.settings_group_playback))
 
-                    if (search.input.isBlank() || stringResource(R.string.video_content_mode_title).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+
+                settingsGroupCard {
+                    if (search.matchesAny(R.string.video_content_mode_title)) {
 
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.video_content_mode_title),
@@ -723,16 +695,11 @@ fun GeneralSettings(
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
-                            valueText = { it.textName }
+                            valueText = { it.textName }, icon = R.drawable.video,
                         )
 
                     }
-
-                    if (search.input.isBlank() || stringResource(R.string.jump_previous_title).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                    if (search.matchesAny(R.string.jump_previous_title)) {
 
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.jump_previous_title),
@@ -745,16 +712,11 @@ fun GeneralSettings(
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
-                            valueText = { it.textName }
+                            valueText = { it.textName }, icon = R.drawable.arrow_left,
                         )
 
                     }
-
-                    if (search.input.isBlank() || stringResource(R.string.min_listening_time).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                    if (search.matchesAny(R.string.min_listening_time)) {
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.min_listening_time),
                             selectedValue = minTimeForEvent,
@@ -764,16 +726,11 @@ fun GeneralSettings(
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
-                            valueText = { it.displayName }
+                            valueText = { it.displayName }, icon = R.drawable.time,
                         )
                         SettingsDescription(text = stringResource(R.string.is_min_list_time_for_tips_or_quick_pics))
                     }
-
-                    if (search.input.isBlank() || stringResource(R.string.min_listening_time).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                    if (search.matchesAny(R.string.min_listening_time)) {
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.exclude_songs_with_duration_limit),
                             selectedValue = excludeSongWithDurationLimit,
@@ -783,18 +740,13 @@ fun GeneralSettings(
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
-                            valueText = { it.displayName }
+                            valueText = { it.displayName }, icon = R.drawable.music,
                         )
                         SettingsDescription(text = stringResource(R.string.exclude_songs_with_duration_limit_description))
                     }
 
 
-
-                    if (search.input.isBlank() || stringResource(R.string.pause_between_songs).contains(
-                            search.input,
-                            true
-                        )
-                    )
+                    if (search.matchesAny(R.string.pause_between_songs))
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.pause_between_songs),
                             selectedValue = pauseBetweenSongs,
@@ -804,15 +756,10 @@ fun GeneralSettings(
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
-                            valueText = { it.displayName }
+                            valueText = { it.displayName }, icon = R.drawable.pause,
                         )
 
-
-                    if (search.input.isBlank() || stringResource(R.string.player_pause_on_volume_zero).contains(
-                            search.input,
-                            true
-                        )
-                    )
+                    if (search.matchesAny(R.string.player_pause_on_volume_zero))
                         SwitchSettingEntry(
                             title = stringResource(R.string.player_pause_on_volume_zero),
                             text = stringResource(R.string.info_pauses_player_when_volume_zero),
@@ -822,50 +769,10 @@ fun GeneralSettings(
                                     val new = appSettingsManager.activeSettings.value.copy(isPauseOnVolumeZeroEnabled = it)
                                     appSettingsManager.updateSettings(new)
                                 }
-                            }
+                            }, icon = R.drawable.volume_up,
                         )
 
-
-                    if (search.input.isBlank() || stringResource(R.string.player_keep_minimized).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.player_keep_minimized),
-                            text = stringResource(R.string.when_click_on_a_song_player_start_minimized),
-                            isChecked = keepPlayerMinimized,
-                            onCheckedChange = {
-                                coroutineScope.launch {
-                                    val new = appSettingsManager.activeSettings.value.copy(keepPlayerMinimized = it)
-                                    appSettingsManager.updateSettings(new)
-                                }
-                            }
-                        )
-
-
-                    if (search.input.isBlank() || stringResource(R.string.player_collapsed_disable_swiping_down).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.player_collapsed_disable_swiping_down),
-                            text = stringResource(R.string.avoid_closing_the_player_cleaning_queue_by_swiping_down),
-                            isChecked = disableClosingPlayerSwipingDown,
-                            onCheckedChange = {
-                                coroutineScope.launch {
-                                    val new = appSettingsManager.activeSettings.value.copy(disableClosingPlayerSwipingDown = it)
-                                    appSettingsManager.updateSettings(new)
-                                }
-                            }
-                        )
-
-                    if (search.input.isBlank() || stringResource(R.string.player_auto_load_songs_in_queue).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                    if (search.matchesAny(R.string.player_auto_load_songs_in_queue)) {
                         SwitchSettingEntry(
                             title = stringResource(R.string.player_auto_load_songs_in_queue),
                             text = stringResource(R.string.player_auto_load_songs_in_queue_description),
@@ -876,16 +783,11 @@ fun GeneralSettings(
                                     appSettingsManager.updateSettings(new)
                                 }
                                 restartService = true
-                            }
+                            }, icon = R.drawable.addqueue,
                         )
                         RestartPlayerService(restartService, onRestart = { restartService = false })
                     }
-
-                    if (search.input.isBlank() || stringResource(R.string.max_songs_in_queue).contains(
-                            search.input,
-                            true
-                        )
-                    )
+                    if (search.matchesAny(R.string.max_songs_in_queue))
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.max_songs_in_queue),
                             selectedValue = maxSongsInQueue,
@@ -895,14 +797,9 @@ fun GeneralSettings(
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
-                            valueText = { it.displayName }
+                            valueText = { it.displayName }, icon = R.drawable.list,
                         )
-
-                    if (search.input.isBlank() || stringResource(R.string.filter_content_type).contains(
-                            search.input,
-                            true
-                        )
-                    )
+                    if (search.matchesAny(R.string.filter_content_type))
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.filter_content_type),
                             selectedValue = filterContentType,
@@ -914,67 +811,9 @@ fun GeneralSettings(
                             },
                             valueText = {
                                 it.textName
-                            }
+                            }, icon = R.drawable.shapes,
                         )
-
-                    if (search.input.isBlank() || stringResource(R.string.discover).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.discover),
-                            text = stringResource(R.string.discoverinfo),
-                            isChecked = discoverIsEnabled,
-                            onCheckedChange = {
-                                coroutineScope.launch {
-                                    val new = appSettingsManager.activeSettings.value.copy(discoverIsEnabled = it)
-                                    appSettingsManager.updateSettings(new)
-                                }
-                            }
-                        )
-
-                    if (search.input.isBlank() || stringResource(R.string.playlistindicator).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.playlistindicator),
-                            text = stringResource(R.string.playlistindicatorinfo),
-                            isChecked = playlistindicator,
-                            onCheckedChange = {
-                                coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(playlistIndicator = it)
-                                    appearanceSettingsManager.updatePreset(new)
-                                }
-                            }
-                        )
-
-                    if (search.input.isBlank() || stringResource(R.string.now_playing_indicator).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        EnumValueSelectorSettingsEntry(
-                            title = stringResource(R.string.now_playing_indicator),
-                            selectedValue = nowPlayingIndicator,
-                            onValueSelected = {
-                                coroutineScope.launch {
-                                    val new = appSettingsManager.activeSettings.value.copy(nowPlayingIndicator = it)
-                                    appSettingsManager.updateSettings(new)
-                                }
-                            },
-                            valueText = {
-                                it.textName
-                            }
-                        )
-
-                    if (search.input.isBlank() || stringResource(R.string.persistent_queue).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                    if (search.matchesAny(R.string.persistent_queue)) {
                         SwitchSettingEntry(
                             title = stringResource(R.string.persistent_queue),
                             text = stringResource(R.string.save_and_restore_playing_songs),
@@ -986,7 +825,7 @@ fun GeneralSettings(
 
                                     if(it) binder?.loadQueue() // try to load last known queue now
                                 }
-                            }
+                            }, icon = R.drawable.library,
                         )
                         RestartPlayerService(restartService, onRestart = { restartService = false })
 
@@ -1005,7 +844,7 @@ fun GeneralSettings(
                                         }
 
                                         //restartService = true
-                                    }
+                                    }, icon = R.drawable.play,
                                 )
                                 RestartPlayerService(
                                     restartService,
@@ -1013,12 +852,7 @@ fun GeneralSettings(
                             }
                         }
                     }
-
-                    if (search.input.isBlank() || stringResource(R.string.close_app_with_back_button).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                    if (search.matchesAny(R.string.close_app_with_back_button)) {
                         SwitchSettingEntry(
                             isEnabled = Build.VERSION.SDK_INT >= 33,
                             title = stringResource(R.string.close_app_with_back_button),
@@ -1031,15 +865,10 @@ fun GeneralSettings(
                                 }
 
                                 restartActivity = true
-                            }
+                            }, icon = R.drawable.exit,
                         )
                     }
-
-                    if (search.input.isBlank() || stringResource(R.string.skip_media_on_error).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                    if (search.matchesAny(R.string.skip_media_on_error)) {
                         SwitchSettingEntry(
                             title = stringResource(R.string.skip_media_on_error),
                             text = stringResource(R.string.skip_media_on_error_description),
@@ -1053,18 +882,13 @@ fun GeneralSettings(
                                     )
                                 }
                                 restartService = true
-                            }
+                            }, icon = R.drawable.alert_circle,
                         )
 
                         RestartPlayerService(restartService, onRestart = { restartService = false })
 
                     }
-
-                    if (search.input.isBlank() || stringResource(R.string.skip_silence).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                    if (search.matchesAny(R.string.skip_silence)) {
                         SwitchSettingEntry(
                             title = stringResource(R.string.skip_silence),
                             text = stringResource(R.string.skip_silent_parts_during_playback),
@@ -1077,7 +901,7 @@ fun GeneralSettings(
                                         )
                                     )
                                 }
-                            }
+                            }, icon = R.drawable.slow_motion,
                         )
 
                         AnimatedVisibility(visible = skipSilence) {
@@ -1109,7 +933,7 @@ fun GeneralSettings(
                                         restartService = true
                                     },
                                     toDisplay = { stringResource(R.string.format_ms, it.toLong()) },
-                                    range = 1.00f..2000.000f
+                                    range = 1.00f..2000.000f, icon = R.drawable.slow_motion,
                                 )
 
                                 RestartPlayerService(
@@ -1119,12 +943,7 @@ fun GeneralSettings(
                         }
 
                     }
-
-                    if (search.input.isBlank() || stringResource(R.string.parental_control).contains(
-                            search.input,
-                            true
-                        )
-                    )
+                    if (search.matchesAny(R.string.parental_control))
                         SwitchSettingEntry(
                             title = stringResource(R.string.parental_control),
                             text = stringResource(R.string.info_prevent_play_songs_with_age_limitation),
@@ -1137,14 +956,9 @@ fun GeneralSettings(
                                         )
                                     )
                                 }
-                            }
+                            }, icon = R.drawable.shield_checkmark,
                         )
-
-                    if (search.input.isBlank() || stringResource(R.string.event_shake).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                    if (search.matchesAny(R.string.event_shake)) {
                         SwitchSettingEntry(
                             title = stringResource(R.string.event_shake),
                             text = stringResource(R.string.shake_to_change_song),
@@ -1158,16 +972,94 @@ fun GeneralSettings(
                                     )
                                 }
                                 restartService = true
-                            }
+                            }, icon = R.drawable.smart_shuffle,
                         )
                         RestartPlayerService(restartService, onRestart = { restartService = false })
                     }
 
-                    if (search.input.isBlank() || stringResource(R.string.settings_enable_pip).contains(
-                            search.input,
-                            true
+                }
+                }
+
+
+                if (search.matchesAny(R.string.player_keep_minimized, R.string.when_click_on_a_song_player_start_minimized, R.string.player_collapsed_disable_swiping_down, R.string.avoid_closing_the_player_cleaning_queue_by_swiping_down, R.string.discover, R.string.discoverinfo, R.string.playlistindicator, R.string.playlistindicatorinfo, R.string.now_playing_indicator)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.settings_group_player_interface))
+
+
+                settingsGroupCard {
+                    if (search.matchesAny(R.string.player_keep_minimized))
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.player_keep_minimized),
+                            text = stringResource(R.string.when_click_on_a_song_player_start_minimized),
+                            isChecked = keepPlayerMinimized,
+                            onCheckedChange = {
+                                coroutineScope.launch {
+                                    val new = appSettingsManager.activeSettings.value.copy(keepPlayerMinimized = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
+                            }, icon = R.drawable.minmax,
                         )
-                    ) {
+
+                    if (search.matchesAny(R.string.player_collapsed_disable_swiping_down))
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.player_collapsed_disable_swiping_down),
+                            text = stringResource(R.string.avoid_closing_the_player_cleaning_queue_by_swiping_down),
+                            isChecked = disableClosingPlayerSwipingDown,
+                            onCheckedChange = {
+                                coroutineScope.launch {
+                                    val new = appSettingsManager.activeSettings.value.copy(disableClosingPlayerSwipingDown = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
+                            }, icon = R.drawable.arrow_down,
+                        )
+                    if (search.matchesAny(R.string.discover))
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.discover),
+                            text = stringResource(R.string.discoverinfo),
+                            isChecked = discoverIsEnabled,
+                            onCheckedChange = {
+                                coroutineScope.launch {
+                                    val new = appSettingsManager.activeSettings.value.copy(discoverIsEnabled = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
+                            }, icon = R.drawable.trending,
+                        )
+                    if (search.matchesAny(R.string.playlistindicator))
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.playlistindicator),
+                            text = stringResource(R.string.playlistindicatorinfo),
+                            isChecked = playlistindicator,
+                            onCheckedChange = {
+                                coroutineScope.launch {
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(playlistIndicator = it)
+                                    appearanceSettingsManager.updatePreset(new)
+                                }
+                            }, icon = R.drawable.playlist,
+                        )
+                    if (search.matchesAny(R.string.now_playing_indicator))
+                        EnumValueSelectorSettingsEntry(
+                            title = stringResource(R.string.now_playing_indicator),
+                            selectedValue = nowPlayingIndicator,
+                            onValueSelected = {
+                                coroutineScope.launch {
+                                    val new = appSettingsManager.activeSettings.value.copy(nowPlayingIndicator = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
+                            },
+                            valueText = {
+                                it.textName
+                            }, icon = R.drawable.musical_note,
+                        )
+
+                }
+                }
+
+
+                if (search.matchesAny(R.string.settings_enable_pip, R.string.settings_pip_module, R.string.settings_enable_pip_auto, R.string.pip_info_from_android_12_pip_can_be_automatically_enabled, R.string.settings_floating_lyrics, R.string.settings_floating_lyrics_info, R.string.floating_lyrics_permission_missing)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.settings_group_screen_windows))
+
+
+                settingsGroupCard {
+                    if (search.matchesAny(R.string.settings_enable_pip)) {
                         SwitchSettingEntry(
                             title = stringResource(R.string.settings_enable_pip),
                             text = "",
@@ -1181,7 +1073,7 @@ fun GeneralSettings(
                                     )
                                 }
                                 restartActivity = true
-                            }
+                            }, icon = R.drawable.picture,
                         )
                         RestartActivity(restartActivity, onRestart = { restartActivity = false })
                         AnimatedVisibility(visible = enablePictureInPicture) {
@@ -1202,7 +1094,7 @@ fun GeneralSettings(
                                         }
                                         restartActivity = true
                                     },
-                                    valueText = { it.displayName }
+                                    valueText = { it.displayName }, icon = R.drawable.film,
                                 )
 
                                 SwitchSettingEntry(
@@ -1219,7 +1111,7 @@ fun GeneralSettings(
                                             )
                                         }
                                         restartActivity = true
-                                    }
+                                    }, icon = R.drawable.picture,
                                 )
                                 RestartActivity(
                                     restartActivity,
@@ -1228,12 +1120,7 @@ fun GeneralSettings(
 
                         }
                     }
-
-                    if (search.input.isBlank() || stringResource(R.string.settings_floating_lyrics).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                    if (search.matchesAny(R.string.settings_floating_lyrics)) {
                         SwitchSettingEntry(
                             title = stringResource(R.string.settings_floating_lyrics),
                             text = stringResource(R.string.settings_floating_lyrics_info),
@@ -1262,51 +1149,22 @@ fun GeneralSettings(
                                         )
                                     }
                                 }
-                            }
+                            }, icon = R.drawable.musical_notes,
                         )
                     }
 
-                    if (search.input.isBlank() || stringResource(R.string.equalizer).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
-                        EnumValueSelectorSettingsEntry(
-                            title = stringResource(R.string.equalizer),
-                            selectedValue = equalizerType,
-                            onValueSelected = {
-                                coroutineScope.launch {
-                                    appSettingsManager.updateSettings(
-                                        appSettingsManager.activeSettings.value.copy(
-                                            equalizerType = it
-                                        )
-                                    )
-                                }
-
-                                if (it == EqualizerType.System)
-                                    internalEqualizer?.setEnabled(false)
-                            },
-                            valueText = { it.textName }
-                        )
-
-                    }
-
+                }
                 }
 
-                settingsItem(
-                    isHeader = true
-                ) {
-                    SettingsGroupSpacer()
-                    SettingsEntryGroupText(title = stringResource(R.string.audio))
-                }
 
-                settingsItem {
+                if (search.matchesAny(R.string.effect_title_crossfade, R.string.effect_subtitle_crossfade_fade_between_tracks_in_queue, R.string.loudness_normalization, R.string.autoadjust_the_volume, R.string.settings_loudness_base_gain, R.string.settings_target_gain_loudness_info, R.string.loudness_boost_level, R.string.loudness_boost_level_info, R.string.settings_audio_bass_boost, R.string.settings_bass_boost_level, R.string.settings_audio_reverb, R.string.settings_audio_reverb_info_apply_a_depth_effect_to_the_audio, R.string.settings_audio_focus, R.string.settings_audio_focus_info, R.string.settings_disable_audio_drc, R.string.equalizer)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.audio))
 
-                    if (search.input.isBlank() || stringResource(R.string.effect_title_crossfade).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+
+                settingsGroupCard {
+
+
+                    if (search.matchesAny(R.string.effect_title_crossfade)) {
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.effect_title_crossfade),
                             titleSecondary = stringResource(R.string.effect_subtitle_crossfade_fade_between_tracks_in_queue),
@@ -1317,16 +1175,12 @@ fun GeneralSettings(
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
-                            valueText = { it.title }
+                            valueText = { it.title }, icon = R.drawable.shuffle,
                         )
 
                     }
 
-                    if (search.input.isBlank() || stringResource(R.string.loudness_normalization).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                    if (search.matchesAny(R.string.loudness_normalization)) {
                         SwitchSettingEntry(
                             title = stringResource(R.string.loudness_normalization),
                             text = stringResource(R.string.autoadjust_the_volume),
@@ -1339,7 +1193,7 @@ fun GeneralSettings(
                                         )
                                     )
                                 }
-                            }
+                            }, icon = R.drawable.music_equalizer,
                         )
                         AnimatedVisibility(visible = volumeNormalization) {
                             val initialValue by remember { derivedStateOf { loudnessBaseGain } }
@@ -1377,7 +1231,7 @@ fun GeneralSettings(
                                     toDisplay = {
                                         "%.1f dB".format(loudnessBaseGain).replace(",", ".")
                                     },
-                                    range = -20f..20f
+                                    range = -20f..20f, icon = R.drawable.music_equalizer,
                                 )
 
                                 SliderSettingsEntry(
@@ -1397,17 +1251,13 @@ fun GeneralSettings(
                                     toDisplay = {
                                         "%.2f dB".format(volumeBoostLevel).replace(",", ".")
                                     },
-                                    range = -20f..20f
+                                    range = -20f..20f, icon = R.drawable.music_equalizer,
                                 )
                             }
                         }
                     }
 
-                    if (search.input.isBlank() || stringResource(R.string.settings_audio_bass_boost).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                    if (search.matchesAny(R.string.settings_audio_bass_boost)) {
                         SwitchSettingEntry(
                             title = stringResource(R.string.settings_audio_bass_boost),
                             text = "",
@@ -1420,7 +1270,7 @@ fun GeneralSettings(
                                         )
                                     )
                                 }
-                            }
+                            }, icon = R.drawable.music_equalizer,
                         )
                         AnimatedVisibility(visible = bassboostEnabled) {
                             val initialValue by remember { derivedStateOf { bassboostLevel } }
@@ -1449,17 +1299,13 @@ fun GeneralSettings(
                                         }
                                     },
                                     toDisplay = { "%.1f".format(bassboostLevel).replace(",", ".") },
-                                    range = 0f..1f
+                                    range = 0f..1f, icon = R.drawable.music_equalizer,
                                 )
                             }
                         }
                     }
 
-                    if (search.input.isBlank() || stringResource(R.string.settings_audio_reverb).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                    if (search.matchesAny(R.string.settings_audio_reverb)) {
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.settings_audio_reverb),
                             titleSecondary = stringResource(R.string.settings_audio_reverb_info_apply_a_depth_effect_to_the_audio),
@@ -1476,16 +1322,12 @@ fun GeneralSettings(
                             },
                             valueText = {
                                 it.textName
-                            }
+                            }, icon = R.drawable.music_equalizer,
                         )
                         RestartPlayerService(restartService, onRestart = { restartService = false })
                     }
 
-                    if (search.input.isBlank() || stringResource(R.string.settings_audio_focus).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                    if (search.matchesAny(R.string.settings_audio_focus)) {
                         SwitchSettingEntry(
                             title = stringResource(R.string.settings_audio_focus),
                             text = stringResource(R.string.settings_audio_focus_info),
@@ -1498,15 +1340,11 @@ fun GeneralSettings(
                                         )
                                     )
                                 }
-                            }
+                            }, icon = R.drawable.master_volume,
                         )
                     }
 
-                    if (search.input.isBlank() || stringResource(R.string.settings_disable_audio_drc).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                    if (search.matchesAny(R.string.settings_disable_audio_drc)) {
                         SwitchSettingEntry(
                             isEnabled = AudioDRCHelper.hasDRCSupport(),
                             title = stringResource(R.string.settings_disable_audio_drc),
@@ -1520,26 +1358,44 @@ fun GeneralSettings(
                                         )
                                     )
                                 }
-                            }
+                            }, icon = R.drawable.music_equalizer,
                         )
                     }
 
+                
+
+                    if (search.matchesAny(R.string.equalizer)) {
+                        EnumValueSelectorSettingsEntry(
+                            title = stringResource(R.string.equalizer),
+                            selectedValue = equalizerType,
+                            onValueSelected = {
+                                coroutineScope.launch {
+                                    appSettingsManager.updateSettings(
+                                        appSettingsManager.activeSettings.value.copy(
+                                            equalizerType = it
+                                        )
+                                    )
+                                }
+
+                                if (it == EqualizerType.System)
+                                    internalEqualizer?.setEnabled(false)
+                            },
+                            valueText = { it.textName }, icon = R.drawable.equalizer,
+                        )
+
+                    }
                 }
+                }
+
 
                  // cast to complete in the future
-                settingsItem(
-                    isHeader = true
-                ) {
-                    SettingsGroupSpacer()
-                    SettingsEntryGroupText(title = stringResource(R.string.cast))
-                }
+                if (search.matchesAny(R.string.cast, R.string.enable_ritune_cast, R.string.ritune_cast_info, R.string.cast_type)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.cast))
 
-                settingsItem {
-                    if (search.input.isBlank() || stringResource(R.string.cast).contains(
-                            search.input,
-                            true
-                        )
-                    )
+
+                settingsGroupCard {
+
+                    if (search.matchesAny(R.string.cast))
 //                        SwitchSettingEntry(
 //                            title = stringResource(R.string.enable_ritune_cast),
 //                            text = stringResource(R.string.ritune_cast_info),
@@ -1547,7 +1403,7 @@ fun GeneralSettings(
 //                            onCheckedChange = {
 //                                castToRiTuneDeviceEnabled = it
 //                            }
-//                        )
+//, icon = R.drawable.cast_connected,                        )
 
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.cast_type),
@@ -1559,27 +1415,24 @@ fun GeneralSettings(
                                 }
                                 restartActivity = true
                             },
-                            valueText = { stringResource(it.title) }
+                            valueText = { stringResource(it.title) }, icon = R.drawable.cast_disconnected,
                         )
                         RestartActivity(
                             restartActivity,
                             onRestart = { restartActivity = false })
 
+                
+                }
                 }
 
-                settingsItem(
-                    isHeader = true
-                ) {
-                    SettingsGroupSpacer()
-                    SettingsEntryGroupText(title = stringResource(R.string.settings_automatic_playback))
-                }
 
-                settingsItem {
-                    if (search.input.isBlank() || stringResource(R.string.settings_automatic_playback).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                if (search.matchesAny(R.string.settings_automatic_playback, R.string.settings_bt_title_bluetooth_audio_devices, R.string.settings_bt_info_resume_playback_when_connected_pause_when_disconnected, R.string.settings_wired_title_wired_audio_devices, R.string.settings_wired_info_resume_playback_when_plugged_pause_when_unplugged)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.settings_automatic_playback))
+
+
+                settingsGroupCard {
+
+                    if (search.matchesAny(R.string.settings_automatic_playback)) {
                         if (isAtLeastAndroid6) {
                             SwitchSettingEntry(
                                 title = stringResource(R.string.settings_bt_title_bluetooth_audio_devices),
@@ -1593,7 +1446,7 @@ fun GeneralSettings(
                                     }
 
                                     restartService = true
-                                }
+                                }, icon = R.drawable.bluetooth,
                             )
                             SwitchSettingEntry(
                                 title = stringResource(R.string.settings_wired_title_wired_audio_devices),
@@ -1607,28 +1460,25 @@ fun GeneralSettings(
                                     }
 
                                     restartService = true
-                                }
+                                }, icon = R.drawable.headset,
                             )
                             RestartPlayerService(
                                 restartService,
                                 onRestart = { restartService = false })
                         }
                     }
+                
+                }
                 }
 
-                settingsItem(
-                    isHeader = true
-                ) {
-                    SettingsGroupSpacer()
-                    SettingsEntryGroupText(title = stringResource(R.string.playback_events))
-                }
-                settingsItem {
 
-                    if (search.input.isBlank() || stringResource(R.string.player_pause_listen_history).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                if (search.matchesAny(R.string.player_pause_listen_history, R.string.player_pause_listen_history_info, R.string.reset_playback_events, R.string.delete_playback_events, R.string.no_playback_events, R.string.reset_unplayable_tracks, R.string.clear_unplayable_tracks_summary, R.string.clear_unplayable_tracks, R.string.no_unplayable_tracks)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.playback_events))
+
+                settingsGroupCard {
+
+
+                    if (search.matchesAny(R.string.player_pause_listen_history)) {
                         SwitchSettingEntry(
                             title = stringResource(R.string.player_pause_listen_history),
                             text = stringResource(R.string.player_pause_listen_history_info),
@@ -1642,7 +1492,7 @@ fun GeneralSettings(
                                     )
                                 }
                                 restartService = true
-                            }
+                            }, icon = R.drawable.history,
                         )
                         RestartPlayerService(restartService, onRestart = { restartService = false })
 
@@ -1654,7 +1504,7 @@ fun GeneralSettings(
                                 stringResource(R.string.no_playback_events)
                             },
                             isEnabled = eventsCount > 0,
-                            onClick = { clearEvents = true }
+                            onClick = { clearEvents = true }, icon = R.drawable.refresh,
                         )
 
                         SettingsEntry(
@@ -1666,18 +1516,19 @@ fun GeneralSettings(
                                 stringResource(R.string.no_unplayable_tracks)
                             },
                             isEnabled = unplayableTracksCount > 0,
-                            onClick = { clearUnplayableTracks = true }
+                            onClick = { clearUnplayableTracks = true }, icon = R.drawable.alert_circle,
                         )
                     }
+                
+                }
                 }
 
-                settingsItem(
-                    isHeader = true
-                ) {
-                    SettingsGroupSpacer()
-                    SettingsEntryGroupText(title = stringResource(R.string.search_history))
-                }
-                settingsItem {
+
+                if (search.matchesAny(R.string.pause_search_history, R.string.neither_save_new_searched_query, R.string.clear_search_history, R.string.delete, R.string.search_queries, R.string.history_is_empty)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.search_history))
+
+                settingsGroupCard {
+
                     SwitchSettingEntry(
                         title = stringResource(R.string.pause_search_history),
                         text = stringResource(R.string.neither_save_new_searched_query),
@@ -1691,7 +1542,7 @@ fun GeneralSettings(
                                 )
                             }
                             restartService = true
-                        }
+                        }, icon = R.drawable.pause,
                     )
                     RestartPlayerService(restartService, onRestart = { restartService = false } )
 
@@ -1703,23 +1554,20 @@ fun GeneralSettings(
                             stringResource(R.string.history_is_empty)
                         },
                         isEnabled = queriesCount > 0,
-                        onClick = { Database.asyncTransaction( Database::clearQueries ) }
+                        onClick = { Database.asyncTransaction( Database::clearQueries ) }, icon = R.drawable.trash,
                     )
+                
+                }
                 }
 
-                settingsItem(
-                    isHeader = true
-                ) {
-                    SettingsGroupSpacer()
-                    SettingsEntryGroupText(title = stringResource(R.string.android_auto))
-                }
 
-                settingsItem {
-                    if (search.input.isBlank() || stringResource(R.string.android_auto_1).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                if (search.matchesAny(R.string.android_auto_1, R.string.enable_android_auto_support, R.string.aa_show_list_as_grid, R.string.aa_playlist_song_limit, R.string.aa_show_monthly_playlists, R.string.aa_info_show_monthly_playlists_in_playlists_screen, R.string.aa_show_podcast_playlists, R.string.aa_show_pinned_playlists, R.string.aa_show_in_library, R.string.aa_info_show_in_library_in_artists_and_albums_screen, R.string.aa_show_on_device, R.string.aa_info_show_on_device_in_artists_and_albums_screen, R.string.aa_show_top_songs, R.string.aa_info_show_top_playlist_in_playlists_screen, R.string.aa_show_all_songs, R.string.aa_info_show_favorites_playlists_in_playlists_screen, R.string.aa_show_shuffle_in_songs)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.android_auto))
+
+
+                settingsGroupCard {
+
+                    if (search.matchesAny(R.string.android_auto_1)) {
                         SwitchSettingEntry(
                             title = stringResource(R.string.android_auto_1),
                             text = stringResource(R.string.enable_android_auto_support),
@@ -1732,7 +1580,7 @@ fun GeneralSettings(
                                     //binder?.notifyAndroidAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.ROOT)
                                     restartApp(context)
                                 }
-                            }
+                            }, icon = R.drawable.ic_android_auto,
                         )
                         RestartPlayerService(restartService, onRestart = { restartService = false })
                     }
@@ -1741,11 +1589,7 @@ fun GeneralSettings(
                             modifier = Modifier.padding(start = 12.dp)
                         ) {
 
-                            if (search.input.isBlank() || stringResource(R.string.aa_show_list_as_grid).contains(
-                                    search.input,
-                                    true
-                                )
-                            ) {
+                            if (search.matchesAny(R.string.aa_show_list_as_grid)) {
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.aa_show_list_as_grid),
                                     text = "",
@@ -1769,15 +1613,11 @@ fun GeneralSettings(
                                                 )
                                             }
                                         }
-                                    }
+                                    }, icon = R.drawable.grid_view,
                                 )
                             }
 
-                            if (search.input.isBlank() || stringResource(R.string.aa_playlist_song_limit).contains(
-                                    search.input,
-                                    true
-                                )
-                            ) {
+                            if (search.matchesAny(R.string.aa_playlist_song_limit)) {
                                 EnumValueSelectorSettingsEntry(
                                     title = stringResource(R.string.aa_playlist_song_limit),
                                     selectedValue = androidAutoPlaylistLimit,
@@ -1801,15 +1641,11 @@ fun GeneralSettings(
                                             )
                                         }
                                     },
-                                    valueText = { it.displayName }
+                                    valueText = { it.displayName }, icon = R.drawable.list,
                                 )
                             }
 
-                            if (search.input.isBlank() || stringResource(R.string.aa_show_monthly_playlists).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.aa_show_monthly_playlists))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.aa_show_monthly_playlists),
                                     text = "", //stringResource(R.string.aa_info_show_monthly_playlists_in_playlists_screen),
@@ -1822,14 +1658,10 @@ fun GeneralSettings(
                                                 MediaLibraryServiceCallback.MediaId.PLAYLISTS
                                             )
                                         }
-                                    }
+                                    }, icon = R.drawable.calendar,
                                 )
 
-                            if (search.input.isBlank() || stringResource(R.string.aa_show_podcast_playlists).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.aa_show_podcast_playlists))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.aa_show_podcast_playlists),
                                     text = "", //stringResource(R.string.aa_info_show_monthly_playlists_in_playlists_screen),
@@ -1842,14 +1674,10 @@ fun GeneralSettings(
                                                 MediaLibraryServiceCallback.MediaId.PLAYLISTS
                                             )
                                         }
-                                    }
+                                    }, icon = R.drawable.podcast,
                                 )
 
-                            if (search.input.isBlank() || stringResource(R.string.aa_show_pinned_playlists).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.aa_show_pinned_playlists))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.aa_show_pinned_playlists),
                                     text = "", //stringResource(R.string.aa_info_show_monthly_playlists_in_playlists_screen),
@@ -1862,14 +1690,10 @@ fun GeneralSettings(
                                                 MediaLibraryServiceCallback.MediaId.PLAYLISTS
                                             )
                                         }
-                                    }
+                                    }, icon = R.drawable.pin,
                                 )
 
-                            if (search.input.isBlank() || stringResource(R.string.aa_show_in_library).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.aa_show_in_library))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.aa_show_in_library),
                                     text = "", //stringResource(R.string.aa_info_show_in_library_in_artists_and_albums_screen),
@@ -1893,14 +1717,10 @@ fun GeneralSettings(
                                                 )
                                             }
                                         }
-                                    }
+                                    }, icon = R.drawable.library,
                                 )
 
-                            if (search.input.isBlank() || stringResource(R.string.aa_show_on_device).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.aa_show_on_device))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.aa_show_on_device),
                                     text = "", //stringResource(R.string.aa_info_show_on_device_in_artists_and_albums_screen),
@@ -1924,14 +1744,10 @@ fun GeneralSettings(
                                                 )
                                             }
                                         }
-                                    }
+                                    }, icon = R.drawable.folder,
                                 )
 
-                            if (search.input.isBlank() || stringResource(R.string.aa_show_top_songs).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.aa_show_top_songs))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.aa_show_top_songs),
                                     text = "", //stringResource(R.string.aa_info_show_top_playlist_in_playlists_screen),
@@ -1944,14 +1760,10 @@ fun GeneralSettings(
                                                 MediaLibraryServiceCallback.MediaId.SONGS
                                             )
                                         }
-                                    }
+                                    }, icon = R.drawable.trophy,
                                 )
 
-                            if (search.input.isBlank() || stringResource(R.string.aa_show_all_songs).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.aa_show_all_songs))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.aa_show_all_songs),
                                     text = "", // stringResource(R.string.aa_info_show_favorites_playlists_in_playlists_screen),
@@ -1964,14 +1776,10 @@ fun GeneralSettings(
                                                 MediaLibraryServiceCallback.MediaId.SONGS
                                             )
                                         }
-                                    }
+                                    }, icon = R.drawable.musical_notes,
                                 )
 
-                            if (search.input.isBlank() || stringResource(R.string.aa_show_shuffle_in_songs).contains(
-                                    search.input,
-                                    true
-                                )
-                            ) {
+                            if (search.matchesAny(R.string.aa_show_shuffle_in_songs)) {
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.aa_show_shuffle_in_songs),
                                     text = "",
@@ -1984,20 +1792,23 @@ fun GeneralSettings(
                                                 MediaLibraryServiceCallback.MediaId.SONGS
                                             )
                                         }
-                                    }
+                                    }, icon = R.drawable.shuffle,
                                 )
                             }
 
                         }
                     }
 
-                }
+                
+
 
 //            SettingsGroupSpacer(
 //                modifier = Modifier.height(Dimensions.bottomSpacer)
 //            )
 
             }
+                }
         }
     }
+        }
 }

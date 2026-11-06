@@ -60,8 +60,6 @@ import it.fast4x.riplay.extensions.appearancesettings.models.AppearanceSettings
 import it.fast4x.riplay.extensions.appearancesettings.utils.fromShareString
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
-import it.fast4x.riplay.ui.components.themed.settingsItem
-import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.utils.RestartActivity
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
 import it.fast4x.riplay.utils.LazyListContainer
@@ -69,6 +67,10 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Date
+import it.fast4x.riplay.ui.components.themed.settingsHeaderItem
+import it.fast4x.riplay.ui.components.themed.settingsGroupHeader
+import it.fast4x.riplay.ui.components.themed.settingsGroupCard
+import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 
 @OptIn(ExperimentalPermissionsApi::class)
 @ExperimentalAnimationApi
@@ -138,7 +140,7 @@ fun PlayerAppearanceSettings(
     val clickLyricsText = appearanceSettings.clickLyricsText
     val showBackgroundLyrics = appearanceSettings.showBackgroundLyrics
 
-    val search = Search.init()
+    val search = Search.init(alwaysVisible = true)
 
     val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
@@ -453,7 +455,7 @@ fun PlayerAppearanceSettings(
                 state = state,
                 contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer)
             ) {
-                settingsItem {
+                settingsHeaderItem {
                     HeaderWithIcon(
                         title = stringResource(R.string.player_appearance),
                         iconId = R.drawable.color_palette,
@@ -465,36 +467,17 @@ fun PlayerAppearanceSettings(
                     )
                 }
 
+
                 settingsSearchBarItem {
-                    search.ToolBarButton()
                     search.SearchBar(this)
                 }
 
-                settingsItem(
-                    isHeader = true
-                ) {
-                    SettingsEntryGroupText(title = stringResource(R.string.player))
-                }
+                if (search.matchesAny(R.string.player_transitions_enabled, R.string.player_transitions_enabled_description, R.string.player_transition_animation, R.string.player_transition_animation_description, R.string.show_player_top_actions_bar, R.string.blankspace, R.string.playertype, R.string.queuetype, R.string.miniplayertype, R.string.player_swap_controls_with_timeline, R.string.pcontrols_type, R.string.disable_scrolling_text, R.string.scrolling_text_is_used_for_long_texts, R.string.disable_horizontal_swipe, R.string.disable_vertical_swipe, R.string.disable_vertical_swipe_secondary, R.string.disable_song_switching_via_swipe)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.settings_group_player_layout))
 
-                settingsItem {
-                    //if (!isLandscape) {
-                    ButtonBarSettingEntry(
-                        title = stringResource(R.string.settings_themes_manager), //stringResource(R.string.appearancepresets),
-                        text = stringResource(R.string.settings_themes_manager_title_swithes_between_themes),
-                        icon = R.drawable.color_palette,
-                        iconColor = colorPalette().text,
-                        onClick = { appearanceChooser = true },
-                    )
 
-                }
-
-                settingsItem {
-
-                    if (search.input.isBlank() || stringResource(R.string.player_transitions_enabled).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+                settingsGroupCard {
+                    if (search.matchesAny(R.string.player_transitions_enabled)) {
                         SwitchSettingEntry(
                             title = stringResource(R.string.player_transitions_enabled),
                             text = stringResource(R.string.player_transitions_enabled_description),
@@ -506,7 +489,7 @@ fun PlayerAppearanceSettings(
                                     )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
-                            }
+                            }, icon = R.drawable.slow_motion,
                         )
 
                         AnimatedVisibility(visible = playerTransitionsEnabled) {
@@ -524,18 +507,12 @@ fun PlayerAppearanceSettings(
                                             appearanceSettingsManager.updatePreset(new)
                                         }
                                     },
-                                    valueText = { it.name },
+                                    valueText = { it.name }, icon = R.drawable.slow_motion,
                                 )
                             }
                         }
                     }
-
-
-                    if (search.input.isBlank() || stringResource(R.string.show_player_top_actions_bar).contains(
-                            search.input,
-                            true
-                        )
-                    )
+                    if (search.matchesAny(R.string.show_player_top_actions_bar))
                         SwitchSettingEntry(
                             title = stringResource(R.string.show_player_top_actions_bar),
                             text = "",
@@ -547,15 +524,10 @@ fun PlayerAppearanceSettings(
                                     )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
-                            }
+                            }, icon = R.drawable.horizontal_bold_line,
                         )
-
                     if (!showTopActionsBar) {
-                        if (search.input.isBlank() || stringResource(R.string.blankspace).contains(
-                                search.input,
-                                true
-                            )
-                        )
+                        if (search.matchesAny(R.string.blankspace))
                             SwitchSettingEntry(
                                 title = stringResource(R.string.blankspace),
                                 text = "",
@@ -568,16 +540,10 @@ fun PlayerAppearanceSettings(
                                             )
                                         appearanceSettingsManager.updatePreset(new)
                                     }
-                                }
+                                }, icon = R.drawable.resize,
                             )
                     }
-                    //}
-
-                    if (search.input.isBlank() || stringResource(R.string.playertype).contains(
-                            search.input,
-                            true
-                        )
-                    )
+                    if (search.matchesAny(R.string.playertype))
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.playertype),
                             selectedValue = playerType,
@@ -589,14 +555,9 @@ fun PlayerAppearanceSettings(
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             },
-                            valueText = { it.displayName },
+                            valueText = { it.displayName }, icon = R.drawable.play,
                         )
-
-                    if (search.input.isBlank() || stringResource(R.string.queuetype).contains(
-                            search.input,
-                            true
-                        )
-                    )
+                    if (search.matchesAny(R.string.queuetype))
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.queuetype),
                             selectedValue = queueType,
@@ -608,15 +569,91 @@ fun PlayerAppearanceSettings(
                                     appearanceSettingsManager.updatePreset(new)
                                 }
                             },
-                            valueText = { it.displayName },
+                            valueText = { it.displayName }, icon = R.drawable.list,
                         )
+                    if (search.matchesAny(R.string.miniplayertype))
+                        EnumValueSelectorSettingsEntry(
+                            title = stringResource(R.string.miniplayertype),
+                            selectedValue = miniPlayerType,
+                            onValueSelected = {
+                                coroutineScope.launch {
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        miniPlayerType = it
+                                    )
+                                    appearanceSettingsManager.updatePreset(new)
+                                }
+                            },
+                            valueText = { it.displayName }, icon = R.drawable.player_mini_widget,
+                        )
+                    if (search.matchesAny(R.string.player_swap_controls_with_timeline))
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.player_swap_controls_with_timeline),
+                            text = "",
+                            isChecked = playerSwapControlsWithTimeline,
+                            onCheckedChange = {
+                                coroutineScope.launch {
+                                    val new =
+                                        appearanceSettingsManager.activeSettings.value.copy(
+                                            playerSwapControlsWithTimeline = it
+                                        )
+                                    appearanceSettingsManager.updatePreset(new)
+                                }
+                            }, icon = R.drawable.reorder,
+                        )
+                    if (search.matchesAny(R.string.pcontrols_type))
+                        EnumValueSelectorSettingsEntry(
+                            title = stringResource(R.string.pcontrols_type),
+                            selectedValue = playerControlsType,
+                            onValueSelected = {
+                                coroutineScope.launch {
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        playerControlsType = it
+                                    )
+                                    appearanceSettingsManager.updatePreset(new)
+                                }
+                            },
+                            valueText = { it.displayName }, icon = R.drawable.play,
+                        )
+                    if (search.matchesAny(R.string.disable_scrolling_text))
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.disable_scrolling_text),
+                            text = stringResource(R.string.scrolling_text_is_used_for_long_texts),
+                            isChecked = disableScrollingText,
+                            onCheckedChange = {
+                                coroutineScope.launch {
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        disableScrollingText = it
+                                    )
+                                    appearanceSettingsManager.updatePreset(new)
+                                }
+                            }, icon = R.drawable.text,
+                        )
+                    if (search.matches(stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.disable_horizontal_swipe else R.string.disable_vertical_swipe)))
+                        SwitchSettingEntry(
+                            title = stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.disable_vertical_swipe else R.string.disable_horizontal_swipe),
+                            text = stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.disable_vertical_swipe_secondary else R.string.disable_song_switching_via_swipe),
+                            isChecked = disablePlayerHorizontalSwipe,
+                            onCheckedChange = {
+                                coroutineScope.launch {
+                                    val new =
+                                        appearanceSettingsManager.activeSettings.value.copy(
+                                            disablePlayerHorizontalSwipe = it
+                                        )
+                                    appearanceSettingsManager.updatePreset(new)
+                                }
+                            }
+                        )
+                }
+                }
 
+
+if (search.matchesAny(R.string.show_thumbnail, R.string.swipe_Animation_No_Thumbnail, R.string.fadingedge, R.string.carousel, R.string.carouselsize, R.string.thumbnailpause, R.string.show_lyrics_thumbnail, R.string.showvisthumbnail, R.string.show_cover_thumbnail_animation, R.string.cover_thumbnail_animation_type, R.string.player_thumbnail_size, R.string.thumbnailtype, R.string.thumbnail_roundness, R.string.noblur, R.string.albumCoverRotation)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.settings_group_thumbnail))
+
+
+                settingsGroupCard {
                     if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) {
-                        if (search.input.isBlank() || stringResource(R.string.show_thumbnail).contains(
-                                search.input,
-                                true
-                            )
-                        )
+                        if (search.matchesAny(R.string.show_thumbnail))
                             SwitchSettingEntry(
                                 title = stringResource(R.string.show_thumbnail),
                                 text = "",
@@ -629,15 +666,11 @@ fun PlayerAppearanceSettings(
                                             )
                                         appearanceSettingsManager.updatePreset(new)
                                     }
-                                },
+                                }, icon = R.drawable.picture,
                             )
                     }
                     AnimatedVisibility(visible = !showthumbnail && playerType == PlayerType.Modern && !isLandscape) {
-                        if (search.input.isBlank() || stringResource(R.string.swipe_Animation_No_Thumbnail).contains(
-                                search.input,
-                                true
-                            )
-                        )
+                        if (search.matchesAny(R.string.swipe_Animation_No_Thumbnail))
                             EnumValueSelectorSettingsEntry(
                                 title = stringResource(R.string.swipe_Animation_No_Thumbnail),
                                 selectedValue = swipeAnimationNoThumbnail,
@@ -651,17 +684,13 @@ fun PlayerAppearanceSettings(
                                     }
                                 },
                                 valueText = { it.displayName },
-                                modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
+                                modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp), icon = R.drawable.flip,
                             )
                     }
                     AnimatedVisibility(visible = showthumbnail) {
                         Column {
                             if (playerType == PlayerType.Modern) {
-                                if (search.input.isBlank() || stringResource(R.string.fadingedge).contains(
-                                        search.input,
-                                        true
-                                    )
-                                )
+                                if (search.matchesAny(R.string.fadingedge))
                                     SwitchSettingEntry(
                                         title = stringResource(R.string.fadingedge),
                                         text = "",
@@ -675,7 +704,7 @@ fun PlayerAppearanceSettings(
                                                 appearanceSettingsManager.updatePreset(new)
                                             }
                                         },
-                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
+                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp), icon = R.drawable.slow_motion,
                                     )
                             }
 
@@ -683,11 +712,7 @@ fun PlayerAppearanceSettings(
                                 //&& (expandedplayertoggle || expandedplayer)
                                 )
                             {
-                                if (search.input.isBlank() || stringResource(R.string.carousel).contains(
-                                        search.input,
-                                        true
-                                    )
-                                )
+                                if (search.matchesAny(R.string.carousel))
                                     SwitchSettingEntry(
                                         title = stringResource(R.string.carousel),
                                         text = "",
@@ -703,14 +728,10 @@ fun PlayerAppearanceSettings(
                                                 appearanceSettingsManager.updatePreset(new)
                                             }
                                         },
-                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
+                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp), icon = R.drawable.cd,
                                     )
 
-                                if (search.input.isBlank() || stringResource(R.string.carouselsize).contains(
-                                        search.input,
-                                        true
-                                    )
-                                )
+                                if (search.matchesAny(R.string.carouselsize))
                                     EnumValueSelectorSettingsEntry(
                                         title = stringResource(R.string.carouselsize),
                                         selectedValue = carouselSize,
@@ -724,16 +745,12 @@ fun PlayerAppearanceSettings(
                                             }
                                         },
                                         valueText = { it.displayName },
-                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
+                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp), icon = R.drawable.resize,
                                     )
                             }
                             if (playerType == PlayerType.Essential) {
 
-                                if (search.input.isBlank() || stringResource(R.string.thumbnailpause).contains(
-                                        search.input,
-                                        true
-                                    )
-                                )
+                                if (search.matchesAny(R.string.thumbnailpause))
                                     SwitchSettingEntry(
                                         title = stringResource(R.string.thumbnailpause),
                                         text = "",
@@ -747,14 +764,10 @@ fun PlayerAppearanceSettings(
                                                 appearanceSettingsManager.updatePreset(new)
                                             }
                                         },
-                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
+                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp), icon = R.drawable.pause,
                                     )
 
-                                if (search.input.isBlank() || stringResource(R.string.show_lyrics_thumbnail).contains(
-                                        search.input,
-                                        true
-                                    )
-                                )
+                                if (search.matchesAny(R.string.show_lyrics_thumbnail))
                                     SwitchSettingEntry(
                                         title = stringResource(R.string.show_lyrics_thumbnail),
                                         text = "",
@@ -768,14 +781,10 @@ fun PlayerAppearanceSettings(
                                                 appearanceSettingsManager.updatePreset(new)
                                             }
                                         },
-                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
+                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp), icon = R.drawable.musical_notes,
                                     )
                                 if (audioVisualizerStyleInPlayer != AudioVisualizerStyle.NONE) {
-                                    if (search.input.isBlank() || stringResource(R.string.showvisthumbnail).contains(
-                                            search.input,
-                                            true
-                                        )
-                                    )
+                                    if (search.matchesAny(R.string.showvisthumbnail))
                                         SwitchSettingEntry(
                                             title = stringResource(R.string.showvisthumbnail),
                                             text = "",
@@ -789,16 +798,12 @@ fun PlayerAppearanceSettings(
                                                     appearanceSettingsManager.updatePreset(new)
                                                 }
                                             },
-                                            modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
+                                            modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp), icon = R.drawable.soundwave,
                                         )
                                 }
                             }
 
-                            if (search.input.isBlank() || stringResource(R.string.show_cover_thumbnail_animation).contains(
-                                    search.input,
-                                    true
-                                )
-                            ) {
+                            if (search.matchesAny(R.string.show_cover_thumbnail_animation)) {
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.show_cover_thumbnail_animation),
                                     text = "",
@@ -812,7 +817,7 @@ fun PlayerAppearanceSettings(
                                             appearanceSettingsManager.updatePreset(new)
                                         }
                                     },
-                                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
+                                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp), icon = R.drawable.picture,
                                 )
                                 AnimatedVisibility(visible = showCoverThumbnailAnimation) {
                                     Column {
@@ -829,18 +834,14 @@ fun PlayerAppearanceSettings(
                                                 }
                                             },
                                             valueText = { it.textName },
-                                            modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 24.dp else 12.dp)
+                                            modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 24.dp else 12.dp), icon = R.drawable.picture,
                                         )
                                     }
                                 }
                             }
 
                             if (isLandscape) {
-                                if (search.input.isBlank() || stringResource(R.string.player_thumbnail_size).contains(
-                                        search.input,
-                                        true
-                                    )
-                                )
+                                if (search.matchesAny(R.string.player_thumbnail_size))
                                     EnumValueSelectorSettingsEntry(
                                         title = stringResource(R.string.player_thumbnail_size),
                                         selectedValue = playerThumbnailSizeL,
@@ -854,14 +855,10 @@ fun PlayerAppearanceSettings(
                                             }
                                         },
                                         valueText = { it.displayName },
-                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
+                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp), icon = R.drawable.resize,
                                     )
                             } else {
-                                if (search.input.isBlank() || stringResource(R.string.player_thumbnail_size).contains(
-                                        search.input,
-                                        true
-                                    )
-                                )
+                                if (search.matchesAny(R.string.player_thumbnail_size))
                                     EnumValueSelectorSettingsEntry(
                                         title = stringResource(R.string.player_thumbnail_size),
                                         selectedValue = playerThumbnailSize,
@@ -875,14 +872,10 @@ fun PlayerAppearanceSettings(
                                             }
                                         },
                                         valueText = { it.displayName },
-                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
+                                        modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp), icon = R.drawable.resize,
                                     )
                             }
-                            if (search.input.isBlank() || stringResource(R.string.thumbnailtype).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.thumbnailtype))
                                 EnumValueSelectorSettingsEntry(
                                     title = stringResource(R.string.thumbnailtype),
                                     selectedValue = thumbnailType,
@@ -896,14 +889,10 @@ fun PlayerAppearanceSettings(
                                         }
                                     },
                                     valueText = { it.displayName },
-                                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
+                                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp), icon = R.drawable.picture,
                                 )
 
-                            if (search.input.isBlank() || stringResource(R.string.thumbnail_roundness).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.thumbnail_roundness))
                                 EnumValueSelectorSettingsEntry(
                                     title = stringResource(R.string.thumbnail_roundness),
                                     selectedValue = thumbnailRoundness,
@@ -932,17 +921,12 @@ fun PlayerAppearanceSettings(
                                         )
                                     },
                                     valueText = { it.displayName },
-                                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp)
+                                    modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 12.dp else 0.dp), icon = R.drawable.shapes,
                                 )
                         }
                     }
-
                     if (!showthumbnail) {
-                        if (search.input.isBlank() || stringResource(R.string.noblur).contains(
-                                search.input,
-                                true
-                            )
-                        )
+                        if (search.matchesAny(R.string.noblur))
                             SwitchSettingEntry(
                                 title = stringResource(R.string.noblur),
                                 text = "",
@@ -955,362 +939,13 @@ fun PlayerAppearanceSettings(
                                             )
                                         appearanceSettingsManager.updatePreset(new)
                                     }
-                                }
+                                }, icon = R.drawable.eye_off,
                             )
 
 
                     }
-
-                    if (!(showthumbnail && playerType == PlayerType.Essential)) {
-                        if (search.input.isBlank() || stringResource(R.string.statsfornerdsplayer).contains(
-                                search.input,
-                                true
-                            )
-                        )
-                            SwitchSettingEntry(
-                                title = stringResource(R.string.statsfornerdsplayer),
-                                text = "",
-                                isChecked = statsfornerds,
-                                onCheckedChange = {
-                                    coroutineScope.launch {
-                                        val new =
-                                            appearanceSettingsManager.activeSettings.value.copy(
-                                                statsfornerds = it
-                                            )
-                                        appearanceSettingsManager.updatePreset(new)
-                                    }
-                                }
-                            )
-                    }
-
-                    if (search.input.isBlank() || stringResource(R.string.pinfo_type).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
-                        EnumValueSelectorSettingsEntry(
-                            title = stringResource(R.string.pinfo_type),
-                            selectedValue = playerInfoType,
-                            onValueSelected = {
-                                coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(
-                                        playerInfoType = it
-                                    )
-                                    appearanceSettingsManager.updatePreset(new)
-                                }
-                            },
-                            valueText = { it.displayName },
-                        )
-                        SettingsDescription(text = stringResource(R.string.pinfo_album_and_artist_name))
-
-                        AnimatedVisibility(visible = playerInfoType == PlayerInfoType.Modern) {
-                            Column {
-                                if (search.input.isBlank() || stringResource(R.string.pinfo_show_icons).contains(
-                                        search.input,
-                                        true
-                                    )
-                                )
-                                    SwitchSettingEntry(
-                                        title = stringResource(R.string.pinfo_show_icons),
-                                        text = "",
-                                        isChecked = playerInfoShowIcons,
-                                        onCheckedChange = {
-                                            coroutineScope.launch {
-                                                val new =
-                                                    appearanceSettingsManager.activeSettings.value.copy(
-                                                        playerInfoShowIcons = it
-                                                    )
-                                                appearanceSettingsManager.updatePreset(new)
-                                            }
-                                        },
-                                        modifier = Modifier
-                                            .padding(start = 12.dp)
-                                    )
-                            }
-                        }
-
-                    }
-
-
-
-                    if (search.input.isBlank() || stringResource(R.string.miniplayertype).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        EnumValueSelectorSettingsEntry(
-                            title = stringResource(R.string.miniplayertype),
-                            selectedValue = miniPlayerType,
-                            onValueSelected = {
-                                coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(
-                                        miniPlayerType = it
-                                    )
-                                    appearanceSettingsManager.updatePreset(new)
-                                }
-                            },
-                            valueText = { it.displayName },
-                        )
-
-                    if (search.input.isBlank() || stringResource(R.string.player_swap_controls_with_timeline).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.player_swap_controls_with_timeline),
-                            text = "",
-                            isChecked = playerSwapControlsWithTimeline,
-                            onCheckedChange = {
-                                coroutineScope.launch {
-                                    val new =
-                                        appearanceSettingsManager.activeSettings.value.copy(
-                                            playerSwapControlsWithTimeline = it
-                                        )
-                                    appearanceSettingsManager.updatePreset(new)
-                                }
-                            }
-                        )
-
-                    if (search.input.isBlank() || stringResource(R.string.timeline).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
-                        EnumValueSelectorSettingsEntry(
-                            title = stringResource(R.string.timeline),
-                            selectedValue = playerTimelineType,
-                            onValueSelected = {
-                                coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(
-                                        playerTimelineType = it
-                                    )
-                                    appearanceSettingsManager.updatePreset(new)
-                                }
-
-                                restartActivity = true // applied also for online player
-                            },
-                            valueText = { it.textName }
-                        )
-                        RestartActivity(restartActivity, onRestart = { restartActivity = false })
-                    }
-
-                    if (search.input.isBlank() || stringResource(R.string.transparentbar).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.transparentbar),
-                            text = "",
-                            isChecked = transparentbar,
-                            onCheckedChange = {
-                                coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(
-                                        transparentBar = it
-                                    )
-                                    appearanceSettingsManager.updatePreset(new)
-                                }
-                            }
-                        )
-
-                    if (search.input.isBlank() || stringResource(R.string.timelinesize).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        EnumValueSelectorSettingsEntry(
-                            title = stringResource(R.string.timelinesize),
-                            selectedValue = playerTimelineSize,
-                            onValueSelected = {
-                                coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(
-                                        playerTimelineSize = it
-                                    )
-                                    appearanceSettingsManager.updatePreset(new)
-                                }
-                            },
-                            valueText = { it.displayName }
-                        )
-
-                    if (search.input.isBlank() || stringResource(R.string.seek_with_tap).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.seek_with_tap),
-                            text = "",
-                            isChecked = seekWithTap,
-                            onCheckedChange = {
-                                coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(
-                                        seekWithTap = it
-                                    )
-                                    appearanceSettingsManager.updatePreset(new)
-                                }
-                            }
-                        )
-
-                    if (search.input.isBlank() || stringResource(R.string.pcontrols_type).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        EnumValueSelectorSettingsEntry(
-                            title = stringResource(R.string.pcontrols_type),
-                            selectedValue = playerControlsType,
-                            onValueSelected = {
-                                coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(
-                                        playerControlsType = it
-                                    )
-                                    appearanceSettingsManager.updatePreset(new)
-                                }
-                            },
-                            valueText = { it.displayName },
-                        )
-
-
-                    if (search.input.isBlank() || stringResource(R.string.play_button).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        EnumValueSelectorSettingsEntry(
-                            title = stringResource(R.string.play_button),
-                            selectedValue = playerPlayButtonType,
-                            onValueSelected = {
-                                coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(
-                                        playerPlayButtonType = it,
-                                        lastPlayerPlayButtonType = it
-                                    )
-                                    appearanceSettingsManager.updatePreset(new)
-                                }
-                            },
-                            valueText = { it.displayName },
-                        )
-
-                    if (search.input.isBlank() || stringResource(R.string.buttonzoomout).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.buttonzoomout),
-                            text = "",
-                            isChecked = buttonzoomout,
-                            onCheckedChange = {
-                                coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(
-                                        buttonzoomout = it
-                                    )
-                                    appearanceSettingsManager.updatePreset(new)
-                                }
-                            }
-                        )
-
-
-                    if (search.input.isBlank() || stringResource(R.string.play_button).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        EnumValueSelectorSettingsEntry(
-                            title = stringResource(R.string.icon_like_button),
-                            selectedValue = iconLikeType,
-                            onValueSelected = {
-                                coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(
-                                        iconLikeType = it
-                                    )
-                                    appearanceSettingsManager.updatePreset(new)
-                                }
-                            },
-                            valueText = { it.displayName },
-                        )
-
-                    /*
-
-            if (filter.isNullOrBlank() || stringResource(R.string.use_gradient_background).contains(filterCharSequence,true))
-                SwitchSettingEntry(
-                    title = stringResource(R.string.use_gradient_background),
-                    text = "",
-                    isChecked = isGradientBackgroundEnabled,
-                    onCheckedChange = { isGradientBackgroundEnabled = it }
-                )
-             */
-
-                    if (search.input.isBlank() || stringResource(R.string.background_colors).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        EnumValueSelectorSettingsEntry(
-                            title = stringResource(R.string.background_colors),
-                            selectedValue = playerBackgroundColors,
-                            onValueSelected = {
-                                coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(
-                                        playerBackgroundColors = it
-                                    )
-                                    appearanceSettingsManager.updatePreset(new)
-                                }
-                            },
-                            valueText = { it.textName },
-                        )
-
-                    AnimatedVisibility(visible = playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient) {
-                        if (search.input.isBlank() || stringResource(R.string.gradienttype).contains(
-                                search.input,
-                                true
-                            )
-                        )
-                            EnumValueSelectorSettingsEntry(
-                                title = stringResource(R.string.gradienttype),
-                                selectedValue = animatedGradient,
-                                onValueSelected = {
-                                    coroutineScope.launch {
-                                        val new =
-                                            appearanceSettingsManager.activeSettings.value.copy(
-                                                animatedGradient = it
-                                            )
-                                        appearanceSettingsManager.updatePreset(new)
-                                    }
-                                },
-                                valueText = { it.displayName },
-                                modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient) 12.dp else 0.dp)
-                            )
-                    }
-
-                    if ((playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient) || (playerBackgroundColors == PlayerBackgroundColors.ThemeColorGradient))
-                        if (search.input.isBlank() || stringResource(R.string.blackgradient).contains(
-                                search.input,
-                                true
-                            )
-                        )
-                            SwitchSettingEntry(
-                                title = stringResource(R.string.blackgradient),
-                                text = "",
-                                isChecked = blackgradient,
-                                onCheckedChange = {
-                                    coroutineScope.launch {
-                                        val new =
-                                            appearanceSettingsManager.activeSettings.value.copy(
-                                                blackgradient = it
-                                            )
-                                        appearanceSettingsManager.updatePreset(new)
-                                    }
-                                }
-                            )
-
                     if ((playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) && (playerType == PlayerType.Modern))
-                        if (search.input.isBlank() || stringResource(R.string.albumCoverRotation).contains(
-                                search.input,
-                                true
-                            )
-                        )
+                        if (search.matchesAny(R.string.albumCoverRotation))
                             SwitchSettingEntry(
                                 title = stringResource(R.string.albumCoverRotation),
                                 text = "",
@@ -1325,34 +960,74 @@ fun PlayerAppearanceSettings(
                                     }
                                 },
                                 modifier = Modifier
-                                    .padding(start = 12.dp)
+                                    .padding(start = 12.dp), icon = R.drawable.cd,
                             )
+                }
+                }
 
-                    if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor)
-                        if (search.input.isBlank() || stringResource(R.string.bottomgradient).contains(
-                                search.input,
-                                true
-                            )
-                        )
+
+if (search.matchesAny(R.string.statsfornerdsplayer, R.string.pinfo_type, R.string.pinfo_album_and_artist_name, R.string.pinfo_show_icons, R.string.textoutline, R.string.show_total_time_of_queue, R.string.show_remaining_song_time, R.string.show_next_songs_in_player, R.string.showtwosongs, R.string.songs_number_to_show, R.string.showalbumcover)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.settings_group_song_info))
+
+
+                settingsGroupCard {
+                    if (!(showthumbnail && playerType == PlayerType.Essential)) {
+                        if (search.matchesAny(R.string.statsfornerdsplayer))
                             SwitchSettingEntry(
-                                title = stringResource(R.string.bottomgradient),
+                                title = stringResource(R.string.statsfornerdsplayer),
                                 text = "",
-                                isChecked = bottomgradient,
+                                isChecked = statsfornerds,
                                 onCheckedChange = {
                                     coroutineScope.launch {
                                         val new =
                                             appearanceSettingsManager.activeSettings.value.copy(
-                                                bottomGradient = it
+                                                statsfornerds = it
                                             )
                                         appearanceSettingsManager.updatePreset(new)
                                     }
-                                }
+                                }, icon = R.drawable.query_stats,
                             )
-                    if (search.input.isBlank() || stringResource(R.string.textoutline).contains(
-                            search.input,
-                            true
+                    }
+                    if (search.matchesAny(R.string.pinfo_type)) {
+                        EnumValueSelectorSettingsEntry(
+                            title = stringResource(R.string.pinfo_type),
+                            selectedValue = playerInfoType,
+                            onValueSelected = {
+                                coroutineScope.launch {
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        playerInfoType = it
+                                    )
+                                    appearanceSettingsManager.updatePreset(new)
+                                }
+                            },
+                            valueText = { it.displayName }, icon = R.drawable.text,
                         )
-                    )
+                        SettingsDescription(text = stringResource(R.string.pinfo_album_and_artist_name))
+
+                        AnimatedVisibility(visible = playerInfoType == PlayerInfoType.Modern) {
+                            Column {
+                                if (search.matchesAny(R.string.pinfo_show_icons))
+                                    SwitchSettingEntry(
+                                        title = stringResource(R.string.pinfo_show_icons),
+                                        text = "",
+                                        isChecked = playerInfoShowIcons,
+                                        onCheckedChange = {
+                                            coroutineScope.launch {
+                                                val new =
+                                                    appearanceSettingsManager.activeSettings.value.copy(
+                                                        playerInfoShowIcons = it
+                                                    )
+                                                appearanceSettingsManager.updatePreset(new)
+                                            }
+                                        },
+                                        modifier = Modifier
+                                            .padding(start = 12.dp), icon = R.drawable.information_circle,
+                                    )
+                            }
+                        }
+
+                    }
+                    if (search.matchesAny(R.string.textoutline))
                         SwitchSettingEntry(
                             title = stringResource(R.string.textoutline),
                             text = "",
@@ -1364,14 +1039,9 @@ fun PlayerAppearanceSettings(
                                     )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
-                            }
+                            }, icon = R.drawable.text,
                         )
-
-                    if (search.input.isBlank() || stringResource(R.string.show_total_time_of_queue).contains(
-                            search.input,
-                            true
-                        )
-                    )
+                    if (search.matchesAny(R.string.show_total_time_of_queue))
                         SwitchSettingEntry(
                             title = stringResource(R.string.show_total_time_of_queue),
                             text = "",
@@ -1383,14 +1053,9 @@ fun PlayerAppearanceSettings(
                                     )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
-                            }
+                            }, icon = R.drawable.time,
                         )
-
-                    if (search.input.isBlank() || stringResource(R.string.show_remaining_song_time).contains(
-                            search.input,
-                            true
-                        )
-                    )
+                    if (search.matchesAny(R.string.show_remaining_song_time))
                         SwitchSettingEntry(
                             title = stringResource(R.string.show_remaining_song_time),
                             text = "",
@@ -1402,14 +1067,9 @@ fun PlayerAppearanceSettings(
                                     )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
-                            }
+                            }, icon = R.drawable.time,
                         )
-
-                    if (search.input.isBlank() || stringResource(R.string.show_next_songs_in_player).contains(
-                            search.input,
-                            true
-                        )
-                    )
+                    if (search.matchesAny(R.string.show_next_songs_in_player))
                         SwitchSettingEntry(
                             title = stringResource(R.string.show_next_songs_in_player),
                             text = "",
@@ -1421,15 +1081,11 @@ fun PlayerAppearanceSettings(
                                     )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
-                            }
+                            }, icon = R.drawable.addqueue,
                         )
                     AnimatedVisibility(visible = showNextSongsInPlayer) {
                         Column {
-                            if (search.input.isBlank() || stringResource(R.string.showtwosongs).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.showtwosongs))
                                 EnumValueSelectorSettingsEntry(
                                     title = stringResource(R.string.songs_number_to_show),
                                     selectedValue = showsongs,
@@ -1446,15 +1102,11 @@ fun PlayerAppearanceSettings(
                                         it.name
                                     },
                                     modifier = Modifier
-                                        .padding(start = 12.dp)
+                                        .padding(start = 12.dp), icon = R.drawable.list,
                                 )
 
 
-                            if (search.input.isBlank() || stringResource(R.string.showalbumcover).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.showalbumcover))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.showalbumcover),
                                     text = "",
@@ -1468,55 +1120,235 @@ fun PlayerAppearanceSettings(
                                             appearanceSettingsManager.updatePreset(new)
                                         }
                                     },
-                                    modifier = Modifier.padding(start = 12.dp)
+                                    modifier = Modifier.padding(start = 12.dp), icon = R.drawable.picture,
                                 )
                         }
                     }
+                }
+                }
 
-                    if (search.input.isBlank() || stringResource(R.string.disable_scrolling_text).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.disable_scrolling_text),
-                            text = stringResource(R.string.scrolling_text_is_used_for_long_texts),
-                            isChecked = disableScrollingText,
-                            onCheckedChange = {
+
+if (search.matchesAny(R.string.timeline, R.string.transparentbar, R.string.timelinesize, R.string.seek_with_tap, R.string.background_progress_bar)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.settings_group_timeline))
+
+
+                settingsGroupCard {
+                    if (search.matchesAny(R.string.timeline)) {
+                        EnumValueSelectorSettingsEntry(
+                            title = stringResource(R.string.timeline),
+                            selectedValue = playerTimelineType,
+                            onValueSelected = {
                                 coroutineScope.launch {
                                     val new = appearanceSettingsManager.activeSettings.value.copy(
-                                        disableScrollingText = it
+                                        playerTimelineType = it
                                     )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
-                            }
-                        )
 
-                    if (search.input.isBlank() || stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.disable_horizontal_swipe else R.string.disable_vertical_swipe).contains(
-                            search.input,
-                            true
+                                restartActivity = true // applied also for online player
+                            },
+                            valueText = { it.textName }, icon = R.drawable.horizontal_bold_line,
                         )
-                    )
+                        RestartActivity(restartActivity, onRestart = { restartActivity = false })
+                    }
+                    if (search.matchesAny(R.string.transparentbar))
                         SwitchSettingEntry(
-                            title = stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.disable_vertical_swipe else R.string.disable_horizontal_swipe),
-                            text = stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.disable_vertical_swipe_secondary else R.string.disable_song_switching_via_swipe),
-                            isChecked = disablePlayerHorizontalSwipe,
+                            title = stringResource(R.string.transparentbar),
+                            text = "",
+                            isChecked = transparentbar,
                             onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new =
-                                        appearanceSettingsManager.activeSettings.value.copy(
-                                            disablePlayerHorizontalSwipe = it
-                                        )
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        transparentBar = it
+                                    )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
-                            }
+                            }, icon = R.drawable.eye_off,
                         )
+                    if (search.matchesAny(R.string.timelinesize))
+                        EnumValueSelectorSettingsEntry(
+                            title = stringResource(R.string.timelinesize),
+                            selectedValue = playerTimelineSize,
+                            onValueSelected = {
+                                coroutineScope.launch {
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        playerTimelineSize = it
+                                    )
+                                    appearanceSettingsManager.updatePreset(new)
+                                }
+                            },
+                            valueText = { it.displayName }, icon = R.drawable.resize,
+                        )
+                    if (search.matchesAny(R.string.seek_with_tap))
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.seek_with_tap),
+                            text = "",
+                            isChecked = seekWithTap,
+                            onCheckedChange = {
+                                coroutineScope.launch {
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        seekWithTap = it
+                                    )
+                                    appearanceSettingsManager.updatePreset(new)
+                                }
+                            }, icon = R.drawable.left_and_right_arrows,
+                        )
+                    if (search.matchesAny(R.string.background_progress_bar))
+                        EnumValueSelectorSettingsEntry(
+                            title = stringResource(R.string.background_progress_bar),
+                            selectedValue = backgroundProgress,
+                            onValueSelected = {
+                                coroutineScope.launch {
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        backgroundProgress = it
+                                    )
+                                    appearanceSettingsManager.updatePreset(new)
+                                }
+                            },
+                            valueText = { it.displayName }, icon = R.drawable.horizontal_bold_line,
+                        )
+                }
+                }
 
-                    if (search.input.isBlank() || stringResource(R.string.toggle_lyrics).contains(
-                            search.input,
-                            true
+
+if (search.matchesAny(R.string.play_button, R.string.buttonzoomout, R.string.icon_like_button)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.settings_group_buttons))
+
+
+                settingsGroupCard {
+                    if (search.matchesAny(R.string.play_button))
+                        EnumValueSelectorSettingsEntry(
+                            title = stringResource(R.string.play_button),
+                            selectedValue = playerPlayButtonType,
+                            onValueSelected = {
+                                coroutineScope.launch {
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        playerPlayButtonType = it,
+                                        lastPlayerPlayButtonType = it
+                                    )
+                                    appearanceSettingsManager.updatePreset(new)
+                                }
+                            },
+                            valueText = { it.displayName }, icon = R.drawable.play,
                         )
+                    if (search.matchesAny(R.string.buttonzoomout))
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.buttonzoomout),
+                            text = "",
+                            isChecked = buttonzoomout,
+                            onCheckedChange = {
+                                coroutineScope.launch {
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        buttonzoomout = it
+                                    )
+                                    appearanceSettingsManager.updatePreset(new)
+                                }
+                            }, icon = R.drawable.resize,
+                        )
+                    if (search.matchesAny(R.string.play_button))
+                        EnumValueSelectorSettingsEntry(
+                            title = stringResource(R.string.icon_like_button),
+                            selectedValue = iconLikeType,
+                            onValueSelected = {
+                                coroutineScope.launch {
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        iconLikeType = it
+                                    )
+                                    appearanceSettingsManager.updatePreset(new)
+                                }
+                            },
+                            valueText = { it.displayName }, icon = R.drawable.heart,
+                        )
+                }
+                }
+
+
+if (search.matchesAny(R.string.settings_themes_manager, R.string.appearancepresets, R.string.settings_themes_manager_title_swithes_between_themes, R.string.background_colors, R.string.gradienttype, R.string.blackgradient, R.string.bottomgradient)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.settings_group_background))
+
+
+                settingsGroupCard {
+                    ButtonBarSettingEntry(
+                        title = stringResource(R.string.settings_themes_manager), //stringResource(R.string.appearancepresets),
+                        text = stringResource(R.string.settings_themes_manager_title_swithes_between_themes),
+                        icon = R.drawable.color_palette,
+                        iconColor = colorPalette().text,
+                        onClick = { appearanceChooser = true },
                     )
+                    if (search.matchesAny(R.string.background_colors))
+                        EnumValueSelectorSettingsEntry(
+                            title = stringResource(R.string.background_colors),
+                            selectedValue = playerBackgroundColors,
+                            onValueSelected = {
+                                coroutineScope.launch {
+                                    val new = appearanceSettingsManager.activeSettings.value.copy(
+                                        playerBackgroundColors = it
+                                    )
+                                    appearanceSettingsManager.updatePreset(new)
+                                }
+                            },
+                            valueText = { it.textName }, icon = R.drawable.color_palette,
+                        )
+                    AnimatedVisibility(visible = playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient) {
+                        if (search.matchesAny(R.string.gradienttype))
+                            EnumValueSelectorSettingsEntry(
+                                title = stringResource(R.string.gradienttype),
+                                selectedValue = animatedGradient,
+                                onValueSelected = {
+                                    coroutineScope.launch {
+                                        val new =
+                                            appearanceSettingsManager.activeSettings.value.copy(
+                                                animatedGradient = it
+                                            )
+                                        appearanceSettingsManager.updatePreset(new)
+                                    }
+                                },
+                                valueText = { it.displayName },
+                                modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient) 12.dp else 0.dp), icon = R.drawable.color_palette,
+                            )
+                    }
+                    if ((playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient) || (playerBackgroundColors == PlayerBackgroundColors.ThemeColorGradient))
+                        if (search.matchesAny(R.string.blackgradient))
+                            SwitchSettingEntry(
+                                title = stringResource(R.string.blackgradient),
+                                text = "",
+                                isChecked = blackgradient,
+                                onCheckedChange = {
+                                    coroutineScope.launch {
+                                        val new =
+                                            appearanceSettingsManager.activeSettings.value.copy(
+                                                blackgradient = it
+                                            )
+                                        appearanceSettingsManager.updatePreset(new)
+                                    }
+                                }, icon = R.drawable.moon,
+                            )
+                    if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor)
+                        if (search.matchesAny(R.string.bottomgradient))
+                            SwitchSettingEntry(
+                                title = stringResource(R.string.bottomgradient),
+                                text = "",
+                                isChecked = bottomgradient,
+                                onCheckedChange = {
+                                    coroutineScope.launch {
+                                        val new =
+                                            appearanceSettingsManager.activeSettings.value.copy(
+                                                bottomGradient = it
+                                            )
+                                        appearanceSettingsManager.updatePreset(new)
+                                    }
+                                }, icon = R.drawable.color_palette,
+                            )
+                }
+                }
+
+
+if (search.matchesAny(R.string.toggle_lyrics, R.string.by_tapping_on_the_thumbnail, R.string.click_lyrics_text, R.string.show_background_in_lyrics, R.string.player_enable_lyrics_popup_message)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.settings_group_lyrics))
+
+
+                settingsGroupCard {
+                    if (search.matchesAny(R.string.toggle_lyrics))
                         SwitchSettingEntry(
                             title = stringResource(R.string.toggle_lyrics),
                             text = stringResource(R.string.by_tapping_on_the_thumbnail),
@@ -1528,14 +1360,9 @@ fun PlayerAppearanceSettings(
                                     )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
-                            }
+                            }, icon = R.drawable.musical_notes,
                         )
-
-                    if (search.input.isBlank() || stringResource(R.string.click_lyrics_text).contains(
-                            search.input,
-                            true
-                        )
-                    )
+                    if (search.matchesAny(R.string.click_lyrics_text))
                         SwitchSettingEntry(
                             title = stringResource(R.string.click_lyrics_text),
                             text = "",
@@ -1547,14 +1374,10 @@ fun PlayerAppearanceSettings(
                                     )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
-                            }
+                            }, icon = R.drawable.musical_notes,
                         )
                     if (showlyricsthumbnail)
-                        if (search.input.isBlank() || stringResource(R.string.show_background_in_lyrics).contains(
-                                search.input,
-                                true
-                            )
-                        )
+                        if (search.matchesAny(R.string.show_background_in_lyrics))
                             SwitchSettingEntry(
                                 title = stringResource(R.string.show_background_in_lyrics),
                                 text = "",
@@ -1567,14 +1390,9 @@ fun PlayerAppearanceSettings(
                                             )
                                         appearanceSettingsManager.updatePreset(new)
                                     }
-                                }
+                                }, icon = R.drawable.picture,
                             )
-
-                    if (search.input.isBlank() || stringResource(R.string.player_enable_lyrics_popup_message).contains(
-                            search.input,
-                            true
-                        )
-                    )
+                    if (search.matchesAny(R.string.player_enable_lyrics_popup_message))
                         SwitchSettingEntry(
                             title = stringResource(R.string.player_enable_lyrics_popup_message),
                             text = "",
@@ -1587,41 +1405,23 @@ fun PlayerAppearanceSettings(
                                         )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
-                            }
-                        )
-
-                    if (search.input.isBlank() || stringResource(R.string.background_progress_bar).contains(
-                            search.input,
-                            true
-                        )
-                    )
-                        EnumValueSelectorSettingsEntry(
-                            title = stringResource(R.string.background_progress_bar),
-                            selectedValue = backgroundProgress,
-                            onValueSelected = {
-                                coroutineScope.launch {
-                                    val new = appearanceSettingsManager.activeSettings.value.copy(
-                                        backgroundProgress = it
-                                    )
-                                    appearanceSettingsManager.updatePreset(new)
-                                }
-                            },
-                            valueText = { it.displayName },
+                            }, icon = R.drawable.information_circle,
                         )
                 }
+                }
 
-                    settingsItem(
-                        isHeader = true
-                    ) {
-                        SettingsGroupSpacer()
-                        SettingsEntryGroupText(title = stringResource(R.string.audio_visualizer))
-                    }
-                    settingsItem {
-                        if (search.input.isBlank() || stringResource(R.string.audio_visualizer).contains(
-                                search.input,
-                                true
-                            )
-                        ) {
+
+
+
+            
+
+
+                    if (search.matchesAny(R.string.audio_visualizer, R.string.audio_visualizer_title_player_style, R.string.audio_visualizer_title_mini_player_style, R.string.audio_visualizer_title_equalizer_style, R.string.visualizer_require_mic_permission)) {
+                    settingsGroupHeader(title = context.resources.getString(R.string.audio_visualizer))
+
+                    settingsGroupCard {
+
+                        if (search.matchesAny(R.string.audio_visualizer)) {
                             EnumValueSelectorSettingsEntry(
                                 title = stringResource(R.string.audio_visualizer_title_player_style),
                                 selectedValue = audioVisualizerStyleInPlayer,
@@ -1640,7 +1440,7 @@ fun PlayerAppearanceSettings(
                                 },
                                 valueText = {
                                     it.displayName
-                                },
+                                }, icon = R.drawable.soundwave,
                             )
                             EnumValueSelectorSettingsEntry(
                                 title = stringResource(R.string.audio_visualizer_title_mini_player_style),
@@ -1661,7 +1461,7 @@ fun PlayerAppearanceSettings(
                                 },
                                 valueText = {
                                     it.displayName
-                                },
+                                }, icon = R.drawable.soundwave,
                             )
 
                             EnumValueSelectorSettingsEntry(
@@ -1683,27 +1483,24 @@ fun PlayerAppearanceSettings(
                                 },
                                 valueText = {
                                     it.displayName
-                                },
+                                }, icon = R.drawable.equalizer,
                             )
 
                             ImportantSettingsDescription(text = stringResource(R.string.visualizer_require_mic_permission))
                         }
 
+                    
+                }
                     }
 
-                settingsItem(
-                    isHeader = true
-                ) {
-                    SettingsGroupSpacer()
-                    SettingsEntryGroupText(title = stringResource(R.string.player_action_bar))
-                }
 
-                settingsItem {
-                    if (search.input.isBlank() || stringResource(R.string.player_action_bar).contains(
-                            search.input,
-                            true
-                        )
-                    )
+                if (search.matchesAny(R.string.player_action_bar, R.string.action_bar_transparent_background, R.string.actionspacedevenly, R.string.tapqueue, R.string.swipe_up_to_open_the_queue, R.string.action_bar_show_video_button, R.string.action_bar_show_discover_button, R.string.action_bar_show_download_button, R.string.action_bar_show_add_to_playlist_button, R.string.action_bar_show_loop_button, R.string.action_bar_show_shuffle_button, R.string.action_bar_show_lyrics_button, R.string.expandedplayer, R.string.action_bar_show_sleep_timer_button, R.string.show_equalizer, R.string.action_bar_show_arrow_button_to_open_queue, R.string.action_bar_show_start_radio_button, R.string.action_bar_show_menu_button)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.player_action_bar), icon = R.drawable.horizontal_bold_line,)
+
+
+                settingsGroupCard {
+
+                    if (search.matchesAny(R.string.player_action_bar))
                         SwitchSettingEntry(
                             title = stringResource(R.string.player_action_bar),
                             text = "",
@@ -1713,19 +1510,16 @@ fun PlayerAppearanceSettings(
                                     val new = appearanceSettingsManager.activeSettings.value.copy(showPlayerActionsBar = it)
                                     appearanceSettingsManager.updatePreset(new)
                                 }
-                            }
+                            }, icon = R.drawable.horizontal_bold_line,
                         )
-                }
+                
 
 
-                settingsItem {
+
+
                     AnimatedVisibility(visible = showPlayerActionsBar) {
                         Column(modifier = Modifier.padding(start = 12.dp)) {
-                            if (search.input.isBlank() || stringResource(R.string.action_bar_transparent_background).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.action_bar_transparent_background))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.action_bar_transparent_background),
                                     text = "",
@@ -1737,14 +1531,10 @@ fun PlayerAppearanceSettings(
                                             )
                                             appearanceSettingsManager.updatePreset(new)
                                         }
-                                    }
+                                    }, icon = R.drawable.eye_off,
                                 )
 
-                            if (search.input.isBlank() || stringResource(R.string.actionspacedevenly).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.actionspacedevenly))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.actionspacedevenly),
                                     text = "",
@@ -1755,14 +1545,10 @@ fun PlayerAppearanceSettings(
                                                 appearanceSettingsManager.activeSettings.value.copy(actionsSpacedEvenly = it)
                                             appearanceSettingsManager.updatePreset(new)
                                         }
-                                    }
+                                    }, icon = R.drawable.reorder,
                                 )
 
-                            if (search.input.isBlank() || stringResource(R.string.tapqueue).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.tapqueue))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.tapqueue),
                                     text = "",
@@ -1772,14 +1558,10 @@ fun PlayerAppearanceSettings(
                                             val new = appearanceSettingsManager.activeSettings.value.copy(tapqueue = it)
                                             appearanceSettingsManager.updatePreset(new)
                                         }
-                                    }
+                                    }, icon = R.drawable.addqueue,
                                 )
 
-                            if (search.input.isBlank() || stringResource(R.string.swipe_up_to_open_the_queue).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.swipe_up_to_open_the_queue))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.swipe_up_to_open_the_queue),
                                     text = "",
@@ -1789,14 +1571,10 @@ fun PlayerAppearanceSettings(
                                             val new = appearanceSettingsManager.activeSettings.value.copy(swipeUpQueue = it)
                                             appearanceSettingsManager.updatePreset(new)
                                         }
-                                    }
+                                    }, icon = R.drawable.arrow_up,
                                 )
 
-                            if (search.input.isBlank() || stringResource(R.string.action_bar_show_video_button).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.action_bar_show_video_button))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.action_bar_show_video_button),
                                     text = "",
@@ -1807,14 +1585,10 @@ fun PlayerAppearanceSettings(
                                                 appearanceSettingsManager.activeSettings.value.copy(showButtonPlayerVideo = it)
                                             appearanceSettingsManager.updatePreset(new)
                                         }
-                                    }
+                                    }, icon = R.drawable.video,
                                 )
 
-                            if (search.input.isBlank() || stringResource(R.string.action_bar_show_discover_button).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.action_bar_show_discover_button))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.action_bar_show_discover_button),
                                     text = "",
@@ -1825,26 +1599,10 @@ fun PlayerAppearanceSettings(
                                                 appearanceSettingsManager.activeSettings.value.copy(showButtonPlayerDiscover = it)
                                             appearanceSettingsManager.updatePreset(new)
                                         }
-                                    }
+                                    }, icon = R.drawable.trending,
                                 )
 
-//        if (search.input.isBlank() || stringResource(R.string.action_bar_show_download_button).contains(
-//                search.input,
-//                true
-//            )
-//        )
-//            SwitchSettingEntry(
-//                title = stringResource(R.string.action_bar_show_download_button),
-//                text = "",
-//                isChecked = showButtonPlayerDownload,
-//                onCheckedChange = { showButtonPlayerDownload = it }
-//            )
-
-                            if (search.input.isBlank() || stringResource(R.string.action_bar_show_add_to_playlist_button).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.action_bar_show_add_to_playlist_button))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.action_bar_show_add_to_playlist_button),
                                     text = "",
@@ -1856,14 +1614,10 @@ fun PlayerAppearanceSettings(
                                             )
                                             appearanceSettingsManager.updatePreset(new)
                                         }
-                                    }
+                                    }, icon = R.drawable.add_in_playlist,
                                 )
 
-                            if (search.input.isBlank() || stringResource(R.string.action_bar_show_loop_button).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.action_bar_show_loop_button))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.action_bar_show_loop_button),
                                     text = "",
@@ -1874,14 +1628,10 @@ fun PlayerAppearanceSettings(
                                                 appearanceSettingsManager.activeSettings.value.copy(showButtonPlayerLoop = it)
                                             appearanceSettingsManager.updatePreset(new)
                                         }
-                                    }
+                                    }, icon = R.drawable.repeatone,
                                 )
 
-                            if (search.input.isBlank() || stringResource(R.string.action_bar_show_shuffle_button).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.action_bar_show_shuffle_button))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.action_bar_show_shuffle_button),
                                     text = "",
@@ -1892,14 +1642,10 @@ fun PlayerAppearanceSettings(
                                                 appearanceSettingsManager.activeSettings.value.copy(showButtonPlayerShuffle = it)
                                             appearanceSettingsManager.updatePreset(new)
                                         }
-                                    }
+                                    }, icon = R.drawable.shuffle,
                                 )
 
-                            if (search.input.isBlank() || stringResource(R.string.action_bar_show_lyrics_button).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.action_bar_show_lyrics_button))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.action_bar_show_lyrics_button),
                                     text = "",
@@ -1910,16 +1656,12 @@ fun PlayerAppearanceSettings(
                                                 appearanceSettingsManager.activeSettings.value.copy(showButtonPlayerLyrics = it)
                                             appearanceSettingsManager.updatePreset(new)
                                         }
-                                    }
+                                    }, icon = R.drawable.musical_notes,
                                 )
                             if (!isLandscape // || !showthumbnail
                                 ) {
                                 if (!showlyricsthumbnail) {
-                                    if (search.input.isBlank() || stringResource(R.string.expandedplayer).contains(
-                                            search.input,
-                                            true
-                                        )
-                                    )
+                                    if (search.matchesAny(R.string.expandedplayer))
                                         SwitchSettingEntry(
                                             title = stringResource(R.string.expandedplayer),
                                             text = "",
@@ -1930,16 +1672,12 @@ fun PlayerAppearanceSettings(
                                                         appearanceSettingsManager.activeSettings.value.copy(expandedPlayerToggle = it)
                                                     appearanceSettingsManager.updatePreset(new)
                                                 }
-                                            }
+                                            }, icon = R.drawable.resize,
                                         )
                                 }
                             }
 
-                            if (search.input.isBlank() || stringResource(R.string.action_bar_show_sleep_timer_button).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.action_bar_show_sleep_timer_button))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.action_bar_show_sleep_timer_button),
                                     text = "",
@@ -1950,14 +1688,10 @@ fun PlayerAppearanceSettings(
                                                 appearanceSettingsManager.activeSettings.value.copy(showButtonPlayerSleepTimer = it)
                                             appearanceSettingsManager.updatePreset(new)
                                         }
-                                    }
+                                    }, icon = R.drawable.sleep,
                                 )
 
-                            if (search.input.isBlank() || stringResource(R.string.show_equalizer).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.show_equalizer))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.show_equalizer),
                                     text = "",
@@ -1969,28 +1703,20 @@ fun PlayerAppearanceSettings(
                                             )
                                             appearanceSettingsManager.updatePreset(new)
                                         }
-                                    }
+                                    }, icon = R.drawable.equalizer,
                                 )
 
                             /*
-                            if (search.input.isBlank() || stringResource(R.string.action_bar_show_arrow_button_to_open_queue).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.action_bar_show_arrow_button_to_open_queue))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.action_bar_show_arrow_button_to_open_queue),
                                     text = "",
                                     isChecked = showButtonPlayerArrow,
-                                    onCheckedChange = { showButtonPlayerArrow = it }
+                                    onCheckedChange = { showButtonPlayerArrow = it }, icon = R.drawable.chevron_up,
                                 )
                             */
 
-                            if (search.input.isBlank() || stringResource(R.string.action_bar_show_start_radio_button).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.action_bar_show_start_radio_button))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.action_bar_show_start_radio_button),
                                     text = "",
@@ -2001,14 +1727,10 @@ fun PlayerAppearanceSettings(
                                                 appearanceSettingsManager.activeSettings.value.copy(showButtonPlayerStartRadio = it)
                                             appearanceSettingsManager.updatePreset(new)
                                         }
-                                    }
+                                    }, icon = R.drawable.radio,
                                 )
 
-                            if (search.input.isBlank() || stringResource(R.string.action_bar_show_menu_button).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.action_bar_show_menu_button))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.action_bar_show_menu_button),
                                     text = "",
@@ -2019,27 +1741,24 @@ fun PlayerAppearanceSettings(
                                                 appearanceSettingsManager.activeSettings.value.copy(showButtonPlayerMenu = it)
                                             appearanceSettingsManager.updatePreset(new)
                                         }
-                                    }
+                                    }, icon = R.drawable.burger,
                                 )
                         }
                     }
+                
+                    }
                 }
 
-                if (!showlyricsthumbnail) {
-                    settingsItem(
-                        isHeader = true
-                    ) {
-                        SettingsGroupSpacer()
-                        SettingsEntryGroupText(title = stringResource(R.string.full_screen_lyrics_components))
-                    }
 
-                    settingsItem {
+                if (!showlyricsthumbnail) {
+                    if (search.matchesAny(R.string.show_total_time_of_queue, R.string.titleartist, R.string.timeline, R.string.controls, R.string.statsfornerds, R.string.actionbar, R.string.miniqueue)) {
+                    settingsGroupHeader(title = context.resources.getString(R.string.full_screen_lyrics_components))
+
+
+                    settingsGroupCard {
+
                         if (showTotalTimeQueue) {
-                            if (search.input.isBlank() || stringResource(R.string.show_total_time_of_queue).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.show_total_time_of_queue))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.show_total_time_of_queue),
                                     text = "",
@@ -2050,15 +1769,11 @@ fun PlayerAppearanceSettings(
                                                 appearanceSettingsManager.activeSettings.value.copy(queueDurationExpanded = it)
                                             appearanceSettingsManager.updatePreset(new)
                                         }
-                                    }
+                                    }, icon = R.drawable.time,
                                 )
                         }
 
-                        if (search.input.isBlank() || stringResource(R.string.titleartist).contains(
-                                search.input,
-                                true
-                            )
-                        )
+                        if (search.matchesAny(R.string.titleartist))
                             SwitchSettingEntry(
                                 title = stringResource(R.string.titleartist),
                                 text = "",
@@ -2068,14 +1783,10 @@ fun PlayerAppearanceSettings(
                                         val new = appearanceSettingsManager.activeSettings.value.copy(titleExpanded = it)
                                         appearanceSettingsManager.updatePreset(new)
                                     }
-                                }
+                                }, icon = R.drawable.text,
                             )
 
-                        if (search.input.isBlank() || stringResource(R.string.timeline).contains(
-                                search.input,
-                                true
-                            )
-                        )
+                        if (search.matchesAny(R.string.timeline))
                             SwitchSettingEntry(
                                 title = stringResource(R.string.timeline),
                                 text = "",
@@ -2085,14 +1796,10 @@ fun PlayerAppearanceSettings(
                                         val new = appearanceSettingsManager.activeSettings.value.copy(timelineExpanded = it)
                                         appearanceSettingsManager.updatePreset(new)
                                     }
-                                }
+                                }, icon = R.drawable.horizontal_bold_line,
                             )
 
-                        if (search.input.isBlank() || stringResource(R.string.controls).contains(
-                                search.input,
-                                true
-                            )
-                        )
+                        if (search.matchesAny(R.string.controls))
                             SwitchSettingEntry(
                                 title = stringResource(R.string.controls),
                                 text = "",
@@ -2102,15 +1809,11 @@ fun PlayerAppearanceSettings(
                                         val new = appearanceSettingsManager.activeSettings.value.copy(controlsExpanded = it)
                                         appearanceSettingsManager.updatePreset(new)
                                     }
-                                }
+                                }, icon = R.drawable.play,
                             )
 
                         if (statsfornerds && (!(showthumbnail && playerType == PlayerType.Essential))) {
-                            if (search.input.isBlank() || stringResource(R.string.statsfornerds).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.statsfornerds))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.statsfornerds),
                                     text = "",
@@ -2120,7 +1823,7 @@ fun PlayerAppearanceSettings(
                                             val new = appearanceSettingsManager.activeSettings.value.copy(statsExpanded = it)
                                             appearanceSettingsManager.updatePreset(new)
                                         }
-                                    }
+                                    }, icon = R.drawable.query_stats,
                                 )
                         }
 
@@ -2138,11 +1841,7 @@ fun PlayerAppearanceSettings(
                             showButtonPlayerDiscover ||
                             showButtonPlayerVideo
                         ) {
-                            if (search.input.isBlank() || stringResource(R.string.actionbar).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.actionbar))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.actionbar),
                                     text = "",
@@ -2152,15 +1851,11 @@ fun PlayerAppearanceSettings(
                                             val new = appearanceSettingsManager.activeSettings.value.copy(actionExpanded = it)
                                             appearanceSettingsManager.updatePreset(new)
                                         }
-                                    }
+                                    }, icon = R.drawable.horizontal_bold_line,
                                 )
                         }
                         if (showNextSongsInPlayer && actionExpanded) {
-                            if (search.input.isBlank() || stringResource(R.string.miniqueue).contains(
-                                    search.input,
-                                    true
-                                )
-                            )
+                            if (search.matchesAny(R.string.miniqueue))
                                 SwitchSettingEntry(
                                     title = stringResource(R.string.miniqueue),
                                     text = "",
@@ -2171,26 +1866,23 @@ fun PlayerAppearanceSettings(
                                                 appearanceSettingsManager.activeSettings.value.copy(miniQueueExpanded = it)
                                             appearanceSettingsManager.updatePreset(new)
                                         }
-                                    }
+                                    }, icon = R.drawable.list,
                                 )
                         }
+                    
+                }
                     }
 
+
                 }
 
-                settingsItem(
-                    isHeader = true
-                ) {
-                    SettingsGroupSpacer()
-                    SettingsEntryGroupText(title = stringResource(R.string.notification_player))
-                }
+                if (search.matchesAny(R.string.notification_player, R.string.notificationPlayerFirstIcon, R.string.notificationPlayerSecondIcon, R.string.show_song_cover, R.string.lockscreen, R.string.use_song_cover_on_lockscreen)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.notification_player))
 
-                settingsItem {
-                    if (search.input.isBlank() || stringResource(R.string.notification_player).contains(
-                            search.input,
-                            true
-                        )
-                    ) {
+
+                settingsGroupCard {
+
+                    if (search.matchesAny(R.string.notification_player)) {
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.notificationPlayerFirstIcon),
                             selectedValue = notificationPlayerFirstIcon,
@@ -2203,7 +1895,7 @@ fun PlayerAppearanceSettings(
                             },
                             valueText = {
                                 it.displayName
-                            },
+                            }, icon = R.drawable.notifications,
                         )
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.notificationPlayerSecondIcon),
@@ -2218,17 +1910,13 @@ fun PlayerAppearanceSettings(
                             },
                             valueText = {
                                 it.displayName
-                            },
+                            }, icon = R.drawable.notifications,
                         )
                         RestartPlayerService(restartService, onRestart = { restartService = false })
                     }
 
 
-                    if (search.input.isBlank() || stringResource(R.string.show_song_cover).contains(
-                            search.input,
-                            true
-                        )
-                    )
+                    if (search.matchesAny(R.string.show_song_cover))
 
                     SettingsGroupSpacer()
 
@@ -2243,20 +1931,21 @@ fun PlayerAppearanceSettings(
                                 val new = appSettingsManager.activeSettings.value.copy(isShowingThumbnailInLockscreen = it)
                                 appSettingsManager.updateSettings(new)
                             }
-                        }
+                        }, icon = R.drawable.picture,
                     )
 
 
+                
+                    }
                 }
 
+
                 if (isAtLeastAndroid7) {
-                    settingsItem(
-                        isHeader = true
-                    ) {
-                        SettingsGroupSpacer()
-                        SettingsEntryGroupText(title = stringResource(R.string.wallpaper))
-                    }
-                    settingsItem {
+                    if (search.matchesAny(R.string.enable_wallpaper, R.string.set_cover_thumbnail_as_wallpaper)) {
+                    settingsGroupHeader(title = context.resources.getString(R.string.wallpaper))
+
+                    settingsGroupCard {
+
                         SwitchSettingEntry(
                             title = stringResource(R.string.enable_wallpaper),
                             text = "",
@@ -2266,7 +1955,7 @@ fun PlayerAppearanceSettings(
                                     val new = appSettingsManager.activeSettings.value.copy(enableWallpaper = it)
                                     appSettingsManager.updateSettings(new)
                                 }
-                            }
+                            }, icon = R.drawable.picture,
                         )
                         AnimatedVisibility(visible = enableWallpaper) {
                             Column {
@@ -2284,25 +1973,26 @@ fun PlayerAppearanceSettings(
                                     valueText = {
                                         it.displayName
                                     },
-                                    modifier = Modifier.padding(start = 12.dp)
+                                    modifier = Modifier.padding(start = 12.dp), icon = R.drawable.picture,
                                 )
                                 RestartPlayerService(
                                     restartService,
                                     onRestart = { restartService = false })
                             }
                         }
+                    
+                }
                     }
 
+
                 }
 
-                settingsItem(
-                    isHeader = true
-                ) {
-                    SettingsGroupSpacer()
-                    SettingsEntryGroupText(stringResource(R.string.settings_reset))
-                }
+                if (search.matchesAny(R.string.settings_reset, R.string.settings_restore_default_settings, R.string.done, R.string.export_appearance_settings, R.string.info_backup_or_share_appearance_settings, R.string.import_appearance_settings, R.string.info_restore_backup_or_shared_appearance_settings, R.string.info_not_find_app_open_doc)) {
+                settingsGroupHeader(context.resources.getString(R.string.settings_reset))
 
-                settingsItem {
+
+                settingsGroupCard {
+
                     SettingsGroupSpacer()
                     var resetToDefault by remember { mutableStateOf(false) }
 
@@ -2357,14 +2047,17 @@ fun PlayerAppearanceSettings(
 //                        },
 //                    )
 
-                }
+                
+
 
 
 //            SettingsGroupSpacer(
 //                modifier = Modifier.height(Dimensions.bottomSpacer)
 //            )
             }
+                }
         }
     }
 
+        }
 }

@@ -50,6 +50,7 @@ import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.ui.components.themed.CacheSpaceIndicator
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
+import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.InputNumericDialog
 import it.fast4x.riplay.ui.styling.Dimensions
@@ -76,6 +77,7 @@ fun DataSettings(
     navController: NavController
 ) {
     val context = LocalContext.current
+    val search = Search.init(alwaysVisible = true)
     val binder = LocalPlayerServiceBinder.current
     val backupViewModel = LocalBackupManager.current
     val backupUiState by backupViewModel.uiState.collectAsState()
@@ -247,204 +249,221 @@ fun DataSettings(
             navController = navController
         )
 
+        search.SearchBar(this)
+
+
         SettingsDescription(text = stringResource(R.string.cache_cleared))
 
-        Coil.imageLoader(context).diskCache?.let { diskCache ->
-            var diskCacheSize by remember { mutableLongStateOf(0L) }
-            LaunchedEffect(key1 = diskCache, key2 = cleanCacheImages, coilDiskCacheMaxSize) {
-                withContext(Dispatchers.IO) {
-                    try {
-                        diskCache.size
-                    } catch (e: Exception) {
-                        Timber.e("Errore durante il calcolo della cache immagini: $e")
-                        0L
-                    }
-                }.let { size ->
-                    diskCacheSize = size
-                }
-            }
-
+        if (search.matchesAny(R.string.cache, R.string.image_cache_max_size, R.string.used, R.string.song_cache_max_size, R.string.set_cache_location, R.string.info_private_cache_location_can_t_cleaned)) {
             SettingsGroupSpacer()
             SettingsEntryGroupText(title = stringResource(R.string.cache))
 
-            EnumValueSelectorSettingsEntry(
-                title = stringResource(R.string.image_cache_max_size),
-                titleSecondary = when (coilDiskCacheMaxSize) {
-                    CoilDiskCacheMaxSize.Custom -> Formatter.formatShortFileSize(context, diskCacheSize) +
-                            "/${Formatter.formatShortFileSize(context, coilCustomDiskCache.toLong() * 1000 * 1000)}" +
-                            stringResource(R.string.used)
-                    else -> Formatter.formatShortFileSize(context, diskCacheSize) +
-                            stringResource(R.string.used) +
-                            " (${diskCacheSize * 100 / coilDiskCacheMaxSize.bytes}%)"
-                },
-                trailingContent = {
-                    HeaderIconButton(
-                        icon = R.drawable.trash,
-                        enabled = true,
-                        color = colorPalette().text,
-                        onClick = { cleanCacheImages = true }
-                    )
-                },
-                selectedValue = coilDiskCacheMaxSize,
-                onValueSelected = {
-                    coroutineScope.launch {
-                        val new = appSettingsManager.activeSettings.value.copy(
-                            coilDiskCacheMaxSize = it
-                        )
-                        appSettingsManager.updateSettings(new)
-                    }
-
-                    if (it == CoilDiskCacheMaxSize.Custom) {
-                        showCoilCustomDiskCacheDialog = true
-                    } else restartService = true
-                },
-                valueText = { it.displayName }
-            )
-            RestartPlayerService(restartService, onRestart = { restartService = false } )
-
-            key(coilDiskCacheMaxSize) {
-                CacheSpaceIndicator(cacheType = CacheType.Images, horizontalPadding = 20.dp)
-            }
-        }
-
-        binder?.cache?.let { cache ->
-            var diskCacheSize by remember { mutableLongStateOf(0L) }
-            LaunchedEffect(key1 = cache, key2 = cleanCacheOfflineSongs, exoPlayerDiskCacheMaxSize) {
-                withContext(Dispatchers.IO) {
-                    try {
-                        cache.cacheSpace
-                    } catch (e: Exception) {
-                        Timber.e("Errore durante il calcolo dello spazio cache: $e")
-                        0L
-                    }
-                }.let { size ->
-                    diskCacheSize = size
-                }
-            }
-
-            //SettingsGroup {
-            EnumValueSelectorSettingsEntry(
-                title = stringResource(R.string.song_cache_max_size),
-                titleSecondary = when (exoPlayerDiskCacheMaxSize) {
-                    ExoPlayerDiskCacheMaxSize.Disabled -> ""
-                    ExoPlayerDiskCacheMaxSize.Custom -> Formatter.formatShortFileSize(context, diskCacheSize) +
-                            "/${Formatter.formatShortFileSize(context,
-                                exoPlayerCustomCache.toLong() * 1000 * 1000
-                            )}" + " ${stringResource(R.string.used)}"
-                    else -> Formatter.formatShortFileSize(context, diskCacheSize) +
-                            " ${stringResource(R.string.used)}" +
-                            when (exoPlayerDiskCacheMaxSize) {
-                                ExoPlayerDiskCacheMaxSize.Unlimited-> ""
-                                // only needed because of UNLIMITED
-                                else -> " (${diskCacheSize * 100 / exoPlayerDiskCacheMaxSize.bytes}%)"
+            SettingsCardContainer {
+                Coil.imageLoader(context).diskCache?.let { diskCache ->
+                    var diskCacheSize by remember { mutableLongStateOf(0L) }
+                    LaunchedEffect(key1 = diskCache, key2 = cleanCacheImages, coilDiskCacheMaxSize) {
+                        withContext(Dispatchers.IO) {
+                            try {
+                                diskCache.size
+                            } catch (e: Exception) {
+                                Timber.e("Errore durante il calcolo della cache immagini: $e")
+                                0L
                             }
-                },
-                trailingContent = {
-                    HeaderIconButton(
-                        icon = R.drawable.trash,
-                        enabled = true,
-                        color = colorPalette().text,
-                        onClick = { cleanCacheOfflineSongs = true }
-                    )
-                },
-                selectedValue = exoPlayerDiskCacheMaxSize,
-                onValueSelected = {
-                    Timber.d("DataSettings exoPlayerDiskCacheMaxSize: $it")
-                    if (it == ExoPlayerDiskCacheMaxSize.Custom) {
-                        showExoPlayerCustomDiskCacheDialog = true
-                    } else restartService = true
-
-                    coroutineScope.launch {
-                        val new = appSettingsManager.activeSettings.value.copy(
-                            exoPlayerDiskCacheMaxSize = it
-                        )
-                        appSettingsManager.updateSettings(new)
+                        }.let { size ->
+                            diskCacheSize = size
+                        }
                     }
-                },
-                valueText = { it.displayName }
-            )
-            RestartPlayerService(restartService, onRestart = { restartService = false } )
 
-            key(exoPlayerDiskCacheMaxSize) {
-                CacheSpaceIndicator(cacheType = CacheType.CachedSongs, horizontalPadding = 20.dp)
-            }
-            //}
-        }
+                    EnumValueSelectorSettingsEntry(
+                        title = stringResource(R.string.image_cache_max_size),
+                        titleSecondary = when (coilDiskCacheMaxSize) {
+                            CoilDiskCacheMaxSize.Custom -> Formatter.formatShortFileSize(context, diskCacheSize) +
+                                    "/${Formatter.formatShortFileSize(context, coilCustomDiskCache.toLong() * 1000 * 1000)}" +
+                                    stringResource(R.string.used)
+                            else -> Formatter.formatShortFileSize(context, diskCacheSize) +
+                                    stringResource(R.string.used) +
+                                    " (${diskCacheSize * 100 / coilDiskCacheMaxSize.bytes}%)"
+                        },
+                        trailingContent = {
+                            HeaderIconButton(
+                                icon = R.drawable.trash,
+                                enabled = true,
+                                color = colorPalette().text,
+                                onClick = { cleanCacheImages = true }
+                            )
+                        },
+                        selectedValue = coilDiskCacheMaxSize,
+                        onValueSelected = {
+                            coroutineScope.launch {
+                                val new = appSettingsManager.activeSettings.value.copy(
+                                    coilDiskCacheMaxSize = it
+                                )
+                                appSettingsManager.updateSettings(new)
+                            }
 
-        EnumValueSelectorSettingsEntry(
-            title = stringResource(R.string.set_cache_location),
-            selectedValue = exoPlayerCacheLocation,
-            onValueSelected = {
-                coroutineScope.launch {
-                    val new = appSettingsManager.activeSettings.value.copy(
-                        exoPlayerCacheLocation = it
+                            if (it == CoilDiskCacheMaxSize.Custom) {
+                                showCoilCustomDiskCacheDialog = true
+                            } else restartService = true
+                        },
+                        valueText = { it.displayName }
                     )
-                    appSettingsManager.updateSettings(new)
+                    RestartPlayerService(restartService, onRestart = { restartService = false } )
+
+                    key(coilDiskCacheMaxSize) {
+                        CacheSpaceIndicator(cacheType = CacheType.Images, horizontalPadding = 20.dp)
+                    }
+
+                    if (binder?.cache != null) SettingsGroupDivider()
                 }
 
-                restartService = true
-            },
-            valueText = { it.displayName }
-        )
+                binder?.cache?.let { cache ->
+                    var diskCacheSize by remember { mutableLongStateOf(0L) }
+                    LaunchedEffect(key1 = cache, key2 = cleanCacheOfflineSongs, exoPlayerDiskCacheMaxSize) {
+                        withContext(Dispatchers.IO) {
+                            try {
+                                cache.cacheSpace
+                            } catch (e: Exception) {
+                                Timber.e("Errore durante il calcolo dello spazio cache: $e")
+                                0L
+                            }
+                        }.let { size ->
+                            diskCacheSize = size
+                        }
+                    }
 
-        SettingsDescription(stringResource(R.string.info_private_cache_location_can_t_cleaned))
-        RestartPlayerService(restartService, onRestart = { restartService = false } )
+                    //SettingsGroup {
+                    EnumValueSelectorSettingsEntry(
+                        title = stringResource(R.string.song_cache_max_size),
+                        titleSecondary = when (exoPlayerDiskCacheMaxSize) {
+                            ExoPlayerDiskCacheMaxSize.Disabled -> ""
+                            ExoPlayerDiskCacheMaxSize.Custom -> Formatter.formatShortFileSize(context, diskCacheSize) +
+                                    "/${Formatter.formatShortFileSize(context,
+                                        exoPlayerCustomCache.toLong() * 1000 * 1000
+                                    )}" + " ${stringResource(R.string.used)}"
+                            else -> Formatter.formatShortFileSize(context, diskCacheSize) +
+                                    " ${stringResource(R.string.used)}" +
+                                    when (exoPlayerDiskCacheMaxSize) {
+                                        ExoPlayerDiskCacheMaxSize.Unlimited-> ""
+                                        // only needed because of UNLIMITED
+                                        else -> " (${diskCacheSize * 100 / exoPlayerDiskCacheMaxSize.bytes}%)"
+                                    }
+                        },
+                        trailingContent = {
+                            HeaderIconButton(
+                                icon = R.drawable.trash,
+                                enabled = true,
+                                color = colorPalette().text,
+                                onClick = { cleanCacheOfflineSongs = true }
+                            )
+                        },
+                        selectedValue = exoPlayerDiskCacheMaxSize,
+                        onValueSelected = {
+                            Timber.d("DataSettings exoPlayerDiskCacheMaxSize: $it")
+                            if (it == ExoPlayerDiskCacheMaxSize.Custom) {
+                                showExoPlayerCustomDiskCacheDialog = true
+                            } else restartService = true
 
-        SettingsGroupSpacer()
+                            coroutineScope.launch {
+                                val new = appSettingsManager.activeSettings.value.copy(
+                                    exoPlayerDiskCacheMaxSize = it
+                                )
+                                appSettingsManager.updateSettings(new)
+                            }
+                        },
+                        valueText = { it.displayName }
+                    )
+                    RestartPlayerService(restartService, onRestart = { restartService = false } )
 
-        SettingsEntryGroupText(title = stringResource(R.string.title_backup_and_restore))
+                    key(exoPlayerDiskCacheMaxSize) {
+                        CacheSpaceIndicator(cacheType = CacheType.CachedSongs, horizontalPadding = 20.dp)
+                    }
+                    //}
+                }
 
-        SettingsEntry(
-            isEnabled = backupUiState is BackupUiState.Idle,
-            title = stringResource(R.string.save_to_backup),
-            titleSecondary = stringResource(R.string.export_the_database),
-            text = "",
-            onClick = {
-                isExporting = true
-            }
-        )
-        SettingsDescription(text = stringResource(R.string.personal_preference))
-        if (backupUiState is BackupUiState.BackingUp || backupUiState is BackupUiState.Restoring) {
-            DefaultDialog(
-                onDismiss = {}
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.server),
-                    contentDescription = null,
-                    modifier = Modifier.size(32.dp),
-                    colorFilter = ColorFilter.tint(colorPalette().text)
+
+                    if (Coil.imageLoader(context).diskCache != null || binder?.cache != null)
+                        SettingsGroupDivider()
+
+                EnumValueSelectorSettingsEntry(
+                    title = stringResource(R.string.set_cache_location),
+                    selectedValue = exoPlayerCacheLocation,
+                    onValueSelected = {
+                        coroutineScope.launch {
+                            val new = appSettingsManager.activeSettings.value.copy(
+                                exoPlayerCacheLocation = it
+                            )
+                            appSettingsManager.updateSettings(new)
+                        }
+
+                        restartService = true
+                    },
+                    valueText = { it.displayName }, icon = R.drawable.folder,
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = if (backupUiState is BackupUiState.BackingUp) "Backup in progress..." else "Restore in progress...",
-                    style = typography().m,
-                    color = colorPalette().text
-                )
+
+                SettingsDescription(stringResource(R.string.info_private_cache_location_can_t_cleaned))
+                RestartPlayerService(restartService, onRestart = { restartService = false } )
             }
         }
 
-        SettingsEntry(
-            isEnabled = backupUiState is BackupUiState.Idle,
-            title = stringResource(R.string.restore_from_backup),
-            titleSecondary = stringResource(R.string.import_the_database),
-            text = "",
-            onClick = {
-                //restoreFromOtherFileExtension = false
-                isImporting = true
+        if (search.matchesAny(R.string.title_backup_and_restore, R.string.save_to_backup, R.string.export_the_database, R.string.personal_preference, R.string.restore_from_backup, R.string.import_the_database, R.string.restore_from_other_backup, R.string.import_the_database_be_carefull, R.string.existing_data_will_be_overwritten, R.string.riplay_app_name)) {
+            SettingsGroupSpacer()
+
+            SettingsEntryGroupText(title = stringResource(R.string.title_backup_and_restore))
+
+            SettingsCardContainer {
+                SettingsEntry(
+                    isEnabled = backupUiState is BackupUiState.Idle,
+                    title = stringResource(R.string.save_to_backup),
+                    titleSecondary = stringResource(R.string.export_the_database),
+                    text = "",
+                    onClick = {
+                        isExporting = true
+                    }, icon = R.drawable.copy,
+                )
+                SettingsDescription(text = stringResource(R.string.personal_preference))
+                if (backupUiState is BackupUiState.BackingUp || backupUiState is BackupUiState.Restoring) {
+                    DefaultDialog(
+                        onDismiss = {}
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.server),
+                            contentDescription = null,
+                            modifier = Modifier.size(32.dp),
+                            colorFilter = ColorFilter.tint(colorPalette().text)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = if (backupUiState is BackupUiState.BackingUp) "Backup in progress..." else "Restore in progress...",
+                            style = typography().m,
+                            color = colorPalette().text
+                        )
+                    }
+                }
+
+                SettingsEntry(
+                    isEnabled = backupUiState is BackupUiState.Idle,
+                    title = stringResource(R.string.restore_from_backup),
+                    titleSecondary = stringResource(R.string.import_the_database),
+                    text = "",
+                    onClick = {
+                        //restoreFromOtherFileExtension = false
+                        isImporting = true
+                    }, icon = R.drawable.sync,
+                )
+        //        SettingsEntry(
+        //            title = stringResource(R.string.restore_from_other_backup),
+        //            text = stringResource(R.string.import_the_database_be_carefull),
+        //            onClick = {
+        //                restoreFromOtherFileExtension = true
+        //                isImporting = true
+        //            }
+        //, icon = R.drawable.sync,        )
+                ImportantSettingsDescription(text = stringResource(
+                    R.string.existing_data_will_be_overwritten,
+                    stringResource(R.string.riplay_app_name)
+                ))
             }
-        )
-//        SettingsEntry(
-//            title = stringResource(R.string.restore_from_other_backup),
-//            text = stringResource(R.string.import_the_database_be_carefull),
-//            onClick = {
-//                restoreFromOtherFileExtension = true
-//                isImporting = true
-//            }
-//        )
-        ImportantSettingsDescription(text = stringResource(
-            R.string.existing_data_will_be_overwritten,
-            stringResource(R.string.riplay_app_name)
-        ))
+        }
 
         SettingsGroupSpacer(
             modifier = Modifier.height(Dimensions.bottomSpacer)

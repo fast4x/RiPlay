@@ -60,11 +60,13 @@ import it.fast4x.riplay.ui.styling.DefaultLightColorPalette
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.ui.components.themed.Search
-import it.fast4x.riplay.ui.components.themed.settingsItem
-import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.restartApp
 import kotlinx.coroutines.launch
+import it.fast4x.riplay.ui.components.themed.settingsHeaderItem
+import it.fast4x.riplay.ui.components.themed.settingsGroupHeader
+import it.fast4x.riplay.ui.components.themed.settingsGroupCard
+import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 
 @ExperimentalAnimationApi
 @UnstableApi
@@ -73,6 +75,7 @@ fun UiSettings(
     navController: NavController
 ) {
 
+    val context = LocalContext.current
     val appearanceSettingsManager = LocalAppearanceSettingsManager.current
     val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
@@ -97,7 +100,7 @@ fun UiSettings(
     val maxTopPlaylistItems = appSettings.maxTopPlaylistItems
     val navigationBarPosition = appSettings.navigationBarPosition
     val navigationBarType = appSettings.navigationBarType
-    val search = Search.init()
+    val search = Search.init(alwaysVisible = true)
     val showFavoritesPlaylist = appSettings.showFavoritesPlaylist
     val showMyTopPlaylist = appSettings.showMyTopPlaylist
     val showOnDevicePlaylist = appSettings.showOnDevicePlaylist
@@ -147,7 +150,7 @@ fun UiSettings(
     val showUpNextSongInMiniPlayer = appSettings.showUpNextSongInMiniPlayer
     val loaderStyle = appSettings.loaderStyle
     val swipeToNext = appSettings.swipeToNext
-
+    val uiType = appSettings.uiType
     val coroutineScope = rememberCoroutineScope()
 
     Column(
@@ -225,7 +228,7 @@ fun UiSettings(
             state = state,
             contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer)
         ) {
-            settingsItem {
+            settingsHeaderItem {
                 HeaderWithIcon(
                     title = stringResource(R.string.user_interface),
                     iconId = R.drawable.ui,
@@ -237,26 +240,18 @@ fun UiSettings(
                 )
             }
 
+
             settingsSearchBarItem {
-                search.ToolBarButton()
                 search.SearchBar(this)
             }
 
 
-            settingsItem(
-                isHeader = true
-            ) {
-                SettingsGroupSpacer()
-                SettingsEntryGroupText(stringResource(R.string.user_interface))
-            }
+            if (search.matchesAny(R.string.enable_fullscreen, R.string.interface_in_use)) {
+            settingsGroupHeader(context.resources.getString(R.string.user_interface))
+            settingsGroupCard {
 
-            settingsItem {
 
-                if (search.input.isBlank() || stringResource(R.string.enable_fullscreen).contains(
-                        search.input,
-                        true
-                    )
-                )
+                if (search.matchesAny(R.string.enable_fullscreen))
                     SwitchSettingEntry(
                         title = stringResource(R.string.enable_fullscreen),
                         text = stringResource(R.string.enable_fullscreen_info),
@@ -266,15 +261,14 @@ fun UiSettings(
                                 val new = appSettingsManager.activeSettings.value.copy(isEnabledFullScreen = it)
                                 appSettingsManager.updateSettings(new)
                             }
-                        }
+                        }, icon = R.drawable.resize,
                     )
 
                 val uiType = appSettings.uiType
-                if (search.input.isBlank() || stringResource(R.string.interface_in_use).contains(
-                        search.input,
-                        true
-                    )
-                )
+                if (search.matchesAny(R.string.interface_in_use))
+                    SettingsGroupDivider()
+
+                if (search.matchesAny(R.string.interface_in_use))
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.interface_in_use),
                         selectedValue = uiType,
@@ -365,14 +359,17 @@ fun UiSettings(
                         },
                         valueText = {
                             it.name
-                        }
+                        },
+                        icon = R.drawable.ui
                     )
+                }
+                }
 
-                if (search.input.isBlank() || stringResource(R.string.theme).contains(
-                        search.input,
-                        true
-                    )
-                )
+                if (search.matchesAny(R.string.theme, R.string.customcolor, R.string.theme_mode, R.string.title_customized_light_theme_colors, R.string.title_customized_dark_theme_colors)) {
+                settingsGroupHeader(context.resources.getString(R.string.theme))
+                settingsGroupCard {
+
+                if (search.matchesAny(R.string.theme))
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.theme),
                         selectedValue = colorPaletteName,
@@ -392,7 +389,7 @@ fun UiSettings(
                                 appearanceSettingsManager.updatePreset(new)
                             }
                         },
-                        valueText = { it.displayName }
+                        valueText = { it.displayName }, icon = R.drawable.color_palette,
                     )
 
                 AnimatedVisibility(visible = colorPaletteName == ColorPaletteName.CustomColor) {
@@ -408,7 +405,7 @@ fun UiSettings(
                                 }
                             },
                             modifier = Modifier
-                                .padding(start = 12.dp)
+                                .padding(start = 12.dp), icon = R.drawable.color_palette,
                         )
                         ImportantSettingsDescription(
                             text = stringResource(R.string.restarting_riplay_is_required),
@@ -697,11 +694,10 @@ fun UiSettings(
                     }
                 }
 
-                if (search.input.isBlank() || stringResource(R.string.theme_mode).contains(
-                        search.input,
-                        true
-                    )
-                )
+                if (search.matchesAny(R.string.theme_mode))
+                    SettingsGroupDivider()
+
+                if (search.matchesAny(R.string.theme_mode))
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.theme_mode),
                         selectedValue = colorPaletteMode,
@@ -719,14 +715,17 @@ fun UiSettings(
                             }
                             //if (it == ColorPaletteMode.PitchBlack) colorPaletteName = ColorPaletteName.ModernBlack
                         },
-                        valueText = { it.displayName }
+                        valueText = { it.displayName },
+                        icon = R.drawable.moon
                     )
+                }
+                }
 
-                if (search.input.isBlank() || stringResource(R.string.navigation_bar_position).contains(
-                        search.input,
-                        true
-                    )
-                )
+                if (search.matchesAny(R.string.navigation_bar_position, R.string.navigation_bar_type, R.string.player_position, R.string.swipe_to_next_with_miniplayer_title, R.string.show_upnext_in_miniplayer, R.string.show_miniplayer_in_settings)) {
+                settingsGroupHeader(context.resources.getString(R.string.settings_group_navigation))
+                settingsGroupCard {
+
+                if (search.matchesAny(R.string.navigation_bar_position))
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.navigation_bar_position),
                         selectedValue = navigationBarPosition,
@@ -739,14 +738,13 @@ fun UiSettings(
                         // As of version 0.6.53, changing navigation bar to top or bottom
                         // while using ViMusic theme breaks the UI
                         //isEnabled = uiType != UiType.ViMusic,
-                        valueText = { it.displayName }
+                        valueText = { it.displayName }, icon = R.drawable.position,
                     )
 
-                if (search.input.isBlank() || stringResource(R.string.navigation_bar_type).contains(
-                        search.input,
-                        true
-                    )
-                )
+                if (search.matchesAny(R.string.navigation_bar_type))
+                    SettingsGroupDivider()
+
+                if (search.matchesAny(R.string.navigation_bar_type))
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.navigation_bar_type),
                         selectedValue = navigationBarType,
@@ -756,15 +754,14 @@ fun UiSettings(
                                 appSettingsManager.updateSettings(new)
                             }
                         },
-                        valueText = { it.displayName }
+                        valueText = { it.displayName }, icon = R.drawable.singlepage,
                     )
 
                 if (UiType.RiPlay.isCurrent()) {
-                    if (search.input.isBlank() || stringResource(R.string.player_position).contains(
-                            search.input,
-                            true
-                        )
-                    )
+                    if (search.matchesAny(R.string.player_position))
+                        SettingsGroupDivider()
+
+                    if (search.matchesAny(R.string.player_position))
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.player_position),
                             selectedValue = playerPosition,
@@ -775,15 +772,14 @@ fun UiSettings(
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
-                            valueText = { it.displayName }
+                            valueText = { it.displayName }, icon = R.drawable.arrow_up,
                         )
                 }
 
-                if (search.input.isBlank() || stringResource(R.string.swipe_to_next_with_miniplayer_title).contains(
-                        search.input,
-                        true
-                    )
-                )
+                if (search.matchesAny(R.string.swipe_to_next_with_miniplayer_title))
+                    SettingsGroupDivider()
+
+                if (search.matchesAny(R.string.swipe_to_next_with_miniplayer_title))
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.swipe_to_next_with_miniplayer_title),
                         selectedValue = swipeToNext,
@@ -793,14 +789,13 @@ fun UiSettings(
                                 appSettingsManager.updateSettings(new)
                             }
                         },
-                        valueText = { it.displayName }
+                        valueText = { it.displayName }, icon = R.drawable.left_and_right_arrows,
                     )
 
-                if (search.input.isBlank() || stringResource(R.string.show_upnext_in_miniplayer).contains(
-                        search.input,
-                        true
-                    )
-                )
+                if (search.matchesAny(R.string.show_upnext_in_miniplayer))
+                    SettingsGroupDivider()
+
+                if (search.matchesAny(R.string.show_upnext_in_miniplayer))
                     SwitchSettingEntry(
                         title = stringResource(R.string.show_upnext_in_miniplayer),
                         text = "",
@@ -810,14 +805,13 @@ fun UiSettings(
                                 val new = appSettingsManager.activeSettings.value.copy(showUpNextSongInMiniPlayer = it)
                                 appSettingsManager.updateSettings(new)
                             }
-                        }
+                        }, icon = R.drawable.addqueue,
                     )
 
-                if (search.input.isBlank() || stringResource(R.string.show_miniplayer_in_settings).contains(
-                        search.input,
-                        true
-                    )
-                )
+                if (search.matchesAny(R.string.show_miniplayer_in_settings))
+                    SettingsGroupDivider()
+
+                if (search.matchesAny(R.string.show_miniplayer_in_settings))
                     SwitchSettingEntry(
                         title = stringResource(R.string.show_miniplayer_in_settings),
                         text = "",
@@ -827,14 +821,17 @@ fun UiSettings(
                                 val new = appSettingsManager.activeSettings.value.copy(showMiniPlayerInSettings = it)
                                 appSettingsManager.updateSettings(new)
                             }
-                        }
+                        },
+                        icon = R.drawable.player_mini_widget
                     )
+                }
+                }
 
-                if (search.input.isBlank() || stringResource(R.string.loader_style).contains(
-                        search.input,
-                        true
-                    )
-                )
+                if (search.matchesAny(R.string.loader_style, R.string.menu_style, R.string.message_type, R.string.transition_effect, R.string.snow_effect)) {
+                settingsGroupHeader(context.resources.getString(R.string.settings_group_effects))
+                settingsGroupCard {
+
+                if (search.matchesAny(R.string.loader_style))
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.loader_style),
                         selectedValue = loaderStyle,
@@ -844,14 +841,13 @@ fun UiSettings(
                                 appSettingsManager.updateSettings(new)
                             }
                         },
-                        valueText = { it.displayName }
+                        valueText = { it.displayName }, icon = R.drawable.refresh,
                     )
 
-                if (search.input.isBlank() || stringResource(R.string.menu_style).contains(
-                        search.input,
-                        true
-                    )
-                )
+                if (search.matchesAny(R.string.menu_style))
+                    SettingsGroupDivider()
+
+                if (search.matchesAny(R.string.menu_style))
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.menu_style),
                         selectedValue = menuStyle,
@@ -861,14 +857,13 @@ fun UiSettings(
                                 appSettingsManager.updateSettings(new)
                             }
                         },
-                        valueText = { it.displayName }
+                        valueText = { it.displayName }, icon = R.drawable.burger,
                     )
 
-                if (search.input.isBlank() || stringResource(R.string.message_type).contains(
-                        search.input,
-                        true
-                    )
-                )
+                if (search.matchesAny(R.string.message_type))
+                    SettingsGroupDivider()
+
+                if (search.matchesAny(R.string.message_type))
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.message_type),
                         selectedValue = messageType,
@@ -878,14 +873,13 @@ fun UiSettings(
                                 appSettingsManager.updateSettings(new)
                             }
                         },
-                        valueText = { it.displayName }
+                        valueText = { it.displayName }, icon = R.drawable.information_circle,
                     )
 
-                if (search.input.isBlank() || stringResource(R.string.transition_effect).contains(
-                        search.input,
-                        true
-                    )
-                )
+                if (search.matchesAny(R.string.transition_effect))
+                    SettingsGroupDivider()
+
+                if (search.matchesAny(R.string.transition_effect))
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.transition_effect),
                         selectedValue = transitionEffect,
@@ -895,14 +889,13 @@ fun UiSettings(
                                 appSettingsManager.updateSettings(new)
                             }
                         },
-                        valueText = { it.displayName }
+                        valueText = { it.displayName }, icon = R.drawable.slow_motion,
                     )
 
-                if (search.input.isBlank() || stringResource(R.string.snow_effect).contains(
-                        search.input,
-                        true
-                    )
-                )
+                if (search.matchesAny(R.string.snow_effect))
+                    SettingsGroupDivider()
+
+                if (search.matchesAny(R.string.snow_effect))
                     SwitchSettingEntry(
                         title = stringResource(R.string.snow_effect),
                         text = "",
@@ -912,15 +905,32 @@ fun UiSettings(
                                 val new = appSettingsManager.activeSettings.value.copy(isSnowEffectEnabled = it)
                                 appSettingsManager.updateSettings(new)
                             }
-                        }
+                        },
+                        icon = R.drawable.droplet
                     )
 
-                if (UiType.ViMusic.isCurrent()) {
-                    if (search.input.isBlank() || stringResource(R.string.vimusic_show_search_button_in_navigation_bar).contains(
-                            search.input,
-                            true
-                        )
+                if (search.matchesAny(R.string.use_placeholder_in_imageloader))
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.use_placeholder_in_imageloader),
+                        text = stringResource(R.string.use_placeholder_in_imageloader_info),
+                        isChecked = usePlaceholderInImageLoader,
+                        onCheckedChange = {
+                            coroutineScope.launch {
+                                val new = appSettingsManager.activeSettings.value.copy(usePlaceholderInImageLoader = it)
+                                appSettingsManager.updateSettings(new)
+                            }
+                        },
+                        icon = R.drawable.picture
                     )
+                }
+                }
+
+                if (search.matchesAny(R.string.vimusic_show_search_button_in_navigation_bar, R.string.show_statistics_in_navigation_bar, R.string.show_floating_icon)) {
+                settingsGroupHeader(context.resources.getString(R.string.settings_group_visibility))
+                settingsGroupCard {
+
+                if (UiType.ViMusic.isCurrent()) {
+                    if (search.matchesAny(R.string.vimusic_show_search_button_in_navigation_bar))
                         SwitchSettingEntry(
                             title = stringResource(R.string.vimusic_show_search_button_in_navigation_bar),
                             text = stringResource(R.string.vismusic_only_in_left_right_navigation_bar),
@@ -930,16 +940,15 @@ fun UiSettings(
                                     val new = appSettingsManager.activeSettings.value.copy(showSearchTab = it)
                                     appSettingsManager.updateSettings(new)
                                 }
-                            }
+                            }, icon = R.drawable.search,
                         )
 
 
 
-                    if (search.input.isBlank() || stringResource(R.string.show_statistics_in_navigation_bar).contains(
-                            search.input,
-                            true
-                        )
-                    )
+                    if (search.matchesAny(R.string.show_statistics_in_navigation_bar))
+                        SettingsGroupDivider()
+
+                    if (search.matchesAny(R.string.show_statistics_in_navigation_bar))
                         SwitchSettingEntry(
                             title = stringResource(R.string.show_statistics_in_navigation_bar),
                             text = "",
@@ -949,16 +958,15 @@ fun UiSettings(
                                     val new = appSettingsManager.activeSettings.value.copy(showStatsInNavbar = it)
                                     appSettingsManager.updateSettings(new)
                                 }
-                            }
+                            }, icon = R.drawable.query_stats,
                         )
                 }
 
                 if (uiType == UiType.ViMusic) {
-                    if (search.input.isBlank() || stringResource(R.string.show_floating_icon).contains(
-                            search.input,
-                            true
-                        )
-                    )
+                    if (search.matchesAny(R.string.show_floating_icon))
+                    SettingsGroupDivider()
+
+                if (search.matchesAny(R.string.show_floating_icon))
                         SwitchSettingEntry(
                             title = stringResource(R.string.show_floating_icon),
                             text = "",
@@ -968,7 +976,7 @@ fun UiSettings(
                                     val new = appSettingsManager.activeSettings.value.copy(showFloatingIcon = it)
                                     appSettingsManager.updateSettings(new)
                                 }
-                            }
+                            }, icon = R.drawable.sparkles,
                         )
                 } else {
                     LaunchedEffect(Unit) {
@@ -978,14 +986,14 @@ fun UiSettings(
                         appSettingsManager.updateSettings(new)
                     }
                 }
+                }
+                }
 
+                if (search.matchesAny(R.string.settings_use_font_type, R.string.use_system_font, R.string.apply_font_padding)) {
+                settingsGroupHeader(context.resources.getString(R.string.settings_group_font))
+                settingsGroupCard {
 
-
-                if (search.input.isBlank() || stringResource(R.string.settings_use_font_type).contains(
-                        search.input,
-                        true
-                    )
-                )
+                if (search.matchesAny(R.string.settings_use_font_type))
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.settings_use_font_type),
                         selectedValue = fontType,
@@ -995,14 +1003,13 @@ fun UiSettings(
                                 appSettingsManager.updateSettings(new)
                             }
                         },
-                        valueText = { it.displayName }
+                        valueText = { it.displayName }, icon = R.drawable.text,
                     )
 
-                if (search.input.isBlank() || stringResource(R.string.use_system_font).contains(
-                        search.input,
-                        true
-                    )
-                )
+                if (search.matchesAny(R.string.use_system_font))
+                    SettingsGroupDivider()
+
+                if (search.matchesAny(R.string.use_system_font))
                     SwitchSettingEntry(
                         title = stringResource(R.string.use_system_font),
                         text = stringResource(R.string.use_font_by_the_system),
@@ -1012,14 +1019,13 @@ fun UiSettings(
                                 val new = appSettingsManager.activeSettings.value.copy(useSystemFont = it)
                                 appSettingsManager.updateSettings(new)
                             }
-                        }
+                        }, icon = R.drawable.text,
                     )
 
-                if (search.input.isBlank() || stringResource(R.string.apply_font_padding).contains(
-                        search.input,
-                        true
-                    )
-                )
+                if (search.matchesAny(R.string.apply_font_padding))
+                    SettingsGroupDivider()
+
+                if (search.matchesAny(R.string.apply_font_padding))
                     SwitchSettingEntry(
                         title = stringResource(R.string.apply_font_padding),
                         text = stringResource(R.string.add_spacing_around_texts),
@@ -1029,15 +1035,17 @@ fun UiSettings(
                                 val new = appSettingsManager.activeSettings.value.copy(applyFontPadding = it)
                                 appSettingsManager.updateSettings(new)
                             }
-                        }
+                        },
+                        icon = R.drawable.text
                     )
+                }
+                }
 
+                if (search.matchesAny(R.string.swipe_to_action, R.string.queue_and_local_playlists_left_swipe, R.string.queue_and_local_playlists_right_swipe, R.string.playlist_left_swipe, R.string.playlist_right_swipe, R.string.album_left_swipe, R.string.album_right_swipe)) {
+                settingsGroupHeader(context.resources.getString(R.string.settings_group_gestures))
+                settingsGroupCard {
 
-                if (search.input.isBlank() || stringResource(R.string.swipe_to_action).contains(
-                        search.input,
-                        true
-                    )
-                ) {
+                if (search.matchesAny(R.string.swipe_to_action)) {
                     SwitchSettingEntry(
                         title = stringResource(R.string.swipe_to_action),
                         text = stringResource(R.string.activate_the_action_menu_by_swiping_the_song_left_or_right),
@@ -1047,7 +1055,7 @@ fun UiSettings(
                                 val new = appSettingsManager.activeSettings.value.copy(isSwipeToActionEnabled = it)
                                 appSettingsManager.updateSettings(new)
                             }
-                        }
+                        }, icon = R.drawable.flip,
                     )
 
                     AnimatedVisibility(visible = isSwipeToActionEnabled) {
@@ -1148,37 +1156,17 @@ fun UiSettings(
                     }
                 }
 
-                if (search.input.isBlank() || stringResource(R.string.use_placeholder_in_imageloader).contains(
-                        search.input,
-                        true
-                    )
-                )
-                    SwitchSettingEntry(
-                        title = stringResource(R.string.use_placeholder_in_imageloader),
-                        text = stringResource(R.string.use_placeholder_in_imageloader_info),
-                        isChecked = usePlaceholderInImageLoader,
-                        onCheckedChange = {
-                            coroutineScope.launch {
-                                val new = appSettingsManager.activeSettings.value.copy(usePlaceholderInImageLoader = it)
-                                appSettingsManager.updateSettings(new)
-                            }
-                        }
-                    )
-            }
+                }
+                }
 
-            settingsItem(
-                isHeader = true
-            ) {
-                SettingsGroupSpacer()
-                SettingsEntryGroupText(title = stringResource(R.string.songs).uppercase())
-            }
 
-            settingsItem {
-                if (search.input.isBlank() || "${stringResource(R.string.show)} ${stringResource(R.string.favorites)}".contains(
-                        search.input,
-                        true
-                    )
-                )
+            if (search.matchesAny(R.string.show, R.string.favorites, R.string.my_playlist_top, R.string.on_device, R.string.disliked)) {
+            settingsGroupHeader(title = context.resources.getString(R.string.songs).uppercase())
+
+
+            settingsGroupCard {
+
+                if (search.matches("${stringResource(R.string.show)} ${stringResource(R.string.favorites)}"))
                     SwitchSettingEntry(
                         title = "${stringResource(R.string.show)} ${stringResource(R.string.favorites)}",
                         text = "",
@@ -1188,14 +1176,10 @@ fun UiSettings(
                                 val new = appSettingsManager.activeSettings.value.copy(showFavoritesPlaylist = it)
                                 appSettingsManager.updateSettings(new)
                             }
-                        }
+                        }, icon = R.drawable.heart,
                     )
 
-                if (search.input.isBlank() || "${stringResource(R.string.show)} ${stringResource(R.string.my_playlist_top)}".contains(
-                        search.input,
-                        true
-                    )
-                )
+                if (search.matches("${stringResource(R.string.show)} ${stringResource(R.string.my_playlist_top)}"))
                     SwitchSettingEntry(
                         title = "${stringResource(R.string.show)} ${
                             stringResource(R.string.my_playlist_top).format(
@@ -1209,13 +1193,9 @@ fun UiSettings(
                                 val new = appSettingsManager.activeSettings.value.copy(showMyTopPlaylist = it)
                                 appSettingsManager.updateSettings(new)
                             }
-                        }
+                        }, icon = R.drawable.trophy,
                     )
-                if (search.input.isBlank() || "${stringResource(R.string.show)} ${stringResource(R.string.on_device)}".contains(
-                        search.input,
-                        true
-                    )
-                )
+                if (search.matches("${stringResource(R.string.show)} ${stringResource(R.string.on_device)}"))
                     SwitchSettingEntry(
                         title = "${stringResource(R.string.show)} ${stringResource(R.string.on_device)}",
                         text = "",
@@ -1225,14 +1205,10 @@ fun UiSettings(
                                 val new = appSettingsManager.activeSettings.value.copy(showOnDevicePlaylist = it)
                                 appSettingsManager.updateSettings(new)
                             }
-                        }
+                        }, icon = R.drawable.folder,
                     )
 
-                if (search.input.isBlank() || "${stringResource(R.string.show)} ${stringResource(R.string.disliked)}".contains(
-                        search.input,
-                        true
-                    )
-                )
+                if (search.matches("${stringResource(R.string.show)} ${stringResource(R.string.disliked)}"))
                     SwitchSettingEntry(
                         title = "${stringResource(R.string.show)} ${stringResource(R.string.disliked)}",
                         text = "",
@@ -1242,25 +1218,22 @@ fun UiSettings(
                                 val new = appSettingsManager.activeSettings.value.copy(showDislikedPlaylist = it)
                                 appSettingsManager.updateSettings(new)
                             }
-                        }
+                        }, icon = R.drawable.heart_dislike,
                     )
 
+            
+            }
             }
 
-            settingsItem(
-                isHeader = true
-            ) {
-                SettingsGroupSpacer()
-                SettingsEntryGroupText(title = stringResource(R.string.playlists).uppercase())
-            }
 
-            settingsItem {
+            if (search.matchesAny(R.string.show, R.string.pinned_playlists, R.string.monthly_playlists)) {
+            settingsGroupHeader(title = context.resources.getString(R.string.playlists).uppercase())
 
-                if (search.input.isBlank() || "${stringResource(R.string.show)} ${stringResource(R.string.pinned_playlists)}".contains(
-                        search.input,
-                        true
-                    )
-                )
+
+            settingsGroupCard {
+
+
+                if (search.matches("${stringResource(R.string.show)} ${stringResource(R.string.pinned_playlists)}"))
                     SwitchSettingEntry(
                         title = "${stringResource(R.string.show)} ${stringResource(R.string.pinned_playlists)}",
                         text = "",
@@ -1270,14 +1243,10 @@ fun UiSettings(
                                 val new = appSettingsManager.activeSettings.value.copy(showPinnedPlaylists = it)
                                 appSettingsManager.updateSettings(new)
                             }
-                        }
+                        }, icon = R.drawable.pin,
                     )
 
-                if (search.input.isBlank() || "${stringResource(R.string.show)} ${stringResource(R.string.monthly_playlists)}".contains(
-                        search.input,
-                        true
-                    )
-                )
+                if (search.matches("${stringResource(R.string.show)} ${stringResource(R.string.monthly_playlists)}"))
                     SwitchSettingEntry(
                         title = "${stringResource(R.string.show)} ${stringResource(R.string.monthly_playlists)}",
                         text = "",
@@ -1287,23 +1256,20 @@ fun UiSettings(
                                 val new = appSettingsManager.activeSettings.value.copy(showMonthlyPlaylists = it)
                                 appSettingsManager.updateSettings(new)
                             }
-                        }
+                        }, icon = R.drawable.calendar,
                     )
+            
+            }
             }
 
-            settingsItem(
-                isHeader = true
-            ) {
-                SettingsGroupSpacer()
-                SettingsEntryGroupText(stringResource(R.string.monthly_playlists).uppercase())
-            }
 
-            settingsItem {
-                if (search.input.isBlank() || stringResource(R.string.monthly_playlists).contains(
-                        search.input,
-                        true
-                    )
-                )
+            if (search.matchesAny(R.string.monthly_playlists, R.string.enable_monthly_playlists_creation)) {
+            settingsGroupHeader(context.resources.getString(R.string.monthly_playlists).uppercase())
+
+
+            settingsGroupCard {
+
+                if (search.matchesAny(R.string.monthly_playlists))
                     SwitchSettingEntry(
                         title = stringResource(R.string.enable_monthly_playlists_creation),
                         text = "",
@@ -1313,23 +1279,20 @@ fun UiSettings(
                                 val new = appSettingsManager.activeSettings.value.copy(enableCreateMonthlyPlaylists = it)
                                 appSettingsManager.updateSettings(new)
                             }
-                        }
+                        }, icon = R.drawable.calendar,
                     )
+            
+            }
             }
 
-            settingsItem(
-                isHeader = true
-            ) {
-                SettingsGroupSpacer()
-                SettingsEntryGroupText(stringResource(R.string.smart_recommendations))
-            }
 
-            settingsItem {
-                if (search.input.isBlank() || stringResource(R.string.statistics_max_number_of_items).contains(
-                        search.input,
-                        true
-                    )
-                )
+            if (search.matchesAny(R.string.statistics_max_number_of_items)) {
+            settingsGroupHeader(context.resources.getString(R.string.smart_recommendations))
+
+
+            settingsGroupCard {
+
+                if (search.matchesAny(R.string.statistics_max_number_of_items))
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.statistics_max_number_of_items),
                         selectedValue = recommendationsNumber,
@@ -1341,23 +1304,20 @@ fun UiSettings(
                         },
                         valueText = {
                             it.number.toString()
-                        }
+                        }, icon = R.drawable.query_stats,
                     )
+            
+            }
             }
 
-            settingsItem(
-                isHeader = true
-            ) {
-                SettingsGroupSpacer()
-                SettingsEntryGroupText(stringResource(R.string.statistics))
-            }
 
-            settingsItem {
-                if (search.input.isBlank() || stringResource(R.string.statistics_max_number_of_items).contains(
-                        search.input,
-                        true
-                    )
-                )
+            if (search.matchesAny(R.string.statistics_max_number_of_items, R.string.listening_time, R.string.shows_the_number_of_songs_heard_and_their_listening_time)) {
+            settingsGroupHeader(context.resources.getString(R.string.statistics))
+
+
+            settingsGroupCard {
+
+                if (search.matchesAny(R.string.statistics_max_number_of_items))
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.statistics_max_number_of_items),
                         selectedValue = maxStatisticsItems,
@@ -1369,14 +1329,10 @@ fun UiSettings(
                         },
                         valueText = {
                             it.number.toString()
-                        }
+                        }, icon = R.drawable.query_stats,
                     )
 
-                if (search.input.isBlank() || stringResource(R.string.listening_time).contains(
-                        search.input,
-                        true
-                    )
-                )
+                if (search.matchesAny(R.string.listening_time))
                     SwitchSettingEntry(
                         title = stringResource(R.string.listening_time),
                         text = stringResource(R.string.shows_the_number_of_songs_heard_and_their_listening_time),
@@ -1388,23 +1344,20 @@ fun UiSettings(
                                 )
                                 appSettingsManager.updateSettings(new)
                             }
-                        }
+                        }, icon = R.drawable.time,
                     )
+            
+            }
             }
 
-            settingsItem(
-                isHeader = true
-            ) {
-                SettingsGroupSpacer()
-                SettingsEntryGroupText(stringResource(R.string.playlist_top))
-            }
 
-            settingsItem {
-                if (search.input.isBlank() || stringResource(R.string.statistics_max_number_of_items).contains(
-                        search.input,
-                        true
-                    )
-                )
+            if (search.matchesAny(R.string.statistics_max_number_of_items)) {
+            settingsGroupHeader(context.resources.getString(R.string.playlist_top))
+
+
+            settingsGroupCard {
+
+                if (search.matchesAny(R.string.statistics_max_number_of_items))
                     EnumValueSelectorSettingsEntry(
                         title = stringResource(R.string.statistics_max_number_of_items),
                         selectedValue = maxTopPlaylistItems,
@@ -1416,20 +1369,21 @@ fun UiSettings(
                         },
                         valueText = {
                             it.number.toString()
-                        }
+                        }, icon = R.drawable.query_stats,
                     )
 
 
+            
+            }
             }
 
-            settingsItem(
-                isHeader = true
-            ) {
-                SettingsGroupSpacer()
-                SettingsEntryGroupText(stringResource(R.string.listener_levels))
-            }
 
-            settingsItem {
+            if (search.matchesAny(R.string.show, R.string.listener_levels, R.string.disable_if_you_do_not_want_to_see)) {
+            settingsGroupHeader(context.resources.getString(R.string.listener_levels))
+
+
+            settingsGroupCard {
+
                 SwitchSettingEntry(
                     title = "${stringResource(R.string.show)} ${stringResource(R.string.listener_levels)}",
                     text = stringResource(R.string.disable_if_you_do_not_want_to_see) + " " + stringResource(
@@ -1443,18 +1397,19 @@ fun UiSettings(
                             )
                             appSettingsManager.updateSettings(new)
                         }
-                    }
+                    }, icon = R.drawable.soundwave,
                 )
+            
+            }
             }
 
-            settingsItem(
-                isHeader = true
-            ) {
-                SettingsGroupSpacer()
-                SettingsEntryGroupText(stringResource(R.string.settings_reset))
-            }
 
-            settingsItem {
+            if (search.matchesAny(R.string.settings_reset, R.string.settings_restore_default_settings, R.string.done)) {
+            settingsGroupHeader(context.resources.getString(R.string.settings_reset))
+
+
+            settingsGroupCard {
+
                 var resetToDefault by remember { mutableStateOf(false) }
                 val context = LocalContext.current
                 ButtonBarSettingEntry(
@@ -1475,7 +1430,10 @@ fun UiSettings(
                     }
                 }
 
-            }
+            
+
         }
+            }
     }
+        }
 }

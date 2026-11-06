@@ -673,6 +673,7 @@
     <string name="paste">Incolla</string>
     <string name="searches_no_suggestions">Nessun suggerimento</string>
     <string name="action_bar_show_discover_button">Mostra pulsante Esplora</string>
+    <string name="action_bar_show_download_button">Mostra pulsante download</string>
     <string name="playertype">Stile player</string>
     <string name="noblur">Nessuna sfocatura quando il testo è disabilitato</string>
     <string name="fadingedge">Margine Dissolvenza</string>
@@ -1588,4 +1589,21 @@
     <string name="swipe_to_next_settings_right_to_left">Right to left</string>
     <string name="swipe_to_next_settings_left_to_right">Left to right</string>
     <string name="swipe_to_next_with_miniplayer_title">Swipe to next with mini player</string>
+    <!-- RiPlay settings refactor: titoli dei gruppi -->
+    <string name="settings_group_navigation">Barra di navigazione</string>
+    <string name="settings_search_hint">Cerca nelle impostazioni…</string>
+    <string name="settings_group_playback">Riproduzione</string>
+    <string name="settings_group_player_interface">Interfaccia del player</string>
+    <string name="settings_group_screen_windows">Schermo e finestre</string>
+    <string name="settings_group_player_layout">Layout e transizioni</string>
+    <string name="settings_group_thumbnail">Miniatura</string>
+    <string name="settings_group_song_info">Informazioni brano</string>
+    <string name="settings_group_timeline">Barra di avanzamento</string>
+    <string name="settings_group_buttons">Pulsanti</string>
+    <string name="settings_group_background">Sfondo e gradienti</string>
+    <string name="settings_group_lyrics">Testi</string>
+    <string name="settings_group_effects">Effetti e grafica</string>
+    <string name="settings_group_visibility">Visibilit\u00e0</string>
+    <string name="settings_group_font">Caratteri</string>
+    <string name="settings_group_gestures">Gesti e azioni swipe</string>
 </resources>

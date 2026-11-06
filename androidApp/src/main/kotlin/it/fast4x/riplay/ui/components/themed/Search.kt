@@ -5,6 +5,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -51,15 +53,29 @@ class Search private constructor(
     private val inputState: MutableState<String>,
     private val visibleState: MutableState<Boolean>,
     private val focusState: MutableState<Boolean>,
+    // non privato: le funzioni di estensione (es. Search.matchesAny in
+    // SettingsScreen.kt) devono poter accedere al context per leggere le stringhe
+    val context: android.content.Context,
+    /*
+     * Se true la barra di ricerca e' SEMPRE visibile, senza icona a
+     * lentina: usato dalle schermate delle impostazioni, dove la riga
+     * di ricerca sta subito sotto il titolo della tab (stile anteprima).
+     * Default false: tutti gli altri schermi dell'app mantengono il
+     * comportamento a toggle. Il filtro (matchesAny/matches) funziona
+     * identico nei due casi perche' legge solo [input].
+     */
+    private val alwaysVisible: Boolean = false,
 ): MenuIcon, Descriptive {
 
     companion object {
         @JvmStatic
         @Composable
-        fun init() = Search(
+        fun init(alwaysVisible: Boolean = false) = Search(
             rememberSaveable { mutableStateOf( "" ) },
             rememberSaveable { mutableStateOf( false ) },
-            rememberSaveable { mutableStateOf( false ) }
+            rememberSaveable { mutableStateOf( false ) },
+            androidx.compose.ui.platform.LocalContext.current,
+            alwaysVisible
         )
     }
 
@@ -114,7 +130,10 @@ class Search private constructor(
                 exit = fadeOut(tween(100)),
             ) {
                 BasicText(
-                    text = stringResource(R.string.search),
+                    text = stringResource(
+                        if (alwaysVisible) R.string.settings_search_hint
+                        else R.string.search
+                    ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     style = typography().xs
@@ -144,6 +163,9 @@ class Search private constructor(
     }
 
     fun onItemSelected() {
+        // barra sempre visibile: niente toggle, lo stato resta invariato
+        if ( alwaysVisible ) return
+
         if ( isVisible )
             if ( input.isBlank() )
                 isVisible = false
@@ -164,10 +186,30 @@ class Search private constructor(
 
         val focusRequester = remember { FocusRequester() }
 
+        /*
+         * Stile della barra.
+         * - alwaysVisible (impostazioni): pillola alta 38.dp, superficie
+         *   background2 con bordo sottile, margini orizzontali 16.dp --
+         *   come nell'anteprima del restyling.
+         * - default: barra compatta da 30.dp su background4, come prima.
+         */
+        val barShape =
+            if ( alwaysVisible ) RoundedCornerShape(percent = 50)
+            else thumbnailRoundness.shape()
+        val barColor =
+            if ( alwaysVisible ) colorPalette().background2
+            else colorPalette().background4
+        val barModifier =
+            if ( alwaysVisible )
+                Modifier.padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 4.dp)
+                    .fillMaxWidth()
+            else
+                Modifier.padding(all = 10.dp)
+                    .fillMaxWidth()
+
         AnimatedVisibility(
-            visible = isVisible,
-            modifier = Modifier.padding(all = 10.dp)
-                .fillMaxWidth()
+            visible = alwaysVisible || isVisible,
+            modifier = barModifier
         ) {
             // Auto focus on search bar when it's visible
             val focusManager = LocalFocusManager.current
@@ -220,13 +262,24 @@ class Search private constructor(
                         isFocused = true
                     }
                 },
-                modifier = Modifier.height( 30.dp )
+                modifier = Modifier.height( if (alwaysVisible) 38.dp else 30.dp )
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
                     .background(
-                        colorPalette().background4,
-                        thumbnailRoundness.shape()
+                        barColor,
+                        barShape
                     )
+                    .let {
+                        // bordo sottile come le card: garantisce il
+                        // contrasto anche sui temi tutta-nero
+                        if (alwaysVisible)
+                            it.border(
+                                1.dp,
+                                colorPalette().text.copy(alpha = 0.07f),
+                                barShape
+                            )
+                        else it
+                    }
             )
         }
     }

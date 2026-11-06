@@ -23,6 +23,7 @@ import androidx.navigation.NavController
 import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavigationBarPosition
+import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.secondary
@@ -38,6 +39,7 @@ fun About(
     navController: NavController
 ) {
     val uriHandler = LocalUriHandler.current
+    val search = Search.init(alwaysVisible = true)
 
     Column(
         modifier = Modifier
@@ -61,6 +63,9 @@ fun About(
             onClick = {},
             navController = navController
         )
+
+        search.SearchBar(this)
+
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
@@ -73,73 +78,85 @@ fun About(
             )
         }
 
-        SettingsGroupSpacer()
+        if (search.matchesAny(R.string.social, R.string.social_telegram, R.string.social_telegram_info, R.string.social_reddit, R.string.social_reddit_info)) {
+            SettingsGroupSpacer()
 
-        SettingsEntryGroupText(title = stringResource(R.string.social))
+            SettingsEntryGroupText(title = stringResource(R.string.social))
 
-        SettingsEntry(
-            title = stringResource(R.string.social_telegram),
-            titleSecondary = stringResource(R.string.social_telegram_info),
-            text = "",
-            onClick = {
-                uriHandler.openUri("https://t.me/riplay_app")
-            }
-        )
-
-        SettingsEntry(
-            title = stringResource(R.string.social_reddit),
-            titleSecondary = stringResource(R.string.social_reddit_info),
-            text = "",
-            onClick = {
-                uriHandler.openUri("https://www.reddit.com/r/RiMusicApp/")
-            }
-        )
-
-        SettingsGroupSpacer()
-
-        SettingsEntryGroupText(title = stringResource(R.string.title_official_project_page))
-
-        SettingsEntry(
-            title = stringResource(R.string.social_github),
-            titleSecondary = stringResource(R.string.view_the_source_code),
-            text = "",
-            onClick = {
-                uriHandler.openUri("https://github.com/fast4x/RiPlay")
-            }
-        )
-
-        if (BuildConfig.FLAVOR == "full")
+            SettingsCardContainer {
             SettingsEntry(
-                title = stringResource(R.string.social_github),
-                titleSecondary = stringResource(R.string.download_latest_version_from_github_you_will_find_the_file_in_the_notification_area_and_you_can_install_by_clicking_on_it),
+                title = stringResource(R.string.social_telegram),
+                titleSecondary = stringResource(R.string.social_telegram_info),
                 text = "",
                 onClick = {
-                    uriHandler.openUri("https://github.com/fast4x/RiPlay/releases/latest")
-                }
+                    uriHandler.openUri("https://t.me/riplay_app")
+                }, icon = R.drawable.share_social,
             )
 
-        SettingsGroupSpacer()
-
-        SettingsEntryGroupText(title = stringResource(R.string.troubleshooting))
-
-        SettingsEntry(
-            title = stringResource(R.string.report_an_issue),
-            titleSecondary = stringResource(R.string.you_will_be_redirected_to_github),
-            text = "",
-            onClick = {
-                uriHandler.openUri("https://github.com/fast4x/RiPlay/issues/new?assignees=&labels=bug&template=bug_report.yaml")
+            SettingsEntry(
+                title = stringResource(R.string.social_reddit),
+                titleSecondary = stringResource(R.string.social_reddit_info),
+                text = "",
+                onClick = {
+                    uriHandler.openUri("https://www.reddit.com/r/RiMusicApp/")
+                }, icon = R.drawable.share_social,
+            )
             }
-        )
+        }
 
+        if (search.matchesAny(R.string.title_official_project_page, R.string.social_github, R.string.view_the_source_code, R.string.download_latest_version_from_github_you_will_find_the_file_in_the_notification_area_and_you_can_install_by_clicking_on_it)) {
+            SettingsGroupSpacer()
 
-        SettingsEntry(
-            title = stringResource(R.string.request_a_feature_or_suggest_an_idea),
-            titleSecondary = stringResource(R.string.you_will_be_redirected_to_github),
-            text = "",
-            onClick = {
-                uriHandler.openUri("https://github.com/fast4x/RiPlay/issues/new?assignees=&labels=enhancement&template=feature_request.yaml")
+            SettingsEntryGroupText(title = stringResource(R.string.title_official_project_page))
+
+            SettingsCardContainer {
+            SettingsEntry(
+                title = stringResource(R.string.social_github),
+                titleSecondary = stringResource(R.string.view_the_source_code),
+                text = "",
+                onClick = {
+                    uriHandler.openUri("https://github.com/fast4x/RiPlay")
+                }, icon = R.drawable.link,
+            )
+
+            if (BuildConfig.FLAVOR == "full")
+                SettingsEntry(
+                    title = stringResource(R.string.social_github),
+                    titleSecondary = stringResource(R.string.download_latest_version_from_github_you_will_find_the_file_in_the_notification_area_and_you_can_install_by_clicking_on_it),
+                    text = "",
+                    onClick = {
+                        uriHandler.openUri("https://github.com/fast4x/RiPlay/releases/latest")
+                    }, icon = R.drawable.download,
+                )
             }
-        )
+        }
+
+        if (search.matchesAny(R.string.troubleshooting, R.string.report_an_issue, R.string.you_will_be_redirected_to_github, R.string.request_a_feature_or_suggest_an_idea, R.string.contributors)) {
+            SettingsGroupSpacer()
+
+            SettingsEntryGroupText(title = stringResource(R.string.troubleshooting))
+
+            SettingsCardContainer {
+            SettingsEntry(
+                title = stringResource(R.string.report_an_issue),
+                titleSecondary = stringResource(R.string.you_will_be_redirected_to_github),
+                text = "",
+                onClick = {
+                    uriHandler.openUri("https://github.com/fast4x/RiPlay/issues/new?assignees=&labels=bug&template=bug_report.yaml")
+                }, icon = R.drawable.alert_circle,
+            )
+
+
+            SettingsEntry(
+                title = stringResource(R.string.request_a_feature_or_suggest_an_idea),
+                titleSecondary = stringResource(R.string.you_will_be_redirected_to_github),
+                text = "",
+                onClick = {
+                    uriHandler.openUri("https://github.com/fast4x/RiPlay/issues/new?assignees=&labels=enhancement&template=feature_request.yaml")
+                }, icon = R.drawable.sparkles,
+            )
+            }
+        }
 
 //        SettingsGroupSpacer()
 //

@@ -74,6 +74,7 @@ import it.fast4x.riplay.extensions.webdavlibrary.ui.WebDavAccountFormSheet
 import it.fast4x.riplay.extensions.webdavlibrary.ui.WebDavDatabaseRestoreConfirmDialog
 import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.ui.components.CustomModalBottomSheet
+import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.styling.Dimensions
@@ -104,6 +105,9 @@ fun AccountsSettings(
     val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
     val context = LocalContext.current
+    val search = Search.init(alwaysVisible = true)
+
+    val searchWebdavVisible = search.matchesAny(R.string.settings_webdav_title, R.string.settings_webdav_link_cloud_and_music_title, R.string.settings_webdav_link_cloud_and_music_subtitle, R.string.settings_webdav_cloud_accounts, R.string.settings_webdav_link_music_title, R.string.settings_webdav_link_music_subtitle, R.string.settings_webdav_backup_title, R.string.settings_webdav_backup_subtitle, R.string.settings_webdav_restore_title, R.string.settings_webdav_restore_subtitle)
     val thumbnailRoundness = appearanceSettings.thumbnailRoundness
 
     var showUserInfoDialog by rememberSaveable { mutableStateOf(false) }
@@ -137,6 +141,9 @@ fun AccountsSettings(
             onClick = {},
             navController = navController
         )
+
+        search.SearchBar(this)
+
 
 
 
@@ -177,8 +184,10 @@ fun AccountsSettings(
         }
 
 
-        SettingsGroupSpacer()
-        SettingsEntryGroupText(title = stringResource(R.string.settings_webdav_title))
+        if (searchWebdavVisible) {
+            SettingsGroupSpacer()
+            SettingsEntryGroupText(title = stringResource(R.string.settings_webdav_title))
+        }
 
         LaunchedEffect(webDavSync) {
             if (webDavSync) {
@@ -207,132 +216,132 @@ fun AccountsSettings(
             }
         }
 
-        SwitchSettingEntry(
-            title = stringResource(R.string.settings_webdav_link_cloud_and_music_title),
-            text = stringResource(R.string.settings_webdav_link_cloud_and_music_subtitle),
-            isChecked = isWebDavEnabled,
-            onCheckedChange = {
-                coroutineScope.launch {
-                    val new = appSettingsManager.activeSettings.value.copy(isWebDavEnabled = it)
-                    appSettingsManager.updateSettings(new)
-                }
-            }
-        )
+        if (searchWebdavVisible) {
+    SettingsCardContainer {
+                SwitchSettingEntry(
+                    title = stringResource(R.string.settings_webdav_link_cloud_and_music_title),
+                    text = stringResource(R.string.settings_webdav_link_cloud_and_music_subtitle),
+                    isChecked = isWebDavEnabled,
+                    onCheckedChange = {
+                        coroutineScope.launch {
+                            val new = appSettingsManager.activeSettings.value.copy(isWebDavEnabled = it)
+                            appSettingsManager.updateSettings(new)
+                        }
+                    }, icon = R.drawable.link,
+                )
 
-        AnimatedVisibility(visible = isWebDavEnabled) {
-            Column(
-                modifier = Modifier.padding(start = 12.dp)
-            ) {
+                AnimatedVisibility(visible = isWebDavEnabled) {
+                    Column {
 
-                key(webdavAccounts.value) {
-                    ValueWebDavAccountSelectorSettingsEntry(
-                        title = stringResource(R.string.settings_webdav_cloud_accounts),
-                        titleSecondary = "",
-                        values = webdavAccounts.value,
-                        onValueSelected = { account ->
-                            accountSelected = account
-                            webDavAccountEditing = true
-                            showWebDavAccount = true
-                        },
-                        onNewAccount = {
-                            webDavAccountEditing = false
-                            showWebDavAccount = true
-                        },
-                        onDismiss = { webdavViewModel.refreshAccounts() }
-                    )
-                }
+                        key(webdavAccounts.value) {
+                            ValueWebDavAccountSelectorSettingsEntry(
+                                title = stringResource(R.string.settings_webdav_cloud_accounts),
+                                titleSecondary = "",
+                                values = webdavAccounts.value,
+                                onValueSelected = { account ->
+                                    accountSelected = account
+                                    webDavAccountEditing = true
+                                    showWebDavAccount = true
+                                },
+                                onNewAccount = {
+                                    webDavAccountEditing = false
+                                    showWebDavAccount = true
+                                },
+                                onDismiss = { webdavViewModel.refreshAccounts() }, icon = R.drawable.cloud,
+                            )
+                        }
 
 
-                AnimatedVisibility(visible = webdavAccounts.value.isNotEmpty()) {
-                    Column(
-                        modifier = Modifier.padding(start = 12.dp)
-                    ) {
-                        if (webdavAsMusicSource)
-                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                ButtonBarSettingEntry(
-                                    isEnabled = true,
-                                    title = stringResource(R.string.settings_webdav_link_music_title),
-                                    text = stringResource(R.string.settings_webdav_link_music_subtitle),
-                                    icon = Icons.Rounded.CloudSync,
-                                    iconColor = colorPalette().text,
-                                    onClick = {
-                                        webDavSync = true
+                        AnimatedVisibility(visible = webdavAccounts.value.isNotEmpty()) {
+                            Column {
+                                if (webdavAsMusicSource)
+                                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        ButtonBarSettingEntry(
+                                            isEnabled = true,
+                                            title = stringResource(R.string.settings_webdav_link_music_title),
+                                            text = stringResource(R.string.settings_webdav_link_music_subtitle),
+                                            icon = Icons.Rounded.CloudSync,
+                                            iconColor = colorPalette().text,
+                                            onClick = {
+                                                webDavSync = true
+                                            },
+                                        )
                                     }
-                                )
-                            }
 
-                        if (webdavAsBackup) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                ButtonBarSettingEntry(
-                                    isEnabled = true,
-                                    title = stringResource(R.string.settings_webdav_backup_title),
-                                    text = stringResource(R.string.settings_webdav_backup_subtitle),
-                                    icon = Icons.Rounded.CloudUpload,
-                                    iconColor = colorPalette().text,
-                                    onClick = {
-                                        webdavViewModel.syncDatabaseToWebDav(Dependencies.application)
-                                    }
-                                )
-                            }
-
-
-                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                ButtonBarSettingEntry(
-                                    isEnabled = true,
-                                    title = stringResource(R.string.settings_webdav_restore_title),
-                                    text = stringResource(R.string.settings_webdav_restore_subtitle),
-                                    icon = Icons.Rounded.CloudDownload,
-                                    iconColor = colorPalette().text,
-                                    onClick = {
-                                        val appScope = Dependencies.application.appScopeIO
-                                        isFetchingRestore = true
-                                        webdavAccounts.value.fastFilter { !it.isMusicSource }
-                                            .firstOrNull()?.let { webDavAccount ->
-
-                                                // Lancia la coroutine nel ViewModel per scaricare il riplay_meta.json
-                                                appScope.launch {
-                                                    backupInfo = webdavViewModel.fetchBackupInfo(
-                                                        webDavAccount
-                                                    )
-                                                    isFetchingRestore = false
-                                                }
+                                if (webdavAsBackup) {
+                                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        ButtonBarSettingEntry(
+                                            isEnabled = true,
+                                            title = stringResource(R.string.settings_webdav_backup_title),
+                                            text = stringResource(R.string.settings_webdav_backup_subtitle),
+                                            icon = Icons.Rounded.CloudUpload,
+                                            iconColor = colorPalette().text,
+                                            onClick = {
+                                                webdavViewModel.syncDatabaseToWebDav(Dependencies.application)
                                             }
+                                        )
                                     }
-                                )
-                                // Mostra un loader se stai scaricando le info
-                                if (isFetchingRestore) {
-                                    CircularProgressIndicator()
-                                }
-                                // Mostra il Dialog del restore se le info sono pronte
-                                backupInfo?.let { info ->
-                                    WebDavDatabaseRestoreConfirmDialog(
-                                        backupInfo = info,
-                                        onConfirm = {
-                                            backupInfo = null // Chiude il dialog
-                                            isRestoring = true
-                                            // Lancia il restore vero e proprio
-                                            val appScope = Dependencies.application.appScopeIO
-                                            appScope.launch {
+
+
+                                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        ButtonBarSettingEntry(
+                                            isEnabled = true,
+                                            title = stringResource(R.string.settings_webdav_restore_title),
+                                            text = stringResource(R.string.settings_webdav_restore_subtitle),
+                                            icon = Icons.Rounded.CloudDownload,
+                                            iconColor = colorPalette().text,
+                                            onClick = {
+                                                val appScope = Dependencies.application.appScopeIO
+                                                isFetchingRestore = true
                                                 webdavAccounts.value.fastFilter { !it.isMusicSource }
                                                     .firstOrNull()?.let { webDavAccount ->
-                                                        webdavViewModel.syncDatabaseFromWebDav(
-                                                            Dependencies.application,
-                                                            webDavAccount
-                                                        )
-                                                    }
-                                            }
-                                        },
-                                        onDismiss = {
-                                            backupInfo = null // Chiude il dialog senza fare nulla
-                                        }
-                                    )
-                                }
 
+                                                        // Lancia la coroutine nel ViewModel per scaricare il riplay_meta.json
+                                                        appScope.launch {
+                                                            backupInfo = webdavViewModel.fetchBackupInfo(
+                                                                webDavAccount
+                                                            )
+                                                            isFetchingRestore = false
+                                                        }
+                                                    }
+                                            },
+                                        )
+                                        // Mostra un loader se stai scaricando le info
+                                        if (isFetchingRestore) {
+                                            CircularProgressIndicator()
+                                        }
+                                        // Mostra il Dialog del restore se le info sono pronte
+                                        backupInfo?.let { info ->
+                                            WebDavDatabaseRestoreConfirmDialog(
+                                                backupInfo = info,
+                                                onConfirm = {
+                                                    backupInfo = null // Chiude il dialog
+                                                    isRestoring = true
+                                                    // Lancia il restore vero e proprio
+                                                    val appScope = Dependencies.application.appScopeIO
+                                                    appScope.launch {
+                                                        webdavAccounts.value.fastFilter { !it.isMusicSource }
+                                                            .firstOrNull()?.let { webDavAccount ->
+                                                                webdavViewModel.syncDatabaseFromWebDav(
+                                                                    Dependencies.application,
+                                                                    webDavAccount
+                                                                )
+                                                            }
+                                                    }
+                                                },
+                                                onDismiss = {
+                                                    backupInfo = null // Chiude il dialog senza fare nulla
+                                                }
+                                            )
+                                        }
+
+                                    }
+                                }
                             }
+
+
                         }
                     }
-
-
                 }
             }
         }
@@ -359,176 +368,178 @@ fun AccountsSettings(
             emptyList()
         }
 
-        SettingsGroupSpacer()
-        SettingsEntryGroupText(title = stringResource(R.string.title_youtube_music))
+        if (search.matchesAny(R.string.title_youtube_music, R.string.enable_youtube_music_login, R.string.disconnect, R.string.connect, R.string.login_connect_or_disconnect_your_account, R.string.login_switch_account, R.string.login_info_you_can_switch_to_another_account_without_completely_disconnecting, R.string.account_info, R.string.login_info_you_can_quickly_check_which_account_you_are_connected_to, R.string.sync_data_with_ytm_account, R.string.sync_data_playlists_albums_artists_history_like_etc)) {
+            SettingsGroupSpacer()
+            SettingsEntryGroupText(title = stringResource(R.string.title_youtube_music))
 
-        SwitchSettingEntry(
-            title = stringResource(R.string.enable_youtube_music_login),
-            text = "",
-            isChecked = isYouTubeLoginEnabled,
-            onCheckedChange = {
-                coroutineScope.launch {
-                    val new = appSettingsManager.activeSettings.value.copy(enableYtLogin = it)
-                    appSettingsManager.updateSettings(new)
-                    // Usiamo solo se quando l'utente disattiva vogliamo rimuovere i dati di login
-//                    if (!it) {
-//                        appSettingsManager.updateSettings(
-//                            new.copy(
-//                                ytAccountName = "",
-//                                ytAccountChannelHandle = "",
-//                                ytAccountThumbnail = ""
-//                            )
-//                        )
-//                    }
-                }
+            SettingsCardContainer {
+                SwitchSettingEntry(
+                    title = stringResource(R.string.enable_youtube_music_login),
+                    text = "",
+                    isChecked = isYouTubeLoginEnabled,
+                    onCheckedChange = {
+                        coroutineScope.launch {
+                            val new = appSettingsManager.activeSettings.value.copy(enableYtLogin = it)
+                            appSettingsManager.updateSettings(new)
+                            // Usiamo solo se quando l'utente disattiva vogliamo rimuovere i dati di login
+        //                    if (!it) {
+        //                        appSettingsManager.updateSettings(
+        //                            new.copy(
+        //                                ytAccountName = "",
+        //                                ytAccountChannelHandle = "",
+        //                                ytAccountThumbnail = ""
+        //                            )
+        //                        )
+        //                    }
+                        }
 
-            }
-        )
+                    }, icon = R.drawable.switch_user,
+                )
 
-        AnimatedVisibility(visible = isYouTubeLoginEnabled) {
-            Column(
-                modifier = Modifier.padding(start = 12.dp)
-            ) {
+                AnimatedVisibility(visible = isYouTubeLoginEnabled) {
+                    Column {
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.Top,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.Top,
+                                horizontalArrangement = Arrangement.SpaceBetween
 
-                    ){
+                            ){
 
-                        if (isYtLoggedIn() && accountThumbnail != "")
-                            AsyncImage(
-                                model = accountThumbnail,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .height(45.dp)
-                                    .clip(thumbnailShape())
-                            )
+                                if (isYtLoggedIn() && accountThumbnail != "")
+                                    AsyncImage(
+                                        model = accountThumbnail,
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .height(45.dp)
+                                            .clip(thumbnailShape())
+                                    )
 
-                        Column {
-                            ButtonBarSettingEntry(
-                                isEnabled = true,
-                                title = if (isYtLoggedIn()) stringResource(R.string.disconnect) else stringResource(
-                                    R.string.connect
-                                ),
-                                text = stringResource(R.string.login_connect_or_disconnect_your_account),
-                                icon = R.drawable.internet,
-                                iconColor = colorPalette().text,
-                                onClick = {
-                                    if (isYtLoggedIn()) {
-                                        coroutineScope.launch {
-                                            val new = appSettingsManager.activeSettings.value.copy(
-                                                ytCookie = "",
-                                                ytAccountName = "",
-                                                ytAccountChannelHandle = "",
-                                                ytAccountEmail = "",
-                                                ytAccountThumbnail = "",
-                                                ytCachedAccounts = ""
-                                            )
-                                            appSettingsManager.updateSettings(new)
-                                        }
-
-                                        coroutineScope.launch {
-                                            // Eliminiamo i non riproducibili contrassegnati quando l'utente era autenticato
-                                            Database.unplayableTracksDao().revokeForLoginState(true)
-                                        }
-
-                                        cachedAccounts = emptyList()
-                                        loginYouTube = false
-                                        val cookieManager = CookieManager.getInstance()
-                                        cookieManager.removeAllCookies(null)
-                                        cookieManager.flush()
-                                        WebStorage.getInstance().deleteAllData()
-                                    } else {
-                                        coroutineScope.launch {
-                                            // Eliminiamo i non riproducibili contrassegnati quando l'utente NON era autenticato
-                                            Database.unplayableTracksDao().revokeForLoginState(false)
-                                        }
-                                        loginYouTube = true
-                                    }
-                                }
-                            )
-
-                            if (isYtLoggedIn()) {
-
-                                if (cachedAccounts.isNotEmpty())
+                                Column {
                                     ButtonBarSettingEntry(
                                         isEnabled = true,
-                                        title = stringResource(R.string.login_switch_account),
-                                        text = stringResource(R.string.login_info_you_can_switch_to_another_account_without_completely_disconnecting),
-                                        icon = R.drawable.switch_user,
+                                        title = if (isYtLoggedIn()) stringResource(R.string.disconnect) else stringResource(
+                                            R.string.connect
+                                        ),
+                                        text = stringResource(R.string.login_connect_or_disconnect_your_account),
+                                        icon = R.drawable.internet,
                                         iconColor = colorPalette().text,
                                         onClick = {
-                                            loginYouTube = true
+                                            if (isYtLoggedIn()) {
+                                                coroutineScope.launch {
+                                                    val new = appSettingsManager.activeSettings.value.copy(
+                                                        ytCookie = "",
+                                                        ytAccountName = "",
+                                                        ytAccountChannelHandle = "",
+                                                        ytAccountEmail = "",
+                                                        ytAccountThumbnail = "",
+                                                        ytCachedAccounts = ""
+                                                    )
+                                                    appSettingsManager.updateSettings(new)
+                                                }
+
+                                                coroutineScope.launch {
+                                                    // Eliminiamo i non riproducibili contrassegnati quando l'utente era autenticato
+                                                    Database.unplayableTracksDao().revokeForLoginState(true)
+                                                }
+
+                                                cachedAccounts = emptyList()
+                                                loginYouTube = false
+                                                val cookieManager = CookieManager.getInstance()
+                                                cookieManager.removeAllCookies(null)
+                                                cookieManager.flush()
+                                                WebStorage.getInstance().deleteAllData()
+                                            } else {
+                                                coroutineScope.launch {
+                                                    // Eliminiamo i non riproducibili contrassegnati quando l'utente NON era autenticato
+                                                    Database.unplayableTracksDao().revokeForLoginState(false)
+                                                }
+                                                loginYouTube = true
+                                            }
                                         }
                                     )
 
-                                ButtonBarSettingEntry(
-                                    isEnabled = true,
-                                    title = stringResource(R.string.account_info),
-                                    text = stringResource(R.string.login_info_you_can_quickly_check_which_account_you_are_connected_to),
-                                    icon = R.drawable.person,
-                                    iconColor = colorPalette().text,
-                                    onClick = {
-                                        if (accountThumbnail == "" || accountName == "" || accountEmail == "")
-                                            GlobalScope.launch {
-                                                Environment.accountInfo().onSuccess {
-                                                    val new = appSettingsManager.activeSettings.value.copy(
-                                                        ytAccountName = it?.name.orEmpty(),
-                                                        ytAccountEmail = it?.email.orEmpty(),
-                                                        ytAccountChannelHandle =
-                                                            it?.channelHandle.orEmpty(),
-                                                        ytAccountThumbnail = it?.thumbnailUrl.orEmpty()
-                                                    )
-                                                    appSettingsManager.updateSettings(new)
-                                                }.onFailure {
-                                                    Timber.e("Error YoutubeLogin: $it.stackTraceToString()")
+                                    if (isYtLoggedIn()) {
+
+                                        if (cachedAccounts.isNotEmpty())
+                                            ButtonBarSettingEntry(
+                                                isEnabled = true,
+                                                title = stringResource(R.string.login_switch_account),
+                                                text = stringResource(R.string.login_info_you_can_switch_to_another_account_without_completely_disconnecting),
+                                                icon = R.drawable.switch_user,
+                                                iconColor = colorPalette().text,
+                                                onClick = {
+                                                    loginYouTube = true
                                                 }
+                                            )
+
+                                        ButtonBarSettingEntry(
+                                            isEnabled = true,
+                                            title = stringResource(R.string.account_info),
+                                            text = stringResource(R.string.login_info_you_can_quickly_check_which_account_you_are_connected_to),
+                                            icon = R.drawable.person,
+                                            iconColor = colorPalette().text,
+                                            onClick = {
+                                                if (accountThumbnail == "" || accountName == "" || accountEmail == "")
+                                                    GlobalScope.launch {
+                                                        Environment.accountInfo().onSuccess {
+                                                            val new = appSettingsManager.activeSettings.value.copy(
+                                                                ytAccountName = it?.name.orEmpty(),
+                                                                ytAccountEmail = it?.email.orEmpty(),
+                                                                ytAccountChannelHandle =
+                                                                    it?.channelHandle.orEmpty(),
+                                                                ytAccountThumbnail = it?.thumbnailUrl.orEmpty()
+                                                            )
+                                                            appSettingsManager.updateSettings(new)
+                                                        }.onFailure {
+                                                            Timber.e("Error YoutubeLogin: $it.stackTraceToString()")
+                                                        }
+                                                    }
+                                                showUserInfoDialog = true
                                             }
-                                        showUserInfoDialog = true
-                                    }
-                                )
+                                        )
 
-                                SwitchSettingEntry(
-                                    title = stringResource(R.string.sync_data_with_ytm_account),
-                                    text = stringResource(R.string.sync_data_playlists_albums_artists_history_like_etc),
-                                    isChecked = isSyncEnabled,
-                                    onCheckedChange = {
-                                        coroutineScope.launch {
-                                            val new = appSettingsManager.activeSettings.value.copy(enableYtSync = it)
-                                            appSettingsManager.updateSettings(new)
-                                        }
+                                        SwitchSettingEntry(
+                                            title = stringResource(R.string.sync_data_with_ytm_account),
+                                            text = stringResource(R.string.sync_data_playlists_albums_artists_history_like_etc),
+                                            isChecked = isSyncEnabled,
+                                            onCheckedChange = {
+                                                coroutineScope.launch {
+                                                    val new = appSettingsManager.activeSettings.value.copy(enableYtSync = it)
+                                                    appSettingsManager.updateSettings(new)
+                                                }
+                                            }, icon = R.drawable.sync,
+                                        )
                                     }
-                                )
+
+
+                                    CustomModalBottomSheet(
+                                        showSheet = loginYouTube,
+                                        onDismissRequest = {
+                                            loginYouTube = false
+                                        },
+                                        containerColor = colorPalette().background0,
+                                        contentColor = colorPalette().background0,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        dragHandle = {
+                                            Surface(
+                                                modifier = Modifier.padding(vertical = 0.dp),
+                                                color = colorPalette().background0,
+                                                shape = thumbnailShape()
+                                            ) {}
+                                        },
+                                        shape = thumbnailRoundness.shape()
+                                    ) {
+                                        AccountLogin(onLogin = { loginYouTube = false })
+                                    }
+
+                                }
+
                             }
 
-
-                            CustomModalBottomSheet(
-                                showSheet = loginYouTube,
-                                onDismissRequest = {
-                                    loginYouTube = false
-                                },
-                                containerColor = colorPalette().background0,
-                                contentColor = colorPalette().background0,
-                                modifier = Modifier.fillMaxWidth(),
-                                dragHandle = {
-                                    Surface(
-                                        modifier = Modifier.padding(vertical = 0.dp),
-                                        color = colorPalette().background0,
-                                        shape = thumbnailShape()
-                                    ) {}
-                                },
-                                shape = thumbnailRoundness.shape()
-                            ) {
-                                AccountLogin(onLogin = { loginYouTube = false })
-                            }
-
-                        }
 
                     }
-
-
+                }
             }
         }
 
@@ -552,86 +563,88 @@ fun AccountsSettings(
 
         val lastfmScrobbleType = appSettings.lastFmScrobbleType
 
-        SettingsGroupSpacer()
-        SettingsEntryGroupText(title = stringResource(R.string.title_lastfm))
+        if (search.matchesAny(R.string.title_lastfm, R.string.enable_lastfm, R.string.lastfm_disconnect, R.string.lastfm_connect, R.string.lastfm_connected_to_lastfm_account, R.string.lastfm_scrobble_type)) {
+            SettingsGroupSpacer()
+            SettingsEntryGroupText(title = stringResource(R.string.title_lastfm))
 
-        SwitchSettingEntry(
-            title = stringResource(R.string.enable_lastfm),
-            text = "",
-            isChecked = isEnabledLastfm,
-            onCheckedChange = {
-                coroutineScope.launch {
-                    val new = appSettingsManager.activeSettings.value.copy(isEnabledLastFM = it)
-                    appSettingsManager.updateSettings(new)
-                }
-            },
-        )
-
-        AnimatedVisibility(visible = isEnabledLastfm) {
-            Column(
-                modifier = Modifier.padding(start = 12.dp)
-            ) {
-                ButtonBarSettingEntry(
-                    isEnabled = true,
-                    title = if (lastFmSessionToken.isNotEmpty()) stringResource(R.string.lastfm_disconnect) else stringResource(
-                        R.string.lastfm_connect
-                    ),
-                    text = if (lastFmSessionToken.isNotEmpty()) stringResource(R.string.lastfm_connected_to_lastfm_account) else "",
-                    icon = R.drawable.logo_lastfm,
-                    iconColor = colorPalette().text,
-                    onClick = {
-                        if (lastFmSessionToken.isNotEmpty()) {
-                            coroutineScope.launch {
-                                val new = appSettingsManager.activeSettings.value.copy(lastFMSessionToken = "")
-                                appSettingsManager.updateSettings(new)
-                            }
-                        } else
-                            loginLastfm = true
-                    }
-                )
-
-                CustomModalBottomSheet(
-                    showSheet = loginLastfm,
-                    onDismissRequest = {
-                        loginLastfm = false
-                    },
-                    containerColor = colorPalette().background0,
-                    contentColor = colorPalette().background0,
-                    modifier = Modifier.fillMaxWidth(),
-                    dragHandle = {
-                        Surface(
-                            modifier = Modifier.padding(vertical = 0.dp),
-                            color = colorPalette().background0,
-                            shape = thumbnailShape()
-                        ) {}
-                    },
-                    shape = thumbnailRoundness.shape()
-                ) {
-                    LastFmAuthScreen(
-                        navController = rememberNavController(),
-                        onAuthSuccess = {
-                            loginLastfm = false
-                            // controllare se necessario
-                            //lastFmSessionToken = appSettings.lastFMSessionToken
-                            //context.preferences.getString(LASTFM_SESSION_TOKEN.key, "") ?: ""
-                            Timber.d("LastFmAuthScreen: Authentication complete")
-                        }
-                    )
-                }
-
-                EnumValueSelectorSettingsEntry(
-                    title = stringResource(R.string.lastfm_scrobble_type),
-                    titleSecondary = "",
-                    selectedValue = lastfmScrobbleType,
-                    onValueSelected = {
+            SettingsCardContainer {
+                SwitchSettingEntry(
+                    title = stringResource(R.string.enable_lastfm),
+                    text = "",
+                    isChecked = isEnabledLastfm,
+                    onCheckedChange = {
                         coroutineScope.launch {
-                            val new = appSettingsManager.activeSettings.value.copy(lastFmScrobbleType = it)
+                            val new = appSettingsManager.activeSettings.value.copy(isEnabledLastFM = it)
                             appSettingsManager.updateSettings(new)
                         }
-                    },
-                    valueText = { it.textName },
+                    }, icon = R.drawable.logo_lastfm,
                 )
 
+                AnimatedVisibility(visible = isEnabledLastfm) {
+                    Column {
+                        ButtonBarSettingEntry(
+                            isEnabled = true,
+                            title = if (lastFmSessionToken.isNotEmpty()) stringResource(R.string.lastfm_disconnect) else stringResource(
+                                R.string.lastfm_connect
+                            ),
+                            text = if (lastFmSessionToken.isNotEmpty()) stringResource(R.string.lastfm_connected_to_lastfm_account) else "",
+                            icon = R.drawable.logo_lastfm,
+                            iconColor = colorPalette().text,
+                            onClick = {
+                                if (lastFmSessionToken.isNotEmpty()) {
+                                    coroutineScope.launch {
+                                        val new = appSettingsManager.activeSettings.value.copy(lastFMSessionToken = "")
+                                        appSettingsManager.updateSettings(new)
+                                    }
+                                } else
+                                    loginLastfm = true
+                            }
+                        )
+
+                        CustomModalBottomSheet(
+                            showSheet = loginLastfm,
+                            onDismissRequest = {
+                                loginLastfm = false
+                            },
+                            containerColor = colorPalette().background0,
+                            contentColor = colorPalette().background0,
+                            modifier = Modifier.fillMaxWidth(),
+                            dragHandle = {
+                                Surface(
+                                    modifier = Modifier.padding(vertical = 0.dp),
+                                    color = colorPalette().background0,
+                                    shape = thumbnailShape()
+                                ) {}
+                            },
+                            shape = thumbnailRoundness.shape()
+                        ) {
+                            LastFmAuthScreen(
+                                navController = rememberNavController(),
+                                onAuthSuccess = {
+                                    loginLastfm = false
+                                    // controllare se necessario
+                                    //lastFmSessionToken = appSettings.lastFMSessionToken
+                                    //context.preferences.getString(LASTFM_SESSION_TOKEN.key, "") ?: ""
+                                    Timber.d("LastFmAuthScreen: Authentication complete")
+                                }
+                            )
+                        }
+
+                        EnumValueSelectorSettingsEntry(
+                            title = stringResource(R.string.lastfm_scrobble_type),
+                            titleSecondary = "",
+                            selectedValue = lastfmScrobbleType,
+                            onValueSelected = {
+                                coroutineScope.launch {
+                                    val new = appSettingsManager.activeSettings.value.copy(lastFmScrobbleType = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
+                            },
+                            valueText = { it.textName }, icon = R.drawable.logo_lastfm,
+                        )
+
+                    }
+                }
             }
         }
 
@@ -646,101 +659,103 @@ fun AccountsSettings(
 
         val discordAccountName = appSettings.discordAccountName
 
-        SettingsGroupSpacer()
-        SettingsEntryGroupText(title = stringResource(R.string.social_discord))
-        SwitchSettingEntry(
-            isEnabled = isAtLeastAndroid81,
-            title = stringResource(R.string.discord_enable_rich_presence),
-            text = "",
-            isChecked = isDiscordPresenceEnabled,
-            onCheckedChange = {
-                coroutineScope.launch {
-                    val new = appSettingsManager.activeSettings.value.copy(isDiscordPresenceEnabled = it)
-                    appSettingsManager.updateSettings(new)
-                }
-            }
-        )
-
-        AnimatedVisibility(visible = isDiscordPresenceEnabled) {
-            Column(
-                modifier = Modifier.padding(start = 12.dp)
-            ) {
-                ButtonBarSettingEntry(
-                    isEnabled = true,
-                    title = if (discordPersonalAccessToken.isNotEmpty()) stringResource(R.string.discord_disconnect) else stringResource(
-                        R.string.discord_connect
-                    ),
-                    text = if (discordPersonalAccessToken.isNotEmpty()) stringResource(R.string.discord_connected_to_discord_account) else "",
-                    icon = R.drawable.logo_discord,
-                    iconColor = colorPalette().text,
-                    onClick = {
-                        if (discordPersonalAccessToken.isNotEmpty()) {
-                            coroutineScope.launch {
-                                val new = appSettingsManager.activeSettings.value.copy(discordPersonalAccessToken = "")
-                                appSettingsManager.updateSettings(new)
-                            }
-                        } else
-                            loginDiscord = true
-                    }
+        if (search.matchesAny(R.string.social_discord, R.string.discord_enable_rich_presence, R.string.discord_disconnect, R.string.discord_connect, R.string.discord_connected_to_discord_account, R.string.account_info)) {
+            SettingsGroupSpacer()
+            SettingsEntryGroupText(title = stringResource(R.string.social_discord))
+            SettingsCardContainer {
+                SwitchSettingEntry(
+                    isEnabled = isAtLeastAndroid81,
+                    title = stringResource(R.string.discord_enable_rich_presence),
+                    text = "",
+                    isChecked = isDiscordPresenceEnabled,
+                    onCheckedChange = {
+                        coroutineScope.launch {
+                            val new = appSettingsManager.activeSettings.value.copy(isDiscordPresenceEnabled = it)
+                            appSettingsManager.updateSettings(new)
+                        }
+                    }, icon = R.drawable.logo_discord,
                 )
 
-                if (discordPersonalAccessToken.isNotEmpty()) {
-                    ButtonBarSettingEntry(
-                        isEnabled = true,
-                        title = stringResource(R.string.account_info),
-                        text = discordAccountName,
-                        icon = R.drawable.person,
-                        iconColor = colorPalette().text,
-                        onClick = {
-                            showDiscordUserInfoDialog = true
-                        }
-                    )
-
-                    if (showDiscordUserInfoDialog) {
-                        AccountInfoDialog(
-                            accountName = discordAccountName,
-                            onDismiss = { showDiscordUserInfoDialog = false }
-                        )
-                    }
-
-                }
-
-                CustomModalBottomSheet(
-                    showSheet = loginDiscord,
-                    onDismissRequest = {
-                        loginDiscord = false
-                    },
-                    containerColor = colorPalette().background0,
-                    contentColor = colorPalette().background0,
-                    modifier = Modifier.fillMaxWidth(),
-                    dragHandle = {
-                        Surface(
-                            modifier = Modifier.padding(vertical = 0.dp),
-                            color = colorPalette().background0,
-                            shape = thumbnailShape()
-                        ) {}
-                    },
-                    shape = thumbnailRoundness.shape()
-                ) {
-                    DiscordLoginAndGetToken(
-                        navController = rememberNavController(),
-                        onGetToken = { token, username, avatar ->
-                            //Timber.d("DiscordLoginAndGetToken DiscordPresence: token $token user $username avatar $avatar")
-                            loginDiscord = false
-                            coroutineScope.launch {
-                                val new = appSettingsManager.activeSettings.value.copy(
-                                    discordPersonalAccessToken = token,
-                                    discordAccountName = username,
-                                )
-                                appSettingsManager.updateSettings(new)
+                AnimatedVisibility(visible = isDiscordPresenceEnabled) {
+                    Column {
+                        ButtonBarSettingEntry(
+                            isEnabled = true,
+                            title = if (discordPersonalAccessToken.isNotEmpty()) stringResource(R.string.discord_disconnect) else stringResource(
+                                R.string.discord_connect
+                            ),
+                            text = if (discordPersonalAccessToken.isNotEmpty()) stringResource(R.string.discord_connected_to_discord_account) else "",
+                            icon = R.drawable.logo_discord,
+                            iconColor = colorPalette().text,
+                            onClick = {
+                                if (discordPersonalAccessToken.isNotEmpty()) {
+                                    coroutineScope.launch {
+                                        val new = appSettingsManager.activeSettings.value.copy(discordPersonalAccessToken = "")
+                                        appSettingsManager.updateSettings(new)
+                                    }
+                                } else
+                                    loginDiscord = true
                             }
-                            SmartMessage(
-                                globalContext().resources.getString(R.string.discord_connected_to_discord_account) + " $username",
-                                type = PopupType.Info,
-                                context = context
+                        )
+
+                        if (discordPersonalAccessToken.isNotEmpty()) {
+                            ButtonBarSettingEntry(
+                                isEnabled = true,
+                                title = stringResource(R.string.account_info),
+                                text = discordAccountName,
+                                icon = R.drawable.person,
+                                iconColor = colorPalette().text,
+                                onClick = {
+                                    showDiscordUserInfoDialog = true
+                                }
+                            )
+
+                            if (showDiscordUserInfoDialog) {
+                                AccountInfoDialog(
+                                    accountName = discordAccountName,
+                                    onDismiss = { showDiscordUserInfoDialog = false }
+                                )
+                            }
+
+                        }
+
+                        CustomModalBottomSheet(
+                            showSheet = loginDiscord,
+                            onDismissRequest = {
+                                loginDiscord = false
+                            },
+                            containerColor = colorPalette().background0,
+                            contentColor = colorPalette().background0,
+                            modifier = Modifier.fillMaxWidth(),
+                            dragHandle = {
+                                Surface(
+                                    modifier = Modifier.padding(vertical = 0.dp),
+                                    color = colorPalette().background0,
+                                    shape = thumbnailShape()
+                                ) {}
+                            },
+                            shape = thumbnailRoundness.shape()
+                        ) {
+                            DiscordLoginAndGetToken(
+                                navController = rememberNavController(),
+                                onGetToken = { token, username, avatar ->
+                                    //Timber.d("DiscordLoginAndGetToken DiscordPresence: token $token user $username avatar $avatar")
+                                    loginDiscord = false
+                                    coroutineScope.launch {
+                                        val new = appSettingsManager.activeSettings.value.copy(
+                                            discordPersonalAccessToken = token,
+                                            discordAccountName = username,
+                                        )
+                                        appSettingsManager.updateSettings(new)
+                                    }
+                                    SmartMessage(
+                                        globalContext().resources.getString(R.string.discord_connected_to_discord_account) + " $username",
+                                        type = PopupType.Info,
+                                        context = context
+                                    )
+                                }
                             )
                         }
-                    )
+                    }
                 }
             }
         }
@@ -749,102 +764,102 @@ fun AccountsSettings(
         /****** DISCORD ******/
 
         /**** MUSIC IDENTIFIER ******/
-        SettingsGroupSpacer()
-        SettingsEntryGroupText(title = stringResource(R.string.title_music_identifier))
+        if (search.matchesAny(R.string.title_music_identifier, R.string.enable_music_identifier, R.string.music_identifier_provider, R.string.api_key, R.string.if_empty_system_api_key_will_be_used, R.string.api_expiration, R.string.api_queries_count, R.string.music_identifier_free_identification_seconds_remaining)) {
+            SettingsGroupSpacer()
+            SettingsEntryGroupText(title = stringResource(R.string.title_music_identifier))
 
-        SwitchSettingEntry(
-            title = stringResource(R.string.enable_music_identifier),
-            text = "",
-            isChecked = isEnabledMusicIdentifier,
-            onCheckedChange = {
-                coroutineScope.launch {
-                    val new = appSettingsManager.activeSettings.value.copy(enableMusicIdentifier = it)
-                    appSettingsManager.updateSettings(new)
-                }
-            },
-        )
-
-        AnimatedVisibility(visible = isEnabledMusicIdentifier) {
-            Column(
-                modifier = Modifier.padding(start = 12.dp)
-            ) {
-                EnumValueSelectorSettingsEntry(
-                    title = stringResource(R.string.music_identifier_provider),
-                    titleSecondary = musicIdentifierProvider.info,
-                    selectedValue = musicIdentifierProvider,
-                    onValueSelected = {
+            SettingsCardContainer {
+                SwitchSettingEntry(
+                    title = stringResource(R.string.enable_music_identifier),
+                    text = "",
+                    isChecked = isEnabledMusicIdentifier,
+                    onCheckedChange = {
                         coroutineScope.launch {
-                            val new = appSettingsManager.activeSettings.value.copy(musicIdentifierProvider = it)
+                            val new = appSettingsManager.activeSettings.value.copy(enableMusicIdentifier = it)
                             appSettingsManager.updateSettings(new)
                         }
-                    },
-                    valueText = { it.title },
-                )
-                SettingsEntry(
-                    title = musicIdentifierProvider.subtitle,
-                    titleSecondary = musicIdentifierProvider.website,
-                    text = "",
-                    onClick = {
-                        uriHandler.openUri(musicIdentifierProvider.website)
-                    }
+                    }, icon = R.drawable.mic,
                 )
 
-
-                AnimatedVisibility(visible = musicIdentifierProvider == MusicIdentifierProvider.AudioTagInfo) {
-                    Column(
-                        modifier = Modifier.padding(start = 12.dp)
-                    ) {
-                        TextDialogSettingEntry(
-                            title = stringResource(R.string.api_key),
-                            text = musicIdentifierApi.ifEmpty { stringResource(R.string.if_empty_system_api_key_will_be_used) },
-                            currentText = musicIdentifierApi,
-                            onTextSave = {
+                AnimatedVisibility(visible = isEnabledMusicIdentifier) {
+                    Column {
+                        EnumValueSelectorSettingsEntry(
+                            title = stringResource(R.string.music_identifier_provider),
+                            titleSecondary = musicIdentifierProvider.info,
+                            selectedValue = musicIdentifierProvider,
+                            onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appSettingsManager.activeSettings.value.copy(musicIdentifierApi = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(musicIdentifierProvider = it)
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
-                            validationType = ValidationType.None,
+                            valueText = { it.title }, icon = R.drawable.mic,
+                        )
+                        SettingsEntry(
+                            title = musicIdentifierProvider.subtitle,
+                            titleSecondary = musicIdentifierProvider.website,
+                            text = "",
+                            onClick = {
+                                uriHandler.openUri(musicIdentifierProvider.website)
+                            }
                         )
 
-                        val localAudioTagger = LocalAudioTagger.current
-                        LaunchedEffect(Unit) {
-                            localAudioTagger.stat()
-                        }
-                        val statState by localAudioTagger.statsState.collectAsState()
-                        if (statState?.success == true) {
 
-                            BasicText(
-                                text = stringResource(
-                                    R.string.api_expiration,
-                                    statState?.expirationDate?.substring(0, 10).toString()
-                                ),
-                                style = typography().xxs.semiBold.copy(color = colorPalette().text),
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            BasicText(
-                                text = stringResource(
-                                    R.string.api_queries_count,
-                                    statState?.queriesCount ?: "0"
+                        AnimatedVisibility(visible = musicIdentifierProvider == MusicIdentifierProvider.AudioTagInfo) {
+                            Column {
+                                TextDialogSettingEntry(
+                                    title = stringResource(R.string.api_key),
+                                    text = musicIdentifierApi.ifEmpty { stringResource(R.string.if_empty_system_api_key_will_be_used) },
+                                    currentText = musicIdentifierApi,
+                                    onTextSave = {
+                                        coroutineScope.launch {
+                                            val new = appSettingsManager.activeSettings.value.copy(musicIdentifierApi = it)
+                                            appSettingsManager.updateSettings(new)
+                                        }
+                                    },
+                                    validationType = ValidationType.None, icon = R.drawable.shield_checkmark,
+                                )
 
-                                ),
-                                style = typography().xxs.semiBold.copy(color = colorPalette().textSecondary),
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            BasicText(
-                                text = stringResource(
-                                    R.string.music_identifier_free_identification_seconds_remaining,
-                                    statState?.identificationFreeSecRemainder ?: "0"
-                                ),
-                                style = typography().xxs.semiBold.copy(color = colorPalette().textSecondary),
-                            )
-                            Spacer(
-                                modifier = Modifier
-                                    .height(Dimensions.bottomSpacer)
-                            )
+                                val localAudioTagger = LocalAudioTagger.current
+                                LaunchedEffect(Unit) {
+                                    localAudioTagger.stat()
+                                }
+                                val statState by localAudioTagger.statsState.collectAsState()
+                                if (statState?.success == true) {
+
+                                    BasicText(
+                                        text = stringResource(
+                                            R.string.api_expiration,
+                                            statState?.expirationDate?.substring(0, 10).toString()
+                                        ),
+                                        style = typography().xxs.semiBold.copy(color = colorPalette().text),
+                                    )
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                    BasicText(
+                                        text = stringResource(
+                                            R.string.api_queries_count,
+                                            statState?.queriesCount ?: "0"
+
+                                        ),
+                                        style = typography().xxs.semiBold.copy(color = colorPalette().textSecondary),
+                                    )
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                    BasicText(
+                                        text = stringResource(
+                                            R.string.music_identifier_free_identification_seconds_remaining,
+                                            statState?.identificationFreeSecRemainder ?: "0"
+                                        ),
+                                        style = typography().xxs.semiBold.copy(color = colorPalette().textSecondary),
+                                    )
+                                    Spacer(
+                                        modifier = Modifier
+                                            .height(Dimensions.bottomSpacer)
+                                    )
+                                }
+                            }
+
                         }
                     }
-
                 }
             }
         }

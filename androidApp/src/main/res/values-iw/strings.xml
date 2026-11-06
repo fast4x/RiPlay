@@ -1593,4 +1593,21 @@
     <string name="swipe_to_next_settings_right_to_left">Right to left</string>
     <string name="swipe_to_next_settings_left_to_right">Left to right</string>
     <string name="swipe_to_next_with_miniplayer_title">Swipe to next with mini player</string>
+    <string name="action_bar_show_download_button">Show download button</string>
+    <string name="settings_group_navigation">Navigation bar</string>
+    <string name="settings_search_hint">Search in settings…</string>
+    <string name="settings_group_playback">Playback</string>
+    <string name="settings_group_player_interface">Player interface</string>
+    <string name="settings_group_screen_windows">Screen &amp; windows</string>
+    <string name="settings_group_player_layout">Layout &amp; transitions</string>
+    <string name="settings_group_thumbnail">Thumbnail</string>
+    <string name="settings_group_song_info">Song info</string>
+    <string name="settings_group_timeline">Progress bar</string>
+    <string name="settings_group_buttons">Buttons</string>
+    <string name="settings_group_background">Background &amp; gradients</string>
+    <string name="settings_group_lyrics">Lyrics</string>
+    <string name="settings_group_effects">Effects &amp; graphics</string>
+    <string name="settings_group_visibility">Visibility</string>
+    <string name="settings_group_font">Font</string>
+    <string name="settings_group_gestures">Gestures &amp; swipe actions</string>
 </resources>

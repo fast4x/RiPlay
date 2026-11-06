@@ -36,10 +36,10 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.musicvault.MusicVaultDisclaimerDialog
 import it.fast4x.riplay.musicvault.MusicVaultFolderSetting
 import it.fast4x.riplay.musicvault.checkAndStartMusicVault
+import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.LocalAppearance
 import kotlinx.coroutines.CoroutineScope
@@ -49,6 +49,10 @@ import java.io.File
 import java.io.FileInputStream
 import java.text.SimpleDateFormat
 import java.util.Date
+import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
+import it.fast4x.riplay.ui.components.themed.settingsHeaderItem
+import it.fast4x.riplay.ui.components.themed.settingsGroupHeader
+import it.fast4x.riplay.ui.components.themed.settingsGroupCard
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,6 +63,7 @@ fun MiscSettings(
     navController: NavController
 ) {
     val context = LocalContext.current
+    val search = Search.init(alwaysVisible = true)
     val (colorPalette, _, _) = LocalAppearance.current
     val appSettingsManager = LocalAppSettingsManager.current
     val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
@@ -152,7 +157,7 @@ fun MiscSettings(
             state = rememberLazyListState(),
             contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer)
         ) {
-            settingsItem {
+            settingsHeaderItem {
                 HeaderWithIcon(
                     title = stringResource(R.string.tab_miscellaneous),
                     iconId = R.drawable.equalizer,
@@ -164,141 +169,150 @@ fun MiscSettings(
                 )
             }
 
+            settingsSearchBarItem {
+                search.SearchBar(this)
+            }
+
+
+
             if (BuildConfig.FLAVOR == "full") {
-                settingsItem(
-                    isHeader = true
-                ) {
-                    SettingsGroupSpacer()
-                    SettingsEntryGroupText(title = stringResource(R.string.settings_music_vault_title))
-                }
-                settingsItem {
-                    SwitchSettingEntry(
-                        title = stringResource(R.string.settings_music_vault_enable_personal_audio_saving),
-                        text = stringResource(R.string.settings_music_vault_save_songs_from_youtube_for_personal_offline_listening),
-                        isChecked = musicVaultEnabled,
-                        onCheckedChange = {
-                            coroutineScope.launch {
-                                if (it) {
-                                    if (disclaimerAccepted) {
-                                        val new = appSettingsManager.activeSettings.value.copy(musicVaultEnabled = true)
-                                        appSettingsManager.updateSettings(new)
-                                    } else showDisclaimer = true
-                                } else {
-                                    val new = appSettingsManager.activeSettings.value.copy(
-                                        musicVaultEnabled = false,
-                                        musicVaultDisclaimerAccepted = false
-                                    )
-                                    appSettingsManager.updateSettings(new)
-                                }
-                            }
-                        }
-                    )
+                if (search.matchesAny(R.string.settings_music_vault_title, R.string.settings_music_vault_enable_personal_audio_saving, R.string.settings_music_vault_save_songs_from_youtube_for_personal_offline_listening)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.settings_music_vault_title))
 
-                    // Disclaimer dialog
-                    if (showDisclaimer) {
-                        MusicVaultDisclaimerDialog(
-                            onAccept = {
+                    settingsGroupCard {
+
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.settings_music_vault_enable_personal_audio_saving),
+                            text = stringResource(R.string.settings_music_vault_save_songs_from_youtube_for_personal_offline_listening),
+                            isChecked = musicVaultEnabled,
+                            onCheckedChange = {
                                 coroutineScope.launch {
-                                    val new = appSettingsManager.activeSettings.value.copy(
-                                        musicVaultEnabled = true,
-                                        musicVaultDisclaimerAccepted = true
-                                    )
-                                    appSettingsManager.updateSettings(new)
+                                    if (it) {
+                                        if (disclaimerAccepted) {
+                                            val new = appSettingsManager.activeSettings.value.copy(musicVaultEnabled = true)
+                                            appSettingsManager.updateSettings(new)
+                                        } else showDisclaimer = true
+                                    } else {
+                                        val new = appSettingsManager.activeSettings.value.copy(
+                                            musicVaultEnabled = false,
+                                            musicVaultDisclaimerAccepted = false
+                                        )
+                                        appSettingsManager.updateSettings(new)
+                                    }
                                 }
-
-                                showDisclaimer = false
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    // Disclaimer accettato quindi Music Vault può essere avviato
-                                    checkAndStartMusicVault()
-                                }
-                            },
-                            onDecline = {
-                                showDisclaimer = false
-                            }
+                            }, icon = R.drawable.cd,
                         )
-                    }
 
-                    AnimatedVisibility(
-                        visible = musicVaultEnabled && disclaimerAccepted
-                    ) {
-                        MusicVaultFolderSetting()
-                    }
-                }
-            }
+                        // Disclaimer dialog
+                        if (showDisclaimer) {
+                            MusicVaultDisclaimerDialog(
+                                onAccept = {
+                                    coroutineScope.launch {
+                                        val new = appSettingsManager.activeSettings.value.copy(
+                                            musicVaultEnabled = true,
+                                            musicVaultDisclaimerAccepted = true
+                                        )
+                                        appSettingsManager.updateSettings(new)
+                                    }
 
-            settingsItem(
-                isHeader = true
-            ) {
-                SettingsGroupSpacer()
-                SettingsEntryGroupText(title = stringResource(R.string.settings_title_on_device_music_folder))
-            }
-
-            settingsItem {
-                FolderSetting("")
-            }
-
-
-            settingsItem(
-                isHeader = true
-            ) {
-                SettingsGroupSpacer()
-                SettingsEntryGroupText(title = stringResource(R.string.debug))
-            }
-
-            settingsItem {
-                SwitchSettingEntry(
-                    title = stringResource(R.string.enable_log_debug),
-                    text = stringResource(R.string.if_enabled_create_a_log_file_to_highlight_errors),
-                    isChecked = logDebugEnabled,
-                    onCheckedChange = {
-                        Dependencies.application.initializeLog(it)
-
-                        coroutineScope.launch {
-                            val new = appSettingsManager.activeSettings.value.copy(logDebugEnabled = it)
-                            appSettingsManager.updateSettings(new)
-                        }
-
-                        if (!it) {
-                            val file = File(context.filesDir.resolve("logs"), "RiPlay_log.txt")
-                            if (file.exists())
-                                file.delete()
-
-                            val filec =
-                                File(context.filesDir.resolve("logs"), "RiPlay_crash_log.txt")
-                            if (filec.exists())
-                                filec.delete()
-
-
-                        } else {
-                            SmartMessage(
-                                context.resources.getString(R.string.done),
-                                type = PopupType.Info, context = context
+                                    showDisclaimer = false
+                                    CoroutineScope(Dispatchers.IO).launch {
+                                        // Disclaimer accettato quindi Music Vault può essere avviato
+                                        checkAndStartMusicVault()
+                                    }
+                                },
+                                onDecline = {
+                                    showDisclaimer = false
+                                }
                             )
                         }
-                    }
-                )
-                ImportantSettingsDescription(text = stringResource(R.string.restart_is_not_required))
-                ButtonBarSettingEntry(
-                    isEnabled = logDebugEnabled,
-                    title = stringResource(R.string.export_log),
-                    text = "",
-                    icon = R.drawable.export,
-                    onClick = {
-                        exportCrashlog = false
-                        isExporting = true
-                    }
-                )
-                ButtonBarSettingEntry(
-                    title = stringResource(R.string.export_crash_log),
-                    text = stringResource(R.string.is_always_enabled),
-                    icon = R.drawable.export,
-                    onClick = {
-                        exportCrashlog = true
-                        isExporting = true
-                    }
-                )
+
+                        AnimatedVisibility(
+                            visible = musicVaultEnabled && disclaimerAccepted
+                        ) {
+                            MusicVaultFolderSetting()
+                        }
+                
+                }
             }
-        }
+
+            }
+
+            if (search.matchesAny(R.string.settings_title_on_device_music_folder, R.string.settings_music_vault_restore_default_folder)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.settings_title_on_device_music_folder))
+
+
+                settingsGroupCard {
+
+                    FolderSetting("")
+            
+                }
+            }
+
+
+
+            if (search.matchesAny(R.string.debug, R.string.enable_log_debug, R.string.if_enabled_create_a_log_file_to_highlight_errors, R.string.done, R.string.restart_is_not_required, R.string.export_log, R.string.export_crash_log, R.string.is_always_enabled)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.debug))
+
+
+                settingsGroupCard {
+
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.enable_log_debug),
+                        text = stringResource(R.string.if_enabled_create_a_log_file_to_highlight_errors),
+                        isChecked = logDebugEnabled,
+                        onCheckedChange = {
+                            Dependencies.application.initializeLog(it)
+
+                            coroutineScope.launch {
+                                val new = appSettingsManager.activeSettings.value.copy(logDebugEnabled = it)
+                                appSettingsManager.updateSettings(new)
+                            }
+
+                            if (!it) {
+                                val file = File(context.filesDir.resolve("logs"), "RiPlay_log.txt")
+                                if (file.exists())
+                                    file.delete()
+
+                                val filec =
+                                    File(context.filesDir.resolve("logs"), "RiPlay_crash_log.txt")
+                                if (filec.exists())
+                                    filec.delete()
+
+
+                            } else {
+                                SmartMessage(
+                                    context.resources.getString(R.string.done),
+                                    type = PopupType.Info, context = context
+                                )
+                            }
+                        }, icon = R.drawable.text,
+                    )
+                    ImportantSettingsDescription(text = stringResource(R.string.restart_is_not_required))
+                    ButtonBarSettingEntry(
+                        isEnabled = logDebugEnabled,
+                        title = stringResource(R.string.export_log),
+                        text = "",
+                        icon = R.drawable.export,
+                        onClick = {
+                            exportCrashlog = false
+                            isExporting = true
+                        }
+                    )
+                    ButtonBarSettingEntry(
+                        title = stringResource(R.string.export_crash_log),
+                        text = stringResource(R.string.is_always_enabled),
+                        icon = R.drawable.export,
+                        onClick = {
+                            exportCrashlog = true
+                            isExporting = true
+                        }
+                    )
+            
+
+            }
+            }
 
     }
+        }
 }

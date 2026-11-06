@@ -24,12 +24,16 @@ import it.fast4x.riplay.enums.WidgetBackground
 import it.fast4x.riplay.enums.WidgetBadgePosition
 import it.fast4x.riplay.enums.WidgetTheme
 import it.fast4x.riplay.extensions.appsettings.models.AppSettings
+import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
-import it.fast4x.riplay.ui.components.themed.settingsItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.LocalAppearance
 import it.fast4x.riplay.ui.widgets.WidgetUpdater
 import kotlinx.coroutines.launch
+import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
+import it.fast4x.riplay.ui.components.themed.settingsHeaderItem
+import it.fast4x.riplay.ui.components.themed.settingsGroupHeader
+import it.fast4x.riplay.ui.components.themed.settingsGroupCard
 
 /**
  * Sezione Impostazioni > Widgets.
@@ -54,6 +58,7 @@ fun WidgetsSettings(
     navController: NavController
 ) {
     val context = LocalContext.current
+    val search = Search.init(alwaysVisible = true)
     val (colorPalette, _, _) = LocalAppearance.current
     val appSettingsManager = LocalAppSettingsManager.current
     val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
@@ -83,7 +88,7 @@ fun WidgetsSettings(
             state = rememberLazyListState(),
             contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer)
         ) {
-            settingsItem {
+            settingsHeaderItem {
                 HeaderWithIcon(
                     title = stringResource(R.string.tab_widgets),
                     iconId = R.drawable.grid_view,
@@ -95,179 +100,197 @@ fun WidgetsSettings(
                 )
             }
 
-            settingsItem(
-                isHeader = true
-            ) {
-                SettingsGroupSpacer()
-                SettingsEntryGroupText(title = stringResource(R.string.settings_widgets_appearance))
+            settingsSearchBarItem {
+                search.SearchBar(this)
             }
 
-            settingsItem {
-                EnumValueSelectorSettingsEntry(
-                    title = stringResource(R.string.settings_widgets_theme),
-                    text = stringResource(R.string.settings_widgets_theme_desc),
-                    selectedValue = appSettings.widgetTheme,
-                    onValueSelected = { value ->
-                        updateWidgetSettings { it.copy(widgetTheme = value) }
-                    },
-                    valueText = { theme ->
-                        stringResource(
-                            when (theme) {
-                                WidgetTheme.System -> R.string.settings_widgets_theme_system
-                                WidgetTheme.Light -> R.string.settings_widgets_theme_light
-                                WidgetTheme.Dark -> R.string.settings_widgets_theme_dark
-                                WidgetTheme.PureBlack -> R.string.settings_widgets_theme_black
-                            }
-                        )
-                    }
-                )
+
+
+            if (search.matchesAny(R.string.settings_widgets_appearance, R.string.settings_widgets_theme, R.string.settings_widgets_theme_desc, R.string.settings_widgets_theme_system, R.string.settings_widgets_theme_light, R.string.settings_widgets_theme_dark, R.string.settings_widgets_theme_black, R.string.settings_widgets_accent, R.string.settings_widgets_accent_desc, R.string.settings_widgets_accent_default, R.string.settings_widgets_accent_orange, R.string.settings_widgets_accent_red, R.string.settings_widgets_accent_pink, R.string.settings_widgets_accent_purple, R.string.settings_widgets_accent_blue, R.string.settings_widgets_accent_teal, R.string.settings_widgets_accent_green, R.string.settings_widgets_background, R.string.settings_widgets_background_desc, R.string.settings_widgets_background_solid, R.string.settings_widgets_background_semi, R.string.settings_widgets_background_transparent, R.string.settings_widgets_badge, R.string.settings_widgets_badge_desc, R.string.settings_widgets_badge_top_start, R.string.settings_widgets_badge_top_end, R.string.settings_widgets_badge_bottom_start, R.string.settings_widgets_badge_bottom_end, R.string.settings_widgets_show_artwork, R.string.settings_widgets_show_artwork_desc, R.string.settings_widgets_show_like, R.string.settings_widgets_show_like_desc, R.string.settings_widgets_show_shuffle, R.string.settings_widgets_show_shuffle_desc, R.string.settings_widgets_show_progress, R.string.settings_widgets_show_progress_desc)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.settings_widgets_appearance))
+
+
+                settingsGroupCard {
+
+                    EnumValueSelectorSettingsEntry(
+                        title = stringResource(R.string.settings_widgets_theme),
+                        text = stringResource(R.string.settings_widgets_theme_desc),
+                        selectedValue = appSettings.widgetTheme,
+                        onValueSelected = { value ->
+                            updateWidgetSettings { it.copy(widgetTheme = value) }
+                        },
+                        valueText = { theme ->
+                            stringResource(
+                                when (theme) {
+                                    WidgetTheme.System -> R.string.settings_widgets_theme_system
+                                    WidgetTheme.Light -> R.string.settings_widgets_theme_light
+                                    WidgetTheme.Dark -> R.string.settings_widgets_theme_dark
+                                    WidgetTheme.PureBlack -> R.string.settings_widgets_theme_black
+                                }
+                            )
+                        }, icon = R.drawable.color_palette,
+                    )
+            
+
+
+
+                    EnumValueSelectorSettingsEntry(
+                        title = stringResource(R.string.settings_widgets_accent),
+                        text = stringResource(R.string.settings_widgets_accent_desc),
+                        selectedValue = appSettings.widgetAccentColor,
+                        onValueSelected = { value ->
+                            updateWidgetSettings { it.copy(widgetAccentColor = value) }
+                        },
+                        valueText = { accent ->
+                            stringResource(
+                                when (accent) {
+                                    WidgetAccentColor.Default -> R.string.settings_widgets_accent_default
+                                    WidgetAccentColor.Orange -> R.string.settings_widgets_accent_orange
+                                    WidgetAccentColor.Red -> R.string.settings_widgets_accent_red
+                                    WidgetAccentColor.Pink -> R.string.settings_widgets_accent_pink
+                                    WidgetAccentColor.Purple -> R.string.settings_widgets_accent_purple
+                                    WidgetAccentColor.Blue -> R.string.settings_widgets_accent_blue
+                                    WidgetAccentColor.Teal -> R.string.settings_widgets_accent_teal
+                                    WidgetAccentColor.Green -> R.string.settings_widgets_accent_green
+                                }
+                            )
+                        }, icon = R.drawable.color_palette,
+                    )
+            
+
+
+
+                    EnumValueSelectorSettingsEntry(
+                        title = stringResource(R.string.settings_widgets_background),
+                        text = stringResource(R.string.settings_widgets_background_desc),
+                        selectedValue = appSettings.widgetBackground,
+                        onValueSelected = { value ->
+                            updateWidgetSettings { it.copy(widgetBackground = value) }
+                        },
+                        valueText = { background ->
+                            stringResource(
+                                when (background) {
+                                    WidgetBackground.Solid -> R.string.settings_widgets_background_solid
+                                    WidgetBackground.SemiTransparent -> R.string.settings_widgets_background_semi
+                                    WidgetBackground.Transparent -> R.string.settings_widgets_background_transparent
+                                }
+                            )
+                        }, icon = R.drawable.color_palette,
+                    )
+            
+
+
+
+                    EnumValueSelectorSettingsEntry(
+                        title = stringResource(R.string.settings_widgets_badge),
+                        text = stringResource(R.string.settings_widgets_badge_desc),
+                        selectedValue = appSettings.widgetBadgePosition,
+                        onValueSelected = { value ->
+                            updateWidgetSettings { it.copy(widgetBadgePosition = value) }
+                        },
+                        valueText = { position ->
+                            stringResource(
+                                when (position) {
+                                    WidgetBadgePosition.TopStart -> R.string.settings_widgets_badge_top_start
+                                    WidgetBadgePosition.TopEnd -> R.string.settings_widgets_badge_top_end
+                                    WidgetBadgePosition.BottomStart -> R.string.settings_widgets_badge_bottom_start
+                                    WidgetBadgePosition.BottomEnd -> R.string.settings_widgets_badge_bottom_end
+                                }
+                            )
+                        }, icon = R.drawable.star,
+                    )
+            
+
+
+
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.settings_widgets_show_artwork),
+                        text = stringResource(R.string.settings_widgets_show_artwork_desc),
+                        isChecked = appSettings.widgetShowArtwork,
+                        onCheckedChange = { value ->
+                            updateWidgetSettings { it.copy(widgetShowArtwork = value) }
+                        }, icon = R.drawable.picture,
+                    )
+            
+
+
+
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.settings_widgets_show_like),
+                        text = stringResource(R.string.settings_widgets_show_like_desc),
+                        isChecked = appSettings.widgetShowLikeButton,
+                        onCheckedChange = { value ->
+                            updateWidgetSettings { it.copy(widgetShowLikeButton = value) }
+                        }, icon = R.drawable.heart,
+                    )
+            
+
+
+
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.settings_widgets_show_shuffle),
+                        text = stringResource(R.string.settings_widgets_show_shuffle_desc),
+                        isChecked = appSettings.widgetShowShuffleButton,
+                        onCheckedChange = { value ->
+                            updateWidgetSettings { it.copy(widgetShowShuffleButton = value) }
+                        }, icon = R.drawable.shuffle,
+                    )
+            
+
+
+
+                    SwitchSettingEntry(
+                        title = stringResource(R.string.settings_widgets_show_progress),
+                        text = stringResource(R.string.settings_widgets_show_progress_desc),
+                        isChecked = appSettings.widgetShowProgress,
+                        onCheckedChange = { value ->
+                            updateWidgetSettings { it.copy(widgetShowProgress = value) }
+                        }, icon = R.drawable.horizontal_bold_line,
+                    )
+            
+                }
             }
 
-            settingsItem {
-                EnumValueSelectorSettingsEntry(
-                    title = stringResource(R.string.settings_widgets_accent),
-                    text = stringResource(R.string.settings_widgets_accent_desc),
-                    selectedValue = appSettings.widgetAccentColor,
-                    onValueSelected = { value ->
-                        updateWidgetSettings { it.copy(widgetAccentColor = value) }
-                    },
-                    valueText = { accent ->
-                        stringResource(
-                            when (accent) {
-                                WidgetAccentColor.Default -> R.string.settings_widgets_accent_default
-                                WidgetAccentColor.Orange -> R.string.settings_widgets_accent_orange
-                                WidgetAccentColor.Red -> R.string.settings_widgets_accent_red
-                                WidgetAccentColor.Pink -> R.string.settings_widgets_accent_pink
-                                WidgetAccentColor.Purple -> R.string.settings_widgets_accent_purple
-                                WidgetAccentColor.Blue -> R.string.settings_widgets_accent_blue
-                                WidgetAccentColor.Teal -> R.string.settings_widgets_accent_teal
-                                WidgetAccentColor.Green -> R.string.settings_widgets_accent_green
-                            }
-                        )
-                    }
-                )
-            }
 
-            settingsItem {
-                EnumValueSelectorSettingsEntry(
-                    title = stringResource(R.string.settings_widgets_background),
-                    text = stringResource(R.string.settings_widgets_background_desc),
-                    selectedValue = appSettings.widgetBackground,
-                    onValueSelected = { value ->
-                        updateWidgetSettings { it.copy(widgetBackground = value) }
-                    },
-                    valueText = { background ->
-                        stringResource(
-                            when (background) {
-                                WidgetBackground.Solid -> R.string.settings_widgets_background_solid
-                                WidgetBackground.SemiTransparent -> R.string.settings_widgets_background_semi
-                                WidgetBackground.Transparent -> R.string.settings_widgets_background_transparent
-                            }
-                        )
-                    }
-                )
-            }
+            if (search.matchesAny(R.string.settings_widgets_maintenance, R.string.settings_widgets_refresh_now, R.string.settings_widgets_refresh_now_desc, R.string.settings_widgets_info, R.string.settings_widgets_info_transparent, R.string.settings_widgets_badge_note)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.settings_widgets_maintenance))
 
-            settingsItem {
-                EnumValueSelectorSettingsEntry(
-                    title = stringResource(R.string.settings_widgets_badge),
-                    text = stringResource(R.string.settings_widgets_badge_desc),
-                    selectedValue = appSettings.widgetBadgePosition,
-                    onValueSelected = { value ->
-                        updateWidgetSettings { it.copy(widgetBadgePosition = value) }
-                    },
-                    valueText = { position ->
-                        stringResource(
-                            when (position) {
-                                WidgetBadgePosition.TopStart -> R.string.settings_widgets_badge_top_start
-                                WidgetBadgePosition.TopEnd -> R.string.settings_widgets_badge_top_end
-                                WidgetBadgePosition.BottomStart -> R.string.settings_widgets_badge_bottom_start
-                                WidgetBadgePosition.BottomEnd -> R.string.settings_widgets_badge_bottom_end
-                            }
-                        )
-                    }
-                )
-            }
 
-            settingsItem {
-                SwitchSettingEntry(
-                    title = stringResource(R.string.settings_widgets_show_artwork),
-                    text = stringResource(R.string.settings_widgets_show_artwork_desc),
-                    isChecked = appSettings.widgetShowArtwork,
-                    onCheckedChange = { value ->
-                        updateWidgetSettings { it.copy(widgetShowArtwork = value) }
-                    }
-                )
-            }
+                settingsGroupCard {
 
-            settingsItem {
-                SwitchSettingEntry(
-                    title = stringResource(R.string.settings_widgets_show_like),
-                    text = stringResource(R.string.settings_widgets_show_like_desc),
-                    isChecked = appSettings.widgetShowLikeButton,
-                    onCheckedChange = { value ->
-                        updateWidgetSettings { it.copy(widgetShowLikeButton = value) }
-                    }
-                )
-            }
+                    ButtonBarSettingEntry(
+                        title = stringResource(R.string.settings_widgets_refresh_now),
+                        text = stringResource(R.string.settings_widgets_refresh_now_desc),
+                        icon = R.drawable.grid_view,
+                        onClick = {
+                            WidgetUpdater.forceRefresh()
+                        }
+                    )
+            
 
-            settingsItem {
-                SwitchSettingEntry(
-                    title = stringResource(R.string.settings_widgets_show_shuffle),
-                    text = stringResource(R.string.settings_widgets_show_shuffle_desc),
-                    isChecked = appSettings.widgetShowShuffleButton,
-                    onCheckedChange = { value ->
-                        updateWidgetSettings { it.copy(widgetShowShuffleButton = value) }
-                    }
-                )
-            }
 
-            settingsItem {
-                SwitchSettingEntry(
-                    title = stringResource(R.string.settings_widgets_show_progress),
-                    text = stringResource(R.string.settings_widgets_show_progress_desc),
-                    isChecked = appSettings.widgetShowProgress,
-                    onCheckedChange = { value ->
-                        updateWidgetSettings { it.copy(widgetShowProgress = value) }
-                    }
-                )
-            }
 
-            settingsItem(
-                isHeader = true
-            ) {
-                SettingsGroupSpacer()
-                SettingsEntryGroupText(title = stringResource(R.string.settings_widgets_maintenance))
-            }
+                    SettingsDescription(
+                        text = stringResource(R.string.settings_widgets_info)
+                    )
+            
 
-            settingsItem {
-                ButtonBarSettingEntry(
-                    title = stringResource(R.string.settings_widgets_refresh_now),
-                    text = stringResource(R.string.settings_widgets_refresh_now_desc),
-                    icon = R.drawable.grid_view,
-                    onClick = {
-                        WidgetUpdater.forceRefresh()
-                    }
-                )
-            }
 
-            settingsItem {
-                SettingsDescription(
-                    text = stringResource(R.string.settings_widgets_info)
-                )
-            }
 
-            settingsItem {
-                SettingsDescription(
-                    text = stringResource(R.string.settings_widgets_info_transparent)
-                )
-            }
+                    SettingsDescription(
+                        text = stringResource(R.string.settings_widgets_info_transparent)
+                    )
+            
 
-            settingsItem {
-                SettingsDescription(
-                    text = stringResource(R.string.settings_widgets_badge_note)
-                )
+
+
+                    SettingsDescription(
+                        text = stringResource(R.string.settings_widgets_badge_note)
+                    )
+            
+
             }
-        }
+            }
     }
+        }
 }
