@@ -1589,7 +1589,6 @@
     <string name="swipe_to_next_settings_right_to_left">Right to left</string>
     <string name="swipe_to_next_settings_left_to_right">Left to right</string>
     <string name="swipe_to_next_with_miniplayer_title">Swipe to next with mini player</string>
-    <!-- RiPlay settings refactor: titoli dei gruppi -->
     <string name="settings_group_navigation">Barra di navigazione</string>
     <string name="settings_search_hint">Cerca nelle impostazioni…</string>
     <string name="settings_group_playback">Riproduzione</string>
@@ -1606,4 +1605,10 @@
     <string name="settings_group_visibility">Visibilit\u00e0</string>
     <string name="settings_group_font">Caratteri</string>
     <string name="settings_group_gestures">Gesti e azioni swipe</string>
+    <string name="error_import_unreadable_file">Impossibile leggere il file selezionato. L\'operazione è stata annullata.</string>
+    <string name="error_import_empty_file">Il file selezionato non contiene brani da importare.</string>
+    <string name="error_import_invalid_structure">Non è possibile completare l\'operazione: la struttura del file CSV non è compatibile con il tipo di importazione selezionato.</string>
+    <string name="error_import_failed">Non è possibile completare l\'operazione: si è verificato un errore imprevisto durante l\'importazione.</string>
+    <string name="info_import_completed">Importazione completata. Brani importati: %1$d</string>
+    <string name="info_import_completed_with_skipped">Importazione completata con avvisi. Brani importati: %1$d, brani saltati: %2$d</string>
 </resources>

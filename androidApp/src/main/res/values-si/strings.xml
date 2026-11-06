@@ -1606,4 +1606,10 @@ CC-BY-SA 3.0</string>
     <string name="settings_group_visibility">Visibility</string>
     <string name="settings_group_font">Font</string>
     <string name="settings_group_gestures">Gestures &amp; swipe actions</string>
+    <string name="error_import_unreadable_file">Unable to read the selected file. The operation has been cancelled.</string>
+    <string name="error_import_empty_file">The selected file does not contain any track to import.</string>
+    <string name="error_import_invalid_structure">Unable to complete the operation: the structure of the CSV file is not compatible with the selected import type.</string>
+    <string name="error_import_failed">Unable to complete the operation: an unexpected error occurred during the import.</string>
+    <string name="info_import_completed">Import completed. Tracks imported: %1$d</string>
+    <string name="info_import_completed_with_skipped">Import completed with warnings. Tracks imported: %1$d, skipped: %2$d</string>
 </resources>
