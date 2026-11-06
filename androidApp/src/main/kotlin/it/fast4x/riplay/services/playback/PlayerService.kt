@@ -210,6 +210,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 import java.io.File
@@ -2581,12 +2582,31 @@ class PlayerService : MediaLibraryService(),
                     _internalYouTubePlayer.value?.loadVideo(it.mediaId, 0f) // Si parte sempre dall'inizio perchè è il successivo
 
                     if (appSettings.crossfadeDuration == CrossfadeDuration.Off) {
+                        // ═══ FIX PICCO RESIDUO ═══
                         // Con crossfade disattivo startFadeIn() esce subito senza toccare il volume:
                         // ripristiniamo subito il livello corretto SEMPRE via pipeline (rispetta la
                         // normalizzazione), senza forzature immediate al 100%.
                         // La normalizzazione definitiva del brano arriverà comunque da
                         // setYtLoudnessDb() non appena il DB fornirà il loudness corretto.
-                        hybridPlayer.setFadeVolume(1.0f)
+                        // Il brano, intanto, nasce nel silenzio (setFadeVolume(0f) sopra) mentre la
+                        // WebView sta ancora caricando: il tempo di lettura DB (pochi ms) è coperto.
+                        if (appSettings.volumeNormalizationEnabled) {
+                            val targetMediaId = it.mediaId
+                            this@PlayerService.serviceScope.launch(Dispatchers.Main) {
+                                val freshLoudness = withTimeoutOrNull(600L.milliseconds) {
+                                    Database.loudnessDb(targetMediaId).cancellable().first()
+                                }
+                                // Se nel frattempo è già partito un altro brano, lasciamo
+                                // gestire il volume alla sua stessa transizione
+                                if (hybridPlayer.currentMediaItem?.mediaId == targetMediaId) {
+                                    hybridPlayer.setYtLoudnessDb(freshLoudness ?: 0f)
+                                    hybridPlayer.setFadeVolume(1.0f)
+                                }
+                            }
+                        } else {
+                            // Normalizzazione disattiva: nessun fattore da attendere, ripristino immediato
+                            hybridPlayer.setFadeVolume(1.0f)
+                        }
                     } else {
                         // Avvia il fade in per il nuovo brano appena parte il play se il fade/crossfade è attivo
                         startFadeIn()
@@ -2657,7 +2677,10 @@ class PlayerService : MediaLibraryService(),
 
         updateWidgetState()
 
-        initializeNormalizeVolume()
+        // ═══ FIX NORMALIZZAZIONE IN RITARDO DI UN BRANO ═══
+        // Passiamo SUBITO il mediaId del brano che sta partendo in modo da escludere
+        // l'uso del brano precedente
+        initializeNormalizeVolume(mediaItem.mediaId)
         maybeProcessRadio(reason)
 
         updateDiscordPresence()
@@ -2774,7 +2797,7 @@ class PlayerService : MediaLibraryService(),
 
     @ExperimentalCoroutinesApi
     @UnstableApi
-    private fun initializeNormalizeVolume() {
+    private fun initializeNormalizeVolume(targetMediaId: String? = null) {
         if (!appSettings.volumeNormalizationEnabled) {
             loudnessEnhancer?.enabled = false
             loudnessEnhancer?.release()
@@ -2798,8 +2821,15 @@ class PlayerService : MediaLibraryService(),
 
             fun Float?.toMb() = ((this ?: 0f) * 100).toInt()
 
-            Database.loudnessDb((if(currentSong.value?.isLocal == true)
-                currentSong.value?.mediaId else currentSong.value?.id).toString())
+            // FIX PICCO RESIDUO: la chiave del loudness DEVE essere quella del brano che
+            // sta partendo ADESSO. Se il chiamante (onMediaItemTransition) passa il mediaId
+            // usiamo quello; currentSong.value letto qui sarebbe ancora il brano precedente
+            // quindi userebbe sempre il brano precedente.
+            val loudnessKey = targetMediaId
+                ?: (if (currentSong.value?.isLocal == true)
+                    currentSong.value?.mediaId else currentSong.value?.id).toString()
+
+            Database.loudnessDb(loudnessKey)
                 .cancellable().collectLatest { loudnessDb ->
                     val loudnessMb = loudnessDb.toMb().let {
                         if (it !in -2000..2000) {
@@ -4901,6 +4931,11 @@ class PlayerService : MediaLibraryService(),
                 // setFadeVolume(1.0f), che riallinea fadeMultiplier, rispetta la
                 // normalizzazione (ytLoudnessDb) e vale per entrambi i motori.
                 if (appSettings.crossfadeDuration == CrossfadeDuration.Off) {
+                    // FIX: ripristino via pipeline invece di una forzatura al 100%:
+                    // applyCurrentVolume() applica 1.0 × fattore di normalizzazione del brano
+                    // corrente (in un riavvio dello STESSO brano è già quello giusto), quindi
+                    // nessun picco al riavvio con normalizzazione attiva. Vale anche per
+                    // ExoPlayer, che altrimenti resta a volume 0 dopo il quick-fade.
                     hybridPlayer.setFadeVolume(1.0f)
                     isFading = false
                     Timber.d("PlayerService UX: riavvio brano senza crossfade, volume ripristinato via HybridPlayer (fadeMultiplier=1.0, isFading=false)")
