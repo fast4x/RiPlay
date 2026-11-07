@@ -101,6 +101,14 @@ import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.data.models.Event
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.ui.components.themed.SmartMessage
+import it.fast4x.riplay.extensions.alarm.ACTION_ALARM_SNOOZE
+import it.fast4x.riplay.extensions.alarm.ACTION_ALARM_STOP
+import it.fast4x.riplay.extensions.alarm.AlarmItem
+import it.fast4x.riplay.extensions.alarm.AlarmReceiver
+import it.fast4x.riplay.extensions.alarm.AlarmServiceActions
+import it.fast4x.riplay.extensions.alarm.EXTRA_ALARM_ID
+import it.fast4x.riplay.extensions.alarm.loadAlarmOptions
+import it.fast4x.riplay.extensions.alarm.loadAlarms
 import it.fast4x.riplay.utils.intent
 import it.fast4x.riplay.utils.isAtLeastAndroid10
 import it.fast4x.riplay.utils.isAtLeastAndroid12
@@ -218,6 +226,7 @@ import java.util.Objects
 import kotlin.collections.map
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import android.os.Binder as AndroidBinder
 import it.fast4x.riplay.extensions.appsettings.AppSettingsManager
@@ -268,6 +277,50 @@ class PlayerService : MediaLibraryService(),
     private var notificationManager: NotificationManager? = null
 
     private var timerJob: TimerJob? = null
+
+    // ------------------------------------------------------------------
+    // ALARM (Sveglia): job e stato della sessione sveglia corrente
+    // ------------------------------------------------------------------
+    private var alarmAutoStopJob: Job? = null
+    private var alarmFadeInJob: Job? = null
+    private var alarmSessionAlarmId: String? = null
+
+    /**
+     * ALARM (Sveglia): true quando la sessione sveglia ha AVUTO almeno un
+     * istante di riproduzione effettiva. La chiusura automatica della sessione
+     * ("riproduzione interrotta") è valida solo in quel caso: durante l'avvio
+     * (buffering iniziale, bridge YouTube da riattivare con il servizio già
+     * vivo in background) l'evento "not playing" è normale e chiudere la
+     * sessione lì ucciderebbe la sveglia prima che il brano parta.
+     */
+    @Volatile
+    private var alarmSessionHeardPlayback = false
+
+    /**
+     * True mentre la sveglia sta eseguendo il fade-in del volume:
+     * inibisce i reset di volume del crossfade/ripristino che
+     * interromperebbero la rampa graduale.
+     */
+    @Volatile
+    var alarmFadeInProgress = false
+        private set
+
+    /**
+     * Segnala che l'eventuale ripristino della coda persistente è terminato.
+     * La sveglia attende questo segnale prima di sostituire la coda, così da
+     * non essere sovrascritta dal caricamento della vecchia coda all'avvio a freddo.
+     */
+    private val _queueSetupCompleted = MutableStateFlow(false)
+    val queueSetupCompleted: StateFlow<Boolean> = _queueSetupCompleted.asStateFlow()
+
+    /**
+     * ALARM (Sveglia): brano online da caricare appena la WebView YouTube sarà
+     * pronta (onReady). Serve quando la sveglia scatta a app chiusa: la WebView
+     * viene creata in modo asincrono e un loadVideo anticipato sarebbe un no-op
+     * silenzioso. Consumato in initializeOnlinePlayer().onReady.
+     */
+    @Volatile
+    private var pendingAlarmLoadVideoId: String? = null
 
     private var radio: OnlineRadio? = null
 
@@ -789,6 +842,9 @@ class PlayerService : MediaLibraryService(),
                     resumePlaybackOnStart()
                 }
 
+                // Il ripristino della coda è concluso: la sveglia può subentrare in sicurezza
+                _queueSetupCompleted.value = true
+
                 // Usiamo il flusso reattivo dello stato del player per salvare la coda SOLO quando cambia lo stato
                 // Questo evita di bloccare il thread Main ogni 10 secondi eliminando i picchettii audio (buffer underrun)
                 _playerState
@@ -813,6 +869,9 @@ class PlayerService : MediaLibraryService(),
                     }
                 }
             }
+        } else {
+            // Coda persistente disattivata: nessun ripristino, la sveglia non deve attendere
+            _queueSetupCompleted.value = true
         }
 
         this@PlayerService.serviceScope.launch {
@@ -1048,10 +1107,336 @@ class PlayerService : MediaLibraryService(),
             }
             Action.next.value -> handlePlayNextRequestedByUser("PlayerService.onStartCommand")
             Action.previous.value -> handlePlayPreviousRequestedByUser("PlayerService.onStartCommand")
+            AlarmServiceActions.PLAY -> handleAlarmPlay(intent)
+            AlarmServiceActions.STOP -> handleAlarmStop()
         }
         updateWidgetState()
 
         return START_STICKY
+    }
+
+    // ------------------------------------------------------------------
+    // ALARM (Sveglia): avvio riproduzione, fade-in, auto-stop, notifica
+    // ------------------------------------------------------------------
+
+    private fun handleAlarmPlay(intent: Intent?) {
+        val alarmId = intent?.getStringExtra(EXTRA_ALARM_ID)
+        if (alarmId == null) {
+            Timber.w("PlayerService ALARM: azione alarmplay senza alarmId")
+            return
+        }
+
+        Timber.i("PlayerService ALARM: avvio sveglia $alarmId")
+
+        // ═══ FIX STABILITÀ SVEGLIA (1/3): foreground service IMMEDIATO ═══
+        // Il receiver avvia il servizio con startForegroundService(): da quel
+        // momento Android concede una finestra limitata (~5-10s) per chiamare
+        // startForeground(), altrimenti UCCIDE il processo. Prima di questo fix
+        // la promozione avveniva solo in startForegroundPlaceholder() dentro
+        // onMediaItemTransition — ma: (a) per i brani LOCALI non veniva mai
+        // chiamato; (b) con schermo spento e app aperta AppForegroundTracker
+        // considera l'app "in foreground" (activity in pausa ma non stoppata)
+        // e il check saltava la promozione; (c) all'avvio a freddo onCreate +
+        // attesa coda persistente superavano la finestra. Risultato: notifica
+        // visibile ma processo ucciso prima che la musica partisse.
+        startForegroundForAlarm()
+
+        // Marca la sessione sveglia SUBITO (sincrono): serve a onReady per NON
+        // far ripartire in automatico la vecchia coda persistente mentre la
+        // sveglia è in fase di avvio a freddo.
+        alarmSessionAlarmId = alarmId
+        alarmSessionHeardPlayback = false
+
+        serviceScope.launch {
+            // Attende l'eventuale ripristino della coda persistente per evitare
+            // che il caricamento della vecchia coda sovrascriva la sveglia
+            withTimeoutOrNull(8_000L) { _queueSetupCompleted.first { it } }
+
+            val alarm = withContext(Dispatchers.IO) { loadAlarms().firstOrNull { it.id == alarmId } }
+            if (alarm == null) {
+                Timber.w("PlayerService ALARM: sveglia $alarmId non trovata")
+                // Rimuove la notifica temporanea "Avvio sveglia…" della promozione FGS
+                notificationManager?.cancel(ALARM_NOTIFICATION_ID)
+                return@launch
+            }
+
+            val options = loadAlarmOptions()
+            val mediaItems = buildAlarmMediaItems(alarm)
+
+            if (mediaItems.isEmpty()) {
+                Timber.w("PlayerService ALARM: sorgente musicale non disponibile per la sveglia $alarmId")
+                postAlarmNotification(
+                    alarm = alarm,
+                    text = getString(R.string.alarm_source_missing),
+                    snoozeMinutes = options.snoozeMinutes,
+                    sourceMissing = true
+                )
+                return@launch
+            }
+
+            // ═══ FIX STABILITÀ SVEGLIA (2/3): WebView YouTube non ancora pronta ═══
+            // L'avvio a freddo (app chiusa) crea la WebView in modo asincrono:
+            // _internalYouTubePlayer diventa non-null solo nell'onReady dell'IFrame.
+            // Un loadVideo chiamato prima è un NO-OP silenzioso -> notifica sì,
+            // musica no. Attendiamo con grazia la prontezza e, se non arriva,
+            // registriamo un load pendente che onReady eseguirà appena possibile.
+            val firstItemIsOnline = mediaItems.first().isLocal == false
+            if (firstItemIsOnline && _internalYouTubePlayer.value == null) {
+                Timber.i("PlayerService ALARM: WebView YouTube non ancora pronta, attesa grazia...")
+                val ready = withTimeoutOrNull(12_000L) { _internalYouTubePlayer.first { it != null } } != null
+                if (!ready) {
+                    pendingAlarmLoadVideoId = mediaItems.first().mediaId
+                    Timber.w("PlayerService ALARM: WebView YouTube non pronta dopo 12s, load pendente registrato (${mediaItems.first().mediaId})")
+                }
+            }
+
+            withContext(Dispatchers.Main) {
+                runCatching {
+                    alarmSessionAlarmId = alarmId
+                    clearUserPauseIntent()
+                    binder.stopRadio()
+
+                    // ═══ FIX STABILITÀ SVEGLIA (3/3): nessuna esclusione silenziosa ═══
+                    // forcePlay() esclude in silenzio i brani filtrati (video con
+                    // "escludi video" attivo, blacklist, limite di durata): per una
+                    // sveglia — scelta esplicita dell'utente — non deve mai restare
+                    // in silenzio, quindi la riproduzione avviene direttamente.
+                    if (mediaItems.size == 1) {
+                        exoPlayer.setMediaItem(mediaItems.first(), true)
+                    } else {
+                        val list = if (alarm.shuffle) mediaItems.shuffled() else mediaItems
+                        exoPlayer.shuffleModeEnabled = false
+                        exoPlayer.setMediaItems(list, 0, C.TIME_UNSET)
+                    }
+                    exoPlayer.playWhenReady = true
+                    exoPlayer.prepare()
+
+                    // ═══ FIX SVEGLIA CON SERVIZIO GIÀ VIVO IN BACKGROUND ═══
+                    // Se il servizio esisteva già (processo NON ricreato
+                    // dall'allarme), il bridge YouTube è pronto ma fermo nello
+                    // stato di pausa della sessione precedente:
+                    // onMediaItemTransition emette il loadVideo però poi mette in
+                    // pausa exoPlayer e il bridge non riceve mai il comando di
+                    // play (sintomo: brano caricato, musica muta). Come già fa
+                    // l'avvio a freddo (load pendente in onReady), appena la
+                    // transizione è assestata commandiamo l'avvio effettivo con
+                    // il pipeline canonica executeActualPlay(), che emette
+                    // loadVideo/play e sincronizza youtubePlayWhenReady.
+                    if (firstItemIsOnline && _internalYouTubePlayer.value != null) {
+                        myMainHandler.postDelayed({
+                            if (alarmSessionAlarmId != null &&
+                                hybridPlayer.activeEngine == ActiveEngine.YOUTUBE
+                            ) {
+                                Timber.i("PlayerService ALARM: servizio già attivo, comando l'avvio effettivo sul bridge YouTube")
+                                hybridPlayer.executeActualPlay()
+                            }
+                        }, 600)
+                    }
+
+                    if (options.fadeInEnabled) startAlarmFadeIn()
+
+                    Timber.i("PlayerService ALARM: riproduzione avviata (${mediaItems.size} brani)")
+                }.onFailure {
+                    Timber.e("PlayerService ALARM: avvio riproduzione fallito: ${it.message}")
+                }
+            }
+
+            if (options.autoStopMinutes > 0) scheduleAlarmAutoStop(options.autoStopMinutes)
+
+            val sourceName = alarm.sourceName.ifBlank { getString(R.string.alarm_title) }
+            postAlarmNotification(alarm, sourceName, options.snoozeMinutes)
+        }
+    }
+
+    /**
+     * ALARM: porta il servizio in stato foreground SUBITO, prima di qualsiasi
+     * lavoro asincrono. Non è condizionato da AppForegroundTracker: con lo
+     * schermo spento e l'app aperta il tracker vede l'app "in foreground"
+     * (l'activity è in pausa ma non stoppata) e la promozione verrebbe saltata,
+     * lasciando scadere il contratto di startForegroundService con conseguente
+     * kill del processo da parte del sistema.
+     */
+    private fun startForegroundForAlarm() {
+        runCatching {
+            val notification = NotificationCompat.Builder(this, ALARM_NOTIFICATION_CHANNEL_ID)
+                .setSmallIcon(R.drawable.alarm)
+                .setContentTitle(getString(R.string.alarm_notification_title))
+                .setContentText(getString(R.string.alarm_notification_starting))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_ALARM)
+                .setOngoing(true)
+                .build()
+            if (isAtLeastAndroid10) {
+                startForeground(
+                    ALARM_NOTIFICATION_ID, notification,
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                )
+            } else {
+                startForeground(ALARM_NOTIFICATION_ID, notification)
+            }
+            Timber.d("PlayerService ALARM: foreground service acquisito immediatamente")
+        }.onFailure {
+            Timber.e("PlayerService ALARM: startForeground rifiutato (playback prosegue comunque): ${it.javaClass.simpleName}: ${it.message}")
+        }
+    }
+
+    private fun handleAlarmStop() {
+        Timber.i("PlayerService ALARM: stop sveglia richiesto")
+        markUserPauseRequested()
+        hybridPlayer.pause()
+        endAlarmSession("stop richiesto")
+    }
+
+    /**
+     * Risolve i MediaItem della sorgente della sveglia (brano, playlist o album).
+     * Per i brani scelti online non presenti in libreria, usa lo snapshot
+     * salvato nella sveglia e lo inserisce nel database.
+     * Per gli album usa l'ordine traccia (position) come in AlbumDetails.
+     */
+    private suspend fun buildAlarmMediaItems(alarm: AlarmItem): List<MediaItem> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                when {
+                    alarm.playlistId != null ->
+                        Database.songsInPlaylist(alarm.playlistId).first()
+                            .map { it.asMediaItem }
+
+                    alarm.albumId != null ->
+                        Database.albumSongsList(alarm.albumId)
+                            .map { it.asMediaItem }
+
+                    alarm.songId != null -> {
+                        val song = Database.songDao().getById(alarm.songId)
+                            ?: alarm.songSnapshot?.also { Database.insert(it) }
+                        song?.let { listOf(it.asMediaItem) } ?: emptyList()
+                    }
+
+                    else -> emptyList()
+                }
+            }.onFailure {
+                Timber.e("PlayerService ALARM: caricamento sorgente fallito: ${it.message}")
+            }.getOrDefault(emptyList())
+        }
+
+    /**
+     * Fade-in del volume su ~30 secondi. Inibisce temporaneamente i reset di
+     * volume automatici del servizio (crossfade/ripristino) tramite
+     * [alarmFadeInProgress].
+     */
+    private fun startAlarmFadeIn() {
+        alarmFadeInJob?.cancel()
+
+        alarmFadeInProgress = true
+        isFading = true
+        hybridPlayer.setFadeVolume(0f)
+
+        alarmFadeInJob = serviceScope.launch(Dispatchers.Main) {
+            runCatching {
+                val steps = 30
+                for (i in 1..steps) {
+                    delay(1.seconds)
+                    hybridPlayer.setFadeVolume(i / steps.toFloat())
+                }
+                hybridPlayer.setFadeVolume(1f)
+                Timber.i("PlayerService ALARM: fade-in completato")
+            }.onFailure {
+                Timber.e("PlayerService ALARM: fade-in interrotto: ${it.message}")
+            }
+            alarmFadeInProgress = false
+            isFading = false
+        }
+    }
+
+    /** Ferma la riproduzione della sveglia dopo i minuti indicati. */
+    private fun scheduleAlarmAutoStop(minutes: Int) {
+        alarmAutoStopJob?.cancel()
+        if (minutes <= 0) return
+
+        Timber.i("PlayerService ALARM: auto-stop programmato tra $minutes minuti")
+        alarmAutoStopJob = serviceScope.launch(Dispatchers.Main) {
+            runCatching {
+                delay(minutes.minutes)
+
+                // Sfumatura rapida di cortesia prima della pausa
+                for (i in 1..5) {
+                    hybridPlayer.setFadeVolume(1f - (i / 5f))
+                    delay(120.milliseconds)
+                }
+
+                hybridPlayer.setFadeVolume(1f)
+                markUserPauseRequested()
+                hybridPlayer.pause()
+                Timber.i("PlayerService ALARM: auto-stop eseguito")
+            }.onFailure {
+                Timber.e("PlayerService ALARM: auto-stop interrotto: ${it.message}")
+            }
+            endAlarmSession("auto-stop")
+        }
+    }
+
+    /** Chiude la sessione sveglia: cancella job, resetta il volume e rimuove la notifica. */
+    private fun endAlarmSession(reason: String) {
+        Timber.i("PlayerService ALARM: fine sessione sveglia ($reason)")
+        alarmSessionAlarmId = null
+        alarmSessionHeardPlayback = false
+        alarmAutoStopJob?.cancel()
+        alarmAutoStopJob = null
+        alarmFadeInJob?.cancel()
+        alarmFadeInJob = null
+        alarmFadeInProgress = false
+        isFading = false
+        runCatching { hybridPlayer.setFadeVolume(1f) }
+        notificationManager?.cancel(ALARM_NOTIFICATION_ID)
+    }
+
+    private fun postAlarmNotification(
+        alarm: AlarmItem,
+        text: String,
+        snoozeMinutes: Int,
+        sourceMissing: Boolean = false,
+    ) {
+        runCatching {
+            val snoozePi = PendingIntent.getBroadcast(
+                this, 20_001,
+                Intent(this, AlarmReceiver::class.java)
+                    .setAction(ACTION_ALARM_SNOOZE)
+                    .setPackage(packageName)
+                    .putExtra(EXTRA_ALARM_ID, alarm.id),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            val stopPi = PendingIntent.getBroadcast(
+                this, 20_002,
+                Intent(this, AlarmReceiver::class.java)
+                    .setAction(ACTION_ALARM_STOP)
+                    .setPackage(packageName)
+                    .putExtra(EXTRA_ALARM_ID, alarm.id),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            val openAppPi = PendingIntent.getActivity(
+                this, 20_003,
+                Intent(this, MainActivity::class.java).setPackage(packageName),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            val builder = NotificationCompat.Builder(this, ALARM_NOTIFICATION_CHANNEL_ID)
+                .setSmallIcon(R.drawable.alarm)
+                .setContentTitle(getString(R.string.alarm_notification_title))
+                .setContentText(text)
+                .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_ALARM)
+                .setOngoing(!sourceMissing)
+                .setContentIntent(openAppPi)
+
+            if (!sourceMissing) {
+                builder.addAction(0, getString(R.string.alarm_snooze, snoozeMinutes), snoozePi)
+                builder.addAction(0, getString(R.string.stop), stopPi)
+            }
+
+            notificationManager?.notify(ALARM_NOTIFICATION_ID, builder.build())
+        }.onFailure {
+            Timber.e("PlayerService ALARM: notifica sveglia non mostrata: ${it.message}")
+        }
     }
 
     private fun initializeMediaItemState() {
@@ -1532,7 +1917,10 @@ class PlayerService : MediaLibraryService(),
                 _currentSecond.value = playFromSecond
 
                 currentSong.value?.id?.let{
-                    if (appSettings.persistentQueue && appSettings.resumePlaybackOnStart && firstTimeStarted && !skipAutoload) {
+                    // SVEGLIA: durante l'avvio di una sveglia non ripartire in automatico
+                    // con la vecchia coda persistente (a freddo, prima che la sveglia
+                    // sostituisca la coda, onReady qui farebbe esplodere il brano vecchio).
+                    if (appSettings.persistentQueue && appSettings.resumePlaybackOnStart && firstTimeStarted && !skipAutoload && alarmSessionAlarmId == null) {
                         //Timber.d("LOAD-COMMAND videoId=${it} start=${playFromSecond}")
 
                         youTubePlayer.loadVideo(it, playFromSecond)
@@ -1556,6 +1944,26 @@ class PlayerService : MediaLibraryService(),
                         hybridPlayer.invalidateYouTubePlayPause()
                     } else {
                         youTubePlayer.cueVideo(pendingRecoveryId, pendingSecond)
+                    }
+                }
+
+                // ── SVEGLIA: load pendente della sveglia (WebView non era pronta
+                //    quando la sveglia ha provato a partire, tipico avvio a freddo
+                //    con app chiusa) ──
+                val pendingAlarmId = pendingAlarmLoadVideoId
+                if (pendingAlarmId != null && alarmSessionAlarmId != null) {
+                    val currentId = hybridPlayer.currentMediaItem?.mediaId ?: currentSong.value?.id
+                    if (currentId == pendingAlarmId) {
+                        pendingAlarmLoadVideoId = null
+                        Timber.i("PlayerService ALARM: onReady esegue il load pendente della sveglia id=$pendingAlarmId")
+                        youTubePlayer.loadVideo(pendingAlarmId, 0f)
+                        hybridPlayer.youtubePlayWhenReady = true
+                        hybridPlayer.invalidateYouTubePlayPause()
+                    } else {
+                        // La sveglia nel frattempo è stata annullata/sostituita:
+                        // scarta il load pendente per non suonare brani sbagliati.
+                        Timber.i("PlayerService ALARM: onReady scarta il load pendente (brano corrente $currentId ≠ sveglia $pendingAlarmId)")
+                        pendingAlarmLoadVideoId = null
                     }
                 }
 
@@ -2188,12 +2596,11 @@ class PlayerService : MediaLibraryService(),
     override fun onTaskRemoved(rootIntent: Intent?) {
         val closeServiceAfterMinutes = appSettings.closeBackgroundPlayerAfterMinutes
         Timber.d("PlayerService onTaskRemoved closeServiceAfterMinutes $closeServiceAfterMinutes")
+
         if (closeServiceAfterMinutes != DurationInMinutes.Disabled) {
             binder.startAutoCloseTimer(closeServiceAfterMinutes.milliSeconds)
         }
     }
-
-
 
     @UnstableApi
     override fun onDestroy() {
@@ -2362,6 +2769,10 @@ class PlayerService : MediaLibraryService(),
 
             // Torniamo indietro se l'engine non è EXO
             if (hybridPlayer.activeEngine != ActiveEngine.EXOPLAYER) return
+
+            // Durante il fade-in della sveglia il volume è gestito dalla rampa dedicata:
+            // un ripristino qui lo interromperebbe bruscamente
+            if (alarmFadeInProgress) return
 
             // Fade-in solo all'inizio del brano
             if (appSettings.crossfadeDuration != CrossfadeDuration.Off) {
@@ -3169,8 +3580,9 @@ class PlayerService : MediaLibraryService(),
             setLoadPending(LoadPhase.NONE, "ExoPlayer onIsPlayingChanged = $isPlaying")
 
         if (isPlaying) {
-            if (appSettings.crossfadeDuration == CrossfadeDuration.Off){
-                // SE IL CROSSFADE È DISATTIVATO:
+            if (alarmSessionAlarmId != null) alarmSessionHeardPlayback = true
+            if (appSettings.crossfadeDuration == CrossfadeDuration.Off && !alarmFadeInProgress){
+                // SE IL CROSSFADE È DISATTIVATO (e la sveglia non sta facendo il fade-in):
                 // Ripristiniamo immediatamente il volume pieno in modo sincrono
                 hybridPlayer.setFadeVolume(1.0f)
                 // E RISBLOCCHIAMO SUBITO IL WATCHDOG PERENNE PER IL NUOVO BRANO!
@@ -3182,6 +3594,23 @@ class PlayerService : MediaLibraryService(),
             updatePlayerState(PlayerConstants.PlayerState.PLAYING)
         } else {
             updatePlayerState(PlayerConstants.PlayerState.PAUSED)
+
+            // Sveglia: se la riproduzione si interrompe (pausa dell'utente dalla
+            // notifica media o dai controlli), la sessione sveglia termina e la
+            // notifica Snooze/Stop viene rimossa. La sessione viene chiusa SOLO
+            // se la sveglia ha cominciato effettivamente a suonare
+            // ([alarmSessionHeardPlayback]): durante l'avvio (buffering
+            // iniziale, bridge YouTube da riattivare con il servizio già vivo)
+            // l'evento "not playing" è NORMALE e chiudere la sessione lì
+            // ucciderebbe la sveglia prima che il brano parta.
+            if (alarmSessionAlarmId != null && alarmSessionHeardPlayback) {
+                val alsoIsPlaying = hybridPlayer.isPlaying
+                serviceScope.launch {
+                    delay(2_500.milliseconds)
+                    if (alarmSessionAlarmId != null && !alsoIsPlaying && !alarmFadeInProgress)
+                        endAlarmSession("riproduzione interrotta")
+                }
+            }
         }
 
         // Forziamo il ridisegno dei pulsanti nella notifica, utile per android auto e lettori bluetooth in auto
@@ -3905,6 +4334,21 @@ class PlayerService : MediaLibraryService(),
                         setSound(null, null)
                         enableLights(false)
                         enableVibration(false)
+                    }
+                )
+            }
+
+            // Canale sveglia: heads-up per avvisare subito che la sveglia è suonata
+            if (getNotificationChannel(ALARM_NOTIFICATION_CHANNEL_ID) == null) {
+                createNotificationChannel(
+                    NotificationChannel(
+                        ALARM_NOTIFICATION_CHANNEL_ID,
+                        ALARM_NOTIFICATION_CHANNEL_ID,
+                        NotificationManager.IMPORTANCE_HIGH
+                    ).apply {
+                        setSound(null, null)
+                        enableLights(true)
+                        enableVibration(true)
                     }
                 )
             }
@@ -5070,6 +5514,9 @@ class PlayerService : MediaLibraryService(),
 
         const val SLEEPTIMER_NOTIFICATION_ID = 1002
         val SLEEPTIMER_NOTIFICATION_CHANNEL_ID = globalContext().resources.getString(R.string.sleep_timer_notification_channel_id)
+
+        const val ALARM_NOTIFICATION_ID = 1003
+        val ALARM_NOTIFICATION_CHANNEL_ID = globalContext().resources.getString(R.string.alarm_notification_channel_id)
 
     }
 

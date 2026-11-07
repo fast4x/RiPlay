@@ -9,6 +9,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Sveglia RiPlay: AlarmManager.setAlarmClock() non lo richiede,
+         ma serve per il controllo canScheduleExactAlarms() e il fallback
+         utente dalla schermata Sveglia -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
@@ -302,6 +306,23 @@
         <receiver
             android:name=".services.playback.PlayerService$NotificationDismissReceiver"
             android:exported="false" />
+
+        <!-- Sveglia RiPlay: attivazione sveglia + pulsanti Snooze/Stop notifica -->
+        <receiver
+            android:name=".extensions.alarm.AlarmReceiver"
+            android:exported="false" />
+
+        <!-- Sveglia RiPlay: riprogrammazione dopo reboot / cambio ora / fuso / update app -->
+        <receiver
+            android:name=".extensions.alarm.AlarmBootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
 
         <provider
             android:name="androidx.core.content.FileProvider"

@@ -31,6 +31,7 @@ enum class NavRoutes {
     onDevicePlaylist,
     blacklist,
     onBoarding,
+    alarm,
     albumInsights,
     artistInsights;
 

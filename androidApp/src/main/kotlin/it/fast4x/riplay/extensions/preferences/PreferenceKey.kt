@@ -390,7 +390,10 @@ enum class PreferenceKey(val key: String) {
 
     INITIAL_SETUP_WORKER_DONE("initialSetupWorkerDone"),
 
-    QR_CODE_TO_ACTIONS("qrCodeToActions");
+    QR_CODE_TO_ACTIONS("qrCodeToActions"),
+
+    ALARM_ITEMS("alarmItems"),
+    ALARM_OPTIONS("alarmOptions");
 
     companion object {
         val allKeys: Set<String>

@@ -53,6 +53,7 @@ import it.fast4x.riplay.data.models.Mood
 import it.fast4x.riplay.enums.QueueType
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.ui.screens.player.common.Queue
+import it.fast4x.riplay.ui.screens.alarm.AlarmScreen
 import it.fast4x.riplay.ui.screens.blacklist.BlacklistScreen
 import it.fast4x.riplay.extensions.listenerlevel.ListenerLevelCharts
 import it.fast4x.riplay.extensions.musicbrainz.ui.AlbumInsightsScreen
@@ -538,6 +539,13 @@ fun AppNavigation(
 
         composable(route = NavRoutes.blacklist.name) {
             BlacklistScreen(navController, { miniPlayer(NavRoutes.blacklist.name) })
+        }
+
+        composable(route = NavRoutes.alarm.name) {
+            AlarmScreen(
+                navController = navController,
+                miniPlayer = { miniPlayer(NavRoutes.alarm.name) },
+            )
         }
 
         composable(

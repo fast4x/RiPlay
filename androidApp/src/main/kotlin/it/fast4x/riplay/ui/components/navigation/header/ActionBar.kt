@@ -101,11 +101,18 @@ private fun HamburgerMenu(
 
                 ModernMenuItem(
                     index = menuIndex++,
-                    iconRes = R.drawable.alarm,
+                    iconRes = R.drawable.time,
                     textRes = R.string.events,
                     onClick = {
                         sheet.display { SheetBody { EventsScreen() } }
                     }
+                )
+
+                ModernMenuItem(
+                    index = menuIndex++,
+                    iconRes = R.drawable.alarm,
+                    textRes = R.string.alarm_title,
+                    onClick = { onItemClick(NavRoutes.alarm) }
                 )
 
 

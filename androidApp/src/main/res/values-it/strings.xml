@@ -1613,4 +1613,42 @@
     <string name="info_import_completed_with_skipped">Importazione completata con avvisi. Brani importati: %1$d, brani saltati: %2$d</string>
     <string name="error_song_rematch_failed">Non è possibile completare l\'operazione: si è verificato un errore durante l\'aggiornamento del brano.</string>
     <string name="info_song_rematch_completed">Brano aggiornato correttamente.</string>
+
+    <!-- Alarm (Sveglia) -->
+    <string name="alarm_title">Sveglia</string>
+    <string name="alarm_subtitle">Svegliati con la tua musica: programma un brano, una playlist o un album</string>
+    <string name="alarm_add">Aggiungi sveglia</string>
+    <string name="alarm_edit">Modifica sveglia</string>
+    <string name="alarm_none">Nessuna sveglia impostata</string>
+    <string name="alarm_once">Una volta</string>
+    <string name="alarm_every_day">Ogni giorno</string>
+    <string name="alarm_custom_days">Personalizzata</string>
+    <string name="alarm_day_short_1">Lun</string>
+    <string name="alarm_day_short_2">Mar</string>
+    <string name="alarm_day_short_3">Mer</string>
+    <string name="alarm_day_short_4">Gio</string>
+    <string name="alarm_day_short_5">Ven</string>
+    <string name="alarm_day_short_6">Sab</string>
+    <string name="alarm_day_short_7">Dom</string>
+    <string name="alarm_music">Musica</string>
+    <string name="alarm_no_music">Nessuna musica scelta. Tocca per scegliere</string>
+    <string name="alarm_pick_title">Scegli brano, playlist o album</string>
+    <string name="alarm_search_hint">Cerca brani o album…</string>
+    <string name="alarm_no_playlists">Nessuna playlist trovata</string>
+    <string name="alarm_no_albums">Nessun album trovato</string>
+    <string name="alarm_delete_confirm">Eliminare questa sveglia?</string>
+    <string name="alarm_fade_in">Volume progressivo</string>
+    <string name="alarm_fade_in_desc">Il volume sale gradualmente quando la sveglia suona</string>
+    <string name="alarm_auto_stop">Arresto automatico</string>
+    <string name="alarm_auto_stop_desc">Interrompe la riproduzione automaticamente dopo il tempo scelto</string>
+    <string name="alarm_auto_stop_value">Dopo %1$d min</string>
+    <string name="alarm_auto_stop_off">Mai</string>
+    <string name="alarm_exact_permission_hint">Per un orario preciso, concedi \"Sveglie e promemoria\" a RiPlay nelle impostazioni di sistema</string>
+    <string name="alarm_exact_permission_open_settings">Consenti</string>
+    <string name="alarm_notification_channel_id">Sveglia RiPlay</string>
+    <string name="alarm_notification_title">Sveglia</string>
+    <string name="alarm_notification_text">Ti sveglia con %1$s</string>
+    <string name="alarm_snooze">Posticipa di %1$d min</string>
+    <string name="alarm_source_missing">La musica della sveglia non è più disponibile. Scegli un nuovo brano, una playlist o un album.</string>
+    <string name="alarm_notification_starting">Avvio sveglia…</string>
 </resources>

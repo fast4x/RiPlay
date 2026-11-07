@@ -32,10 +32,13 @@ import it.fast4x.riplay.Dependencies
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavigationBarPosition
+import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.musicvault.MusicVaultDisclaimerDialog
 import it.fast4x.riplay.musicvault.MusicVaultFolderSetting
 import it.fast4x.riplay.musicvault.checkAndStartMusicVault
+import it.fast4x.riplay.extensions.alarm.loadAlarms
+import it.fast4x.riplay.extensions.alarm.nextTriggerAtMillis
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.components.themed.InputTextDialog
@@ -49,6 +52,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.ui.components.themed.settingsHeaderItem
 import it.fast4x.riplay.ui.components.themed.settingsGroupHeader
@@ -139,6 +143,15 @@ fun MiscSettings(
     var showDisclaimer by remember { mutableStateOf(false) }
 
     val coroutineScope = rememberCoroutineScope()
+
+
+    val savedAlarms = remember { loadAlarms(context) }
+    val nextAlarmMillis = savedAlarms
+        .filter { it.enabled }
+        .minOfOrNull { it.nextTriggerAtMillis() }
+    val nextAlarmText = nextAlarmMillis?.let {
+        SimpleDateFormat("EEE HH:mm", Locale.getDefault()).format(Date(it))
+    } ?: context.resources.getString(R.string.alarm_none)
 
     Column(
         modifier = Modifier
@@ -250,6 +263,23 @@ fun MiscSettings(
             }
 
 
+
+            if (search.matchesAny(R.string.alarm_title, R.string.alarm_subtitle, R.string.alarm_add, R.string.alarm_fade_in, R.string.alarm_auto_stop, R.string.alarm_none)) {
+                settingsGroupHeader(title = context.resources.getString(R.string.alarm_title))
+
+                settingsGroupCard {
+
+                    SettingsEntry(
+                        title = stringResource(R.string.alarm_title),
+                        text = stringResource(R.string.alarm_subtitle),
+                        icon = R.drawable.alarm,
+                        valueText = nextAlarmText,
+                        showChevron = true,
+                        onClick = { navController.navigate(NavRoutes.alarm.name) }
+                    )
+
+                }
+            }
 
             if (search.matchesAny(R.string.debug, R.string.enable_log_debug, R.string.if_enabled_create_a_log_file_to_highlight_errors, R.string.done, R.string.restart_is_not_required, R.string.export_log, R.string.export_crash_log, R.string.is_always_enabled)) {
                 settingsGroupHeader(title = context.resources.getString(R.string.debug))
