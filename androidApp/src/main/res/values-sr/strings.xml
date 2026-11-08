@@ -673,6 +673,7 @@
     <string name="paste">Налепи</string>
     <string name="searches_no_suggestions">Нема предлога</string>
     <string name="action_bar_show_discover_button">Прикажи дугме Откриј</string>
+    <string name="action_bar_show_download_button">Show download button</string>
     <string name="playertype">Тип Плејера</string>
     <string name="noblur">Нема Замућења када су Стихови онемогућени</string>
     <string name="fadingedge">Ивица Прелаза</string>
@@ -1588,7 +1589,6 @@
     <string name="swipe_to_next_settings_right_to_left">Right to left</string>
     <string name="swipe_to_next_settings_left_to_right">Left to right</string>
     <string name="swipe_to_next_with_miniplayer_title">Swipe to next with mini player</string>
-    <string name="action_bar_show_download_button">Show download button</string>
     <string name="settings_group_navigation">Navigation bar</string>
     <string name="settings_search_hint">Search in settings…</string>
     <string name="settings_group_playback">Playback</string>
@@ -1613,6 +1613,7 @@
     <string name="info_import_completed_with_skipped">Import completed with warnings. Tracks imported: %1$d, skipped: %2$d</string>
     <string name="error_song_rematch_failed">Unable to complete the operation: an error occurred while updating the song.</string>
     <string name="info_song_rematch_completed">Song updated successfully.</string>
+    <!-- Alarm (Sveglia) -->
     <string name="alarm_title">Alarm</string>
     <string name="alarm_subtitle">Wake up with your music: schedule a song or a playlist</string>
     <string name="alarm_add">Add alarm</string>
