@@ -1,11 +1,11 @@
 # =============================================================================
 # build-release.yml - WORKFLOW UNIFICATO di rilascio RiPlay
 #
-# Unifica in UN SOLO processo (richiesta utente: "unifica il processo di
+# Unifica in UN SOLO processo di
 # produzione delle varie versioni android con le varie versioni desktop"):
 #
 #   ANDROID  : APK firmati full + foss  (job build-apk, da build-release-apks)
-#   DESKTOP  : pacchetti NATIVI Windows MSI / Linux DEB+RPM / macOS DMG
+#   DESKTOP  : pacchetti NATIVI Windows MSI / Linux DEB+RPM+AppImage / macOS DMG
 #              (job build-desktop, con CEF PRE-SEMINATO: nessun download
 #              ~200MB per l'utente al primo avvio)
 #   ARCHIVI  : 7z AVD / WSA / WAYDROID  (dal job release, come da Version3)
@@ -85,7 +85,7 @@
 #    build mac morirebbe alla scelta della macchina.
 #  - MIGRAZIONE: macos-14 -> macos-15 (Apple Silicon arm64, 3 vCPU / 7 GB,
 #    stesso profilo del vecchio macos-14; i cap STEP 3w restano).
-#  - NUOVA BUILD INTEL (richiesta utente: "aggiungere la versione x86_64
+#  - NUOVA BUILD INTEL ("aggiungere la versione x86_64
 #    desktop per macOS"): esiste ancora un runner Intel gratuito,
 #    "macos-15-intel" (x86_64 nativo, 4 vCPU / 14 GB, gratis sui repo
 #    pubblici) -> nuovo job macos-dmg-x64. jpackage non fa cross-building:
@@ -109,7 +109,37 @@
 #  - DIAGNOSTICA jpackage: artifact rinominato per-job
 #    (macos-jpackage-diagnostics-<nome job>) perche' con due job mac un
 #    nome unico andrebbe in conflitto se entrambi fallissero nella run.
-# =============================================================================
+#
+# STEP 3ac (AppImage Linux):
+#  - jpackage NON produce AppImage: si wrappa l'app-image di jpackage
+#    (task :composeApp:createDistributable -> binaries/main/app/RiPlay, gia'
+#    completo di launcher, jar, runtime JRE e CEF pre-seminato) in un .AppDir
+#    (AppRun + RiPlay.desktop + icone + .DirIcon) compresso con appimagetool
+#    (AppImageKit ufficiale, lanciato con --appimage-extract-and-run perche'
+#    i runner CI non hanno libfuse2).
+#  - Il job linux-deb-rpm costruisce deb+rpm+AppImage nella STESSA run (stesso
+#    checkout, stesso seed CEF, stessa JDK; ubuntu-22.04 come per il deb:
+#    glibc base piu' vecchio -> compatibilita' anche con distro non recenti).
+#    createDistributable e' stato aggiunto alla matrix (costo ~1-2 min:
+#    condivide jar/jlink con deb/rpm).
+#  - RICETTA VALIDATA in locale (nov 2026) con appimagetool continuous:
+#    (1) ARCH=x86_64 va impostato ESPLICITAMENTE (il guessing dell'arch
+#    fallisce se appimagetool non aggancia un ELF); (2) l'icona va copiata
+#    ANCHE alla radice dell'AppDir (riplay.png), hicolor da solo non basta
+#    ("riplay{.png,.svg,.xpm} defined in desktop file but not found").
+#  - Canarini post-build: eseguibile, dimensione >= 50MB, magic type 2
+#    all'offset 8 ("AI\x02" = 41 49 02) verificato con dd/od.
+#  - Staging/assert/release: '*.AppImage' aggiunto a "Raccogli pacchetti" e
+#    all'assert per-OS del runner Linux; nome canonico
+#    RiPlay-<tag>-Linux-x86_64.AppImage; verifica asset attesi (all e
+#    desktop-only) e release notes aggiornate.
+#  - COMPROMESSI NOTI (scelte consapevoli): niente update-info zsync (i nomi
+#    degli asset sono versionati, AppImageUpdate richiederebbe un nome
+#    stabile tra le release); senza libfuse2 l'utente puo' eseguire con
+#    --appimage-extract-and-run; niente StartupWMClass nel .desktop finche'
+#    non si verifica con xprop il WM_CLASS reale della finestra Compose
+#    (valore sbagliato = dock che non raggruppa la finestra).
+# ==============================================================================
 
 name: Build and Release RiPlay
 
@@ -317,10 +347,13 @@ jobs:
             seed_arch: x64
             extra_flags: ''
           # ubuntu-22.04: glibc base piu' vecchio -> il deb gira anche su
-          # distribuzioni non recentissime
+          # distribuzioni non recentissime (vale anche per l'AppImage, STEP 3ac)
+          # STEP 3ac: createDistributable aggiunto -> produce l'app-image
+          # jpackage (binaries/main/app/RiPlay) da cui il job costruisce
+          # ANCHE l'AppImage (stesso checkout/seed CEF/JDK di deb e rpm)
           - name: linux-deb-rpm
             os: ubuntu-22.04
-            tasks: :composeApp:packageDeb :composeApp:packageRpm
+            tasks: :composeApp:packageDeb :composeApp:packageRpm :composeApp:createDistributable
             seed_os: linux
             seed_arch: x64
             extra_flags: ''
@@ -338,7 +371,7 @@ jobs:
             # teorici 4g+4g di gradle.properties sono pensati per i runner 16GB,
             # la compilazione desktop resta <1.5GB)
             extra_flags: '-Pcompose.desktop.verbose=true -Pcompose.preserve.working.dir=true -Pkotlin.daemon.jvmargs=-Xmx2g'
-          # STEP 3ab: build Intel NATIVA (richiesta utente: versione x86_64
+          # STEP 3ab: build Intel NATIVA (versione x86_64
           # desktop per macOS). macos-15-intel = runner x86_64 (4 vCPU /
           # 14 GB, gratuito sui repo pubblici); jpackage non fa
           # cross-building quindi serve un runner del target.
@@ -458,6 +491,103 @@ jobs:
           echo "❌ Build fallita dopo ${max_attempts} tentativi"
           exit 1
 
+      # STEP 3ac: appimagetool (AppImageKit ufficiale). Nei runner CI non c'e'
+      # libfuse2 -> sempre --appimage-extract-and-run; --version come smoke
+      # test (verificato: exit 0, printa il commit della build). Download in
+      # RUNNER_TEMP per non sporcare la repo; path passato via GITHUB_ENV.
+      - name: Setup appimagetool (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOOL="appimagetool-x86_64.AppImage"
+          URL="https://github.com/AppImage/AppImageKit/releases/download/continuous/${TOOL}"
+          echo "⬇️ Download ${TOOL} (AppImageKit continuous)"
+          curl -fL --retry 3 --retry-delay 5 -o "${RUNNER_TEMP}/${TOOL}" "${URL}"
+          chmod +x "${RUNNER_TEMP}/${TOOL}"
+          "${RUNNER_TEMP}/${TOOL}" --appimage-extract-and-run --version
+          echo "APPIMAGETOOL=${RUNNER_TEMP}/${TOOL}" >> "$GITHUB_ENV"
+
+      # STEP 3ac: jpackage non produce AppImage -> l'app-image di
+      # createDistributable (launcher + jar + runtime JRE + CEF seminato)
+      # viene wrappato in un .AppDir e compresso con appimagetool. Output in
+      # composeApp/build/compose/binaries/appimage/ cosi' "Raccogli pacchetti"
+      # (che scansiona binaries) lo trova senza toccare altro.
+      # Le due lezioni del test locale: ARCH=x86_64 esplicito e icona copiata
+      # ANCHE alla radice dell'AppDir (riplay.png).
+      - name: Costruisci AppImage (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          APP_SRC="composeApp/build/compose/binaries/main/app/RiPlay"
+          if [ ! -x "${APP_SRC}/bin/RiPlay" ]; then
+            echo "❌ app-image jpackage non trovato: ${APP_SRC}"
+            find composeApp/build/compose/binaries -maxdepth 4 || true
+            exit 1
+          fi
+          ICON="composeApp/desktop-icons/icon-linux.png"
+          if [ ! -f "${ICON}" ]; then
+            echo "❌ icona Linux non trovata: ${ICON}"
+            exit 1
+          fi
+          APPDIR="composeApp/build/appimage/RiPlay.AppDir"
+          rm -rf "${APPDIR}"
+          mkdir -p "${APPDIR}/usr/bin" \
+                   "${APPDIR}/usr/share/icons/hicolor/128x128/apps" \
+                   "${APPDIR}/usr/share/icons/hicolor/256x256/apps"
+          # app-image jpackage: launcher + lib/app/*.jar + lib/runtime (JRE) + resources/kcef
+          cp -a "${APP_SRC}" "${APPDIR}/usr/bin/RiPlay"
+          # icona: radice (richiesta da appimagetool) + hicolor (integrazione desktop)
+          cp "${ICON}" "${APPDIR}/riplay.png"
+          for d in 128x128 256x256; do
+            cp "${ICON}" "${APPDIR}/usr/share/icons/hicolor/${d}/apps/riplay.png"
+          done
+          ln -sfn riplay.png "${APPDIR}/.DirIcon"
+          # stessi metadati del blocco linux{} di nativeDistributions (menuGroup)
+          cat > "${APPDIR}/RiPlay.desktop" <<'DESKTOP_EOF'
+          [Desktop Entry]
+          Name=RiPlay
+          Comment=RiPlay Desktop Music Player
+          Exec=AppRun
+          Icon=riplay
+          Terminal=false
+          Type=Application
+          Categories=Audio;AudioVideo;
+          DESKTOP_EOF
+          # AppRun: lancia il launcher jpackage self-contained (bin/RiPlay + lib/)
+          cat > "${APPDIR}/AppRun" <<'APPRUN_EOF'
+          #!/bin/sh
+          HERE="$(dirname "$(readlink -f "$0")")"
+          exec "$HERE/usr/bin/RiPlay/bin/RiPlay" "$@"
+          APPRUN_EOF
+          chmod +x "${APPDIR}/AppRun"
+          mkdir -p composeApp/build/compose/binaries/appimage
+          OUT="composeApp/build/compose/binaries/appimage/RiPlay-Linux-x86_64.AppImage"
+          echo "🔨 appimagetool -> ${OUT}"
+          ARCH=x86_64 "${APPIMAGETOOL}" --appimage-extract-and-run "${APPDIR}" "${OUT}" \
+            > appimage-build.log 2>&1 || APPIMAGE_FAILED=1
+          grep -v -e "Failed to remove" -e "File exists and file size matches" appimage-build.log || true
+          if [ -n "${APPIMAGE_FAILED:-}" ]; then
+            echo "❌ appimagetool fallito — log completo sopra (appimage-build.log)"
+            exit 1
+          fi
+          # canarini: eseguibile, dimensione minima, magic AppImage type 2 (offset 8 = AI\x02)
+          if [ ! -x "${OUT}" ]; then echo "❌ AppImage non prodotta/non eseguibile"; exit 1; fi
+          size=$(stat -c%s "${OUT}")
+          echo "📦 ${OUT}: ${size} bytes"
+          if [ "${size}" -lt 52428800 ]; then
+            echo "❌ AppImage sospettosamente piccola (<50MB): runtime o CEF mancanti?"
+            exit 1
+          fi
+          magic=$(dd if="${OUT}" bs=1 skip=8 count=3 2>/dev/null | od -An -tx1 | tr -d ' \n')
+          echo "🔎 magic offset 8: ${magic} (atteso 414902 = AI\\x02)"
+          if [ "${magic}" != "414902" ]; then
+            echo "❌ magic AppImage type 2 non riconosciuto"
+            exit 1
+          fi
+          echo "✅ AppImage costruita: ${OUT}"
+
       # STEP 3ab: canarino architettura — su macOS verifica che il binario
       # dell'app (e il runtime bundlato da jpackage) sia dell'arch attesa
       # della matrix (arm64 su macos-15, x86_64 su macos-15-intel): se il
@@ -530,7 +660,8 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-      # STEP 3y: staging PIATTO dei pacchetti jpackage. upload-artifact@v4 con
+      # STEP 3y: staging PIATTO dei pacchetti desktop (jpackage + AppImage,
+      # STEP 3ac). upload-artifact@v4 con
       # piu' search path usa come root dell'artifact il "least common ancestor
       # of all the search paths": passando i 4 glob sotto binaries/main/ il
       # root era binaries/main/ e i pacchetti arrivavano ANNIDATI (msi/...,
@@ -542,7 +673,8 @@ jobs:
         run: |
           set -u
           mkdir -p desktop-packages
-          find composeApp/build/compose/binaries -type f \( -name '*.msi' -o -name '*.deb' -o -name '*.rpm' -o -name '*.dmg' \) -print -exec cp {} desktop-packages/ \;
+          # STEP 3ac: aggiunto '*.AppImage' (prodotta in binaries/appimage/)
+          find composeApp/build/compose/binaries -type f \( -name '*.msi' -o -name '*.deb' -o -name '*.rpm' -o -name '*.dmg' -o -name '*.AppImage' \) -print -exec cp {} desktop-packages/ \;
           echo "📦 Pacchetti raccolti in desktop-packages/:"
           ls -lah desktop-packages/
           n=$(ls -1 desktop-packages | wc -l)
@@ -554,7 +686,7 @@ jobs:
           # Assert per-OS: ogni runner DEVE produrre la sua estensione
           case "${RUNNER_OS}" in
             Windows) exts="msi" ;;
-            Linux)   exts="deb rpm" ;;
+            Linux)   exts="deb rpm AppImage" ;;
             macOS)   exts="dmg" ;;
             *)       exts="" ;;
           esac
@@ -635,6 +767,7 @@ jobs:
           rename_artifact windows-msi    msi "RiPlay-${CURRENT_TAG}-Windows"
           rename_artifact linux-deb-rpm  deb "RiPlay-${CURRENT_TAG}-Linux"
           rename_artifact linux-deb-rpm  rpm "RiPlay-${CURRENT_TAG}-Linux"
+          rename_artifact linux-deb-rpm  AppImage "RiPlay-${CURRENT_TAG}-Linux-x86_64"
           rename_artifact macos-dmg      dmg "RiPlay-${CURRENT_TAG}-macOS-arm64"
           rename_artifact macos-dmg-x64  dmg "RiPlay-${CURRENT_TAG}-macOS-x86_64"
 
@@ -671,6 +804,7 @@ jobs:
               check "RiPlay-${CURRENT_TAG}-Windows*.msi" "MSI Windows"
               check "RiPlay-${CURRENT_TAG}-Linux*.deb"   "DEB Linux"
               check "RiPlay-${CURRENT_TAG}-Linux*.rpm"   "RPM Linux"
+              check "RiPlay-${CURRENT_TAG}-Linux-x86_64*.AppImage" "AppImage Linux x86_64"
               check "RiPlay-${CURRENT_TAG}-macOS-arm64*.dmg"   "DMG macOS Apple Silicon"
               check "RiPlay-${CURRENT_TAG}-macOS-x86_64*.dmg"  "DMG macOS Intel"
               ;;
@@ -680,6 +814,7 @@ jobs:
               check "RiPlay-${CURRENT_TAG}-Windows*.msi" "MSI Windows"
               check "RiPlay-${CURRENT_TAG}-Linux*.deb"   "DEB Linux"
               check "RiPlay-${CURRENT_TAG}-Linux*.rpm"   "RPM Linux"
+              check "RiPlay-${CURRENT_TAG}-Linux-x86_64*.AppImage" "AppImage Linux x86_64"
               check "RiPlay-${CURRENT_TAG}-macOS-arm64*.dmg"   "DMG macOS Apple Silicon"
               check "RiPlay-${CURRENT_TAG}-macOS-x86_64*.dmg"  "DMG macOS Intel"
               ;;
@@ -784,9 +919,10 @@ jobs:
             echo ""
             echo "**Desktop nativo** (CEF incluso, nessun download al primo avvio; VLC richiesto per i file locali)"
             echo "- **Windows** - MSI installer"
-            echo "- **Linux** - DEB + RPM"
+            echo "- **Linux** - DEB + RPM + AppImage (portatile x86_64)"
             echo "- **macOS Apple Silicon** - DMG (non firmato: primo avvio con tasto destro -> Apri)"
             echo "- **macOS Intel** - DMG (non firmato: primo avvio con tasto destro -> Apri)"
+            echo '  - AppImage: `chmod +x RiPlay-*.AppImage` ed esegui (richiede libfuse2; se assente: `./RiPlay-*.AppImage --appimage-extract-and-run`)'
             echo ""
             echo "**Desktop distribuzioni Android-based** (7z)"
             echo "- **Desktop AVD** (Windows & Linux)"
