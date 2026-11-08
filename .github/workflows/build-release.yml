@@ -919,10 +919,9 @@ jobs:
             echo ""
             echo "**Desktop nativo** (CEF incluso, nessun download al primo avvio; VLC richiesto per i file locali)"
             echo "- **Windows** - MSI installer"
-            echo "- **Linux** - DEB + RPM + AppImage (portatile x86_64)"
+            echo "- **Linux** - DEB + RPM + AppImage"
             echo "- **macOS Apple Silicon** - DMG (non firmato: primo avvio con tasto destro -> Apri)"
-            echo "- **macOS Intel** - DMG (non firmato: primo avvio con tasto destro -> Apri)"
-            echo '  - AppImage: `chmod +x RiPlay-*.AppImage` ed esegui (richiede libfuse2; se assente: `./RiPlay-*.AppImage --appimage-extract-and-run`)'
+            echo "- **macOS Intel** - DMG (non firmato: primo avvio con tasto destro -> Apri)"        
             echo ""
             echo "**Desktop distribuzioni Android-based** (7z)"
             echo "- **Desktop AVD** (Windows & Linux)"
