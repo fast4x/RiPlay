@@ -86,7 +86,7 @@ import dev.datlag.kcef.KCEFBrowser
 @Composable
 fun SettingsPage() {
     val coroutineScope = rememberCoroutineScope()
-    var activeTab by remember { mutableStateOf(SettingsTab.DATA) }
+    var activeTab by remember { mutableStateOf(SettingsTab.GENERAL) }
 
     Column(
         horizontalAlignment = Alignment.Start,
@@ -916,7 +916,7 @@ private fun AboutTab() {
 
         // Riga di presentazione (Android: "RiPlay <versione> by fast4x")
         Text(
-            text = ds("settings.about.tagline", "version" to DesktopAppInfo.VERSION),
+            text = ds("settings.about.tagline", "version" to DesktopUpdateChecker.localVersion),
             color = Color.White.copy(alpha = 0.85f),
             fontSize = 14.sp
         )
@@ -991,7 +991,7 @@ private fun UpdatesSection() {
         ) {
             Text(ds("settings.about.check_updates"), color = Color.White, fontSize = 14.sp)
             Text(
-                ds("settings.about.check_updates_info", "version" to DesktopAppInfo.VERSION),
+                ds("settings.about.check_updates_info", "version" to DesktopUpdateChecker.localVersion),
                 color = Color.White.copy(alpha = 0.55f),
                 fontSize = 12.sp
             )

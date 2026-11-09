@@ -55,6 +55,7 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberWindowState
 import kotlinx.coroutines.delay
 import it.fast4x.riplay.ui.components.RiPlayAccent
+import it.fast4x.riplay.utils.DesktopUpdateChecker
 
 
 @OptIn(ExperimentalCoilApi::class)
@@ -370,7 +371,7 @@ private fun DesktopSplash() {
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    text = "v${DesktopAppInfo.VERSION} (Desktop) ${DesktopAppInfo.TAGLINE}",
+                    text = "v${DesktopUpdateChecker.localVersion} (Desktop) ${DesktopAppInfo.TAGLINE}",
                     color = Color.White.copy(alpha = 0.45f),
                     fontSize = 12.sp
                 )
