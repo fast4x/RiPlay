@@ -36,45 +36,70 @@ class DatabaseBackupManager(
 
     suspend fun backupDatabase(backupUri: Uri) = withContext(Dispatchers.IO) {
         val temp = File(context.cacheDir, "riplay-backup-${System.currentTimeMillis()}.db")
+        temp.delete()   // VACUUM INTO fallisce se il file di destinazione esiste già: temp sempre fresca
+
         try {
-            getDatabaseInitializer().useWriterConnection { conn ->
-                // VACUUM INTO con parametro: usePrepared + bindText (KMP driver API)
-                conn.usePrepared("VACUUM INTO ?") { stmt ->
-                    stmt.bindText(1, temp.absolutePath)
-                    stmt.step()
+            // 1. Checkpoint WAL best-effort (mai bloccante): libera il WAL prima della copia.
+            //    Non serve per la correttezza: VACUUM INTO legge uno snapshot coerente
+            //    che include anche il contenuto del WAL.
+            runCatching {
+                getDatabaseInitializer().useWriterConnection { conn ->
+                    conn.usePrepared("PRAGMA wal_checkpoint(TRUNCATE)") { it.step() }
                 }
+            }.onFailure {
+                Timber.w("backupDatabase: wal_checkpoint saltato: ${it.message}")
             }
 
+            // 2. VACUUM INTO su connessione DEDICATA (mai sulla writer di Room):
+            val dbFile = context.getDatabasePath(DatabaseInitializer.DB_NAME)
+            val source = SQLiteDatabase.openDatabase(
+                dbFile.absolutePath,
+                null,
+                SQLiteDatabase.OPEN_READWRITE
+            )
+            try {
+                source.rawQuery("PRAGMA busy_timeout = 5000", null).use { it.moveToFirst() }
+                source.execSQL("VACUUM INTO ?", arrayOf(temp.absolutePath))
+            } finally {
+                source.close()
+            }
+
+            // 3. Copia il file verso la destinazione scelta dall'utente (SAF)
             context.contentResolver.openOutputStream(backupUri)?.use { out ->
                 temp.inputStream().use { it.copyTo(out) }
             } ?: error("Impossibile aprire la destinazione")
 
         } finally {
-            temp.delete()   // VACUUM INTO fallisce se il file esiste già: temp sempre fresca
+            temp.delete()
         }
     }
 
     // classic restore
     suspend fun restoreDatabase(restoreUri: Uri) {
         withContext(Dispatchers.IO) {
-            Timber.d("DatabaseBackupManager restoreDatabase close db")
-            try {
+            val dbFile = context.getDatabasePath(DatabaseInitializer.DB_NAME)
+            // 1. Checkpoint e chiusura controllata del DB prima della sovrascrittura
+            runCatching {
                 getDatabaseInitializer().useWriterConnection { conn ->
-                    conn.usePrepared("PRAGMA wal_checkpoint(TRUNCATE);") { it.step() }
+                    conn.usePrepared("PRAGMA wal_checkpoint(TRUNCATE)") { it.step() }
                 }
-                getDatabaseInitializer().close()
-
-                context.applicationContext.contentResolver.openInputStream(restoreUri)
-                    ?.use { inputStream ->
-                        FileOutputStream(
-                            context.getDatabasePath(DatabaseInitializer.DB_NAME).absolutePath
-                        ).use { outputStream ->
-                            inputStream.copyTo(outputStream)
-                        }
-                    }
-            } catch (e: IOException) {
-                throw e
+            }.onFailure {
+                Timber.w("restoreDatabase: wal_checkpoint saltato: ${it.message}")
             }
+            getDatabaseInitializer().close()
+
+            // 2. Copia il backup sul file del database
+            context.applicationContext.contentResolver.openInputStream(restoreUri)
+                ?.use { inputStream ->
+                    FileOutputStream(dbFile).use { outputStream ->
+                        inputStream.copyTo(outputStream)
+                    }
+                } ?: error("Impossibile leggere il file di backup")
+
+            // 3. Pulizia dei file ausiliari del vecchio database.
+            File(dbFile.absolutePath + "-wal").delete()
+            File(dbFile.absolutePath + "-shm").delete()
+            File(dbFile.absolutePath + "-journal").delete()
         }
     }
 
@@ -85,15 +110,21 @@ class DatabaseBackupManager(
             try {
                 context.contentResolver.openInputStream(restoreUri)?.use { input ->
                     FileOutputStream(internalBackupFile).use { input.copyTo(it) }
-                } ?: run {
-                    Timber.e("smartRestore: impossibile aprire il backup: $restoreUri")
-                    internalBackupFile.delete()
-                    return@withContext
-                }
+                } ?: error("Impossibile leggere il file di backup: $restoreUri")
             } catch (e: Exception) {
                 Timber.e("smartRestore: copia fallita: ${e.message}")
                 internalBackupFile.delete()
-                return@withContext
+                // Propaga l'errore invece di tornare in silenzio: altrimenti il chiamante
+                // vede un restore "riuscito" e riavvia l'app senza aver ripristinato nulla.
+                throw IllegalStateException("smartRestore: copia del backup non riuscita", e)
+            }
+
+            // 1b. Guardia anti file vuoto/troncato: un file da 0 byte supererebbe
+            //     l'integrity check (SQLite lo tratta come DB valido senza tabelle)
+            //     e il restore terminerebbe "con successo" senza importare nulla.
+            if (internalBackupFile.length() == 0L) {
+                internalBackupFile.delete()
+                throw IllegalStateException("Il file di backup è vuoto o la copia non è completa")
             }
 
             var backupDb: SQLiteDatabase? = null

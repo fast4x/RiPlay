@@ -51,6 +51,10 @@ class BackupViewModel(
 
         viewModelScope.launch {
             _uiState.value = BackupUiState.BackingUp
+            // Con il backup su connessione dedicata (DatabaseBackupManager) il DB resta
+            // vivo e operativo: l'arresto del PlayerService non è più richiesto dalla
+            // correttezza, lo si tiene solo se si vuole interrompere la riproduzione
+            // durante il backup.
             context.stopService(Intent(context, PlayerService::class.java))
             delay(1500.milliseconds)
             try {
@@ -79,12 +83,13 @@ class BackupViewModel(
                 backupManager.smartRestoreDatabase(restoreUri, mode)
                 _uiState.value = BackupUiState.Success("Database restored, wait app will restart...")
                 delay(1500.milliseconds)
+                // Il riavvio avviene SOLO dopo un ripristino riuscito.
+                restartApp()
             } catch (e: IOException) {
                 _uiState.value = BackupUiState.Error("Restore error: ${e.message}")
             } catch (e: Exception) {
                 _uiState.value = BackupUiState.Error("Unknown restore error: ${e.message}")
             }
-            restartApp()
         }
     }
 
