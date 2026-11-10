@@ -480,7 +480,12 @@ fun HomePageOnline(
                                                 thumbnailSizeDp = songThumbnailSizeDp,
                                                 disableScrollingText = disableScrollingText,
                                                 modifier = Modifier.clickable(onClick = {
-                                                    navController.navigate("${NavRoutes.playlist.name}/${item.key}")
+                                                    navController.navigate(
+                                                        if (!item.key.startsWith("MPSP"))
+                                                        "${NavRoutes.playlist.name}/${item.key}"
+                                                        else
+                                                        "${NavRoutes.podcast.name}/${item.key}"
+                                                    )
                                                 })
                                             )
                                         }
@@ -561,7 +566,12 @@ fun HomePageOnline(
                                                 thumbnailSizeDp = playlistThumbnailSizeDp,
                                                 disableScrollingText = disableScrollingText,
                                                 modifier = Modifier.clickable(onClick = {
-                                                    navController.navigate("${NavRoutes.playlist.name}/${item.key}")
+                                                    navController.navigate(
+                                                        if (!item.key.startsWith("MPSP"))
+                                                            "${NavRoutes.playlist.name}/${item.key}"
+                                                        else
+                                                            "${NavRoutes.podcast.name}/${item.key}"
+                                                    )
                                                 })
                                             )
                                         }
