@@ -1,7 +1,7 @@
 # =============================================================================
 # build-release.yml - WORKFLOW UNIFICATO di rilascio RiPlay
 #
-# Unifica in UN SOLO processo di
+# Unifica in UN SOLO processo ("unifica il processo di
 # produzione delle varie versioni android con le varie versioni desktop"):
 #
 #   ANDROID  : APK firmati full + foss  (job build-apk, da build-release-apks)
@@ -85,7 +85,7 @@
 #    build mac morirebbe alla scelta della macchina.
 #  - MIGRAZIONE: macos-14 -> macos-15 (Apple Silicon arm64, 3 vCPU / 7 GB,
 #    stesso profilo del vecchio macos-14; i cap STEP 3w restano).
-#  - NUOVA BUILD INTEL ("aggiungere la versione x86_64
+#  - NUOVA BUILD INTEL (" versione x86_64
 #    desktop per macOS"): esiste ancora un runner Intel gratuito,
 #    "macos-15-intel" (x86_64 nativo, 4 vCPU / 14 GB, gratis sui repo
 #    pubblici) -> nuovo job macos-dmg-x64. jpackage non fa cross-building:
@@ -99,10 +99,10 @@
 #    distinguibili nel nome -> RiPlay-<tag>-macOS-arm64.dmg e
 #    RiPlay-<tag>-macOS-x86_64.dmg (prima: RiPlay-<tag>-macOS.dmg).
 #    Aggiornati rename, verifica asset attesi e testo release notes.
-#  - CANARINO ARCHITETTURA: nuovo step macOS-only dopo la build: lipo
+#  - Controllo ARCHITETTURA: nuovo step macOS-only dopo la build: lipo
 #    -archs su binario app image e runtime bundlato, con assert sull'arch
 #    attesa della matrix (arm64 / x86_64).
-#  - CANARINO KCEF: il canarino STEP 3x ora controlla anche la presenza
+#  - Controllo KCEF: il Controllo STEP 3x ora controlla anche la presenza
 #    del motore KCEF v44 (bootstrap "v44 (step3z)") nel codice eseguito:
 #    protegge dal regresso al motore v37 (bug chrome_elf su Linux ai
 #    riavvii + crash macOS).
@@ -111,6 +111,7 @@
 #    nome unico andrebbe in conflitto se entrambi fallissero nella run.
 #
 # STEP 3ac (AppImage Linux):
+#  - Aggiunto'AppImage agli asset della GitHub Release.
 #  - jpackage NON produce AppImage: si wrappa l'app-image di jpackage
 #    (task :composeApp:createDistributable -> binaries/main/app/RiPlay, gia'
 #    completo di launcher, jar, runtime JRE e CEF pre-seminato) in un .AppDir
@@ -133,12 +134,37 @@
 #    all'assert per-OS del runner Linux; nome canonico
 #    RiPlay-<tag>-Linux-x86_64.AppImage; verifica asset attesi (all e
 #    desktop-only) e release notes aggiornate.
-#  - COMPROMESSI NOTI (scelte consapevoli): niente update-info zsync (i nomi
-#    degli asset sono versionati, AppImageUpdate richiederebbe un nome
-#    stabile tra le release); senza libfuse2 l'utente puo' eseguire con
-#    --appimage-extract-and-run; niente StartupWMClass nel .desktop finche'
-#    non si verifica con xprop il WM_CLASS reale della finestra Compose
-#    (valore sbagliato = dock che non raggruppa la finestra).
+#  - COMPROMESSI NOTI (scelte consapevoli): senza libfuse2 l'utente puo'
+#    eseguire con --appimage-extract-and-run; niente StartupWMClass nel
+#    .desktop finche' non si verifica con xprop il WM_CLASS reale della
+#    finestra Compose (valore sbagliato = dock che non raggruppa la finestra).
+#    Gli aggiornamenti delta (zsync) sono stati poi aggiunti nel STEP 3ad.
+#
+# STEP 3ad (zsync / AppImageUpdate):
+#  - Produce il file .zsync per gli aggiornamenti
+#    incrementali (AppImageUpdate scarica solo i blocchi modificati).
+#  - FORMATO VERIFICATO SUI SORGENTI (AppImageKit appimagetool.c, guess
+#    dell'autore): "gh-releases-zsync|<user>|<repo>|<tag>|<pattern>", il 3o
+#    campo puo' essere "latest" e il 4o campo matcha il NOME DELL'ASSET
+#    .AppImage.zsync della release (es. nel sorgente: "gh-releases-zsync|
+#    probono|AppImages|latest|Subsurface*-x86_64.AppImage.zsync"). Non serve
+#    quindi un nome asset stabile tra le release (superato il compromesso
+#    del STEP 3ac).
+#  - appimagetool con -u/--updateinformation EMBEDDE la stringa nella sezione
+#    ELF .upd_info e genera anche lui un .zsync, ma con "-u basename"
+#    RELATIVO: su GitHub Releases con nomi versionati l'URL relativo
+#    risolverebbe 404 -> il workflow lo RIGENERA con zsyncmake (pacchetto
+#    apt "zsync") e -u ASSOLUTO canonico. Il .zsync classico copre il FILE
+#    INTERO (verificato in locale: Length/SHA-1 == file reale).
+#  - E2E VALIDATO IN LOCALE (nov 2026): v1 e v2 (8KB diversi), update info
+#    embedduta e ritrovata nel binario, client zsync2 con seed v1 -> output
+#    con SHA-1 IDENTICO a v2 ("checksum matches OK"). NB il server di test
+#    DEVE supportare Range/206 (GitHub Releases/S3 lo fa nativamente).
+#  - Note: l'efficienza del delta su squashfs dipende dall'allineamento dei
+#    blocchi compressi (modifiche sparse riducono il riuso dei seed); il
+#    meccanismo resta quello ufficiale di tutti i progetti AppImage con
+#    update information. AppImageUpdate usa l'API GitHub anonima (rate limit
+#    60/h per IP: accettabile per un check di aggiornamento).
 # ==============================================================================
 
 name: Build and Release RiPlay
@@ -411,14 +437,14 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      # STEP 3x: canarino diagnostico — mostra nel log QUALI fix sono presenti
+      # STEP 3x: Controllo diagnostico — mostra nel log QUALI fix sono presenti
       # nel codice realmente eseguito dalla run (un tag creato su un commit
       # vecchio, o un checkout su ref diverso, gira su codice SENZA i fix:
       # ora si vede subito). shell bash per compatibilita' win/linux/mac
-      - name: Canarino fix versioni/heap nel codice di questa run
+      - name: Controllo fix versioni/heap nel codice di questa run
         shell: bash
         run: |
-          echo "=== STEP 3x canarino: fix presenti nel codice eseguito ==="
+          echo "=== STEP 3x Controllo: fix presenti nel codice eseguito ==="
           if grep -n "riplayPackageVersionForHost" composeApp/build.gradle.kts; then
             echo "OK: fix versione mac-safe (STEP 3v/3x) PRESENTE"
           else
@@ -495,11 +521,16 @@ jobs:
       # libfuse2 -> sempre --appimage-extract-and-run; --version come smoke
       # test (verificato: exit 0, printa il commit della build). Download in
       # RUNNER_TEMP per non sporcare la repo; path passato via GITHUB_ENV.
-      - name: Setup appimagetool (Linux)
+      # STEP 3ad: apt "zsync" fornisce zsyncmake (formato classico full-file,
+      # lo stesso che appimagetool bundleggia) per il .zsync dell'update delta.
+      - name: Setup appimagetool + zsync (Linux)
         if: runner.os == 'Linux'
         shell: bash
         run: |
           set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq zsync
+          zsyncmake --version | head -1
           TOOL="appimagetool-x86_64.AppImage"
           URL="https://github.com/AppImage/AppImageKit/releases/download/continuous/${TOOL}"
           echo "⬇️ Download ${TOOL} (AppImageKit continuous)"
@@ -515,9 +546,15 @@ jobs:
       # (che scansiona binaries) lo trova senza toccare altro.
       # Le due lezioni del test locale: ARCH=x86_64 esplicito e icona copiata
       # ANCHE alla radice dell'AppDir (riplay.png).
+      # STEP 3ad: update information gh-releases-zsync embeddta (AppImageUpdate
+      # la legge dalla sezione ELF .upd_info) e .zsync rigenerato con URL
+      # assoluto canonico (l'auto-generato da appimagetool ha URL relativo ->
+      # risolverebbe 404 su GitHub Releases versionate).
       - name: Costruisci AppImage (Linux)
         if: runner.os == 'Linux'
         shell: bash
+        env:
+          CURRENT_TAG: ${{ needs.validate.outputs.version }}
         run: |
           set -euo pipefail
           APP_SRC="composeApp/build/compose/binaries/main/app/RiPlay"
@@ -562,10 +599,26 @@ jobs:
           exec "$HERE/usr/bin/RiPlay/bin/RiPlay" "$@"
           APPRUN_EOF
           chmod +x "${APPDIR}/AppRun"
+          # STEP 3ad: update information per AppImageUpdate (formato verificato
+          # su appimagetool.c: 3o campo tag con "latest" supportato, 4o campo =
+          # pattern sul nome dell'asset .AppImage.zsync). Se il repo non e'
+          # noto (run locale) si salta l'embedding: l'AppImage resta valida.
+          GH_SLUG="${GITHUB_REPOSITORY:-}"
+          GH_OWNER="${GH_SLUG%%/*}"
+          GH_REPO="${GH_SLUG#*/}"
+          UPDATEINFO=""
+          UI_ARGS=()
+          if [ -n "${GH_OWNER}" ] && [ -n "${GH_REPO}" ]; then
+            UPDATEINFO="gh-releases-zsync|${GH_OWNER}|${GH_REPO}|latest|RiPlay-*-Linux-x86_64.AppImage.zsync"
+            echo "ℹ️ update information: ${UPDATEINFO}"
+            UI_ARGS=(--updateinformation "${UPDATEINFO}")
+          else
+            echo "⚠️ GITHUB_REPOSITORY assente: AppImage senza update information embedded"
+          fi
           mkdir -p composeApp/build/compose/binaries/appimage
           OUT="composeApp/build/compose/binaries/appimage/RiPlay-Linux-x86_64.AppImage"
           echo "🔨 appimagetool -> ${OUT}"
-          ARCH=x86_64 "${APPIMAGETOOL}" --appimage-extract-and-run "${APPDIR}" "${OUT}" \
+          ARCH=x86_64 "${APPIMAGETOOL}" --appimage-extract-and-run "${UI_ARGS[@]}" "${APPDIR}" "${OUT}" \
             > appimage-build.log 2>&1 || APPIMAGE_FAILED=1
           grep -v -e "Failed to remove" -e "File exists and file size matches" appimage-build.log || true
           if [ -n "${APPIMAGE_FAILED:-}" ]; then
@@ -586,13 +639,41 @@ jobs:
             echo "❌ magic AppImage type 2 non riconosciuto"
             exit 1
           fi
+          # STEP 3ad: embedding update information (sezione .upd_info)
+          if [ -n "${UPDATEINFO}" ] && ! grep -aq "gh-releases-zsync|" "${OUT}"; then
+            echo "❌ update information non trovata nell'AppImage (embedding fallito?)"
+            exit 1
+          fi
+          # STEP 3ad: .zsync per gli aggiornamenti delta (AppImageUpdate).
+          # appimagetool ha gia' generato un .zsync con URL RELATIVO: lo si
+          # RIGENERA con zsyncmake e URL assoluto canonico (formato classico
+          # full-file, compatibile con AppImageUpdate/zsync2).
+          if [ -n "${UPDATEINFO}" ]; then
+            CANONICAL_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${CURRENT_TAG}/RiPlay-${CURRENT_TAG}-Linux-x86_64.AppImage"
+            ZDIR="composeApp/build/compose/binaries/appimage"
+            echo "🔗 zsyncmake -u ${CANONICAL_URL}"
+            ( cd "${ZDIR}" && zsyncmake -u "${CANONICAL_URL}" "RiPlay-Linux-x86_64.AppImage" )
+            ZSYNC="${ZDIR}/RiPlay-Linux-x86_64.AppImage.zsync"
+            zsize=$(stat -c%s "${ZSYNC}")
+            echo "📦 ${ZSYNC}: ${zsize} bytes"
+            if [ "${zsize}" -lt 51200 ]; then
+              echo "❌ .zsync sospettosamente piccolo (<50KB)"
+              exit 1
+            fi
+            zurl=$(grep -a '^URL:' "${ZSYNC}" | head -1 | cut -d' ' -f2-)
+            echo "🔎 URL nel .zsync: ${zurl}"
+            if [ "${zurl}" != "${CANONICAL_URL}" ]; then
+              echo "❌ URL nel .zsync diverso dall'URL canonico atteso"
+              exit 1
+            fi
+          fi
           echo "✅ AppImage costruita: ${OUT}"
 
-      # STEP 3ab: canarino architettura — su macOS verifica che il binario
+      # STEP 3ab: Architettura su macOS verifica che il binario
       # dell'app (e il runtime bundlato da jpackage) sia dell'arch attesa
       # della matrix (arm64 su macos-15, x86_64 su macos-15-intel): se il
       # runner sbagliasse arch la build muore qui con log chiaro.
-      - name: Canarino architettura app image (macOS)
+      - name: Controllo architettura app image (macOS)
         if: runner.os == 'macOS'
         shell: bash
         run: |
@@ -674,7 +755,7 @@ jobs:
           set -u
           mkdir -p desktop-packages
           # STEP 3ac: aggiunto '*.AppImage' (prodotta in binaries/appimage/)
-          find composeApp/build/compose/binaries -type f \( -name '*.msi' -o -name '*.deb' -o -name '*.rpm' -o -name '*.dmg' -o -name '*.AppImage' \) -print -exec cp {} desktop-packages/ \;
+          find composeApp/build/compose/binaries -type f \( -name '*.msi' -o -name '*.deb' -o -name '*.rpm' -o -name '*.dmg' -o -name '*.AppImage' -o -name '*.zsync' \) -print -exec cp {} desktop-packages/ \;
           echo "📦 Pacchetti raccolti in desktop-packages/:"
           ls -lah desktop-packages/
           n=$(ls -1 desktop-packages | wc -l)
@@ -686,7 +767,7 @@ jobs:
           # Assert per-OS: ogni runner DEVE produrre la sua estensione
           case "${RUNNER_OS}" in
             Windows) exts="msi" ;;
-            Linux)   exts="deb rpm AppImage" ;;
+            Linux)   exts="deb rpm AppImage zsync" ;;
             macOS)   exts="dmg" ;;
             *)       exts="" ;;
           esac
@@ -768,6 +849,7 @@ jobs:
           rename_artifact linux-deb-rpm  deb "RiPlay-${CURRENT_TAG}-Linux"
           rename_artifact linux-deb-rpm  rpm "RiPlay-${CURRENT_TAG}-Linux"
           rename_artifact linux-deb-rpm  AppImage "RiPlay-${CURRENT_TAG}-Linux-x86_64"
+          rename_artifact linux-deb-rpm  AppImage.zsync "RiPlay-${CURRENT_TAG}-Linux-x86_64"
           rename_artifact macos-dmg      dmg "RiPlay-${CURRENT_TAG}-macOS-arm64"
           rename_artifact macos-dmg-x64  dmg "RiPlay-${CURRENT_TAG}-macOS-x86_64"
 
@@ -805,6 +887,7 @@ jobs:
               check "RiPlay-${CURRENT_TAG}-Linux*.deb"   "DEB Linux"
               check "RiPlay-${CURRENT_TAG}-Linux*.rpm"   "RPM Linux"
               check "RiPlay-${CURRENT_TAG}-Linux-x86_64*.AppImage" "AppImage Linux x86_64"
+              check "RiPlay-${CURRENT_TAG}-Linux-x86_64*.AppImage.zsync" "ZSync AppImage (update delta)"
               check "RiPlay-${CURRENT_TAG}-macOS-arm64*.dmg"   "DMG macOS Apple Silicon"
               check "RiPlay-${CURRENT_TAG}-macOS-x86_64*.dmg"  "DMG macOS Intel"
               ;;
@@ -815,6 +898,7 @@ jobs:
               check "RiPlay-${CURRENT_TAG}-Linux*.deb"   "DEB Linux"
               check "RiPlay-${CURRENT_TAG}-Linux*.rpm"   "RPM Linux"
               check "RiPlay-${CURRENT_TAG}-Linux-x86_64*.AppImage" "AppImage Linux x86_64"
+              check "RiPlay-${CURRENT_TAG}-Linux-x86_64*.AppImage.zsync" "ZSync AppImage (update delta)"
               check "RiPlay-${CURRENT_TAG}-macOS-arm64*.dmg"   "DMG macOS Apple Silicon"
               check "RiPlay-${CURRENT_TAG}-macOS-x86_64*.dmg"  "DMG macOS Intel"
               ;;
@@ -917,11 +1001,13 @@ jobs:
             echo "- **APK Full** (all features)"
             echo "- **APK FOSS** (all features less chromecast, check for updates, musicvault)"
             echo ""
-            echo "**Desktop nativo** (CEF incluso, nessun download al primo avvio; VLC richiesto per i file locali)"
+            echo "**Native Desktop** (CEF included, no download; VLC required for local files)"
             echo "- **Windows** - MSI installer"
-            echo "- **Linux** - DEB + RPM + AppImage"
-            echo "- **macOS Apple Silicon** - DMG (non firmato: primo avvio con tasto destro -> Apri)"
-            echo "- **macOS Intel** - DMG (non firmato: primo avvio con tasto destro -> Apri)"        
+            echo "- **Linux** - DEB + RPM + AppImage (portatile x86_64)"
+            echo "  - AppImage: `chmod +x RiPlay-*.AppImage` and run (requires libfuse2; if absent: `./RiPlay-*.AppImage --appimage-extract-and-run`)"
+            echo "  - Delta updates: file .zsync for AppImageUpdate (`appimageupdate RiPlay-*.AppImage`)"
+            echo "- **macOS Apple Silicon** - DMG (not signed: first run with right mouse button -> open)"
+            echo "- **macOS Intel** - DMG (not signed: first run with right mouse button -> open)"
             echo ""
             echo "**Desktop distribuzioni Android-based** (7z)"
             echo "- **Desktop AVD** (Windows & Linux)"
