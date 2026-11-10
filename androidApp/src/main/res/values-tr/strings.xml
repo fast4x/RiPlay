@@ -1614,7 +1614,7 @@
     <string name="error_song_rematch_failed">İşlem tamamlanamadı: şarkıyı güncellerken bir hata oluştu.</string>
     <string name="info_song_rematch_completed">Şarkı başarıyla güncellendi.</string>
     <!-- Alarm (Sveglia) -->
-    <string name="alarm_title">Alarm</string>
+    <string name="alarm_title">Alarme</string>
     <string name="alarm_subtitle">Müziğinizle uyanın: bir şarkı, çalma listesi veya albüm ayarlayın</string>
     <string name="alarm_add">Alarm ekle</string>
     <string name="alarm_edit">Alarmı düzenle</string>
@@ -1644,8 +1644,8 @@
     <string name="alarm_auto_stop_off">Kapat</string>
     <string name="alarm_exact_permission_hint">Güvenilir zamanlama için, sistem ayarlarında RiPlay için “Alarmlar &amp; hatırlatıcılar” seçeneğini etkinleştirin</string>
     <string name="alarm_exact_permission_open_settings">İzin ver</string>
-    <string name="alarm_notification_channel_id">RiPlay Alarm</string>
-    <string name="alarm_notification_title">Alarm</string>
+    <string name="alarm_notification_channel_id">Alarme RiPlay</string>
+    <string name="alarm_notification_title">Alarme</string>
     <string name="alarm_notification_text">%1$s ile seni uyandırmak</string>
     <string name="alarm_snooze">Erteleme %1$d dakika</string>
     <string name="alarm_source_missing">Alarm müziği artık mevcut değil. Yeni bir şarkı, çalma listesi veya albüm seçin.</string>
