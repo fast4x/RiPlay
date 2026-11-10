@@ -551,6 +551,38 @@ sealed interface KcefState {
  *         subprocess CEF Linux, file senza estensione) non partiva;
  *     (5) log diagnostico del bundle Linux (ponte JNI + libcef) come per
  *         macOS. Windows e macOS: comportamento invariato.
+ *
+ *
+ *     33) v46 (step3z2, FIX crash macOS Intel: EXC_BREAKPOINT sull'EDT
+ *         durante l'avvio). Il crash report mostra l'EDT (AWT-EventQueue-0)
+ *         che abortisce DENTRO "Chromium Embedded Framework" (int3/ud2 =
+ *         CHECK/IMMEDIATE_CRASH di Chromium) MENTRE sta ancora caricando
+ *         classi (InterpreterRuntime::_new -> defineClass) e MENTRE
+ *         kcef-init e' ancora in NativeLibraries.load -> dlsym: la fase
+ *         nativa di CEF (dlopen framework ~190MB + JNI_OnLoad) si
+ *         SOVRAPPONEVA alla tempesta di class-loading dell'avvio UI.
+ *         Aggravante: pacchetto NON firmato e bundle CEF estratto in
+ *         ~/Library/Application Support (fuori dall'app, senza firma
+ *         coerente). Quattro difese, TUTTE gate isMacOS (Windows/Linux:
+ *         comportamento invariato):
+ *         (a) GATE UI: kcef-init attende che la finestra principale sia
+ *             composta (KcefEngine.notifyUiReady() da main.kt; timeout 20s
+ *             mai bloccante) PRIMA di toccare le natives;
+ *         (b) PRELOAD mac ripensato: viene caricato SOLO il ponte JNI
+ *             "libjcef.dylib": dyld mappa il framework CEF come SUA
+ *             dipendenza (install name/LC_RPATH) -> una sola copia mappata
+ *             in modo consistente; il System.load DIRETTO del binario del
+ *             framework resta SOLO come fallback se il ponte manca;
+ *         (c) FIRMA AD-HOC del bundle CEF (necessaria con pacchetto non
+ *             firmato): codesign --verify su jcef_helper.app e sul
+ *             framework; se invalida/assente, ri-firma ad-hoc
+ *             (codesign --force --deep --sign "-") best-effort e mai
+ *             bloccante: subprocess coerenti con Gatekeeper/AMFI anche
+ *             senza Developer ID;
+ *         (d) frameworkDirPath impostato nelle settings CEF (reflection,
+ *             best-effort): su macOS CEF deve sapere DOVE sta il
+ *             .framework, altrimenti resta il default derivato dal JDK e
+ *             i subprocess non trovano le risorse.
  */
 object KcefEngine {
 
@@ -558,7 +590,7 @@ object KcefEngine {
      * Marker di versione del bootstrap: SE NEI LOG NON APPARE QUESTA RIGA,
      * il processo sta eseguendo una build NON aggiornata.
      */
-    const val BOOTSTRAP_VERSION = "v45 (step3y)"
+    const val BOOTSTRAP_VERSION = "v46 (step3z2)"
 
     private const val TAG = "[RiPlay-KCEF]"
 
@@ -863,9 +895,18 @@ object KcefEngine {
      * e' il binario del framework; il ponte JNI e' "libjcef.dylib". Come
      * su Windows (step2h) le dylib del runtime Java del bundle NON vanno
      * caricate nel processo host.
+     *
+     * STEP 3z2 (v46): nel processo host viene pre-caricato SOLO il ponte
+     * JNI ("libjcef.dylib"): dyld mappa il framework CEF come SUA
+     * dipendenza risolvendo l'install name/LC_RPATH del ponte -> una sola
+     * copia del framework, mappata in modo consistente con chi la
+     * richiede. Il System.load DIRETTO del binario del framework (v44/v45)
+     * poteva lasciare l'immagine mappata sotto una identita' di percorso
+     * diversa da quella richiesta dalle dipendenze: resta SOLO come
+     * fallback quando il ponte JNI manca dal bundle (vedi
+     * preloadBundleNativeLibraries).
      */
     private val PRELOAD_WHITELIST_MAC = listOf(
-        "chromium embedded framework",
         "libjcef"
     )
 
@@ -926,9 +967,18 @@ object KcefEngine {
             isLinuxOS -> PRELOAD_WHITELIST_LINUX
             else -> PRELOAD_WHITELIST
         }
-        val natives = bundleNativeFiles.filter { f ->
+        var natives = bundleNativeFiles.filter { f ->
             val n = f.name.lowercase()
             !n.startsWith("jcef_helper") && whitelist.any { n.startsWith(it) }
+        }
+        // STEP 3z2 (macOS): preload = SOLO il ponte JNI; il framework CEF
+        // viene mappato da dyld come dipendenza del ponte (install name).
+        // Se il ponte manca dal bundle (layout atipico), fallback al
+        // caricamento diretto del framework (comportamento v45, best-effort).
+        val macFrameworkFallback = bundleCefFrameworkFile
+        if (isMacOS && natives.isEmpty() && macFrameworkFallback != null) {
+            log("preload mac: ponte JNI 'libjcef' assente dal bundle -> fallback caricamento diretto del framework")
+            natives = listOf(macFrameworkFallback)
         }
         if (natives.isEmpty()) {
             report.missing += "<bundle assente: nessuna libreria nativa trovata>"
@@ -1016,6 +1066,21 @@ object KcefEngine {
                         linuxSystemDepsHint = true
                     )
                 }
+            }
+        }
+        // STEP 3z2 (macOS): esito del preload mac. Il ponte JNI caricato e'
+        // la via giusta (il framework arriva come sua dipendenza dyld);
+        // un fallimento del ponte NON abortisce (su mac il preload resta
+        // best-effort come da step3z) ma resta nei log per la diagnosi.
+        if (isMacOS) {
+            val macBridge = natives.firstOrNull { isJniBridgeName(it.name) }
+            if (macBridge == null) {
+                log("preload mac: ponte JNI 'libjcef' non presente nel bundle (uso fallback framework diretto)")
+            } else if (report.loaded.any { isJniBridgeName(it) }) {
+                log("preload mac: ponte JNI caricato (${macBridge.name}); framework CEF mappato da dyld come dipendenza")
+            } else {
+                log("preload mac: ATTENZIONE ponte JNI ${macBridge.name} non caricato " +
+                        "(${loadErrors[macBridge.name] ?: "motivo sconosciuto"})")
             }
         }
         // Il ponte JNI deve coincidere con le classi org.cef: su un JDK
@@ -1490,6 +1555,21 @@ object KcefEngine {
     }
 
     /**
+     * STEP 3z2: la directory ".framework" che contiene il binario CEF
+     * (macOS): e' il valore corretto di CefSettings.frameworkDirPath.
+     */
+    private fun frameworkBundleDir(): File? {
+        var d: File? = bundleCefFrameworkFile?.parentFile
+        var hops = 0
+        while (d != null && hops < 6) {
+            if (d.name.lowercase().endsWith(".framework")) return d
+            d = d.parentFile
+            hops++
+        }
+        return null
+    }
+
+    /**
      * Priorita' del subprocess CEF: 3 = jcef_helper.exe (Windows, lezione
      * step2g: l'.exe batte la .dll omonima); 2 = eseguibile dentro un .app
      * (macOS); 1 = file generico. Vince il punteggio piu' alto.
@@ -1602,6 +1682,110 @@ object KcefEngine {
         }
     }
 
+    /**
+     * STEP 3z2 (macOS): contenitore bundle (.app/.framework) entro 6
+     * livelli sopra il file dato (null se non esiste).
+     */
+    private fun macosBundleContainer(f: File?): File? {
+        var d: File? = f
+        var hops = 0
+        while (d != null && hops < 6) {
+            val n = d.name.lowercase()
+            if (n.endsWith(".app") || n.endsWith(".framework")) return d
+            d = d.parentFile
+            hops++
+        }
+        return null
+    }
+
+    /**
+     * STEP 3z2 (macOS): verifica della firma del bundle CEF e ri-firma
+     * ad-hoc best-effort. Con l'app NON firmata, il bundle estratto in
+     * ~/Library/Application Support resta fuori da qualunque identita' di
+     * firma: se l'archivio (o l'estrazione) lascia jcef_helper.app o il
+     * framework con firma invalida/assente, i subprocess CEF sono esposti
+     * a Gatekeeper/AMFI (SIGKILL silenziosi, crash con signature invalid)
+     * difficilmente distinguibili da un crash CEF. Qui:
+     *  1. codesign --verify --strict (exit 0 = firma valida: nessun tocco);
+     *  2. altrimenti codesign --force --deep --sign "-" (firma AD-HOC,
+     *     non richiede alcun certificato): porta helper e framework a uno
+     *     stato eseguibile su qualunque Mac.
+     * MAI bloccante: qualunque errore e' solo log (l'init prosegue come v45).
+     */
+    private fun verifyAndResignCefBundleMacos() {
+        if (!isMacOS) return
+        scanBundle()
+        val targets = linkedSetOf<File>()
+        val helperContainer = macosBundleContainer(bundleHelperFile)
+        if (helperContainer != null) {
+            targets += helperContainer
+        } else {
+            bundleHelperFile?.takeIf { it.isFile }?.let { targets += it }
+        }
+        macosBundleContainer(bundleCefFrameworkFile)?.let { targets += it }
+        if (targets.isEmpty()) return
+        for (t in targets) {
+            val verify = runCatching {
+                val p = ProcessBuilder(
+                    listOf("/usr/bin/codesign", "--verify", "--strict", t.absolutePath)
+                ).redirectErrorStream(true).start()
+                p.inputStream.bufferedReader().readText().trim() to p.waitFor()
+            }
+            val (vOut, vCode) = verify.getOrElse {
+                "<codesign non eseguibile: ${it.javaClass.simpleName}>" to -1
+            }
+            when {
+                vCode == 0 -> log("firma bundle CEF valida: ${t.name}")
+                vCode < 0 -> log("codesign non disponibile: verifica firma saltata su ${t.name}: $vOut")
+                else -> {
+                    log("firma CEF invalida/assente su ${t.name} (exit=$vCode" +
+                            (if (vOut.isNotEmpty()) ": ${vOut.take(120)}" else "") +
+                            "): ri-firma ad-hoc")
+                    val sign = runCatching {
+                        val p = ProcessBuilder(
+                            listOf("/usr/bin/codesign", "--force", "--deep", "--sign", "-", t.absolutePath)
+                        ).redirectErrorStream(true).start()
+                        p.inputStream.bufferedReader().readText().trim() to p.waitFor()
+                    }
+                    val (sOut, sCode) = sign.getOrElse {
+                        "<codesign non eseguibile: ${it.javaClass.simpleName}>" to -1
+                    }
+                    log("ri-firma ad-hoc ${t.name}: exit=$sCode" +
+                            (if (sOut.isNotEmpty()) " output: " + sOut.take(200) else ""))
+                }
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // STEP 3z2 (macOS): GATE UI. Potrebbe andare in crash l'EDT
+    // (AWT-EventQueue-0) che carica classi e abortisce dentro il framework
+    // CEF MENTRE kcef-init sta ancora mappando le natives
+    // (NativeLibraries.load -> dlsym): su un Mac Intel il dlopen del
+    // framework (~190MB) e l'estrazione del bundle si sovrappongono alla
+    // tempesta di class-loading dell'avvio dell'UI. kcef-init ora attende
+    // (max 20s: mai bloccante) che la finestra principale sia composta:
+    // main.kt chiama notifyUiReady() quando l'UI e' su.
+    // -------------------------------------------------------------------------
+    private val uiReadyGate = java.util.concurrent.CountDownLatch(1)
+
+    /**
+     * Sblocca l'attesa di kcef-init. Chiamata da main.kt quando la finestra
+     * principale e' composta (idempotente: chiamate successive = no-op).
+     */
+    fun notifyUiReady() {
+        if (uiReadyGate.count == 0L) return
+        uiReadyGate.countDown()
+        if (isMacOS) log("UI pronta: sbloccata la fase nativa dell'inizializzazione CEF")
+    }
+
+    private fun awaitUiReadyBeforeNativeInit() {
+        if (!isMacOS) return
+        val released = uiReadyGate.await(20, java.util.concurrent.TimeUnit.SECONDS)
+        log(if (released) "gate UI superato: avvio fase nativa CEF (preseed/preload/init)"
+            else "gate UI: TIMEOUT 20s senza conferma UI -> avvio fase nativa CEF comunque")
+    }
+
     fun start() {
         installGlobalUncaughtExceptionHandler()
         if (started) return
@@ -1613,10 +1797,16 @@ object KcefEngine {
                 try {
                     logEnvironment()
 
-                    // STEP 3q/3s (richiesta utente): CEF PRE-SEMINATO nell'installer
+                    // STEP 3z2 (macOS): GATE UI - non toccare le natives finche'
+                    // l'UI principale non e' composta (notifyUiReady da main.kt):
+                    // evita la sovrapposizione dlopen CEF / class-loading EDT
+                    // vista nel crash report (AWT-EventQueue-0 vs kcef-init).
+                    awaitUiReadyBeforeNativeInit()
+
+                    // STEP 3q/3s  CEF PRE-SEMINATO nell'installer
                     // (deb/msi/dmg): l'archivio jbr_jcef incluso nell'app viene
                     // estratto qui nella directory dati utente PRIMA della catena
-                    // KCEF -> NESSUN download ~200MB al primo avvio. Qualunque
+                    // KCEF -> NESSUN dowload ~200MB al primo avvio. Qualunque
                     // problema = fallback COMPLETO al download normale.
                     preSeedPackagedBundle()
 
@@ -1632,6 +1822,10 @@ object KcefEngine {
                     if (!isWindowsOS && bundleInstalled()) {
                         fixBundleExecPermissions()
                         if (isMacOS) removeBundleQuarantine()
+                        // STEP 3z2: firma del bundle verificata/ripristinata
+                        // ad-hoc PRIMA del preload e dell'init (pacchetto
+                        // app non firmato: subprocess coerenti).
+                        if (isMacOS) verifyAndResignCefBundleMacos()
                     }
 
                     // STEP 2h: KCEFBuilder.install cancella l'INTERA installDir
@@ -1745,6 +1939,37 @@ object KcefEngine {
                                     resourcesDirPath = fwRes?.absolutePath ?: ""
                                     val loc = fwRes?.let { File(it, "locales") }
                                     localesDirPath = loc?.takeIf { l -> l.isDirectory }?.absolutePath ?: ""
+                                    // STEP 3z2: su macOS CEF deve ricevere anche
+                                    // framework_dir_path (directory del .framework):
+                                    // senza, resta il default derivato da java.home
+                                    // (JCefAppConfig) e i subprocess non trovano il
+                                    // framework. Best-effort via reflection (la DSL
+                                    // KCEF non lo espone).
+                                    runCatching {
+                                        val s = this
+                                        val fwBundle = frameworkBundleDir()
+                                        if (fwBundle != null) {
+                                            var cls: Class<*>? = s::class.java
+                                            var done = false
+                                            while (cls != null && !done) {
+                                                for (fname in listOf("frameworkDirPath", "framework_dir_path")) {
+                                                    if (done) break
+                                                    runCatching {
+                                                        val fld = cls.getDeclaredField(fname)
+                                                        fld.isAccessible = true
+                                                        fld.set(s, fwBundle.absolutePath)
+                                                        done = true
+                                                    }
+                                                }
+                                                cls = cls.superclass
+                                            }
+                                            log("settings mac: framework_dir_path " +
+                                                    if (done) "impostato -> ${fwBundle.absolutePath}"
+                                                    else "campo non disponibile nella settings KCEF (ignorato)")
+                                        } else {
+                                            log("settings mac: framework_dir_path non impostato (framework non individuato)")
+                                        }
+                                    }
                                     log("settings mac: subprocess=${helper?.path ?: "ASSENTE"} " +
                                             "framework=${bundleCefFrameworkFile?.path ?: "ASSENTE"} " +
                                             "resources=${fwRes?.path ?: "ASSENTE"} " +

@@ -162,6 +162,15 @@ fun main() {
             undecorated = true
         ) {
             DesktopTheme {
+                // STEP 3z2 (macOS): l'UI principale e' composta -> sblocca il
+                // gate di KcefEngine (kcef-init non tocca le natives CEF prima
+                // di questo momento o del timeout interno di 20s): evita la
+                // sovrapposizione dlopen framework CEF / class-loading EDT
+                // vista nel crash report macOS (AWT-EventQueue-0). Su
+                // Windows/Linux la chiamata e' un no-op.
+                LaunchedEffect(Unit) {
+                    KcefEngine.notifyUiReady()
+                }
                 ThreeColumnsApp(
                     windowScope = this,
                     windowState = windowState,
