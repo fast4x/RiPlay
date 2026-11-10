@@ -227,7 +227,7 @@
     <string name="update.banner_close">Chiudi</string>
     <string name="settings.about.updates">Aggiornamenti</string>
     <string name="settings.about.check_updates">Controlla aggiornamenti</string>
-    <string name="settings.about.check_updates_info">Versione attuale {version} - stesso file usato dall\'app Android</string>
+    <string name="settings.about.check_updates_info">Current version {version}</string>
     <string name="settings.about.update_checking">Controllo in corso...</string>
     <string name="settings.about.update_uptodate">Sei aggiornato all\'ultima versione</string>
     <string name="settings.about.update_available">Nuova versione: {version}</string>
