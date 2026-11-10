@@ -143,7 +143,7 @@ fun macSafeJPackageVersion(raw: String): String {
     return (listOf(first) + rest).joinToString(".")
 }
 
-val riplayDesktopVersion = "0.8.5"
+val riplayDesktopVersion = "0.8.6"
 val riplayDesktopVersionMac = macSafeJPackageVersion(riplayDesktopVersion)
 
 // =============================================================================
