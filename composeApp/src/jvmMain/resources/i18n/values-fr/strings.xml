@@ -56,6 +56,11 @@
     <string name="settings.closetotray.desc">Lorsque cette option est activée, fermer la fenêtre à l\'aide du « X » (ou de la combinaison Alt+F4) ne ferme pas RiPlay : l\'application reste dans la zone de notification et continue la lecture ; double-cliquez sur l\'icône pour rouvrir la fenêtre, puis utilisez l\'option « Quitter RiPlay » dans son menu pour quitter définitivement l\'application. Lorsque cette option est désactivée (par défaut), le « X » ferme l\'application.</string>
     <string name="settings.karaoke.title">Superposition karaoké</string>
     <string name="settings.karaoke.desc">Lorsque cette fonctionnalité est activée, une petite fenêtre toujours au premier plan affiche la ligne actuelle des paroles (ainsi que la suivante), synchronisée avec la lecture. Vous pouvez la faire glisser où vous le souhaitez : sa position sera mémorisée. Elle nécessite des paroles synchronisées (LRCLIB/KuGou) ; à défaut, elle affiche le titre du morceau et le nom de l\'artiste.</string>
+    <string name="settings.cefcache.title">Browser cache limit</string>
+    <string name="settings.cefcache.desc">Automatically deletes the browser cache (kcef-cache) at startup when it exceeds the limit. Only regenerable cache folders are removed: logins and cookies are kept, and the CEF bundle in kcef/ is never touched.</string>
+    <string name="settings.cefcache.now">Currently used: {size}</string>
+    <string name="settings.cefcache.off">Never</string>
+    <string name="settings.cefcache.applied_next_start">Changes apply at the next app start.</string>
     <string name="karaoke.no_synced">Aucune parole synchronisée n\'est disponible</string>
     <string name="karaoke.mode.line">Ligne</string>
     <string name="karaoke.mode.word">Mot</string>
