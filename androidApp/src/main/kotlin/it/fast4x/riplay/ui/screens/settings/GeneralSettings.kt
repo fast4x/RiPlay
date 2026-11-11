@@ -214,6 +214,7 @@ fun GeneralSettings(
     val androidAutoPlaylistLimit = appSettings.androidAutoPlaylistLimit
 
     val isEnabledVoiceInput = appSettings.enableVoiceInput
+    val isVoiceHandsFree = appSettings.voiceCommandsHandsFree
 
     val parentalControlEnabled = appSettings.parentalControlEnabled
 
@@ -643,7 +644,24 @@ fun GeneralSettings(
                         )
                     }
 
-                
+                    if (isEnabledVoiceInput && (search.input.isBlank() || stringResource(R.string.voice_hands_free).contains(
+                            search.input,
+                            true
+                        ))
+                    ) {
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.voice_hands_free),
+                            text = stringResource(R.string.voice_hands_free_description),
+                            isChecked = isVoiceHandsFree,
+                            onCheckedChange = {
+                                coroutineScope.launch {
+                                    val new = appSettingsManager.activeSettings.value.copy(voiceCommandsHandsFree = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
+                            }
+                        )
+                    }
+
                 }
                 }
 
