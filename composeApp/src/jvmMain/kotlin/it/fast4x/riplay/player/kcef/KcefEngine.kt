@@ -588,6 +588,50 @@ sealed interface KcefState {
  *         CefApp.getInstance().createClient(), equivalente di
  *         KCEF.newClientBlocking). Il poll di stato passa al bridge
  *         standard CefMessageRouter (v. KcefYouTubePlayer).
+ *
+ * 34. v47 (FIX "seconda finestra" Wayland, report utente CachyOS/Hyprland 0.57
+ *     + Mesa 26.2 + Intel/NVIDIA hybrid, RiPlay 0.8.7-rc.1): dalla migrazione
+ *     a jcefmaven (CEF 152 = Chromium 152) su sessioni Wayland compare una
+ *     SECONDA finestra toplevel: nera, con il solo logo YouTube, class e
+ *     title VUOTI, nativa Wayland (xwayland=false in hyprctl clients),
+ *     tiling accanto alla finestra principale dell'app. CAUSA RADICE:
+ *     (1) la finestra host di RiPlay e' AWT/Swing, che su Linux vive SOLO su
+ *         X11 (quindi XWayland: class MainKt, xwayland=true);
+ *     (2) da Chromium 141 il default Ozone su Linux e' WAYLAND quando
+ *         WAYLAND_DISPLAY e' presente nell'ambiente (cambio upstream, non
+ *         dipende da jcefmaven: CefInitializer su Linux non aggiunge alcun
+ *         argomento ozone, verificato sui sorgenti jcefmaven master);
+ *     (3) il rendering WINDOWED di CEF su Ozone/Wayland NON puo' incorporare
+ *         finestre di terzi (chromiumembedded/cef#2804, aperto dal 2019;
+ *         l'embedding Wayland e' ancora WIP nel 2026): CEF non puo' riparentare
+ *         il suo window handle dentro la Canvas AWT (X11 Window XID)
+ *         e crea il browser come TOPLEVEL Wayland separato.
+ *     Con v0.8.6 (KCEF 2025.03.23, Chromium precedente al cambio default)
+ *     l'auto-select cadeva su X11 e l'embed funzionava: per questo il
+ *     problema appare SOLO con il build CEF 152.
+ *     PROVA UTENTE COERENTE: env -u WAYLAND_DISPLAY XDG_SESSION_TYPE=x11
+ *     produce una finestra unica (senza WAYLAND_DISPLAY l'auto-select Ozone
+ *     cade su X11 = lo stesso percorso che il fix impone esplicitamente).
+ *     FIX DOPPIO:
+ *     (a) su Linux viene aggiunto --ozone-platform=x11 agli argomenti CEF
+ *         (start()): CEF gira su XWayland, lo STESSO server X della finestra
+ *         AWT, e l'embed via XID funziona di nuovo. Su sessioni X11 pure il
+ *         flag e' un no-op (stesso backend gia' usato). Il flag viaggia sulla
+ *         command line CEF e arriva anche ai subprocess (GPU/network/renderer).
+ *         Nota: quando l'embedding Wayland arrivera' in CEF (cef#2804) si
+ *         potra' riconsiderare il Wayland nativo; per l'host AWT/X11 resterebbe
+ *         comunque necessario il transito XWayland o il rendering OSR.
+ *     (b) KcefYouTubePlayer espone browserAttached (StateFlow osservabile in
+ *         Compose): YoutubeKcefPane mostra copertina/segnaposto INVECE del
+ *         foro nero finche' il browser non e' realmente attaccato al pannello
+ *         ospite (showCoverArt = idle || !browserAttached || audio-only).
+ *         Questo elimina il secondo sintomo del report ("pannello player
+ *         nero senza copertina/controlli"): la parte nera era la superficie
+ *         Swing vuota del browser non incorporato, con CoverCanvas nascosta
+ *         perche' videoVisible e' TRUE di default.
+ *     DIAGNOSTICA: logEnvironment stampa DISPLAY / WAYLAND_DISPLAY /
+ *         XDG_SESSION_TYPE; l'aggiunta del flag e' loggata con la sessione
+ *         rilevata.
  */
 object KcefEngine {
 
@@ -595,7 +639,7 @@ object KcefEngine {
      * Marker di versione del bootstrap: SE NEI LOG NON APPARE QUESTA RIGA,
      * il processo sta eseguendo una build NON aggiornata.
      */
-    const val BOOTSTRAP_VERSION = "v46 (jcefmaven)"
+    const val BOOTSTRAP_VERSION = "v47 (ozone-x11 linux)"
 
     private const val TAG = "[RiPlay-KCEF]"
 
@@ -1273,11 +1317,31 @@ object KcefEngine {
         org.cef.CefApp::class.java.protectionDomain.codeSource.location.toString()
     }.getOrDefault("<sconosciuta>")
 
+    /**
+     * v47: sessione grafica Wayland rilevata dall'ambiente. Con Chromium 141+
+     * la sola presenza di WAYLAND_DISPLAY/WAYLAND_SOCKET sposta il default
+     * Ozone su Wayland: e' la condizione che il fix v47 neutralizza forzando
+     * --ozone-platform=x11 (il plugin AWT e' comunque solo X11 su Linux).
+     */
+    private fun isWaylandSession(): Boolean =
+        System.getenv("WAYLAND_DISPLAY") != null || System.getenv("WAYLAND_SOCKET") != null
+
+    /** v47: descrizione della sessione grafica per il log diagnostico. */
+    private fun graphicsSessionDescription(): String =
+        "DISPLAY=${System.getenv("DISPLAY") ?: "ASSENTE"} " +
+                "WAYLAND_DISPLAY=${System.getenv("WAYLAND_DISPLAY") ?: "ASSENTE"} " +
+                "WAYLAND_SOCKET=${if (System.getenv("WAYLAND_SOCKET") != null) "presente" else "ASSENTE"} " +
+                "XDG_SESSION_TYPE=${System.getenv("XDG_SESSION_TYPE") ?: "n/d"}"
+
     private fun logEnvironment() {
         log("bootstrap $BOOTSTRAP_VERSION - build corrente se compare QUESTA riga")
         log("os=${System.getProperty("os.name")} ${System.getProperty("os.arch")} " +
                 "java=${System.getProperty("java.version")} " +
                 "java.home=${System.getProperty("java.home")}")
+        if (isLinuxOS) {
+            log("sessione grafica: ${graphicsSessionDescription()} " +
+                    "(wayland=${isWaylandSession()})")
+        }
         log("JDK contiene JCEF integrato: ${runtimeHasJcef()}")
         log("classi org.cef caricate da: ${orgCefSource()}")
         log("directory bundle CEF (jcefmaven): ${installDir.absolutePath} cache=${cacheDir.absolutePath}")
@@ -2157,9 +2221,26 @@ object KcefEngine {
                         "--disable-quic",
                         "--app-user-model-id=" + WindowsAppIdentity.AUMID
                     )
+                    // v47 (FIX "seconda finestra" Wayland - nota 34 in testa al
+                    // file): su Linux il browser CEF DEVE stare sullo stesso
+                    // server X della finestra AWT (X11/XWayland), altrimenti
+                    // Chromium 141+ sceglie Ozone Wayland e il rendering windowed
+                    // non puo' incorporare finestre di terzi (cef#2804): nasce
+                    // la seconda toplevel Wayland con class/title vuoti e il
+                    // pannello player resta un foro nero. --ozone-platform=x11
+                    // forza il backend X11 (XWayland su sessioni Wayland; no-op
+                    // su sessioni X11 pure). Il flag e' sulla command line CEF
+                    // condivisa: arriva anche a tutti i subprocess.
+                    if (isLinuxOS) {
+                        builder.addJcefArgs("--ozone-platform=x11")
+                        log("v47: sessione grafica [${graphicsSessionDescription()}] " +
+                                "(wayland=${isWaylandSession()}) -> aggiunto --ozone-platform=x11 " +
+                                "(embed del browser su X11/XWayland, stessa sessione X della finestra AWT)")
+                    }
                     log("builder args: --disable-gpu --disable-gpu-compositing --no-sandbox " +
                             "--autoplay-policy=no-user-gesture-required --disable-quic " +
-                            "--app-user-model-id=" + WindowsAppIdentity.AUMID)
+                            "--app-user-model-id=" + WindowsAppIdentity.AUMID +
+                            if (isLinuxOS) " --ozone-platform=x11" else "")
                     val s = builder.getCefSettings()
                     s.cache_path = cacheDir.absolutePath
                     s.windowless_rendering_enabled = false

@@ -1,4 +1,4 @@
-package player
+package it.fast4x.riplay.player.player
 
 import it.fast4x.riplay.i18n.ds
 
@@ -17,14 +17,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -53,6 +46,8 @@ import it.fast4x.riplay.utils.hiResCoverUrl
 import player.frame.FrameContainer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import player.PlayerController
+import player.PlayerInput
 import java.io.File
 import java.util.concurrent.atomic.AtomicLong
 
@@ -535,9 +530,18 @@ private fun YoutubeKcefPane(
     // VISIBILE sotto la cover (l'audio non si interrompe, come ExoPlayer su
     // Android)
     val ytErr by manager.kcef.ytError.collectAsState()
+    // v47: TRUE quando il browser CEF e' realmente attaccato al pannello
+    // ospite. Finche' non lo e' (client non ancora pronto, creazione in
+    // corso o fallita, browser in ricreazione) la superficie Swing e' un
+    // PANNELLO NERO VUOTO: mostriamo la copertina/segnaposto RiPlay al
+    // posto del foro nero (sintomo "pannello player tutto nero" su
+    // Wayland con CEF 152). Quando il browser si attacca lo stato cambia
+    // e la UI torna al comportamento precedente.
+    val browserAttached by manager.kcef.browserAttached.collectAsState()
     // la cover del player viene caricata alla RISOLUZIONE PIU' ALTA disponibile
     val coverUrl = song?.thumbnailUrl?.hiResCoverUrl()
-    val showCoverArt = manager.idle || (song != null && !manager.videoVisible)
+    val showCoverArt = manager.idle || !browserAttached ||
+            (song != null && !manager.videoVisible)
     val errorText = ytErr.takeIf { it != 0 }?.let { code ->
         ds("error.yt_with_code", "code" to code, "meaning" to KcefEngine.ytErrorMeaning(code))
     }

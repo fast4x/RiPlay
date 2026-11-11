@@ -1,8 +1,8 @@
 package it.fast4x.riplay.utils
 
-import player.DesktopPlayerManager
-import player.PlayerController
+import it.fast4x.riplay.player.player.DesktopPlayerManager
 import it.fast4x.riplay.data.models.Song
+import player.PlayerController
 
 /**
  * Ponte tra la composizione (ThreeColumnsApp) e i servizi GLOBALI

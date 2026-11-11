@@ -71,6 +71,18 @@ class KcefYouTubePlayer(
 
     @Volatile private var lastLoggedYtErr = 0
 
+    /**
+     * v47: TRUE = il browser e' REALMENTE creato e attaccato al pannello
+     * ospite (componente AWT presente nella gerarchia). FALSE = client CEF
+     * non ancora pronto, creazione non ancora avvenuta, browser in
+     * ricreazione o rilasciato (dispose/switch motore). Stato osservabile in
+     * Compose: la UI (YoutubeKcefPane) lo usa per mostrare copertina/
+     * segnaposto INVECE del foro nero quando la superficie del browser non
+     * esiste ancora (sintomo "pannello player tutto nero" su Wayland).
+     */
+    private val _browserAttached = MutableStateFlow(false)
+    val browserAttached: StateFlow<Boolean> = _browserAttached.asStateFlow()
+
     @Volatile private var browser: CefBrowser? = null
     @Volatile private var hostPanel: KcefPlayerHostPanel? = null
     @Volatile private var pendingVideoId: String? = null
@@ -180,6 +192,11 @@ class KcefYouTubePlayer(
             if (java.awt.EventQueue.isDispatchThread()) b.createImmediately()
             else java.awt.EventQueue.invokeAndWait { runCatching { b.createImmediately() } }
             startPolling()
+            // v47: il browser e' ora REALMENTE attaccato al pannello
+            // ospite: la UI puo' togliere il segnaposto/cover e mostrare
+            // il browser (aggiorna browserAttached osservato in Compose)
+            _browserAttached.value = true
+            KcefEngine.logKcef("browser attaccato al pannello ospite (v47 browserAttached=true)")
             // NB: nessuna evaluate qui: il videoId in attesa viene SOSTITUITO
             // dentro l'HTML della pagina (meccanismo Android <<injectedVideoId>>)
             // oppure inviato alla conferma della pagina (onPageConfirmed).
@@ -296,6 +313,7 @@ class KcefYouTubePlayer(
                 KcefEngine.logKcef("ricreo il browser del player: $reason")
                 val old = browser
                 browser = null
+                _browserAttached.value = false
                 pollJob?.cancel()
                 pollJob = null
                 pendingVideoId = videoId
@@ -315,6 +333,8 @@ class KcefYouTubePlayer(
                         KcefEngine.logKcef(
                             "ricrea browser: creazione fallita: ${it.javaClass.simpleName}: ${it.message}"
                         )
+                    }.onSuccess {
+                        _browserAttached.value = true
                     }
                 }
                 startPolling()
@@ -480,6 +500,7 @@ class KcefYouTubePlayer(
         consecutiveTimeReached = 0
         val b = browser
         browser = null
+        _browserAttached.value = false
         val host = hostPanel
         hostPanel = null
         runCatching { host?.removeAll() }
