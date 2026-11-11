@@ -41,6 +41,7 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 ### ⏰ Smart Features
 - Sleep timer
 - Alarm, wake up with your music: schedule a song or a playlist to play at a specific time
+- Hands-free voice control
 - Visualizer (microphone permission required)
 - Fast Share (direct sharing with installed apps)
 - Self-closing app scheduling

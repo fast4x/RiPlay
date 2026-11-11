@@ -1653,8 +1653,6 @@
     <string name="alarm_snooze">Snooze %1$d min</string>
     <string name="alarm_source_missing">The alarm music is no longer available. Choose a new song, playlist or album.</string>
     <string name="alarm_notification_starting">Starting alarm…</string>
-
-    <!-- Voice commands -->
     <string name="voice_hands_free">Hands-free voice control</string>
     <string name="voice_hands_free_description">Keep listening for playback commands while the player is open</string>
     <string name="voice_command_mic">Voice commands</string>

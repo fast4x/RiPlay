@@ -658,7 +658,7 @@ fun GeneralSettings(
                                     val new = appSettingsManager.activeSettings.value.copy(voiceCommandsHandsFree = it)
                                     appSettingsManager.updateSettings(new)
                                 }
-                            }
+                            }, icon = R.drawable.mic,
                         )
                     }
 
