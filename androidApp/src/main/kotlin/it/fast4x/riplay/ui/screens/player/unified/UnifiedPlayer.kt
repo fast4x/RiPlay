@@ -88,6 +88,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -203,6 +204,11 @@ import it.fast4x.riplay.enums.SwipeAnimationNoThumbnail
 import it.fast4x.riplay.enums.ThumbnailCoverType
 import it.fast4x.riplay.enums.ThumbnailType
 import it.fast4x.riplay.extensions.equalizer.InternalEqualizerScreen
+import it.fast4x.riplay.extensions.voice.VoiceCommand
+import it.fast4x.riplay.extensions.voice.VoiceCommandExecutor
+import it.fast4x.riplay.extensions.voice.VoiceCommandHelpDialog
+import it.fast4x.riplay.extensions.voice.VoiceCommandParser
+import it.fast4x.riplay.extensions.voice.rememberVoiceCommandController
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
 import it.fast4x.riplay.enums.AudioVisualizerStyle
 import it.fast4x.riplay.enums.CollapseValue
@@ -490,6 +496,77 @@ fun UnifiedPlayer(
 
 
     val context = LocalContext.current
+
+    val voiceCommandExecutor = remember(binder, appSettingsManager) {
+        VoiceCommandExecutor(context, binder, appSettingsManager)
+    }
+    var showVoiceCommandHelp by rememberSaveable { mutableStateOf(false) }
+    val voiceCommandController = rememberVoiceCommandController { transcript ->
+        if (!appSettings.voiceCommandsHandsFree) {
+            SmartMessage(
+                message = context.getString(R.string.voice_you_said, transcript),
+                context = context
+            )
+        }
+        val command = VoiceCommandParser.parse(transcript)
+        if (command == VoiceCommand.Unknown) {
+            if (!appSettings.voiceCommandsHandsFree) {
+                SmartMessage(
+                    message = context.getString(R.string.voice_unknown_command),
+                    type = PopupType.Error,
+                    context = context
+                )
+            }
+            return@rememberVoiceCommandController
+        }
+        val result = voiceCommandExecutor.execute(command)
+        SmartMessage(
+            message = result.message,
+            type = if (result.isError) PopupType.Error else PopupType.Success,
+            context = context
+        )
+    }
+
+    SideEffect {
+        voiceCommandController.onHandsFreeAborted = {
+            coroutineScope.launch {
+                appSettingsManager.updateSettings(
+                    appSettingsManager.activeSettings.value.copy(voiceCommandsHandsFree = false)
+                )
+            }
+            SmartMessage(
+                message = context.getString(R.string.voice_hands_free_stopped),
+                type = PopupType.Warning,
+                context = context
+            )
+        }
+        voiceCommandController.onRecognitionUnavailable = {
+            SmartMessage(
+                message = context.getString(R.string.voice_unavailable),
+                type = PopupType.Error,
+                context = context
+            )
+        }
+    }
+
+    LaunchedEffect(appSettings.voiceCommandsHandsFree) {
+        voiceCommandController.setHandsFreeMode(appSettings.voiceCommandsHandsFree)
+    }
+
+    if (showVoiceCommandHelp) {
+        VoiceCommandHelpDialog(
+            isHandsFree = appSettings.voiceCommandsHandsFree,
+            onHandsFreeChange = { enabled ->
+                coroutineScope.launch {
+                    appSettingsManager.updateSettings(
+                        appSettingsManager.activeSettings.value.copy(voiceCommandsHandsFree = enabled)
+                    )
+                }
+            },
+            onDismiss = { showVoiceCommandHelp = false }
+        )
+    }
+
     val selectedQueue = LocalSelectedQueue.current
     var mediaItems by remember {
         mutableStateOf(binder.hybridPlayer.currentTimeline?.mediaItems)
@@ -1959,6 +2036,15 @@ fun UnifiedPlayer(
                                 .fillMaxWidth()
                         ) {
                             MusicVaultButton(mediaItem.asSong, size = 28.dp)
+
+                            if (appSettings.enableVoiceInput) IconButton(
+                                icon = R.drawable.mic,
+                                color = if (voiceCommandController.isListening) colorPalette().accent else colorPalette().text,
+                                enabled = true,
+                                onClick = { voiceCommandController.startListening() },
+                                onLongClick = { showVoiceCommandHelp = true },
+                                modifier = Modifier.size(24.dp)
+                            )
 
                             if (showButtonPlayerVideo) IconButton(
                                 icon = R.drawable.left_and_right_arrows,
