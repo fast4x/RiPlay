@@ -87,6 +87,12 @@ fun VoiceCommandHelpDialog(
             Switch(
                 checked = isHandsFree,
                 onCheckedChange = onHandsFreeChange,
+                colors = androidx.compose.material3.SwitchDefaults.colors(
+                    checkedThumbColor = colorPalette().text,
+                    checkedTrackColor = colorPalette().accent,
+                    uncheckedThumbColor = colorPalette().text,
+                    uncheckedTrackColor = colorPalette().background2
+                ),
                 modifier = Modifier.padding(start = 12.dp)
             )
         }
@@ -95,7 +101,7 @@ fun VoiceCommandHelpDialog(
             horizontalArrangement = Arrangement.End,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 12.dp)
+                .padding(top = 24.dp)
         ) {
             DialogTextButton(
                 text = stringResource(R.string.voice_command_close),
