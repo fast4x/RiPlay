@@ -56,6 +56,11 @@
     <string name="settings.closetotray.desc">Se attiva, chiudendo la finestra con la X (o Alt+F4) RiPlay non esce: resta nell\'area di notifica e continua a suonare; doppio click sull\'icona per riaprire la finestra, \"Esci da RiPlay\" nel suo menu per terminare davvero. Se disattiva (predefinito), la X chiude l\'app.</string>
     <string name="settings.karaoke.title">Overlay karaoke</string>
     <string name="settings.karaoke.desc">Se attiva, una piccola finestra sempre in primo piano mostra la riga del testo corrente (e la successiva) sincronizzata con la riproduzione, con evidenza a riga intera o parola per parola (selettore al passaggio del mouse). Si trascina ovunque e ricorda la posizione; regola la dimensione del testo con i pulsanti A-/A+ e accendi o spegni con Ctrl+Maiusc+K. Richiede testi sincronizzati (LRCLIB/KuGou), altrimenti mostra titolo e artista del brano.</string>
+    <string name="settings.cefcache.title">Limite cache browser</string>
+    <string name="settings.cefcache.desc">Cancella automaticamente all\'avvio la cache del browser integrato (kcef-cache) quando supera il limite. Vengono rimosse SOLO le cartelle cache rigenerabili: login e cookie restano al loro posto e il bundle CEF in kcef/ non viene toccato.</string>
+    <string name="settings.cefcache.now">Attualmente in uso: {size}</string>
+    <string name="settings.cefcache.off">Mai</string>
+    <string name="settings.cefcache.applied_next_start">La modifica si applica al prossimo avvio dell\'app.</string>
     <string name="karaoke.no_synced">Testo sincronizzato non disponibile</string>
     <string name="karaoke.mode.line">Riga</string>
     <string name="karaoke.mode.word">Parola</string>
