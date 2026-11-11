@@ -36,6 +36,39 @@ class DatabaseBackupManager(
 
     suspend fun backupDatabase(backupUri: Uri) = withContext(Dispatchers.IO) {
         val temp = File(context.cacheDir, "riplay-backup-${System.currentTimeMillis()}.db")
+        temp.delete()
+
+        try {
+            // 1. Checkpoint WAL: consolida i dati nel file .db principale
+            runCatching {
+                getDatabaseInitializer().useWriterConnection { conn ->
+                    conn.usePrepared("PRAGMA wal_checkpoint(TRUNCATE)") { it.step() }
+                }
+            }.onFailure {
+                Timber.w("backupDatabase: wal_checkpoint saltato: ${it.message}")
+            }
+
+            // 2. Copia il file .db direttamente (niente VACUUM INTO)
+            val dbFile = context.getDatabasePath(DatabaseInitializer.DB_NAME)
+            dbFile.inputStream().use { input ->
+                temp.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+
+            // 3. Copia verso la destinazione scelta dall'utente (SAF)
+            context.contentResolver.openOutputStream(backupUri)?.use { out ->
+                temp.inputStream().use { it.copyTo(out) }
+            } ?: error("backupDatabase: Impossibile aprire la destinazione")
+
+        } finally {
+            temp.delete()
+        }
+    }
+
+    /*
+    suspend fun backupDatabase(backupUri: Uri) = withContext(Dispatchers.IO) {
+        val temp = File(context.cacheDir, "riplay-backup-${System.currentTimeMillis()}.db")
         temp.delete()   // VACUUM INTO fallisce se il file di destinazione esiste già: temp sempre fresca
 
         try {
@@ -73,6 +106,8 @@ class DatabaseBackupManager(
             temp.delete()
         }
     }
+
+     */
 
     // classic restore
     suspend fun restoreDatabase(restoreUri: Uri) {
