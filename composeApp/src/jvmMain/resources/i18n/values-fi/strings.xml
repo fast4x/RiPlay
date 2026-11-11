@@ -56,6 +56,11 @@
     <string name="settings.closetotray.desc">When enabled, closing the window with the X (or Alt+F4) does not quit RiPlay: it stays in the notification area and keeps playing; double-click the icon to reopen the window, use \"Quit RiPlay\" in its menu to exit for real. When disabled (default), the X closes the app.</string>
     <string name="settings.karaoke.title">Karaoke overlay</string>
     <string name="settings.karaoke.desc">When enabled, a small always-on-top window shows the current lyrics line (and the next one) synced with playback. Drag it anywhere, the position is remembered; it needs synced lyrics (LRCLIB/KuGou), otherwise it shows the song title and artist.</string>
+    <string name="settings.cefcache.title">Browser cache limit</string>
+    <string name="settings.cefcache.desc">Automatically deletes the browser cache (kcef-cache) at startup when it exceeds the limit. Only regenerable cache folders are removed: logins and cookies are kept, and the CEF bundle in kcef/ is never touched.</string>
+    <string name="settings.cefcache.now">Currently used: {size}</string>
+    <string name="settings.cefcache.off">Never</string>
+    <string name="settings.cefcache.applied_next_start">Changes apply at the next app start.</string>
     <string name="karaoke.no_synced">No synced lyrics available</string>
     <string name="karaoke.mode.line">Line</string>
     <string name="karaoke.mode.word">Word</string>
