@@ -201,15 +201,17 @@ compose.desktop {
              *    formato viene prodotto dal runner corrispondente nel
              *    workflow GitHub Actions unificato
              *    (.github/workflows/build-release.yml, job build-desktop).
-             *  - CEF PRE-SEMINATO: gli archivi jbr_jcef (selezionati come fa
-             *    KCEF, v. scripts/fetch-kcef-bundle.sh) vanno messi in
-             *    composeApp/desktop-resources/<os>/kcef/ (la DSL copia nell'app
-             *    solo le sottocartelle per sistema: linux | windows | macos)
-             *    PRIMA della build: finiscono nell'applicazione (resources/kcef) e
-             *    KcefEngine li estrae
+             *  - CEF PRE-SEMINATO (v46, jcefmaven): l'archivio natives
+             *    "jcef-natives-<platform>-<tag>.tar.gz" (stesso formato che
+             *    jcefmaven estrae: v. composeApp/desktop-resources/README.md)
+             *    va messo in composeApp/desktop-resources/<os>/kcef/ (la DSL
+             *    copia nell'app solo le sottocartelle per sistema:
+             *    linux | windows | macos) PRIMA della build: finisce
+             *    nell'applicazione (resources/kcef) e KcefEngine lo estrae
              *    al primo avvio nella directory dati utente (nessun download
-             *    ~200MB per l'utente finale). Se l'archivio manca, l'app
-             *    continua a scaricare il bundle come sempre (fallback).
+             *    ~150MB per l'utente finale). Se l'archivio manca o ha un tag
+             *    diverso dalla versione CEF dell'app, jcefmaven scarica
+             *    automaticamente il bundle corretto (fallback, come sempre).
              *  - VLC (motore Locale): resta un REQUISITO DI SISTEMA (vlcj
              *    NativeDiscovery trova libvlc di VLC installato).
              */
@@ -378,19 +380,15 @@ kotlin {
 
             implementation(libs.material.icon.desktop)
             implementation(libs.vlcj)
-            implementation(libs.kcef)
 
-            // JOGL/GlueGen runtime per KCEF (motore YouTube desktop)
-            // jogamp.org risponde 403 al client HTTP di Gradle: si usano gli artefatti 2.6.0 su Maven Central
-            // (jogl-all.jar include le classi nativewindow/newt; la 2.6.0 vince sulla 2.5.0 transitiva di kcef)
-            runtimeOnly("org.jogamp.gluegen:gluegen-rt:2.6.0")
-            runtimeOnly("org.jogamp.jogl:jogl-all:2.6.0")
-            runtimeOnly("org.jogamp.gluegen:gluegen-rt:2.6.0:natives-windows-amd64")
-            runtimeOnly("org.jogamp.gluegen:gluegen-rt:2.6.0:natives-linux-amd64")
-            runtimeOnly("org.jogamp.gluegen:gluegen-rt:2.6.0:natives-macosx-universal")
-            runtimeOnly("org.jogamp.jogl:jogl-all:2.6.0:natives-windows-amd64")
-            runtimeOnly("org.jogamp.jogl:jogl-all:2.6.0:natives-linux-amd64")
-            runtimeOnly("org.jogamp.jogl:jogl-all:2.6.0:natives-macosx-universal")
+            // v46 (jcefmaven): motore CEF = jcefmaven (me.friwi) mantenuto attivo
+            // ( ultima release 152.0.6, Chromium 152 ) in sostituzione di KCEF
+            // (dev.datlag:kcef, ultima release 2025.03.23, non piu' aggiornato).
+            // jcefmaven porta transitivamente jcef-api (classi org.cef) e le sue
+            // dipendenze jogl (me.friwi:jogl-all/gluegen-rt, non usate in rendering
+            // windowed). Le natives CEF vengono estratte dal bundle pre-seminato
+            // nell'app o scaricate al primo avvio (v. KcefEngine).
+            implementation(libs.jcefmaven)
 
             implementation(libs.coil.network.okhttp)
             implementation(projects.simpmusiclyrics)

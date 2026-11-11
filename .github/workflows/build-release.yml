@@ -30,10 +30,12 @@
 #    MACOS_CERTIFICATE_PWD, APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD,
 #    APPLE_TEAM_ID e i blocchi signing/notarization in build.gradle.kts
 #    (composeApp, dentro macOS { ... }).
-#  - Il bundle CEF (jbr_jcef) viene seminato PRIMA della build con
-#    scripts/fetch-kcef-bundle.sh (stessa selezione della libreria KCEF)
-#    e finisce DENTRO l'installer (resources/kcef): l'app lo estrae al
-#    primo avvio nella directory dati utente (KcefEngine.preSeedPackagedBundle).
+#  - Il bundle CEF viene seminato PRIMA della build con
+#    scripts/fetch-kcef-bundle.sh e finisce DENTRO l'installer
+#    (resources/kcef): l'app lo estrae al primo avvio nella directory
+#    dati utente (KcefEngine.preSeedPackagedBundle). Dal v46 il formato
+#    e' jcef-natives-<platform>-<tag>.tar.gz di jcefmaven, NON piu'
+#    jbr_jcef dell'era KCEF (v. STEP 3ae).
 #  - VLC resta un requisito DI SISTEMA per la riproduzione dei file locali.
 #
 # STEP 3u (fix DMG macOS):
@@ -91,10 +93,9 @@
 #    pubblici) -> nuovo job macos-dmg-x64. jpackage non fa cross-building:
 #    serve un runner della stessa arch del target, qui e' NATIVA (niente
 #    Rosetta).
-#  - SEED CEF: anche il bundle jbr_jcef segue l'arch del job (osx/aarch64
-#    per arm, osx/x64 per Intel) via fetch-kcef-bundle.sh (stessa logica
-#    di selezione di KCEFBuilder.GitHub, che a runtime scegliera' lo
-#    stesso archivio).
+#  - SEED CEF: anche il bundle segue l'arch del job (osx/aarch64 per arm,
+#    osx/x64 per Intel) via fetch-kcef-bundle.sh (pre-v46: jbr_jcef; dal
+#    v46: natives jcefmaven, v. STEP 3ae).
 #  - NOMI ASSET (cambia rispetto alle release precedenti): i due DMG sono
 #    distinguibili nel nome -> RiPlay-<tag>-macOS-arm64.dmg e
 #    RiPlay-<tag>-macOS-x86_64.dmg (prima: RiPlay-<tag>-macOS.dmg).
@@ -105,7 +106,8 @@
 #  - Controllo KCEF: il Controllo STEP 3x ora controlla anche la presenza
 #    del motore KCEF v44 (bootstrap "v44 (step3z)") nel codice eseguito:
 #    protegge dal regresso al motore v37 (bug chrome_elf su Linux ai
-#    riavvii + crash macOS).
+#    riavvii + crash macOS). [v46: il marker del controllo ora e' "v46
+#    (jcefmaven)", v. STEP 3ae]
 #  - DIAGNOSTICA jpackage: artifact rinominato per-job
 #    (macos-jpackage-diagnostics-<nome job>) perche' con due job mac un
 #    nome unico andrebbe in conflitto se entrambi fallissero nella run.
@@ -116,8 +118,8 @@
 #    (task :composeApp:createDistributable -> binaries/main/app/RiPlay, gia'
 #    completo di launcher, jar, runtime JRE e CEF pre-seminato) in un .AppDir
 #    (AppRun + RiPlay.desktop + icone + .DirIcon) compresso con appimagetool
-#    (AppImageKit ufficiale, lanciato con --appimage-extract-and-run perche'
-#    i runner CI non hanno libfuse2).
+#    (da STEP 3ag: il successore ufficiale "AppImage/appimagetool", lanciato
+#    con --appimage-extract-and-run perche' i runner CI non hanno libfuse2).
 #  - Il job linux-deb-rpm costruisce deb+rpm+AppImage nella STESSA run (stesso
 #    checkout, stesso seed CEF, stessa JDK; ubuntu-22.04 come per il deb:
 #    glibc base piu' vecchio -> compatibilita' anche con distro non recenti).
@@ -134,11 +136,6 @@
 #    all'assert per-OS del runner Linux; nome canonico
 #    RiPlay-<tag>-Linux-x86_64.AppImage; verifica asset attesi (all e
 #    desktop-only) e release notes aggiornate.
-#  - COMPROMESSI NOTI (scelte consapevoli): senza libfuse2 l'utente puo'
-#    eseguire con --appimage-extract-and-run; niente StartupWMClass nel
-#    .desktop finche' non si verifica con xprop il WM_CLASS reale della
-#    finestra Compose (valore sbagliato = dock che non raggruppa la finestra).
-#    Gli aggiornamenti delta (zsync) sono stati poi aggiunti nel STEP 3ad.
 #
 # STEP 3ad (zsync / AppImageUpdate):
 #  - Produce il file .zsync per gli aggiornamenti
@@ -165,6 +162,88 @@
 #    meccanismo resta quello ufficiale di tutti i progetti AppImage con
 #    update information. AppImageUpdate usa l'API GitHub anonima (rate limit
 #    60/h per IP: accettabile per un check di aggiornamento).
+#
+# STEP 3ae (v46: PRE-SEED CEF migrato a jcefmaven):
+#  - Con la migrazione del motore browser a jcefmaven 152.0.6 (KcefEngine
+#    v46) l'app NON riconosce piu' gli archivi jbr_jcef (JetBrains Runtime)
+#    dell'era KCEF: KcefEngine.packagedCefBundle() accetta SOLO
+#    "jcef-natives-<platform>-<tag>.tar.gz" (platform = EnumPlatform di
+#    jcefmaven: windows-amd64 | linux-amd64 | macosx-amd64 | macosx-arm64)
+#    e gli archivi jbr_jcef restano nel pacchetto come file inutili (log
+#    "archivio KCEF obsoleto ... ignorato" a runtime).
+#  - scripts/fetch-kcef-bundle.sh RISCRITTO (stessa CLI seed_os/seed_arch,
+#    nessun'altra modifica al workflow): (1) legge la versione jcefmaven
+#    da gradle/libs.versions.toml (fonte di verita' della build); (2) risale
+#    al release tag completo (es. jcef-17e805a+cef-152.0.6+g708dc14+
+#    chromium-152.0.7977.83) dagli asset della release GitHub di jcefmaven
+#    (con GITHUB_TOKEN; fallback maven-metadata.xml con retry); (3) scarica
+#    il jar natives (primario GitHub release asset, fallback Maven Central:
+#    le stesse URL che usa CefAppBuilder di jcefmaven); (4) estrae il
+#    .tar.gz dal jar (python -> unzip -> jar JDK: copre tutti i runner);
+#    (5) semina in composeApp/desktop-resources/<windows|linux|macos>/kcef/
+#    con canarini: dimensione >= 50MB, tar leggibile, build_meta.json alla
+#    radice (richiesto dal pre-seed dell'app: install.lock + meta senza
+#    ri-download).
+#  - NB CARTELLA macOS = "macos" (sottocartella riconosciuta dalla DSL
+#    Compose appResourcesRootDir: common|linux|windows|macos): un seed in
+#    "osx/" NON verrebbe incluso nell'installer.
+#  - COERENZA TAG GARANTITA: il tag e' preso dalla release della STESSA
+#    versione jcefmaven del toml e lo script fallisce se il tag non cita
+#    "cef-<versione>" (l'app ignora archivi con tag diverso da
+#    CefBuildInfo.fromClasspath() e jcefmaven scaricherebbe comunque).
+#  - CONTROLLO STEP 3x aggiornato: il marker del motore ora e' "v46
+#    (jcefmaven)" (BOOTSTRAP_VERSION in KcefEngine.kt); il vecchio grep
+#    "v44 (step3z)" NON matcha piu' il codice migrato (falso allarme a
+#    ogni run) e il controllo "kotlin.daemon.jvmargs=-Xmx4g" resta invariato.
+#  - DIMENSIONI INSTALLER (comportamento atteso): il bundle seminato e'
+#    ~153MB (linux-amd64), ~143MB (macosx-arm64), ~171MB (windows-amd64):
+#    MSI/DEB/RPM/DMG/AppImage crescono di conseguenza. Senza seed lo
+#    script fallisce con messaggio chiaro, mai release senza CEF.
+#  - SCRIPT VALIDATO (nov 2026) con download reali per le tre piattaforme
+#    (linux-amd64 152.9MB, macosx-arm64 142.5MB, windows-amd64 171.4MB):
+#    exit 0, canarini OK, idempotenza OK (re-run = skip download).
+#
+# STEP 3ag (AppImage SENZA libfuse2: runtime type2 STATICO):
+#  - PROBLEMA: il runtime di AppImageKit usato finora monta il suo squashfs
+#    caricando FUSE2 DINAMICAMENTE dal sistema (dlopen libfuse.so.2): su
+#    Ubuntu 23.04+/24.04, Fedora 38+ ecc. libfuse2 non e' preinstallata,
+#    l'utente vedeva "dlopen(): error loading libfuse.so.2" e doveva
+#    installare "libfuse2"/"libfuse2t64" oppure lanciare l'AppImage con
+#    --appimage-extract-and-run (compromesso del STEP 3ac).
+#  - FIX: l'AppImage viene prodotta con il RUNTIME STATICO ufficiale
+#    AppImage/type2-runtime (compilato in chroot Alpine con musl, fuse2
+#    linkato staticamente NEL runtime): "Since the runtime is linked
+#    statically, libfuse2 is no longer required on the target system"
+#    (README). Verificato sul binario: NESSUN dlopen di libfuse.so.2, il
+#    mount usa /dev/fuse e cerca un helper fusermount sul PATH (fusermount3
+#    delle distro con fuse3 va bene; in assenza resta il fallback
+#    --appimage-extract-and-run). Approccio gia' in produzione altrove
+#    (es. VeraCrypt, issue #1595).
+#  - MIGRAZIONE TOOL: AppImageKit/appimagetool (ultimo rilascio reale 2021)
+#    -> "AppImage/appimagetool", il successore ufficiale mantenuto: STESSA
+#    CLI (--updateinformation, --appimage-extract-and-run, ARCH=,
+#    --runtime-file), mksquashfs moderno (risolve il bug di determinismo
+#    multi-thread AppImageKit #929). Di default SCARICA il runtime al volo
+#    da type2-runtime: qui lo PINNAMO con --runtime-file usando il runtime
+#    pre-scaricato e verificato nel step "Setup appimagetool" (determinismo
+#    + canarini PRIMA dell'uso, niente fetch nascosto in build).
+#  - CANARINI runtime (step Setup): ELF (7f454c46), >= 512KB, ldd "not a
+#    dynamic executable" (static-pie musl), readelf -d senza NEEDED libfuse.
+#    CANARINI POST-BUILD (step Costruisci): la STESSA staticita' imposta
+#    sull'AppImage prodotta -> la build fallisce se la dipendenza libfuse2
+#    fosse reintrodotta (mai release con compromesso ritornato in silenzio).
+#  - E2E VALIDATO IN LOCALE (nov 2026): appimagetool continuous build 370
+#    (git 11d54c9, 2026-11-06) + runtime-x86_64 (923KB, static-pie): build
+#    exit 0, magic type 2 (414902) a offset 8, update information embedduta
+#    in .upd_info, .zsync auto-generato, payload eseguito con
+#    --appimage-extract-and-run, ldd "not a dynamic executable", zero NEEDED.
+#  - AppImageUpdate/zsync (STEP 3ad): NESSUN IMPATTO: l'update information
+#    vive nella sezione ELF .upd_info (embedding identico) e il .zsync
+#    rigenerato copre il FILE INTERO (runtime incluso). Il runtime continuous
+#    puo' cambiare tra release (delta poco efficienti su ~1MB): accettabile.
+#  - NB: il TOOL appimagetool resta lui stesso un AppImage: sul runner CI
+#    (senza libfuse2) si lancia SEMPRE con --appimage-extract-and-run;
+#    quella necessita' riguarda la macchina di BUILD, non l'artefatto.
 # ==============================================================================
 
 name: Build and Release RiPlay
@@ -455,20 +534,36 @@ jobs:
           else
             echo "!! ATTENZIONE: fix memoria (kotlin.daemon.jvmargs=-Xmx4g) ASSENTE — run su codice vecchio !!"
           fi
-          # STEP 3ab: il motore KCEF v44 vive SOLO nel repo utente (gli zip
-          # consegnati dalle sessioni successive potrebbero non includerlo):
-          # se questo grep fallisce la run gira col motore vecchio v37
-          # (bug chrome_elf su Linux ai riavvii, crash macOS non fixati)
-          if grep -n "v44 (step3z)" composeApp/src/jvmMain/kotlin/it/fast4x/riplay/player/kcef/KcefEngine.kt; then
-            echo "OK: motore KCEF v44 (step3z) PRESENTE"
+          # STEP 3ae: il motore v46 (jcefmaven) vive SOLO nel repo aggiornato
+          # alla migrazione: se questo grep fallisce la run gira su codice
+          # pre-migrazione (KCEF), che NON riconoscerebbe il pre-seed
+          # jcef-natives seminato qui (formato v46) e i pacchetti uscirebbero
+          # senza CEF pre-seminato (download ~150MB per l'utente al primo
+          # avvio). Il vecchio marker "v44 (step3z)" non esiste piu' nel
+          # codice migrato: il grep vecchio dava falso allarme a ogni run.
+          if grep -n "v46 (jcefmaven)" composeApp/src/jvmMain/kotlin/it/fast4x/riplay/player/kcef/KcefEngine.kt; then
+            echo "OK: motore CEF v46 (jcefmaven) PRESENTE"
           else
-            echo "!! ATTENZIONE: motore KCEF v44 ASSENTE — run su motore v37 (bug Linux/macOS nota) !!"
+            echo "!! ATTENZIONE: motore CEF v46 (jcefmaven) ASSENTE — run su codice pre-migrazione KCEF: il pre-seed jcef-natives verrebbe ignorato !!"
+          fi
+          # STEP 3ae: mostra la versione jcefmaven della build. Il tag del
+          # bundle seminato (fetch-kcef-bundle.sh) deriva da QUESTA versione:
+          # se il toml e il jar jcef-api non coincidono, l'app ignora il
+          # pre-seed e jcefmaven scarichera' il bundle al primo avvio.
+          if grep -n '^jcefmaven[[:space:]]*=' gradle/libs.versions.toml; then
+            echo "OK: versione jcefmaven presente nel toml (fonte del tag pre-seed)"
+          else
+            echo "!! ATTENZIONE: chiave 'jcefmaven' ASSENTE nel toml: fetch-kcef-bundle.sh fallira' in fase di seed !!"
           fi
 
-      # Semina l'archivio jbr_jcef (stessa selezione della libreria KCEF) in
-      # composeApp/desktop-resources/<os>/kcef/ -> jpackage lo include
-      # nell'installer (resources/kcef)
-      - name: Pre-seed bundle CEF (jbr_jcef)
+      # STEP 3ae: semina l'archivio natives jcefmaven (formato v46:
+      # jcef-natives-<platform>-<tag>.tar.gz) in
+      # composeApp/desktop-resources/<windows|linux|macos>/kcef/ -> jpackage
+      # lo include nell'installer (resources/kcef). La CLI e' IDENTICA al
+      # vecchio seed jbr_jcef (seed_os/seed_arch della matrix, invariata);
+      # lo script legge la versione jcefmaven dal toml e ne deriva il tag,
+      # cosi' il bundle coincide sempre con CefBuildInfo dell'app.
+      - name: Pre-seed bundle CEF (jcefmaven natives)
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -517,12 +612,19 @@ jobs:
           echo "❌ Build fallita dopo ${max_attempts} tentativi"
           exit 1
 
-      # STEP 3ac: appimagetool (AppImageKit ufficiale). Nei runner CI non c'e'
-      # libfuse2 -> sempre --appimage-extract-and-run; --version come smoke
-      # test (verificato: exit 0, printa il commit della build). Download in
-      # RUNNER_TEMP per non sporcare la repo; path passato via GITHUB_ENV.
-      # STEP 3ad: apt "zsync" fornisce zsyncmake (formato classico full-file,
-      # lo stesso che appimagetool bundleggia) per il .zsync dell'update delta.
+      # STEP 3ag: appimagetool e' il successore ufficiale "AppImage/
+      # appimagetool" (stessa CLI di AppImageKit, mksquashfs moderno, v.
+      # header STEP 3ag) e gli viene affiancato il runtime STATICO
+      # "type2-runtime" (fuse2 linkato staticamente nel runtime: l'AppImage
+      # FINALE non richiede libfuse2 sul sistema dell'utente). Entrambi
+      # scaricati in RUNNER_TEMP con retry; il runtime viene VERIFICATO con
+      # canarini (ELF, statico, zero NEEDED libfuse) PRIMA dell'uso e i path
+      # passano via GITHUB_ENV (APPIMAGETOOL / APPIMAGE_RUNTIME).
+      # Il TOOL resta un AppImage: sui runner CI (senza libfuse2) si lancia
+      # sempre con --appimage-extract-and-run; --version come smoke test
+      # (verificato: exit 0, printa commit e data di build).
+      # STEP 3ad: apt "zsync" fornisce zsyncmake (formato classico full-file)
+      # per il .zsync canonico dell'update delta.
       - name: Setup appimagetool + zsync (Linux)
         if: runner.os == 'Linux'
         shell: bash
@@ -531,13 +633,48 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq zsync
           zsyncmake --version | head -1
+          # STEP 3ag: appimagetool (successore ufficiale di AppImageKit)
           TOOL="appimagetool-x86_64.AppImage"
-          URL="https://github.com/AppImage/AppImageKit/releases/download/continuous/${TOOL}"
-          echo "⬇️ Download ${TOOL} (AppImageKit continuous)"
+          URL="https://github.com/AppImage/appimagetool/releases/download/continuous/${TOOL}"
+          echo "⬇️ Download ${TOOL} (AppImage/appimagetool continuous)"
           curl -fL --retry 3 --retry-delay 5 -o "${RUNNER_TEMP}/${TOOL}" "${URL}"
           chmod +x "${RUNNER_TEMP}/${TOOL}"
           "${RUNNER_TEMP}/${TOOL}" --appimage-extract-and-run --version
           echo "APPIMAGETOOL=${RUNNER_TEMP}/${TOOL}" >> "$GITHUB_ENV"
+          # STEP 3ag: runtime type2 STATICO (fuse2 linkato staticamente NEL
+          # runtime -> l'AppImage prodotta NON richiede libfuse2 sull'host)
+          RUNTIME="runtime-x86_64"
+          RURL="https://github.com/AppImage/type2-runtime/releases/download/continuous/${RUNTIME}"
+          echo "⬇️ Download ${RUNTIME} (type2-runtime statico: no libfuse2)"
+          curl -fL --retry 3 --retry-delay 5 -o "${RUNNER_TEMP}/${RUNTIME}" "${RURL}"
+          chmod +x "${RUNNER_TEMP}/${RUNTIME}"
+          rsize=$(stat -c%s "${RUNNER_TEMP}/${RUNTIME}")
+          echo "📦 runtime statico: ${rsize} bytes"
+          if [ "${rsize}" -lt 524288 ]; then
+            echo "❌ runtime statico sospettosamente piccolo (<512KB): download corrotto?"
+            exit 1
+          fi
+          rmagic=$(head -c 4 "${RUNNER_TEMP}/${RUNTIME}" | od -An -tx1 | tr -d ' \n')
+          if [ "${rmagic}" != "7f454c46" ]; then
+            echo "❌ runtime statico: magic ELF mancante (${rmagic})"
+            exit 1
+          fi
+          # canarino STATICITA' (verificato in locale nov 2026 sul runtime
+          # continuous: ELF static-pie musl): ldd dice "not a dynamic
+          # executable" (ed esce 1 -> catturato con || true) e readelf -d
+          # non ha NESSUNA sezione NEEDED che cita libfuse
+          lddout=$(ldd "${RUNNER_TEMP}/${RUNTIME}" 2>&1 || true)
+          echo "🔎 ldd runtime: ${lddout}"
+          if ! echo "${lddout}" | grep -q "not a dynamic executable"; then
+            echo "❌ runtime type2 NON statico (ldd mostra dipendenze dinamiche): rifiuto, reintrodurrebbe libfuse2"
+            exit 1
+          fi
+          if readelf -d "${RUNNER_TEMP}/${RUNTIME}" 2>/dev/null | grep NEEDED | grep -qi libfuse; then
+            echo "❌ runtime type2 con NEEDED libfuse: non e' il runtime statico atteso"
+            exit 1
+          fi
+          echo "✅ runtime statico verificato: zero dipendenze dinamiche, zero NEEDED libfuse"
+          echo "APPIMAGE_RUNTIME=${RUNNER_TEMP}/${RUNTIME}" >> "$GITHUB_ENV"
 
       # STEP 3ac: jpackage non produce AppImage -> l'app-image di
       # createDistributable (launcher + jar + runtime JRE + CEF seminato)
@@ -550,6 +687,10 @@ jobs:
       # la legge dalla sezione ELF .upd_info) e .zsync rigenerato con URL
       # assoluto canonico (l'auto-generato da appimagetool ha URL relativo ->
       # risolverebbe 404 su GitHub Releases versionate).
+      # STEP 3ag: compressione con --runtime-file (runtime type2 STATICO
+      # pre-scaricato e verificato in "Setup appimagetool"): l'AppImage
+      # finale monta il suo squashfs SENZA cercare libfuse2 sul sistema.
+      # Post-build: canarini ldd/readelf che impongono zero NEEDED libfuse.
       - name: Costruisci AppImage (Linux)
         if: runner.os == 'Linux'
         shell: bash
@@ -617,8 +758,16 @@ jobs:
           fi
           mkdir -p composeApp/build/compose/binaries/appimage
           OUT="composeApp/build/compose/binaries/appimage/RiPlay-Linux-x86_64.AppImage"
-          echo "🔨 appimagetool -> ${OUT}"
-          ARCH=x86_64 "${APPIMAGETOOL}" --appimage-extract-and-run "${UI_ARGS[@]}" "${APPDIR}" "${OUT}" \
+          # STEP 3ag: guard + --runtime-file usa il runtime statico
+          # pre-verificato (al posto del fetch live / runtime legacy)
+          if [ -z "${APPIMAGE_RUNTIME:-}" ]; then
+            echo "❌ APPIMAGE_RUNTIME non impostato (Setup appimagetool non girato?)"
+            exit 1
+          fi
+          echo "🔨 appimagetool -> ${OUT} (runtime statico: ${APPIMAGE_RUNTIME})"
+          ARCH=x86_64 "${APPIMAGETOOL}" --appimage-extract-and-run \
+            --runtime-file "${APPIMAGE_RUNTIME}" \
+            "${UI_ARGS[@]}" "${APPDIR}" "${OUT}" \
             > appimage-build.log 2>&1 || APPIMAGE_FAILED=1
           grep -v -e "Failed to remove" -e "File exists and file size matches" appimage-build.log || true
           if [ -n "${APPIMAGE_FAILED:-}" ]; then
@@ -639,6 +788,23 @@ jobs:
             echo "❌ magic AppImage type 2 non riconosciuto"
             exit 1
           fi
+          # STEP 3ag: canarini runtime statico sull'AppImage PRODOTTA (la
+          # prova che la dipendenza da libfuse2 e' davvero sparita): ldd
+          # deve dire "not a dynamic executable" (musl static-pie, esce 1 ->
+          # catturato con || true) e readelf -d non deve avere NEEDED libfuse
+          aldd=$(ldd "${OUT}" 2>&1 || true)
+          echo "🔎 ldd AppImage: $(echo "${aldd}" | head -1)"
+          if echo "${aldd}" | grep -q "not a dynamic executable"; then
+            echo "✅ runtime statico nell'AppImage: libfuse2 NON richiesta sul sistema (STEP 3ag)"
+          else
+            echo "❌ runtime NON statico nell'AppImage prodotta: dipendenza libfuse2 reintrodotta?"
+            exit 1
+          fi
+          if readelf -d "${OUT}" 2>/dev/null | grep NEEDED | grep -qi libfuse; then
+            echo "❌ NEEDED libfuse nell'AppImage prodotta (runtime statico non embeddato?)"
+            exit 1
+          fi
+          echo "✅ zero NEEDED libfuse nell'AppImage prodotta"
           # STEP 3ad: embedding update information (sezione .upd_info)
           if [ -n "${UPDATEINFO}" ] && ! grep -aq "gh-releases-zsync|" "${OUT}"; then
             echo "❌ update information non trovata nell'AppImage (embedding fallito?)"
@@ -1004,7 +1170,7 @@ jobs:
             echo "**Native Desktop** (CEF included, no download; VLC required for local files)"
             echo "- **Windows** - MSI installer"
             echo "- **Linux** - DEB + RPM + AppImage (portatile x86_64)"
-            echo "  - AppImage: `chmod +x RiPlay-*.AppImage` and run (requires libfuse2; if absent: ./RiPlay-*.AppImage --appimage-extract-and-run)"
+            echo "  - AppImage: `chmod +x RiPlay-*.AppImage` and run (static runtime: no libfuse2 required; fallback if FUSE unavailable: ./RiPlay-*.AppImage --appimage-extract-and-run)"
             echo "  - Delta updates: file .zsync for AppImageUpdate (appimageupdate RiPlay-*.AppImage)"
             echo "- **macOS Apple Silicon** - DMG (not signed: first run with right mouse button -> open)"
             echo "- **macOS Intel** - DMG (not signed: first run with right mouse button -> open)"

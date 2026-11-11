@@ -1,7 +1,5 @@
 package it.fast4x.riplay.player.kcef
 
-import dev.datlag.kcef.KCEFBrowser
-import dev.datlag.kcef.KCEFClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -14,7 +12,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import org.cef.browser.CefRendering
+import org.cef.CefClient
+import org.cef.browser.CefBrowser
 import player.PlayerController
 import player.PlayerState
 
@@ -72,7 +71,7 @@ class KcefYouTubePlayer(
 
     @Volatile private var lastLoggedYtErr = 0
 
-    @Volatile private var browser: KCEFBrowser? = null
+    @Volatile private var browser: CefBrowser? = null
     @Volatile private var hostPanel: KcefPlayerHostPanel? = null
     @Volatile private var pendingVideoId: String? = null
     @Volatile private var pendingStart: Float = 0f
@@ -95,6 +94,13 @@ class KcefYouTubePlayer(
     private val browserLock = Any()
     @Volatile private var lastRawYtState: Int = -99
     private var kickJob: Job? = null
+
+    init {
+        // v46 (jcefmaven): collegamento al bridge di stato standard CEF
+        // (CefMessageRouter installato sul client da KcefEngine.installStateBridge):
+        // la pagina pusha lo stato con window.cefQuery, Kotlin lo riceve qui.
+        KcefEngine.onPlayerStateMessage = ::handleStatePush
+    }
 
     /**
      * Callback di FINE BRANO naturale (stato YT 0 = ENDED). E' il
@@ -149,9 +155,9 @@ class KcefYouTubePlayer(
     private fun ensureBrowser() {
         synchronized(browserLock) {
             if (browser != null) return
-            val client: KCEFClient = KcefEngine.clientOrNull() ?: run {
+            val client: CefClient = KcefEngine.clientOrNull() ?: run {
                 KcefEngine.logKcef(
-                    "attachBrowser: client KCEF non ancora pronto (il watchdog riprovera')"
+                    "attachBrowser: client CEF non ancora pronto (il watchdog riprovera')"
                 )
                 return
             }
@@ -160,9 +166,12 @@ class KcefYouTubePlayer(
             PlayerHtmlServer.onPageConfirmed = { confirmPending() }
             val playerUrl = PlayerHtmlServer.ensureLocalServer()
             KcefEngine.logKcef("attachBrowser: pagina player su $playerUrl (origine onesta localhost)")
-            val b: KCEFBrowser = client.createBrowser(
+            // v46 (jcefmaven): createBrowser(String, boolean osr, boolean transparent)
+            // = API org.cef standard; osr=false = rendering windowed (CefRendering
+            // DEFAULT dell'era KCEF).
+            val b: CefBrowser = client.createBrowser(
                 playerUrl,
-                CefRendering.DEFAULT,
+                false,
                 false
             )
             browser = b
@@ -248,9 +257,9 @@ class KcefYouTubePlayer(
                     comp, java.awt.event.MouseEvent.MOUSE_RELEASED, now + 10, 0, x, y, 1, false,
                     java.awt.event.MouseEvent.BUTTON1
                 )
-                b.sendMouseEvent(moved)
-                b.sendMouseEvent(pressed)
-                b.sendMouseEvent(released)
+                b.sendBrowserMouseEventCompat(moved)
+                b.sendBrowserMouseEventCompat(pressed)
+                b.sendBrowserMouseEventCompat(released)
                 KcefEngine.logKcef(
                     "activation: input reale (mouse MOVED+PRESS+RELEASE a $x,$y) inviato a CEF " +
                             "(canvas=${w}x$h): $reason"
@@ -280,7 +289,7 @@ class KcefYouTubePlayer(
                 if (hostPanel == null) return
                 val client = KcefEngine.clientOrNull()
                 if (client == null) {
-                    KcefEngine.logKcef("ricrea browser: client KCEF assente, riprovero' al prossimo tentativo")
+                    KcefEngine.logKcef("ricrea browser: client CEF assente, riprovero' al prossimo tentativo")
                     armWatchdog(videoId, attempt + 1, allowPlayRecovery)
                     return
                 }
@@ -291,13 +300,14 @@ class KcefYouTubePlayer(
                 pollJob = null
                 pendingVideoId = videoId
                 java.awt.EventQueue.invokeAndWait {
-                    runCatching { old?.dispose() }
+                    runCatching { old?.closeBrowserCompat() }
                     PlayerHtmlServer.resetPageSession()
                     PlayerHtmlServer.pageHtmlProvider = { buildPlayerPageHtml() }
                     PlayerHtmlServer.onPageConfirmed = { confirmPending() }
                     runCatching {
                         val playerUrl = PlayerHtmlServer.ensureLocalServer()
-                        val b = client.createBrowser(playerUrl, CefRendering.DEFAULT, false)
+                        // v46 (jcefmaven): createBrowser(url, osr=false, transparent=false)
+                        val b = client.createBrowser(playerUrl, false, false)
                         browser = b
                         b.createImmediately()
                         hostPanel?.setBrowser(b.uiComponent)
@@ -477,7 +487,7 @@ class KcefYouTubePlayer(
         lastVideoId = null
         PlayerHtmlServer.onPageConfirmed = null
         PlayerHtmlServer.pageHtmlProvider = null
-        runCatching { b?.dispose() }
+        runCatching { b?.closeBrowserCompat() }
     }
 
     override fun seekTo(timestamp: Long) =
@@ -602,9 +612,27 @@ class KcefYouTubePlayer(
     private fun evaluate(code: String) {
         val b = browser ?: return
         scope.launch {
-            runCatching { b.evaluateJavaScript(code) }
+            // v46 (jcefmaven): API org.cef standard (KCEF wrappava il codice con
+            // la gestione errori JS: gli errori ora arrivano come console.error
+            // e vengono instradati dal display handler di KcefEngine).
+            runCatching { b.executeJavaScript(code, "", 0) }
         }
     }
+
+    /**
+     * v46 (jcefmaven): il poll non usa piu' evaluateJavaScriptBlocking di
+     * KCEFBrowser (API KCEF). Il bridge standard CEF (CefMessageRouter,
+     * installato sul client da KcefEngine.installStateBridge) inietta
+     * window.cefQuery in ogni frame: il loop qui sotto CHIEDE alla pagina di
+     * PUSHARE lo stato verso Kotlin, e la pagina lo invia con cefQuery
+     * ("st:{json}"). Lo stato arriva in [handleStatePush] (callback di
+     * KcefEngine.onPlayerStateMessage, thread UI CEF).
+     */
+    private val PUSH_STATE_JS =
+        "(function(){try{var s=window.riplayState&&window.riplayState();" +
+                "if(s!=null&&window.cefQuery){window.cefQuery({request:'st:'+JSON.stringify(s)," +
+                "persistent:false,onSuccess:function(){},onFailure:function(){}});}}" +
+                "catch(e){console.error('[RiPlay-YT] push stato fallito: '+e)}})()"
 
     private fun startPolling() {
         pollJob?.cancel()
@@ -612,57 +640,63 @@ class KcefYouTubePlayer(
             while (isActive) {
                 delay(250L)
                 val b = browser ?: continue
-                val raw = runCatching {
-                    b.evaluateJavaScriptBlocking("window.riplayState ? window.riplayState() : null")
-                }.getOrNull()
-                val cleaned = cleanResult(raw) ?: continue
-                val s = runCatching { json.decodeFromString<KcefJsState>(cleaned) }
-                    .getOrNull() ?: continue
-                // STEP 2i: nuovo codice errore del player YT -> log con
-                // significato + esposizione alla UI (una sola volta per codice).
-                if (s.err != 0 && s.err != lastLoggedYtErr) {
-                    lastLoggedYtErr = s.err
-                    _ytError.value = s.err
-                    KcefEngine.logKcef(
-                        "YouTube player ERROR code=${s.err} (${KcefEngine.ytErrorMeaning(s.err)})"
-                    )
-                }
-                _state.value = PlayerState(
-                    isPlaying = s.s == 1,
-                    isMuted = s.m,
-                    volume = s.v / 100f,
-                    timestamp = (s.t * 1000).toLong(),
-                    duration = (s.d * 1000).toLong()
-                )
-
-                stateForVideoId = lastVideoId
-                lastPollOkAt = System.currentTimeMillis()
-
-                lastRawYtState = s.s
-                if (s.s == 1) disarmWatchdog()
-                // STEP 3i: FINE BRANO NATURALE (stato YT 0 = ENDED): una sola
-                // volta per video (lo stato puo' restare 0 per minuti).
-                if (s.s == 0) {
-                    fireNaturalEnd("yt-state-0")
-                }
-                // PERCORSO 1 - TEMPO RAGGIUNTO (poll vivo, stato
-                // page frozen a finestra nascosta): lastState e' la cache di
-                // riplayState, ma getCurrentTime() e' il clock VIVO del media
-                // element: se il brano "in play" raggiunge la durata per DUE
-                // poll consecutivi, e' finito davvero anche se lo stato resta
-                // 1. Con la finestra visibile lo stato 0 arriva al medesimo
-                // istante: gara risolta dal dedup.
-                if (s.s == 1 && s.t > 0f && s.d > 0f && s.t >= s.d - 0.20f) {
-                    consecutiveTimeReached++
-                    if (consecutiveTimeReached >= 2) fireNaturalEnd("tempo-raggiunto")
-                } else {
-                    consecutiveTimeReached = 0
-                }
+                runCatching { b.executeJavaScript(PUSH_STATE_JS, "", 0) }
             }
         }
         // PERCORSO 2 - watchdog a finestra nascosta (stesso ciclo
         // vitale del poll: parte/riparte con lui, muore col dispose)
         startHiddenEndWatch()
+    }
+
+    /**
+     * Riceve lo stato pushato dalla pagina (request "st:{json}") via
+     * CefMessageRouter: STESSO contenuto che prima tornava dal poll
+     * evaluateJavaScriptBlocking di KCEF (stessa logica di update/errori/
+     * fine brano naturale).
+     */
+    private fun handleStatePush(request: String) {
+        if (!request.startsWith("st:")) return
+        val cleaned = cleanResult(request.substring(3)) ?: return
+        val s = runCatching { json.decodeFromString<KcefJsState>(cleaned) }.getOrNull() ?: return
+        // STEP 2i: nuovo codice errore del player YT -> log con significato +
+        // esposizione alla UI (una sola volta per codice).
+        if (s.err != 0 && s.err != lastLoggedYtErr) {
+            lastLoggedYtErr = s.err
+            _ytError.value = s.err
+            KcefEngine.logKcef(
+                "YouTube player ERROR code=${s.err} (${KcefEngine.ytErrorMeaning(s.err)})"
+            )
+        }
+        _state.value = PlayerState(
+            isPlaying = s.s == 1,
+            isMuted = s.m,
+            volume = s.v / 100f,
+            timestamp = (s.t * 1000).toLong(),
+            duration = (s.d * 1000).toLong()
+        )
+
+        stateForVideoId = lastVideoId
+        lastPollOkAt = System.currentTimeMillis()
+
+        lastRawYtState = s.s
+        if (s.s == 1) disarmWatchdog()
+        // STEP 3i: FINE BRANO NATURALE (stato YT 0 = ENDED): una sola volta
+        // per video (lo stato puo' restare 0 per minuti).
+        if (s.s == 0) {
+            fireNaturalEnd("yt-state-0")
+        }
+        // PERCORSO 1 - TEMPO RAGGIUNTO (poll vivo, stato page frozen a
+        // finestra nascosta): lastState e' la cache di riplayState, ma
+        // getCurrentTime() e' il clock VIVO del media element: se il brano
+        // "in play" raggiunge la durata per DUE push consecutivi, e' finito
+        // davvero anche se lo stato resta 1. Con la finestra visibile lo
+        // stato 0 arriva al medesimo istante: gara risolta dal dedup.
+        if (s.s == 1 && s.t > 0f && s.d > 0f && s.t >= s.d - 0.20f) {
+            consecutiveTimeReached++
+            if (consecutiveTimeReached >= 2) fireNaturalEnd("tempo-raggiunto")
+        } else {
+            consecutiveTimeReached = 0
+        }
     }
 
     /**
@@ -718,4 +752,46 @@ class KcefYouTubePlayer(
     companion object {
         private val VIDEO_ID = Regex("^[A-Za-z0-9_-]{11}$")
     }
+}
+
+/**
+ * v46 (jcefmaven): CefBrowser.sendMouseEvent era PUBLIC nell'org.cef del jar
+ * KCEF (fork JetBrains); nell'org.cef di jcef-api (upstream java-cef) e'
+ * PROTECTED FINAL su CefBrowser_N. L'iniezione di USER ACTIVATION passa da
+ * reflection: stesso comportamento a runtime (il metodo esiste ed e' quello
+ * nativo), nessuna API aggiuntiva.
+ */
+private fun CefBrowser.sendBrowserMouseEventCompat(e: java.awt.event.MouseEvent) {
+    var cls: Class<*>? = javaClass
+    while (cls != null) {
+        val m = runCatching {
+            cls.getDeclaredMethod("sendMouseEvent", java.awt.event.MouseEvent::class.java)
+        }.getOrNull()
+        if (m != null) {
+            runCatching {
+                m.isAccessible = true
+                m.invoke(this, e)
+            }.onFailure {
+                KcefEngine.logKcef(
+                    "activation: sendMouseEvent invocazione fallita: ${it.javaClass.simpleName}: ${it.message}"
+                )
+            }
+            return
+        }
+        cls = cls.superclass
+    }
+    KcefEngine.logKcef(
+        "activation: sendMouseEvent non trovato nell'org.cef corrente (attivazione utente saltata)"
+    )
+}
+
+/**
+ * v46: replica di KCEFBrowser.dispose() (stopLoad + setCloseAllowed +
+ * close(true)) con le API org.cef standard (dispose() non esiste su
+ * CefBrowser in jcef-api).
+ */
+private fun CefBrowser.closeBrowserCompat() {
+    runCatching { stopLoad() }
+    runCatching { setCloseAllowed() }
+    runCatching { close(true) }
 }

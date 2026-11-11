@@ -251,24 +251,28 @@ object DesktopAccountManager {
     // (CefBrowser_N: context null -> getGlobalContext): i cookie del login
     // finiscono nello stesso store che l'enumerazione nativa legge.
     @Volatile
-    private var loginClient: dev.datlag.kcef.KCEFClient? = null
+    private var loginClient: org.cef.CefClient? = null
 
     /**
-     * Client KCEF per il browser di login (cache-ato, riutilizzato tra le
+     * Client CEF per il browser di login (cache-ato, riutilizzato tra le
      * sessioni di login). Null se la creazione non e' riuscita: la UI allora
      * ricade sul client del motore (senza cattura header, l'enumerazione
      * nativa resta attiva).
      */
-    fun provideLoginClient(): dev.datlag.kcef.KCEFClient? {
+    fun provideLoginClient(): org.cef.CefClient? {
         loginClient?.let { return it }
         return runCatching {
-            val c = dev.datlag.kcef.KCEF.newClientBlocking()
+            // v46 (jcefmaven): un client nuovo per il login =
+            // CefApp.getInstance().createClient() (equivalente di
+            // KCEF.newClientBlocking: ogni chiamata crea un client nuovo
+            // con slot handler propri).
+            val c = org.cef.CefApp.getInstance().createClient()
             c.addRequestHandler(captureRequestHandler())
             loginClient = c
-            println("[RiPlay-Account] client KCEF dedicato al login pronto (cattura header Cookie installata)")
+            println("[RiPlay-Account] client CEF dedicato al login pronto (cattura header Cookie installata)")
             c
         }.onFailure {
-            println("[RiPlay-Account] creazione client KCEF login FALLITA: ${it.javaClass.simpleName}: ${it.message}")
+            println("[RiPlay-Account] creazione client CEF login FALLITA: ${it.javaClass.simpleName}: ${it.message}")
         }.getOrNull()
     }
 

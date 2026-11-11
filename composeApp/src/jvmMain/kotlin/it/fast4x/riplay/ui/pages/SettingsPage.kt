@@ -49,7 +49,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import dev.datlag.kcef.KCEFClient
+import org.cef.CefClient
 import it.fast4x.environment.models.responses.CachedAccountProfile
 import it.fast4x.riplay.player.kcef.KcefEngine
 import it.fast4x.riplay.player.kcef.KcefState
@@ -65,8 +65,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.cef.browser.CefRendering
-import dev.datlag.kcef.KCEFBrowser
+import org.cef.browser.CefBrowser
 
 /**
  * PRIMO LIVELLO di IMPOSTAZIONI del desktop, con le tab
@@ -201,6 +200,13 @@ private fun GeneralTab() {
             checked = DesktopKaraokeOverlay.enabled,
             onChecked = { DesktopKaraokeOverlay.setEnabledKaraokeOverlay(it) }
         )
+
+        // STEP 4a: limite della cache del browser integrato (kcef-cache).
+        // La pulizia parte all'avvio successivo SOLO se la cache supera la
+        // soglia scelta: cancella le cartelle rigenerabili (cache HTTP/JS/GPU,
+        // Service Worker), NON tocca cookie e login; il bundle CEF (kcef/)
+        // resta intatto (nessuna re-estrazione, nessun re-download).
+        CacheLimitCard()
     }
 }
 
@@ -253,6 +259,104 @@ private fun GeneralSwitchCard(
                 uncheckedThumbColor = Color.White.copy(alpha = 0.75f),
                 uncheckedBorderColor = Color.White.copy(alpha = 0.18f)
             )
+        )
+    }
+}
+
+/** Preset del limite cache (MB -> etichetta); "Mai" e' gestita a parte (0). */
+private val CacheLimitOptions = listOf(
+    500 to "500 MB",
+    1024 to "1 GB",
+    2048 to "2 GB",
+    4096 to "4 GB"
+)
+
+/**
+ * STEP 4a: card della tab Generale per il LIMITE della cache del browser
+ * integrato (kcef-cache). Stile della GeneralSwitchCard ma con SELEZIONE a
+ * chip (come la barra delle tab): 500 MB / 1 GB (predefinito) / 2 GB /
+ * 4 GB / Mai. Il click persiste SUBITO il valore (kcef.properties via
+ * KcefEngine.setCacheLimitMb); la pulizia si applica al PROSSIMO avvio
+ * (mentre CEF gira i file della cache sono lockati, non si puo' pulire ora).
+ * La riga "in uso" e' un'istantanea all'apertura della pagina (read-only).
+ */
+@Composable
+private fun CacheLimitCard() {
+    val usedMb = remember { KcefEngine.cacheDirSizeBytes() / (1024 * 1024) }
+    var limitMb by remember { mutableStateOf(KcefEngine.cacheLimitMb) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color.White.copy(alpha = 0.06f))
+            .border(1.dp, Color.White.copy(alpha = 0.10f), RoundedCornerShape(14.dp))
+            .padding(horizontal = 14.dp, vertical = 12.dp)
+    ) {
+        Text(
+            text = ds("settings.cefcache.title"),
+            color = if (limitMb > 0) RiPlayAccent else Color.White,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = ds("settings.cefcache.desc"),
+            color = Color.White.copy(alpha = 0.55f),
+            fontSize = 12.sp,
+            lineHeight = 17.sp
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = ds("settings.cefcache.now", "size" to "$usedMb MB"),
+            color = Color.White.copy(alpha = 0.45f),
+            fontSize = 11.sp
+        )
+        Spacer(Modifier.height(10.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            CacheLimitOptions.forEach { (mb, label) ->
+                val active = limitMb == mb
+                Text(
+                    text = label,
+                    color = if (active) Color.Black else Color.White.copy(alpha = 0.85f),
+                    fontSize = 12.sp,
+                    fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(if (active) RiPlayAccent else Color.White.copy(alpha = 0.08f))
+                        .clickable {
+                            if (limitMb != mb) {
+                                limitMb = mb
+                                KcefEngine.setCacheLimitMb(mb)
+                            }
+                        }
+                        .padding(horizontal = 12.dp, vertical = 7.dp)
+                )
+            }
+            // "Mai": pulizia disattivata (limite = 0)
+            val offActive = limitMb == 0
+            Text(
+                text = ds("settings.cefcache.off"),
+                color = if (offActive) Color.Black else Color.White.copy(alpha = 0.85f),
+                fontSize = 12.sp,
+                fontWeight = if (offActive) FontWeight.SemiBold else FontWeight.Normal,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (offActive) RiPlayAccent else Color.White.copy(alpha = 0.08f))
+                    .clickable {
+                        if (limitMb != 0) {
+                            limitMb = 0
+                            KcefEngine.setCacheLimitMb(0)
+                        }
+                    }
+                    .padding(horizontal = 12.dp, vertical = 7.dp)
+            )
+        }
+        Spacer(Modifier.height(6.dp))
+        Text(
+            text = ds("settings.cefcache.applied_next_start"),
+            color = Color.White.copy(alpha = 0.35f),
+            fontSize = 11.sp
         )
     }
 }
@@ -370,12 +474,12 @@ private fun AccountsTab() {
     }
     var verifying by remember { mutableStateOf(false) }
     var loginActive by remember { mutableStateOf(false) }
-    var loginBrowser by remember { mutableStateOf<KCEFBrowser?>(null) }
+    var loginBrowser by remember { mutableStateOf<CefBrowser?>(null) }
     // Client KCEF DEDICATO al login (con cattura header Cookie).
     // Null finche' non e' pronto: l'area mostra il messaggio "in preparazione"
     // e POI crea il browser su questo client. Se la creazione fallisse, la
     // factory ricade sul client del motore (resta l'enumerazione nativa).
-    var loginClientReady by remember { mutableStateOf<KCEFClient?>(null) }
+    var loginClientReady by remember { mutableStateOf<CefClient?>(null) }
     // Esito della verifica dell'account (null = nessun
     // messaggio, false = cookie raccolto ma verifica non riuscita)
     var loginStatus by remember { mutableStateOf<Boolean?>(null) }
@@ -384,7 +488,7 @@ private fun AccountsTab() {
     // URL corrente del browser di login (loginUrl iniziale o
     // signinUrl del profilo scelto). key(loginUrl) ricrea il browser KCEF
     // quando cambia (stesso effetto del webView.loadUrl(signinUrl) Android,
-    // usando SOLO le API gia' usate qui: createBrowser + dispose).
+    // usando SOLO le API gia' usate qui: createBrowser + closeBrowserCompat).
     var loginUrl by remember { mutableStateOf(DesktopAccountManager.loginUrl()) }
     // Cache profili per il selettore (come Android)
     var cachedAccounts by remember { mutableStateOf<List<CachedAccountProfile>>(emptyList()) }
@@ -554,7 +658,7 @@ private fun AccountsTab() {
     if (loginActive) {
         DisposableEffect(Unit) {
             onDispose {
-                loginBrowser?.let { b -> runCatching { b.dispose() } }
+                loginBrowser?.let { b -> runCatching { b.closeBrowserCompat() } }
                 loginBrowser = null
                 DesktopAccountManager.endLoginCapture()
                 println("[RiPlay-Account] browser login chiuso")
@@ -712,7 +816,7 @@ private fun AccountsTab() {
                                     // naviga il browser integrato su signinUrl:
                                     // il vecchio browser viene smontato e ne nasce
                                     // uno nuovo sull'URL del profilo (key(loginUrl))
-                                    loginBrowser?.let { b -> runCatching { b.dispose() } }
+                                    loginBrowser?.let { b -> runCatching { b.closeBrowserCompat() } }
                                     loginBrowser = null
                                     loginUrl = DesktopAccountManager.switchUrl(profile)
                                         ?: DesktopAccountManager.loginUrl()
@@ -788,7 +892,7 @@ private fun AccountsTab() {
                     // non tocca il client del player). Finche' non e' pronto
                     // si mostra "in preparazione"; se la creazione fallisse
                     // la factory ricade sul client del motore.
-                    val dedicatedClient: KCEFClient? = loginClientReady
+                    val dedicatedClient: CefClient? = loginClientReady
                     if (dedicatedClient == null) {
                         Text(
                             text = ds("settings.accounts.kcef_not_ready", "state" to ds("kcef.preparing_short")),
@@ -807,12 +911,13 @@ private fun AccountsTab() {
                                 factory = {
                                     var b = loginBrowser
                                     if (b == null) {
-                                        val client: KCEFClient = dedicatedClient
+                                        val client: CefClient = dedicatedClient
                                             ?: KcefEngine.clientOrNull()
-                                            ?: error("client KCEF assente in stato Ready")
+                                            ?: error("client CEF assente in stato Ready")
+                                        // v46 (jcefmaven): createBrowser(url, osr=false, transparent=false)
                                         b = client.createBrowser(
                                             loginUrl,
-                                            CefRendering.DEFAULT,
+                                            false,
                                             false
                                         )
                                         loginBrowser = b
@@ -1097,4 +1202,17 @@ private fun openInBrowser(url: String) {
         if (desktop.isSupported(java.awt.Desktop.Action.BROWSE))
             desktop.browse(java.net.URI(url))
     }.onFailure { it.printStackTrace() }
+}
+
+/**
+ * v46 (jcefmaven): replica di KCEFBrowser.dispose() (stopLoad + setCloseAllowed
+ * + close(true)) con le API org.cef standard (dispose() NON esiste su
+ * CefBrowser in jcef-api: stessa estensione gia' usata in KcefYouTubePlayer).
+ * Sostituisce la vecchia chiamata b.dispose() nella chiusura del browser di
+ * login (post-logout e cambio tab).
+ */
+private fun CefBrowser.closeBrowserCompat() {
+    runCatching { stopLoad() }
+    runCatching { setCloseAllowed() }
+    runCatching { close(true) }
 }

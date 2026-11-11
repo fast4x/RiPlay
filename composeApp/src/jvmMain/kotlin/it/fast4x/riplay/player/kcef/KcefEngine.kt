@@ -3,12 +3,15 @@ package it.fast4x.riplay.player.kcef
 import it.fast4x.riplay.i18n.ds
 import it.fast4x.riplay.utils.WindowsAppIdentity
 
-import dev.datlag.kcef.KCEF
-import dev.datlag.kcef.KCEFClient
 import it.fast4x.riplay.data.DesktopDbRegistry
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import me.friwi.jcefmaven.CefAppBuilder
+import me.friwi.jcefmaven.CefBuildInfo
+import me.friwi.jcefmaven.EnumProgress
+import org.cef.CefApp
+import org.cef.CefClient
 import java.io.File
 import java.util.ArrayDeque
 
@@ -552,37 +555,39 @@ sealed interface KcefState {
  *     (5) log diagnostico del bundle Linux (ponte JNI + libcef) come per
  *         macOS. Windows e macOS: comportamento invariato.
  *
- *
- *     33) v46 (step3z2, FIX crash macOS Intel: EXC_BREAKPOINT sull'EDT
- *         durante l'avvio). Il crash report mostra l'EDT (AWT-EventQueue-0)
- *         che abortisce DENTRO "Chromium Embedded Framework" (int3/ud2 =
- *         CHECK/IMMEDIATE_CRASH di Chromium) MENTRE sta ancora caricando
- *         classi (InterpreterRuntime::_new -> defineClass) e MENTRE
- *         kcef-init e' ancora in NativeLibraries.load -> dlsym: la fase
- *         nativa di CEF (dlopen framework ~190MB + JNI_OnLoad) si
- *         SOVRAPPONEVA alla tempesta di class-loading dell'avvio UI.
- *         Aggravante: pacchetto NON firmato e bundle CEF estratto in
- *         ~/Library/Application Support (fuori dall'app, senza firma
- *         coerente). Quattro difese, TUTTE gate isMacOS (Windows/Linux:
- *         comportamento invariato):
- *         (a) GATE UI: kcef-init attende che la finestra principale sia
- *             composta (KcefEngine.notifyUiReady() da main.kt; timeout 20s
- *             mai bloccante) PRIMA di toccare le natives;
- *         (b) PRELOAD mac ripensato: viene caricato SOLO il ponte JNI
- *             "libjcef.dylib": dyld mappa il framework CEF come SUA
- *             dipendenza (install name/LC_RPATH) -> una sola copia mappata
- *             in modo consistente; il System.load DIRETTO del binario del
- *             framework resta SOLO come fallback se il ponte manca;
- *         (c) FIRMA AD-HOC del bundle CEF (necessaria con pacchetto non
- *             firmato): codesign --verify su jcef_helper.app e sul
- *             framework; se invalida/assente, ri-firma ad-hoc
- *             (codesign --force --deep --sign "-") best-effort e mai
- *             bloccante: subprocess coerenti con Gatekeeper/AMFI anche
- *             senza Developer ID;
- *         (d) frameworkDirPath impostato nelle settings CEF (reflection,
- *             best-effort): su macOS CEF deve sapere DOVE sta il
- *             .framework, altrimenti resta il default derivato dal JDK e
- *             i subprocess non trovano le risorse.
+ * 33. STEP 46 (v46, MIGRAZIONE KCEF -> jcefmaven): la libreria KCEF
+ *     (dev.datlag:kcef, ultima release 2025.03.23) non e' piu' aggiornata;
+ *     il bootstrap passa a jcefmaven (me.friwi:jcefmaven, mantenuto attivo:
+ *     Chromium corrente). Le classi org.cef arrivano da jcef-api (upstream
+ *     java-cef) e le natives dal bundle "jcef-natives-<platform>" di
+ *     jcefmaven (layout RADICE: libjcef + "jcef Helper.app" + "Chromium
+ *     Embedded Framework.framework" su macOS; libcef/jcef_helper su
+ *     win/linux). Cambiamenti chiave:
+ *     (a) CefAppBuilder (installDir + jcef args + CefSettings) sostituisce
+ *         KCEF.initBlocking; CefInitializer di jcefmaven imposta DA SOLO
+ *         browser_subprocess_path/framework-dir-path/main-bundle-path verso
+ *         il bundle (su macOS CORRETTI per costruzione: e' il fix strutturale
+ *         della classe di crash macOS "EXC_BREAKPOINT su CHECK CEF" a init
+ *         ancora in corso) e chiama CefApp.startup();
+ *     (b) l'inizializzazione CEF gira ON EDT (CefApp.createClient ->
+ *         SwingUtilities.invokeAndWait -> N_Initialize): ordine CEF
+ *         corretto per costruzione (inizializzazione sul thread principale,
+ *         dopo AWT, prima di qualunque browser);
+ *     (c) la CACHE CEF esce dalla directory bundle (<dati>/kcef-cache):
+ *         qualunque reinstallazione (aggiornamento, migrazione dal vecchio
+ *         layout KCEF) preserva cookie/consenso/login;
+ *     (d) MIGRAZIONE AUTOMATICA: il vecchio bundle KCEF (install.lock senza
+ *         build_meta.json) viene rimosso al primo avvio e sostituito dal
+ *         bundle jcefmaven (pre-seminato o scaricato); il vecchio archivio
+ *         jbr_jcef nell'app e' ignorato (layout incompatibile);
+ *     (e) pre-seed: nuovo formato archivio "jcef-natives-<platform>-<tag>
+ *         .tar.gz" (lo STESSO artefatto estratto da jcefmaven) accettato
+ *         SOLO se il tag corrisponde alla versione CEF dell'app
+ *         (CefBuildInfo.fromClasspath);
+ *     (f) il client e' org.cef.CefClient (un client nuovo per il login:
+ *         CefApp.getInstance().createClient(), equivalente di
+ *         KCEF.newClientBlocking). Il poll di stato passa al bridge
+ *         standard CefMessageRouter (v. KcefYouTubePlayer).
  */
 object KcefEngine {
 
@@ -590,7 +595,7 @@ object KcefEngine {
      * Marker di versione del bootstrap: SE NEI LOG NON APPARE QUESTA RIGA,
      * il processo sta eseguendo una build NON aggiornata.
      */
-    const val BOOTSTRAP_VERSION = "v46 (step3z2)"
+    const val BOOTSTRAP_VERSION = "v46 (jcefmaven)"
 
     private const val TAG = "[RiPlay-KCEF]"
 
@@ -663,10 +668,14 @@ object KcefEngine {
     val state: StateFlow<KcefState> = _state.asStateFlow()
 
     @Volatile
-    private var client: KCEFClient? = null
+    private var client: CefClient? = null
 
-    /** Client KCEF, disponibile solo quando [state] e' [KcefState.Ready]. */
-    fun clientOrNull(): KCEFClient? = client
+    /** App CEF (singleton creato da jcefmaven), per il dispose ordinato. */
+    @Volatile
+    private var cefApp: CefApp? = null
+
+    /** Client CEF, disponibile solo quando [state] e' [KcefState.Ready]. */
+    fun clientOrNull(): CefClient? = client
 
     /** Directory di installazione del bundle CEF, accanto al database. */
     val installDir: File
@@ -687,9 +696,160 @@ object KcefEngine {
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
                 "(KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
 
-    /** Cache CEF (cookie, web storage, cache HTTP dell'iframe player). */
+    /**
+     * Cache CEF (cookie, web storage, cache HTTP dell'iframe player).
+     * v46: FUORI dalla directory di installazione del bundle (<dati>/kcef):
+     * qualunque reinstallazione del bundle (aggiornamento, migrazione dal
+     * vecchio layout KCEF) NON deve cancellare cookie e login dell'utente.
+     */
     private val cacheDir: File
-        get() = File(installDir, "cache").apply { mkdirs() }
+        get() = File(installDir.parentFile ?: installDir, "kcef-cache").apply { mkdirs() }
+
+    // =========================================================================
+    // STEP 4a: pulizia automatica della cache browser (kcef-cache).
+    // =========================================================================
+    // La cartella kcef-cache contiene SOLO dati di sessione/cache del browser
+    // integrato (cache HTTP, Code Cache JS, cache GPU/shader, Service Worker)
+    // PIU' i dati persistenti piccoli (cookie, Local Storage). Chromium
+    // autolimita la cache HTTP/Code Cache, ma con uso intenso la somma puo'
+    // pesare (centinaia di MB): su dischi piccoli va tenuta sotto controllo.
+    //
+    // Meccanismo:
+    //  - la pulizia gira SOLO nell'avvio del motore ([start]), PRIMA che CEF
+    //    nasca: nessun file della cache e' ancora aperto/lockato (i subprocess
+    //    CEF non esistono) e nessun'altra operazione la sta usando;
+    //  - se la dimensione TOTALE di [cacheDir] supera [cacheLimitMb] (default
+    //    1 GB, configurabile in Impostazioni -> Generale, persistito in
+    //    ~/.riplay/kcef.properties) vengono cancellate SOLE le directory
+    //    WHITELISTATE ([CACHE_CLEANABLE_SUBDIRS]): cache rigenerabili;
+    //    cookie / Local Storage / Network / IndexedDB NON vengono toccati
+    //    -> login e consensi dell'utente sopravvivono;
+    //  - il BUNDLE CEF ([installDir], cartella gemella kcef/) non viene MAI
+    //    toccato: nessuna re-estrazione, nessun re-download;
+    //  - cacheLimitMb = 0 -> pulizia disattivata ("Mai").
+    // =========================================================================
+
+    /** Limite della cache in MB oltre il quale viene pulita (default 1 GB). */
+    const val DEFAULT_CACHE_LIMIT_MB = 1024
+
+    /** Massimo impostabile per la soglia (16 GB). */
+    const val MAX_CACHE_LIMIT_MB = 16384
+
+    private const val CACHE_LIMIT_KEY = "cacheLimitMb"
+
+    /** Preferenze del motore (stesso schema di DesktopMiniPlayer). */
+    private val cachePrefsFile: File
+        get() = File(System.getProperty("user.home"), ".riplay").resolve("kcef.properties")
+
+    /**
+     * Directory cache cancellabili in modo SICURO: solo cache rigenerabili
+     * di Chromium, percorsi RELATIVI a [cacheDir]. Fuori da questa whitelist
+     * NON si tocca NIENTE (Cookies, "Local Storage", "Network", "IndexedDB",
+     * "Sessions": login e consensi dell'utente restano al loro posto).
+     */
+    private val CACHE_CLEANABLE_SUBDIRS = listOf(
+        "Cache", "Code Cache", "GPUCache", "ShaderCache", "GrShaderCache",
+        "DawnCache", "GraphiteDawnCache", "Service Worker/CacheStorage",
+        "Service Worker/ScriptCache"
+    )
+
+    @Volatile
+    private var cacheLimitMbValue: Int = readCacheLimitMb()
+
+    /** Limite cache corrente (MB). 0 = pulizia disattivata. Thread-safe. */
+    val cacheLimitMb: Int
+        get() = cacheLimitMbValue
+
+    /**
+     * Cambia il limite (MB) e lo PERSISTE subito su ~/.riplay/kcef.properties
+     * (l'utente non deve "salvare" nulla). La pulizia si applica al PROSSIMO
+     * avvio del motore (mentre CEF gira i file della cache sono lockati).
+     */
+    fun setCacheLimitMb(valueMb: Int) {
+        val clamped = valueMb.coerceIn(0, MAX_CACHE_LIMIT_MB)
+        if (cacheLimitMbValue == clamped) return
+        cacheLimitMbValue = clamped
+        persistCacheLimitMb(clamped)
+        log("limite cache browser impostato a " +
+                if (clamped == 0) "MAI (pulizia disattivata)" else "$clamped MB")
+    }
+
+    /** Lettura della soglia persistita (default 1 GB; clamp [0..MAX]). */
+    private fun readCacheLimitMb(): Int {
+        val v = runCatching {
+            val p = java.util.Properties()
+            if (cachePrefsFile.isFile) cachePrefsFile.inputStream().use { p.load(it) }
+            p.getProperty(CACHE_LIMIT_KEY)?.trim()?.toIntOrNull()
+        }.getOrNull() ?: return DEFAULT_CACHE_LIMIT_MB
+        return v.coerceIn(0, MAX_CACHE_LIMIT_MB)
+    }
+
+    private fun persistCacheLimitMb(valueMb: Int) {
+        // persistenza silenziosa: mai bloccare la UI per un file di preferenze
+        runCatching {
+            val p = java.util.Properties()
+            if (cachePrefsFile.isFile) cachePrefsFile.inputStream().use { p.load(it) }
+            p.setProperty(CACHE_LIMIT_KEY, valueMb.toString())
+            cachePrefsFile.parentFile?.mkdirs()
+            cachePrefsFile.outputStream().use { p.store(it, "RiPlay desktop - browser CEF cache") }
+        }
+    }
+
+    /** Somma ricorsiva dei byte dei file regolari di [dir] (0 se assente). */
+    private fun dirSizeBytes(dir: File): Long {
+        if (!dir.isDirectory) return 0L
+        var total = 0L
+        val queue = ArrayDeque<File>().apply { add(dir) }
+        while (queue.isNotEmpty()) {
+            val d = queue.removeFirst()
+            val files = runCatching { d.listFiles() }.getOrNull() ?: continue
+            for (f in files) {
+                if (f.isDirectory) queue.add(f)
+                else total += runCatching { f.length() }.getOrDefault(0L)
+            }
+        }
+        return total
+    }
+
+    /**
+     * Dimensione attuale della cache browser (kcef-cache), per la UI
+     * (Impostazioni -> Generale). Operazione read-only, mai lancia.
+     */
+    fun cacheDirSizeBytes(): Long = dirSizeBytes(cacheDir)
+
+    /**
+     * Pulizia all'avvio (chiamata da [start], prima dell'inizializzazione
+     * nativa di CEF): se [cacheDir] supera [cacheLimitMb] cancella le sole
+     * directory della whitelist, loggando liberati/rimasti in kcef-boot.log.
+     */
+    private fun cleanupCefCacheIfNeeded() {
+        val limitMb = cacheLimitMbValue
+        if (limitMb <= 0) {
+            log("pulizia cache: disattivata (limite = Mai)")
+            return
+        }
+        val limitBytes = limitMb.toLong() * 1024L * 1024L
+        val usedBytes = dirSizeBytes(cacheDir)
+        if (usedBytes < limitBytes) {
+            log("pulizia cache: ${usedBytes / (1024L * 1024L)} MB su limite $limitMb MB -> nessuna azione")
+            return
+        }
+        log("pulizia cache: ${usedBytes / (1024L * 1024L)} MB >= limite $limitMb MB -> rimozione cache rigenerabili")
+        var freedBytes = 0L
+        for (rel in CACHE_CLEANABLE_SUBDIRS) {
+            val dir = File(cacheDir, rel)
+            if (!dir.isDirectory) continue
+            val size = dirSizeBytes(dir)
+            val ok = runCatching { dir.deleteRecursively() }.getOrDefault(false)
+            if (ok && size > 0L) {
+                freedBytes += size
+                log("pulizia cache: rimossa \"$rel\" (${size / (1024L * 1024L)} MB)")
+            }
+        }
+        val afterBytes = dirSizeBytes(cacheDir)
+        log("pulizia cache completata: liberati ${freedBytes / (1024L * 1024L)} MB, " +
+                "cache ora ${afterBytes / (1024L * 1024L)} MB")
+    }
 
     @Volatile
     private var started = false
@@ -895,18 +1055,9 @@ object KcefEngine {
      * e' il binario del framework; il ponte JNI e' "libjcef.dylib". Come
      * su Windows (step2h) le dylib del runtime Java del bundle NON vanno
      * caricate nel processo host.
-     *
-     * STEP 3z2 (v46): nel processo host viene pre-caricato SOLO il ponte
-     * JNI ("libjcef.dylib"): dyld mappa il framework CEF come SUA
-     * dipendenza risolvendo l'install name/LC_RPATH del ponte -> una sola
-     * copia del framework, mappata in modo consistente con chi la
-     * richiede. Il System.load DIRETTO del binario del framework (v44/v45)
-     * poteva lasciare l'immagine mappata sotto una identita' di percorso
-     * diversa da quella richiesta dalle dipendenze: resta SOLO come
-     * fallback quando il ponte JNI manca dal bundle (vedi
-     * preloadBundleNativeLibraries).
      */
     private val PRELOAD_WHITELIST_MAC = listOf(
+        "chromium embedded framework",
         "libjcef"
     )
 
@@ -967,18 +1118,9 @@ object KcefEngine {
             isLinuxOS -> PRELOAD_WHITELIST_LINUX
             else -> PRELOAD_WHITELIST
         }
-        var natives = bundleNativeFiles.filter { f ->
+        val natives = bundleNativeFiles.filter { f ->
             val n = f.name.lowercase()
             !n.startsWith("jcef_helper") && whitelist.any { n.startsWith(it) }
-        }
-        // STEP 3z2 (macOS): preload = SOLO il ponte JNI; il framework CEF
-        // viene mappato da dyld come dipendenza del ponte (install name).
-        // Se il ponte manca dal bundle (layout atipico), fallback al
-        // caricamento diretto del framework (comportamento v45, best-effort).
-        val macFrameworkFallback = bundleCefFrameworkFile
-        if (isMacOS && natives.isEmpty() && macFrameworkFallback != null) {
-            log("preload mac: ponte JNI 'libjcef' assente dal bundle -> fallback caricamento diretto del framework")
-            natives = listOf(macFrameworkFallback)
         }
         if (natives.isEmpty()) {
             report.missing += "<bundle assente: nessuna libreria nativa trovata>"
@@ -1068,21 +1210,6 @@ object KcefEngine {
                 }
             }
         }
-        // STEP 3z2 (macOS): esito del preload mac. Il ponte JNI caricato e'
-        // la via giusta (il framework arriva come sua dipendenza dyld);
-        // un fallimento del ponte NON abortisce (su mac il preload resta
-        // best-effort come da step3z) ma resta nei log per la diagnosi.
-        if (isMacOS) {
-            val macBridge = natives.firstOrNull { isJniBridgeName(it.name) }
-            if (macBridge == null) {
-                log("preload mac: ponte JNI 'libjcef' non presente nel bundle (uso fallback framework diretto)")
-            } else if (report.loaded.any { isJniBridgeName(it) }) {
-                log("preload mac: ponte JNI caricato (${macBridge.name}); framework CEF mappato da dyld come dipendenza")
-            } else {
-                log("preload mac: ATTENZIONE ponte JNI ${macBridge.name} non caricato " +
-                        "(${loadErrors[macBridge.name] ?: "motivo sconosciuto"})")
-            }
-        }
         // Il ponte JNI deve coincidere con le classi org.cef: su un JDK
         // con JCEF integrato DEVE arrivare dal bundle (mismatch altrimenti).
         // Su JDK pulito un eventuale fallimento di jcef lascia procedere
@@ -1153,7 +1280,7 @@ object KcefEngine {
                 "java.home=${System.getProperty("java.home")}")
         log("JDK contiene JCEF integrato: ${runtimeHasJcef()}")
         log("classi org.cef caricate da: ${orgCefSource()}")
-        log("directory bundle KCEF: ${installDir.absolutePath}")
+        log("directory bundle CEF (jcefmaven): ${installDir.absolutePath} cache=${cacheDir.absolutePath}")
         scanBundle()
         log("bundle: libcef=${bundleLibcefFile?.path ?: "ASSENTE"} " +
                 "helper=${bundleHelperFile?.path ?: "ASSENTE"} " +
@@ -1171,7 +1298,7 @@ object KcefEngine {
             log("bundle linux: bridge=${bridge?.path ?: "ASSENTE"} " +
                     "libcef=${bundleLibcefFile?.path ?: "ASSENTE"}")
         }
-        log("install.lock: ${File(installDir, "install.lock").isFile}")
+        log("install.lock: ${File(installDir, "install.lock").isFile} build_meta.json: ${File(installDir, "build_meta.json").isFile}")
     }
 
     /**
@@ -1220,52 +1347,199 @@ object KcefEngine {
      * non bloccante: sicuro chiamarlo all'avvio dell'app).
      */
     // ---------------------------------------------------------------------------
-    // STEP 3q/3s: CEF PRE-SEMINATO DALL'INSTALLER (deb/msi/dmg).
+    // v46 (ex STEP 3q/3s): CEF PRE-SEMINATO DALL'INSTALLER (deb/msi/dmg).
     //
-    // La build desktop puo' includere l'archivio jbr_jcef (lo STESSO che
-    // KCEF scaricherebbe: scripts/fetch-kcef-bundle.sh/.ps1 usa la SELEZIONE
-    // IDENTICA a KCEFBuilder.GitHub) dentro l'applicazione via
-    // appResourcesRootDir: finisce in <app>/resources/kcef/ e a runtime e'
-    // raggiungibile con la proprieta' di sistema
+    // La build desktop puo' includere l'archivio natives di jcefmaven
+    // "jcef-natives-<platform>-<tag>.tar.gz" (lo STESSO che jcefmaven
+    // scaricherebbe, v. composeApp/desktop-resources/README.md) dentro
+    // l'applicazione via appResourcesRootDir: finisce in <app>/resources/kcef/
+    // e a runtime e' raggiungibile con la proprieta' di sistema
     // "compose.application.resources.dir" impostata dal launcher Compose.
     //
     // Comportamento:
-    //  - archivio assente -> nessuna azione (come prima: KCEF scarichera');
+    //  - archivio assente -> nessuna azione (jcefmaven scarichera');
+    //  - tag dell'archivio DIVERSO dalla versione CEF attesa dall'app
+    //    (CefBuildInfo.fromClasspath) -> ignorato (jcefmaven reinstalla);
     //  - bundle installato + preseed.stamp UGUALE -> salto immediato;
-    //  - bundle installato SENZA stamp (scaricato da KCEF) -> MAI toccato;
-    //  - stamp DIVERSO -> AGGIORNAMENTO (installDir cancellata e ri-estratta);
+    //  - bundle installato con build_meta.json di tag UGUALE (da jcefmaven)
+    //    -> salto immediato;
+    //  - stamp/tag DIVERSI -> AGGIORNAMENTO (installDir svuotata e
+    //    ri-estratta: cache CEF fuori dal bundle, PRESERVATA);
     //  - estrazione: 'tar' di sistema (Win10+ include bsdtar) con fallback a
     //    un lettore tar minimale in Kotlin (ustar 512, GNU 'L', pax 'x',
-    //    symlink best-effort, guard path traversal);
-    //  - layout finale REPLICA di TarGzExtractor+move di KCEF (win: lib+bin
-    //    -> root; linux: lib -> root; mac: Contents/Home/lib -> root +
-    //    Contents/Frameworks -> root/Frameworks);
+    //    symlink best-effort, guard path traversal); il layout dell'archivio
+    //    jcefmaven e' GIA' radice (nessun riordino: applyPreseedLayout
+    //    dell'era KCEF e' stato RIMOSSO);
+    //  - dopo l'estrazione: install.lock creato (build_meta.json arriva
+    //    dall'archivio) -> CefInstallationChecker di jcefmaven passa;
     //  - preseed.stamp = nome|size|lastModified dell'archivio;
-    //  - QUALUNQUE errore = ripristino e fallback COMPLETO al download KCEF.
+    //  - QUALUNQUE errore = ripristino e fallback COMPLETO al download di
+    //    jcefmaven (GitHub release -> Maven Central).
     // ---------------------------------------------------------------------------
     private const val PRESEED_STAMP_FILE = "preseed.stamp"
 
-    /** Archivio CEF incluso nel pacchetto (resources: kcef con archivio .tar.gz), se presente. */
-    private fun packagedKcefArchive(): File? = runCatching {
-        val resDir = System.getProperty("compose.application.resources.dir") ?: return null
-        val dir = File(resDir, "kcef")
-        dir.listFiles { f -> f.isFile && f.name.startsWith("jbr_jcef") && f.name.endsWith(".tar.gz") }
-            ?.maxByOrNull { it.lastModified() }
-    }.getOrNull()?.takeIf { it.isFile && it.length() > 0L }
+    /**
+     * v46: identificatore di piattaforma nello stesso formato di jcefmaven
+     * (EnumPlatform: macosx-amd64 | macosx-arm64 | linux-amd64 | linux-arm64 |
+     * linux-arm | windows-amd64 | windows-i386 | windows-arm64).
+     */
+    private fun jcefPlatformIdentifier(): String {
+        val os = System.getProperty("os.name").lowercase()
+        val arch = System.getProperty("os.arch").lowercase()
+        val osId = when {
+            os.contains("mac") || os.contains("darwin") -> "macosx"
+            os.contains("nux") -> "linux"
+            os.contains("win") -> "windows"
+            else -> ""
+        }
+        val archId = when {
+            arch.contains("amd64") || arch.contains("x86_64") -> "amd64"
+            arch.contains("aarch64") || arch.contains("arm64") -> "arm64"
+            arch.startsWith("arm") -> "arm"
+            arch.startsWith("x86") || arch.contains("i386") || arch.contains("i686") -> "i386"
+            else -> ""
+        }
+        return if (osId.isNotEmpty() && archId.isNotEmpty()) "$osId-$archId" else ""
+    }
+
+    /**
+     * Tag della release CEF che QUESTA build dell'app si aspetta (il
+     * build_meta.json incluso nell'artefatto jcef-api di jcefmaven).
+     */
+    private fun expectedBundleTag(): String? = runCatching {
+        CefBuildInfo.fromClasspath().releaseTag
+    }.getOrNull()
+
+    /** Archivio natives CEF incluso nel pacchetto + tag letto dal nome file. */
+    private data class PackagedBundle(val archive: File, val tag: String)
+
+    /**
+     * v46: FORMATO NUOVO del pre-seed. L'archivio atteso e'
+     * "jcef-natives-<platform>-<tag>.tar.gz" (lo STESSO archivio che
+     * jcefmaven estrae, proveniente dall'artefatto jcef-natives-<platform>
+     * su Maven Central / GitHub release di jcefmaven). Il vecchio formato
+     * jbr_jcef (KCEF) NON e' piu' compatibile: segnalato come ignorato.
+     */
+    private fun packagedCefBundle(): PackagedBundle? {
+        // NB: la catena runCatching{...}.getOrNull()?.takeIf { it.archive... }
+        // con "return" NON locali dentro il lambda e' stata riscritta: con
+        // return non locali l'inferenza K2 degrada il tipo del lambda a
+        // Nothing? e "it.archive" diventa unresolved reference. Qui il lambda
+        // usa solo return@runCatching etichettati e il risultato e' tipizzato
+        // esplicitamente (PackagedBundle?): l'archivio pre-seminato viene
+        // validato (esistente e non vuoto) in OGNI caso, come da contratto
+        // del takeIf originale.
+        val found: PackagedBundle? = runCatching<PackagedBundle?> {
+            val resDir = System.getProperty("compose.application.resources.dir")
+            if (resDir.isNullOrEmpty()) return@runCatching null
+            val dir = File(resDir, "kcef")
+            val platform = jcefPlatformIdentifier()
+            if (platform.isEmpty()) return@runCatching null
+            val regex = Regex("^jcef-natives-${Regex.escape(platform)}-(.+)\\.tar\\.gz$")
+            val hit = dir.listFiles { f -> f.isFile && regex.matches(f.name) }
+                ?.maxByOrNull { it.lastModified() }
+            if (hit != null) {
+                PackagedBundle(hit, regex.matchEntire(hit.name)!!.groupValues[1])
+            } else {
+                val legacy = dir.listFiles { f -> f.isFile && f.name.startsWith("jbr_jcef") && f.name.endsWith(".tar.gz") }
+                if (!legacy.isNullOrEmpty()) {
+                    log("pre-seed: archivio KCEF obsoleto (${legacy.first().name}) ignorato: " +
+                            "il formato atteso e' jcef-natives-<platform>-<tag>.tar.gz (v46)")
+                }
+                null
+            }
+        }.getOrNull()
+        return found?.takeIf { b -> b.archive.isFile && b.archive.length() > 0L }
+    }
 
     private fun preseedStampFile(): File = File(installDir, PRESEED_STAMP_FILE)
 
     private fun stampOf(archive: File): String =
         "${archive.name}|${archive.length()}|${archive.lastModified()}"
 
+    /** Cancella il contenuto della directory bundle preservando SOLO i log di avvio. */
+    private fun wipeBundleDirPreservingLogs() {
+        runCatching {
+            installDir.listFiles()?.forEach { f ->
+                if (f.name == "kcef-boot.log" || f.name == "kcef-boot.log.1") return@forEach
+                f.deleteRecursively()
+            }
+        }
+        resetBundleScanCache()
+    }
+
+    /**
+     * v46: MIGRAZIONE dal layout KCEF (bundle jbr_jcef) al layout jcefmaven.
+     *  1. La cache CEF si sposta FUORI dal bundle (installDir/cache ->
+     *     <dati>/kcef-cache): cookie/consenso/login sopravvivono a qualunque
+     *     reinstallazione del bundle;
+     *  2. il vecchio bundle KCEF si riconosce dall'ASSENZA di build_meta.json
+     *     (il bundle jcefmaven lo porta SEMPRE, estratto dall'archivio):
+     *     viene rimosso e jcefmaven reinstalla il bundle (pre-seminato o
+     *     scaricato).
+     */
+    private fun migrateLegacyLayout() {
+        val oldCache = File(installDir, "cache")
+        if (oldCache.isDirectory) {
+            val newCache = cacheDir
+            if (!newCache.isDirectory || newCache.listFiles().isNullOrEmpty()) {
+                val moved = runCatching { oldCache.renameTo(newCache) }.getOrDefault(false)
+                if (moved) {
+                    log("migrazione: cache CEF spostata fuori dal bundle -> ${newCache.absolutePath}")
+                } else {
+                    // fallback: copia ricorsiva (rename fallito: file aperti / filesystem diversi)
+                    runCatching {
+                        newCache.mkdirs()
+                        oldCache.walkTopDown().filter { it.isFile }.forEach { src ->
+                            val dst = File(newCache, src.relativeTo(oldCache).path)
+                            dst.parentFile?.mkdirs()
+                            src.copyTo(dst, overwrite = true)
+                        }
+                        oldCache.deleteRecursively()
+                    }.onSuccess {
+                        log("migrazione: cache CEF copiata fuori dal bundle -> ${newCache.absolutePath}")
+                    }.onFailure {
+                        log("migrazione: cache CEF NON spostata (verra' ricreata vuota): ${it.message}")
+                    }
+                }
+            } else {
+                // cache nuova gia' in uso: la vecchia viene rimossa col bundle
+                runCatching { oldCache.deleteRecursively() }
+            }
+        }
+        val lock = File(installDir, "install.lock")
+        val meta = File(installDir, "build_meta.json")
+        if (!meta.isFile && (lock.isFile || bundleInstalled())) {
+            log("MIGRAZIONE: bundle KCEF obsoleto (install.lock senza build_meta.json) RIMOSSO; " +
+                    "jcefmaven installera' il nuovo bundle (pre-seminato o scaricato) - cache preservata")
+            wipeBundleDirPreservingLogs()
+            runCatching { preseedStampFile().delete() }
+        }
+    }
+
+    /**
+     * v46: pre-seed dal pacchetto. Estrae "jcef-natives-<platform>-<tag>
+     * .tar.gz" (se presente nell'app) nella directory dati utente e crea il
+     * lock di installazione jcefmaven (il build_meta.json arriva dall'archivio
+     * stesso, come nell'installazione nativa di jcefmaven). L'archivio viene
+     * accettato SOLO se il tag corrisponde alla versione CEF attesa dall'app:
+     * un tag diverso verrebbe comunque cancellato/riscaricato da jcefmaven
+     * (CefInstallationChecker), quindi si evita il lavoro inutile.
+     */
     private fun preSeedPackagedBundle() {
-        val archive = packagedKcefArchive() ?: run {
-            log("pre-seed: nessun archivio CEF nel pacchetto (il download normale resta disponibile)")
+        val bundle = packagedCefBundle() ?: run {
+            log("pre-seed: nessun archivio CEF jcefmaven nel pacchetto (il download automatico resta disponibile)")
             return
         }
-        val want = stampOf(archive)
+        val expected = expectedBundleTag()
+        if (expected != null && bundle.tag != expected) {
+            log("pre-seed: archivio con tag ${bundle.tag} diverso dall'atteso $expected: ignorato " +
+                    "(jcefmaven scarichera' il bundle corretto)")
+            return
+        }
+        val want = stampOf(bundle.archive)
         val stampFile = preseedStampFile()
-        if (bundleInstalled()) {
+        if (bundleInstalled() && File(installDir, "build_meta.json").isFile) {
             val have = runCatching { stampFile.readText().trim() }.getOrDefault("")
             when {
                 have == want -> {
@@ -1274,34 +1548,40 @@ object KcefEngine {
                 }
                 have.isNotEmpty() -> log("pre-seed: bundle da archivio DIVERSO ($have -> $want): AGGIORNAMENTO")
                 else -> {
-                    log("pre-seed: bundle esistente scaricato da KCEF (senza stamp): MAI toccato")
-                    return
+                    // bundle con build_meta.json ma senza nostro stamp: installato
+                    // da jcefmaven: se il tag coincide con l'archivio non tocchiamo
+                    val metaTag = runCatching {
+                        CefBuildInfo.fromFile(File(installDir, "build_meta.json")).releaseTag
+                    }.getOrNull()
+                    if (metaTag == bundle.tag) {
+                        log("pre-seed: bundle gia' installato con lo stesso tag (${bundle.tag}): salto")
+                        return
+                    }
+                    log("pre-seed: bundle esistente con tag diverso ($metaTag -> ${bundle.tag}): AGGIORNAMENTO")
                 }
             }
             // aggiornamento: estrazione pulita dall'archivio nuovo
-            runCatching { installDir.deleteRecursively() }
+            wipeBundleDirPreservingLogs()
         }
         _state.value = KcefState.Installing
-        log("pre-seed: estrazione di ${archive.name} (${archive.length()} byte) in ${installDir.absolutePath}")
+        log("pre-seed: estrazione di ${bundle.archive.name} (${bundle.archive.length()} byte) in ${installDir.absolutePath}")
         try {
             installDir.mkdirs()
-            extractTarGzWithSystemTar(archive, installDir)
-            applyPreseedLayout()
+            extractTarGzWithSystemTar(bundle.archive, installDir)
+            // lock di installazione jcefmaven: con build_meta.json estratto
+            // dall'archivio rende l'installazione completa (nessun ri-download)
+            runCatching { File(installDir, "install.lock").createNewFile() }
+                .onFailure { log("pre-seed: install.lock non creato: ${it.message}") }
             stampFile.writeText(want)
             log("pre-seed: OK (stamp scritto: $want)")
         } catch (t: Throwable) {
-            log("pre-seed FALLITA (${t.javaClass.simpleName}: ${t.message}): fallback COMPLETO al download KCEF")
-            runCatching { installDir.deleteRecursively() }
+            log("pre-seed FALLITA (${t.javaClass.simpleName}: ${t.message}): fallback COMPLETO al download jcefmaven")
+            wipeBundleDirPreservingLogs()
             runCatching { stampFile.delete() }
         } finally {
-            // STEP 3y: logEnvironment/preseed hanno gia' popolato la cache di
-            // scansione (con il bundle ANCORA assente al primo avvio): senza
-            // un reset, bundleInstalled() restava falso anche dopo
-            // l'estrazione -> install.lock non ricreato, preload saltato e
-            // KCEFBuilder.install cancellava e RI-SCARICAVA il bundle appena
-            // estratto (~200MB) a ogni primo avvio (tutti i sistemi, incluso
-            // Linux). Stessa cosa nel percorso di aggiornamento (bundle
-            // sostituito: le cache devono puntare ai file nuovi).
+            // v46 (come step3y): reset delle cache di scansione dopo QUALUNQUE
+            // cambio del contenuto di installDir (estrazione, aggiornamento,
+            // pulizia): scanBundle memoizza il primo risultato.
             resetBundleScanCache()
         }
     }
@@ -1336,51 +1616,9 @@ object KcefEngine {
         extractTarGzKotlin(archive, dest)
     }
 
-    /** Replica del layout TarGzExtractor+move di KCEF (dipendente dal sistema). */
-    private fun applyPreseedLayout() {
-        val os = System.getProperty("os.name").lowercase()
-        when {
-            os.contains("win") -> {
-                File(installDir, "lib").takeIf { it.isDirectory }?.let { moveDirInto(it, installDir) }
-                File(installDir, "bin").takeIf { it.isDirectory }?.let { moveDirInto(it, installDir) }
-            }
-            os.contains("mac") || os.contains("darwin") -> {
-                val homeLib = File(installDir, "Contents/Home/lib")
-                if (homeLib.isDirectory) moveDirInto(homeLib, installDir)
-                val frameworks = File(installDir, "Contents/Frameworks")
-                if (frameworks.isDirectory) {
-                    val target = File(installDir, "Frameworks")
-                    target.mkdirs()
-                    moveDirInto(frameworks, target)
-                }
-            }
-            else -> {
-                File(installDir, "lib").takeIf { it.isDirectory }?.let { moveDirInto(it, installDir) }
-            }
-        }
-    }
-
-    /** Sposta il CONTENUTO di [src] dentro [targetDir] (rename, fallback copy). */
-    private fun moveDirInto(src: File, targetDir: File) {
-        for (c in src.listFiles().orEmpty()) {
-            val dst = File(targetDir, c.name)
-            if (dst.exists()) {
-                // sovrascrittura deterministica (aggiornamento bundle)
-                if (dst.isDirectory) dst.deleteRecursively() else dst.delete()
-            }
-            if (!c.renameTo(dst)) {
-                if (c.isDirectory) {
-                    dst.mkdirs()
-                    moveDirInto(c, dst)
-                    c.deleteRecursively()
-                } else {
-                    c.copyTo(dst, overwrite = true)
-                    c.delete()
-                }
-            }
-        }
-        src.deleteRecursively()
-    }
+    // v46: il layout dell'archivio jcefmaven e' GIA' radice (libcef/jcef
+    // helper/framework direttamente in installDir): niente riordino layout
+    // (applyPreseedLayout/moveDirInto dell'era KCEF rimossi).
 
     // --------------------------- lettore tar minimale (fallback Kotlin) -----
     private fun readFully(input: java.io.InputStream, buffer: ByteArray): Int {
@@ -1555,21 +1793,6 @@ object KcefEngine {
     }
 
     /**
-     * STEP 3z2: la directory ".framework" che contiene il binario CEF
-     * (macOS): e' il valore corretto di CefSettings.frameworkDirPath.
-     */
-    private fun frameworkBundleDir(): File? {
-        var d: File? = bundleCefFrameworkFile?.parentFile
-        var hops = 0
-        while (d != null && hops < 6) {
-            if (d.name.lowercase().endsWith(".framework")) return d
-            d = d.parentFile
-            hops++
-        }
-        return null
-    }
-
-    /**
      * Priorita' del subprocess CEF: 3 = jcef_helper.exe (Windows, lezione
      * step2g: l'.exe batte la .dll omonima); 2 = eseguibile dentro un .app
      * (macOS); 1 = file generico. Vince il punteggio piu' alto.
@@ -1710,7 +1933,7 @@ object KcefEngine {
      *  2. altrimenti codesign --force --deep --sign "-" (firma AD-HOC,
      *     non richiede alcun certificato): porta helper e framework a uno
      *     stato eseguibile su qualunque Mac.
-     * MAI bloccante: qualunque errore e' solo log (l'init prosegue come v45).
+     * MAI bloccante: qualunque errore e' solo log (l'init prosegue).
      */
     private fun verifyAndResignCefBundleMacos() {
         if (!isMacOS) return
@@ -1758,7 +1981,7 @@ object KcefEngine {
     }
 
     // -------------------------------------------------------------------------
-    // STEP 3z2 (macOS): GATE UI. Potrebbe andare in crash l'EDT
+    // STEP 3z2 (macOS): GATE UI. Il crash report mostra l'EDT
     // (AWT-EventQueue-0) che carica classi e abortisce dentro il framework
     // CEF MENTRE kcef-init sta ancora mappando le natives
     // (NativeLibraries.load -> dlsym): su un Mac Intel il dlopen del
@@ -1797,17 +2020,30 @@ object KcefEngine {
                 try {
                     logEnvironment()
 
-                    // STEP 3z2 (macOS): GATE UI - non toccare le natives finche'
-                    // l'UI principale non e' composta (notifyUiReady da main.kt):
-                    // evita la sovrapposizione dlopen CEF / class-loading EDT
-                    // vista nel crash report (AWT-EventQueue-0 vs kcef-init).
+                    // STEP 3z2 (macOS): GATE UI - non toccare il bundle/natives
+                    // finche' l'UI principale non e' composta (notifyUiReady da
+                    // main.kt): evita la sovrapposizione dlopen CEF /
+                    // class-loading EDT vista nel crash report
+                    // (AWT-EventQueue-0 vs kcef-init).
                     awaitUiReadyBeforeNativeInit()
 
-                    // STEP 3q/3s  CEF PRE-SEMINATO nell'installer
-                    // (deb/msi/dmg): l'archivio jbr_jcef incluso nell'app viene
-                    // estratto qui nella directory dati utente PRIMA della catena
-                    // KCEF -> NESSUN dowload ~200MB al primo avvio. Qualunque
-                    // problema = fallback COMPLETO al download normale.
+                    // STEP 4a: pulizia della cache browser (kcef-cache) PRIMA
+                    // che CEF nasca (nessun file lockato, nessun subprocess).
+                    // Cancella solo le cartelle cache rigenerabili se la cache
+                    // supera il limite impostato (Impostazioni -> Generale);
+                    // NON tocca il bundle (installDir) -> nessun re-download.
+                    // Errore non bloccante: la pulizia non puo' fermare l'init.
+                    runCatching { cleanupCefCacheIfNeeded() }
+                        .onFailure { log("pulizia cache: errore non bloccante: ${it.message}") }
+
+                    // v46: MIGRAZIONE dal vecchio layout KCEF (cache fuori dal
+                    // bundle, bundle jbr_jcef obsoleto rimosso) e poi CEF
+                    // PRE-SEMINATO nell'installer (deb/msi/dmg): l'archivio
+                    // natives jcefmaven incluso nell'app viene estratto qui
+                    // nella directory dati utente PRIMA della catena di init
+                    // -> NESSUN download ~150MB al primo avvio. Qualunque
+                    // problema = fallback COMPLETO al download automatico.
+                    migrateLegacyLayout()
                     preSeedPackagedBundle()
 
                     // STEP 3z: permessi di esecuzione e quarantena
@@ -1822,33 +2058,25 @@ object KcefEngine {
                     if (!isWindowsOS && bundleInstalled()) {
                         fixBundleExecPermissions()
                         if (isMacOS) removeBundleQuarantine()
-                        // STEP 3z2: firma del bundle verificata/ripristinata
-                        // ad-hoc PRIMA del preload e dell'init (pacchetto
-                        // app non firmato: subprocess coerenti).
+                        // STEP 3z2 (macOS): firma del bundle verificata/ripristinata
+                        // ad-hoc PRIMA del preload e dell'init (pacchetto app
+                        // non firmato: subprocess coerenti).
                         if (isMacOS) verifyAndResignCefBundleMacos()
                     }
 
-                    // STEP 2h: KCEFBuilder.install cancella l'INTERA installDir
-                    // e ri-scarica il bundle se manca install.lock (bytecode
-                    // verificato: existsSafely -> deleteDir -> downloadPackage
-                    // -> extract -> createSafely). Un bundle COMPLETO non va
-                    // mai cancellato: se il lock manca (AV, interruzione,
-                    // build precedenti) lo pre-creiamo qui, cosi' KCEF salta
-                    // install e riutilizza il bundle gia' scaricato.
+                    // v46: il lock di installazione di jcefmaven ha senso SOLO
+                    // quando il build_meta.json e' gia' presente (estrazione
+                    // nostra dal pre-seed o installazione precedente): jcefmaven
+                    // verifica install.lock + build_meta.json (tag+platform) e
+                    // in mancanza cancella/reinstalla il bundle DA SOLO. Un lock
+                    // senza build_meta e' il vecchio layout KCEF (gestito sopra).
                     val lockFile = File(installDir, "install.lock")
-                    if (bundleInstalled() && !lockFile.isFile) {
-                        val exeHelper = bundleHelperFile?.takeIf {
-                            !it.name.lowercase().endsWith(".dll")
-                        }
-                        if (exeHelper != null) {
-                            val created = runCatching { lockFile.createNewFile() }.getOrDefault(false)
-                            log("install.lock ASSENTE ma bundle completo (libcef + ${exeHelper.name}): " +
-                                    if (created) "lock ricreato -> ri-download EVITATO"
-                                    else "impossibile creare il lock -> KCEF re-installera' il bundle")
-                        } else {
-                            log("install.lock assente e helper eseguibile mancante: bundle incompleto, lascio KCEF reinstallare")
-                        }
-                    } else if (bundleInstalled()) {
+                    if (bundleInstalled() && File(installDir, "build_meta.json").isFile && !lockFile.isFile) {
+                        val created = runCatching { lockFile.createNewFile() }.getOrDefault(false)
+                        log("install.lock ASSENTE ma bundle jcefmaven completo (libcef + build_meta.json): " +
+                                if (created) "lock ricreato -> ri-download EVITATO"
+                                else "impossibile creare il lock -> jcefmaven reinstallera' il bundle")
+                    } else if (bundleInstalled() && lockFile.isFile) {
                         log("install.lock presente: bundle gia' installato, NESSUN ri-download")
                     }
 
@@ -1876,7 +2104,7 @@ object KcefEngine {
                             log("ABORT init: bundle incompleto o incompatibile -> $detail")
                             _state.value = KcefState.Failed(
                                 withLogHint(
-                                    "Il browser integrato (KCEF) non puo' avviarsi: $detail. " +
+                                    "Il browser integrato (CEF) non puo' avviarsi: $detail. " +
                                             "Controlla il log per i dettagli e reinstalla/aggiorna RiPlay."
                                 )
                             )
@@ -1898,7 +2126,7 @@ object KcefEngine {
                             log("ABORT init: MISMATCH architettura CEF($bundleArch) vs JVM($jvmArch)")
                             _state.value = KcefState.Failed(
                                 withLogHint(
-                                    "Il browser integrato (KCEF) e' compilato per $bundleArch ma questo Mac " +
+                                    "Il browser integrato (CEF) e' compilato per $bundleArch ma questo Mac " +
                                             "esegue Java $jvmArch: scarica il pacchetto RiPlay che corrisponde " +
                                             "all'architettura del tuo Mac."
                                 )
@@ -1907,167 +2135,98 @@ object KcefEngine {
                         }
                     }
 
-                    KCEF.initBlocking(
-                        builder = {
-                            installDir(installDir)
-
-                            args(
-                                "--disable-gpu",
-                                "--disable-gpu-compositing",
-                                "--no-sandbox",
-                                "--autoplay-policy=no-user-gesture-required",
-                                "--disable-quic",
-                                "--app-user-model-id=" + WindowsAppIdentity.AUMID
-                            )
-                            log("builder args: --disable-gpu --disable-gpu-compositing --no-sandbox " +
-                                    "--autoplay-policy=no-user-gesture-required --disable-quic " +
-                                    "--app-user-model-id=" + WindowsAppIdentity.AUMID)
-
-                            settings {
-                                cachePath = cacheDir.absolutePath
-                                windowlessRenderingEnabled = false
-                                noSandbox = true
-                                // STEP 2l: replica l'UA del player Android (AYP)
-                                userAgent = ANDROID_AYP_USER_AGENT
-                                scanBundle()
-                                val helper = bundleHelperFile
-                                val libcef = bundleLibcefFile
-                                if (isMacOS) {
-
-                                    val fwRes = bundleCefResourcesDir
-                                    browserSubProcessPath = helper?.absolutePath ?: ""
-                                    resourcesDirPath = fwRes?.absolutePath ?: ""
-                                    val loc = fwRes?.let { File(it, "locales") }
-                                    localesDirPath = loc?.takeIf { l -> l.isDirectory }?.absolutePath ?: ""
-                                    // STEP 3z2: su macOS CEF deve ricevere anche
-                                    // framework_dir_path (directory del .framework):
-                                    // senza, resta il default derivato da java.home
-                                    // (JCefAppConfig) e i subprocess non trovano il
-                                    // framework. Best-effort via reflection (la DSL
-                                    // KCEF non lo espone).
-                                    runCatching {
-                                        val s = this
-                                        val fwBundle = frameworkBundleDir()
-                                        if (fwBundle != null) {
-                                            var cls: Class<*>? = s::class.java
-                                            var done = false
-                                            while (cls != null && !done) {
-                                                for (fname in listOf("frameworkDirPath", "framework_dir_path")) {
-                                                    if (done) break
-                                                    runCatching {
-                                                        val fld = cls.getDeclaredField(fname)
-                                                        fld.isAccessible = true
-                                                        fld.set(s, fwBundle.absolutePath)
-                                                        done = true
-                                                    }
-                                                }
-                                                cls = cls.superclass
-                                            }
-                                            log("settings mac: framework_dir_path " +
-                                                    if (done) "impostato -> ${fwBundle.absolutePath}"
-                                                    else "campo non disponibile nella settings KCEF (ignorato)")
-                                        } else {
-                                            log("settings mac: framework_dir_path non impostato (framework non individuato)")
-                                        }
-                                    }
-                                    log("settings mac: subprocess=${helper?.path ?: "ASSENTE"} " +
-                                            "framework=${bundleCefFrameworkFile?.path ?: "ASSENTE"} " +
-                                            "resources=${fwRes?.path ?: "ASSENTE"} " +
-                                            "locales=${localesDirPath?.takeIf { it.isNotEmpty() } ?: "ASSENTE"}")
-                                } else if (helper != null && libcef != null) {
-                                    browserSubProcessPath = helper.absolutePath
-                                    helper.parentFile?.let { res ->
-                                        resourcesDirPath = res.absolutePath
-                                        val loc = File(res, "locales")
-                                        localesDirPath =
-                                            if (loc.isDirectory) loc.absolutePath else ""
-                                    }
-                                    log("settings: subprocess=${helper.path} resources=${helper.parent} " +
-                                            "cache=${cacheDir.path} windowless=false userAgent=Chrome/134 (AYP)")
-                                } else {
-                                    browserSubProcessPath = ""
-                                    resourcesDirPath = ""
-                                    localesDirPath = ""
-                                    log("settings: campi path VUOTI (bundle assente) -> autofill KCEF verso installDir " +
-                                            "(userAgent=Chrome/134 AYP resta impostata)")
-                                }
-                                // STEP 3z: log nativo Chromium su file (i FATAL dei
-                                // subprocess altrimenti sono invisibili nel .app).
-                                // Best-effort via reflection: il campo log_file
-                                // esiste in CefSettings ma la DSL KCEF non lo espone.
-                                runCatching {
-                                    val s = this
-                                    val cefLog = File(cacheDir, "cef-debug.log")
-                                    var cls: Class<*>? = s::class.java
-                                    var done = false
-                                    while (cls != null && !done) {
-                                        for (fname in listOf("logFile", "log_file")) {
-                                            if (done) break
-                                            runCatching {
-                                                val fld = cls.getDeclaredField(fname)
-                                                fld.isAccessible = true
-                                                fld.set(s, cefLog.absolutePath)
-                                                done = true
-                                            }
-                                        }
-                                        cls = cls.superclass
-                                    }
-                                    log("cef-debug.log nativo: " +
-                                            if (done) "impostato -> ${cefLog.absolutePath}"
-                                            else "campo logFile non disponibile nella settings KCEF (ignorato)")
-                                }
-                            }
-                            progress {
-                                onDownloading { percent ->
-                                    log("download bundle: $percent%")
-                                    _state.value = KcefState.Downloading(percent)
-                                }
-                                onExtracting {
-                                    log("estrazione bundle...")
-                                    _state.value = KcefState.Extracting
-                                }
-                                onInstall {
-                                    log("installazione bundle...")
-                                    _state.value = KcefState.Installing
-                                }
-                                onInitializing {
-                                    log("inizializzazione CEF...")
-                                    _state.value = KcefState.Initializing
-                                }
-                            }
-                        },
-                        onError = { t ->
-                            log("onError: ${t?.message ?: t?.javaClass?.name ?: "sconosciuto"}")
-                            _state.value = KcefState.Failed(
-                                withLogHint(
-                                    t?.message ?: t?.javaClass?.simpleName ?: "Errore inizializzazione KCEF"
-                                )
-                            )
-                        },
-                        onRestartRequired = {
-                            log("onRestartRequired")
-                            _state.value = KcefState.Failed(
-                                withLogHint(
-                                    "Riavvia RiPlay per completare l'installazione del motore di riproduzione (KCEF)."
-                                )
-                            )
-                        }
+                    // v46: bootstrap jcefmaven. CefAppBuilder: installa (se
+                    // necessario) le natives del bundle in installDir e crea il
+                    // singleton CefApp con le nostre impostazioni. CefInitializer
+                    // di jcefmaven System.loada le librerie del BUNDLE (il loader
+                    // interno di jcef e' disattivato), aggiunge su macOS gli
+                    // argomenti --browser-subprocess-path/--framework-dir-path/
+                    // --main-bundle-path verso il Helper del bundle (CORRETTI per
+                    // costruzione: e' il fix strutturale della classe di crash
+                    // macOS) e chiama CefApp.startup().
+                    // Garanzia AWT: l'inizializzazione CEF gira sul thread EDT
+                    // (vedi sotto): il Toolkit deve esistere PRIMA.
+                    runCatching { java.awt.Toolkit.getDefaultToolkit() }
+                    val builder = CefAppBuilder()
+                    builder.setInstallDir(installDir)
+                    builder.addJcefArgs(
+                        "--disable-gpu",
+                        "--disable-gpu-compositing",
+                        "--no-sandbox",
+                        "--autoplay-policy=no-user-gesture-required",
+                        "--disable-quic",
+                        "--app-user-model-id=" + WindowsAppIdentity.AUMID
                     )
-                    log("KCEF.initBlocking completato")
-                    // STEP 2g: su Windows CefApp.startup() e' ASINCRONA (thread
-                    // CefStartup): initBlocking puo' tornare con lo stato ancora
-                    // INITIALIZING (visto nel log v6: client e browser creati
-                    // PRIMA del contesto nativo -> "can't invoke native method
-                    // ... before native context initialized", chiamate JS
-                    // perse). Attendiamo lo stato INITIALIZED prima di creare
-                    // client e browser.
+                    log("builder args: --disable-gpu --disable-gpu-compositing --no-sandbox " +
+                            "--autoplay-policy=no-user-gesture-required --disable-quic " +
+                            "--app-user-model-id=" + WindowsAppIdentity.AUMID)
+                    val s = builder.getCefSettings()
+                    s.cache_path = cacheDir.absolutePath
+                    s.windowless_rendering_enabled = false
+                    // STEP 2l: replica l'UA del player Android (AYP)
+                    s.user_agent = ANDROID_AYP_USER_AGENT
+                    // v46: log nativo Chromium su file (i FATAL dei subprocess
+                    // altrimenti sono invisibili nel .app). Il campo log_file e'
+                    // PUBBLICO in CefSettings di jcef-api: il workaround reflection
+                    // dell'era KCEF non serve piu'.
+                    s.log_file = File(cacheDir, "cef-debug.log").absolutePath
+                    log("settings: cache=${cacheDir.path} windowless=false userAgent=Chrome/134 (AYP) " +
+                            "log=${s.log_file}")
+                    // NB: i path subprocess/resources/locales NON vengono impostati:
+                    // CefInitializer li deduce dalla directory di installazione
+                    // (java.library.path viene estesa verso installDir) e su macOS
+                    // imposta esplicitamente anche framework-dir-path e
+                    // main-bundle-path verso il bundle.
+                    builder.setProgressHandler { state, percent ->
+                        when (state) {
+                            EnumProgress.LOCATING -> {
+                                _state.value = KcefState.Locating
+                                log("installazione bundle: ricerca...")
+                            }
+                            EnumProgress.DOWNLOADING -> {
+                                val p = if (percent >= 0f) percent else 0f
+                                _state.value = KcefState.Downloading(p)
+                                log("download bundle: ${p.toInt()}%")
+                            }
+                            EnumProgress.EXTRACTING -> {
+                                _state.value = KcefState.Extracting
+                                log("estrazione bundle...")
+                            }
+                            EnumProgress.INSTALL -> {
+                                _state.value = KcefState.Installing
+                                log("installazione bundle...")
+                            }
+                            EnumProgress.INITIALIZING -> {
+                                _state.value = KcefState.Initializing
+                                log("inizializzazione CEF...")
+                            }
+                            EnumProgress.INITIALIZED -> {
+                                // lo stato Ready arriva dopo la creazione del client
+                            }
+                        }
+                    }
+                    val app = builder.build()
+                    cefApp = app
+                    log("CefAppBuilder.build completato (natives del bundle installate, CefApp creato)")
+
+                    // v46: createClient AVVIA l'inizializzazione CEF: CefApp.initialize
+                    // esegue N_Initialize sul thread EDT (SwingUtilities.invokeAndWait)
+                    // = l'ordine richiesto da CEF su macOS (init sul thread principale,
+                    // dopo AWT, prima di qualunque browser). La chiamata BLOCCA finche'
+                    // N_Initialize non torna.
+                    val newClient = app.createClient()
+
+                    // Conferma dello stato (createClient blocca gia' l'init: il loop
+                    // e' una cintura di sicurezza, con gestione esplicita del fallimento
+                    // e del timeout: v. STEP 2g storico per l'asincronia Windows).
                     val deadline = System.currentTimeMillis() + 180_000L
                     while (true) {
-                        val appState = runCatching { org.cef.CefApp.getState() }.getOrNull()
+                        val appState = runCatching { CefApp.getState() }.getOrNull()
                         when (appState) {
-                            org.cef.CefApp.CefAppState.INITIALIZED -> break
-                            org.cef.CefApp.CefAppState.SHUTTING_DOWN,
-                            org.cef.CefApp.CefAppState.TERMINATED -> {
+                            CefApp.CefAppState.INITIALIZED -> break
+                            CefApp.CefAppState.SHUTTING_DOWN,
+                            CefApp.CefAppState.TERMINATED,
+                            CefApp.CefAppState.INITIALIZATION_FAILED -> {
                                 log("init CEF interrotta: stato=$appState")
                                 _state.value = KcefState.Failed(
                                     withLogHint(
@@ -2092,18 +2251,16 @@ object KcefEngine {
                             }
                         }
                     }
-                    log("CefApp INITIALIZED confermato: creazione client")
+                    log("CefApp INITIALIZED confermato")
                     // STEP 2j: consenso EU seminato PRIMA del primo uso del browser
                     seedConsentCookies()
-                    // Client creato SOLO dopo init completata: la UI monta
-                    // il browser solo quando lo stato e' Ready.
-                    val newClient = KCEF.newClientBlocking()
                     // STEP 2r: politica del contesto embed (Referer apex sulle
                     // richieste /embed/, contesto Android). NESSUN CefResource
                     // Handler custom (getResourceHandler sempre null): zero
                     // rischio NoSuchMethodError open/read del glue nativo.
                     installEmbedRefererPolicy(newClient)
                     installDiagnosticsHandlers(newClient)
+                    installStateBridge(newClient)
                     client = newClient
                     log("pagina player: HTML LOCALE con parametri sostituiti PRIMA del caricamento " +
                             "(replica WebViewYouTubePlayer.initWebView Android: segnaposto " +
@@ -2112,7 +2269,7 @@ object KcefEngine {
                             "YouTube: www.youtube.com e 127.0.0.1 sono rifiutati con errore 152, " +
                             "verifica empirica step2r); l'origin resta una variabile interna " +
                             "del player (mai un parametro dell'URL del browser)")
-                    log("client KCEF creato: motore YouTube pronto")
+                    log("client CEF creato (jcefmaven): motore YouTube pronto")
                     _state.value = KcefState.Ready
                 } catch (t: Throwable) {
                     log("INIT FALLITA: ${t.javaClass.name}: ${t.message}")
@@ -2120,6 +2277,54 @@ object KcefEngine {
                     _state.value = KcefState.Failed(withLogHint(t.message ?: t.javaClass.simpleName))
                 }
             }, "kcef-init").apply { isDaemon = true }.start()
+        }
+    }
+
+    /**
+     * v46: hook verso il player ([KcefYouTubePlayer]): riceve le richieste
+     * cefQuery della pagina ("st:{json}" = stato player YT pushato dalla
+     * pagina). Sostituisce evaluateJavaScriptBlocking di KCEFBrowser.
+     */
+    @Volatile
+    var onPlayerStateMessage: ((String) -> Unit)? = null
+
+    /**
+     * v46: bridge di stato standard CEF (CefMessageRouter). JCEF inietta la
+     * funzione JavaScript window.cefQuery in OGNI frame dei browser creati su
+     * questo client: la pagina player pusha lo stato verso Kotlin senza
+     * bisogno delle API KCEF (evaluateJavaScriptBlocking). Da chiamare DOPO
+     * la creazione del client e PRIMA della creazione del primo browser.
+     */
+    private fun installStateBridge(c: CefClient) {
+        runCatching {
+            val router = org.cef.browser.CefMessageRouter.create()
+            val handler = object : org.cef.handler.CefMessageRouterHandlerAdapter() {
+                override fun onQuery(
+                    browser: org.cef.browser.CefBrowser,
+                    frame: org.cef.browser.CefFrame,
+                    queryId: Long,
+                    request: String,
+                    persistent: Boolean,
+                    callback: org.cef.callback.CefQueryCallback
+                ): Boolean {
+                    onPlayerStateMessage?.invoke(request)
+                    callback.success("")
+                    return true
+                }
+
+                override fun onQueryCanceled(
+                    browser: org.cef.browser.CefBrowser,
+                    frame: org.cef.browser.CefFrame,
+                    queryId: Long
+                ) {
+                    // niente: le query di stato sono non-persistenti one-shot
+                }
+            }
+            router.addHandler(handler, true)
+            c.addMessageRouter(router)
+            log("bridge di stato (CefMessageRouter/window.cefQuery) installato sul client")
+        }.onFailure {
+            log("installazione bridge di stato FALLITA: ${it.javaClass.simpleName}: ${it.message}")
         }
     }
 
@@ -2196,7 +2401,7 @@ object KcefEngine {
     @Volatile
     private var embedShareHiddenLogged = false
 
-    private fun installEmbedRefererPolicy(c: KCEFClient) {
+    private fun installEmbedRefererPolicy(c: CefClient) {
         runCatching {
             val embedHandler = object : org.cef.handler.CefResourceRequestHandlerAdapter() {
                 override fun onBeforeResourceLoad(
@@ -2256,7 +2461,7 @@ object KcefEngine {
      * verificata: solo un MessageRouter per il bridge JS), quindi non
      * sostituiamo nulla di interno a KCEF.
      */
-    private fun installDiagnosticsHandlers(c: KCEFClient) {
+    private fun installDiagnosticsHandlers(c: CefClient) {
         runCatching {
             c.addDisplayHandler(object : org.cef.handler.CefDisplayHandlerAdapter() {
                 override fun onConsoleMessage(
@@ -2371,7 +2576,12 @@ object KcefEngine {
     }
 
     fun dispose() {
-        runCatching { KCEF.disposeBlocking() }
+        // v46: dispose del singleton CefApp di jcefmaven (chiusura dei client
+        // e dei browser + shutdown CEF). Il builder registra gia' uno shutdown
+        // hook che chiama dispose() all'uscita del JVM: qui il dispose esplicito
+        // ordina la chiusura PRIMA, come faceva KCEF.disposeBlocking.
+        runCatching { cefApp?.dispose() }
+        cefApp = null
         client = null
         started = false
         _state.value = KcefState.NotStarted
