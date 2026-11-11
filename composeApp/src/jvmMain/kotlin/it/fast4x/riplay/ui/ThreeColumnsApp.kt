@@ -71,7 +71,6 @@ import it.fast4x.riplay.ui.pages.AlbumsPage
 import it.fast4x.riplay.ui.pages.ArtistsPage
 import it.fast4x.riplay.ui.pages.HomePageOnline
 import it.fast4x.riplay.ui.pages.LocalSongsPage
-import player.DesktopPlayerEngine
 import it.fast4x.riplay.ui.pages.PlaylistsPage
 import it.fast4x.riplay.ui.pages.PlaylistSongsPage
 import it.fast4x.riplay.ui.pages.SettingsPage
@@ -101,11 +100,12 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import it.fast4x.environment.models.bodies.NextBody
 import it.fast4x.environment.requests.nextPage
+import it.fast4x.riplay.player.player.DesktopPlayerEngine
 import it.fast4x.riplay.ui.pages.SearchPage
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import player.DesktopVideoSource
-import player.DesktopPlayerManager
+import it.fast4x.riplay.player.player.DesktopVideoSource
+import it.fast4x.riplay.player.player.DesktopPlayerManager
 import riplay.composeapp.generated.resources.Res
 import riplay.composeapp.generated.resources.arrow_left
 import riplay.composeapp.generated.resources.back
@@ -939,7 +939,12 @@ fun DestinationPanel(
                                     onOpenDetail(DesktopDetail.Artist(it))
                                 },
                                 onPlaylistClick = {
-                                    onOpenDetail(DesktopDetail.YtPlaylist(it))
+                                    onOpenDetail(
+                                        if (!it.startsWith("MPSP"))
+                                            DesktopDetail.YtPlaylist(it)
+                                        else
+                                            DesktopDetail.Podcast(it)
+                                    )
                                 },
                                 onMoodClick = {
                                     onOpenDetail(DesktopDetail.Mood(it))
