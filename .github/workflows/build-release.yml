@@ -17,6 +17,17 @@
 #  - workflow_dispatch (manuale): si sceglie la "version" e COSA costruire
 #                                  (all / android-only / desktop-only)
 #
+# STEP 3ah (RELEASE CANDIDATE):
+#  - Ammesse le pre-release SemVer 2.0.0: v1.0.0-rc.1 | v1.0.0-rc2 |
+#    v1.0.0-beta.1 | v1.0.0-alpha (suffisso = "-" + identificatori
+#    alfanumerici separati da punto, dopo le tre componenti numeriche).
+#  - La GitHub Release di una pre-release viene marcata "pre-release": NON
+#    diventa "Latest" -> il canale stabile e l'AppImageUpdate (update info
+#    con pattern "latest") restano agganciati all'ultima STABILE.
+#  - NB jpackage (MSI/DEB/RPM/DMG) vuole una versione NUMERICA: verificare
+#    che riplayPackageVersionForHost (STEP 3v/3x) in build.gradle.kts
+#    ritagli le sole componenti numeriche dal tag, scartando il suffisso.
+#
 # NOTE TECNICHE:
 #  - jpackage NON fa cross-building: ogni formato desktop esce solo dal
 #    runner del suo sistema (MSI solo su windows-latest, DEB/RPM solo su
@@ -255,7 +266,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version tag (e.g., v1.0.0)'
+        description: 'Version tag (e.g., v1.0.0 or v1.0.0-rc.1)'
         required: true
         type: string
       targets:
@@ -287,6 +298,8 @@ jobs:
     outputs:
       version: ${{ steps.resolve.outputs.version }}
       targets: ${{ steps.targets.outputs.targets }}
+      # STEP 3ah: true se la versione ha un suffisso pre-release (-rc, -beta...)
+      prerelease: ${{ steps.resolve.outputs.prerelease }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -306,8 +319,12 @@ jobs:
           # 🔧 FIX: input passato via env, non iniettato nello script
           VERSION: ${{ github.event.inputs.version }}
         run: |
-          if [[ ! $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "❌ Invalid version format! Use v1.0.0"
+          # STEP 3ah: accetta anche il suffisso pre-release SemVer 2.0.0
+          # (v1.0.0-rc.1, v1.0.0-rc2, v1.0.0-beta.1, ...): "-" seguito da
+          # identificatori alfanumerici separati da punto. Le componenti
+          # numeriche MAJOR.MINOR.PATCH restano obbligatorie.
+          if [[ ! $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z]+(\.[0-9A-Za-z]+)*)?$ ]]; then
+            echo "❌ Invalid version format! Use v1.0.0 or a pre-release like v1.0.0-rc.1"
             exit 1
           fi
 
@@ -328,6 +345,17 @@ jobs:
             CURRENT_TAG="${GITHUB_REF_NAME}"
           fi
           echo "version=$CURRENT_TAG" >> "$GITHUB_OUTPUT"
+
+          # STEP 3ah: pre-release = suffisso SemVer dopo la terza componente
+          # numerica. Vale per ENTRAMBI i trigger: workflow_dispatch (input
+          # version) e push del tag (GITHUB_REF_NAME). L'output viene usato
+          # dal job release per marcare la GitHub Release come "pre-release".
+          if [[ "$CURRENT_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+- ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+            echo "🏷️ $CURRENT_TAG e' una pre-release (release candidate): la GitHub Release sara' marcata 'pre-release' (non diventa 'Latest')"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Resolve targets output
         id: targets
@@ -1150,6 +1178,7 @@ jobs:
       - name: Create Release Notes
         env:
           CURRENT_TAG: ${{ needs.validate.outputs.version }}
+          IS_PRERELEASE: ${{ needs.validate.outputs.prerelease }}
         run: |
           RELEASE_DATE=$(date +'%Y-%m-%d')
           COMMIT_HASH=$(git rev-parse --short HEAD)
@@ -1157,6 +1186,11 @@ jobs:
           {
             echo "## 🎵 RiPlay ${CURRENT_TAG} - Released ${RELEASE_DATE}"
             echo ""
+            # STEP 3ah: avviso ben visibile sulle pre-release
+            if [ "$IS_PRERELEASE" = "true" ]; then
+              echo "> ⚠️ **RELEASE CANDIDATE**: versione di prova destinata ai tester. Puo' contenere bug e NON sostituisce l'ultima release stabile."
+              echo ""
+            fi
             echo "### 📋 What's Changed"
             # Il changelog viene letto da file: bash non interpreta
             # virgolette, backtick o parentesi nei messaggi di commit
@@ -1200,7 +1234,12 @@ jobs:
           overwrite_files: true
           body_path: /tmp/release_notes.md
           draft: false
-          prerelease: false
+          # STEP 3ah: una release candidate viene marcata "pre-release" su
+          # GitHub -> NON compare come "Latest": l'endpoint /releases/latest
+          # (usato anche da AppImageUpdate via gh-releases-zsync) continua a
+          # risolvere verso l'ultima STABILE, quindi il canale stabile non
+          # vede mai la RC.
+          prerelease: ${{ needs.validate.outputs.prerelease == 'true' }}
           tag_name: ${{ needs.validate.outputs.version }}
           token: ${{ secrets.GITHUB_TOKEN }}
         env:

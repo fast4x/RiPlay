@@ -143,8 +143,41 @@ fun macSafeJPackageVersion(raw: String): String {
     return (listOf(first) + rest).joinToString(".")
 }
 
-val riplayDesktopVersion = "0.8.6"
-val riplayDesktopVersionMac = macSafeJPackageVersion(riplayDesktopVersion)
+// =============================================================================
+// STEP 3ah (release candidate): versioning desktop con suffisso pre-release
+// La versione desktop puo' portare un suffisso SemVer 2.0.0 ("0.8.7-rc.1",
+// "0.8.7-beta.2", ...): la GitHub Release viene marcata "pre-release" dal
+// workflow (STEP 3ah di build-release.yml). jpackage pero' NON accetta
+// suffissi: --app-version deve essere "1-3 interi separati da punti" per
+// QUALUNQUE formato (Msi/Deb/Rpm/Dmg/AppImage), e RPM rifiuta anche il
+// trattino. Quindi la versione viaggia in TRE forme:
+//   - riplayDesktopVersion        = versione COMPLETA (anche con suffisso):
+//     resta sui metadati applicazione (version =) e sul log diagnostico
+//   - riplayDesktopVersionNumeric = parte numerica (taglio al primo "-"):
+//     e' quella passata a jpackage su Windows/Linux
+//   - riplayDesktopVersionMac     = mac-safe della numerica (STEP 3v:
+//     "0.8.7" -> "1.8.7"): quella passata a jpackage su macOS
+// Fail-fast: se la parte numerica non e' 1-3 interi la CONFIGURAZIONE
+// gradle fallisce subito con messaggio esplicito (mai ConfigException
+// oscura di jpackage a meta' build CI).
+// =============================================================================
+fun numericPackagingVersion(raw: String): String {
+    val core = raw.substringBefore('-').trim()
+    val parts = core.split('.').map { it.trim() }
+    require(parts.size in 1..3 && parts.all { it.isNotEmpty() && it.all(Char::isDigit) }) {
+        "Versione desktop non valida: '$raw' (parte numerica '$core'). " +
+            "Formato atteso: 1-3 interi separati da punti, con eventuale suffisso " +
+            "pre-release dopo '-' (es. 0.8.7, 0.8.7-rc.1, 1.0.0-beta.2)."
+    }
+    return core
+}
+
+val riplayDesktopVersion = "0.8.7-rc.1"
+// STEP 3ah: parte numerica per jpackage: "0.8.7-rc.1" -> "0.8.7"
+val riplayDesktopVersionNumeric = numericPackagingVersion(riplayDesktopVersion)
+// STEP 3v: su macOS jpackage rifiuta 0.x -> la NUMERICA viene promossa
+// ("0.8.7" -> "1.8.7"); il suffisso pre-release e' gia' stato rimosso
+val riplayDesktopVersionMac = macSafeJPackageVersion(riplayDesktopVersionNumeric)
 
 // =============================================================================
 // STEP 3x (difesa finale app-version macOS + canarino diagnostico):
@@ -169,10 +202,12 @@ val riplayDesktopVersionMac = macSafeJPackageVersion(riplayDesktopVersion)
 //    (logger.lifecycle verrebbe filtrato dal log level warn di gradle.properties)
 // =============================================================================
 val riplayMacHost = (System.getProperty("os.name") ?: "").startsWith("Mac", ignoreCase = true)
-val riplayPackageVersionForHost = if (riplayMacHost) riplayDesktopVersionMac else riplayDesktopVersion
+// STEP 3ah: jpackage riceve SEMPRE una versione numerica (numeric o macSafe),
+// mai la versione completa con suffisso pre-release
+val riplayPackageVersionForHost = if (riplayMacHost) riplayDesktopVersionMac else riplayDesktopVersionNumeric
 println(
     "RiPlay packaging version: host='" + System.getProperty("os.name") + "' " +
-        "packageVersion=$riplayPackageVersionForHost (raw=$riplayDesktopVersion, macSafe=$riplayDesktopVersionMac)"
+        "packageVersion=$riplayPackageVersionForHost (raw=$riplayDesktopVersion, numeric=$riplayDesktopVersionNumeric, macSafe=$riplayDesktopVersionMac)"
 )
 
 compose.desktop {
@@ -181,6 +216,9 @@ compose.desktop {
         mainClass = "MainKt"
 
         // STEP 3q: versione allineata all'app Android (versionName)
+        // STEP 3ah: qui resta la versione COMPLETA (anche con suffisso
+        // "-rc.1"): e' solo metadato, jpackage NON la vede mai (i package*
+        // Version qui sotto usano sempre la parte numerica o la mac-safe)
         // NOTA: dentro application{} "version =" risolve sulla proprieta' del
         // Project Gradle (receiver esterno al lambda), il plugin Compose 1.11
         // non espone una version propria su JvmApplication
@@ -217,9 +255,12 @@ compose.desktop {
              */
             targetFormats(TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm, TargetFormat.Dmg)
             packageName = "RiPlay"
-            // STEP 3x: su host macOS qui arriva gia' la versione mac-safe (1.8.0),
+            // STEP 3x: su host macOS qui arriva gia' la versione mac-safe,
             // cosi' jpackage non puo' mai ricevere 0.x per qualunque formato
-            // (createDistributable/AppImage incluso); su Linux/Windows resta 0.8.0
+            // (createDistributable/AppImage incluso).
+            // STEP 3ah: su Linux/Windows arriva la parte NUMERICA della
+            // versione (es. "0.8.7-rc.1" -> "0.8.7"): jpackage rifiuta
+            // qualunque suffisso su Msi/Deb/Rpm (e RPM rifiuta il trattino)
             packageVersion = riplayPackageVersionForHost
 
             // STEP 4: risorse applicative incluse nel pacchetto (CEF pre-seminato)
@@ -254,7 +295,10 @@ compose.desktop {
                 // con primo numero 0 o negativo). "0.8.0" -> "1.8.0": vale per
                 // createDistributable (--app-version), packageDmg e la
                 // CFBundleVersion/CFBundleShortVersionString dell'Info.plist.
-                // Windows/Linux continuano a usare 0.8.0 (top-level).
+                // Windows/Linux continuano a usare la numerica (top-level).
+                // STEP 3ah: qui arriva la mac-safe della parte NUMERICA
+                // ("0.8.7-rc.1" -> numerica "0.8.7" -> mac-safe "1.8.7"):
+                // il suffisso pre-release e' gia' stato rimosso
                 packageVersion = riplayDesktopVersionMac
                 packageBuildVersion = riplayDesktopVersionMac
             }

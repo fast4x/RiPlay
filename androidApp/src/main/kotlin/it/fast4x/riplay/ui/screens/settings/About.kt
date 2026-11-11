@@ -64,8 +64,7 @@ fun About(
             navController = navController
         )
 
-        search.SearchBar(this)
-
+        /*
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
@@ -75,6 +74,24 @@ fun About(
             BasicText(
                 text = "RiPlay ${BuildConfig.VERSION_NAME} (${BuildConfig.FLAVOR}${if(BuildConfig.DEBUG) " DEBUG" else ""})  by fast4x",
                 style = typography().s.secondary
+            )
+        }
+
+         */
+
+        search.SearchBar(this)
+
+        SettingsGroupSpacer()
+
+        SettingsEntryGroupText(title = stringResource(R.string.information))
+
+        SettingsCardContainer {
+            SettingsEntry(
+                title = "RiPlay",
+                titleSecondary = "${BuildConfig.VERSION_NAME} - ${BuildConfig.FLAVOR.uppercase()}${if(BuildConfig.DEBUG) " - DEBUG" else ""}",
+                text= "by fast4x",
+                onClick = {},
+                icon = R.drawable.information_circle,
             )
         }
 
