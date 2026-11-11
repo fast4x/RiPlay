@@ -1188,7 +1188,7 @@ jobs:
             echo ""
             # STEP 3ah: avviso ben visibile sulle pre-release
             if [ "$IS_PRERELEASE" = "true" ]; then
-              echo "> ⚠️ **RELEASE CANDIDATE**: versione di prova destinata ai tester. Puo' contenere bug e NON sostituisce l'ultima release stabile."
+              echo "> ⚠️ **RELEASE CANDIDATE**: test version intended for testers and  translators. It may contain bugs and does NOT replace the latest stable release."
               echo ""
             fi
             echo "### 📋 What's Changed"
@@ -1204,7 +1204,7 @@ jobs:
             echo "**Native Desktop** (CEF included, no download; VLC required for local files)"
             echo "- **Windows** - MSI installer"
             echo "- **Linux** - DEB + RPM + AppImage (portatile x86_64)"
-            echo "  - AppImage: `chmod +x RiPlay-*.AppImage` and run (static runtime: no libfuse2 required; fallback if FUSE unavailable: ./RiPlay-*.AppImage --appimage-extract-and-run)"
+            echo "  - AppImage: chmod +x RiPlay-*.AppImage and run (static runtime: no libfuse2 required)"
             echo "  - Delta updates: file .zsync for AppImageUpdate (appimageupdate RiPlay-*.AppImage)"
             echo "- **macOS Apple Silicon** - DMG (not signed: first run with right mouse button -> open)"
             echo "- **macOS Intel** - DMG (not signed: first run with right mouse button -> open)"
