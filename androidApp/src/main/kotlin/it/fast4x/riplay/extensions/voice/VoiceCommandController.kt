@@ -20,10 +20,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.core.content.ContextCompat
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.ui.components.themed.SmartMessage
@@ -40,7 +40,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import timber.log.Timber
 
 private const val LISTEN_TIMEOUT_MS = 15_000L
-private const val RESTART_DELAY_MS = 400L
+private const val RESTART_DELAY_MS = 600L
 private const val FAILURE_BACKOFF_MS = 1_200L
 private const val MAX_CONSECUTIVE_FAILURES = 4
 
@@ -50,12 +50,18 @@ private const val MAX_CONSECUTIVE_FAILURES = 4
  * Supports one command at a time ([startListening]) and an optional hands-free
  * loop ([setHandsFreeMode]) that keeps listening while the player is in the
  * foreground, stopping on lifecycle pause and restarting on resume.
+ *
+ * Every listening session gets its own recognizer. Reusing one recognizer and
+ * calling `cancel()` right before the next `startListening()` looks harmless,
+ * but the cancel-related callback can arrive after the next session has
+ * started. That old callback used to complete the new session immediately,
+ * which made hands-free mode open and close the microphone in a tight loop.
  */
 class VoiceCommandController internal constructor(
     private val context: Context,
     private val scope: CoroutineScope,
     internal var onTranscript: suspend (String) -> Unit,
-) : RecognitionListener {
+) {
 
     var isListening by mutableStateOf(false)
         private set
@@ -67,8 +73,7 @@ class VoiceCommandController internal constructor(
     internal var onHandsFreeAborted: (() -> Unit)? = null
     internal var onRecognitionUnavailable: (() -> Unit)? = null
 
-    private var speechRecognizer: SpeechRecognizer? = null
-    private var pending: CancellableContinuation<String?>? = null
+    private var session: ListenSession? = null
     private var handsFreeJob: Job? = null
     private var isForeground = true
     private var waitingForPermission = false
@@ -76,12 +81,18 @@ class VoiceCommandController internal constructor(
 
     private enum class ListenOutcome { Result, Silence, Permission, Unavailable, Error }
 
+    private class ListenSession(
+        val recognizer: SpeechRecognizer,
+        val continuation: CancellableContinuation<String?>,
+    )
+
     fun startListening() {
         if (isListening) return
         val resumeHandsFree = isHandsFree
         if (resumeHandsFree) stopHandsFreeLoop()
         scope.launch {
-            runCommand(listenOnce())
+            val transcript = listenOnce()
+            runCommand(transcript)
             if (resumeHandsFree) startHandsFreeLoop()
         }
     }
@@ -127,15 +138,11 @@ class VoiceCommandController internal constructor(
         isHandsFree = false
         stopHandsFreeLoop()
         cancelPending()
-        speechRecognizer?.let { recognizer ->
-            runCatching { recognizer.destroy() }
-                .onFailure { Timber.e(it, "VoiceCommandController could not destroy recognizer") }
-        }
-        speechRecognizer = null
     }
 
     private suspend fun runCommand(transcript: String?) {
         if (transcript.isNullOrBlank()) return
+        Timber.d("VoiceCommandController heard: %s", transcript)
         runCatching { onTranscript(transcript) }
             .onFailure { Timber.e(it, "VoiceCommandController command failed for: $transcript") }
     }
@@ -154,8 +161,13 @@ class VoiceCommandController internal constructor(
                     continue
                 }
                 when (lastOutcome) {
-                    ListenOutcome.Permission, ListenOutcome.Unavailable -> {
-                        Timber.w("VoiceCommandController hands-free stopped: ${lastOutcome.name}")
+                    ListenOutcome.Permission -> {
+                        // Leave hands-free enabled; the permission result restarts it.
+                        Timber.w("VoiceCommandController hands-free paused: waiting for microphone permission")
+                        break
+                    }
+                    ListenOutcome.Unavailable -> {
+                        Timber.w("VoiceCommandController hands-free stopped: recognition unavailable")
                         isHandsFree = false
                         onHandsFreeAborted?.invoke()
                         break
@@ -185,16 +197,19 @@ class VoiceCommandController internal constructor(
         handsFreeJob = null
     }
 
-    private suspend fun listenOnce(): String? {
-        val result = withTimeoutOrNull(LISTEN_TIMEOUT_MS) { awaitUtterance() }
-        if (result == null && isListening) cancelPending()
-        return result
-    }
+    private suspend fun listenOnce(): String? =
+        withTimeoutOrNull(LISTEN_TIMEOUT_MS) { awaitUtterance() }
 
     private suspend fun awaitUtterance(): String? = suspendCancellableCoroutine { continuation ->
         lastOutcome = ListenOutcome.Silence
 
         if (!hasMicrophonePermission()) {
+            if (waitingForPermission) {
+                // A permission dialog is already showing; wait for its result.
+                lastOutcome = ListenOutcome.Permission
+                continuation.resume(null)
+                return@suspendCancellableCoroutine
+            }
             waitingForPermission = true
             lastOutcome = ListenOutcome.Permission
             requestPermission?.invoke()
@@ -202,46 +217,110 @@ class VoiceCommandController internal constructor(
             return@suspendCancellableCoroutine
         }
 
-        val recognizer = ensureRecognizer()
-        if (recognizer == null) {
+        if (!SpeechRecognizer.isRecognitionAvailable(context)) {
+            Timber.w("VoiceCommandController speech recognition not available")
             lastOutcome = ListenOutcome.Unavailable
+            onRecognitionUnavailable?.invoke()
             continuation.resume(null)
             return@suspendCancellableCoroutine
         }
 
-        pending?.let { previous ->
-            if (previous.isActive) previous.resume(null)
+        val recognizer = runCatching { SpeechRecognizer.createSpeechRecognizer(context) }
+            .onFailure { Timber.e(it, "VoiceCommandController could not create recognizer") }
+            .getOrNull()
+        if (recognizer == null) {
+            lastOutcome = ListenOutcome.Unavailable
+            onRecognitionUnavailable?.invoke()
+            continuation.resume(null)
+            return@suspendCancellableCoroutine
         }
-        pending = continuation
+
+        val listenSession = ListenSession(recognizer, continuation)
+        recognizer.setRecognitionListener(
+            object : RecognitionListener {
+                override fun onReadyForSpeech(params: Bundle?) {
+                    if (session === listenSession) isListening = true
+                }
+
+                override fun onBeginningOfSpeech() = Unit
+
+                override fun onRmsChanged(rmsdB: Float) = Unit
+
+                override fun onBufferReceived(buffer: ByteArray?) = Unit
+
+                override fun onEndOfSpeech() = Unit
+
+                override fun onError(error: Int) {
+                    val outcome = when (error) {
+                        SpeechRecognizer.ERROR_NO_MATCH,
+                        SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> ListenOutcome.Silence
+                        SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> ListenOutcome.Permission
+                        else -> ListenOutcome.Error
+                    }
+                    finishSession(listenSession, null, outcome)
+                }
+
+                override fun onResults(results: Bundle?) {
+                    val transcript = results
+                        ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                        ?.firstOrNull()
+                        ?.trim()
+                        ?.takeIf { it.isNotEmpty() }
+                    finishSession(listenSession, transcript, ListenOutcome.Result)
+                }
+
+                override fun onPartialResults(partialResults: Bundle?) = Unit
+
+                override fun onEvent(eventType: Int, params: Bundle?) = Unit
+            }
+        )
+
+        session = listenSession
         isListening = true
 
         continuation.invokeOnCancellation {
-            if (pending === continuation) pending = null
-            isListening = false
-            safeCancel(recognizer)
+            if (session === listenSession) {
+                session = null
+                isListening = false
+            }
+            cancelAndDestroy(recognizer)
         }
 
-        safeCancel(recognizer)
         try {
             recognizer.startListening(recognitionIntent())
         } catch (t: Throwable) {
             Timber.e(t, "VoiceCommandController could not start listening")
-            finishPending(null)
+            finishSession(listenSession, null, ListenOutcome.Error)
         }
     }
 
-    private fun ensureRecognizer(): SpeechRecognizer? {
-        if (!SpeechRecognizer.isRecognitionAvailable(context)) {
-            Timber.w("VoiceCommandController speech recognition not available")
-            onRecognitionUnavailable?.invoke()
-            return null
-        }
-        speechRecognizer?.let { return it }
-        return runCatching { SpeechRecognizer.createSpeechRecognizer(context) }
-            .onSuccess { it.setRecognitionListener(this) }
-            .onFailure { Timber.e(it, "VoiceCommandController could not create recognizer") }
-            .getOrNull()
-            ?.also { speechRecognizer = it }
+    private fun finishSession(
+        target: ListenSession,
+        transcript: String?,
+        outcome: ListenOutcome,
+    ) {
+        if (session !== target) return
+        session = null
+        lastOutcome = outcome
+        isListening = false
+        if (target.continuation.isActive) target.continuation.resume(transcript)
+        runCatching { target.recognizer.destroy() }
+            .onFailure { Timber.w(it, "VoiceCommandController could not destroy recognizer") }
+    }
+
+    private fun cancelPending() {
+        val active = session ?: return
+        session = null
+        isListening = false
+        if (active.continuation.isActive) active.continuation.resume(null)
+        cancelAndDestroy(active.recognizer)
+    }
+
+    private fun cancelAndDestroy(recognizer: SpeechRecognizer) {
+        runCatching { recognizer.cancel() }
+            .onFailure { Timber.w(it, "VoiceCommandController could not cancel recognizer") }
+        runCatching { recognizer.destroy() }
+            .onFailure { Timber.w(it, "VoiceCommandController could not destroy recognizer") }
     }
 
     private fun recognitionIntent(): Intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
@@ -254,67 +333,6 @@ class VoiceCommandController internal constructor(
     private fun hasMicrophonePermission(): Boolean =
         ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) ==
             PackageManager.PERMISSION_GRANTED
-
-    private fun safeCancel(recognizer: SpeechRecognizer) {
-        runCatching { recognizer.cancel() }
-    }
-
-    private fun cancelPending() {
-        val continuation = pending
-        pending = null
-        isListening = false
-        speechRecognizer?.let(::safeCancel)
-        if (continuation != null && continuation.isActive) continuation.resume(null)
-    }
-
-    private fun finishPending(transcript: String?) {
-        val continuation = pending ?: return
-        pending = null
-        isListening = false
-        if (continuation.isActive) continuation.resume(transcript)
-    }
-
-    override fun onReadyForSpeech(params: Bundle?) {
-        isListening = true
-    }
-
-    override fun onBeginningOfSpeech() = Unit
-
-    override fun onRmsChanged(rmsdB: Float) = Unit
-
-    override fun onBufferReceived(buffer: ByteArray?) = Unit
-
-    override fun onEndOfSpeech() = Unit
-
-    override fun onError(error: Int) {
-        lastOutcome = when (error) {
-            SpeechRecognizer.ERROR_NO_MATCH,
-            SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> ListenOutcome.Silence
-            else -> ListenOutcome.Error
-        }
-        when (error) {
-            SpeechRecognizer.ERROR_CLIENT,
-            SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> {
-                speechRecognizer?.let { runCatching { it.destroy() } }
-                speechRecognizer = null
-            }
-        }
-        finishPending(null)
-    }
-
-    override fun onResults(results: Bundle?) {
-        lastOutcome = ListenOutcome.Result
-        val transcript = results
-            ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-            ?.firstOrNull()
-            ?.trim()
-            ?.takeIf { it.isNotEmpty() }
-        finishPending(transcript)
-    }
-
-    override fun onPartialResults(partialResults: Bundle?) = Unit
-
-    override fun onEvent(eventType: Int, params: Bundle?) = Unit
 }
 
 @Composable

@@ -105,6 +105,16 @@ object VoiceCommandParser {
         "^(?:play|put on|start|listen to) (.+)$"
     )
 
+    /**
+     * True when the utterance starts with the RiPlay wake word.
+     *
+     * Hands-free listening needs this check: while music is playing the
+     * microphone also hears the song, and a lyric containing "stop", "hold on"
+     * or "play ..." would otherwise be executed as a real command.
+     */
+    fun hasWakeWord(rawInput: String): Boolean =
+        wakeWord.containsMatchIn(normalize(rawInput))
+
     fun parse(rawInput: String): VoiceCommand {
         val text = stripPoliteness(stripWakeWord(normalize(rawInput)))
         if (text.isEmpty()) return VoiceCommand.Unknown

@@ -502,7 +502,15 @@ fun UnifiedPlayer(
     }
     var showVoiceCommandHelp by rememberSaveable { mutableStateOf(false) }
     val voiceCommandController = rememberVoiceCommandController { transcript ->
-        if (!appSettings.voiceCommandsHandsFree) {
+        val handsFree = appSettings.voiceCommandsHandsFree
+        // In hands-free mode the microphone also hears the song that is playing.
+        // Require the wake word so lyrics such as "stop" or "hold on" cannot pause
+        // playback, and so background conversations are ignored.
+        if (handsFree && !VoiceCommandParser.hasWakeWord(transcript)) {
+            Timber.d("VoiceCommandController ignoring speech without wake word: %s", transcript)
+            return@rememberVoiceCommandController
+        }
+        if (!handsFree) {
             SmartMessage(
                 message = context.getString(R.string.voice_you_said, transcript),
                 context = context
@@ -510,7 +518,7 @@ fun UnifiedPlayer(
         }
         val command = VoiceCommandParser.parse(transcript)
         if (command == VoiceCommand.Unknown) {
-            if (!appSettings.voiceCommandsHandsFree) {
+            if (!handsFree) {
                 SmartMessage(
                     message = context.getString(R.string.voice_unknown_command),
                     type = PopupType.Error,
@@ -2039,7 +2047,7 @@ fun UnifiedPlayer(
 
                             if (appSettings.enableVoiceInput) IconButton(
                                 icon = R.drawable.mic,
-                                color = if (voiceCommandController.isListening) colorPalette().accent else colorPalette().text,
+                                color = if (voiceCommandController.isListening || voiceCommandController.isHandsFree) colorPalette().accent else colorPalette().text,
                                 enabled = true,
                                 onClick = { voiceCommandController.startListening() },
                                 onLongClick = { showVoiceCommandHelp = true },

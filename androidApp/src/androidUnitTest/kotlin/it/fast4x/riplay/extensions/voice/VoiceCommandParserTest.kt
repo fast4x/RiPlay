@@ -2,7 +2,9 @@ package it.fast4x.riplay.extensions.voice
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class VoiceCommandParserTest {
 
@@ -82,6 +84,16 @@ class VoiceCommandParserTest {
         assertEquals(VoiceCommand.Unknown, parse("what's the weather like"))
         assertEquals(VoiceCommand.Unknown, parse(""))
         assertEquals(VoiceCommand.Unknown, parse("   "))
+    }
+
+    @Test
+    fun detectsHandsFreeWakeWord() {
+        assertTrue(VoiceCommandParser.hasWakeWord("RiPlay, pause"))
+        assertTrue(VoiceCommandParser.hasWakeWord("hey ri play next song"))
+        assertTrue(VoiceCommandParser.hasWakeWord("OK RiPlay stop the music"))
+        assertFalse(VoiceCommandParser.hasWakeWord("pause"))
+        assertFalse(VoiceCommandParser.hasWakeWord("stop the music"))
+        assertFalse(VoiceCommandParser.hasWakeWord("the song says riplay in the chorus"))
     }
 
     @Test
