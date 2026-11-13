@@ -1231,6 +1231,24 @@
     <string name="lastfm_scrobble_type">Tipo di scorrimento</string>
     <string name="song_unliked_lastfm">Brano non piaciuto in last.fm</string>
     <string name="song_liked_lastfm">Brano piaciuto in last.fm</string>
+    <string name="title_listenbrainz">ListenBrainz</string>
+    <string name="enable_listenbrainz">Abilita ListenBrainz</string>
+    <string name="listenbrainz_connect">Connetti</string>
+    <string name="listenbrainz_disconnect">Disconnetti</string>
+    <string name="listenbrainz_connected_to_listenbrainz_account">Connesso all\'account ListenBrainz</string>
+    <string name="listenbrainz_scrobble_type">Tipo di scorrimento</string>
+    <string name="listenbrainz_scrobble_simple">Semplice</string>
+    <string name="listenbrainz_scrobble_now_playing">In riproduzione</string>
+    <string name="song_unliked_listenbrainz">Brano non piaciuto in ListenBrainz</string>
+    <string name="song_liked_listenbrainz">Brano piaciuto in ListenBrainz</string>
+    <string name="listenbrainz_token_hint">Token utente ListenBrainz</string>
+    <string name="listenbrainz_token_instructions">Inserisci il tuo token utente di ListenBrainz. Puoi trovarlo su listenbrainz.org/settings</string>
+    <string name="listenbrainz_validating">Verifica del token...</string>
+    <string name="listenbrainz_token_invalid">Token non valido: %1$s</string>
+    <string name="listenbrainz_server_url">Server ListenBrainz</string>
+    <string name="listenbrainz_server_url_official">Server ufficiale (api.listenbrainz.org)</string>
+    <string name="listenbrainz_custom_server_hint">URL server personalizzato (opzionale)</string>
+    <string name="listenbrainz_custom_server_instructions">Lascia vuoto per usare il server ufficiale di ListenBrainz. Dato che ListenBrainz è open source, puoi installarlo sul tuo server e inserirne qui l\'indirizzo, es. http://192.168.1.10</string>
     <string name="toggle_ondevice_folder_name_instead_full_path">Attiva/disattiva il nome della cartella invece del percorso completo</string>
     <string name="music_paused_headphones_disconnected">Musica in pausa (cuffie disconnesse)</string>
     <string name="music_resumed_headphones_connected">Musica ripresa (cuffie connesse)</string>
@@ -1683,4 +1701,6 @@
     <string name="voice_playlist_empty">The playlist \"%1$s\" is empty</string>
     <string name="voice_hands_free_stopped">Voice control stopped. Check the microphone and try again</string>
     <string name="voice_unavailable">Speech recognition is not available on this device</string>
+    <string name="app_language_system_country">System Country</string>
+    <string name="app_language_country">Country</string>
 </resources>

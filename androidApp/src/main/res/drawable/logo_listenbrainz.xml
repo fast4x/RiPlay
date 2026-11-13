@@ -1,0 +1,9 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:height="512dp" android:viewportHeight="512" android:viewportWidth="512" android:width="512dp">
+
+    <!-- Cerchio esterno (anello) -->
+    <path android:fillColor="#000000" android:pathData="M256,16 C123.5,16 16,123.5 16,256 C16,388.5 123.5,496 256,496 C388.5,496 496,388.5 496,256 C496,123.5 388.5,16 256,16 z M256,56 C366.5,56 456,145.5 456,256 C456,366.5 366.5,456 256,456 C145.5,456 56,366.5 56,256 C56,145.5 145.5,56 256,56 z"/>
+
+    <!-- Onda audio -->
+    <path android:fillColor="#000000" android:pathData="M116,236 L156,236 L156,276 L116,276 z M176,196 L216,196 L216,316 L176,316 z M236,156 L276,156 L276,356 L236,356 z M296,196 L336,196 L336,316 L296,316 z M356,236 L396,236 L396,276 L356,276 z"/>
+
+</vector>

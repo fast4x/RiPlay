@@ -81,6 +81,7 @@ import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.utils.isAtLeastAndroid81
 import it.fast4x.riplay.ui.components.themed.AccountInfoDialog
 import it.fast4x.riplay.extensions.lastfm.LastFmAuthScreen
+import it.fast4x.riplay.extensions.listenbrainz.ListenBrainzAuthScreen
 import it.fast4x.riplay.extensions.smoothloader.Loader
 import it.fast4x.riplay.ui.styling.semiBold
 import it.fast4x.riplay.utils.typography
@@ -649,6 +650,129 @@ fun AccountsSettings(
         }
 
         /****** LASTFM ******/
+
+        /****** LISTENBRAINZ ******/
+        val isEnabledListenBrainz = appSettings.isEnabledListenBrainz
+        val listenBrainzToken = appSettings.listenBrainzToken
+        val listenBrainzUsername = appSettings.listenBrainzUsername
+        val listenBrainzServerUrl = appSettings.listenBrainzServerUrl
+        var loginListenBrainz by remember { mutableStateOf(false) }
+
+        val listenBrainzScrobbleType = appSettings.listenBrainzScrobbleType
+
+        if (search.matchesAny(R.string.title_listenbrainz, R.string.enable_listenbrainz, R.string.listenbrainz_disconnect, R.string.listenbrainz_connect, R.string.listenbrainz_connected_to_listenbrainz_account, R.string.listenbrainz_scrobble_type, R.string.listenbrainz_server_url)) {
+            SettingsGroupSpacer()
+            SettingsEntryGroupText(title = stringResource(R.string.title_listenbrainz))
+
+            SettingsCardContainer {
+                SwitchSettingEntry(
+                    title = stringResource(R.string.enable_listenbrainz),
+                    text = "",
+                    isChecked = isEnabledListenBrainz,
+                    onCheckedChange = {
+                        coroutineScope.launch {
+                            val new = appSettingsManager.activeSettings.value.copy(isEnabledListenBrainz = it)
+                            appSettingsManager.updateSettings(new)
+                        }
+                    }, icon = R.drawable.logo_listenbrainz,
+                )
+
+                AnimatedVisibility(visible = isEnabledListenBrainz) {
+                    Column {
+                        ButtonBarSettingEntry(
+                            isEnabled = true,
+                            title = if (listenBrainzToken.isNotEmpty()) stringResource(R.string.listenbrainz_disconnect) else stringResource(
+                                R.string.listenbrainz_connect
+                            ),
+                            text = if (listenBrainzToken.isNotEmpty()) stringResource(R.string.listenbrainz_connected_to_listenbrainz_account) else "",
+                            icon = R.drawable.logo_listenbrainz,
+                            iconColor = colorPalette().text,
+                            onClick = {
+                                if (listenBrainzToken.isNotEmpty()) {
+                                    coroutineScope.launch {
+                                        val new = appSettingsManager.activeSettings.value.copy(
+                                            listenBrainzToken = "",
+                                            listenBrainzUsername = ""
+                                        )
+                                        appSettingsManager.updateSettings(new)
+                                    }
+                                } else
+                                    loginListenBrainz = true
+                            }
+                        )
+
+                        if (listenBrainzToken.isNotEmpty() && listenBrainzUsername.isNotEmpty()) {
+                            ButtonBarSettingEntry(
+                                isEnabled = true,
+                                title = stringResource(R.string.account_info),
+                                text = listenBrainzUsername,
+                                icon = R.drawable.person,
+                                iconColor = colorPalette().text,
+                                onClick = { }
+                            )
+                        }
+
+                        // Server ListenBrainz: vuoto = server ufficiale, altrimenti istanza self-hosted
+                        TextDialogSettingEntry(
+                            title = stringResource(R.string.listenbrainz_server_url),
+                            text = listenBrainzServerUrl.ifEmpty { stringResource(R.string.listenbrainz_server_url_official) },
+                            currentText = listenBrainzServerUrl,
+                            onTextSave = {
+                                coroutineScope.launch {
+                                    val new = appSettingsManager.activeSettings.value.copy(
+                                        listenBrainzServerUrl = it.trim()
+                                    )
+                                    appSettingsManager.updateSettings(new)
+                                }
+                            },
+                            validationType = ValidationType.Url,
+                            icon = R.drawable.logo_listenbrainz,
+                        )
+
+                        CustomModalBottomSheet(
+                            showSheet = loginListenBrainz,
+                            onDismissRequest = {
+                                loginListenBrainz = false
+                            },
+                            containerColor = colorPalette().background0,
+                            contentColor = colorPalette().text,
+                            modifier = Modifier.fillMaxWidth(),
+                            dragHandle = {
+                                Surface(
+                                    modifier = Modifier.padding(vertical = 0.dp),
+                                    color = colorPalette().background0,
+                                    shape = thumbnailShape()
+                                ) {}
+                            },
+                            shape = thumbnailRoundness.shape()
+                        ) {
+                            ListenBrainzAuthScreen(
+                                onAuthSuccess = {
+                                    loginListenBrainz = false
+                                    Timber.d("ListenBrainzAuthScreen: Authentication complete")
+                                }
+                            )
+                        }
+
+                        EnumValueSelectorSettingsEntry(
+                            title = stringResource(R.string.listenbrainz_scrobble_type),
+                            titleSecondary = "",
+                            selectedValue = listenBrainzScrobbleType,
+                            onValueSelected = {
+                                coroutineScope.launch {
+                                    val new = appSettingsManager.activeSettings.value.copy(listenBrainzScrobbleType = it)
+                                    appSettingsManager.updateSettings(new)
+                                }
+                            },
+                            valueText = { it.textName }, icon = R.drawable.logo_listenbrainz,
+                        )
+
+                    }
+                }
+            }
+        }
+
+        /****** LISTENBRAINZ ******/
 
         /****** DISCORD ******/
         val isDiscordPresenceEnabled = appSettings.isDiscordPresenceEnabled

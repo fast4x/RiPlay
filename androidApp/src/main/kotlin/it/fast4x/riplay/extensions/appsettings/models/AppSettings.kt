@@ -24,6 +24,7 @@ import it.fast4x.riplay.enums.HomeType
 import it.fast4x.riplay.enums.ImportPlaylistType
 import it.fast4x.riplay.enums.Languages
 import it.fast4x.riplay.enums.LastFmScrobbleType
+import it.fast4x.riplay.enums.ListenBrainzScrobbleType
 import it.fast4x.riplay.enums.ExoPlayerCacheLocation
 import it.fast4x.riplay.enums.ExoPlayerDiskCacheMaxSize
 import it.fast4x.riplay.enums.MaxSongs
@@ -138,6 +139,13 @@ data class AppSettings(
     val isEnabledLastFM: Boolean = false,
     val lastFMSessionToken: String = "",
     val lastFmScrobbleType: LastFmScrobbleType = LastFmScrobbleType.Simple,
+    val isEnabledListenBrainz: Boolean = false,
+    val listenBrainzToken: String = "",
+    val listenBrainzUsername: String = "",
+    val listenBrainzScrobbleType: ListenBrainzScrobbleType = ListenBrainzScrobbleType.Simple,
+    // Server ListenBrainz: vuoto = server ufficiale (https://api.listenbrainz.org).
+    // E' possibile impostare un'istanza self-hosted, dato che ListenBrainz e' open source.
+    val listenBrainzServerUrl: String = "",
     val isDiscordPresenceEnabled: Boolean = false,
     val discordPersonalAccessToken: String = "",
     val discordAccountName: String = "",

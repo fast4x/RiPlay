@@ -1686,4 +1686,6 @@ Mach dich bereit, deine unvergesslichsten musikalischen Momente noch einmal zu e
     <string name="voice_playlist_empty">The playlist \"%1$s\" is empty</string>
     <string name="voice_hands_free_stopped">Voice control stopped. Check the microphone and try again</string>
     <string name="voice_unavailable">Speech recognition is not available on this device</string>
+    <string name="app_language_system_country">System Country</string>
+    <string name="app_language_country">Country</string>
 </resources>

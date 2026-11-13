@@ -44,6 +44,8 @@ import it.fast4x.riplay.musicvault.MusicVaultRepository
 import it.fast4x.riplay.musicvault.MusicVaultState
 import it.fast4x.riplay.extensions.lastfm.sendLoveTrack
 import it.fast4x.riplay.extensions.lastfm.sendUnloveTrack
+import it.fast4x.riplay.extensions.listenbrainz.sendListenBrainzLoveTrack
+import it.fast4x.riplay.extensions.listenbrainz.sendListenBrainzUnloveTrack
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import kotlinx.coroutines.CoroutineScope
@@ -690,6 +692,18 @@ suspend fun addToOnlineLikedSong(mediaItem: MediaItem){
         )
     }
 
+    if(isEnabledListenBrainz()) {
+        sendListenBrainzLoveTrack(
+            mediaItem.mediaMetadata.artist as String,
+            mediaItem.mediaMetadata.title as String
+        )
+        SmartMessage(
+            appContext().resources.getString(R.string.song_liked_listenbrainz),
+            context = appContext(),
+            durationLong = false
+        )
+    }
+
     if (isYtSyncEnabled()) {
         if (getLikedAt(mediaItem.mediaId) in listOf(-1L, null)) {
             likeVideoOrSong(mediaItem.mediaId)
@@ -730,6 +744,18 @@ suspend fun removeFromOnlineLikedSong(mediaItem: MediaItem){
         )
         SmartMessage(
             appContext().resources.getString(R.string.song_unliked_lastfm),
+            context = appContext(),
+            durationLong = false
+        )
+    }
+
+    if(isEnabledListenBrainz()) {
+        sendListenBrainzUnloveTrack(
+            mediaItem.mediaMetadata.artist as String,
+            mediaItem.mediaMetadata.title as String
+        )
+        SmartMessage(
+            appContext().resources.getString(R.string.song_unliked_listenbrainz),
             context = appContext(),
             durationLong = false
         )

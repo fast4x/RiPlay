@@ -391,7 +391,7 @@ fun GeneralSettings(
                         )
 
                         EnumValueSelectorSettingsEntry(
-                            title = "Country language",
+                            title = stringResource(R.string.app_language_country),
                             selectedValue = contentCountry,
                             onValueSelected = {
                                 coroutineScope.launch {
@@ -400,7 +400,8 @@ fun GeneralSettings(
                                     appSettingsManager.updateSettings(new)
                                 }
                             },
-                            valueText = { if (it == Countries.XX) "System Country" else it.countryName }
+                            valueText = { if (it == Countries.XX) stringResource(R.string.app_language_system_country) else it.countryName },
+                            icon = R.drawable.globe,
                         )
                     }
                 

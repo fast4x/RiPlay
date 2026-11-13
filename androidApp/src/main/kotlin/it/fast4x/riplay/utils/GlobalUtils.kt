@@ -51,6 +51,14 @@ fun isPersistentQueueEnabled() = getAppSettings().persistentQueue
 fun isPipModeAutoEnabled() = getAppSettings().enablePictureInPictureAuto
 fun isEnabledLastFm() = getAppSettings().isEnabledLastFM && getlastFmSessionKey().isNotEmpty()
 
+fun getListenBrainzToken() = getAppSettings().listenBrainzToken
+
+// Server ListenBrainz impostato dall'utente: vuoto = server ufficiale.
+// Viene normalizzato in base URL API completo prima dell'uso (vedi ListenBrainzService).
+fun getListenBrainzServerUrl() = getAppSettings().listenBrainzServerUrl
+
+fun isEnabledListenBrainz() = getAppSettings().isEnabledListenBrainz && getListenBrainzToken().isNotEmpty()
+
 
 object GlobalSharedData {
     var riTuneDevices: MutableState<List<RiTuneDevice>> = mutableStateOf(emptyList())

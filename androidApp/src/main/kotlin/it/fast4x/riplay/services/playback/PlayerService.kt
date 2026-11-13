@@ -150,9 +150,12 @@ import it.fast4x.riplay.utils.seamlessQueue
 import it.fast4x.riplay.commonutils.setLikeState
 import it.fast4x.riplay.data.models.Format
 import it.fast4x.riplay.enums.LastFmScrobbleType
+import it.fast4x.riplay.enums.ListenBrainzScrobbleType
 import it.fast4x.riplay.enums.WallpaperType
 import it.fast4x.riplay.extensions.lastfm.sendNowPlaying
 import it.fast4x.riplay.extensions.lastfm.sendScrobble
+import it.fast4x.riplay.extensions.listenbrainz.sendListenBrainzNowPlaying
+import it.fast4x.riplay.extensions.listenbrainz.sendListenBrainzScrobble
 import it.fast4x.riplay.extensions.players.getOnlineMetadata
 import it.fast4x.riplay.cast.ritune.RiTuneCastClient
 import it.fast4x.riplay.cast.ritune.models.RiTuneConnectionStatus
@@ -3112,6 +3115,31 @@ class PlayerService : MediaLibraryService(),
 
                     LastFmScrobbleType.NowPlaying -> {
                         sendNowPlaying(
+                            mediaItem.mediaMetadata.artist.toString(),
+                            cleanPrefix(mediaItem.mediaMetadata.title.toString()),
+                            mediaItem.mediaMetadata.albumTitle.toString(),
+                            it
+                        )
+                    }
+                }
+
+            }
+        }
+
+        if (appSettings.isEnabledListenBrainz) {
+            appSettings.listenBrainzToken.let {
+                when (appSettings.listenBrainzScrobbleType) {
+                    ListenBrainzScrobbleType.Simple -> {
+                        sendListenBrainzScrobble(
+                            mediaItem.mediaMetadata.artist.toString(),
+                            cleanPrefix(mediaItem.mediaMetadata.title.toString()),
+                            mediaItem.mediaMetadata.albumTitle.toString(),
+                            it
+                        )
+                    }
+
+                    ListenBrainzScrobbleType.NowPlaying -> {
+                        sendListenBrainzNowPlaying(
                             mediaItem.mediaMetadata.artist.toString(),
                             cleanPrefix(mediaItem.mediaMetadata.title.toString()),
                             mediaItem.mediaMetadata.albumTitle.toString(),
