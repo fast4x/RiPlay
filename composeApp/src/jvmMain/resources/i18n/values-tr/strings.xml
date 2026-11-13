@@ -56,11 +56,11 @@
     <string name="settings.closetotray.desc">Bu özellik etkinleştirildiğinde, pencereyi X tuşuyla (veya Alt+F4 tuşlarıyla) kapatmak RiPlay\'i sonlandırmaz: uygulama bildirim alanında kalır ve oynatmaya devam eder; pencereyi yeniden açmak için simgeye çift tıklayın; uygulamadan tamamen çıkmak için menüsündeki “RiPlay\'den Çık” seçeneğini kullanın. Bu özellik devre dışı bırakıldığında (varsayılan ayar), X tuşuyla uygulama kapatılır.</string>
     <string name="settings.karaoke.title">Karaoke üst katmanı</string>
     <string name="settings.karaoke.desc">Etkinleştirildiğinde, her zaman en üstte kalan küçük bir pencere, çalma ile senkronize olarak o anki şarkı sözü satırını (ve bir sonrakini) gösterir. Pencerayı istediğiniz yere sürükleyin; konumu kaydedilir; senkronize şarkı sözleri (LRCLIB/KuGou) gereklidir; aksi takdirde şarkı adı ve sanatçı gösterilir.</string>
-    <string name="settings.cefcache.title">Browser cache limit</string>
-    <string name="settings.cefcache.desc">Automatically deletes the browser cache (kcef-cache) at startup when it exceeds the limit. Only regenerable cache folders are removed: logins and cookies are kept, and the CEF bundle in kcef/ is never touched.</string>
-    <string name="settings.cefcache.now">Currently used: {size}</string>
-    <string name="settings.cefcache.off">Never</string>
-    <string name="settings.cefcache.applied_next_start">Changes apply at the next app start.</string>
+    <string name="settings.cefcache.title">Tarayıcı önbellek sınırı</string>
+    <string name="settings.cefcache.desc">Başlangıçta sınırı aştığında tarayıcı önbelleğini (kcef-cache) otomatik olarak siler. Yalnızca yeniden oluşturulabilir önbellek klasörleri kaldırılır: oturum bilgileri ve çerezler korunur ve kcef/ dizinindeki CEF paketi hiçbir şekilde değiştirilmez.</string>
+    <string name="settings.cefcache.now">Şu anda kullanılan: {size}</string>
+    <string name="settings.cefcache.off">Asla</string>
+    <string name="settings.cefcache.applied_next_start">Değişiklikler, uygulamanın bir sonraki açılışında geçerli olur.</string>
     <string name="karaoke.no_synced">Senkronize şarkı sözü bulunmuyor</string>
     <string name="karaoke.mode.line">Satır</string>
     <string name="karaoke.mode.word">Kelime</string>
