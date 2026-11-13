@@ -1657,7 +1657,7 @@
     <!-- Voice commands -->
     <string name="voice_hands_free">Hands-free voice control</string>
     <string name="voice_hands_free_description">Keep listening for playback commands while the player is open</string>
-    <string name="voice_hands_free_wake_word_hint">Hands-free mode only reacts to commands that start with “RiPlay”, so music and background noise cannot pause playback.</string>
+    <string name="voice_hands_free_wake_word_hint">Hands-free mode only reacts to commands that start with “Hello” or “RiPlay”, so music and background noise cannot pause playback.</string>
     <string name="voice_command_mic">Voice commands</string>
     <string name="voice_command_title">Voice control</string>
     <string name="voice_command_help_intro">Say a command, for example:</string>

@@ -19,6 +19,9 @@ class VoiceCommandParserTest {
     @Test
     fun ignoresWakeWordAndPoliteness() {
         assertEquals(VoiceCommand.PlaySong("faded"), parse("Hey RiPlay, could you play the song Faded"))
+        assertEquals(VoiceCommand.PlaySong("faded"), parse("Hello, play Faded"))
+        assertEquals(VoiceCommand.Next, parse("hello next"))
+        assertEquals(VoiceCommand.Pause, parse("Hello RiPlay, pause"))
     }
 
     @Test
@@ -91,9 +94,12 @@ class VoiceCommandParserTest {
         assertTrue(VoiceCommandParser.hasWakeWord("RiPlay, pause"))
         assertTrue(VoiceCommandParser.hasWakeWord("hey ri play next song"))
         assertTrue(VoiceCommandParser.hasWakeWord("OK RiPlay stop the music"))
+        assertTrue(VoiceCommandParser.hasWakeWord("Hello, play Faded"))
+        assertTrue(VoiceCommandParser.hasWakeWord("hello riplay pause"))
         assertFalse(VoiceCommandParser.hasWakeWord("pause"))
         assertFalse(VoiceCommandParser.hasWakeWord("stop the music"))
         assertFalse(VoiceCommandParser.hasWakeWord("the song says riplay in the chorus"))
+        assertFalse(VoiceCommandParser.hasWakeWord("well hello there"))
     }
 
     @Test

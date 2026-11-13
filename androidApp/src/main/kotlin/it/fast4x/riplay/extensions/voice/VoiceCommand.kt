@@ -38,7 +38,9 @@ sealed interface VoiceCommand {
  */
 object VoiceCommandParser {
 
-    private val wakeWord = Regex("^(?:hey |ok |okay |yo )?(?:riplay|ri play|r i play|ryplay)(?: |$)")
+    private val wakeWord = Regex(
+        "^(?:(?:hey |ok |okay |yo )?(?:riplay|ri play|r i play|ryplay)|hello(?: riplay)?)(?: |$)"
+    )
 
     private val politeness = Regex(
         "^(?:please|could you|can you|would you|will you|i want you to|i would like to|i want to|i wanna|lets|let us|just)(?: |$)"
@@ -106,7 +108,7 @@ object VoiceCommandParser {
     )
 
     /**
-     * True when the utterance starts with the RiPlay wake word.
+     * True when the utterance starts with a wake word ("Hello" or "RiPlay").
      *
      * Hands-free listening needs this check: while music is playing the
      * microphone also hears the song, and a lyric containing "stop", "hold on"
