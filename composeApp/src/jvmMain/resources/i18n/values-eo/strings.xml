@@ -163,6 +163,14 @@
     <string name="local.delete_done">Removed: {title}</string>
     <string name="local.delete_file_failed">Removed from the library, but the file could not be deleted (in use?)</string>
     <string name="local.delete_failed">Deletion failed: {error}</string>
+    <string name="local.select">Select</string>
+    <string name="local.select_all">Select all</string>
+    <string name="local.deselect_all">Deselect all</string>
+    <string name="local.selected_count">{n} selected</string>
+    <string name="local.delete_selected">Delete selected</string>
+    <string name="local.delete_multi_title">Remove selected songs</string>
+    <string name="local.delete_multi_text">{n} songs will be removed from the RiPlay library. You can also delete the audio files from your computer.</string>
+    <string name="local.delete_multi_done">Removed {n} songs</string>
     <string name="podcast.episodes">epizodoj</string>
     <string name="podcast.description">Priskribo</string>
     <string name="nav.settings">Settings</string>

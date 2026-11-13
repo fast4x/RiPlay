@@ -24,8 +24,15 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Audiotrack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.typography
@@ -33,6 +40,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -74,6 +82,24 @@ fun LocalSongsPage(
     var deleteCandidate by remember { mutableStateOf<Song?>(null) }
     val deleteScope = rememberCoroutineScope()
 
+    var scanRequest by remember { mutableStateOf<Int?>(null) }
+    var scanning by remember { mutableStateOf(false) }
+    var feedback by remember { mutableStateOf<String?>(null) }
+
+    // ---- SELEZIONE MULTIPLA -------------------------------------------------
+    // selectMode: attivato dal pill "Seleziona" o da un long-press su una
+    // riga; mostra la toolbar di selezione e le spunte per riga.
+    // selected: mappa id -> Song dei brani scelti (il flusso del database la
+    // ripulisce quando un brano sparisce dalla libreria).
+    // multiDeleteOpen: dialog di conferma per la cancellazione dei selezionati.
+    var selectMode by remember { mutableStateOf(false) }
+    val selected = remember { mutableStateMapOf<String, Song>() }
+    var multiDeleteOpen by remember { mutableStateOf(false) }
+
+    fun toggleSelected(song: Song) {
+        if (song.id in selected) selected.remove(song.id) else selected[song.id] = song
+    }
+
     fun performDelete(song: Song, alsoFile: Boolean) {
         deleteCandidate = null
         deleteScope.launch {
@@ -92,9 +118,36 @@ fun LocalSongsPage(
     }
 
 
-    var scanRequest by remember { mutableStateOf<Int?>(null) }
-    var scanning by remember { mutableStateOf(false) }
-    var feedback by remember { mutableStateOf<String?>(null) }
+    /** Cancella TUTTI i brani selezionati (opzionale: anche i file audio). */
+    fun performBatchDelete(alsoFile: Boolean) {
+        val targets = selected.values.toList()
+        multiDeleteOpen = false
+        selectMode = false
+        selected.clear()
+        deleteScope.launch {
+            val (dbOk, fileOk) = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                var dbOk = 0
+                var fileOk = 0
+                targets.forEach { song ->
+                    val ok = runCatching { Database.delete(song) }.isSuccess
+                    if (ok) {
+                        dbOk++
+                        // rimozione file: solo se richiesta E il percorso e' risolvibile
+                        if (alsoFile) {
+                            val path = (song.mediaId ?: song.id).removePrefix(LOCAL_KEY_PREFIX).trim()
+                            val f = File(path)
+                            if (path.isNotEmpty() && f.isFile &&
+                                runCatching { f.delete() }.getOrDefault(false)
+                            ) fileOk++
+                        }
+                    }
+                }
+                dbOk to fileOk
+            }
+            feedback = ds("local.delete_multi_done", "n" to dbOk)
+            println("[RiPlay-Locali] eliminazione multipla: richiesti=${targets.size} db=$dbOk file=$fileOk")
+        }
+    }
 
 
     LaunchedEffect(Unit) {
@@ -114,6 +167,8 @@ fun LocalSongsPage(
         Database.getLocalSongs().collect {
             songs.clear()
             songs += it
+            // la selezione segue la libreria: via gli id che non esistono piu'
+            selected.keys.retainAll(it.map { s -> s.id }.toSet())
         }
     }
 
@@ -198,38 +253,100 @@ fun LocalSongsPage(
             )
         }
 
-        // Pulsanti di importazione + feedback
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .padding(vertical = 6.dp)
-                .fillMaxWidth()
-        ) {
-            ImportPill(
-                icon = { Icon(Icons.Filled.Folder, contentDescription = null, tint = RiPlayAccent, modifier = Modifier.size(17.dp)) },
-                label = ds("local.add_folder"),
-                enabled = !scanning
-            ) { scanRequest = 1 }
-
-            ImportPill(
-                icon = { Icon(Icons.Filled.Audiotrack, contentDescription = null, tint = RiPlayAccent, modifier = Modifier.size(17.dp)) },
-                label = ds("local.add_files"),
-                enabled = !scanning
-            ) { scanRequest = 2 }
-
-            if (scanning) {
-                CircularProgressIndicator(
-                    color = RiPlayAccent,
-                    strokeWidth = 2.dp,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(Modifier.width(6.dp))
+        if (selectMode) {
+            // Toolbar di selezione: conteggio, selezione/deselezione totale,
+            // cancellazione dei brani selezionati, uscita dalla modalita'
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(vertical = 6.dp)
+                    .fillMaxWidth()
+            ) {
                 Text(
-                    ds("local.scanning"),
-                    color = Color.White.copy(alpha = 0.6f),
-                    fontSize = 12.sp
+                    ds("local.selected_count", "n" to selected.size),
+                    color = RiPlayAccent,
+                    fontSize = 13.sp,
+                    modifier = Modifier.padding(end = 4.dp)
                 )
+
+                ImportPill(
+                    icon = { Icon(Icons.Filled.SelectAll, contentDescription = null, tint = RiPlayAccent, modifier = Modifier.size(17.dp)) },
+                    label = ds("local.select_all"),
+                    enabled = songs.isNotEmpty() && selected.size < songs.size
+                ) { selected.putAll(songs.associateBy { it.id }) }
+
+                ImportPill(
+                    icon = { Icon(Icons.Filled.Clear, contentDescription = null, tint = RiPlayAccent, modifier = Modifier.size(17.dp)) },
+                    label = ds("local.deselect_all"),
+                    enabled = selected.isNotEmpty()
+                ) { selected.clear() }
+
+                ImportPill(
+                    icon = {
+                        Icon(
+                            Icons.Filled.DeleteSweep,
+                            contentDescription = null,
+                            tint = androidx.compose.material3.MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(17.dp)
+                        )
+                    },
+                    label = ds("local.delete_selected"),
+                    enabled = selected.isNotEmpty(),
+                    accent = androidx.compose.material3.MaterialTheme.colorScheme.error
+                ) { multiDeleteOpen = true }
+
+                ImportPill(
+                    icon = { Icon(Icons.Filled.Close, contentDescription = null, tint = Color.White.copy(alpha = 0.6f), modifier = Modifier.size(17.dp)) },
+                    label = ds("local.delete_cancel"),
+                    accent = Color.White.copy(alpha = 0.6f)
+                ) {
+                    selectMode = false
+                    selected.clear()
+                }
+            }
+        } else {
+            // Pulsanti di importazione + "Seleziona" + feedback
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(vertical = 6.dp)
+                    .fillMaxWidth()
+            ) {
+                ImportPill(
+                    icon = { Icon(Icons.Filled.Folder, contentDescription = null, tint = RiPlayAccent, modifier = Modifier.size(17.dp)) },
+                    label = ds("local.add_folder"),
+                    enabled = !scanning
+                ) { scanRequest = 1 }
+
+                ImportPill(
+                    icon = { Icon(Icons.Filled.Audiotrack, contentDescription = null, tint = RiPlayAccent, modifier = Modifier.size(17.dp)) },
+                    label = ds("local.add_files"),
+                    enabled = !scanning
+                ) { scanRequest = 2 }
+
+                // entra in modalita' selezione (i brani si scelgono poi con i
+                // click o con "Seleziona tutto")
+                ImportPill(
+                    icon = { Icon(Icons.Filled.Check, contentDescription = null, tint = RiPlayAccent, modifier = Modifier.size(17.dp)) },
+                    label = ds("local.select"),
+                    enabled = songs.isNotEmpty()
+                ) { selectMode = true }
+
+                if (scanning) {
+                    CircularProgressIndicator(
+                        color = RiPlayAccent,
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        ds("local.scanning"),
+                        color = Color.White.copy(alpha = 0.6f),
+                        fontSize = 12.sp
+                    )
+                }
             }
         }
 
@@ -265,6 +382,24 @@ fun LocalSongsPage(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
+                    // in selezione la spunta per riga al posto del cestino
+                    if (selectMode) {
+                        IconButton(
+                            onClick = { toggleSelected(song) },
+                            modifier = Modifier
+                                .padding(start = 6.dp)
+                                .size(34.dp)
+                        ) {
+                            Icon(
+                                if (song.id in selected) Icons.Filled.CheckCircle
+                                else Icons.Filled.RadioButtonUnchecked,
+                                contentDescription = null,
+                                tint = if (song.id in selected) RiPlayAccent
+                                       else Color.White.copy(alpha = 0.4f),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
                     SongItem(
                         songEntity = SongEntity(song = song),
                         modifier = Modifier
@@ -272,23 +407,36 @@ fun LocalSongsPage(
                             .padding(horizontal = 12.dp)
                             .padding(vertical = 4.dp)
                             .combinedClickable(
-                                onLongClick = {},
-                                onClick = { onPlayCollection(songs.toList(), song) }
+                                onLongClick = {
+                                    // il long-press entra in selezione (e seleziona la riga)
+                                    if (!selectMode) {
+                                        selectMode = true
+                                        selected.clear()
+                                    }
+                                    selected[song.id] = song
+                                },
+                                onClick = {
+                                    if (selectMode) toggleSelected(song)
+                                    else onPlayCollection(songs.toList(), song)
+                                }
                             ),
-                        onAddToQueue = { onAddToQueue(song) }
+                        // in selezione il "+" coda sposta solo l'attenzione: nascosto
+                        onAddToQueue = if (selectMode) null else ({ onAddToQueue(song) })
                     )
-                    IconButton(
-                        onClick = { deleteCandidate = song },
-                        modifier = Modifier
-                            .padding(end = 8.dp)
-                            .size(34.dp)
-                    ) {
-                        Icon(
-                            Icons.Filled.Delete,
-                            contentDescription = ds("local.delete"),
-                            tint = Color.White.copy(alpha = 0.5f),
-                            modifier = Modifier.size(18.dp)
-                        )
+                    if (!selectMode) {
+                        IconButton(
+                            onClick = { deleteCandidate = song },
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .size(34.dp)
+                        ) {
+                            Icon(
+                                Icons.Filled.Delete,
+                                contentDescription = ds("local.delete"),
+                                tint = Color.White.copy(alpha = 0.5f),
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -332,6 +480,42 @@ fun LocalSongsPage(
             }
         )
     }
+
+
+    // Dialog di conferma per la cancellazione dei brani SELEZIONATI:
+    // stesse due opzioni della cancellazione singola, applicate in blocco
+    if (multiDeleteOpen) {
+        AlertDialog(
+            onDismissRequest = { multiDeleteOpen = false },
+            title = {
+                Text(ds("local.delete_multi_title"), color = Color.White)
+            },
+            text = {
+                Text(
+                    ds("local.delete_multi_text", "n" to selected.size),
+                    color = Color.White.copy(alpha = 0.85f)
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { performBatchDelete(false) }) {
+                    Text(ds("local.delete_keep_library"), color = Color.White)
+                }
+            },
+            dismissButton = {
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    TextButton(onClick = { performBatchDelete(true) }) {
+                        Text(
+                            ds("local.delete_also_file"),
+                            color = androidx.compose.material3.MaterialTheme.colorScheme.error
+                        )
+                    }
+                    TextButton(onClick = { multiDeleteOpen = false }) {
+                        Text(ds("local.delete_cancel"), color = Color.White.copy(alpha = 0.6f))
+                    }
+                }
+            }
+        )
+    }
 }
 
 /**
@@ -357,12 +541,14 @@ private fun isOrphanLocalSong(song: Song): Boolean {
     return !File(path).isFile
 }
 
-/** Pill compatta dei due comandi di importazione (stile pill "Coda"/"Radio"). */
+/** Pill compatta dei comandi della pagina (stile pill "Coda"/"Radio").
+ *  [accent] personalizza il colore (es. rosso per la cancellazione batch). */
 @Composable
 private fun ImportPill(
     icon: @Composable () -> Unit,
     label: String,
     enabled: Boolean = true,
+    accent: Color = RiPlayAccent,
     onClick: () -> Unit
 ) {
     Row(
@@ -370,14 +556,14 @@ private fun ImportPill(
         modifier = Modifier
             .clickable(enabled = enabled, onClick = onClick)
             .clip(RoundedCornerShape(16.dp))
-            .background(RiPlayAccent.copy(alpha = 0.10f))
+            .background(accent.copy(alpha = 0.10f))
             .padding(horizontal = 12.dp, vertical = 7.dp)
     ) {
         icon()
         Spacer(Modifier.width(7.dp))
         Text(
             label,
-            color = if (enabled) RiPlayAccent else RiPlayAccent.copy(alpha = 0.4f),
+            color = if (enabled) accent else accent.copy(alpha = 0.4f),
             fontSize = 13.sp
         )
     }

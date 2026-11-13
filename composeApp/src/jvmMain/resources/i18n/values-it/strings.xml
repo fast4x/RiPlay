@@ -163,6 +163,14 @@
     <string name="local.delete_done">Rimosso: {title}</string>
     <string name="local.delete_file_failed">Rimosso dalla libreria, ma il file non è eliminabile (in uso?)</string>
     <string name="local.delete_failed">Eliminazione fallita: {error}</string>
+    <string name="local.select">Seleziona</string>
+    <string name="local.select_all">Seleziona tutto</string>
+    <string name="local.deselect_all">Deseleziona tutto</string>
+    <string name="local.selected_count">{n} selezionati</string>
+    <string name="local.delete_selected">Elimina selezionati</string>
+    <string name="local.delete_multi_title">Rimuovi brani selezionati</string>
+    <string name="local.delete_multi_text">Verranno rimossi {n} brani dalla libreria di RiPlay. Puoi anche eliminare i file audio dal computer.</string>
+    <string name="local.delete_multi_done">Rimossi {n} brani</string>
     <string name="podcast.episodes">episodi</string>
     <string name="podcast.description">Descrizione</string>
     <string name="nav.settings">Impostazioni</string>
