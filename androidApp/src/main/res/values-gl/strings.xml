@@ -1693,14 +1693,14 @@
     <string name="voice_loop_song">Repetindo a canción actual</string>
     <string name="voice_loop_queue">Repetindo a cola de reprodución</string>
     <string name="voice_loop_off">Repetición desactivada</string>
-    <string name="voice_shuffle_on">Shuffle on</string>
-    <string name="voice_now_playing_song">Playing %1$s</string>
-    <string name="voice_now_playing_playlist">Playing playlist %1$s</string>
-    <string name="voice_song_not_found">I couldn\'t find \"%1$s\"</string>
-    <string name="voice_playlist_not_found">I couldn\'t find a playlist named \"%1$s\"</string>
-    <string name="voice_playlist_empty">The playlist \"%1$s\" is empty</string>
-    <string name="voice_hands_free_stopped">Voice control stopped. Check the microphone and try again</string>
-    <string name="voice_unavailable">Speech recognition is not available on this device</string>
-    <string name="app_language_system_country">System Country</string>
+    <string name="voice_shuffle_on">Reprodución ao chou activada</string>
+    <string name="voice_now_playing_song">Reproducindo %1$s</string>
+    <string name="voice_now_playing_playlist">Reproducindo a lista de reprodución %1$s</string>
+    <string name="voice_song_not_found">Non se atopou «%1$s»</string>
+    <string name="voice_playlist_not_found">Non se atopou ningunha lista de reprodución co nome «%1$s»</string>
+    <string name="voice_playlist_empty">A lista de reprodución «%1$s» está baleira</string>
+    <string name="voice_hands_free_stopped">Control por voz detido. Comproba o micrófono e téntao de novo</string>
+    <string name="voice_unavailable">O recoñecemento de voz non está dispoñible neste dispositivo</string>
+    <string name="app_language_system_country">País do sistema</string>
     <string name="app_language_country">País</string>
 </resources>
