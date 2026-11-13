@@ -197,6 +197,24 @@ object DesktopBackup {
     }
 
     /**
+     * STEP 3ao: restore da un file ESTERNO al file system (es. backup
+     * scaricato da WebDAV da DesktopWebDavManager): stesso percorso
+     * extractToPending dell'import della tab Dati, senza dialog.
+     *
+     * @return null = ripristino programmato (si applica al PROSSIMO avvio,
+     *         come l'import manuale); stringa = messaggio di errore/invalidita'
+     */
+    suspend fun scheduleRestoreFromExternalFile(source: File): String? {
+        val result = withContext(Dispatchers.IO) { extractToPending(source) }
+        return when (result) {
+            ImportResult.Scheduled -> null
+            is ImportResult.Invalid -> result.reason
+            is ImportResult.Failed -> result.error
+            ImportResult.Cancelled -> null
+        }
+    }
+
+    /**
      * Estrazione del backup a file di ripristino PENDENTE (nessun tocco al
      * db corrente in uso: vedi note di classe). Solo I/O, nessun componente
      * UI: puo' girare su Dispatchers.IO.

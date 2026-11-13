@@ -34,6 +34,8 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import it.fast4x.riplay.commonutils.LOCAL_KEY_PREFIX
+import it.fast4x.riplay.utils.WEBDAV_KEY_PREFIX
+import it.fast4x.riplay.extensions.webdav.DesktopWebDavManager
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.player.kcef.CoverOverlay
 import it.fast4x.riplay.player.kcef.KcefEngine
@@ -80,6 +82,12 @@ val LOCAL_VIDEO_EXTENSIONS = setOf(
 /** Percorso/URL riproducibile da VLCJ per un brano locale, se risolvibile. */
 fun localMediaPath(song: Song): String? {
     val raw = (song.mediaId ?: song.id).trim()
+    // STEP 3ao: brano WebDAV (id "webdav:<url>"): l'URL assoluto e' direttamente
+    // riproducibile da VLCJ (stream http/https, credenziali via pendingHttpAuth)
+    if (raw.startsWith(WEBDAV_KEY_PREFIX)) {
+        val url = raw.removePrefix(WEBDAV_KEY_PREFIX).trim()
+        return url.takeIf { it.isStreamUrl() }
+    }
     val cleaned = raw.removePrefix(LOCAL_KEY_PREFIX).trim()
     return when {
         cleaned.isEmpty() -> null
@@ -233,18 +241,24 @@ class DesktopPlayerManager(
                 }
             }
 
-            // 3) brano locale (Song.isLocal, id con prefisso local:)
+            // 3) brano locale (Song.isLocal, id con prefisso local:) o
+            //    brano WebDAV (id con prefisso webdav:, STEP 3ao: URL assoluto
+            //    riprodotto da VLCJ con le credenziali Basic dell'account)
             //    STEP 3c: display secondo Song.isVideo (stesso campo db Android)
-            videoId.startsWith(LOCAL_KEY_PREFIX) -> {
+            videoId.startsWith(LOCAL_KEY_PREFIX) || videoId.startsWith(WEBDAV_KEY_PREFIX) -> {
                 selectEngine(DesktopPlayerEngine.LOCAL)
                 videoVisible = song?.isVideo == true
                 logDisplayMode(song)
                 if (localPath != null && (localPath.isStreamUrl() || File(localPath).isFile)) {
-                    loadLocalMedia(localPath, "brano locale '${song.title}'")
+                    // STEP 3ao: credenziali dell'account WebDAV per il prossimo load
+                    vlcj.pendingHttpAuth = if (videoId.startsWith(WEBDAV_KEY_PREFIX))
+                        webDavAuthFor(localPath) else null
+                    loadLocalMedia(localPath, if (videoId.startsWith(WEBDAV_KEY_PREFIX))
+                        "brano WebDAV '${song.title}'" else "brano locale '${song.title}'")
                 } else {
                     localUnavailableReason = ds("error.local_unavailable")
                     KcefEngine.logKcef(
-                        "brano locale NON riproducibile su desktop: id='$videoId' " +
+                        "brano locale/WebDAV NON riproducibile su desktop: id='$videoId' " +
                                 "mediaId='${song?.mediaId}' percorso risolto='$localPath' " +
                                 "(uri MediaStore Android o file inesistente)"
                     )
@@ -303,6 +317,17 @@ class DesktopPlayerManager(
     }
 
     /**
+     * STEP 3ao: credenziali HTTP Basic per un URL WebDAV, cercate tra gli
+     * account salvati (baseUrl = prefisso dell'URL). Null = server senza
+     * autenticazione (o account non trovato): nessuna opzione VLC.
+     */
+    private fun webDavAuthFor(url: String): Pair<String, String>? = runCatching {
+        val account = DesktopWebDavManager.accountForBaseUrl(url) ?: return@runCatching null
+        val password = DesktopWebDavManager.decryptedPassword(account)
+        if (password.isBlank()) null else account.username to password
+    }.getOrNull()
+
+    /**
      * CARICA UN BRANO NEL PLAYER SENZA AVVIARLO (cue). All'avvio
      * dell'app, con la coda ripristinata dalla persistenza, l'app chiama
      * questa funzione col PRIMO brano della coda: il player lo mostra
@@ -326,7 +351,7 @@ class DesktopPlayerManager(
         val id = song.id.trim()
         if (id.isEmpty()) return false
         cuePlaybackConfirmed = false
-        val isLocal = id.startsWith(LOCAL_KEY_PREFIX)
+        val isLocal = id.startsWith(LOCAL_KEY_PREFIX) || id.startsWith(WEBDAV_KEY_PREFIX)
         if (isLocal) {
             val localPath = localMediaPath(song)
             if (localPath == null || !(localPath.isStreamUrl() || File(localPath).isFile)) {
@@ -345,6 +370,9 @@ class DesktopPlayerManager(
             logDisplayMode(song)
             idle = false
             cuedVideoId = id
+            // STEP 3ao: credenziali WebDAV anche per il cue (media preparato
+            // senza auth fallirebbe al play)
+            vlcj.pendingHttpAuth = if (id.startsWith(WEBDAV_KEY_PREFIX)) webDavAuthFor(localPath) else null
             vlcj.load(localPath)   // prepare SENZA play
             return true
         }

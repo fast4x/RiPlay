@@ -97,11 +97,24 @@ class VlcjController : PlayerController {
             runCatching { events()?.removeMediaPlayerEventListener(stateListener) }
             runCatching { release() }
         }
+        // STEP 3ao: credenziali HTTP Basic PENDENTI (impostate dal routing
+        // per i brani WebDAV prima del load): passate come opzioni VLC al
+        // modulo di accesso http/https. Null = nessuna opzione.
+        val authOptions: Array<String> = pendingHttpAuth?.let { (user, pass) ->
+            arrayOf(":http-user=$user", ":http-password=$pass")
+        } ?: arrayOf()
         player = factory.mediaPlayers()?.newEmbeddedMediaPlayer()?.apply {
             events()?.addMediaPlayerEventListener(stateListener)
-            media()?.prepare(url)
+            media()?.prepare(url, *authOptions)
         }
     }
+
+    /**
+     * STEP 3ao: credenziali HTTP Basic da usare SOLO per il PROSSIMO load
+     * (brani WebDAV: server con autenticazione). Consumato da load().
+     */
+    @Volatile
+    var pendingHttpAuth: Pair<String, String>? = null
 
     override fun play() = catch {
         player?.controls()?.play()

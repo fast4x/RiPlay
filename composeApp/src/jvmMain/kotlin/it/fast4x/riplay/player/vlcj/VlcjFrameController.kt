@@ -107,6 +107,17 @@ class VlcjFrameController constructor(
             controller.onEnded = value
         }
 
+    /**
+     * STEP 3ao: credenziali HTTP Basic per il PROSSIMO load (brani WebDAV).
+     * Forward su [controller]: la delega `by controller` copre solo l'
+     * interfaccia PlayerController, questa proprieta' non e' nell'interfaccia.
+     */
+    var pendingHttpAuth: Pair<String, String>?
+        get() = controller.pendingHttpAuth
+        set(value) {
+            controller.pendingHttpAuth = value
+        }
+
     override fun load(url: String) {
         controller.load(url)
         controller.player?.videoSurface()?.set(surface)

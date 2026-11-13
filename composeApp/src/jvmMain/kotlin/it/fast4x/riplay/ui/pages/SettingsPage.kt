@@ -986,6 +986,16 @@ private fun AccountsTab() {
                     .padding(horizontal = 14.dp, vertical = 8.dp)
             )
         }
+
+        // ── STEP 3ao: SEZIONI ACCOUNT Android (AccountsSettings) ────────────
+        // WebDAV (account cloud + backup/restore db), Last.fm (scrobble),
+        // ListenBrainz (ascolti), Discord (rich presence). Stessa scheda
+        // dell'Account YouTube Music, replicano AccountsSettings.kt Android.
+        // Vedi SettingsPageAccounts.kt.
+        WebDavAccountsSection()
+        LastFmAccountsSection()
+        ListenBrainzAccountsSection()
+        DiscordAccountsSection()
     }
 }
 

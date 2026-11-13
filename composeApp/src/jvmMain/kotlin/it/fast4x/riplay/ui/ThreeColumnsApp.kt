@@ -96,6 +96,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import it.fast4x.riplay.utils.DesktopUpdateChecker
 import it.fast4x.riplay.utils.DesktopPlaybackHub
+import it.fast4x.riplay.utils.DesktopMediaIntegrations
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import it.fast4x.environment.models.bodies.NextBody
@@ -222,6 +223,9 @@ fun ThreeColumnsApp(
     // route() idempotente: a finestra visibile si deduplica con l'effetto di
     // DesktopVideoSource, a finestra nascosta invia lui il brano successivo.
     val watcherLastVideoId = remember { AtomicReference<String?>(null) }
+    // STEP 3ao: ultimo brano scrobbellato in questa sessione (nessuna doppia
+    // scrobbellatura su re-route dello stesso videoId)
+    val lastScrobbledVideoId = remember { AtomicReference<String?>(null) }
     remember(playerManager) {
         coroutineScope.launch {
             snapshotFlow { videoId to nowPlayingSong }
@@ -235,6 +239,10 @@ fun ThreeColumnsApp(
                     }
                     // primo route: immediato (la Song serve solo ai brani locali)
                     playerManager.route(song, vid, "")
+                    // STEP 3ao: brano da consegnare alle integrazioni (scrobble
+                    // e presence): al primo giro e' la song in memoria, appena
+                    // dopo e' quella risolta dal db (titoli/artisti veri)
+                    var integrationSong = song
                     if (vid.isNotBlank()) {
                         // secondo route: con la Song letta dal db (percorsi e UI)
                         var resolved = song
@@ -247,7 +255,18 @@ fun ThreeColumnsApp(
                         if (resolved != null && resolved.id == vid) {
                             if (nowPlayingSong?.id != vid) nowPlayingSong = resolved
                             playerManager.route(resolved, vid, "")
+                            integrationSong = resolved
                         }
+                    }
+                    // STEP 3ao: SCROBBLE + DISCORD PRESENCE sul brano che INIZIA
+                    // (solo su cambio brano EFFETTIVO: i re-route dello stesso vid
+                    // non devono scrobbellare due volte). Replica PlayerService
+                    // Android onMediaItemTransition -> sendScrobble/sendNowPlaying
+                    // + updateDiscordPresence. Vedi DesktopMediaIntegrations.
+                    if (vid.isNotBlank() && lastScrobbledVideoId.getAndSet(vid) != vid) {
+                        runCatching {
+                            DesktopMediaIntegrations.onTrackChanged(integrationSong)
+                        }.onFailure { println("[RiPlay-MediaIntegrations] errore: ${it.message}") }
                     }
                 }
         }
@@ -270,6 +289,8 @@ fun ThreeColumnsApp(
         DesktopPlaybackHub.currentSongTitle = { nowPlayingSong?.title }
         DesktopPlaybackHub.currentSongThumbnail = { nowPlayingSong?.thumbnailUrl }
         DesktopPlaybackHub.currentSong = { nowPlayingSong }
+        // STEP 3ao: avvia il poller play/pausa per la presence Discord
+        DesktopMediaIntegrations.start()
         true
     }
 
