@@ -37,13 +37,15 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 - Listener level ranking with personal monthly and annual badge
 - Blacklist, can ignore artist, album, Song, Playlist, Device folder
 - Rewind, your year in music
+- Last.fm scrobble integration
+- ListenBrainz scrobble integration, also support custom server
+- Fast Share (direct sharing with installed apps)
 
 ### ⏰ Smart Features
 - Sleep timer
 - Alarm, wake up with your music: schedule a song or a playlist to play at a specific time
 - Hands-free voice control
 - Visualizer (microphone permission required)
-- Fast Share (direct sharing with installed apps)
 - Self-closing app scheduling
 - Events daily/weekly, new releases from your artists, auto backup and check update
 - Android Auto support
