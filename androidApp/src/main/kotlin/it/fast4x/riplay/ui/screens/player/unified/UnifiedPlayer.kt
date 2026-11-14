@@ -333,10 +333,10 @@ fun UnifiedPlayer(
 ) {
 
     val appearanceSettingsManager = LocalAppearanceSettingsManager.current
-    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle()
 
     val appSettingsManager = LocalAppSettingsManager.current
-    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle()
 
     // Se le impostazioni app e/o appearance non sono pronte, torniamo indietro in attesa che siano pronte
     if (!appSettingsManager.isInitialized || !appearanceSettingsManager.isInitialized) return
@@ -378,7 +378,7 @@ fun UnifiedPlayer(
 //                                "target=[${target.left.roundToInt()},${target.top.roundToInt()} → ${target.right.roundToInt()},${target.bottom.roundToInt()}]"
 //                    )
                     PlayerTransitionAnimation.playerBoundsAnimation(
-                        appearanceSettings.playerTransitionAnimation,
+                        appearanceSettings.value.playerTransitionAnimation,
                         initial,
                         target
                     )
@@ -394,11 +394,11 @@ fun UnifiedPlayer(
         label = "playerContentAlpha",
     )
 
-    val playerThumbnailSize = appearanceSettings.playerThumbnailSize
-    val playerThumbnailSizeL = appearanceSettings.playerThumbnailSizeL
+    val playerThumbnailSize = appearanceSettings.value.playerThumbnailSize
+    val playerThumbnailSizeL = appearanceSettings.value.playerThumbnailSizeL
 
-    val disablePlayerHorizontalSwipe = appearanceSettings.disablePlayerHorizontalSwipe
-    val showlyricsthumbnail = appearanceSettings.showLyricsThumbnail
+    val disablePlayerHorizontalSwipe = appearanceSettings.value.disablePlayerHorizontalSwipe
+    val showlyricsthumbnail = appearanceSettings.value.showLyricsThumbnail
 
     val binder = LocalPlayerServiceBinder.current
 
@@ -413,14 +413,14 @@ fun UnifiedPlayer(
         animationSpec = tween(durationMillis = 200), label = ""
     )
 
-    val visualizerEnabled = appearanceSettings.audioVisualizerStyleInPlayer != AudioVisualizerStyle.NONE
+    val visualizerEnabled = appearanceSettings.value.audioVisualizerStyleInPlayer != AudioVisualizerStyle.NONE
 
-    val blurStrength = appearanceSettings.blurStrength
-    val thumbnailSpacing = appearanceSettings.thumbnailSpacing
-    val thumbnailSpacingL = appearanceSettings.thumbnailSpacingL
-    val thumbnailFade = appearanceSettings.thumbnailFade
-    val thumbnailFadeEx = appearanceSettings.thumbnailFadeEx
-    val imageCoverSize = appearanceSettings.imageCoverSize
+    val blurStrength = appearanceSettings.value.blurStrength
+    val thumbnailSpacing = appearanceSettings.value.thumbnailSpacing
+    val thumbnailSpacingL = appearanceSettings.value.thumbnailSpacingL
+    val thumbnailFade = appearanceSettings.value.thumbnailFade
+    val thumbnailFadeEx = appearanceSettings.value.thumbnailFadeEx
+    val imageCoverSize = appearanceSettings.value.imageCoverSize
 
     var showBlurPlayerDialog by rememberSaveable {
         mutableStateOf(false)
@@ -431,7 +431,7 @@ fun UnifiedPlayer(
     var isShowingLyrics by rememberSaveable {
         mutableStateOf(false)
     }
-    val showvisthumbnail = appearanceSettings.showvisthumbnail
+    val showvisthumbnail = appearanceSettings.value.showvisthumbnail
 
     var isShowingVisualizer by rememberSaveable {
         mutableStateOf(false)
@@ -502,17 +502,17 @@ fun UnifiedPlayer(
     }
     var showVoiceCommandHelp by rememberSaveable { mutableStateOf(false) }
     val voiceCommandController = rememberVoiceCommandController { transcript ->
-        if (!appSettings.voiceCommandsHandsFree) {
+        if (!appSettings.value.voiceCommandsHandsFree) {
             SmartMessage(
-                message = context.getString(R.string.voice_you_said, transcript),
+                message = context.resources.getString(R.string.voice_you_said, transcript),
                 context = context
             )
         }
         val command = VoiceCommandParser.parse(transcript)
         if (command == VoiceCommand.Unknown) {
-            if (!appSettings.voiceCommandsHandsFree) {
+            if (!appSettings.value.voiceCommandsHandsFree) {
                 SmartMessage(
-                    message = context.getString(R.string.voice_unknown_command),
+                    message = context.resources.getString(R.string.voice_unknown_command),
                     type = PopupType.Error,
                     context = context
                 )
@@ -535,27 +535,27 @@ fun UnifiedPlayer(
                 )
             }
             SmartMessage(
-                message = context.getString(R.string.voice_hands_free_stopped),
+                message = context.resources.getString(R.string.voice_hands_free_stopped),
                 type = PopupType.Warning,
                 context = context
             )
         }
         voiceCommandController.onRecognitionUnavailable = {
             SmartMessage(
-                message = context.getString(R.string.voice_unavailable),
+                message = context.resources.getString(R.string.voice_unavailable),
                 type = PopupType.Error,
                 context = context
             )
         }
     }
 
-    LaunchedEffect(appSettings.voiceCommandsHandsFree) {
-        voiceCommandController.setHandsFreeMode(appSettings.voiceCommandsHandsFree)
+    LaunchedEffect(appSettings.value.voiceCommandsHandsFree) {
+        voiceCommandController.setHandsFreeMode(appSettings.value.voiceCommandsHandsFree)
     }
 
     if (showVoiceCommandHelp) {
         VoiceCommandHelpDialog(
-            isHandsFree = appSettings.voiceCommandsHandsFree,
+            isHandsFree = appSettings.value.voiceCommandsHandsFree,
             onHandsFreeChange = { enabled ->
                 coroutineScope.launch {
                     appSettingsManager.updateSettings(
@@ -574,11 +574,11 @@ fun UnifiedPlayer(
     var mediaItemIndex by remember {
         mutableIntStateOf((if (binder.hybridPlayer?.mediaItemCount == 0) -1 else binder.hybridPlayer?.currentMediaItemIndex) ?: 0)
     }
-    val queueDurationExpanded = appearanceSettings.queueDurationExpanded
-    val miniQueueExpanded = appearanceSettings.miniQueueExpanded
-    val statsExpanded = appearanceSettings.statsExpanded
-    val actionExpanded = appearanceSettings.actionExpanded
-    val colorPaletteName = appearanceSettings.colorPaletteName
+    val queueDurationExpanded = appearanceSettings.value.queueDurationExpanded
+    val miniQueueExpanded = appearanceSettings.value.miniQueueExpanded
+    val statsExpanded = appearanceSettings.value.statsExpanded
+    val actionExpanded = appearanceSettings.value.actionExpanded
+    val colorPaletteName = appearanceSettings.value.colorPaletteName
 
     fun PagerState.offsetForPage(page: Int) = (currentPage - page) + currentPageOffsetFraction
 
@@ -616,7 +616,7 @@ fun UnifiedPlayer(
     }
 
 
-    val queueLoopType = appSettings.queueLoopType
+    val queueLoopType = appSettings.value.queueLoopType
 
     binder.hybridPlayer?.DisposableListener {
         object : Player.Listener {
@@ -695,8 +695,8 @@ fun UnifiedPlayer(
             }
         )
     }
-    val actionspacedevenly = appearanceSettings.actionsSpacedEvenly
-    val expandedplayer = appearanceSettings.expandedPlayer
+    val actionspacedevenly = appearanceSettings.value.actionsSpacedEvenly
+    val expandedplayer = appearanceSettings.value.expandedPlayer
 
     var updateBrush by rememberSaveable { mutableStateOf(false) }
 
@@ -785,34 +785,34 @@ fun UnifiedPlayer(
         )
     }
 
-    val showthumbnail = appearanceSettings.showThumbnail
+    val showthumbnail = appearanceSettings.value.showThumbnail
 
-    val showButtonPlayerAddToPlaylist = appearanceSettings.showButtonPlayerAddToPlaylist
-    val showButtonPlayerLoop = appearanceSettings.showButtonPlayerLoop
-    val showButtonPlayerLyrics = appearanceSettings.showButtonPlayerLyrics
-    val expandedplayertoggle = appearanceSettings.expandedPlayerToggle
-    val showButtonPlayerShuffle = appearanceSettings.showButtonPlayerShuffle
-    val showButtonPlayerSleepTimer = appearanceSettings.showButtonPlayerSleepTimer
-    val showButtonPlayerMenu = appearanceSettings.showButtonPlayerMenu
-    val showButtonPlayerStartRadio = appearanceSettings.showButtonPlayerStartRadio
-    val showButtonPlayerSystemEqualizer = appearanceSettings.showButtonPlayerSystemEqualizer
-    val showButtonPlayerVideo = appearanceSettings.showButtonPlayerVideo
+    val showButtonPlayerAddToPlaylist = appearanceSettings.value.showButtonPlayerAddToPlaylist
+    val showButtonPlayerLoop = appearanceSettings.value.showButtonPlayerLoop
+    val showButtonPlayerLyrics = appearanceSettings.value.showButtonPlayerLyrics
+    val expandedplayertoggle = appearanceSettings.value.expandedPlayerToggle
+    val showButtonPlayerShuffle = appearanceSettings.value.showButtonPlayerShuffle
+    val showButtonPlayerSleepTimer = appearanceSettings.value.showButtonPlayerSleepTimer
+    val showButtonPlayerMenu = appearanceSettings.value.showButtonPlayerMenu
+    val showButtonPlayerStartRadio = appearanceSettings.value.showButtonPlayerStartRadio
+    val showButtonPlayerSystemEqualizer = appearanceSettings.value.showButtonPlayerSystemEqualizer
+    val showButtonPlayerVideo = appearanceSettings.value.showButtonPlayerVideo
 
-    val showTotalTimeQueue = appearanceSettings.showTotalTimeQueue
-    val backgroundProgress = appearanceSettings.backgroundProgress
+    val showTotalTimeQueue = appearanceSettings.value.showTotalTimeQueue
+    val backgroundProgress = appearanceSettings.value.backgroundProgress
 
 
     var showCircularSlider by rememberSaveable {
         mutableStateOf(false)
     }
-    val showsongs = appearanceSettings.showsongs
-    val showalbumcover = appearanceSettings.showalbumcover
-    val tapqueue = appearanceSettings.tapqueue
-    val swipeUpQueue = appearanceSettings.swipeUpQueue
-    val playerType = appearanceSettings.playerType
-    val queueType = appearanceSettings.queueType
-    val noblur = appearanceSettings.noblur
-    val fadingedge = appearanceSettings.fadingedge
+    val showsongs = appearanceSettings.value.showsongs
+    val showalbumcover = appearanceSettings.value.showalbumcover
+    val tapqueue = appearanceSettings.value.tapqueue
+    val swipeUpQueue = appearanceSettings.value.swipeUpQueue
+    val playerType = appearanceSettings.value.playerType
+    val queueType = appearanceSettings.value.queueType
+    val noblur = appearanceSettings.value.noblur
+    val fadingedge = appearanceSettings.value.fadingedge
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val screenHeight = configuration.screenHeightDp.dp
@@ -972,7 +972,7 @@ fun UnifiedPlayer(
     var lightMuted by rememberSaveable { mutableStateOf(0) }
     var darkMuted by rememberSaveable { mutableStateOf(0) }
 
-    val colorPaletteMode = appearanceSettings.colorPaletteMode
+    val colorPaletteMode = appearanceSettings.value.colorPaletteMode
 
     var lightTheme =
         colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
@@ -987,8 +987,8 @@ fun UnifiedPlayer(
         )
     }
 
-    val playerBackgroundColors = appearanceSettings.playerBackgroundColors
-    val animatedGradient = appearanceSettings.animatedGradient
+    val playerBackgroundColors = appearanceSettings.value.playerBackgroundColors
+    val animatedGradient = appearanceSettings.value.animatedGradient
     val isGradientBackgroundEnabled =
         playerBackgroundColors == PlayerBackgroundColors.ThemeColorGradient ||
                 playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient ||
@@ -1104,37 +1104,37 @@ fun UnifiedPlayer(
 
 
     //val thumbnailTapEnabled by rememberPreference(THUMBNAIL_TAP_ENABLED.key, true)
-    val thumbnailTapEnabled = appearanceSettings.thumbnailTapEnabled
+    val thumbnailTapEnabled = appearanceSettings.value.thumbnailTapEnabled
     //val showNextSongsInPlayer by rememberPreference(SHOW_NEXT_SONGS_IN_PLAYER.key, false)
-    val showNextSongsInPlayer = appearanceSettings.showNextSongsInPlayer
+    val showNextSongsInPlayer = appearanceSettings.value.showNextSongsInPlayer
 
     var showQueue by rememberSaveable { mutableStateOf(false) }
     var showSearchEntity by rememberSaveable { mutableStateOf(false) }
 
-    val transparentBackgroundActionBarPlayer = appearanceSettings.transparentBackgroundActionBarPlayer
+    val transparentBackgroundActionBarPlayer = appearanceSettings.value.transparentBackgroundActionBarPlayer
 
-    val showTopActionsBar = appearanceSettings.showTopActionsBar
-    val showPlayerActionsBar = appearanceSettings.showPlayerActionsBar
+    val showTopActionsBar = appearanceSettings.value.showTopActionsBar
+    val showPlayerActionsBar = appearanceSettings.value.showPlayerActionsBar
 
     var containerModifier = Modifier
         .padding(bottom = 0.dp)
     var deltaX by rememberSaveable { mutableFloatStateOf(0f) }
-    val blackgradient = appearanceSettings.blackgradient
-    val bottomgradient = appearanceSettings.bottomGradient
-    val disableScrollingText = appearanceSettings.disableScrollingText
-    val discoverIsEnabled = appSettings.discoverIsEnabled
-    val titleExpanded = appearanceSettings.titleExpanded
-    val timelineExpanded = appearanceSettings.timelineExpanded
-    val controlsExpanded = appearanceSettings.controlsExpanded
+    val blackgradient = appearanceSettings.value.blackgradient
+    val bottomgradient = appearanceSettings.value.bottomGradient
+    val disableScrollingText = appearanceSettings.value.disableScrollingText
+    val discoverIsEnabled = appSettings.value.discoverIsEnabled
+    val titleExpanded = appearanceSettings.value.titleExpanded
+    val timelineExpanded = appearanceSettings.value.timelineExpanded
+    val controlsExpanded = appearanceSettings.value.controlsExpanded
 
-    val showCoverThumbnailAnimation = appearanceSettings.showCoverThumbnailAnimation
-    val coverThumbnailAnimation = appearanceSettings.coverThumbnailAnimation
+    val showCoverThumbnailAnimation = appearanceSettings.value.showCoverThumbnailAnimation
+    val coverThumbnailAnimation = appearanceSettings.value.coverThumbnailAnimation
 
     var valueGrad by rememberSaveable { mutableIntStateOf(2) }
     val gradients = enumEntries<AnimatedGradient>().toTypedArray()
     var tempGradient by rememberSaveable { mutableStateOf(AnimatedGradient.Linear) }
 
-    val albumCoverRotation = appearanceSettings.albumCoverRotation
+    val albumCoverRotation = appearanceSettings.value.albumCoverRotation
     var circleOffsetY by rememberSaveable { mutableFloatStateOf(0f) }
 
     // Animiamo lo sfondo dello shader per tutti i background animati in base allo stato del player, si muove quando è in play
@@ -1643,7 +1643,7 @@ fun UnifiedPlayer(
     }
 
 
-    val thumbnailRoundness = appearanceSettings.thumbnailRoundness
+    val thumbnailRoundness = appearanceSettings.value.thumbnailRoundness
 
     val controlsContent: @Composable (
         modifier: Modifier
@@ -1819,12 +1819,12 @@ fun UnifiedPlayer(
                 ) {}
             }
 
-            if (sharedTransitionScope?.isTransitionActive == false && (appSettings.videoContentMode.normal || appSettings.forceUserVideoPlayback)) videoPlayerView()
+            if (sharedTransitionScope?.isTransitionActive == false && (appSettings.value.videoContentMode.normal || appSettings.value.forceUserVideoPlayback)) videoPlayerView()
         }
 
     }
 
-    val textoutline = appearanceSettings.textoutline
+    val textoutline = appearanceSettings.value.textoutline
 
 
     var songPlaylist by rememberSaveable {
@@ -1836,11 +1836,11 @@ fun UnifiedPlayer(
         }
     }
 
-    val playlistindicator = appearanceSettings.playlistIndicator
-    val carousel = appearanceSettings.carousel
-    val carouselSize = appearanceSettings.carouselSize
+    val playlistindicator = appearanceSettings.value.playlistIndicator
+    val carousel = appearanceSettings.value.carousel
+    val carouselSize = appearanceSettings.value.carouselSize
 
-    val showButtonPlayerDiscover = appearanceSettings.showButtonPlayerDiscover
+    val showButtonPlayerDiscover = appearanceSettings.value.showButtonPlayerDiscover
     val hazeState = remember { HazeState() }
 
     val equalizer = LocalPlayerServiceBinder.current?.equalizer
@@ -2037,7 +2037,7 @@ fun UnifiedPlayer(
                         ) {
                             MusicVaultButton(mediaItem.asSong, size = 28.dp)
 
-                            if (appSettings.enableVoiceInput) IconButton(
+                            if (appSettings.value.enableVoiceInput) IconButton(
                                 icon = R.drawable.mic,
                                 color = if (voiceCommandController.isListening) colorPalette().accent else colorPalette().text,
                                 enabled = true,
@@ -2157,8 +2157,8 @@ fun UnifiedPlayer(
                 }
         }
 
-        val clickLyricsText = appearanceSettings.clickLyricsText
-        val extraspace = appearanceSettings.extraSpace
+        val clickLyricsText = appearanceSettings.value.clickLyricsText
+        val extraspace = appearanceSettings.value.extraSpace
 
         val nextmedia = if ((binder.hybridPlayer?.mediaItemCount ?: 0) > 1
             && (binder.hybridPlayer?.currentMediaItemIndex ?: 0) + 1 < (binder.hybridPlayer?.mediaItemCount ?: 0)
@@ -2190,11 +2190,11 @@ fun UnifiedPlayer(
             }
         }
 
-        val thumbnailType = appearanceSettings.thumbnailType
-        val statsfornerds = appearanceSettings.statsfornerds
-        val topPadding = appearanceSettings.topPadding
+        val thumbnailType = appearanceSettings.value.thumbnailType
+        val statsfornerds = appearanceSettings.value.statsfornerds
+        val topPadding = appearanceSettings.value.topPadding
 
-        val swipeAnimationNoThumbnail = appearanceSettings.swipeAnimationNoThumbnail
+        val swipeAnimationNoThumbnail = appearanceSettings.value.swipeAnimationNoThumbnail
 
 //        val collapseOffset = remember { Animatable(0f) }
 //        val collapseThresholdPx = with(LocalDensity.current) { 140.dp.toPx() }
@@ -2207,8 +2207,8 @@ fun UnifiedPlayer(
             // ThumbnailContent lo nascondiamo se è una canzone ma solo se l'utente non ha cliccato esplicitamente in un video
             videoThumbnailContent(
                 if (mediaItem.isVideo &&
-                     (appSettings.forceUserVideoPlayback
-                    || appSettings.videoContentMode.normal)
+                     (appSettings.value.forceUserVideoPlayback
+                    || appSettings.value.videoContentMode.normal)
                 ){
                     Modifier
                         //.fillMaxWidth() // Serve a stirare in orizzontale il video, ma taglia leggermente in altezza
@@ -2220,7 +2220,7 @@ fun UnifiedPlayer(
 
             // Visualizziamo la cover se è una canzone e l'utente non ha cliccato specificatamente su un video
             if (!mediaItem.isVideo
-                || (!appSettings.forceUserVideoPlayback && appSettings.videoContentMode.audioOnly)
+                || (!appSettings.value.forceUserVideoPlayback && appSettings.value.videoContentMode.audioOnly)
             ) {
 
                 val collapseState = remember(collapseDistance) {
@@ -3568,8 +3568,8 @@ fun UnifiedPlayer(
 
                         // PORTRAIT MODE CON VISUALIZZAZIONE COVER
                         if (showthumbnail
-                            && ((!appSettings.forceUserVideoPlayback && appSettings.videoContentMode.audioOnly)
-                                    || (appSettings.videoContentMode.normal && !mediaItem.isVideo))
+                            && ((!appSettings.value.forceUserVideoPlayback && appSettings.value.videoContentMode.audioOnly)
+                                    || (appSettings.value.videoContentMode.normal && !mediaItem.isVideo))
                             ) {
 
                             if ((!isShowingLyrics && !isShowingVisualizer) || (isShowingVisualizer && showvisthumbnail) || (isShowingLyrics && showlyricsthumbnail)) {
@@ -3985,8 +3985,8 @@ fun UnifiedPlayer(
                             if (
                                 mediaItem.isVideo &&
                                 (!isShowingVisualizer
-                                || appSettings.forceUserVideoPlayback
-                                || appSettings.videoContentMode.normal)
+                                || appSettings.value.forceUserVideoPlayback
+                                || appSettings.value.videoContentMode.normal)
                             ){
                                 coverModifier
                                     .then(
@@ -4284,10 +4284,10 @@ fun UnifiedPlayer(
             onDismiss = { isUserVideoSelected ->
                 // Se video content mode = audio only, forziamo la visualizzazione del video su richiesta dell'utente
                 // Verrà resettato dal service quando andrà alla successiva o precedente
-                if (appSettings.videoContentMode.audioOnly && isUserVideoSelected)
+                if (appSettings.value.videoContentMode.audioOnly && isUserVideoSelected)
                     coroutineScope.launch {
                         appSettingsManager.updateSettings(
-                            appSettings.copy(forceUserVideoPlayback = true)
+                            appSettings.value.copy(forceUserVideoPlayback = true)
                         )
                     }
 

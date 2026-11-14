@@ -730,21 +730,21 @@ class MainActivity : AppCompatActivity() {
             ////////////////////////////////////////////////////////////
 
 
-            val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
-            val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+            val appearanceSettings = appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle()
+            val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle()
 
             //Timber.d("MainActivity onCreate appSettings: ${appSettings.lockOrientation}")
 
-            OrientationLock(if (appSettings.lockOrientation) ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT else null)
+            OrientationLock(if (appSettings.value.lockOrientation) ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT else null)
 
-            if (appSettings.keepScreenEnabled) {
+            if (appSettings.value.keepScreenEnabled) {
                 window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             }
 
-            if (appSettings.proxyEnabled ) {
-                val hostName = appSettings.proxyHostname
-                val proxyPort = appSettings.proxyPort
-                val proxyMode = appSettings.proxyMode
+            if (appSettings.value.proxyEnabled ) {
+                val hostName = appSettings.value.proxyHostname
+                val proxyPort = appSettings.value.proxyPort
+                val proxyMode = appSettings.value.proxyMode
                 if (isValidIP(hostName)) {
                     if (hostName.isNotBlank() && proxyPort != 0)
                         ProxyPreferences.preference =
@@ -792,8 +792,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             // Gestione del ciclo di vita reattivo condizionale
-            LaunchedEffect(appSettings.castType) {
-                if (appSettings.castType == CastType.RITUNECAST) {
+            LaunchedEffect(appSettings.value.castType) {
+                if (appSettings.value.castType == CastType.RITUNECAST) {
                     // Verifica se siamo su Android 17+ (API 37) o versioni successive
                     if (Build.VERSION.SDK_INT >= 37) {
                         val isGranted = ContextCompat.checkSelfPermission(
@@ -818,7 +818,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            if (appSettings.shakeEventEnabled) {
+            if (appSettings.value.shakeEventEnabled) {
                 sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
                 Objects.requireNonNull(sensorManager)
                     ?.registerListener(
@@ -830,9 +830,9 @@ class MainActivity : AppCompatActivity() {
             }
 
 
-            isclosebackgroundPlayerEnabled = appSettings.closeBackgroundPlayerAfterMinutes != DurationInMinutes.Disabled
+            isclosebackgroundPlayerEnabled = appSettings.value.closeBackgroundPlayerAfterMinutes != DurationInMinutes.Disabled
 
-            showAutostartPermissionDialog = appSettings.showAutostartPermissionDialog
+            showAutostartPermissionDialog = appSettings.value.showAutostartPermissionDialog
 
 
 
@@ -878,20 +878,20 @@ class MainActivity : AppCompatActivity() {
 //                    COLOR_PALETTE_MODE.key,
 //                    ColorPaletteMode.Dark
 //                )
-            val colorPaletteMode = appearanceSettings.colorPaletteMode
+            val colorPaletteMode = appearanceSettings.value.colorPaletteMode
 
             val coroutineScope = rememberCoroutineScope()
             val isSystemInDarkTheme = isSystemInDarkTheme()
             var navController: NavController? = null
 
-            val customColor = appearanceSettings.customColor
+            val customColor = appearanceSettings.value.customColor
             val lightTheme =
                 colorPaletteMode == ColorPaletteMode.Light || (colorPaletteMode == ColorPaletteMode.System && (!isSystemInDarkTheme()))
 
             val locale = LocalLocale.current.platformLocale
             //val languageTag = locale.toLanguageTag().replace("-Hant", "")
-            val languageApp = appSettings.languageApp
-            val contentCountry = appSettings.contentCountry
+            val languageApp = appSettings.value.languageApp
+            val contentCountry = appSettings.value.contentCountry
             LocalePreferences.preference =
                 LocalePreferenceItem(
                     hl = languageApp.takeIf { it != Languages.System }?.code
@@ -918,13 +918,12 @@ class MainActivity : AppCompatActivity() {
 
             Timber.d("MainActivity onCreate language = ${locale.language} country = ${locale.country} languageTag = ${locale.toLanguageTag()} languageApp = $languageApp")
 
-            LaunchedEffect(appSettingsManager.isInitialized, appSettings.ytVisitorData, appSettings.ytCookie) {
+            LaunchedEffect(appSettingsManager.isInitialized, appSettings.value.ytVisitorData, appSettings.value.ytCookie) {
                 if (!appSettingsManager.isInitialized) return@LaunchedEffect
-                bootstrapEnvironment(appSettings)
+                bootstrapEnvironment(appSettings.value)
             }
 
-            //val dataSyncId = preferences.getString(YT_DATA_SYNC_ID.key, "").toString()
-            val dataSyncId = appSettings.ytDataSyncId
+            val dataSyncId = appSettings.value.ytDataSyncId
             Environment.dataSyncId = dataSyncId.let {
                 it.takeIf { !it.contains("||") }
                     ?: it.takeIf { it.endsWith("||") }?.substringBefore("||")
@@ -933,11 +932,10 @@ class MainActivity : AppCompatActivity() {
 
             Timber.d("MainActivity.setContent Environment variables cookie: ${Environment.cookie} visitorData: ${Environment.visitorData} dataSyncId: ${Environment.dataSyncId}")
             val customDnsOverHttpsServer =
-                appSettings.customDnsOverHttpsServer
-                //preferences.getString(CUSTOM_DNS_OVER_HTTPS_SERVER.key, "")
+                appSettings.value.customDnsOverHttpsServer
 
             val customDnsIsOk = customDnsOverHttpsServer?.let { isValidHttpUrl(it) }
-            if (customDnsIsOk == false && appSettings.dnsOverHttpsType == DnsOverHttpsType.Custom)
+            if (customDnsIsOk == false && appSettings.value.dnsOverHttpsType == DnsOverHttpsType.Custom)
                 SmartMessage(
                     stringResource(R.string.custom_dns_is_invalid),
                     PopupType.Error,
@@ -946,35 +944,34 @@ class MainActivity : AppCompatActivity() {
 
             val customDnsUrl = if (customDnsIsOk == true) customDnsOverHttpsServer else null
             Environment.customDnsToUse = customDnsUrl
-            Environment.dnsToUse = appSettings.dnsOverHttpsType.type
+            Environment.dnsToUse = appSettings.value.dnsOverHttpsType.type
 
-            //val pageId = preferences.getString(PreferenceKey.YT_PAGEID.key, "")
-            val pageId = appSettings.ytPageId
-            //val authUser = preferences.getString(PreferenceKey.YT_AUTHUSER.key, "")
-            val authUser = appSettings.ytAuthUser
+            val pageId = appSettings.value.ytPageId
+
+            val authUser = appSettings.value.ytAuthUser
             Environment.pageId = pageId
             Environment.authUser = authUser
 
             // Recreate appearance whenever theme mode or light/dark flag changes
             var appearance by rememberSaveable(
                 colorPaletteMode,
-                !lightTheme, appSettings, appearanceSettings,
+                !lightTheme, appSettings.value, appearanceSettings.value,
                 stateSaver = Appearance
             ) {
                 //with(preferences) {
                     val colorPaletteName =
-                        appearanceSettings.colorPaletteName
+                        appearanceSettings.value.colorPaletteName
                         //getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
                     val thumbnailRoundness =
-                        appearanceSettings.thumbnailRoundness
+                        appearanceSettings.value.thumbnailRoundness
                         //getEnum(THUMBNAIL_ROUNDNESS.key, ThumbnailRoundness.Light)
-                    val useSystemFont = appSettings.useSystemFont
-                    val applyFontPadding = appSettings.applyFontPadding
+                    val useSystemFont = appSettings.value.useSystemFont
+                    val applyFontPadding = appSettings.value.applyFontPadding
 
                     var colorPalette =
                         colorPaletteOf(colorPaletteName, colorPaletteMode, !lightTheme)
 
-                    val fontType = appSettings.fontType
+                    val fontType = appSettings.value.fontType
 
                     if (colorPaletteName == ColorPaletteName.MaterialYou) {
                         localMonet?.let {
@@ -998,7 +995,7 @@ class MainActivity : AppCompatActivity() {
                             colorPalette,
                             this@MainActivity,
                             isSystemInDarkTheme,
-                            appearanceSettings.colorPaletteMode
+                            appearanceSettings.value.colorPaletteMode
                         )
                     }
 
@@ -1024,7 +1021,7 @@ class MainActivity : AppCompatActivity() {
             fun setDynamicPalette(url: String) {
 
                 val colorPaletteName =
-                    appearanceSettings.colorPaletteName
+                    appearanceSettings.value.colorPaletteName
                     //preferences.getEnum(COLOR_PALETTE_NAME.key, ColorPaletteName.Dynamic)
                 val isDynamicPalette = colorPaletteName == ColorPaletteName.Dynamic
 
@@ -1092,7 +1089,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             LaunchedEffect(Unit, appSettings) {
-                if (appSettings.isEnabledFullScreen) enableFullscreenMode()
+                if (appSettings.value.isEnabledFullScreen) enableFullscreenMode()
 
 
             }
@@ -1101,11 +1098,11 @@ class MainActivity : AppCompatActivity() {
             LaunchedEffect(Unit, appearanceSettings, appSettings, lightTheme) {
                 // Imposta thumbnail shape
                 appearance = appearance.copy(
-                    thumbnailShape = appearanceSettings.thumbnailRoundness.shape()
+                    thumbnailShape = appearanceSettings.value.thumbnailRoundness.shape()
                 )
                 // Imposta appearance in base al tema selezionato
                 val colorPaletteName =
-                    appearanceSettings.colorPaletteName
+                    appearanceSettings.value.colorPaletteName
 
                 if (colorPaletteName == ColorPaletteName.Customized) {
                     appearance = appearance.copy(
@@ -1113,7 +1110,7 @@ class MainActivity : AppCompatActivity() {
                             appearance.colorPalette,
                             this@MainActivity,
                             isSystemInDarkTheme,
-                            appearanceSettings.colorPaletteMode
+                            appearanceSettings.value.colorPaletteMode
                         )
                     )
                 }
@@ -1133,9 +1130,9 @@ class MainActivity : AppCompatActivity() {
                     )
 
 
-                val useSystemFont = appSettings.useSystemFont
-                val applyFontPadding = appSettings.applyFontPadding
-                val fontType = appSettings.fontType
+                val useSystemFont = appSettings.value.useSystemFont
+                val applyFontPadding = appSettings.value.applyFontPadding
+                val fontType = appSettings.value.fontType
 
                 appearance = appearance.copy(
                     typography = typographyOf(
@@ -1244,7 +1241,7 @@ class MainActivity : AppCompatActivity() {
                 // Con l'overlay testi attivo il PiP mostra la copertina:
                 // il testo e' gia' sulla finestra fluttuante sopra le altre app
                 val pipModule =
-                    if (LyricsOverlayManager.active) PipModule.Cover else appSettings.pipModule
+                    if (LyricsOverlayManager.active) PipModule.Cover else appSettings.value.pipModule
 
                 // Parametri della finestra PiP sempre allineati allo stato del player:
                 // tasti come azioni remote, rapporto d'aspetto per modulo e auto-enter
@@ -1252,8 +1249,8 @@ class MainActivity : AppCompatActivity() {
                 PipRemoteActions(
                     module = pipModule,
                     isPlaying = isPlaying,
-                    enabled = appSettings.enablePictureInPicture,
-                    autoEnter = appSettings.enablePictureInPictureAuto,
+                    enabled = appSettings.value.enablePictureInPicture,
+                    autoEnter = appSettings.value.enablePictureInPictureAuto,
                     onPlayPause = {
                         binder?.hybridPlayer?.let { player ->
                             if (player.isPlaying) player.pause() else player.play()
@@ -1288,8 +1285,8 @@ class MainActivity : AppCompatActivity() {
                                             PipModuleLyrics(
                                                 mediaId = binder?.hybridPlayer?.currentMediaItem?.mediaId,
                                                 binder = binder,
-                                                isShowingSynchronizedLyrics = appearanceSettings.isShowingSynchronizedLyrics,
-                                                isShowingWordByWord = appearanceSettings.isShowingSynchronizedWordByWordLyrics
+                                                isShowingSynchronizedLyrics = appearanceSettings.value.isShowingSynchronizedLyrics,
+                                                isShowingWordByWord = appearanceSettings.value.isShowingSynchronizedWordByWordLyrics
                                             )
                                         }
                                     }
@@ -1301,7 +1298,7 @@ class MainActivity : AppCompatActivity() {
                     } else
 
                             SharedTransitionLayout(modifier = Modifier.fillMaxSize()) {
-                                val playerTransitionsEnabled = appearanceSettings.playerTransitionsEnabled
+                                val playerTransitionsEnabled = appearanceSettings.value.playerTransitionsEnabled
                                 // Se l'animazione non è attiva, la mostriamo in modalità swipe down
                                 val sts = if (playerTransitionsEnabled) this else null
 
@@ -1415,32 +1412,12 @@ class MainActivity : AppCompatActivity() {
                                                         }
                                                     }
 
-                                                    /*
-                                    if (binder?.currentMediaItemAsSong?.isLocal == true)
-                                        LocalMiniPlayer(
-                                            showPlayer = { localPlayerSheetState.expandSoft() },
-                                            hidePlayer = { localPlayerSheetState.collapseSoft() },
-                                            navController = navController,
-                                        )
-                                    else {
-                                        OnlineMiniPlayer(
-                                            showPlayer = { localPlayerSheetState.expandSoft() },
-                                            hidePlayer = { localPlayerSheetState.collapseSoft() },
-                                            navController = navController,
-                                        )
-                                    }
-                                     */
-
                                                 },
                                                 openTabFromShortcut = openTabFromShortcut
                                             )
 
-//                                    val isSnowEffectEnabled by rememberPreference(
-//                                        SHOW_SNOWFALL_EFFECT.key,
-//                                        false
-//                                    )
                                             val isSnowEffectEnabled =
-                                                appSettings.isSnowEffectEnabled
+                                                appSettings.value.isSnowEffectEnabled
                                             if (isSnowEffectEnabled)
                                                 Box(modifier = Modifier.fillMaxSize()) {
                                                     Snowfall()
@@ -1449,12 +1426,8 @@ class MainActivity : AppCompatActivity() {
                                             checkIfAppIsRunningInBackground()
                                             if (appRunningInBackground) localPlayerSheetState.collapseSoft()
 
-//                                    val thumbnailRoundness by rememberPreference(
-//                                        THUMBNAIL_ROUNDNESS.key,
-//                                        ThumbnailRoundness.Light
-//                                    )
                                             val thumbnailRoundness =
-                                                appearanceSettings.thumbnailRoundness
+                                                appearanceSettings.value.thumbnailRoundness
 
 
 
@@ -1690,11 +1663,10 @@ class MainActivity : AppCompatActivity() {
                             isPlayerExpanded.value = false
                         }
                     } else {
-                        Timber.d("MainActivity DisposableEffect launchedFromNotification keepPlayerMinimized = ${appSettings.keepPlayerMinimized}")
+                        Timber.d("MainActivity DisposableEffect launchedFromNotification keepPlayerMinimized = ${appSettings.value.keepPlayerMinimized}")
                         if (launchedFromNotification) {
-
                             intent.replaceExtras(Bundle())
-                            if (appSettings.keepPlayerMinimized) {
+                            if (appSettings.value.keepPlayerMinimized) {
                                 localPlayerSheetState.collapseSoft()
                                 isPlayerExpanded.value = false
                             } else {
@@ -1716,6 +1688,16 @@ class MainActivity : AppCompatActivity() {
                                 localPlayerSheetState.collapseSoft()
                                 isPlayerExpanded.value = false
                                 return
+                            } else {
+                                if (appSettings.value.keepPlayerMinimized) {
+                                    localPlayerSheetState.collapseSoft()
+                                    isPlayerExpanded.value = false
+                                } else {
+                                    if (!isPlayerExpanded.value) {
+                                        isPlayerExpanded.value = true
+                                        localPlayerSheetState.expandSoft()
+                                    }
+                                }
                             }
 
                             setDynamicPalette(
@@ -1871,7 +1853,7 @@ class MainActivity : AppCompatActivity() {
                             Environment.song(videoId)?.getOrNull()?.let { song ->
                                 val binder = snapshotFlow { binder }.filterNotNull().first()
                                 withContext(Dispatchers.Main) {
-                                    if (!song.explicit && !appSettings.parentalControlEnabled)
+                                    if (!song.explicit && !appSettings.value.parentalControlEnabled)
                                         binder.hybridPlayer.forcePlay(song.asMediaItem)
                                     else
                                         SmartMessage(

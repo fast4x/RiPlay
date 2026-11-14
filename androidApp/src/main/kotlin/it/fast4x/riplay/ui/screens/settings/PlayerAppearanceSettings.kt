@@ -641,7 +641,8 @@ fun PlayerAppearanceSettings(
                                         )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
-                            }
+                            },
+                            icon = R.drawable.arrow_up
                         )
                 }
                 }
@@ -1495,7 +1496,7 @@ if (search.matchesAny(R.string.toggle_lyrics, R.string.by_tapping_on_the_thumbna
 
 
                 if (search.matchesAny(R.string.player_action_bar, R.string.action_bar_transparent_background, R.string.actionspacedevenly, R.string.tapqueue, R.string.swipe_up_to_open_the_queue, R.string.action_bar_show_video_button, R.string.action_bar_show_discover_button, R.string.action_bar_show_download_button, R.string.action_bar_show_add_to_playlist_button, R.string.action_bar_show_loop_button, R.string.action_bar_show_shuffle_button, R.string.action_bar_show_lyrics_button, R.string.expandedplayer, R.string.action_bar_show_sleep_timer_button, R.string.show_equalizer, R.string.action_bar_show_arrow_button_to_open_queue, R.string.action_bar_show_start_radio_button, R.string.action_bar_show_menu_button)) {
-                settingsGroupHeader(title = context.resources.getString(R.string.player_action_bar), icon = R.drawable.horizontal_bold_line,)
+                settingsGroupHeader(title = context.resources.getString(R.string.player_action_bar))
 
 
                 settingsGroupCard {
@@ -1888,21 +1889,26 @@ if (search.matchesAny(R.string.toggle_lyrics, R.string.by_tapping_on_the_thumbna
                             selectedValue = notificationPlayerFirstIcon,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appSettingsManager.activeSettings.value.copy(notificationPlayerFirstIcon = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(
+                                        notificationPlayerFirstIcon = it
+                                    )
                                     appSettingsManager.updateSettings(new)
                                 }
                                 restartService = true
                             },
                             valueText = {
                                 it.displayName
-                            }, icon = R.drawable.notifications,
+                            },
+                            icon = R.drawable.notifications,
                         )
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.notificationPlayerSecondIcon),
                             selectedValue = notificationPlayerSecondIcon,
                             onValueSelected = {
                                 coroutineScope.launch {
-                                    val new = appSettingsManager.activeSettings.value.copy(notificationPlayerSecondIcon = it)
+                                    val new = appSettingsManager.activeSettings.value.copy(
+                                        notificationPlayerSecondIcon = it
+                                    )
                                     appSettingsManager.updateSettings(new)
                                 }
 
@@ -1910,17 +1916,19 @@ if (search.matchesAny(R.string.toggle_lyrics, R.string.by_tapping_on_the_thumbna
                             },
                             valueText = {
                                 it.displayName
-                            }, icon = R.drawable.notifications,
+                            },
+                            icon = R.drawable.notifications,
                         )
                         RestartPlayerService(restartService, onRestart = { restartService = false })
                     }
 
+                }
+                }
 
-                    if (search.matchesAny(R.string.show_song_cover))
+                if (search.matchesAny(R.string.show_song_cover))
+                    settingsGroupHeader(title = context.resources.getString(R.string.lockscreen))
 
-                    SettingsGroupSpacer()
-
-                    SettingsEntryGroupText(title = stringResource(R.string.lockscreen))
+                settingsGroupCard {
 
                     SwitchSettingEntry(
                         title = stringResource(R.string.show_song_cover),
@@ -1935,10 +1943,8 @@ if (search.matchesAny(R.string.toggle_lyrics, R.string.by_tapping_on_the_thumbna
                     )
 
 
-                
-                    }
-                }
 
+                }
 
                 if (isAtLeastAndroid7) {
                     if (search.matchesAny(R.string.enable_wallpaper, R.string.set_cover_thumbnail_as_wallpaper)) {

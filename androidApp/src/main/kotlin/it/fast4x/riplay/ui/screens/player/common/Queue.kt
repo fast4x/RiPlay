@@ -252,21 +252,21 @@ fun Queue(
 
     val appearanceSettingsManager = LocalAppearanceSettingsManager.current
     val appearanceSettings =
-        appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+        appearanceSettingsManager.activeSettings.collectAsStateWithLifecycle()
 
     val appSettingsManager = LocalAppSettingsManager.current
-    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
+    val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle()
 
     val windowInsets = WindowInsets.systemBars
     val context = LocalContext.current
-    val queueType = appearanceSettings.queueType
-    val disableScrollingText = appearanceSettings.disableScrollingText
+    val queueType = appearanceSettings.value.queueType
+    val disableScrollingText = appearanceSettings.value.disableScrollingText
     val binder = LocalPlayerServiceBinder.current
     binder?.hybridPlayer ?: return
     val binderPlayer = binder.hybridPlayer
 
-    val queueLoopType = appSettings.queueLoopType
-    val excludeSongsIfAreVideos = appSettings.videoContentMode.excluded
+    val queueLoopType = appSettings.value.queueLoopType
+    val excludeSongsIfAreVideos = appSettings.value.videoContentMode.excluded
     val menuState = LocalGlobalSheetState.current
     val thumbnailSizeDp = Dimensions.thumbnails.song
     val thumbnailSizePx = thumbnailSizeDp.px
@@ -325,7 +325,7 @@ fun Queue(
     var showConfirmDeleteAllDialog by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val hazeState = remember { HazeState() }
-    val thumbnailRoundness = appearanceSettings.thumbnailRoundness
+    val thumbnailRoundness = appearanceSettings.value.thumbnailRoundness
 
     // ── TV: modalità "leggera" della coda ────────────────────────
     // Sui TV box la GPU e' debole: blur (haze), animazioni di
@@ -405,8 +405,8 @@ fun Queue(
     }
 
     val hapticFeedback = LocalHapticFeedback.current
-    val showButtonPlayerDiscover = appearanceSettings.showButtonPlayerDiscover
-    val discoverIsEnabled = appSettings.discoverIsEnabled
+    val showButtonPlayerDiscover = appearanceSettings.value.showButtonPlayerDiscover
+    val discoverIsEnabled = appSettings.value.discoverIsEnabled
     var searching by rememberSaveable { mutableStateOf(false) }
     var filter: String? by rememberSaveable { mutableStateOf(null) }
     var showQueues by rememberSaveable { mutableStateOf(false) }
