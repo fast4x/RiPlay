@@ -33,17 +33,55 @@ sealed interface VoiceCommand {
 }
 
 /**
+ * Result of looking at all the hypotheses returned by a hands-free session.
+ *
+ * The recognizer can split "Hello RiPlay, next" into a wake-word-only result
+ * followed by the command, or it can clip the beginning of the wake word
+ * because the detector starts it after speech has already begun.
+ */
+sealed interface HandsFreeSelection {
+    data class Command(val text: String, val wakeWord: Boolean) : HandsFreeSelection
+
+    data object WakeWordOnly : HandsFreeSelection
+
+    data object Ignore : HandsFreeSelection
+}
+
+/**
  * Turns a recognized utterance such as "play faded" or "play songs from my gym
  * playlist" into a [VoiceCommand].
  */
 object VoiceCommandParser {
 
     private val wakeWord = Regex(
-        "^(?:(?:hey |ok |okay |yo )?(?:riplay|ri play|r i play|ryplay)|hello(?: riplay)?)(?: |$)"
+        "^(?:(?:(?:hey|hi|ok|okay|yo) )?(?:riplay|ri play|r i play|rip lay|rip play|ryplay|ry play|rye play)|hello(?: (?:riplay|ri play))?)(?: |$)"
     )
 
+    /**
+     * Recognition errors around "RiPlay" are common, especially in noisy
+     * hands-free sessions. These phrases are compared with a small edit
+     * distance so "riply", "ryplay" or a clipped "i play" still wake the app.
+     */
+    private val wakeWordPhrases = listOf(
+        "riplay", "ri play", "r i play", "rip lay", "rip play", "ryplay", "ry play",
+        "rye play", "hello", "hello riplay", "hello ri play",
+        "hey riplay", "hi riplay", "ok riplay", "okay riplay", "yo riplay",
+        "hey ri play", "okay ri play"
+    )
+
+    private val exactCommandWords = setOf(
+        "play", "replay", "pause", "stop", "next", "previous", "back", "resume",
+        "continue", "shuffle", "loop"
+    )
+
+    private val greetingWords = setOf("hello", "hey", "hi", "ok", "okay", "yo")
+
+    private const val WAKE_WORD_SIMILARITY = 0.78
+    private const val WAKE_WORD_MISHEAR_SIMILARITY = 0.75
+    private const val MAX_WAKE_WORDS = 3
+
     private val politeness = Regex(
-        "^(?:please|could you|can you|would you|will you|i want you to|i would like to|i want to|i wanna|lets|let us|just)(?: |$)"
+        "^(?:hey|hi|ok|okay|yo|please|could you|can you|would you|will you|i want you to|i would like to|i want to|i wanna|lets|let us|just)(?: |$)"
     )
 
     private val playlistFrom = Regex(
@@ -115,7 +153,51 @@ object VoiceCommandParser {
      * or "play ..." would otherwise be executed as a real command.
      */
     fun hasWakeWord(rawInput: String): Boolean =
-        wakeWord.containsMatchIn(normalize(rawInput))
+        wakeWordPrefixLength(normalize(rawInput)) != null
+
+    /** True when the utterance is only the wake word ("Hello", "RiPlay"). */
+    fun isWakeWordOnly(rawInput: String): Boolean {
+        val text = normalize(rawInput)
+        if (text.isEmpty() || !hasWakeWord(text)) return false
+        return stripWakeWord(text).isEmpty()
+    }
+
+    /**
+     * Picks the best transcript from a hands-free recognition session.
+     *
+     * Prefer a hypothesis that contains the wake word and a command. If the
+     * wake word was clipped because the recognizer starts after the detector
+     * hears speech, a clear command is still accepted. A wake-word-only result
+     * asks the caller to open a short follow-up session.
+     */
+    fun selectHandsFree(hypotheses: List<String>): HandsFreeSelection {
+        val usable = hypotheses
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .distinct()
+        if (usable.isEmpty()) return HandsFreeSelection.Ignore
+
+        val withWakeWord = usable.filter(::hasWakeWord)
+        if (withWakeWord.isNotEmpty()) {
+            withWakeWord
+                .firstOrNull { !isWakeWordOnly(it) && parse(it) != VoiceCommand.Unknown }
+                ?.let { return HandsFreeSelection.Command(it, wakeWord = true) }
+
+            // "Hello" and the command can arrive as two hypotheses. The command
+            // is more useful than opening another session.
+            usable
+                .firstOrNull { !hasWakeWord(it) && parse(it) != VoiceCommand.Unknown }
+                ?.let { return HandsFreeSelection.Command(it, wakeWord = false) }
+
+            if (withWakeWord.any(::isWakeWordOnly)) return HandsFreeSelection.WakeWordOnly
+            return HandsFreeSelection.Ignore
+        }
+
+        usable
+            .firstOrNull { parse(it) != VoiceCommand.Unknown }
+            ?.let { return HandsFreeSelection.Command(it, wakeWord = false) }
+        return HandsFreeSelection.Ignore
+    }
 
     fun parse(rawInput: String): VoiceCommand {
         val text = stripPoliteness(stripWakeWord(normalize(rawInput)))
@@ -185,7 +267,58 @@ object VoiceCommandParser {
             .replace(Regex("\\s+"), " ")
             .trim()
 
-    private fun stripWakeWord(text: String): String = text.replaceFirst(wakeWord, "").trim()
+    private fun stripWakeWord(text: String): String {
+        var result = text
+        while (true) {
+            val length = wakeWordPrefixLength(result) ?: break
+            result = result.substring(length).trim()
+        }
+        return result
+    }
+
+    private fun wakeWordPrefixLength(text: String): Int? {
+        if (text.isEmpty()) return null
+
+        val tokens = text.split(' ')
+        if (tokens.size >= 2 &&
+            tokens[0] in greetingWords &&
+            similarity(tokens[1], "riplay") >= WAKE_WORD_MISHEAR_SIMILARITY
+        ) {
+            // "Hello RiPlay" is very often transcribed as "hello replay".
+            // Treat the pair as the wake word so it is not executed as a
+            // Replay command (which would restart the song).
+            return tokens[0].length + 1 + tokens[1].length
+        }
+
+        val match = wakeWord.find(text)
+        if (match != null && match.range.first == 0) return match.range.last + 1
+
+        var consumed = 0
+        for (count in 1..minOf(MAX_WAKE_WORDS, tokens.size)) {
+            // "replay" is one edit away from "riplay"; it must stay a command.
+            if (count == 1 && tokens[0] in exactCommandWords) return null
+            // "hey play faded" is a command with a filler, not "Hey RiPlay".
+            if (count >= 2 &&
+                tokens[0] in greetingWords &&
+                tokens[count - 1] in exactCommandWords
+            ) {
+                continue
+            }
+            consumed += tokens[count - 1].length + 1
+            val prefix = tokens.take(count).joinToString(" ")
+            if (wakeWordPhrases.any { phrase -> similarity(prefix, phrase) >= WAKE_WORD_SIMILARITY }) {
+                return consumed.coerceAtMost(text.length)
+            }
+        }
+        return null
+    }
+
+    private fun similarity(a: String, b: String): Double {
+        if (a == b) return 1.0
+        if (a.isEmpty() || b.isEmpty()) return 0.0
+        val distance = levenshtein(a, b)
+        return 1.0 - distance.toDouble() / maxOf(a.length, b.length)
+    }
 
     private fun stripPoliteness(text: String): String {
         var result = text
@@ -240,23 +373,23 @@ object VoiceNameMatcher {
             .replace(Regex("[^a-z0-9\\s]"), " ")
             .replace(Regex("\\s+"), " ")
             .trim()
+}
 
-    private fun levenshtein(a: String, b: String): Int {
-        if (a == b) return 0
-        val previous = IntArray(b.length + 1) { it }
-        val current = IntArray(b.length + 1)
-        for (i in 1..a.length) {
-            current[0] = i
-            for (j in 1..b.length) {
-                val substitution = if (a[i - 1] == b[j - 1]) 0 else 1
-                current[j] = minOf(
-                    current[j - 1] + 1,
-                    previous[j] + 1,
-                    previous[j - 1] + substitution
-                )
-            }
-            for (j in 0..b.length) previous[j] = current[j]
+private fun levenshtein(a: String, b: String): Int {
+    if (a == b) return 0
+    val previous = IntArray(b.length + 1) { it }
+    val current = IntArray(b.length + 1)
+    for (i in 1..a.length) {
+        current[0] = i
+        for (j in 1..b.length) {
+            val substitution = if (a[i - 1] == b[j - 1]) 0 else 1
+            current[j] = minOf(
+                current[j - 1] + 1,
+                previous[j] + 1,
+                previous[j - 1] + substitution
+            )
         }
-        return previous[b.length]
+        for (j in 0..b.length) previous[j] = current[j]
     }
+    return previous[b.length]
 }

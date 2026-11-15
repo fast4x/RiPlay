@@ -501,15 +501,14 @@ fun UnifiedPlayer(
         VoiceCommandExecutor(context, binder, appSettingsManager)
     }
     var showVoiceCommandHelp by rememberSaveable { mutableStateOf(false) }
-    val voiceCommandController = rememberVoiceCommandController { transcript ->
-        val handsFree = appSettings.voiceCommandsHandsFree
-        // In hands-free mode the microphone also hears the song that is playing.
-        // Require the wake word so lyrics such as "stop" or "hold on" cannot pause
-        // playback, and so background conversations are ignored.
-        if (handsFree && !VoiceCommandParser.hasWakeWord(transcript)) {
-            Timber.d("VoiceCommandController ignoring speech without wake word: %s", transcript)
-            return@rememberVoiceCommandController
+    val voiceCommandController = rememberVoiceCommandController(
+        isPlaybackRunning = {
+            binder.playerState.value.isPlaying || binder.hybridPlayer.isPlaying
         }
+    ) { transcript, handsFree ->
+        // Hands-free transcripts are filtered by the controller: it prefers a
+        // wake-word hypothesis and only accepts an utterance without one when
+        // the voice detector already established that somebody spoke.
         if (!handsFree) {
             SmartMessage(
                 message = context.getString(R.string.voice_you_said, transcript),
@@ -554,6 +553,13 @@ fun UnifiedPlayer(
                 type = PopupType.Error,
                 context = context
             )
+        }
+        // The system recognizer takes exclusive audio focus, which makes
+        // Chromium pause the YouTube iframe. Reassert playback after every
+        // session so listening does not stop the song; explicit pause commands
+        // are filtered by the controller before this callback runs.
+        voiceCommandController.resumePlayback = {
+            binder.hybridPlayer.executeActualPlay()
         }
     }
 
