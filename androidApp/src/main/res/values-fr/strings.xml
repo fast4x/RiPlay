@@ -1670,8 +1670,8 @@ Volume BAS : titre précédent</string>
     <string name="alarm_source_missing">La musique de l\'alarme n\'est plus disponible. Choisissez un nouveau morceau, une nouvelle playlist ou un nouvel album.</string>
     <string name="alarm_notification_starting">Démarrage du réveil…</string>
     <string name="voice_hands_free">Commande vocale mains libres</string>
-    <string name="voice_hands_free_description">Listen for playback commands while the player is open. The microphone only opens when you start speaking.</string>
-    <string name="voice_hands_free_wake_word_hint">The song keeps playing until you speak. Start with “Hello” or “RiPlay”, for example “Hello, next song”. If the wake word gets clipped, a clear command still works.</string>
+    <string name="voice_hands_free_description">Restez à l\'écoute des commandes de lecture tant que le lecteur est ouvert. Le microphone ne s\'active que lorsque vous commencez à parler.</string>
+    <string name="voice_hands_free_wake_word_hint">Le morceau continue de passer jusqu\'à ce que vous parliez. Commencez par « Bonjour » ou « RiPlay », par exemple « Bonjour, titre suivant ». Si le mot d\'activation est tronqué, une commande claire fonctionne tout de même.</string>
     <string name="voice_command_mic">Commandes vocales</string>
     <string name="voice_command_title">Commande vocale</string>
     <string name="voice_command_help_intro">Prononcez une commande, par exemple :</string>
