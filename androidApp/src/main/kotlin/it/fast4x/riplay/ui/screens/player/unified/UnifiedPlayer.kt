@@ -501,8 +501,15 @@ fun UnifiedPlayer(
         VoiceCommandExecutor(context, binder, appSettingsManager)
     }
     var showVoiceCommandHelp by rememberSaveable { mutableStateOf(false) }
-    val voiceCommandController = rememberVoiceCommandController { transcript ->
-        if (!appSettings.voiceCommandsHandsFree) {
+    val voiceCommandController = rememberVoiceCommandController(
+        isPlaybackRunning = {
+            binder.playerState.value.isPlaying || binder.hybridPlayer.isPlaying
+        }
+    ) { transcript, handsFree ->
+        // Hands-free transcripts are filtered by the controller: it prefers a
+        // wake-word hypothesis and only accepts an utterance without one when
+        // the voice detector already established that somebody spoke.
+        if (!handsFree) {
             SmartMessage(
                 message = context.getString(R.string.voice_you_said, transcript),
                 context = context
@@ -510,7 +517,7 @@ fun UnifiedPlayer(
         }
         val command = VoiceCommandParser.parse(transcript)
         if (command == VoiceCommand.Unknown) {
-            if (!appSettings.voiceCommandsHandsFree) {
+            if (!handsFree) {
                 SmartMessage(
                     message = context.getString(R.string.voice_unknown_command),
                     type = PopupType.Error,
@@ -546,6 +553,13 @@ fun UnifiedPlayer(
                 type = PopupType.Error,
                 context = context
             )
+        }
+        // The system recognizer takes exclusive audio focus, which makes
+        // Chromium pause the YouTube iframe. Reassert playback after every
+        // session so listening does not stop the song; explicit pause commands
+        // are filtered by the controller before this callback runs.
+        voiceCommandController.resumePlayback = {
+            binder.hybridPlayer.executeActualPlay()
         }
     }
 
@@ -2039,7 +2053,7 @@ fun UnifiedPlayer(
 
                             if (appSettings.enableVoiceInput) IconButton(
                                 icon = R.drawable.mic,
-                                color = if (voiceCommandController.isListening) colorPalette().accent else colorPalette().text,
+                                color = if (voiceCommandController.isListening || voiceCommandController.isHandsFree) colorPalette().accent else colorPalette().text,
                                 enabled = true,
                                 onClick = { voiceCommandController.startListening() },
                                 onLongClick = { showVoiceCommandHelp = true },

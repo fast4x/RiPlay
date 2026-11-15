@@ -83,6 +83,13 @@ fun VoiceCommandHelpDialog(
                     text = stringResource(R.string.voice_hands_free_description),
                     style = typography().xs.medium.color(colorPalette().textSecondary)
                 )
+                if (isHandsFree) {
+                    BasicText(
+                        text = stringResource(R.string.voice_hands_free_wake_word_hint),
+                        style = typography().xs.medium.color(colorPalette().textSecondary),
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
             }
             Switch(
                 checked = isHandsFree,
