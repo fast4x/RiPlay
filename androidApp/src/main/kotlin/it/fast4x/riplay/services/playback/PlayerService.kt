@@ -130,6 +130,7 @@ import it.fast4x.riplay.enums.PresetsReverb
 import it.fast4x.riplay.enums.QueueLoopType
 import it.fast4x.riplay.extensions.audiovolume.AudioVolumeObserver
 import it.fast4x.riplay.extensions.audiovolume.OnAudioVolumeChangedListener
+import it.fast4x.riplay.extensions.appupdate.AppUpdateTracker
 import it.fast4x.riplay.extensions.discord.DiscordPresenceManager
 import it.fast4x.riplay.extensions.discord.updateDiscordPresenceWithOfflinePlayer
 import it.fast4x.riplay.extensions.discord.updateDiscordPresenceWithOnlinePlayer
@@ -662,6 +663,14 @@ class PlayerService : MediaLibraryService(),
     override fun onCreate() {
         _isServiceReady.value = false
 
+        // APP UPDATE: verifica che la versione del codice in esecuzione
+        // coincida con quella dell'APK installato e registri nei log le
+        // informazioni d'auditoria (versionName, lastUpdateTime, installer,
+        // riavvio post-update pendente/avvenuto). Tutte le informazioni
+        // finiscono nei log via Timber, mai bloccante.
+        runCatching { AppUpdateTracker.verifyRunningVersion(this) }
+            .onFailure { Timber.e("PlayerService.onCreate verifyRunningVersion failed: $it") }
+
         createNotificationChannels()
         val mediaNotificationProvider = DefaultMediaNotificationProvider.Builder(this)
             .setChannelId(NOTIFICATION_CHANNEL_ID)
@@ -1133,6 +1142,20 @@ class PlayerService : MediaLibraryService(),
             Action.previous.value -> handlePlayPreviousRequestedByUser("PlayerService.onStartCommand")
             AlarmServiceActions.PLAY -> handleAlarmPlay(intent)
             AlarmServiceActions.STOP -> handleAlarmStop()
+            AppUpdateTracker.ACTION_APP_UPDATED -> {
+                // APP UPDATE: avvio del servizio dopo l'installazione di una
+                // nuova versione dell'app (immediato da AppUpdatedReceiver,
+                // oppure differito da MainActivity.onStart). Se il servizio è
+                // stato avviato con startForegroundService() dal receiver con
+                // l'app chiusa, il contratto FGS impone startForeground()
+                // entro ~5s: la promozione placeholder lo soddisfa subito
+                // (no-op se l'app è già in foreground, come nell'avvio da
+                // Activity). Traccia quindi il riavvio post-update.
+                startForegroundPlaceholder()
+                runCatching { AppUpdateTracker.onServiceRestartedAfterUpdate(this) }
+                    .onFailure { Timber.e("PlayerService APP_UPDATED tracking failed: $it") }
+                Timber.i("PlayerService onStartCommand: gestione APP_UPDATED (riavvio post-update)")
+            }
         }
         updateWidgetState()
 

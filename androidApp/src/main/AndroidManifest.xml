@@ -324,6 +324,18 @@
             </intent-filter>
         </receiver>
 
+        <!-- APP UPDATE: riceve MY_PACKAGE_REPLACED (solo alla app aggiornata,
+             anche da stopped state) e garantisce il riavvio del PlayerService
+             con la nuova versione: immediato o differito al primo onStart.
+             exported="false": broadcast protetto, inviato solo dal sistema. -->
+        <receiver
+            android:name=".extensions.appupdate.AppUpdatedReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"

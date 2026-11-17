@@ -5,6 +5,7 @@ import android.app.Application
 import android.content.ComponentName
 import android.content.pm.PackageManager
 import androidx.annotation.OptIn
+import androidx.core.content.pm.PackageInfoCompat
 import androidx.media3.common.util.UnstableApi
 import coil.ImageLoader
 import coil.ImageLoaderFactory
@@ -21,6 +22,7 @@ import it.fast4x.riplay.extensions.appviewmodel.observeNetworkType
 import it.fast4x.riplay.utils.FileLoggingTree
 import it.fast4x.riplay.extensions.crashreporter.CrashReporter
 import it.fast4x.riplay.extensions.appsettings.AppSettingsManager
+import it.fast4x.riplay.extensions.appupdate.AppUpdateTracker
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.service.RecommendationService
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.repository.UserProfileRepository
 import it.fast4x.riplay.extensions.experimental.recommendationstrategy.builders.UserProfileBuilder
@@ -142,6 +144,25 @@ class MainApplication : Application(), ImageLoaderFactory {
         /**** LOG *********/
         val logEnabled = appSettingsManager.activeSettings.value.logDebugEnabled
         initializeLog(logEnabled)
+
+        /***** APP UPDATE *****/
+        // 1) Registra il provider della versione installata per la funzione
+        //    KMP condivisa installedVersionCode() (composeApp, stesso pattern
+        //    di registrazione di AndroidDbRegistry per il database).
+        AndroidAppVersionRegistry.provider = {
+            runCatching {
+                PackageInfoCompat.getLongVersionCode(
+                    packageManager.getPackageInfo(packageName, 0)
+                )
+            }.getOrDefault(0L)
+        }
+        // 2) Rileva se questo processo sta partendo dopo l'applicazione di un
+        //    aggiornamento (confronto lastSeenVersionCode <-> installato, log
+        //    e allineamento dello stato). Sync e leggero, indipendente dal DB.
+        //    Se è stato applicato un update, l'ordine è: Application.onCreate
+        //    (rilevamento) -> AppUpdatedReceiver (riavvio PlayerService).
+        runCatching { AppUpdateTracker.onProcessStart(this) }
+            .onFailure { Timber.e("MainApplication AppUpdateTracker.onProcessStart failed: $it") }
 
         if (BuildConfig.FLAVOR == "full") {
             initializeMusicVault(appScopeIO, this@MainApplication)

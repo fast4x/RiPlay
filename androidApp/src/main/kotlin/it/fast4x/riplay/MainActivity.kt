@@ -134,6 +134,7 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PipModule
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.pip.PipModuleContainer
+import it.fast4x.riplay.extensions.appupdate.AppUpdateTracker
 import it.fast4x.riplay.extensions.pip.PipModuleCover
 import it.fast4x.riplay.extensions.pip.PipModuleLyrics
 import it.fast4x.riplay.extensions.pip.PipRemoteActions
@@ -371,6 +372,20 @@ class MainActivity : AppCompatActivity() {
         super.onStart()
 
         val intent = Intent(this, PlayerService::class.java)
+
+        // APP UPDATE: se AppUpdatedReceiver non è riuscito ad avviare il
+        // PlayerService subito dopo l'installazione della nuova versione
+        // (ROM restrittiva), il flag pendente impostato dal receiver viene
+        // qui convertito nell'azione APP_UPDATED: l'app è in foreground,
+        // quindi l'avvio del servizio è sempre consentito. Il flag viene
+        // consumato SOLO dal servizio quando gestisce l'azione (lettura
+        // non distruttiva qui): se il servizio crasha prima, la prossima
+        // apertura riprova. Il riavvio 'normale' resta quello esistente:
+        // qui si aggiunge solo il contesto post-update.
+        if (AppUpdateTracker.isServiceRestartPending(this)) {
+            Timber.i("MainActivity.onStart: riavvio post-update pendente, uso azione APP_UPDATED")
+            intent.action = AppUpdateTracker.ACTION_APP_UPDATED
+        }
 
         // Chiamo startForegroundService SOLO se il servizio non è già pronto in memoria!
         if (!PlayerService.isServiceReady.value) {
