@@ -486,6 +486,7 @@ class PlayerService : MediaLibraryService(),
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
                 Intent.ACTION_SCREEN_ON -> {
+                    isScreenInteractive = true
                     Timber.d("PlayerService Screenreceiver: Schermo acceso, eseguo refresh software del volume")
 
                     // NON CHIAMO initializeNormalizeVolume() QUI!
@@ -511,6 +512,7 @@ class PlayerService : MediaLibraryService(),
                 }
 
                 Intent.ACTION_SCREEN_OFF -> {
+                    isScreenInteractive = false
                     Timber.d("PlayerService Screenreceiver: Schermo spento, congelamento pipeline widget")
                     runCatching { WidgetUpdater.setScreenInteractive(false) }
                         .onFailure { Timber.e("PlayerService Screenreceiver: congelamento widget fallito: ${it.message}") }
@@ -597,6 +599,25 @@ class PlayerService : MediaLibraryService(),
     // Watchdog anti-stallo del motore online
     private var lastProgressSecond = -1f
     private var lastProgressAtMs = 0L
+
+    // ═══ FIX "IL BRANO TORNA INDIETRO / RIPARTE DA CAPO" (brani online) ═══
+    // Posizione massima effettivamente raggiunta dal brano online corrente.
+    // _currentSecond arriva dai timer JS della WebView e può "congelarsi"
+    // (throttling di Android sui timer delle pagine nascoste, a schermo spento
+    // o in background) MENTRE l'audio continua. Usare quel valore congelato
+    // per seek/loadVideo di recovery riavvolge il brano — spesso fino
+    // all'inizio. Ogni recovery deve quindi ripartire dal punto più avanti
+    // mai raggiunto, mai da una posizione vecchia.
+    @Volatile private var maxObservedSecond = 0f
+
+    // Stato schermo: gli eventi JS della WebView vengono throttled a schermo spento,
+    // quindi il watchdog anti-stallo non può valutare stalli reali in quel contesto.
+    @Volatile private var isScreenInteractive = true
+
+    /** Posizione di recovery sicura: il punto più avanti mai raggiunto dal brano corrente. */
+    private fun recoveryPositionSecond(): Float =
+        maxOf(_currentSecond.value, maxObservedSecond).coerceAtLeast(0f)
+
     private var onlineRecoveryLevel = 0               // 0=nessuno, 1=seek, 2=loadVideo, 3=ricrea WebView
     private var onlineRecoveryNextAtMs = 0L
     private var onlineRecoveryMediaId: String? = null
@@ -1506,6 +1527,10 @@ class PlayerService : MediaLibraryService(),
                         handlePlayNext("initializeMedleyMode")
                     }
                 }
+                // FIX: il ciclo originario era un BUSY LOOP senza delay (spinning
+                // continuo su un core + handlePlayNext a raffica). Un tick al secondo
+                // è più che sufficiente per la modalità medley.
+                delay(1.seconds)
             }
         }
     }
@@ -1916,21 +1941,41 @@ class PlayerService : MediaLibraryService(),
 
                 // Diciamo a HybridPlayer di passare all'engine YT
                 hybridPlayer.switchToYoutube()
-                // Imposto i secondi dall'inizio in base a playFromSecond che viene salvata nella coda
-                _currentSecond.value = playFromSecond
+
+                // ═══ FIX "IL BRANO RIPARTE DA CAPO" ALLA RI-INIT WebView ═══
+                // Al primo avvio vale playFromSecond (posizione salvata nella coda
+                // persistente). Ma in una ri-inizializzazione A CALDO della WebView
+                // (watchdog livello 3, renderer ucciso, ensureOnlinePlayerInitialized)
+                // playFromSecond vale 0: un cueVideo/loadVideo con quel valore qui
+                // riavvolge il brano in riproduzione all'inizio. La ripresa deve
+                // avvenire dal punto PIÙ AVANTI effettivamente raggiunto.
+                val resumeSecond = if (firstTimeStarted) playFromSecond
+                else maxOf(playFromSecond, _currentSecond.value, maxObservedSecond)
+                _currentSecond.value = resumeSecond
+                if (resumeSecond > maxObservedSecond) maxObservedSecond = resumeSecond
 
                 currentSong.value?.id?.let{
                     // SVEGLIA: durante l'avvio di una sveglia non ripartire in automatico
                     // con la vecchia coda persistente (a freddo, prima che la sveglia
                     // sostituisca la coda, onReady qui farebbe esplodere il brano vecchio).
-                    if (appSettings.persistentQueue && appSettings.resumePlaybackOnStart && firstTimeStarted && !skipAutoload && alarmSessionAlarmId == null) {
-                        //Timber.d("LOAD-COMMAND videoId=${it} start=${playFromSecond}")
+                    // Avvio a freddo: loadVideo con la posizione della coda persistente.
+                    // Ri-inizializzazione a caldo con riproduzione desiderata: loadVideo
+                    // alla posizione raggiunta (il brano deve RIPRENDERE, non restare
+                    // ricodato e fermo all'inizio). In tutti gli altri casi cueVideo
+                    // alla posizione raggiunta, mai a 0.
+                    val isColdStart = appSettings.persistentQueue && appSettings.resumePlaybackOnStart
+                            && firstTimeStarted && !skipAutoload && alarmSessionAlarmId == null
+                    val isWarmResume = !firstTimeStarted && hybridPlayer.youtubePlayWhenReady
+                            && alarmSessionAlarmId == null
 
-                        youTubePlayer.loadVideo(it, playFromSecond)
-                        Timber.d("PlayerService onlinePlayer onReady loadVideo = $it playFromSecond = $playFromSecond")
+                    if (isColdStart || isWarmResume) {
+                        //Timber.d("LOAD-COMMAND videoId=${it} start=${resumeSecond}")
+
+                        youTubePlayer.loadVideo(it, resumeSecond)
+                        Timber.d("PlayerService onlinePlayer onReady loadVideo = $it resumeSecond = $resumeSecond (coldStart=$isColdStart warmResume=$isWarmResume)")
                     } else {
-                        youTubePlayer.cueVideo(it, playFromSecond)
-                        Timber.d("PlayerService onlinePlayer onReady cueVideo = $it playFromSecond = $playFromSecond")
+                        youTubePlayer.cueVideo(it, resumeSecond)
+                        Timber.d("PlayerService onlinePlayer onReady cueVideo = $it resumeSecond = $resumeSecond")
                     }
                 }
 
@@ -1991,6 +2036,10 @@ class PlayerService : MediaLibraryService(),
                 val oldSecond = _currentSecond.value
                 _currentSecond.value = second
 
+                // Monotonia: il watchdog di recovery usa il punto più avanti raggiunto,
+                // non l'ultimo evento (che può essere rimasto indietro per throttling)
+                if (second > maxObservedSecond) maxObservedSecond = second
+
 
                 if (hybridPlayer.activeEngine == ActiveEngine.YOUTUBE) {
                     hybridPlayer.invalidateYouTubePositionOnly()
@@ -2010,6 +2059,9 @@ class PlayerService : MediaLibraryService(),
                 super.onVideoDuration(youTubePlayer, duration)
 
                 _currentDuration.value = duration
+
+                // FIX: conferma a HybridPlayer che il video è davvero dentro il player YT
+                hybridPlayer.markYouTubeVideoLoaded(exoPlayer.currentMediaItem?.mediaId)
 
                 updateDiscordPresence()
 
@@ -2983,6 +3035,7 @@ class PlayerService : MediaLibraryService(),
                 exoPlayer.pause()
                 hybridPlayer.switchToYoutube()
                 playFromSecond = 0f // Resettiamo la posizione iniziale perchè passiamo al successivo
+                maxObservedSecond = 0f // FIX: e anche il punto massimo raggiunto del brano precedente
 
                 // ═══ FIX PICCO DI VOLUME ALL'AVVIO DI UN BRANO ═══
                 // Non forzare il volume direttamente su _internalYouTubePlayer.value?.setVolume(getSystemMediaVolume())
@@ -3820,7 +3873,23 @@ class PlayerService : MediaLibraryService(),
     }
 
 
+    // ═══ FIX DOPPIO "FINE BRANO" (il brano finito riparte da capo) ═══
+    // handleEndOfSong può essere raggiunto DUE volte per lo stesso brano
+    // (ENDED dell'iframe + eco del bridge JS, crossfade + ENDED ravvicinati...).
+    // La seconda chiamata cade nella finestra di debounce di handlePlayNext, che
+    // NON avanza: il brano già terminato resta caricato e un play() lo fa ripartire
+    // dall'inizio al posto del successivo. Finestra di protezione 3s: nessun
+    // brano reale termina entro 3 secondi dal precedente.
+    private var lastEndOfSongHandledAtMs = 0L
+
     suspend fun handleEndOfSong(source: String) {
+        val nowMs = System.currentTimeMillis()
+        if (nowMs - lastEndOfSongHandledAtMs < 3000L) {
+            Timber.d("PlayerService handleEndOfSong duplicato ignorato (source=$source, Δ=${nowMs - lastEndOfSongHandledAtMs}ms)")
+            return
+        }
+        lastEndOfSongHandledAtMs = nowMs
+
         isFading = true
         lastWatchdogPosition = -1L
 
@@ -4077,7 +4146,10 @@ class PlayerService : MediaLibraryService(),
         }
 
         val videoId = song.id
-        val positionSecond = _currentSecond.value.coerceAtLeast(0f)
+        // FIX: riprendere dal solo _currentSecond può riavvolgere il brano (evento
+        // throttled durante l'interruzione): si riparte dal punto più avanti
+        // effettivamente raggiunto nel brano corrente.
+        val positionSecond = recoveryPositionSecond()
 
         if (_internalYouTubePlayer.value == null) {
             // WebView mai pronta (avvio offline) o ricreata dal watchdog:
@@ -4149,6 +4221,20 @@ class PlayerService : MediaLibraryService(),
         if (isPhoneCallActive()) return
         if (isFading) return
 
+        // ═══ FIX "IL BRANO TORNA INDIETRO" A SCHERMO SPENTO / IN BACKGROUND ═══
+        // Con lo schermo spento (o app in background) Android throttla i timer JS
+        // della WebView: onCurrentSecond smette di arrivare anche se l'audio
+        // prosegue regolarmente. Il watchdog leggerebbe una posizione congelata,
+        // la scambierebbe per uno stallo reale e riavvolgerebbe il brano con
+        // seek/loadVideo. Nessuna escalation senza un osservatore attivo: la
+        // baseline resta fresca così al ritorno in primo piano la valutazione
+        // riparte con una finestra di osservazione pulita.
+        if (!isScreenInteractive || !AppForegroundTracker.isAppInForeground) {
+            if (onlineRecoveryLevel != 0) resetOnlineRecoveryState("schermo spento / app in background")
+            lastProgressAtMs = System.currentTimeMillis()
+            return
+        }
+
         val song = currentSong.value ?: return
         if (song.isLocal) return
         if (hybridPlayer.activeEngine != ActiveEngine.YOUTUBE) return
@@ -4185,19 +4271,25 @@ class PlayerService : MediaLibraryService(),
 
         when (onlineRecoveryLevel) {
             0 -> {
-                Timber.w("PlayerService Connettività: STALLO online da ${stalledFor / 1000}s (second=$second, id=${song.id}). Livello 1: seek+play")
+                // FIX: si riparte dal punto più avanti raggiunto, MAI dalla posizione
+                // evento (che può essere rimasta indietro per throttling degli eventi JS)
+                val kickSecond = recoveryPositionSecond()
+                Timber.w("PlayerService Connettività: STALLO online da ${stalledFor / 1000}s (second=$second, recovery=$kickSecond, id=${song.id}). Livello 1: seek+play")
                 onlineRecoveryLevel = 1
                 onlineRecoveryNextAtMs = now + ONLINE_RECOVERY_STEP_DELAY_MS
                 setLoadPending(LoadPhase.PENDING, "watchdog-livello1-seek")
-                runOnlineRecoveryKick(second, "watchdog-livello1-seek")
+                runOnlineRecoveryKick(kickSecond, "watchdog-livello1-seek")
             }
 
             1 -> {
-                Timber.w("PlayerService Connettività: stallo persiste dopo il seek. Livello 2: loadVideo id=${song.id} a ${second}s")
+                // FIX: il loadVideo di recovery non deve MAI riavvolgere il brano:
+                // usa il punto più avanti mai raggiunto, non l'ultimo secondo riportato
+                val reloadSecond = recoveryPositionSecond()
+                Timber.w("PlayerService Connettività: stallo persiste dopo il seek. Livello 2: loadVideo id=${song.id} a ${reloadSecond}s")
                 onlineRecoveryLevel = 2
                 onlineRecoveryNextAtMs = now + ONLINE_RECOVERY_STEP_DELAY_MS
                 setLoadPending(LoadPhase.PENDING, "watchdog-livello2-loadVideo")
-                runCatching { _internalYouTubePlayer.value?.loadVideo(song.id, second) }
+                runCatching { _internalYouTubePlayer.value?.loadVideo(song.id, reloadSecond) }
                     .onFailure { Timber.e("PlayerService Connettività: loadVideo fallito: ${it.message}") }
                 hybridPlayer.youtubePlayWhenReady = true
                 lastProgressAtMs = now
@@ -4209,7 +4301,7 @@ class PlayerService : MediaLibraryService(),
                 onlineRecoveryNextAtMs = now + ONLINE_RECREATE_STEP_DELAY_MS
                 setLoadPending(LoadPhase.PENDING, "watchdog-livello3-recreate")
                 pendingRecoveryLoadVideoId = song.id
-                pendingRecoveryLoadSecond = second
+                pendingRecoveryLoadSecond = recoveryPositionSecond()
                 recreateOnlinePlayerView()
             }
         }
@@ -4788,6 +4880,7 @@ class PlayerService : MediaLibraryService(),
 
                 playFromSecond = position.toFloat()
                 _currentSecond.value = playFromSecond
+                maxObservedSecond = playFromSecond // FIX: il watchdog recovery parte dalla posizione ripristinata
                 _currentDuration.value = if (queuedSong.mediaId == mId) duration else 0f
                 hybridPlayer.pause()
             }
@@ -5217,8 +5310,16 @@ class PlayerService : MediaLibraryService(),
         if (now - lastPlayNextTime < debounceDelayMs) {
             isFading = false
             Timber.d("PlayerService handlePlayNext ignored (too fast) play current")
-            // play() SOLO se il player è fermo su READY: nessuna transizione in volo
-            if (hybridPlayer.playbackState == Player.STATE_READY && !hybridPlayer.isPlaying) {
+            // play() SOLO se il player è fermo su READY: nessuna transizione in volo.
+            // ═══ FIX "IL BRANO RIPARTE DA CAPO" ═══
+            // NON riprodurre il corrente se è già TERMINATO (posizione ≈ fine) o se
+            // sta partendo un brano nuovo (posizione ≈ inizio): in entrambi i casi
+            // play() qui riavvia il video dall'inizio invece di avanzare. Vale solo
+            // il caso "brano in pausa a metà" (doppio tocco rapido su Next/Previous).
+            val posMs = hybridPlayer.currentPosition
+            val durMs = hybridPlayer.duration
+            val isMidSong = posMs > 2000L && (durMs <= 0L || posMs < durMs - 1500L)
+            if (isMidSong && hybridPlayer.playbackState == Player.STATE_READY && !hybridPlayer.isPlaying) {
                 hybridPlayer.play()
             }
             return

@@ -15,6 +15,7 @@ import androidx.media3.session.MediaSession
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import kotlin.math.abs
 import kotlin.math.pow
 
 interface YouTubeControl {
@@ -44,6 +45,22 @@ class HybridPlayer (
     // Variabile per gestire il fade separatamente
     private var fadeMultiplier: Float = 1.0f
 
+    // ── FIX "torna all'inizio" ─────────────────────────────────────────────────
+    // Traccia l'ultimo mediaId effettivamente caricato nel player YouTube.
+    // Serve a capire se il video è DAVVERO caricato, invece di basarsi su
+    // playerService._currentDuration.value == 0f (che è 0 anche a metà canzone
+    // in momenti del tutto normali: callback della durata non ancora arrivata,
+    // pause/resume rapido, WebView ricaricata, audio focus riacquistato...).
+    private var lastLoadedYtMediaId: String? = null
+
+    // Ultima posizione nota vista dal tick dei 200ms: permette di emettere
+    // EVENT_POSITION_DISCONTINUITY solo per salti REALI (seek, ad, reset),
+    // non 5 volte al secondo come faceva la versione precedente.
+    private var lastTickYtPositionMs: Long = C.TIME_UNSET
+
+    // Sopra questa soglia, il cambio di posizione tra un tick e l'altro è un vero salto
+    private val positionJumpThresholdMs: Long = 1500L
+
     var onRefreshCustomLayoutListener: (() -> Unit)? = null
 
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -58,6 +75,12 @@ class HybridPlayer (
         PlaybackStatsListener(false, playerService)
     private var analyticsAttached = false
 
+    // NOTA: il filtro eventi del segnaposto (YtPlaceholderEventFilter) è stato RIMOSSO.
+    // Intercettava STATE_ENDED e playWhenReady(false, END_OF_MEDIA_ITEM) generati dal
+    // "file vuoto" di ExoPlayer in modalità YouTube, ma senza conoscere il flusso
+    // interno di PlayerService rischiava di nascondere eventi di cui il Service ha
+    // bisogno all'avvio del brano (regressione: il brano non partiva più).
+    // Il bug del riavvio è risolto da executeActualPlay() e non richiede questo filtro.
     override fun addListener(listener: Player.Listener) {
         super.addListener(listener)
         hybridListeners.add(listener)
@@ -94,6 +117,10 @@ class HybridPlayer (
 
     fun switchToYoutube() {
         activeEngine = ActiveEngine.YOUTUBE
+
+        // FIX: nuova sessione YouTube → riparte il tracciamento della posizione del tick,
+        // così il primo tick non genera un falso "salto" rispetto alla posizione di ExoPlayer.
+        lastTickYtPositionMs = C.TIME_UNSET
 
         // Rimuoviamo il listener delle statistiche non ci serve per l'online
         // Lo inseriamo in un try catch perchè potrebbe creare un crash
@@ -155,24 +182,60 @@ class HybridPlayer (
     }
 
     // Chiamare dentro il tuo Runnable/Loop continuo ogni 200ms
-    fun invalidateYouTubePositionOnly() {
+    //
+    // FIX "torna all'inizio": la versione precedente emetteva
+    // EVENT_POSITION_DISCONTINUITY con DISCONTINUITY_REASON_SKIP ad OGNI tick,
+    // anche quando la posizione avanzava normalmente (5 eventi finti al secondo).
+    // Qualsiasi listener del Service che reagisce alle discontinuità (crossfade,
+    // salvataggio della posizione, logica "la posizione è saltata → risincronizza")
+    // riceveva eventi finti continui e poteva innescare un riavvio del brano.
+    // Ora l'evento esce SOLO per salti reali. Il parametro force (default false)
+    // mantiene la compatibilità con le chiamate esistenti del Service.
+    fun invalidateYouTubePositionOnly(force: Boolean = false) {
+        val currentPos = getCurrentPosition()
+        val previousPos = lastTickYtPositionMs
+        lastTickYtPositionMs = currentPos
+
+        if (!force) {
+            if (previousPos == C.TIME_UNSET) return
+            val delta = currentPos - previousPos
+            if (abs(delta) <= positionJumpThresholdMs) return
+        }
+
+        emitYtPositionDiscontinuity(currentPos)
+    }
+
+    // Emette UNA discontinuità di posizione reale verso i listener (notifica, Android Auto...)
+    private fun emitYtPositionDiscontinuity(positionMs: Long) {
         val events = Player.Events(
             FlagSet.Builder()
                 .add(Player.EVENT_POSITION_DISCONTINUITY)
                 .build()
         )
 
-        // Per la notifica e Android Auto serve notificare la discontinuità di posizione
-        val currentPos = getCurrentPosition()
         val positionInfo = Player.PositionInfo(
             null, currentMediaItemIndex, currentMediaItem, null, 0,
-            currentPos, currentPos, C.INDEX_UNSET, C.INDEX_UNSET
+            positionMs, positionMs, C.INDEX_UNSET, C.INDEX_UNSET
         )
 
         hybridListeners.toList().forEach { listener ->
-            listener.onPositionDiscontinuity(positionInfo, positionInfo, Player.DISCONTINUITY_REASON_SKIP)
+            listener.onPositionDiscontinuity(positionInfo, positionInfo, Player.DISCONTINUITY_REASON_SEEK)
             listener.onEvents(this, events)
         }
+    }
+
+    /**
+     * FIX "torna all'inizio": chiamare dal PlayerService nel momento ESATTO in cui
+     * il player YouTube conferma di aver caricato un video (es. callback onVideoLoaded /
+     * onStateChange PLAYING / dopo il loadVideo fatto dal Service stesso).
+     * In questo modo executeActualPlay() sa che il video è già dentro il player
+     * e NON lo ricarica da capo al successivo play().
+     */
+    fun markYouTubeVideoLoaded(mediaId: String?) {
+        lastLoadedYtMediaId = mediaId
+        // Nuovo video: riparte il tracciamento della posizione del tick,
+        // così il primo tick non genera un falso "salto" rispetto al brano precedente.
+        lastTickYtPositionMs = C.TIME_UNSET
     }
 
 
@@ -325,12 +388,38 @@ class HybridPlayer (
     fun executeActualPlay() {
         if (activeEngine == ActiveEngine.YOUTUBE) {
             //Timber.d("HybridPlayer executeActualPlay() called currentDuration is ${playerService._currentDuration.value}")
+
+            // ── FIX "torna all'inizio" (versione sicura per l'avvio) ──
+            // Il bug originale: con _currentDuration == 0f QUALSIASI play() ricaricava
+            // il brano con loadVideo(mediaId, 0f), facendolo ripartire da capo.
+            // Regole attuali:
+            //  - NUOVO mediaId (traccia diversa o mai caricata) → loadVideo(id, 0f):
+            //    IDENTICO al comportamento originale per le canzoni nuove;
+            //  - STESSO mediaId + durata nota → semplice play() (nessun restart);
+            //  - STESSO mediaId + durata a 0 (WebView scaricata / resync) → loadVideo
+            //    dall'ULTIMA POSIZIONE NOTA invece che dall'inizio.
+            // NB: qui si legge SOLO lo StateFlow _currentDuration del Service, NESSUNA
+            // chiamata alla WebView (youtubeControl.getDurationMs), che nella versione
+            // precedente poteva bloccare/rompere l'avvio del brano se chiamata troppo presto.
             val mediaId = playerService.exoPlayer.currentMediaItem?.mediaId
-            if (playerService._currentDuration.value == 0f && mediaId != null) {
-                Timber.d("HybridPlayer executeActualPlay() called mediaId is $mediaId but not loaded, now loading and playing")
+            val durationLoaded = playerService._currentDuration.value > 0f
+
+            if (mediaId != null && mediaId != lastLoadedYtMediaId) {
+                // Nuovo brano (o primo avvio): carica da 0, come il codice originale
+                Timber.d("HybridPlayer executeActualPlay() mediaId=$mediaId is new, loading from 0")
                 playerService._internalYouTubePlayer.value?.loadVideo(mediaId, 0f)
+                lastLoadedYtMediaId = mediaId
+                // Il video riparte da 0: nuova baseline del tick, niente falsi salti
+                lastTickYtPositionMs = 0L
+            } else if (mediaId != null && !durationLoaded) {
+                // Stesso video ma stato "non caricato" (WebView scaricata, resync...):
+                // riparte dall'ultima posizione nota invece che dall'inizio — qui sta la fix
+                val resumePositionMs = getCurrentPosition().coerceAtLeast(0L)
+                Timber.d("HybridPlayer executeActualPlay() mediaId=$mediaId unloaded, reloading from ${resumePositionMs}ms")
+                playerService._internalYouTubePlayer.value?.loadVideo(mediaId, resumePositionMs / 1000f)
+                lastTickYtPositionMs = resumePositionMs
             } else {
-                Timber.d("HybridPlayer executeActualPlay() called mediaId is $mediaId and loaded, now playing")
+                Timber.d("HybridPlayer executeActualPlay() mediaId=$mediaId already loaded, just play")
                 youtubeControl.play()
             }
             youtubePlayWhenReady = true
@@ -367,7 +456,11 @@ class HybridPlayer (
         Timber.d("HybridPlayer seekTo() called: positionMs = $positionMs")
         if (activeEngine == ActiveEngine.YOUTUBE) {
             youtubeControl.seekTo(positionMs)
-            invalidateYouTubePositionOnly()
+            // FIX "torna all'inizio": il seek diventa la nuova baseline del tick
+            // (così il prossimo tick non lo scambia per un salto spurio) e viene
+            // emesso UN solo evento di discontinuità reale con la posizione target.
+            lastTickYtPositionMs = positionMs
+            emitYtPositionDiscontinuity(positionMs)
         } else exoPlayer.seekTo(positionMs)
     }
 
@@ -415,6 +508,17 @@ class HybridPlayer (
     fun updateCurrentMediaItemDuration(durationMs: Long) {
         if (activeEngine == ActiveEngine.YOUTUBE) {
             val currentItem = currentMediaItem ?: return
+
+            // FIX "torna all'inizio": se la durata è già quella, NON rifare replaceMediaItem.
+            // Ogni replace sul brano corrente riavvia il file vuoto segnaposto di ExoPlayer,
+            // che genera un SECONDO STATE_ENDED a metà canzone: il gestore di "canzone
+            // finita" del Service poteva prenderlo per una fine vera e far ripartire
+            // (o avanzare) il brano. Deduplicando si evita anche il churn di timeline.
+            val existingDurationMs = currentItem.mediaMetadata.durationMs
+            if (existingDurationMs != null && abs(existingDurationMs - durationMs) < 1000L) {
+                return
+            }
+
             val updatedItem = currentItem.buildUpon()
                 .setMediaMetadata(
                     currentItem.mediaMetadata.buildUpon()
