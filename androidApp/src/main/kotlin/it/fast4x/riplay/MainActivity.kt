@@ -257,6 +257,18 @@ class MainActivity : AppCompatActivity() {
             if (service is PlayerService.Binder) {
                 this@MainActivity.binder = service
                 service.cancelAutoCloseTimer() // cancel timer when service is connected, before app was closed
+
+                // FIX DESYNC avvio non da UI (bluetooth auto / media button /
+                // widget / coda persistente dopo process death): alla
+                // (ri)connessione chiediamo al servizio di riallineare i flow
+                // esposti (_playerState / currentSong) allo stato REALE del
+                // player. Cosi' la UI parte sempre sincronizzata, qualunque
+                // sia il percorso che ha avviato la riproduzione. Chiamata
+                // idempotente e sul Main thread (onServiceConnected lo e').
+                runCatching { service.reconcileState("MainActivity.onServiceConnected") }
+                    .onFailure {
+                        Timber.e("MainActivity.onServiceConnected reconcileState ${it.stackTraceToString()}")
+                    }
             }
 
         }

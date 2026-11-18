@@ -2563,6 +2563,58 @@ class PlayerService : MediaLibraryService(),
         updateWidgetState()
     }
 
+    /*
+     * FIX DESYNC UI (avvio non da UI: bluetooth auto, media button, widget,
+     * ripristino coda persistente dopo process death).
+     *
+     * Riallinea i flow esposti alla UI (currentSong / _playerState) allo stato
+     * REALE del player, che e' l'unica fonte di verita'. Serve perche' alcuni
+     * percorsi di avvio non passano da onMediaItemTransition "normale": ad
+     * esempio loadQueue() pre-imposta lastOnlineMediaId col brano ripristinato
+     * e il guard "lastOnlineMediaId == newMediaId" dentro onMediaItemTransition
+     * salta la pubblicazione dello stato, lasciando mediaInfo/currentSong vuoti
+     * mentre la musica suona (la notifica Media3 invece risulta corretta
+     * perche' legge il player direttamente, e questo rende il mismatch piu'
+     * visibile quando l'app viene aperta).
+     *
+     * Idempotente: pubblica solo in caso di mismatch effettivo; non tocca
+     * BUFFERING/ENDED per non disturbare le transizioni del motore YT.
+     * Da chiamare SEMPRE sul Main thread (legge ExoPlayer/hybridPlayer).
+     */
+    fun reconcileState(reason: String) {
+        val item = hybridPlayer.currentMediaItem ?: return
+
+        if (currentMediaItemState.value?.mediaId != item.mediaId)
+            currentMediaItemState.value = item
+
+        _playerState.update { state ->
+            val synced =
+                if (state.mediaInfo?.mediaItem?.mediaId != item.mediaId)
+                    state.withMediaTransition(
+                        mediaItem = item,
+                        queueIndex = exoPlayer.currentMediaItemIndex,
+                        queueSize = exoPlayer.mediaItemCount,
+                    )
+                else state
+
+            when {
+                hybridPlayer.isPlaying && synced.playbackState != PlaybackState.PLAYING ->
+                    synced.copy(playbackState = PlaybackState.PLAYING)
+
+                !hybridPlayer.isPlaying && synced.playbackState == PlaybackState.PLAYING ->
+                    synced.copy(playbackState = PlaybackState.PAUSED)
+
+                else -> synced
+            }
+        }
+
+        Timber.i(
+            "PlayerService reconcileState($reason): mediaId=${item.mediaId} " +
+                "playing=${hybridPlayer.isPlaying} " +
+                "queueIndex=${exoPlayer.currentMediaItemIndex}/${exoPlayer.mediaItemCount}"
+        )
+    }
+
     private fun initializeAudioVolumeObserver() {
         audioVolumeObserver = AudioVolumeObserver(this, audioManager)
         audioVolumeObserver.register(AudioManager.STREAM_MUSIC, this)
@@ -4908,6 +4960,15 @@ class PlayerService : MediaLibraryService(),
                 hybridPlayer.pause()
             }
 
+            // FIX DESYNC: il guard "lastOnlineMediaId == newMediaId" dentro
+            // onMediaItemTransition salta la pubblicazione dello stato per il
+            // brano ripristinato (lastOnlineMediaId e' stato pre-impostato qui
+            // sopra). Senza questa pubblicazione esplicita currentSong e
+            // _playerState restano vuoti: aprendo l'app con riproduzione gia'
+            // avviata (es. entrata in auto, telefono collegato al bluetooth)
+            // la UI appare desincronizzata dal player. Siamo gia' sul Main.
+            reconcileState("loadQueue")
+
             Timber.d("PlayerService LoadQueue: Ripristino della coda completato con successo.")
         }
     }
@@ -5011,6 +5072,11 @@ class PlayerService : MediaLibraryService(),
 
         val playerState: StateFlow<PlayerState>
             get() = this@PlayerService.playerState
+
+        // FIX DESYNC: espone il riallineamento dei flow UI allo stato reale
+        // del player, cosi' l'Activity puo' richiederlo a ogni (ri)connessione
+        // indipendentemente da quale percorso ha avviato la riproduzione.
+        fun reconcileState(reason: String) = this@PlayerService.reconcileState(reason)
 
         val youtubePlayerBufferedFraction: StateFlow<Float>
             get() = this@PlayerService.internalYoutubeBufferedFraction
