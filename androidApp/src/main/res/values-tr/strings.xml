@@ -1669,7 +1669,8 @@
     <string name="alarm_source_missing">Alarm müziği artık mevcut değil. Yeni bir şarkı, çalma listesi veya albüm seçin.</string>
     <string name="alarm_notification_starting">Alarm başlıyor…</string>
     <string name="voice_hands_free">Eller serbest sesli kontrol</string>
-    <string name="voice_hands_free_description">Oynatıcı açıkken oynatma komutlarını dinlemeye devam et</string>
+    <string name="voice_hands_free_description">Oynatıcı açıkken oynatma komutlarını dinleyin. Mikrofon yalnızca konuşmaya başladığınızda açılır.</string>
+    <string name="voice_hands_free_wake_word_hint">Siz konuşana kadar şarkı çalmaya devam eder. “Merhaba” veya “RiPlay” ile başlayın; örneğin, “Merhaba, bir sonraki şarkı”. Uyandırma kelimesi kesik çıkarsa bile, net bir komut yine de işe yarar.</string>
     <string name="voice_command_mic">Sesli komut</string>
     <string name="voice_command_title">Ses kontrol</string>
     <string name="voice_command_help_intro">Bir komut söyleyin, örneğin:</string>

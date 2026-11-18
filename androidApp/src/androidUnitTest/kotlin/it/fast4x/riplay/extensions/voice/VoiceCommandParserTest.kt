@@ -2,7 +2,9 @@ package it.fast4x.riplay.extensions.voice
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class VoiceCommandParserTest {
 
@@ -17,6 +19,9 @@ class VoiceCommandParserTest {
     @Test
     fun ignoresWakeWordAndPoliteness() {
         assertEquals(VoiceCommand.PlaySong("faded"), parse("Hey RiPlay, could you play the song Faded"))
+        assertEquals(VoiceCommand.PlaySong("faded"), parse("Hello, play Faded"))
+        assertEquals(VoiceCommand.Next, parse("hello next"))
+        assertEquals(VoiceCommand.Pause, parse("Hello RiPlay, pause"))
     }
 
     @Test
@@ -82,6 +87,93 @@ class VoiceCommandParserTest {
         assertEquals(VoiceCommand.Unknown, parse("what's the weather like"))
         assertEquals(VoiceCommand.Unknown, parse(""))
         assertEquals(VoiceCommand.Unknown, parse("   "))
+    }
+
+    @Test
+    fun detectsHandsFreeWakeWord() {
+        assertTrue(VoiceCommandParser.hasWakeWord("RiPlay, pause"))
+        assertTrue(VoiceCommandParser.hasWakeWord("hey ri play next song"))
+        assertTrue(VoiceCommandParser.hasWakeWord("OK RiPlay stop the music"))
+        assertTrue(VoiceCommandParser.hasWakeWord("Hello, play Faded"))
+        assertTrue(VoiceCommandParser.hasWakeWord("hello riplay pause"))
+        assertFalse(VoiceCommandParser.hasWakeWord("pause"))
+        assertFalse(VoiceCommandParser.hasWakeWord("stop the music"))
+        assertFalse(VoiceCommandParser.hasWakeWord("the song says riplay in the chorus"))
+        assertFalse(VoiceCommandParser.hasWakeWord("well hello there"))
+    }
+
+    @Test
+    fun detectsFuzzyAndClippedWakeWords() {
+        assertTrue(VoiceCommandParser.hasWakeWord("ryplay next song"))
+        assertTrue(VoiceCommandParser.hasWakeWord("riply pause"))
+        assertTrue(VoiceCommandParser.hasWakeWord("i play next"))
+        assertTrue(VoiceCommandParser.hasWakeWord("helo next"))
+        assertTrue(VoiceCommandParser.hasWakeWord("ello pause"))
+        assertFalse(VoiceCommandParser.hasWakeWord("replay"))
+        assertFalse(VoiceCommandParser.hasWakeWord("replay song"))
+        assertFalse(VoiceCommandParser.hasWakeWord("player next"))
+    }
+
+    @Test
+    fun recognizesWakeWordOnlyUtterances() {
+        assertTrue(VoiceCommandParser.isWakeWordOnly("Hello"))
+        assertTrue(VoiceCommandParser.isWakeWordOnly("Hello RiPlay"))
+        assertTrue(VoiceCommandParser.isWakeWordOnly("hey riplay"))
+        assertFalse(VoiceCommandParser.isWakeWordOnly("hello next"))
+        assertFalse(VoiceCommandParser.isWakeWordOnly("next"))
+    }
+
+    @Test
+    fun greetingFillerDoesNotSwallowTheCommand() {
+        assertFalse(VoiceCommandParser.hasWakeWord("hey play faded"))
+        assertEquals(VoiceCommand.PlaySong("faded"), parse("hey play faded"))
+        assertEquals(VoiceCommand.Next, parse("hi next"))
+        assertEquals(VoiceCommand.Pause, parse("ok pause"))
+    }
+
+    @Test
+    fun treatsMisheardHelloRiPlayAsWakeWord() {
+        assertTrue(VoiceCommandParser.isWakeWordOnly("hello replay"))
+        assertEquals(
+            HandsFreeSelection.WakeWordOnly,
+            VoiceCommandParser.selectHandsFree(listOf("hello replay"))
+        )
+        assertEquals(VoiceCommand.Next, parse("hello replay next"))
+        assertEquals(VoiceCommand.Replay, parse("replay"))
+    }
+
+    @Test
+    fun stripsRepeatedWakeWords() {
+        assertEquals(VoiceCommand.Next, parse("hello hello next"))
+        assertEquals(VoiceCommand.Pause, parse("hello riplay pause"))
+    }
+
+    @Test
+    fun selectsHandsFreeHypotheses() {
+        assertEquals(
+            HandsFreeSelection.Command("hello play faded", wakeWord = true),
+            VoiceCommandParser.selectHandsFree(listOf("hello play faded"))
+        )
+        assertEquals(
+            HandsFreeSelection.WakeWordOnly,
+            VoiceCommandParser.selectHandsFree(listOf("hello"))
+        )
+        assertEquals(
+            HandsFreeSelection.Command("play faded", wakeWord = false),
+            VoiceCommandParser.selectHandsFree(listOf("play faded"))
+        )
+        assertEquals(
+            HandsFreeSelection.Command("play faded", wakeWord = false),
+            VoiceCommandParser.selectHandsFree(listOf("hello", "play faded"))
+        )
+        assertEquals(
+            HandsFreeSelection.Ignore,
+            VoiceCommandParser.selectHandsFree(listOf("we can leave the christmas lights"))
+        )
+        assertEquals(
+            HandsFreeSelection.Ignore,
+            VoiceCommandParser.selectHandsFree(emptyList())
+        )
     }
 
     @Test
