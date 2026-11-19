@@ -501,7 +501,7 @@ fun UnifiedPlayer(
         VoiceCommandExecutor(context, binder, appSettingsManager)
     }
     var showVoiceCommandHelp by rememberSaveable { mutableStateOf(false) }
-    val voiceCommandController = rememberVoiceCommandController { transcript ->
+    val voiceCommandController = rememberVoiceCommandController { transcript, _ ->
         if (!appSettings.value.voiceCommandsHandsFree) {
             SmartMessage(
                 message = context.resources.getString(R.string.voice_you_said, transcript),

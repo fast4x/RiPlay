@@ -1,6 +1,5 @@
 package it.fast4x.riplay.ui.screens.settings
 
-import android.content.Context
 import androidx.annotation.StringRes
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.BorderStroke
@@ -47,7 +46,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -66,7 +64,6 @@ import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.themed.SelectorWebDavAccountDialog
 import it.fast4x.riplay.ui.components.themed.Slider
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import it.fast4x.riplay.ui.components.themed.StringListDialog
 import it.fast4x.riplay.ui.components.themed.Switch
 import it.fast4x.riplay.ui.components.themed.Title
 import it.fast4x.riplay.ui.components.themed.ValueSelectorDialog
@@ -114,7 +111,7 @@ fun SettingsScreen(
         navBarContent = { item ->
             item(0, stringResource(R.string.tab_general), R.drawable.app_icon, true)
             item(1, stringResource(R.string.ui_tab), R.drawable.ui, true)
-            item(2, stringResource(R.string.player_appearance), R.drawable.color_palette, true)
+            item(2, stringResource(R.string.player), R.drawable.play, true)
             item(3, stringResource(R.string.tab_widgets), R.drawable.grid_view, true)
             item(4, if (!isYtLoggedIn()) stringResource(R.string.home, true)
             else stringResource(R.string.home), if (!isYtLoggedIn()) R.drawable.sparkles
@@ -130,7 +127,7 @@ fun SettingsScreen(
             when (currentTabIndex) {
                 0 -> GeneralSettings(navController = navController)
                 1 -> UiSettings(navController = navController)
-                2 -> PlayerAppearanceSettings(navController = navController)
+                2 -> PlayerSettings(navController = navController)
                 3 -> WidgetsSettings(navController = navController)
                 4 -> HomeSettings(navController = navController)
                 5 -> DataSettings(navController = navController)

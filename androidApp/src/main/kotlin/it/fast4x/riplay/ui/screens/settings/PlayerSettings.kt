@@ -76,7 +76,7 @@ import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 @ExperimentalAnimationApi
 @UnstableApi
 @Composable
-fun PlayerAppearanceSettings(
+fun PlayerSettings(
     navController: NavController,
 ) {
 
@@ -458,7 +458,7 @@ fun PlayerAppearanceSettings(
             ) {
                 settingsHeaderItem {
                     HeaderWithIcon(
-                        title = stringResource(R.string.player_appearance),
+                        title = stringResource(R.string.player),
                         iconId = R.drawable.color_palette,
                         enabled = false,
                         showIcon = true,
