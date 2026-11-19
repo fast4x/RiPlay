@@ -1,1 +1,1 @@
-git tag -d v0.8.7-rc.3
+git tag -d v0.8.7-rc.4
