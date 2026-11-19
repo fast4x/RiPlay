@@ -1670,7 +1670,7 @@ CC-BY-SA 3.0</string>
     <string name="alarm_source_missing">The alarm music is no longer available. Choose a new song or playlist.</string>
     <string name="alarm_notification_starting">Starting alarm…</string>
     <string name="voice_hands_free">Hands-free voice control</string>
-    <string name="voice_hands_free_description">Listen for playback commands while the player is open. The microphone only opens when you start speaking.</string>
+    <string name="voice_hands_free_description">Keep listening for playback commands while the player is open</string>
     <string name="voice_hands_free_wake_word_hint">The song keeps playing until you speak. Start with “Hello” or “RiPlay”, for example “Hello, next song”. If the wake word gets clipped, a clear command still works.</string>
     <string name="voice_command_mic">Voice commands</string>
     <string name="voice_command_title">Voice control</string>
