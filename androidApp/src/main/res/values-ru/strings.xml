@@ -1706,4 +1706,7 @@
     <string name="voice_unavailable">Speech recognition is not available on this device</string>
     <string name="app_language_system_country">System Country</string>
     <string name="app_language_country">Country</string>
+    <string name="seek_to_tap_info_enable_buttons_to_seek_forward_or_backward">Enable buttons to seek forward or backward</string>
+    <string name="seek_time">Seek time</string>
+    <string name="seek_time_info_seek_forward_and_backward_time">Seek forward and backward time</string>
 </resources>

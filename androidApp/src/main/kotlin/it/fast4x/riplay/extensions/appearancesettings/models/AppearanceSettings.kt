@@ -28,6 +28,7 @@ import it.fast4x.riplay.enums.PlayerType
 import it.fast4x.riplay.enums.PrevNextSongs
 import it.fast4x.riplay.enums.QueueType
 import it.fast4x.riplay.enums.Romanization
+import it.fast4x.riplay.enums.SeekTime
 import it.fast4x.riplay.enums.SongsNumber
 import it.fast4x.riplay.enums.SwipeAnimationNoThumbnail
 import it.fast4x.riplay.enums.ThumbnailCoverType
@@ -123,6 +124,7 @@ data class AppearanceSettings(
     val lastPlayerPlayButtonType: PlayerPlayButtonType = PlayerPlayButtonType.Rectangular,
     val disableScrollingText: Boolean           = false,
     val seekWithTap: Boolean                   = false,
+    val seekTimeWithTap: SeekTime               = SeekTime.`5s`,
     val thumbnailTapEnabled: Boolean            = true,
     val isGradientBackgroundEnabled: Boolean   = false,
     val backgroundProgress: BackgroundProgress = BackgroundProgress.MiniPlayer,

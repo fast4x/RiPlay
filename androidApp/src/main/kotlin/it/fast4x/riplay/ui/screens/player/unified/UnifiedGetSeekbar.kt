@@ -38,7 +38,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
 import it.fast4x.riplay.LocalAppSettingsManager
@@ -114,7 +113,9 @@ fun UnifiedGetSeekBar(
             )
     }
     val textoutline = appearanceSettings.textoutline
+
     val seekWithTap = appearanceSettings.seekWithTap
+    val seekTimeWithTap = appearanceSettings.seekTimeWithTap
 
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -311,9 +312,9 @@ fun UnifiedGetSeekBar(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = ripple(false),
                     onClick = {
-                        val skippedPosition = 5000
+                        val skippedPosition = seekTimeWithTap.milliseconds
                         Timber.d("UnifiedGetSeekbar fast seek position ${positionAndDurationState.value.first} skippedPosition $skippedPosition")
-                        onSeekTo(( positionAndDurationState.value.first - 5000).toFloat())
+                        onSeekTo(( positionAndDurationState.value.first - skippedPosition).toFloat())
                     }
                 )
         ){
@@ -429,7 +430,7 @@ fun UnifiedGetSeekBar(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = ripple(false),
                             onClick = {
-                                onSeekTo(( positionAndDurationState.value.first + 5000).toFloat())
+                                onSeekTo(( positionAndDurationState.value.first + seekTimeWithTap.milliseconds).toFloat())
                             }
                         )
                 ){

@@ -112,6 +112,7 @@ fun PlayerAppearanceSettings(
     val playerTimelineSize = appearanceSettings.playerTimelineSize
 
     val seekWithTap = appearanceSettings.seekWithTap
+    val seekTimeWithTap = appearanceSettings.seekTimeWithTap
 
     val thumbnailTapEnabled = appearanceSettings.thumbnailTapEnabled
 
@@ -1180,10 +1181,10 @@ if (search.matchesAny(R.string.timeline, R.string.transparentbar, R.string.timel
                             },
                             valueText = { it.displayName }, icon = R.drawable.resize,
                         )
-                    if (search.matchesAny(R.string.seek_with_tap))
+                    if (search.matchesAny(R.string.seek_with_tap)) {
                         SwitchSettingEntry(
                             title = stringResource(R.string.seek_with_tap),
-                            text = "",
+                            text = stringResource(R.string.seek_to_tap_info_enable_buttons_to_seek_forward_or_backward),
                             isChecked = seekWithTap,
                             onCheckedChange = {
                                 coroutineScope.launch {
@@ -1192,8 +1193,31 @@ if (search.matchesAny(R.string.timeline, R.string.transparentbar, R.string.timel
                                     )
                                     appearanceSettingsManager.updatePreset(new)
                                 }
-                            }, icon = R.drawable.left_and_right_arrows,
+                            },
+                            icon = R.drawable.left_and_right_arrows,
                         )
+                        AnimatedVisibility(visible = seekWithTap) {
+                            Column(modifier = Modifier.padding(start = 12.dp)) {
+                                EnumValueSelectorSettingsEntry(
+                                    title = stringResource(R.string.seek_time),
+                                    text = stringResource(R.string.seek_time_info_seek_forward_and_backward_time),
+                                    selectedValue = seekTimeWithTap,
+                                    onValueSelected = {
+                                        coroutineScope.launch {
+                                            val new =
+                                                appearanceSettingsManager.activeSettings.value.copy(
+                                                    seekTimeWithTap = it
+                                                )
+                                            appearanceSettingsManager.updatePreset(new)
+                                        }
+                                    },
+                                    valueText = { it.name }, icon = R.drawable.horizontal_bold_line,
+                                )
+                            }
+                        }
+
+                    }
+
                     if (search.matchesAny(R.string.background_progress_bar))
                         EnumValueSelectorSettingsEntry(
                             title = stringResource(R.string.background_progress_bar),
