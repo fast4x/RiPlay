@@ -249,24 +249,24 @@
     <string name="settings.about.update_failed">Échec de la vérification (pas de connexion ?)</string>
     <!-- STEP 3ao: sezioni account desktop (WebDAV, Last.fm, ListenBrainz, Discord)
          replica di AccountsSettings.kt Android -->
-    <string name="common.cancel">Cancel</string>
+    <string name="common.cancel">Annuler</string>
     <string name="settings.scrobble.simple">Simple</string>
-    <string name="settings.scrobble.now_playing">Now playing</string>
+    <string name="settings.scrobble.now_playing">En cours de lecture</string>
     <string name="settings.section.webdav">WebDAV</string>
     <string name="settings.section.lastfm">Last.fm</string>
     <string name="settings.section.listenbrainz">ListenBrainz</string>
     <string name="settings.section.discord">Discord</string>
-    <string name="settings.webdav.enable">Enable WebDAV</string>
-    <string name="settings.webdav.enable_desc">Connect your cloud accounts (Nextcloud, NAS, etc.): use them as a music source or to back up and restore the library database.</string>
-    <string name="settings.webdav.add_account">Add account</string>
-    <string name="settings.webdav.delete">Delete</string>
-    <string name="settings.webdav.badge_music_source">music</string>
-    <string name="settings.webdav.badge_backup">backup</string>
-    <string name="settings.webdav.sync_music">Sync music folders</string>
-    <string name="settings.webdav.sync_loading">Scanning WebDAV folders...</string>
-    <string name="settings.webdav.sync.no_music_accounts">No music-source WebDAV account: add one first.</string>
-    <string name="settings.webdav.sync.done">Sync completed: {songs} songs, {folders} folders</string>
-    <string name="settings.webdav.sync.failed">Sync failed: {error}</string>
+    <string name="settings.webdav.enable">Activer WebDAV</string>
+    <string name="settings.webdav.enable_desc">Connectez vos comptes cloud (Nextcloud, NAS, etc.) : utilisez-les comme source musicale ou pour sauvegarder et restaurer la base de données de la bibliothèque.</string>
+    <string name="settings.webdav.add_account">Ajouter un compte</string>
+    <string name="settings.webdav.delete">Supprimer</string>
+    <string name="settings.webdav.badge_music_source">musique</string>
+    <string name="settings.webdav.badge_backup">sauvegarde</string>
+    <string name="settings.webdav.sync_music">Synchroniser les dossiers de musique</string>
+    <string name="settings.webdav.sync_loading">Analyse en cours dans les dossiers WebDAV...</string>
+    <string name="settings.webdav.sync.no_music_accounts">Aucun compte WebDAV de source musicale : veuillez d\'abord en créer un.</string>
+    <string name="settings.webdav.sync.done">Synchronisation terminée : {songs} titres, {folders} dossiers</string>
+    <string name="settings.webdav.sync.failed">Échec de la synchronisation : {error}</string>
     <string name="settings.webdav.backup_db">Backup database</string>
     <string name="settings.webdav.restore_db">Restore from backup</string>
     <string name="settings.webdav.restore_loading">Downloading backup...</string>
