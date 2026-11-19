@@ -252,12 +252,10 @@
     <string name="common.cancel">Annulla</string>
     <string name="settings.scrobble.simple">Semplice</string>
     <string name="settings.scrobble.now_playing">In ascolto ora</string>
-
     <string name="settings.section.webdav">WebDAV</string>
     <string name="settings.section.lastfm">Last.fm</string>
     <string name="settings.section.listenbrainz">ListenBrainz</string>
     <string name="settings.section.discord">Discord</string>
-
     <string name="settings.webdav.enable">Attiva WebDAV</string>
     <string name="settings.webdav.enable_desc">Collega i tuoi account cloud (Nextcloud, NAS, ecc.): usali come sorgente musicale o per salvare e ripristinare il database della libreria.</string>
     <string name="settings.webdav.add_account">Aggiungi account</string>
@@ -273,13 +271,12 @@
     <string name="settings.webdav.restore_db">Ripristina dal backup</string>
     <string name="settings.webdav.restore_loading">Download del backup in corso...</string>
     <string name="settings.webdav.restore_confirm_title">Ripristinare il database da WebDAV?</string>
-    <string name="settings.webdav.restore_confirm_info">La libreria attuale verrà sostituita. Il ripristino viene applicato al PROSSIMO avvio dell'app (una copia di sicurezza del database corrente viene conservata).</string>
+    <string name="settings.webdav.restore_confirm_info">La libreria attuale verrà sostituita. Il ripristino viene applicato al PROSSIMO avvio dell\'app (una copia di sicurezza del database corrente viene conservata).</string>
     <string name="settings.webdav.restore_confirm_stamp">Backup: {date} (dispositivo: {device})</string>
     <string name="settings.webdav.restore_confirm_yes">Ripristina</string>
     <string name="settings.webdav.restore_confirm_no">Annulla</string>
-    <string name="settings.webdav.restore_scheduled">Ripristino programmato: verrà applicato al prossimo avvio dell'app.</string>
+    <string name="settings.webdav.restore_scheduled">Ripristino programmato: verrà applicato al prossimo avvio dell\'app.</string>
     <string name="settings.webdav.backup.done">Backup completato (cartella: {folder})</string>
-
     <string name="settings.webdav.form.title_add">Aggiungi account WebDAV</string>
     <string name="settings.webdav.form.title_edit">Modifica account WebDAV</string>
     <string name="settings.webdav.form.hint_music">Questo account è usato come sorgente musicale: le cartelle vengono scansionate per aggiungere brani alla libreria.</string>
@@ -294,9 +291,9 @@
     <string name="settings.webdav.form.folder">Cartella remota</string>
     <string name="settings.webdav.form.folder_placeholder">/ (radice)</string>
     <string name="settings.webdav.form.music_source">Sorgente musicale</string>
-    <string name="settings.webdav.form.music_source_desc">Attivo: l'app scansiona questo account per cercare musica. Disattivo: l'account è usato solo per il backup del database.</string>
+    <string name="settings.webdav.form.music_source_desc">Attivo: l\'app scansiona questo account per cercare musica. Disattivo: l\'account è usato solo per il backup del database.</string>
     <string name="settings.webdav.form.subfolders">Scansiona le sottocartelle</string>
-    <string name="settings.webdav.form.subfolders_desc">Scansiona l'intero albero di cartelle, non solo il primo livello.</string>
+    <string name="settings.webdav.form.subfolders_desc">Scansiona l\'intero albero di cartelle, non solo il primo livello.</string>
     <string name="settings.webdav.form.save">Salva</string>
     <string name="settings.webdav.test.button">Testa connessione</string>
     <string name="settings.webdav.test.testing">Test in corso...</string>
@@ -305,45 +302,42 @@
     <string name="settings.webdav.test.success">Connessione riuscita!</string>
     <string name="settings.webdav.test.auth_error">Connessione fallita: nome utente o password errati (401).</string>
     <string name="settings.webdav.test.not_found">Cartella non trovata sul server (404).</string>
-    <string name="settings.webdav.test.unreachable">Server irraggiungibile: controlla l'URL e la rete.</string>
+    <string name="settings.webdav.test.unreachable">Server irraggiungibile: controlla l\'URL e la rete.</string>
     <string name="settings.webdav.test.network_error">Connessione fallita: {error}</string>
     <string name="settings.webdav.test.unexpected_error">Errore inatteso: {error}</string>
-
     <string name="settings.lastfm.enable">Attiva Last.fm</string>
     <string name="settings.lastfm.enable_desc">Registra (scrobble) su Last.fm i brani che ascolti.</string>
-    <string name="settings.lastfm.connect">Collega l'account Last.fm</string>
+    <string name="settings.lastfm.connect">Collega l\'account Last.fm</string>
     <string name="settings.lastfm.disconnect">Disconnetti</string>
-    <string name="settings.lastfm.connected">Connesso all'account Last.fm.</string>
+    <string name="settings.lastfm.connected">Connesso all\'account Last.fm.</string>
     <string name="settings.lastfm.generating_token">Generazione del token di autorizzazione...</string>
-    <string name="settings.lastfm.auth_instructions">Approva l'accesso nella finestra qui sotto, poi la connessione si completa da sola. Se non succede nulla usa \"Verifica adesso\".</string>
-    <string name="settings.lastfm.verify_now">Ho approvato l'accesso: verifica adesso</string>
+    <string name="settings.lastfm.auth_instructions">Approva l\'accesso nella finestra qui sotto, poi la connessione si completa da sola. Se non succede nulla usa \"Verifica adesso\".</string>
+    <string name="settings.lastfm.verify_now">Ho approvato l\'accesso: verifica adesso</string>
     <string name="settings.lastfm.fetching_session">Recupero della chiave di sessione...</string>
     <string name="settings.lastfm.authenticated_as">Autenticato come {user}</string>
     <string name="settings.lastfm.auth_error">Autenticazione Last.fm fallita: {error}</string>
     <string name="settings.lastfm.scrobble_type">Tipo di scrobble</string>
-
     <string name="settings.listenbrainz.enable">Attiva ListenBrainz</string>
     <string name="settings.listenbrainz.enable_desc">Invia i tuoi ascolti a ListenBrainz (alternativa open source a Last.fm).</string>
-    <string name="settings.listenbrainz.connect">Collega l'account ListenBrainz</string>
+    <string name="settings.listenbrainz.connect">Collega l\'account ListenBrainz</string>
     <string name="settings.listenbrainz.disconnect">Disconnetti</string>
-    <string name="settings.listenbrainz.connected">Connesso all'account ListenBrainz.</string>
+    <string name="settings.listenbrainz.connected">Connesso all\'account ListenBrainz.</string>
     <string name="settings.listenbrainz.connected_as">Utente: {user}</string>
     <string name="settings.listenbrainz.token_instructions">Crea un token utente nelle impostazioni del tuo profilo ListenBrainz e incollalo qui. Viene validato prima di essere salvato.</string>
     <string name="settings.listenbrainz.token_hint">Token utente</string>
     <string name="settings.listenbrainz.get_token">Ottieni il token su listenbrainz.org</string>
     <string name="settings.listenbrainz.validating">Validazione del token...</string>
-    <string name="settings.listenbrainz.token_invalid">Token non valido o server irraggiungibile: controlla il valore e l'URL del server.</string>
+    <string name="settings.listenbrainz.token_invalid">Token non valido o server irraggiungibile: controlla il valore e l\'URL del server.</string>
     <string name="settings.listenbrainz.server_hint">URL del server (vuoto = server ufficiale)</string>
     <string name="settings.listenbrainz.server_official">server ufficiale (api.listenbrainz.org)</string>
     <string name="settings.listenbrainz.scrobble_type">Tipo di invio</string>
-
     <string name="settings.discord.enable">Attiva rich presence</string>
     <string name="settings.discord.enable_desc">Mostra sul tuo profilo Discord cosa stai ascoltando (attività RiPlay con copertina, avanzamento e pulsanti).</string>
-    <string name="settings.discord.connect">Collega l'account Discord</string>
+    <string name="settings.discord.connect">Collega l\'account Discord</string>
     <string name="settings.discord.disconnect">Disconnetti</string>
     <string name="settings.discord.connected">Connesso a Discord.</string>
     <string name="settings.discord.connected_as">Connesso come {user}</string>
-    <string name="settings.discord.login_instructions">Accedi a Discord nella finestra qui sotto: quando si apre l'app il token dell'account viene raccolto automaticamente (stesso meccanismo di Android). Se non funziona, incolla il token manualmente qui sotto.</string>
+    <string name="settings.discord.login_instructions">Accedi a Discord nella finestra qui sotto: quando si apre l\'app il token dell\'account viene raccolto automaticamente (stesso meccanismo di Android). Se non funziona, incolla il token manualmente qui sotto.</string>
     <string name="settings.discord.manual_token_title">Token manuale (metodo alternativo)</string>
     <string name="settings.discord.manual_token_instructions">Client Discord desktop: Impostazioni &gt; Avanzate &gt; attiva Strumenti per sviluppatori, poi Ctrl+Shift+I &gt; scheda Console &gt; incolla: (webpackChunkdiscord_app.push([[Symbol()],{},(r)=&gt;r=Object.keys(r.c).map(x=&gt;r.c[x].exports).find(e=&gt;e.hasOwnProperty(&quot;default&quot;)&amp;&amp;e.default!==void 0&amp;&amp;e.default.getToken!==void 0)).default.getToken(),0]) e copia il risultato.</string>
     <string name="settings.discord.manual_token_connect">Collega</string>
