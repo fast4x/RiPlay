@@ -54,18 +54,20 @@ sealed interface HandsFreeSelection {
 object VoiceCommandParser {
 
     private val wakeWord = Regex(
-        "^(?:(?:(?:hey|hi|ok|okay|yo) )?(?:riplay|ri play|r i play|rip lay|rip play|ryplay|ry play|rye play)|hello(?: (?:riplay|ri play))?)(?: |$)"
+        "^(?:(?:(?:hey|hi|ok|okay|yo|ciao) )?(?:riplay|ri play|r i play|rip lay|rip play|ryplay|ry play|rye play)|hello(?: (?:riplay|ri play))?)(?: |$)"
     )
 
     /**
      * Recognition errors around "RiPlay" are common, especially in noisy
      * hands-free sessions. These phrases are compared with a small edit
      * distance so "riply", "ryplay" or a clipped "i play" still wake the app.
+     * "Ciao RiPlay" is the Italian variant of the wake word.
      */
     private val wakeWordPhrases = listOf(
         "riplay", "ri play", "r i play", "rip lay", "rip play", "ryplay", "ry play",
         "rye play", "hello", "hello riplay", "hello ri play",
         "hey riplay", "hi riplay", "ok riplay", "okay riplay", "yo riplay",
+        "ciao riplay", "ciao ri play",
         "hey ri play", "okay ri play"
     )
 
@@ -74,14 +76,14 @@ object VoiceCommandParser {
         "continue", "shuffle", "loop"
     )
 
-    private val greetingWords = setOf("hello", "hey", "hi", "ok", "okay", "yo")
+    private val greetingWords = setOf("hello", "hey", "hi", "ok", "okay", "yo", "ciao")
 
     private const val WAKE_WORD_SIMILARITY = 0.78
     private const val WAKE_WORD_MISHEAR_SIMILARITY = 0.75
     private const val MAX_WAKE_WORDS = 3
 
     private val politeness = Regex(
-        "^(?:hey|hi|ok|okay|yo|please|could you|can you|would you|will you|i want you to|i would like to|i want to|i wanna|lets|let us|just)(?: |$)"
+        "^(?:hey|hi|ok|okay|yo|ciao|please|could you|can you|would you|will you|i want you to|i would like to|i want to|i wanna|lets|let us|just)(?: |$)"
     )
 
     private val playlistFrom = Regex(
@@ -146,7 +148,8 @@ object VoiceCommandParser {
     )
 
     /**
-     * True when the utterance starts with a wake word ("Hello" or "RiPlay").
+     * True when the utterance starts with a wake word ("Hello", "Ciao" or
+     * "RiPlay").
      *
      * Hands-free listening needs this check: while music is playing the
      * microphone also hears the song, and a lyric containing "stop", "hold on"
@@ -155,7 +158,7 @@ object VoiceCommandParser {
     fun hasWakeWord(rawInput: String): Boolean =
         wakeWordPrefixLength(normalize(rawInput)) != null
 
-    /** True when the utterance is only the wake word ("Hello", "RiPlay"). */
+    /** True when the utterance is only the wake word ("Hello", "Ciao RiPlay", "RiPlay"). */
     fun isWakeWordOnly(rawInput: String): Boolean {
         val text = normalize(rawInput)
         if (text.isEmpty() || !hasWakeWord(text)) return false

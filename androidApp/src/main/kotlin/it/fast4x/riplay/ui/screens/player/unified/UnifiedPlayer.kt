@@ -501,7 +501,14 @@ fun UnifiedPlayer(
         VoiceCommandExecutor(context, binder, appSettingsManager)
     }
     var showVoiceCommandHelp by rememberSaveable { mutableStateOf(false) }
-    val voiceCommandController = rememberVoiceCommandController { transcript, _ ->
+    // isPlaybackRunning and resumePlayback must be wired to the real player
+    // state: without them the hands-free loop always waited for a playback
+    // start that never happened and a recognition session left the song paused
+    // (the system recognizer takes exclusive audio focus while listening).
+    val voiceCommandController = rememberVoiceCommandController(
+        isPlaybackRunning = { playerState.isPlaying },
+        resumePlayback = { binder.hybridPlayer?.play() },
+    ) { transcript, _ ->
         if (!appSettings.value.voiceCommandsHandsFree) {
             SmartMessage(
                 message = context.resources.getString(R.string.voice_you_said, transcript),
@@ -4404,4 +4411,4 @@ fun OutlineText(
             modifier = Modifier.applyIfWhenComposable(!disableScrollingText) { basicMarquee() }
         )
     }
-}
+}

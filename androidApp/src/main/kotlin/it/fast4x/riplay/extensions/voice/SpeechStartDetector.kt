@@ -31,7 +31,13 @@ import timber.log.Timber
  *
  * [AcousticEchoCanceler] removes the song that is playing from the captured
  * signal when the device supports it. Without echo cancellation the detector
- * still works, but the music has to stay well below the adaptive noise floor.
+ * still works: [SpeechTriggerGate] triggers on a voice that is clearly louder
+ * than the recent music peaks instead of requiring prior silence.
+ *
+ * When communication mode is taken for the echo canceler it is held for the
+ * whole listening session and restored in the finally block. Releasing it
+ * after a few seconds made the song flood back into the microphone in a single
+ * loud step, which looked exactly like the start of speech.
  */
 internal class SpeechStartDetector(private val context: Context) {
 
@@ -39,10 +45,13 @@ internal class SpeechStartDetector(private val context: Context) {
      * Suspends until speech is detected, the coroutine is cancelled or the
      * microphone cannot be opened.
      *
+     * @param playbackActive true while the player is producing sound. Music
+     * through the speaker leaks into the microphone, so the trigger gate uses
+     * stricter margins while it plays.
      * @return true when speech started, false when the audio source could not
      * be used.
      */
-    suspend fun awaitSpeech(): Boolean {
+    suspend fun awaitSpeech(playbackActive: Boolean): Boolean {
         if (!hasMicrophonePermission()) return false
 
         val minBufferSize = AudioRecord.getMinBufferSize(
@@ -58,9 +67,10 @@ internal class SpeechStartDetector(private val context: Context) {
         // The platform echo canceler runs on the voice-communication path.
         // Without communication mode some songs leak through the canceler at
         // near-speech levels, which made the detector wake the recognizer for
-        // music. Only take the mode over when it is idle, and give it back as
-        // soon as the canceler has converged so the volume keys keep
-        // controlling media again.
+        // music. Only take the mode over when it is idle, and hold it for the
+        // whole session: handing it back mid-listening let the song flood the
+        // microphone in one loud step and the gate treated that step as the
+        // start of speech.
         //
         // Communication mode is only needed while the song plays through the
         // built-in speaker and can bleed into the microphone. With headphones,
@@ -123,23 +133,20 @@ internal class SpeechStartDetector(private val context: Context) {
             val gate = SpeechTriggerGate()
             gate.reset(startedAt)
             var processedFrames = 0
-            var modeRestored = restoreMode == null || echoCanceler == null
 
             while (coroutineContext.isActive) {
                 val now = SystemClock.elapsedRealtime()
-                if (!modeRestored && now - startedAt >= MODE_HOLD_MS) {
-                    modeRestored = true
-                    restoreAudioMode(audioManager, restoreMode)
-                    Timber.d("SpeechStartDetector: released communication mode")
-                }
                 val read = record.read(frame, 0, frame.size, AudioRecord.READ_NON_BLOCKING)
                 if (read > 0) {
                     val levelDb = rmsDb(frame, read)
-                    if (gate.onFrame(levelDb, now)) {
+                    if (gate.onFrame(levelDb, now, playbackActive)) {
                         Timber.i(
-                            "SpeechStartDetector: speech detected level=%.1f dB noise=%.1f dB aec=%s",
+                            "SpeechStartDetector: speech detected level=%.1f dB peak=%.1f dB noise=%.1f dB"
+                                + " playing=%s aec=%s",
                             levelDb,
+                            gate.peakFloorDb,
                             gate.noiseFloorDb,
+                            playbackActive,
                             echoCanceler != null
                         )
                         return true
@@ -148,11 +155,14 @@ internal class SpeechStartDetector(private val context: Context) {
                     processedFrames++
                     if (processedFrames % LOG_EVERY_FRAMES == 0) {
                         Timber.d(
-                            "SpeechStartDetector: level=%.1f dB noise=%.1f dB warming=%s settled=%s aec=%s",
+                            "SpeechStartDetector: level=%.1f dB peak=%.1f dB noise=%.1f dB"
+                                + " warming=%s settled=%s playing=%s aec=%s",
                             levelDb,
+                            gate.peakFloorDb,
                             gate.noiseFloorDb,
                             gate.isWarmingUp(now),
                             gate.isSettled,
+                            playbackActive,
                             echoCanceler != null
                         )
                     }
@@ -231,7 +241,6 @@ internal class SpeechStartDetector(private val context: Context) {
         const val SAMPLE_RATE = 16_000
         const val FRAME_SAMPLES = SAMPLE_RATE / 50 // 20 ms
         const val POLL_INTERVAL_MS = 20L
-        const val MODE_HOLD_MS = 4_000L // let the echo canceler converge, then free the mode
         const val LOG_EVERY_FRAMES = 50 // about once per second
 
         val EXTERNAL_OUTPUT_TYPES = setOf(

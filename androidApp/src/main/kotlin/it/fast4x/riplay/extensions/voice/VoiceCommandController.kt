@@ -46,13 +46,12 @@ import timber.log.Timber
 
 private const val SINGLE_SHOT_TIMEOUT_MS = 15_000L
 private const val HANDS_FREE_TIMEOUT_MS = 9_000L
-private const val FOLLOW_UP_TIMEOUT_MS = 6_000L
+private const val FOLLOW_UP_TIMEOUT_MS = 4_000L
 private const val RESTART_DELAY_MS = 800L
 private const val SILENCE_RESTART_DELAY_MS = 800L
 private const val DETECTOR_RETRY_DELAY_MS = 1_000L
 private const val DETECTOR_RELEASE_DELAY_MS = 120L
-private const val PLAYBACK_WAIT_TIMEOUT_MS = 3_000L
-private const val PLAYBACK_SETTLE_DELAY_MS = 1_200L
+private const val PLAYBACK_SETTLE_DELAY_MS = 900L
 private const val RESUME_AFTER_COMMAND_DELAY_MS = 150L
 private const val FAILURE_BACKOFF_MS = 1_200L
 private const val MAX_CONSECUTIVE_FAILURES = 4
@@ -214,7 +213,13 @@ class VoiceCommandController internal constructor(
         if (!isHandsFree || !isForeground) return
         if (handsFreeJob?.isActive == true) return
 
+        // A stop right before this call cancelled the previous loop, but its
+        // cleanup (detector microphone release, recognizer teardown) may still
+        // be running. Join it at the start of the new loop instead of racing
+        // against it for the microphone.
+        val previousJob = handsFreeJob
         handsFreeJob = scope.launch {
+            previousJob?.join()
             var failures = 0
             var detectorFailures = 0
 
@@ -235,16 +240,20 @@ class VoiceCommandController internal constructor(
                     break
                 }
 
-                // Do not start the detector while the song is still
-                // buffering/resuming after a recognition session: the sudden
-                // music onset would look like speech. Wait until playback is
-                // stable, then give the echo canceler time to converge.
+                // Do not arm the detector right after a recognition session:
+                // the just-resumed song would flood the microphone. The gate
+                // warmup absorbs the music onset, so this is only a short
+                // settle pause; with nothing playing there is nothing to
+                // settle and the detector arms immediately.
                 awaitPlaybackSettled()
                 if (!isActive || !isHandsFree || !isForeground) break
 
                 // Wait for a voice without holding audio focus. The song keeps
                 // playing during this phase.
-                val heardSpeech = withContext(Dispatchers.IO) { speechStartDetector.awaitSpeech() }
+                val heardSpeech =
+                    withContext(Dispatchers.IO) {
+                        speechStartDetector.awaitSpeech(isPlaybackRunning())
+                    }
                 if (!isActive || !isHandsFree || !isForeground) break
                 if (!heardSpeech) {
                     detectorFailures++
@@ -275,24 +284,30 @@ class VoiceCommandController internal constructor(
                         runCommand(selection.text, handsFree = true)
                         executed = true
                     }
-                    HandsFreeSelection.WakeWordOnly -> {
-                        // The user usually says the command right after the wake
-                        // word. Keep a short session open so "Hello ... next"
-                        // split across two recognitions still works.
-                        val followUp = listenOnce(FOLLOW_UP_TIMEOUT_MS)
-                        val followSelection =
-                            VoiceCommandParser.selectHandsFree(followUp.hypotheses)
-                        if (followSelection is HandsFreeSelection.Command) {
-                            if (VoiceCommandParser.parse(followSelection.text) ==
-                                VoiceCommand.Pause
-                            ) {
-                                shouldResume = false
-                            }
-                            runCommand(followSelection.text, handsFree = true)
-                            executed = true
+                    HandsFreeSelection.WakeWordOnly, HandsFreeSelection.Ignore -> Unit
+                }
+
+                // The detector heard speech but no usable command came out of
+                // the session: the recognizer most likely started after a short
+                // word such as "play" had already been spoken, or the wake word
+                // arrived alone. Keep one short session open - users repeat a
+                // command that did nothing, so the retry usually catches it.
+                if (!executed &&
+                    result.outcome != ListenOutcome.Permission &&
+                    result.outcome != ListenOutcome.Unavailable
+                ) {
+                    val followUp = listenOnce(FOLLOW_UP_TIMEOUT_MS)
+                    val followSelection =
+                        VoiceCommandParser.selectHandsFree(followUp.hypotheses)
+                    if (followSelection is HandsFreeSelection.Command) {
+                        if (VoiceCommandParser.parse(followSelection.text) ==
+                            VoiceCommand.Pause
+                        ) {
+                            shouldResume = false
                         }
+                        runCommand(followSelection.text, handsFree = true)
+                        executed = true
                     }
-                    HandsFreeSelection.Ignore -> Unit
                 }
 
                 // Speech without a usable command must not leave the song
@@ -346,16 +361,12 @@ class VoiceCommandController internal constructor(
     }
 
     private suspend fun awaitPlaybackSettled() {
-        var waitedMs = 0L
-        while (coroutineContext.isActive && isHandsFree && isForeground &&
-            waitedMs < PLAYBACK_WAIT_TIMEOUT_MS
-        ) {
-            if (isPlaybackRunning()) {
-                delay(PLAYBACK_SETTLE_DELAY_MS)
-                return
-            }
-            delay(100L)
-            waitedMs += 100L
+        if (isPlaybackRunning()) {
+            delay(PLAYBACK_SETTLE_DELAY_MS)
+        } else {
+            // Nothing plays, so there is no music onset to wait for; the tiny
+            // pause only lets the previous session's microphone fully release.
+            delay(200L)
         }
     }
 
@@ -509,9 +520,9 @@ class VoiceCommandController internal constructor(
         putStringArrayListExtra(
             RecognizerIntent.EXTRA_BIASING_STRINGS,
             arrayListOf(
-                "RiPlay", "Hello RiPlay", "Hello",
+                "RiPlay", "Ciao RiPlay", "Hello RiPlay", "Ciao", "Hello",
                 "next", "previous", "pause", "continue", "replay",
-                "shuffle", "loop", "stop"
+                "shuffle", "loop", "stop", "play"
             )
         )
         // Return the result promptly once the command is finished instead of
@@ -536,6 +547,7 @@ class VoiceCommandController internal constructor(
 @Composable
 fun rememberVoiceCommandController(
     isPlaybackRunning: () -> Boolean = { false },
+    resumePlayback: () -> Unit = {},
     onTranscript: suspend (String, Boolean) -> Unit,
 ): VoiceCommandController {
     val context = LocalContext.current
@@ -548,9 +560,11 @@ fun rememberVoiceCommandController(
 
     val currentOnTranscript by rememberUpdatedState(onTranscript)
     val currentIsPlaybackRunning by rememberUpdatedState(isPlaybackRunning)
+    val currentResumePlayback by rememberUpdatedState(resumePlayback)
     SideEffect {
         controller.onTranscript = currentOnTranscript
         controller.isPlaybackRunning = { currentIsPlaybackRunning() }
+        controller.resumePlayback = { currentResumePlayback() }
     }
 
     val permissionLauncher = rememberLauncherForActivityResult(
