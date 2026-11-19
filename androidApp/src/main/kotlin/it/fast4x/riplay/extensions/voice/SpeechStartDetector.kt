@@ -3,9 +3,7 @@ package it.fast4x.riplay.extensions.voice
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.media.AudioDeviceInfo
 import android.media.AudioFormat
-import android.media.AudioManager
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.media.audiofx.AcousticEchoCanceler
@@ -20,6 +18,20 @@ import kotlinx.coroutines.isActive
 import timber.log.Timber
 
 /**
+ * Outcome of one raw-capture session.
+ */
+internal sealed interface DetectOutcome {
+    /** Somebody started speaking: hand the microphone to the recognizer. */
+    data object Speech : DetectOutcome
+
+    /** Nothing heard within the session window; retry with a fresh capture. */
+    data object Timeout : DetectOutcome
+
+    /** The microphone could not be captured at all. */
+    data object Failed : DetectOutcome
+}
+
+/**
  * Waits for somebody to start speaking without requesting audio focus.
  *
  * Hands-free voice control used to keep a [android.speech.SpeechRecognizer]
@@ -29,30 +41,40 @@ import timber.log.Timber
  * [AudioRecord], which takes no audio focus, and reports the moment speech is
  * loud enough to wake the recognizer.
  *
- * [AcousticEchoCanceler] removes the song that is playing from the captured
- * signal when the device supports it. Without echo cancellation the detector
- * still works: [SpeechTriggerGate] triggers on a voice that is clearly louder
- * than the recent music peaks instead of requiring prior silence.
+ * The global audio mode is never touched. Setting
+ * [android.media.AudioManager.MODE_IN_COMMUNICATION] while a song plays
+ * reroutes/attenuates media output on many devices and the music volume
+ * collapsed until the player was closed — the mode is what the volume bug was
+ * made of. The [AcousticEchoCanceler] attached to the capture session alone
+ * removes the song from the captured signal on devices whose
+ * `VOICE_COMMUNICATION` input path ships an echo canceler; where it does not,
+ * the adaptive noise floor in [SpeechTriggerGate] keeps the music from waking
+ * the recognizer by itself.
  *
- * When communication mode is taken for the echo canceler it is held for the
- * whole listening session and restored in the finally block. Releasing it
- * after a few seconds made the song flood back into the microphone in a single
- * loud step, which looked exactly like the start of speech.
+ * The capture stays open while hands-free waits for a voice, so the system
+ * microphone indicator does not blink on and off; it is only released when a
+ * trigger hands the microphone to the recognizer or hands-free is turned off.
+ * The caller passes [awaitSpeech] a [shouldAbort] check that is evaluated on
+ * every frame, so the capture also closes immediately when the situation
+ * changes under its feet — the song was stopped, hands-free was switched off
+ * or the app went to the background — and hands-free falls back to the direct
+ * listening style instead of sitting on a microphone nobody is using.
  */
 internal class SpeechStartDetector(private val context: Context) {
 
     /**
-     * Suspends until speech is detected, the coroutine is cancelled or the
-     * microphone cannot be opened.
+     * Suspends until speech is detected, the caller aborts or the coroutine is
+     * cancelled.
      *
-     * @param playbackActive true while the player is producing sound. Music
-     * through the speaker leaks into the microphone, so the trigger gate uses
-     * stricter margins while it plays.
-     * @return true when speech started, false when the audio source could not
-     * be used.
+     * @param shouldAbort evaluated before every captured frame; when it turns
+     *   true the capture is released at once and [DetectOutcome.Timeout] is
+     *   returned so the caller can re-evaluate the playback state.
+     * @return [DetectOutcome.Speech] when speech started,
+     * [DetectOutcome.Timeout] when the wait was interrupted without speech and
+     * [DetectOutcome.Failed] when the audio source could not be used.
      */
-    suspend fun awaitSpeech(playbackActive: Boolean): Boolean {
-        if (!hasMicrophonePermission()) return false
+    suspend fun awaitSpeech(shouldAbort: () -> Boolean = { false }): DetectOutcome {
+        if (!hasMicrophonePermission()) return DetectOutcome.Failed
 
         val minBufferSize = AudioRecord.getMinBufferSize(
             SAMPLE_RATE,
@@ -61,38 +83,14 @@ internal class SpeechStartDetector(private val context: Context) {
         )
         if (minBufferSize <= 0) {
             Timber.w("SpeechStartDetector: invalid minimum buffer size %s", minBufferSize)
-            return false
+            return DetectOutcome.Failed
         }
 
-        // The platform echo canceler runs on the voice-communication path.
-        // Without communication mode some songs leak through the canceler at
-        // near-speech levels, which made the detector wake the recognizer for
-        // music. Only take the mode over when it is idle, and hold it for the
-        // whole session: handing it back mid-listening let the song flood the
-        // microphone in one loud step and the gate treated that step as the
-        // start of speech.
-        //
-        // Communication mode is only needed while the song plays through the
-        // built-in speaker and can bleed into the microphone. With headphones,
-        // Bluetooth or USB output the mode would reroute playback and turn the
-        // volume keys into voice-call keys for no benefit, so leave it alone.
-        val audioManager = context.getSystemService(AudioManager::class.java)
-        val externalOutput = isExternalOutputConnected(audioManager)
-        val restoreMode = if (AcousticEchoCanceler.isAvailable() && !externalOutput) {
-            audioManager?.mode?.takeIf { it == AudioManager.MODE_NORMAL }
-        } else {
-            null
-        }
-        if (externalOutput) {
-            Timber.d("SpeechStartDetector: external output active, keeping audio mode")
-        }
-        if (restoreMode != null) {
-            runCatching { audioManager?.mode = AudioManager.MODE_IN_COMMUNICATION }
-                .onFailure {
-                    Timber.w(it, "SpeechStartDetector: could not set communication mode")
-                }
-        }
-
+        // The VOICE_COMMUNICATION input path applies platform voice processing
+        // (echo cancellation, noise suppression) on most devices regardless of
+        // the global audio mode, and unlike the mode it does not reroute or
+        // attenuate playback output. Never set MODE_IN_COMMUNICATION here: the
+        // music volume collapse users saw was caused by exactly that.
         val record = runCatching {
             AudioRecord.Builder()
                 .setAudioSource(MediaRecorder.AudioSource.VOICE_COMMUNICATION)
@@ -111,101 +109,78 @@ internal class SpeechStartDetector(private val context: Context) {
 
         if (record == null || record.state != AudioRecord.STATE_INITIALIZED) {
             record?.release()
-            restoreAudioMode(audioManager, restoreMode)
-            return false
+            return DetectOutcome.Failed
         }
 
         val echoCanceler = createEchoCanceler(record.audioSessionId)
-        if (echoCanceler == null) {
-            // No echo canceler, so communication mode cannot help. Give the
-            // mode back immediately instead of holding it for the whole session.
-            restoreAudioMode(audioManager, restoreMode)
-        }
         try {
             record.startRecording()
             if (record.recordingState != AudioRecord.RECORDSTATE_RECORDING) {
                 Timber.w("SpeechStartDetector: AudioRecord did not start")
-                return false
+                return DetectOutcome.Failed
             }
 
             val frame = ShortArray(FRAME_SAMPLES)
             val startedAt = SystemClock.elapsedRealtime()
-            val gate = SpeechTriggerGate()
+            // The detector only runs while a song plays, so the gate always
+            // works in its playback point (wider margin, longer voiced run).
+            val gate = SpeechTriggerGate(playbackActive = true)
             gate.reset(startedAt)
             var processedFrames = 0
 
+            // No fixed timeout: the capture stays open while hands-free waits
+            // for a voice. Closing and reopening it periodically was visible
+            // as the microphone indicator toggling on and off in complete
+            // silence. The abort check below is what lets go of the capture
+            // the moment the situation changes.
             while (coroutineContext.isActive) {
+                if (shouldAbort()) {
+                    Timber.d(
+                        "SpeechStartDetector: capture aborted (playback/hands-free/foreground changed)"
+                    )
+                    return DetectOutcome.Timeout
+                }
+
                 val now = SystemClock.elapsedRealtime()
                 val read = record.read(frame, 0, frame.size, AudioRecord.READ_NON_BLOCKING)
                 if (read > 0) {
                     val levelDb = rmsDb(frame, read)
-                    if (gate.onFrame(levelDb, now, playbackActive)) {
+                    if (gate.onFrame(levelDb, now)) {
                         Timber.i(
-                            "SpeechStartDetector: speech detected level=%.1f dB peak=%.1f dB noise=%.1f dB"
-                                + " playing=%s aec=%s",
+                            "SpeechStartDetector: speech detected level=%.1f dB floor=%.1f dB aec=%s",
                             levelDb,
                             gate.peakFloorDb,
-                            gate.noiseFloorDb,
-                            playbackActive,
                             echoCanceler != null
                         )
-                        return true
+                        return DetectOutcome.Speech
                     }
 
                     processedFrames++
                     if (processedFrames % LOG_EVERY_FRAMES == 0) {
                         Timber.d(
-                            "SpeechStartDetector: level=%.1f dB peak=%.1f dB noise=%.1f dB"
-                                + " warming=%s settled=%s playing=%s aec=%s",
+                            "SpeechStartDetector: level=%.1f dB floor=%.1f dB warming=%s aec=%s",
                             levelDb,
                             gate.peakFloorDb,
-                            gate.noiseFloorDb,
                             gate.isWarmingUp(now),
-                            gate.isSettled,
-                            playbackActive,
                             echoCanceler != null
                         )
                     }
                 }
                 delay(POLL_INTERVAL_MS)
             }
-            return false
+            return DetectOutcome.Timeout
         } catch (t: CancellationException) {
             throw t
         } catch (t: Throwable) {
             if (coroutineContext.isActive) {
                 Timber.w(t, "SpeechStartDetector: capture failed")
             }
-            return false
+            return DetectOutcome.Failed
         } finally {
             runCatching { if (record.recordingState == AudioRecord.RECORDSTATE_RECORDING) record.stop() }
             runCatching { record.release() }
             runCatching { echoCanceler?.release() }
-            restoreAudioMode(audioManager, restoreMode)
         }
-    }
-
-    private fun restoreAudioMode(audioManager: AudioManager?, restoreMode: Int?) {
-        if (audioManager == null || restoreMode == null) return
-        // A call or another app may have taken the mode over meanwhile.
-        if (audioManager.mode != AudioManager.MODE_IN_COMMUNICATION) return
-        runCatching { audioManager.mode = restoreMode }
-            .onFailure { Timber.w(it, "SpeechStartDetector: could not restore audio mode") }
-    }
-
-    /**
-     * True when a wired, Bluetooth, USB or hearing-aid sink is connected, so
-     * the song is not coming out of the built-in speaker. Communication mode
-     * would not improve echo cancellation there but would still reroute audio.
-     */
-    private fun isExternalOutputConnected(audioManager: AudioManager?): Boolean {
-        if (audioManager == null) return false
-        val devices = runCatching {
-            audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
-        }.onFailure {
-            Timber.w(it, "SpeechStartDetector: could not query audio outputs")
-        }.getOrNull() ?: return false
-        return devices.any { it.isSink && it.type in EXTERNAL_OUTPUT_TYPES }
     }
 
     private fun createEchoCanceler(audioSessionId: Int): AcousticEchoCanceler? {
@@ -242,20 +217,5 @@ internal class SpeechStartDetector(private val context: Context) {
         const val FRAME_SAMPLES = SAMPLE_RATE / 50 // 20 ms
         const val POLL_INTERVAL_MS = 20L
         const val LOG_EVERY_FRAMES = 50 // about once per second
-
-        val EXTERNAL_OUTPUT_TYPES = setOf(
-            AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,
-            AudioDeviceInfo.TYPE_BLUETOOTH_SCO,
-            AudioDeviceInfo.TYPE_BLE_HEADSET,
-            AudioDeviceInfo.TYPE_BLE_SPEAKER,
-            AudioDeviceInfo.TYPE_WIRED_HEADSET,
-            AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
-            AudioDeviceInfo.TYPE_USB_HEADSET,
-            AudioDeviceInfo.TYPE_USB_DEVICE,
-            AudioDeviceInfo.TYPE_HEARING_AID,
-            AudioDeviceInfo.TYPE_HDMI,
-            AudioDeviceInfo.TYPE_HDMI_ARC,
-            AudioDeviceInfo.TYPE_HDMI_EARC
-        )
     }
 }

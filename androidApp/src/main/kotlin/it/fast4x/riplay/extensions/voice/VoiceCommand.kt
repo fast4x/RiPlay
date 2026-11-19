@@ -54,21 +54,21 @@ sealed interface HandsFreeSelection {
 object VoiceCommandParser {
 
     private val wakeWord = Regex(
-        "^(?:(?:(?:hey|hi|ok|okay|yo|ciao) )?(?:riplay|ri play|r i play|rip lay|rip play|ryplay|ry play|rye play)|hello(?: (?:riplay|ri play))?)(?: |$)"
+        "^(?:(?:(?:hey|hi|ok|okay|yo) )?(?:riplay|ri play|r i play|rip lay|rip play|ryplay|ry play|rye play)|hello(?: (?:riplay|ri play))?|(?:ciao|chao|chow) (?:riplay|ri play|riply))(?: |$)"
     )
 
     /**
      * Recognition errors around "RiPlay" are common, especially in noisy
      * hands-free sessions. These phrases are compared with a small edit
      * distance so "riply", "ryplay" or a clipped "i play" still wake the app.
-     * "Ciao RiPlay" is the Italian variant of the wake word.
      */
     private val wakeWordPhrases = listOf(
         "riplay", "ri play", "r i play", "rip lay", "rip play", "ryplay", "ry play",
         "rye play", "hello", "hello riplay", "hello ri play",
         "hey riplay", "hi riplay", "ok riplay", "okay riplay", "yo riplay",
-        "ciao riplay", "ciao ri play",
-        "hey ri play", "okay ri play"
+        "hey ri play", "okay ri play",
+        "ciao riplay", "ciao ri play", "ciao rip lay",
+        "chao riplay", "chao ri play", "chow riplay"
     )
 
     private val exactCommandWords = setOf(
@@ -76,14 +76,14 @@ object VoiceCommandParser {
         "continue", "shuffle", "loop"
     )
 
-    private val greetingWords = setOf("hello", "hey", "hi", "ok", "okay", "yo", "ciao")
+    private val greetingWords = setOf("hello", "hey", "hi", "ok", "okay", "yo", "ciao", "chao", "chow")
 
     private const val WAKE_WORD_SIMILARITY = 0.78
     private const val WAKE_WORD_MISHEAR_SIMILARITY = 0.75
     private const val MAX_WAKE_WORDS = 3
 
     private val politeness = Regex(
-        "^(?:hey|hi|ok|okay|yo|ciao|please|could you|can you|would you|will you|i want you to|i would like to|i want to|i wanna|lets|let us|just)(?: |$)"
+        "^(?:hey|hi|ok|okay|yo|ciao|chao|please|could you|can you|would you|will you|i want you to|i would like to|i want to|i wanna|lets|let us|just)(?: |$)"
     )
 
     private val playlistFrom = Regex(
@@ -148,8 +148,7 @@ object VoiceCommandParser {
     )
 
     /**
-     * True when the utterance starts with a wake word ("Hello", "Ciao" or
-     * "RiPlay").
+     * True when the utterance starts with a wake word ("Hello" or "RiPlay").
      *
      * Hands-free listening needs this check: while music is playing the
      * microphone also hears the song, and a lyric containing "stop", "hold on"
@@ -158,7 +157,7 @@ object VoiceCommandParser {
     fun hasWakeWord(rawInput: String): Boolean =
         wakeWordPrefixLength(normalize(rawInput)) != null
 
-    /** True when the utterance is only the wake word ("Hello", "Ciao RiPlay", "RiPlay"). */
+    /** True when the utterance is only the wake word ("Hello", "RiPlay"). */
     fun isWakeWordOnly(rawInput: String): Boolean {
         val text = normalize(rawInput)
         if (text.isEmpty() || !hasWakeWord(text)) return false
@@ -172,8 +171,15 @@ object VoiceCommandParser {
      * wake word was clipped because the recognizer starts after the detector
      * hears speech, a clear command is still accepted. A wake-word-only result
      * asks the caller to open a short follow-up session.
+     *
+     * When [requireWakeWord] is true (music playing, so lyrics could be picked
+     * up) a session that contains no wake word is ignored; a wake word in any
+     * hypothesis still legitimizes the command arriving as another hypothesis.
      */
-    fun selectHandsFree(hypotheses: List<String>): HandsFreeSelection {
+    fun selectHandsFree(
+        hypotheses: List<String>,
+        requireWakeWord: Boolean = false,
+    ): HandsFreeSelection {
         val usable = hypotheses
             .map { it.trim() }
             .filter { it.isNotEmpty() }
@@ -195,6 +201,8 @@ object VoiceCommandParser {
             if (withWakeWord.any(::isWakeWordOnly)) return HandsFreeSelection.WakeWordOnly
             return HandsFreeSelection.Ignore
         }
+
+        if (requireWakeWord) return HandsFreeSelection.Ignore
 
         usable
             .firstOrNull { parse(it) != VoiceCommand.Unknown }

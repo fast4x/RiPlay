@@ -29,13 +29,13 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.ui.components.themed.SmartMessage
-import java.util.Locale
 import kotlin.coroutines.coroutineContext
 import kotlin.coroutines.resume
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -45,17 +45,36 @@ import kotlinx.coroutines.withTimeoutOrNull
 import timber.log.Timber
 
 private const val SINGLE_SHOT_TIMEOUT_MS = 15_000L
-private const val HANDS_FREE_TIMEOUT_MS = 9_000L
-private const val FOLLOW_UP_TIMEOUT_MS = 4_000L
+private const val HANDS_FREE_TIMEOUT_MS = 12_000L
+private const val FOLLOW_UP_TIMEOUT_MS = 6_000L
 private const val RESTART_DELAY_MS = 800L
-private const val SILENCE_RESTART_DELAY_MS = 800L
+private const val SILENCE_RESTART_DELAY_MS = 250L
 private const val DETECTOR_RETRY_DELAY_MS = 1_000L
 private const val DETECTOR_RELEASE_DELAY_MS = 120L
-private const val PLAYBACK_SETTLE_DELAY_MS = 900L
+private const val PLAYBACK_SETTLE_DELAY_MS = 600L
 private const val RESUME_AFTER_COMMAND_DELAY_MS = 150L
 private const val FAILURE_BACKOFF_MS = 1_200L
 private const val MAX_CONSECUTIVE_FAILURES = 4
 private const val MAX_DETECTOR_FAILURES = 5
+
+/**
+ * While the song plays the microphone can also hear the music, so a lyric
+ * containing "play" or "stop" could occasionally be transcribed and executed
+ * as a real command. With this flag the bare-command selection stays enabled
+ * (as the hands-free spec wants: direct "play", "pause", "next"... without a
+ * wake word); flip it to false to require the wake word ("RiPlay", "Ciao
+ * RiPlay") whenever a song is playing.
+ */
+private const val ALLOW_BARE_COMMANDS_WHILE_PLAYING = true
+
+/**
+ * The command parser only understands English sentences, so the recognizer is
+ * pinned to English instead of following the device language. On a device set
+ * to Italian (or any other language) the default recognizer transcribed the
+ * English commands through the wrong model — "play" came back as "plei"
+ * and "next" as "ness" — and the parser matched nothing.
+ */
+private const val COMMAND_LANGUAGE_TAG = "en-US"
 
 /**
  * Owns the [SpeechRecognizer] used for playback voice commands.
@@ -64,12 +83,34 @@ private const val MAX_DETECTOR_FAILURES = 5
  * loop ([setHandsFreeMode]) that keeps running while the player is in the
  * foreground, stopping on lifecycle pause and restarting on resume.
  *
- * Hands-free listening is gated by [SpeechStartDetector]: the microphone is
- * only handed to the system recognizer once somebody starts speaking. The
- * recognizer itself asks for exclusive audio focus, so Chromium/ExoPlayer
- * pause the song for the duration of a command. Keeping the recognizer open
- * all the time made the song stop again and again; the detector takes no audio
- * focus and lets playback continue while it waits.
+ * Hands-free behaviour depends on the playback state:
+ *
+ * - While a song is playing, listening is gated by [SpeechStartDetector]: the
+ *   microphone is only handed to the system recognizer once somebody starts
+ *   speaking. The recognizer itself asks for exclusive audio focus, so
+ *   Chromium/ExoPlayer pause the song for the duration of a command. Keeping
+ *   the recognizer open all the time made the song stop again and again; the
+ *   detector takes no audio focus and lets playback continue while it waits.
+ *   The detector capture is aborted within one captured frame (~20 ms) as soon
+ *   as playback stops, hands-free is switched off or the app goes to the
+ *   background, so stopping a song manually immediately returns hands-free to
+ *   the direct listening style below instead of leaving a mute capture open.
+ * - While nothing is playing (player open, song paused) the recognizer listens
+ *   directly, without the detector: audio focus cannot pause a song that is
+ *   not running and the gate would only add seconds of warmup before the
+ *   first word was even considered. This is what makes short commands such as
+ *   "play" or "next" work reliably with no wake word.
+ *
+ * [isMicMonitoring] is true the whole time the hands-free loop is guarding the
+ * microphone — both while the raw capture waits for a voice and while a
+ * recognition session runs. The player button binds to it together with
+ * [isListening], so the app shows the same "microphone in use" the system
+ * privacy indicator shows instead of a button that looks switched off while
+ * an invisible capture holds the mic.
+ *
+ * After every hands-free recognition session that did not execute an explicit
+ * pause the song is resumed through [resumePlayback], so a failed or
+ * unrecognized attempt no longer leaves the player stuck in silence.
  *
  * Every listening session gets its own recognizer. Reusing one recognizer and
  * calling `cancel()` right before the next `startListening()` looks harmless,
@@ -87,6 +128,16 @@ class VoiceCommandController internal constructor(
         private set
 
     var isHandsFree by mutableStateOf(false)
+        private set
+
+    /**
+     * True while the hands-free loop is alive and guarding the microphone:
+     * during the raw-capture wait for a voice, and between recognition
+     * sessions. UI binds the microphone button to [isListening] ||
+     * [isMicMonitoring] so the button reflects the same microphone usage the
+     * system privacy indicator reports.
+     */
+    var isMicMonitoring by mutableStateOf(false)
         private set
 
     internal var requestPermission: (() -> Unit)? = null
@@ -140,7 +191,7 @@ class VoiceCommandController internal constructor(
             // The recognizer pauses the song while it owns the audio focus.
             // Remember whether it was playing so a command can restore it.
             var shouldResume = isPlaybackRunning()
-            val result = listenOnce(SINGLE_SHOT_TIMEOUT_MS)
+            val result = listenOnce(SINGLE_SHOT_TIMEOUT_MS, briefSilenceHints = shouldResume)
             result.hypotheses.firstOrNull()?.let { transcript ->
                 if (VoiceCommandParser.parse(transcript) == VoiceCommand.Pause) {
                     shouldResume = false
@@ -213,17 +264,24 @@ class VoiceCommandController internal constructor(
         if (!isHandsFree || !isForeground) return
         if (handsFreeJob?.isActive == true) return
 
-        // A stop right before this call cancelled the previous loop, but its
-        // cleanup (detector microphone release, recognizer teardown) may still
-        // be running. Join it at the start of the new loop instead of racing
-        // against it for the microphone.
-        val previousJob = handsFreeJob
         handsFreeJob = scope.launch {
-            previousJob?.join()
-            var failures = 0
-            var detectorFailures = 0
+            // The loop stays alive across detection waits and recognition
+            // sessions; the flag lets the UI keep the microphone button lit
+            // the whole time instead of flickering between the two phases.
+            isMicMonitoring = true
+            try {
+                handsFreeLoop()
+            } finally {
+                isMicMonitoring = false
+            }
+        }
+    }
 
-            while (isActive && isHandsFree && isForeground) {
+    private suspend fun handsFreeLoop() {
+        var failures = 0
+        var detectorFailures = 0
+
+        while (currentCoroutineContext().isActive && isHandsFree && isForeground) {
                 if (!hasMicrophonePermission()) {
                     if (!waitingForPermission) {
                         waitingForPermission = true
@@ -240,43 +298,86 @@ class VoiceCommandController internal constructor(
                     break
                 }
 
-                // Do not arm the detector right after a recognition session:
-                // the just-resumed song would flood the microphone. The gate
-                // warmup absorbs the music onset, so this is only a short
-                // settle pause; with nothing playing there is nothing to
-                // settle and the detector arms immediately.
-                awaitPlaybackSettled()
-                if (!isActive || !isHandsFree || !isForeground) break
+                // Nothing playing: the recognizer owns the microphone
+                // directly, no detector in between. Audio focus cannot pause a
+                // song that is not running and the gate would only add
+                // seconds of warmup before the first word was even considered,
+                // so the session starts instantly and short commands such as
+                // "play" or "next" arrive complete.
+                //
+                // While the song plays, wait for a voice with the raw capture
+                // detector first: the recognizer asks for exclusive audio
+                // focus and Chromium would pause the song for every session.
+                var shouldResume = false
+                if (isPlaybackRunning()) {
+                    // Give the echo canceler a moment to converge after a
+                    // resume so the first beat does not look like speech.
+                    delay(PLAYBACK_SETTLE_DELAY_MS)
+                    if (!currentCoroutineContext().isActive || !isHandsFree || !isForeground) break
 
-                // Wait for a voice without holding audio focus. The song keeps
-                // playing during this phase.
-                val heardSpeech =
-                    withContext(Dispatchers.IO) {
-                        speechStartDetector.awaitSpeech(isPlaybackRunning())
+                    val detected = withContext(Dispatchers.IO) {
+                        // Cooperatively abort the capture the moment playback
+                        // stops, hands-free is switched off or the app goes to
+                        // the background: the detector releases the microphone
+                        // within one frame and the loop re-evaluates the state
+                        // (playback stopped -> back to direct listening).
+                        speechStartDetector.awaitSpeech {
+                            !isActive || !isHandsFree || !isForeground ||
+                                !isPlaybackRunning()
+                        }
                     }
-                if (!isActive || !isHandsFree || !isForeground) break
-                if (!heardSpeech) {
-                    detectorFailures++
-                    Timber.w("VoiceCommandController voice detector failed (%s)", detectorFailures)
-                    if (detectorFailures >= MAX_DETECTOR_FAILURES) {
-                        isHandsFree = false
-                        onHandsFreeAborted?.invoke()
-                        break
+                    if (!currentCoroutineContext().isActive || !isHandsFree || !isForeground) break
+                    when (detected) {
+                        DetectOutcome.Speech -> Unit
+                        DetectOutcome.Timeout -> {
+                            // The capture was aborted, not failed: re-evaluate
+                            // the playback state at the top of the loop. This
+                            // is what makes a manually stopped song switch to
+                            // direct listening right away.
+                            continue
+                        }
+                        DetectOutcome.Failed -> {
+                            detectorFailures++
+                            Timber.w(
+                                "VoiceCommandController voice detector failed (%s)",
+                                detectorFailures
+                            )
+                            if (detectorFailures >= MAX_DETECTOR_FAILURES) {
+                                isHandsFree = false
+                                onHandsFreeAborted?.invoke()
+                                break
+                            }
+                            delay(DETECTOR_RETRY_DELAY_MS)
+                            continue
+                        }
                     }
-                    delay(DETECTOR_RETRY_DELAY_MS)
-                    continue
+                    detectorFailures = 0
+
+                    // The song may have stopped (or been stopped) while the
+                    // capture waited: fall back to the direct listening style
+                    // immediately instead of recognizing over nothing.
+                    if (!isPlaybackRunning()) continue
+
+                    delay(DETECTOR_RELEASE_DELAY_MS)
+                    // The detector heard a voice, so the recognizer is about to
+                    // take the audio focus and Chromium will pause the iframe.
+                    // Remember whether the song was playing before that happens.
+                    shouldResume = isPlaybackRunning()
                 }
-                detectorFailures = 0
 
-                delay(DETECTOR_RELEASE_DELAY_MS)
-                // The detector heard a voice, so the recognizer is about to take
-                // the audio focus and Chromium will pause the iframe. Remember
-                // whether the song was playing before that happens.
-                var shouldResume = isPlaybackRunning()
-                val result = listenOnce(HANDS_FREE_TIMEOUT_MS)
+                val result = listenOnce(HANDS_FREE_TIMEOUT_MS, briefSilenceHints = shouldResume)
                 var executed = false
 
-                when (val selection = VoiceCommandParser.selectHandsFree(result.hypotheses)) {
+                // While the song plays the microphone can also hear the music:
+                // lyrics containing "play" or "stop" must not run as commands,
+                // so the first selection can be limited to wake-word phrases.
+                // The follow-up window after a wake word always accepts bare
+                // commands — that is the "RiPlay ... next" conversation.
+                val selection = VoiceCommandParser.selectHandsFree(
+                    result.hypotheses,
+                    requireWakeWord = !ALLOW_BARE_COMMANDS_WHILE_PLAYING
+                )
+                when (selection) {
                     is HandsFreeSelection.Command -> {
                         if (VoiceCommandParser.parse(selection.text) == VoiceCommand.Pause) {
                             shouldResume = false
@@ -284,30 +385,24 @@ class VoiceCommandController internal constructor(
                         runCommand(selection.text, handsFree = true)
                         executed = true
                     }
-                    HandsFreeSelection.WakeWordOnly, HandsFreeSelection.Ignore -> Unit
-                }
-
-                // The detector heard speech but no usable command came out of
-                // the session: the recognizer most likely started after a short
-                // word such as "play" had already been spoken, or the wake word
-                // arrived alone. Keep one short session open - users repeat a
-                // command that did nothing, so the retry usually catches it.
-                if (!executed &&
-                    result.outcome != ListenOutcome.Permission &&
-                    result.outcome != ListenOutcome.Unavailable
-                ) {
-                    val followUp = listenOnce(FOLLOW_UP_TIMEOUT_MS)
-                    val followSelection =
-                        VoiceCommandParser.selectHandsFree(followUp.hypotheses)
-                    if (followSelection is HandsFreeSelection.Command) {
-                        if (VoiceCommandParser.parse(followSelection.text) ==
-                            VoiceCommand.Pause
-                        ) {
-                            shouldResume = false
+                    HandsFreeSelection.WakeWordOnly -> {
+                        // The user usually says the command right after the wake
+                        // word. Keep a short session open so "Hello ... next"
+                        // split across two recognitions still works.
+                        val followUp = listenOnce(FOLLOW_UP_TIMEOUT_MS, briefSilenceHints = shouldResume)
+                        val followSelection =
+                            VoiceCommandParser.selectHandsFree(followUp.hypotheses)
+                        if (followSelection is HandsFreeSelection.Command) {
+                            if (VoiceCommandParser.parse(followSelection.text) ==
+                                VoiceCommand.Pause
+                            ) {
+                                shouldResume = false
+                            }
+                            runCommand(followSelection.text, handsFree = true)
+                            executed = true
                         }
-                        runCommand(followSelection.text, handsFree = true)
-                        executed = true
                     }
+                    HandsFreeSelection.Ignore -> Unit
                 }
 
                 // Speech without a usable command must not leave the song
@@ -344,7 +439,6 @@ class VoiceCommandController internal constructor(
                     }
                 }
             }
-        }
     }
 
     private fun stopHandsFreeLoop() {
@@ -360,17 +454,22 @@ class VoiceCommandController internal constructor(
             .onFailure { Timber.w(it, "VoiceCommandController could not resume playback") }
     }
 
-    private suspend fun awaitPlaybackSettled() {
-        if (isPlaybackRunning()) {
-            delay(PLAYBACK_SETTLE_DELAY_MS)
-        } else {
-            // Nothing plays, so there is no music onset to wait for; the tiny
-            // pause only lets the previous session's microphone fully release.
-            delay(200L)
-        }
-    }
-
-    private suspend fun listenOnce(timeoutMs: Long): ListenResult {
+    /**
+     * Runs one recognition session.
+     *
+     * @param briefSilenceHints when true the session is told to return as soon
+     *   as the command is finished (short silence timeouts). This is wanted
+     *   while a song plays, because the recognizer owns the audio focus and
+     *   the song stays paused for the whole session. When nothing plays there
+     *   is nothing to restore, so the system default timeouts are used: each
+     *   session covers several seconds more, the microphone is re-opened less
+     *   often and the privacy indicator blinks far less while hands-free waits
+     *   in silence.
+     */
+    private suspend fun listenOnce(
+        timeoutMs: Long,
+        briefSilenceHints: Boolean,
+    ): ListenResult {
         if (!hasMicrophonePermission()) {
             if (!waitingForPermission) {
                 waitingForPermission = true
@@ -388,7 +487,9 @@ class VoiceCommandController internal constructor(
         val recognizer = createRecognizer()
             ?: return ListenResult(emptyList(), ListenOutcome.Unavailable)
 
-        val result = withTimeoutOrNull(timeoutMs) { awaitUtterance(recognizer) }
+        val result = withTimeoutOrNull(timeoutMs) {
+            awaitUtterance(recognizer, briefSilenceHints)
+        }
         if (result != null) return result
 
         // The timeout cancelled awaitUtterance. Clean up synchronously so a
@@ -406,7 +507,10 @@ class VoiceCommandController internal constructor(
                 .getOrNull()
         }
 
-    private suspend fun awaitUtterance(recognizer: SpeechRecognizer): ListenResult =
+    private suspend fun awaitUtterance(
+        recognizer: SpeechRecognizer,
+        briefSilenceHints: Boolean,
+    ): ListenResult =
         withContext(Dispatchers.Main.immediate) {
             suspendCancellableCoroutine { continuation ->
                 val listenSession = ListenSession(recognizer, continuation)
@@ -452,7 +556,7 @@ class VoiceCommandController internal constructor(
                     runOnMain { cleanupSession(listenSession, cancel = true) }
                 }
 
-                runCatching { recognizer.startListening(recognitionIntent()) }
+                runCatching { recognizer.startListening(recognitionIntent(briefSilenceHints)) }
                     .onFailure {
                         Timber.e(it, "VoiceCommandController could not start listening")
                         finishSession(listenSession, emptyList(), ListenOutcome.Error)
@@ -512,23 +616,35 @@ class VoiceCommandController internal constructor(
         else -> ListenOutcome.Error
     }
 
-    private fun recognitionIntent(): Intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+    private fun recognitionIntent(briefSilenceHints: Boolean): Intent =
+        Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
         putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-        putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault().toLanguageTag())
+        // Pin the recognizer to English: the parser only matches English
+        // sentences, and a device set to another language transcribed the
+        // commands through the wrong model so they never matched.
+        putExtra(RecognizerIntent.EXTRA_LANGUAGE, COMMAND_LANGUAGE_TAG)
+        putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, COMMAND_LANGUAGE_TAG)
         putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5)
         putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false)
         putStringArrayListExtra(
             RecognizerIntent.EXTRA_BIASING_STRINGS,
             arrayListOf(
-                "RiPlay", "Ciao RiPlay", "Hello RiPlay", "Ciao", "Hello",
+                "RiPlay", "Hello RiPlay", "Hello",
                 "next", "previous", "pause", "continue", "replay",
-                "shuffle", "loop", "stop", "play"
+                "shuffle", "loop", "stop"
             )
         )
-        // Return the result promptly once the command is finished instead of
-        // leaving the song paused for several extra seconds.
-        putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 1_000L)
-        putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 700L)
+        // While a song plays the recognizer holds the audio focus and the song
+        // stays paused for the whole session: return the result promptly once
+        // the command is finished. When nothing plays the hints are omitted so
+        // each session lasts longer and the microphone is re-opened less often.
+        if (briefSilenceHints) {
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 1_000L)
+            putExtra(
+                RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS,
+                700L
+            )
+        }
     }
 
     private fun hasMicrophonePermission(): Boolean =
@@ -547,7 +663,6 @@ class VoiceCommandController internal constructor(
 @Composable
 fun rememberVoiceCommandController(
     isPlaybackRunning: () -> Boolean = { false },
-    resumePlayback: () -> Unit = {},
     onTranscript: suspend (String, Boolean) -> Unit,
 ): VoiceCommandController {
     val context = LocalContext.current
@@ -560,11 +675,9 @@ fun rememberVoiceCommandController(
 
     val currentOnTranscript by rememberUpdatedState(onTranscript)
     val currentIsPlaybackRunning by rememberUpdatedState(isPlaybackRunning)
-    val currentResumePlayback by rememberUpdatedState(resumePlayback)
     SideEffect {
         controller.onTranscript = currentOnTranscript
         controller.isPlaybackRunning = { currentIsPlaybackRunning() }
-        controller.resumePlayback = { currentResumePlayback() }
     }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -573,7 +686,7 @@ fun rememberVoiceCommandController(
         controller.onMicrophonePermissionResult(granted)
         if (!granted) {
             SmartMessage(
-                message = context.getString(R.string.voice_microphone_permission_denied),
+                message = context.resources .getString(R.string.voice_microphone_permission_denied),
                 type = PopupType.Error,
                 context = context
             )

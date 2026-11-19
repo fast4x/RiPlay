@@ -501,13 +501,13 @@ fun UnifiedPlayer(
         VoiceCommandExecutor(context, binder, appSettingsManager)
     }
     var showVoiceCommandHelp by rememberSaveable { mutableStateOf(false) }
-    // isPlaybackRunning and resumePlayback must be wired to the real player
-    // state: without them the hands-free loop always waited for a playback
-    // start that never happened and a recognition session left the song paused
-    // (the system recognizer takes exclusive audio focus while listening).
+    // isPlaybackRunning and resumePlayback are essential in hands-free mode:
+    // without them the controller never knows whether a song is playing, waits
+    // for nothing before opening the detector, and — worse — never resumes the
+    // song after a recognition session that found no command, leaving the
+    // player stuck in silence.
     val voiceCommandController = rememberVoiceCommandController(
-        isPlaybackRunning = { playerState.isPlaying },
-        resumePlayback = { binder.hybridPlayer?.play() },
+        isPlaybackRunning = { playerState.isPlaying }
     ) { transcript, _ ->
         if (!appSettings.value.voiceCommandsHandsFree) {
             SmartMessage(
@@ -535,6 +535,9 @@ fun UnifiedPlayer(
     }
 
     SideEffect {
+        voiceCommandController.resumePlayback = {
+            binder.hybridPlayer.play()
+        }
         voiceCommandController.onHandsFreeAborted = {
             coroutineScope.launch {
                 appSettingsManager.updateSettings(
@@ -2046,7 +2049,15 @@ fun UnifiedPlayer(
 
                             if (appSettings.value.enableVoiceInput) IconButton(
                                 icon = R.drawable.mic,
-                                color = if (voiceCommandController.isListening) colorPalette().accent else colorPalette().text,
+                                // Accent while a recognition session runs AND
+                                // while the hands-free guard keeps the raw
+                                // capture open waiting for a voice: the button
+                                // then matches the "microphone in use" the
+                                // system privacy indicator shows, instead of
+                                // looking switched off while the mic is held.
+                                color = if (voiceCommandController.isListening ||
+                                    voiceCommandController.isMicMonitoring
+                                ) colorPalette().accent else colorPalette().text,
                                 enabled = true,
                                 onClick = { voiceCommandController.startListening() },
                                 onLongClick = { showVoiceCommandHelp = true },
@@ -4411,4 +4422,4 @@ fun OutlineText(
             modifier = Modifier.applyIfWhenComposable(!disableScrollingText) { basicMarquee() }
         )
     }
-}
+}
