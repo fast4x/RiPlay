@@ -102,7 +102,7 @@
     <string name="disable_background_restrictions">Disabilita le restrizioni sullo sfondo</string>
     <string name="invincible_service">Servizio invincibile</string>
     <string name="turning_off_battery_optimizations_is_not_enough">Quando disattivare le ottimizzazioni della batteria non è sufficiente</string>
-    <string name="player">Lettore musicale</string>
+    <string name="player">Player</string>
     <string name="persistent_queue">Coda persistente</string>
     <string name="save_and_restore_playing_songs">Salva e ripristina la riproduzione di brani</string>
     <string name="resume_playback">Riprendi la riproduzione</string>
