@@ -560,7 +560,9 @@ fun UnifiedPlayer(
     }
 
     LaunchedEffect(appSettings.value.voiceCommandsHandsFree) {
-        voiceCommandController.setHandsFreeMode(appSettings.value.voiceCommandsHandsFree)
+        // La modalità hand free ha vari bug da sistemare quindi al momento la disattiviamo
+        //voiceCommandController.setHandsFreeMode(appSettings.value.voiceCommandsHandsFree)
+        voiceCommandController.setHandsFreeMode(false)
     }
 
     if (showVoiceCommandHelp) {

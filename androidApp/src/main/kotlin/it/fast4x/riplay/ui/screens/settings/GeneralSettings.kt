@@ -653,12 +653,13 @@ fun GeneralSettings(
                         SwitchSettingEntry(
                             title = stringResource(R.string.voice_hands_free),
                             text = stringResource(R.string.voice_hands_free_description),
-                            isChecked = isVoiceHandsFree,
+                            isChecked = false, //isVoiceHandsFree, Disattivato perchè ha molti bug da sistemare
+                            isEnabled = false,
                             onCheckedChange = {
-                                coroutineScope.launch {
-                                    val new = appSettingsManager.activeSettings.value.copy(voiceCommandsHandsFree = it)
-                                    appSettingsManager.updateSettings(new)
-                                }
+//                                coroutineScope.launch {
+//                                    val new = appSettingsManager.activeSettings.value.copy(voiceCommandsHandsFree = it)
+//                                    appSettingsManager.updateSettings(new)
+//                                }
                             }, icon = R.drawable.mic,
                         )
                     }

@@ -266,7 +266,6 @@ data class AppSettings(
     val homeType: HomeType = HomeType.Tabbed,
     val playlistSongsTypeFilter: PlaylistSongsTypeFilter = PlaylistSongsTypeFilter.All,
     val isRecommendationEnabled: Boolean = false,
-    //val reorderInQueueEnabled: Boolean = true, // candidato alla rimozione
     val pauseBetweenSongs: PauseBetweenSongs = PauseBetweenSongs.`0`,
     val disableClosingPlayerSwipingDown: Boolean = false,
     val enableVoiceInput: Boolean = true,
