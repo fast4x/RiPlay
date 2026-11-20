@@ -57,7 +57,6 @@ import it.fast4x.riplay.ui.components.RiPlayAccent
 import it.fast4x.zoundhub.ZoundHubCatalogState
 import it.fast4x.riplay.items.formatZoundHubDateDesktop
 import it.fast4x.riplay.extensions.zoundhub.DesktopZoundHub
-import it.fast4x.riplay.utils.DesktopAppInfo
 import it.fast4x.riplay.utils.DesktopCloseToTray
 import it.fast4x.riplay.utils.DesktopKaraokeOverlay
 import it.fast4x.riplay.utils.DesktopMiniPlayer
@@ -485,7 +484,7 @@ private fun ZoundHubCard(coroutineScope: kotlinx.coroutines.CoroutineScope) {
             title = ds("settings.zoundhub.title"),
             description = ds("settings.zoundhub.desc"),
             checked = DesktopZoundHub.enabled,
-            onChecked = { DesktopZoundHub.setEnabled(it) }
+            onChecked = { DesktopZoundHub.setEnabledZoundHub(it) }
         )
 
         // Filtro "nascondi contenuti AI": rimuove dalle liste i contenuti di
@@ -494,7 +493,7 @@ private fun ZoundHubCard(coroutineScope: kotlinx.coroutines.CoroutineScope) {
             title = ds("settings.zoundhub.hide_ai"),
             description = ds("settings.zoundhub.hide_ai.desc"),
             checked = DesktopZoundHub.hidden,
-            onChecked = { DesktopZoundHub.setHidden(it) }
+            onChecked = { DesktopZoundHub.setHiddenZoundHub(it) }
         )
 
         Text(

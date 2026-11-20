@@ -112,7 +112,7 @@ object DesktopZoundHub {
         private set
 
     /** Cambia e PERSISTE subito (l'utente non deve "salvare" nulla). */
-    fun setEnabled(value: Boolean) {
+    fun setEnabledZoundHub(value: Boolean) {
         if (enabled == value) return
         enabled = value
         try {
@@ -133,7 +133,7 @@ object DesktopZoundHub {
         private set
 
     /** Cambia e PERSISTE subito. */
-    fun setHidden(value: Boolean) {
+    fun setHiddenZoundHub(value: Boolean) {
         if (hidden == value) return
         hidden = value
         try {
