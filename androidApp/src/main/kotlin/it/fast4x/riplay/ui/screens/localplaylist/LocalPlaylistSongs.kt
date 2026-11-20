@@ -194,6 +194,8 @@ import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import it.fast4x.riplay.extensions.persist.persistList
 import it.fast4x.riplay.ui.components.themed.SongMatchingDialog
+import it.fast4x.riplay.ui.components.themed.rememberZoundHubAiHiddenPredicate
+import it.fast4x.riplay.ui.components.themed.zoundHubArtistNames
 import it.fast4x.riplay.utils.isDeezerTrack
 import it.fast4x.riplay.utils.isSpotifyTrack
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -248,12 +250,18 @@ fun LocalPlaylistSongs(
 
     val isNetworkConnected = rememberIsNetworkConnected()
 
+    // Filtro "nascondi contenuti AI" (ZoundHub): attivo solo con catalogo pronto.
+    val zoundHubAiHidden = rememberZoundHubAiHiddenPredicate()
+
     LaunchedEffect(Unit, filter, sortOrder, sortBy) {
         Database.songsPlaylist(playlistId, sortBy, sortOrder).filterNotNull()
             .collect { songs ->
-                playlistAllSongs = songs
-                isSpotifyPlaylist = songs.any { it.song.id.startsWith("spotify") }
-                isDeezerPlaylist = songs.any { it.song.id.startsWith("deezer") }
+                // ZoundHub: nasconde i brani AI a livello dati
+                val songsChecked = songs.filter { !zoundHubAiHidden(it.song.zoundHubArtistNames()) }
+
+                playlistAllSongs = songsChecked
+                isSpotifyPlaylist = songsChecked.any { it.song.id.startsWith("spotify") }
+                isDeezerPlaylist = songsChecked.any { it.song.id.startsWith("deezer") }
             }
 
 

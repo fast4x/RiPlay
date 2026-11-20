@@ -29,6 +29,7 @@ import it.fast4x.riplay.data.dao.SongArtistCrossRefDao
 import it.fast4x.riplay.data.dao.SongDao
 import it.fast4x.riplay.data.dao.UnplayableTracksDao
 import it.fast4x.riplay.data.dao.WebDavAccountDao
+import it.fast4x.riplay.data.dao.ZoundHubDecisionDao
 import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.AppSettingsEntity
 import it.fast4x.riplay.data.models.AppearancePresetEntity
@@ -146,6 +147,9 @@ interface Database {
         }
         fun unplayableTracksDao(): UnplayableTracksDao {
             return (getDatabaseInitializer()).unplayableTracksDao()
+        }
+        fun zoundHubDecisionDao(): ZoundHubDecisionDao {
+            return (getDatabaseInitializer()).zoundHubDecisionDao()
         }
     }
 

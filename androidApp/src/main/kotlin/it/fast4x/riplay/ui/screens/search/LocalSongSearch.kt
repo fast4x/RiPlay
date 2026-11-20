@@ -34,6 +34,7 @@ import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import it.fast4x.riplay.ui.components.themed.InHistoryMediaItemMenu
+import it.fast4x.riplay.ui.components.themed.rememberZoundHubAiFiltered
 import it.fast4x.riplay.ui.items.SongItem
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.px
@@ -77,6 +78,11 @@ fun LocalSongSearch(
     val lazyListState = rememberLazyListState()
     val disableScrollingText = appearanceSettings.disableScrollingText
 
+    // Filtro "nascondi contenuti AI" (ZoundHub): attivo solo con catalogo pronto.
+    // FIX FREEZE v1.3: filtraggio su Dispatchers.Default (produceState), la UI
+    // non si blocca mai alla prima attivazione con cache fredda.
+    val visibleSongs = rememberZoundHubAiFiltered(items) { it.artistsText }
+
     val focusRequester = remember {
         FocusRequester()
     }
@@ -101,7 +107,7 @@ fun LocalSongSearch(
                     .fillMaxSize()
             ) {
                 items(
-                    items = items,
+                    items = visibleSongs,
                     key = Song::id,
                 ) { song ->
                     SongItem(

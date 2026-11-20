@@ -59,6 +59,7 @@ import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.items.SongItem
+import it.fast4x.riplay.items.filterHiddenZoundHubAiDesktop
 import it.fast4x.riplay.styling.Dimensions.layoutColumnBottomSpacer
 import it.fast4x.riplay.ui.components.RiPlayAccent
 import kotlinx.coroutines.flow.first
@@ -77,6 +78,10 @@ fun LocalSongsPage(
 ) {
 
     val songs = remember { SnapshotStateList<Song>() }
+
+    // Filtro "nascondi contenuti AI" (ZoundHub): attivo solo con catalogo pronto.
+    // Da usare nei punti NON composable (LazyListScope) come lista filtrata.
+    val visibleSongs = songs.filterHiddenZoundHubAiDesktop { it.artistsText }
 
 
     var deleteCandidate by remember { mutableStateOf<Song?>(null) }
@@ -244,7 +249,7 @@ fun LocalSongsPage(
                 .fillMaxWidth()
         ) {
             Text(
-                text = ds("page.local", "n" to songs.size),
+                text = ds("page.local", "n" to visibleSongs.size),
                 style = TextStyle(
                     fontSize = typography.titleSmall.fontSize,
                     color = Color.White,
@@ -374,7 +379,7 @@ fun LocalSongsPage(
             modifier = Modifier.weight(1f)
         ) {
             itemsIndexed(
-                items = songs,
+                items = visibleSongs,
                 key = { _, song -> song.id }
             ) { index, song ->
 

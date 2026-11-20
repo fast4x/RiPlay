@@ -27,6 +27,7 @@ import it.fast4x.riplay.extensions.musicbrainz.models.MBReleaseGroupSearchResult
 import it.fast4x.riplay.extensions.musicbrainz.models.MBSearchArtistResponse
 import it.fast4x.riplay.extensions.musicbrainz.models.MBSearchReleaseGroupResponse
 import it.fast4x.riplay.extensions.musicbrainz.models.WikiInfoResult
+import it.fast4x.riplay.extensions.musicbrainz.utils.IdentityUtils
 import it.fast4x.riplay.utils.cleanWikipediaText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
@@ -44,7 +45,13 @@ class MusicBrainz {
     private val appVersion = BuildConfig.VERSION_NAME
     private val userAgent = "riplay/$appVersion ( https://github.com/fast4x/RiPlay )"
 
-    private val rateLimiter = Mutex()
+    companion object {
+        // FIX (Fase 3): il rate limiter era per-istanza: ogni schermata/worker
+        // che creava il proprio MusicBrainz() aveva un Mutex proprio e il limite
+        // di ~1 req/s di MusicBrainz veniva aggirato di fatto (503 a catena).
+        // Un processo = un limiter, per TUTTE le istanze.
+        private val rateLimiter = Mutex()
+    }
 
     private suspend fun <T> makeRateLimitedRequest(block: suspend () -> T): T {
         rateLimiter.withLock {
@@ -93,12 +100,29 @@ class MusicBrainz {
     suspend fun fetchArtistMetadata(artistName: String): MBArtistMetadata {
         return makeRateLimitedRequest {
             // 1. Cerca l'artista per ottenere l'MBID
-            val searchResponse = client.get("$baseUrl/artist?query=$artistName&fmt=json") {
+            // FIX (Fase 1): il nome veniva passato RAW nell'URL (query con spazi
+            // e caratteri speciali rotti). Ora e' URL-encoded e la query usa
+            // l'operatore artist:"..." come nelle altre ricerche.
+            val encoded = URLEncoder.encode(artistName, "UTF-8")
+            val searchResponse = client.get("$baseUrl/artist?query=artist:%22$encoded%22&fmt=json") {
                 header("User-Agent", userAgent)
             }
             val searchResult = searchResponse.body<MBSearchArtistResponse>()
-            val mbid = searchResult.artists.maxByOrNull { it.score }?.id
-                ?: return@makeRateLimitedRequest MBArtistMetadata(emptyList(), null, null, null, emptyList(), null, null, null, null,null, emptyList(), null)
+            val best = searchResult.artists.maxByOrNull { it.score }
+            if (best == null) {
+                return@makeRateLimitedRequest MBArtistMetadata(
+                    genres = emptyList(), artistType = null, countryCode = null,
+                    beginYear = null, topTags = emptyList(), ratingValue = null,
+                    ratingVotes = null, wikipediaUrl = null, wikipediaBio = null,
+                    disambiguation = null, links = emptyList(), mbId = null
+                )
+            }
+            val mbid = best.id
+
+            // Provenienza del match: similarita' nome normalizzato (0..1).
+            // Lo score MB da solo non basta (le prime hits sono quasi sempre >=90).
+            val similarity = IdentityUtils.nameSimilarity(artistName, best.name)
+            val matchScore = (0.5f * (best.score / 100f) + 0.5f * similarity).coerceIn(0f, 1f)
 
             // 2. Ottiene dettagli con generi
             val detailResponse = client.get("$baseUrl/artist/$mbid?inc=genres+tags+ratings+url-rels&fmt=json") {
@@ -140,6 +164,11 @@ class MusicBrainz {
                 ?.firstOrNull { it.url?.resource?.contains("wikipedia.org") == true }
                 ?.url?.resource
 
+            // Ponte ZoundHub (Fase 2): Spotify artist ID dagli url-rels. MB tipizza
+            // questi link come "streaming"/"social network": si scandisce l'URL,
+            // non il tipo, per non perdere i primi.
+            val spotifyId = detailResult.relations
+                ?.firstNotNullOfOrNull { it.url?.resource?.spotifyArtistId() }
 
             MBArtistMetadata(
                 genres = genres,
@@ -153,7 +182,9 @@ class MusicBrainz {
                 disambiguation = detailResult.disambiguation,
                 wikipediaBio = null,
                 links = links,
-                mbId = mbid
+                mbId = mbid,
+                spotifyId = spotifyId,
+                matchScore = matchScore
             )
 
         }
@@ -207,7 +238,11 @@ class MusicBrainz {
             }
             val searchResult = searchResponse.body<MBSearchReleaseGroupResponse>()
             val mbid = searchResult.releaseGroups.maxByOrNull { it.score }?.id
-                ?: return@makeRateLimitedRequest MBAlbumMetadata(emptyList(), null, null, emptyList(), null, null, null)
+                ?: return@makeRateLimitedRequest MBAlbumMetadata(
+                    genres = emptyList(), albumType = null, originalYear = null,
+                    topTags = emptyList(), ratingValue = null, ratingVotes = null,
+                    wikipediaUrl = null, mbId = null
+                )
 
             // 2. Ottiene dettagli
 //            val detailResponse = client.get("$baseUrl/release-group/$mbid?inc=genres+tags+ratings+url-rels&fmt=json") {
@@ -217,14 +252,11 @@ class MusicBrainz {
             val detailResponse = client.get("$baseUrl/release-group/$mbid?inc=genres+tags+ratings+url-rels&fmt=json") {
                 header("User-Agent", userAgent)
             }
-            val rawBody = detailResponse.bodyAsText()
-            Timber.tag("MB_DEBUG").d("=== RAW MB RESPONSE for $mbid ===")
-            Timber.tag("MB_DEBUG").d(rawBody)
-            Timber.tag("MB_DEBUG").d("=== END RAW ===")
-
+            // FIX (Fase 3): prima qui veniva loggato l'INTERO body raw della
+            // risposta MB a ogni album visualizzato (log inutilizzabile e pesante).
             val detailResult = detailResponse.body<MBReleaseGroupDetailResponse>()
             Timber.tag("MB_DEBUG")
-                .d("Parsed: rating=${detailResult.rating?.value}, votes=${detailResult.rating?.votesCount}, genres=${detailResult.genres.size}")
+                .d("RG $mbid: rating=${detailResult.rating?.value}, votes=${detailResult.rating?.votesCount}, genres=${detailResult.genres.size}")
 
             // 3. Estrae e formatta i nuovi dati
             val genres = detailResult.genres
@@ -280,7 +312,8 @@ class MusicBrainz {
                 ratingValue = ratingValue,
                 ratingVotes = ratingVotes,
                 wikipediaUrl = wikiUrl,
-                links = links
+                links = links,
+                mbId = mbid
             )
         }
     }
@@ -295,7 +328,11 @@ class MusicBrainz {
             val searchUrl = "https://en.wikipedia.org/w/api.php?" +
                     "action=query&titles=$cleanName&prop=extracts&exintro&explaintext&format=json&redirects=true"
 
-            val searchResponse = client.get(searchUrl)
+            // FIX (Fase 1): la policy di Wikimedia richiede un User-Agent
+            // identificativo; e' condiviso il rate limiter per non martellare l'API.
+            val searchResponse = makeRateLimitedRequest { client.get(searchUrl) {
+                header("User-Agent", userAgent)
+            } }
             //Timber.d("MBMetadataHelper fetchWikipediaExtractByArtist searchResponse ${searchResponse.bodyAsText()}")
             val searchJson = Json.parseToJsonElement(searchResponse.bodyAsText()).jsonObject
 
@@ -478,6 +515,18 @@ class MusicBrainz {
         }
 
         return response.body<MBSearchReleaseGroupResponse>().releaseGroups
+    }
+
+    /**
+     * Estrae lo Spotify artist ID da un url-rel MusicBrainz
+     * (https://open.spotify.com/artist/<id>[?...]).
+     * Ponte ZoundHub: il catalogo AI e' indicizzato proprio per Spotify ID.
+     */
+    private fun String?.spotifyArtistId(): String? {
+        if (this == null) return null
+        return Regex("open\\.spotify\\.com/artist/([A-Za-z0-9]+)")
+            .find(this)?.groupValues?.get(1)
+            ?.takeIf { it.length == 22 } // Spotify ID canonico: 22 char base62
     }
 
     // Helper per dedurre la piattaforma dall'URL

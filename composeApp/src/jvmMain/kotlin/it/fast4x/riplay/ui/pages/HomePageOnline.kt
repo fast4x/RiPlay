@@ -39,6 +39,8 @@ import it.fast4x.riplay.items.ArtistItem
 import it.fast4x.riplay.items.MoodItemColored
 import it.fast4x.riplay.items.PlaylistItem
 import it.fast4x.riplay.items.SongItem
+import it.fast4x.riplay.items.rememberZoundHubAiFilteredDesktop
+import it.fast4x.riplay.items.zoundHubArtistNamesDesktop
 import it.fast4x.riplay.styling.Dimensions.albumThumbnailSize
 import it.fast4x.riplay.styling.Dimensions.artistThumbnailSize
 import it.fast4x.riplay.styling.Dimensions.itemInHorizontalGridWidth
@@ -75,6 +77,11 @@ fun HomePageOnline(
     var discover by remember { mutableStateOf<Environment.DiscoverPage?>(null) }
     var loading by remember { mutableStateOf(true) }
     var reloadTick by remember { mutableStateOf(0) }
+
+    // Filtro "nascondi contenuti AI" (ZoundHub): attivo solo con catalogo pronto.
+    // FIX FREEZE v1.3: le sezioni vengono filtrate con
+    // rememberZoundHubAiFilteredDesktop su Dispatchers.Default (produceState),
+    // la UI non si blocca mai alla prima attivazione con cache fredda.
 
     // STEP 3am: stato login = presenza dei cookie in Environment (impostati
     // da DesktopAccountManager al restore/login). La home cosi' porta le
@@ -188,7 +195,13 @@ fun HomePageOnline(
         )
     } else {
         page.sections.forEach { section ->
-            val items = section.items.filterNotNull().distinctBy { it.key }
+            // FIX FREEZE v1.3: filtro AI della sezione calcolato in background
+            // (Dispatchers.Default) prima dei blocchi lazy
+            val itemsAiFiltered = rememberZoundHubAiFilteredDesktop(
+                section.items.filterNotNull()
+            ) { it.zoundHubArtistNamesDesktop() }
+            val items = itemsAiFiltered
+                .distinctBy { it.key }
             if (items.isEmpty() || items.firstOrNull()?.key == null) return@forEach
 
             // Android: TitleMiniSection (etichetta piccola) + Title (titolo)

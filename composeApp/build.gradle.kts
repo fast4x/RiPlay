@@ -183,7 +183,7 @@ fun numericPackagingVersion(raw: String): String {
     return core
 }
 
-val riplayDesktopVersion = "0.8.7-rc.4"
+val riplayDesktopVersion = "0.8.7-rc.5"
 // STEP 3ah: parte numerica per jpackage: "0.8.7-rc.1" -> "0.8.7"
 val riplayDesktopVersionNumeric = numericPackagingVersion(riplayDesktopVersion)
 // STEP 3v: su macOS jpackage rifiuta 0.x -> la NUMERICA viene promossa
@@ -982,6 +982,7 @@ kotlin {
                 implementation(projects.lrclib)
                 implementation(projects.audiotaginfo)
                 implementation(projects.lastfm)
+                implementation(projects.zoundhub)
 
                 implementation(libs.room.runtime)
                 implementation(libs.room.sqlite.bundled)

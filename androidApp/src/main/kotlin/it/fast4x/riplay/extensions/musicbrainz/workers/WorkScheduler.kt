@@ -38,6 +38,8 @@ object WorkScheduler {
         // === Profile Rebuild (giornaliero, notte) ===
         val profileWork = PeriodicWorkRequestBuilder<ProfileRebuildWorker>(
             1, TimeUnit.DAYS
+        ).setBackoffCriteria(
+            BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS
         ).setConstraints(
             Constraints.Builder()
                 .setRequiresDeviceIdle(true)
@@ -56,6 +58,8 @@ object WorkScheduler {
         // === MB Albums Fetch (settimanale, WiFi + charging) ===
         val mbAlbumsWork = PeriodicWorkRequestBuilder<MBAlbumsFetcherWorker>(
             7, TimeUnit.DAYS
+        ).setBackoffCriteria(
+            BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS
         ).setConstraints(
             Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.UNMETERED)
@@ -71,6 +75,8 @@ object WorkScheduler {
         // === Artist Relations Fetch (settimanale, WiFi + charging) ===
         val relationsWork = PeriodicWorkRequestBuilder<ArtistRelationFetcherWorker>(
             7, TimeUnit.DAYS
+        ).setBackoffCriteria(
+            BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS
         ).setConstraints(
             Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.UNMETERED)
@@ -86,6 +92,8 @@ object WorkScheduler {
         // === SongArtist Backfill (mensile, qualsiasi rete) ===
         val backfillWork = PeriodicWorkRequestBuilder<SongArtistBackfillWorker>(
             30, TimeUnit.DAYS
+        ).setBackoffCriteria(
+            BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS
         ).setConstraints(
             Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -100,6 +108,8 @@ object WorkScheduler {
         // === New Releases Fetch (giornaliero, WiFi) ===
         val newReleasesWork = PeriodicWorkRequestBuilder<NewReleasesFetcherWorker>(
             1, TimeUnit.DAYS
+        ).setBackoffCriteria(
+            BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS
         ).setConstraints(
             Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.UNMETERED)
@@ -175,6 +185,9 @@ object WorkScheduler {
         }
 
         val initialWork = OneTimeWorkRequestBuilder<InitialSetupWorker>()
+            .setBackoffCriteria(
+                BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS
+            )
             .setConstraints(
                 Constraints.Builder()
                     .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -188,16 +201,10 @@ object WorkScheduler {
             initialWork
         )
 
-        // Segna come schedulato ( verrà segnato done dal Worker stesso)
-        //prefs.edit { putBoolean(PreferenceKey.INITIAL_SETUP_WORKER_DONE.key, true) }
-        CoroutineScope(Dispatchers.IO).launch {
-            val settings = appSettingsManager.waitForInitialization()
-            appSettingsManager.updateSettings(
-                settings.copy(
-                    initialSetupWorkerDone = true
-                )
-            )
-        }
+        // FIX (Fase 1): il flag NON viene più segnato all'accodamento:
+        // il Worker lo segna quando il setup è davvero completato
+        // (InitialSetupWorker.onSuccess). Se il primo run viene interrotto,
+        // il setup ora si ri-propone invece di restare "done" per sempre.
     }
 
     /**

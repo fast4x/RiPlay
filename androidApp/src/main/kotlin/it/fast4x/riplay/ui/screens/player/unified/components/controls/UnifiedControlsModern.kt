@@ -74,6 +74,7 @@ import it.fast4x.riplay.ui.components.themed.CustomElevatedButton
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.SelectorArtistsDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
+import it.fast4x.riplay.ui.components.themed.AiArtistBadge
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.ui.styling.collapsedPlayerProgressBar
@@ -694,9 +695,15 @@ fun UnifiedInfoAlbumAndArtistModern(
 
         val textoutline = appearanceSettings.textoutline
         if (!disableScrollingText) modifierArtist = modifierArtist.basicMarquee()
-        Box(
 
+        // ZoundHub: badge AI dell'artista in riproduzione (click = dettagli)
+        Row(
+            verticalAlignment = Alignment.CenterVertically
         ) {
+
+            Box(
+
+            ) {
             BasicText(
                 text = artist ?: "",
                 style = TextStyle(
@@ -729,6 +736,10 @@ fun UnifiedInfoAlbumAndArtistModern(
                 modifier = modifierArtist
 
             )
+        }
+
+            AiArtistBadge(artistText = artist)
+
         }
 
     }

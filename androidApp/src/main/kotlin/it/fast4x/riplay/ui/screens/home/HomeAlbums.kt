@@ -116,6 +116,7 @@ import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.utils.addToYtPlaylist
 import it.fast4x.riplay.ui.components.themed.EnumsMenu
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
+import it.fast4x.riplay.ui.components.themed.rememberZoundHubAiFiltered
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.importYTMLikedAlbums
@@ -165,9 +166,12 @@ fun HomeAlbums(
             .map { list -> list.mapTo(hashSetOf()) { it.path } }
     }.collectAsStateWithLifecycle(initialValue = emptySet())
 
-    val itemsOnDisplay = remember(items, search.input, blacklistIds) {
+    // Filtro "nascondi contenuti AI" (ZoundHub): attivo solo con catalogo pronto.
+    val itemsAiFiltered = rememberZoundHubAiFiltered(items) { it.authorsText }
+
+    val itemsOnDisplay = remember(itemsAiFiltered, search.input, blacklistIds) {
         val q = search.input
-        items.asSequence()
+        itemsAiFiltered.asSequence()
             .filter { q.isBlank() ||
                     it.title?.contains(q, true) == true ||
                     it.year?.contains(q, true) == true ||
@@ -531,15 +535,25 @@ fun HomeAlbums(
                                                         AlbumsItemMenu(
                                                             navController = navController,
                                                             onDismiss = menuState::hide,
-                                                            onChangeAlbumTitle = { showDialogChangeAlbumTitle = true },
-                                                            onChangeAlbumAuthors = { showDialogChangeAlbumAuthors = true },
-                                                            onChangeAlbumCover = { showDialogChangeAlbumCover = true },
+                                                            onChangeAlbumTitle = {
+                                                                showDialogChangeAlbumTitle =
+                                                                    true
+                                                            },
+                                                            onChangeAlbumAuthors = {
+                                                                showDialogChangeAlbumAuthors =
+                                                                    true
+                                                            },
+                                                            onChangeAlbumCover = {
+                                                                showDialogChangeAlbumCover =
+                                                                    true
+                                                            },
                                                             album = album,
                                                             onPlayNext = {
                                                                 binder?.hybridPlayer?.addNext(
                                                                     songs.map(Song::asMediaItem),
                                                                     context,
-                                                                    selectedQueue ?: defaultQueue()
+                                                                    selectedQueue
+                                                                        ?: defaultQueue()
                                                                 )
                                                             },
                                                             onEnqueue = {
@@ -550,13 +564,21 @@ fun HomeAlbums(
                                                             },
                                                             onAddToPlaylist = { preview ->
                                                                 coroutineScope.launch {
-                                                                    val songs = withContext(Dispatchers.IO) { albumSongsList(album.id) }
-                                                                    val startPosition = (preview.songCount ?: 0).coerceAtLeast(0)   // append in coda, sempre
+                                                                    val songs = withContext(
+                                                                        Dispatchers.IO
+                                                                    ) { albumSongsList(album.id) }
+                                                                    val startPosition =
+                                                                        (preview.songCount
+                                                                            ?: 0).coerceAtLeast(
+                                                                            0
+                                                                        )   // append in coda, sempre
 
                                                                     if (!isYtSyncEnabled() || !preview.playlist.isYoutubePlaylist) {
                                                                         Database.asyncTransaction {                                 // 🔑 UNA sola transazione
                                                                             songs.forEachIndexed { index, song ->
-                                                                                Database.insert(song.asMediaItem)
+                                                                                Database.insert(
+                                                                                    song.asMediaItem
+                                                                                )
                                                                                 insert(
                                                                                     SongPlaylistMap(
                                                                                         songId = song.asMediaItem.mediaId,
@@ -568,7 +590,8 @@ fun HomeAlbums(
                                                                         }
                                                                     } else {
                                                                         addToYtPlaylist(
-                                                                            preview.playlist.id, startPosition,
+                                                                            preview.playlist.id,
+                                                                            startPosition,
                                                                             preview.playlist.browseId.orEmpty(),
                                                                             songs.map { it.asMediaItem }
                                                                         )
@@ -579,7 +602,11 @@ fun HomeAlbums(
                                                                 navController.navigate("${NavRoutes.localPlaylist.name}/$it")
                                                             },
                                                             disableScrollingText = disableScrollingText,
-                                                            onBlacklist = { insertOrUpdateBlacklist(album) },
+                                                            onBlacklist = {
+                                                                insertOrUpdateBlacklist(
+                                                                    album
+                                                                )
+                                                            },
                                                         )
                                                     }
                                                 },
@@ -687,15 +714,25 @@ fun HomeAlbums(
                                                         AlbumsItemMenu(
                                                             navController = navController,
                                                             onDismiss = menuState::hide,
-                                                            onChangeAlbumTitle = { showDialogChangeAlbumTitle = true },
-                                                            onChangeAlbumAuthors = { showDialogChangeAlbumAuthors = true },
-                                                            onChangeAlbumCover = { showDialogChangeAlbumCover = true },
+                                                            onChangeAlbumTitle = {
+                                                                showDialogChangeAlbumTitle =
+                                                                    true
+                                                            },
+                                                            onChangeAlbumAuthors = {
+                                                                showDialogChangeAlbumAuthors =
+                                                                    true
+                                                            },
+                                                            onChangeAlbumCover = {
+                                                                showDialogChangeAlbumCover =
+                                                                    true
+                                                            },
                                                             album = album,
                                                             onPlayNext = {
                                                                 binder?.hybridPlayer?.addNext(
                                                                     songs.map(Song::asMediaItem),
                                                                     context,
-                                                                    selectedQueue ?: defaultQueue()
+                                                                    selectedQueue
+                                                                        ?: defaultQueue()
                                                                 )
                                                             },
                                                             onEnqueue = {
@@ -706,13 +743,22 @@ fun HomeAlbums(
                                                             },
                                                             onAddToPlaylist = { preview ->
                                                                 coroutineScope.launch {
-                                                                    val songs = withContext(Dispatchers.IO) { albumSongsList(album.id) }
-                                                                    val startPosition = (preview.songCount ?: 0).coerceAtLeast(0)   // append in coda, sempre
+                                                                    val songs =
+                                                                        withContext(Dispatchers.IO) {
+                                                                            albumSongsList(album.id)
+                                                                        }
+                                                                    val startPosition =
+                                                                        (preview.songCount
+                                                                            ?: 0).coerceAtLeast(
+                                                                            0
+                                                                        )   // append in coda, sempre
 
                                                                     if (!isYtSyncEnabled() || !preview.playlist.isYoutubePlaylist) {
                                                                         Database.asyncTransaction {                                 // 🔑 UNA sola transazione
                                                                             songs.forEachIndexed { index, song ->
-                                                                                Database.insert(song.asMediaItem)
+                                                                                Database.insert(
+                                                                                    song.asMediaItem
+                                                                                )
                                                                                 insert(
                                                                                     SongPlaylistMap(
                                                                                         songId = song.asMediaItem.mediaId,
@@ -724,7 +770,8 @@ fun HomeAlbums(
                                                                         }
                                                                     } else {
                                                                         addToYtPlaylist(
-                                                                            preview.playlist.id, startPosition,
+                                                                            preview.playlist.id,
+                                                                            startPosition,
                                                                             preview.playlist.browseId.orEmpty(),
                                                                             songs.map { it.asMediaItem }
                                                                         )
@@ -735,7 +782,11 @@ fun HomeAlbums(
                                                                 navController.navigate("${NavRoutes.localPlaylist.name}/$it")
                                                             },
                                                             disableScrollingText = disableScrollingText,
-                                                            onBlacklist = { insertOrUpdateBlacklist(album) },
+                                                            onBlacklist = {
+                                                                insertOrUpdateBlacklist(
+                                                                    album
+                                                                )
+                                                            },
                                                         )
                                                     }
                                                 },

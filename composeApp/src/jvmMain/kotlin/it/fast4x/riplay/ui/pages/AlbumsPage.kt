@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.items.AlbumItem
+import it.fast4x.riplay.items.filterHiddenZoundHubAiDesktop
 import it.fast4x.riplay.styling.Dimensions.albumThumbnailSize
 import it.fast4x.riplay.styling.Dimensions.layoutColumnBottomSpacer
 
@@ -50,6 +51,9 @@ fun AlbumsPage(
             albums += it
         }
     }
+
+    // Filtro "nascondi contenuti AI" (ZoundHub): attivo solo con catalogo pronto.
+    val visibleAlbums = albums.filterHiddenZoundHubAiDesktop { it.authorsText }
 
     val lazyListState = rememberLazyListState()
 
@@ -72,7 +76,7 @@ fun AlbumsPage(
                         .fillMaxWidth()
                 ) {
                     Text(
-                        text = ds("page.albums", "n" to albums.size),
+                        text = ds("page.albums", "n" to visibleAlbums.size),
                         style = TextStyle(
                             fontSize = typography.titleSmall.fontSize,
                             //fontWeight = typography.titleSmall.fontWeight,
@@ -84,7 +88,7 @@ fun AlbumsPage(
                 }
             }
             itemsIndexed(
-                items = albums,
+                items = visibleAlbums,
                 key = { _, album -> album.id }
             ) { index, album ->
                 AlbumItem(

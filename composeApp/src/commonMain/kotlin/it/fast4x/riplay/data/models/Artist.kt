@@ -45,6 +45,22 @@ data class Artist(
 
     val mbId: String? = null, // id di MusicBrainz
     val youtubeChannelId: String? = null,
+
+    // Ponte ZoundHub: Spotify artist ID estratto dagli url-rels MusicBrainz
+    // (open.spotify.com/artist/<id>). ZoundHub cataloga gli artisti per
+    // Spotify ID: con questo campo il match AI e' ESATTO, senza fuzzy.
+    val spotifyId: String? = null,
+
+    // Provenienza del match MusicBrainz: quanto ci si puo' fidare del mbId
+    // (0..1, combinazione score MB + similarita' nome) e quando e' stato matchato.
+    val mbMatchScore: Float? = null,
+    val mbMatchedAt: Long? = null,
+
+    // Negative cache: epoch millis dell'ultimo tentativo FALLITO di risolvere
+    // il mbId. Evita che i backfiller settimanali ri-proviino all'infinito gli
+    // artisti che non hanno match (null = mai tentato / ultimo tentativo ok).
+    val mbLookupFailedAt: Long? = null,
+
     @ColumnInfo(defaultValue = "UNKNOWN")
     val nature: ArtistNature = ArtistNature.UNKNOWN
 ) {

@@ -18,6 +18,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.enums.ArtistNature
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -27,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
@@ -60,6 +63,9 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.databasebackup.BackupUiState
 import it.fast4x.riplay.ui.components.themed.DefaultDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
+import it.fast4x.riplay.ui.components.themed.formatZoundHubDate
+import it.fast4x.zoundhub.ZoundHubCatalogState
+import it.fast4x.riplay.extensions.zoundhub.ZoundHubClient
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

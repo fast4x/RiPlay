@@ -161,6 +161,9 @@ fun SongItem(
 
                 Spacer(modifier = Modifier.padding(horizontal = 2.dp))
 
+                // ZoundHub: badge AI propagato dall'artista del brano
+                AiArtistBadgeDesktop(artistText = authors.takeIf { it?.isNotBlank() == true })
+
                 BasicText(
                     text = authors ?: "",
                     style = TextStyle(
@@ -303,20 +306,29 @@ fun AlbumItem(
 
             if (!alternative || showAuthors == true) {
                 authors?.let {
-                    BasicText(
-                        text = cleanPrefix(authors),
-                        style = TextStyle(
-                            color = Color.White,
-                            fontSize = typography.titleSmall.fontSize,
-                            //fontWeight = typography.titleSmall.fontWeight
-                        ),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .basicMarquee(iterations = Int.MAX_VALUE)
-                            .align(
-                                if (yearCentered == true) Alignment.CenterHorizontally else Alignment.Start)
-                    )
+                    // ZoundHub: badge AI propagato dall'artista dell'album
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.align(
+                            if (yearCentered == true) Alignment.CenterHorizontally else Alignment.Start
+                        )
+                    ) {
+                        BasicText(
+                            text = cleanPrefix(authors),
+                            style = TextStyle(
+                                color = Color.White,
+                                fontSize = typography.titleSmall.fontSize,
+                                //fontWeight = typography.titleSmall.fontWeight
+                            ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier
+                                .weight(1f)
+                                .basicMarquee(iterations = Int.MAX_VALUE)
+                        )
+
+                        AiArtistBadgeDesktop(artistText = authors.takeIf { it.isNotBlank() })
+                    }
                 }
             }
 
@@ -426,18 +438,24 @@ fun ArtistItem(
             ItemInfoContainer(
                 horizontalAlignment = if (alternative) Alignment.CenterHorizontally else Alignment.Start,
             ) {
-                BasicText(
-                    text = name ?: "",
-                    style = TextStyle(
-                        color = Color.White,
-                        fontSize = typography.titleSmall.fontSize,
-                        //fontWeight = typography.titleSmall.fontWeight
-                    ),
-                    maxLines = 1, //if (alternative) 1 else 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier
-                        .basicMarquee(iterations = Int.MAX_VALUE)
-                )
+                // ZoundHub: badge AI accanto al nome artista
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    BasicText(
+                        text = name ?: "",
+                        style = TextStyle(
+                            color = Color.White,
+                            fontSize = typography.titleSmall.fontSize,
+                            //fontWeight = typography.titleSmall.fontWeight
+                        ),
+                        maxLines = 1, //if (alternative) 1 else 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .weight(1f)
+                            .basicMarquee(iterations = Int.MAX_VALUE)
+                    )
+
+                    AiArtistBadgeDesktop(artistText = name)
+                }
 
                 subscribersCount?.let {
                     BasicText(

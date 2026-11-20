@@ -1,6 +1,7 @@
 package it.fast4x.riplay.ui.screens
 
 import it.fast4x.riplay.i18n.ds
+import it.fast4x.riplay.items.AiArtistBadgeDesktop
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
@@ -446,6 +447,15 @@ fun DesktopPlayerOverlay(
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
                     )
+
+                    // ZoundHub: badge AI dell'artista in riproduzione (click = dettagli)
+                    Spacer(Modifier.height(6.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        AiArtistBadgeDesktop(artistText = song?.artistsText)
+                    }
                 }
 
                 Spacer(Modifier.weight(1f))

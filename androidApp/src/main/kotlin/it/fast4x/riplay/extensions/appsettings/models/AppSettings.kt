@@ -137,6 +137,15 @@ data class AppSettings(
     val enableYtLogin: Boolean = false,
     val enableYtSync: Boolean = true,
     val isEnabledLastFM: Boolean = false,
+    // ZoundHub (https://zoundhub.com): directory open source di segnali AI.
+    // Abilita il badge AI su artisti/album/brani (segnale a livello ARTISTA
+    // propagato alle release) e il catalogo locale con aggiornamento manuale
+    // dalla sezione Dati delle impostazioni.
+    val isEnabledZoundHub: Boolean = true,
+    // Nasconde dalle liste (home, ricerca) i contenuti di artisti segnalati
+    // come AI da ZoundHub. Il filtro e' attivo SOLO con il catalogo scaricato:
+    // finche' non e' pronto le liste restano complete (niente falsi vuoti).
+    val isHiddenZoundHubAi: Boolean = false,
     val lastFMSessionToken: String = "",
     val lastFmScrobbleType: LastFmScrobbleType = LastFmScrobbleType.Simple,
     val isEnabledListenBrainz: Boolean = false,

@@ -30,8 +30,11 @@ class ArtistRepository() {
         if (artistMbId != null) {
             Database.artistDao().getByMbId(artistMbId)?.let { existing ->
                 val merged = mergeArtists(existing, artist)
+                // FIX (Fase 1): si classifica l'oggetto FUSO (prima: 'artist',
+                // quindi le keywords appena scaricate venivano ignorate e la
+                // natura restava UNKNOWN).
                 val classifiedArtist = if (merged.nature == ArtistNature.UNKNOWN) {
-                    merged.copy(nature = ArtistClassifier.classify(artist))
+                    merged.copy(nature = ArtistClassifier.classify(merged))
                 } else {
                     merged
                 }
@@ -47,7 +50,7 @@ class ArtistRepository() {
             artistDao.getByYoutubeChannelId(artistChannelId)?.let { existing ->
                 val merged = mergeArtists(existing, artist)
                 val classifiedArtist = if (merged.nature == ArtistNature.UNKNOWN) {
-                    merged.copy(nature = ArtistClassifier.classify(artist))
+                    merged.copy(nature = ArtistClassifier.classify(merged))
                 } else {
                     merged
                 }
@@ -69,7 +72,7 @@ class ArtistRepository() {
             }?.let { existing ->
                 val merged = mergeArtists(existing, artist)
                 val classifiedArtist = if (merged.nature == ArtistNature.UNKNOWN) {
-                    merged.copy(nature = ArtistClassifier.classify(artist))
+                    merged.copy(nature = ArtistClassifier.classify(merged))
                 } else {
                     merged
                 }
@@ -105,6 +108,15 @@ class ArtistRepository() {
         return existing.copy(
             mbId = incoming.mbId ?: existing.mbId,
             youtubeChannelId = incoming.youtubeChannelId ?: existing.youtubeChannelId,
+            // Ponte ZoundHub: lo Spotify ID (più affidabile del nome) non si perde
+            spotifyId = incoming.spotifyId ?: existing.spotifyId,
+            // Provenienza match MB: si tiene il punteggio più alto
+            mbMatchScore = maxOf(incoming.mbMatchScore ?: 0f, existing.mbMatchScore ?: 0f)
+                .takeIf { it > 0f } ?: (incoming.mbMatchScore ?: existing.mbMatchScore),
+            mbMatchedAt = incoming.mbMatchedAt ?: existing.mbMatchedAt,
+            // Un match riuscito pulisce la negative cache
+            mbLookupFailedAt = if (incoming.mbId != null) null
+                else (incoming.mbLookupFailedAt ?: existing.mbLookupFailedAt),
             isYoutubeArtist = incoming.isYoutubeArtist || existing.isYoutubeArtist,
             name = incoming.name ?: existing.name,
             thumbnailUrl = incoming.thumbnailUrl ?: existing.thumbnailUrl,

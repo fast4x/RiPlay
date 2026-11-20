@@ -103,6 +103,7 @@ import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.themed.ArtistsItemMenu
 import it.fast4x.riplay.ui.components.themed.EnumsMenu
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
+import it.fast4x.riplay.ui.components.themed.rememberZoundHubAiFiltered
 import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.getRoundnessShape
@@ -152,9 +153,12 @@ fun HomeArtists(
             .map { list -> list.mapTo(hashSetOf()) { it.path } }
     }.collectAsStateWithLifecycle(initialValue = emptySet())        // mai null, e come Set
 
-    val itemsOnDisplay = remember(items, search.input, blacklistIds) {
+    // Filtro "nascondi contenuti AI" (ZoundHub): attivo solo con catalogo pronto.
+    val itemsAiFiltered = rememberZoundHubAiFiltered(items) { it.name }
+
+    val itemsOnDisplay = remember(itemsAiFiltered, search.input, blacklistIds) {
         val q = search.input
-        items.asSequence()
+        itemsAiFiltered.asSequence()
             .filter { q.isBlank() || it.name?.contains(q, true) == true }
             .filter { it.id !in blacklistIds }
             .toList()

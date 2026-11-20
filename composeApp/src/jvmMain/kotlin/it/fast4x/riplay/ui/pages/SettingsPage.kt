@@ -54,7 +54,9 @@ import it.fast4x.environment.models.responses.CachedAccountProfile
 import it.fast4x.riplay.player.kcef.KcefEngine
 import it.fast4x.riplay.player.kcef.KcefState
 import it.fast4x.riplay.ui.components.RiPlayAccent
-import it.fast4x.riplay.utils.DesktopAppInfo
+import it.fast4x.zoundhub.ZoundHubCatalogState
+import it.fast4x.riplay.items.formatZoundHubDateDesktop
+import it.fast4x.riplay.extensions.zoundhub.DesktopZoundHub
 import it.fast4x.riplay.utils.DesktopCloseToTray
 import it.fast4x.riplay.utils.DesktopKaraokeOverlay
 import it.fast4x.riplay.utils.DesktopMiniPlayer
@@ -454,6 +456,103 @@ private fun DataTab(coroutineScope: kotlinx.coroutines.CoroutineScope) {
             Text(
                 text = it,
                 color = if (statusOk) RiPlayAccent else Color(0xFFFFC107),
+                fontSize = 12.sp
+            )
+        }
+
+        // ── ZoundHub: badge AI + catalogo locale ──
+        ZoundHubCard(coroutineScope)
+    }
+}
+
+/**
+ * Card ZoundHub della tab Dati: toggle del badge AI, stato del catalogo
+ * locale (ultimo aggiornamento + numero artisti AI) e refresh manuale.
+ * Il catalogo NON viene mai scaricato in automatico (scelta di progetto).
+ */
+@Composable
+private fun ZoundHubCard(coroutineScope: kotlinx.coroutines.CoroutineScope) {
+    val store = DesktopZoundHub.store
+    val state by store.state.collectAsState()
+    var refreshing by remember { mutableStateOf(false) }
+    var message by remember { mutableStateOf<String?>(null) }
+    var messageOk by remember { mutableStateOf(false) }
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+
+        GeneralSwitchCard(
+            title = ds("settings.zoundhub.title"),
+            description = ds("settings.zoundhub.desc"),
+            checked = DesktopZoundHub.enabled,
+            onChecked = { DesktopZoundHub.setEnabledZoundHub(it) }
+        )
+
+        // Filtro "nascondi contenuti AI": rimuove dalle liste i contenuti di
+        // artisti segnalati come AI (richiede il catalogo scaricato).
+        GeneralSwitchCard(
+            title = ds("settings.zoundhub.hide_ai"),
+            description = ds("settings.zoundhub.hide_ai.desc"),
+            checked = DesktopZoundHub.hidden,
+            onChecked = { DesktopZoundHub.setHiddenZoundHub(it) }
+        )
+
+        Text(
+            text = when {
+                state.status == ZoundHubCatalogState.Status.Failed ->
+                    ds("settings.zoundhub.failed", "error" to (state.error ?: ""))
+                state.fetchedAt != null ->
+                    ds(
+                        "settings.zoundhub.status",
+                        "date" to formatZoundHubDateDesktop(state.fetchedAt),
+                        "count" to state.artistCount.toString()
+                    )
+                else ->
+                    ds("settings.zoundhub.never")
+            },
+            color = if (state.status == ZoundHubCatalogState.Status.Failed) Color(0xFFFFC107)
+                    else Color.White.copy(alpha = 0.55f),
+            fontSize = 12.sp
+        )
+
+        Text(
+            text = if (refreshing || state.status == ZoundHubCatalogState.Status.Loading)
+                ds("settings.zoundhub.updating")
+            else ds("settings.zoundhub.update_now"),
+            color = if (refreshing || state.status == ZoundHubCatalogState.Status.Loading)
+                Color.White.copy(alpha = 0.4f)
+            else Color.Black,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier
+                .clip(RoundedCornerShape(16.dp))
+                .background(
+                    if (refreshing || state.status == ZoundHubCatalogState.Status.Loading)
+                        RiPlayAccent.copy(alpha = 0.3f) else RiPlayAccent
+                )
+                .clickable(enabled = !refreshing) {
+                    coroutineScope.launch {
+                        refreshing = true
+                        message = null
+                        store.refresh().fold(
+                            onSuccess = {
+                                message = ds("settings.zoundhub.done")
+                                messageOk = true
+                            },
+                            onFailure = {
+                                message = ds("settings.zoundhub.failed", "error" to (it.message ?: ""))
+                                messageOk = false
+                            }
+                        )
+                        refreshing = false
+                    }
+                }
+                .padding(horizontal = 14.dp, vertical = 8.dp)
+        )
+
+        message?.let {
+            Text(
+                text = it,
+                color = if (messageOk) RiPlayAccent else Color(0xFFFFC107),
                 fontSize = 12.sp
             )
         }

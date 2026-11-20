@@ -45,8 +45,8 @@ extensions.configure<ApplicationExtension> {
         applicationId = "it.fast4x.riplay"
         targetSdk = 37
 
-        versionCode = 111
-        versionName = "0.8.7-rc.4"
+        versionCode = 112
+        versionName = "0.8.7-rc.5"
 
 
         // INIT ENVIRONMENT
@@ -418,6 +418,7 @@ dependencies {
     implementation(projects.listenbrainz)
     implementation(projects.simpmusiclyrics)
     implementation(projects.spotifymeta)
+    implementation(projects.zoundhub)
 
     implementation(libs.navigation)
     implementation(libs.media3.session)

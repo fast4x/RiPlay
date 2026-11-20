@@ -60,6 +60,23 @@ class InitialSetupWorker(
             Timber.tag("InitialSetupWorker").i("  Result: $relResult")
 
             Timber.tag("InitialSetupWorker").i("=== INITIAL SETUP COMPLETED ===")
+
+            // FIX (Fase 1): il flag viene segnato quando il setup è davvero
+            // completato (prima era messo a true ALL'ACCODAMENTO da
+            // WorkScheduler: se il primo run veniva interrotto, il setup
+            // non si ripeteva mai).
+            try {
+                val appSettingsManager =
+                    (applicationContext as it.fast4x.riplay.MainApplication).appSettingsManager
+                val settings = appSettingsManager.waitForInitialization()
+                appSettingsManager.updateSettings(
+                    settings.copy(initialSetupWorkerDone = true)
+                )
+                Timber.tag("InitialSetupWorker").i("Flag initialSetupWorkerDone = true")
+            } catch (e: Exception) {
+                Timber.tag("InitialSetupWorker").w(e, "Flag initialSetupWorkerDone non aggiornato")
+            }
+
             Result.success()
         } catch (e: Exception) {
             Timber.tag("InitialSetupWorker").e(e, "Failed")

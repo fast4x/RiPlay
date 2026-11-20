@@ -25,6 +25,7 @@ import it.fast4x.riplay.data.dao.SongArtistCrossRefDao
 import it.fast4x.riplay.data.dao.SongDao
 import it.fast4x.riplay.data.dao.UnplayableTracksDao
 import it.fast4x.riplay.data.dao.WebDavAccountDao
+import it.fast4x.riplay.data.dao.ZoundHubDecisionDao
 import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.data.models.AppSettingsEntity
 import it.fast4x.riplay.data.models.AppearancePresetEntity
@@ -50,6 +51,7 @@ import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.data.models.SortedSongPlaylistMap
 import it.fast4x.riplay.data.models.UnplayableTrack
 import it.fast4x.riplay.data.models.WebDavAccount
+import it.fast4x.riplay.data.models.ZoundHubDecision
 import it.fast4x.riplay.data.models.UserArtistAffinity
 import it.fast4x.riplay.data.models.UserKeywordAffinity
 import it.fast4x.riplay.data.models.UserEraAffinity
@@ -86,12 +88,13 @@ expect object DatabaseInitializerConstructor : RoomDatabaseConstructor<DatabaseI
         AppearancePresetEntity::class,
         AppSettingsEntity::class,
         WebDavAccount::class,
-        UnplayableTrack::class
+        UnplayableTrack::class,
+        ZoundHubDecision::class
     ],
     views = [
         SortedSongPlaylistMap::class
     ],
-    version = 68,
+    version = 70,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
@@ -156,6 +159,7 @@ abstract class DatabaseInitializer : RoomDatabase() {
     abstract fun appSettingsDao(): AppSettingsDao
     abstract fun webDavAccountDao(): WebDavAccountDao
     abstract fun unplayableTracksDao(): UnplayableTracksDao
+    abstract fun zoundHubDecisionDao(): ZoundHubDecisionDao
 
     companion object {
         const val DB_NAME = "data.db"
@@ -202,6 +206,8 @@ abstract class DatabaseInitializer : RoomDatabase() {
             From65To66Migration(),
             From66To67Migration(),
             From67To68Migration(),
+            From68To69Migration(),
+            From69To70Migration(),
         )
     }
 
@@ -851,6 +857,64 @@ abstract class DatabaseInitializer : RoomDatabase() {
                 )
             } catch (e: Exception) {
                 println("Database From67To68Migration error ${e.stackTraceToString()}")
+            }
+        }
+    }
+
+    /**
+     * Colonne per la qualità dell'incrocio MusicBrainz e per il ponte ZoundHub:
+     *  - Artist.spotifyId: Spotify artist ID estratto dagli url-rels MB —
+     *    permette il match ESATTO col catalogo AI ZoundHub (che è indicizzato
+     *    per Spotify ID), senza fuzzy;
+     *  - mbMatchScore / mbMatchedAt: provenienza del match MBID
+     *    (affidabilità 0..1 + timestamp), per rivedere match sbagliati;
+     *  - mbLookupFailedAt: negative cache — ultimo tentativo fallito di
+     *    risoluzione MBID, evita retry infiniti dei backfiller.
+     */
+    class From68To69Migration : Migration(68, 69) {
+        override fun migrate(db: SQLiteConnection) {
+            try {
+                db.execSQL("ALTER TABLE `Artist` ADD COLUMN `spotifyId` TEXT")
+                db.execSQL("ALTER TABLE `Artist` ADD COLUMN `mbMatchScore` REAL")
+                db.execSQL("ALTER TABLE `Artist` ADD COLUMN `mbMatchedAt` INTEGER")
+                db.execSQL("ALTER TABLE `Artist` ADD COLUMN `mbLookupFailedAt` INTEGER")
+                db.execSQL("ALTER TABLE `Album` ADD COLUMN `mbMatchScore` REAL")
+                db.execSQL("ALTER TABLE `Album` ADD COLUMN `mbMatchedAt` INTEGER")
+                db.execSQL("ALTER TABLE `Album` ADD COLUMN `mbLookupFailedAt` INTEGER")
+            } catch (e: Exception) {
+                println("Database From68To69Migration error ${e.stackTraceToString()}")
+            }
+        }
+    }
+
+    /**
+     * Cache delle decisioni del filtro AI ZoundHub (v1.4): testo autori ->
+     * isAi, taggata con la versione del catalogo (catalogFetchedAt).
+     * Tabella SOLO DERIVATA (cache ricostruibile dal catalogo): al riavvio
+     * il filtro parte a caldo senza ripagare i miss fuzzy su dispositivi
+     * lenti. Lo schema deve corrispondere ESATTAMENTE a quello generato da
+     * Room per l'entity ZoundHubDecision (PK artistsText + indice su
+     * catalogFetchedAt), altrimenti la validation della migration fallisce.
+     */
+    class From69To70Migration : Migration(69, 70) {
+        override fun migrate(db: SQLiteConnection) {
+            try {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `zoundhub_decisions` (
+                        `artistsText` TEXT NOT NULL,
+                        `isAi` INTEGER NOT NULL,
+                        `catalogFetchedAt` INTEGER NOT NULL,
+                        PRIMARY KEY(`artistsText`)
+                    )
+                """
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_zoundhub_decisions_catalogFetchedAt` " +
+                        "ON `zoundhub_decisions` (`catalogFetchedAt`)"
+                )
+            } catch (e: Exception) {
+                println("Database From69To70Migration error ${e.stackTraceToString()}")
             }
         }
     }

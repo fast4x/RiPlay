@@ -44,6 +44,14 @@ data class Album(
 
     val mbId: String? = null,
     val youtubeAlbumId: String? = null,
+
+    // Provenienza del match MusicBrainz (come per Artist)
+    val mbMatchScore: Float? = null,
+    val mbMatchedAt: Long? = null,
+
+    // Negative cache: ultimo tentativo fallito di risoluzione mbId
+    val mbLookupFailedAt: Long? = null,
+
     @ColumnInfo(defaultValue = "UNKNOWN")
     val nature: AlbumNature = AlbumNature.UNKNOWN
 ) {

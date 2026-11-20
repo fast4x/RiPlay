@@ -62,6 +62,11 @@ project(":chaquopy").projectDir = file("modules/chaquopy")
 include(":spotifymeta")
 project(":spotifymeta").projectDir = file("modules/spotifymeta")
 
+// ZoundHub: directory open source di segnali AI associati agli artisti
+// (https://zoundhub.com - https://github.com/xoundbyte/zoundhub)
+include(":zoundhub")
+project(":zoundhub").projectDir = file("modules/zoundhub")
+
 //Custom android youtube player
 include(":ayp")
 project(":ayp").projectDir = file("modules/ayp")

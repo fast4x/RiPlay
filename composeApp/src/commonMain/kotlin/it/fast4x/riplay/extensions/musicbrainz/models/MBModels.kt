@@ -26,7 +26,13 @@ data class MBReleaseGroupSearchResult(
 data class MBArtist(
     val id: String, // Questo è l'MBID
     val name: String,
-    val score: Int // Rilevanza della ricerca (0-100)
+    val score: Int, // Rilevanza della ricerca (0-100)
+
+    // Campi opzionali usati dalla disambiguazione del match (l'ignoreUnknownKeys
+    // del client li scarta se assenti nella risposta):
+    val type: String? = null,           // "Person", "Group"
+    val country: String? = null,       // "US", "GB", ...
+    val disambiguation: String? = null
 )
 
 @Serializable
@@ -138,7 +144,10 @@ data class MBAlbumMetadata(
     val ratingVotes: Int?,
     val wikipediaUrl: String?,
     val wikipediaInfo: String? = null,
-    val links: List<ExternalLink>? = null
+    val links: List<ExternalLink>? = null,
+    // FIX (Fase 1): prima il MBID del release-group trovato NON veniva
+    // persistito e gli album restavano "senza match" per sempre.
+    val mbId: String? = null
 )
 
 data class MBArtistMetadata(
@@ -155,6 +164,11 @@ data class MBArtistMetadata(
     val disambiguation: String?,   // Info addizionali su artista
     val links: List<ExternalLink>? = null,
     val mbId: String?,
+    // Ponte ZoundHub: Spotify artist ID da url-rels (open.spotify.com/artist/<id>).
+    val spotifyId: String? = null,
+    // Rilevanza del match col catalogo MB (0..1): serve a valutare quanto
+    // fidarsi del mbId prima di scriverlo su Artist (provenienza).
+    val matchScore: Float? = null
 )
 
 data class WikiInfoResult(

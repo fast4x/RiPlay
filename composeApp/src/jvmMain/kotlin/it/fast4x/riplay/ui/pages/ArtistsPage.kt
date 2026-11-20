@@ -46,6 +46,7 @@ import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.enums.ArtistSortBy
 import it.fast4x.riplay.enums.SortOrder
 import it.fast4x.riplay.items.ArtistItem
+import it.fast4x.riplay.items.filterHiddenZoundHubAiDesktop
 import it.fast4x.riplay.ui.components.RiPlayAccent
 import it.fast4x.riplay.styling.Dimensions.layoutColumnBottomSpacer
 
@@ -78,7 +79,9 @@ fun ArtistsPage(
         }
     }
 
-    val visible = if (onlyFollowed) artists.filter { it.bookmarkedAt != null } else artists
+    val visible = (if (onlyFollowed) artists.filter { it.bookmarkedAt != null } else artists)
+        // Filtro "nascondi contenuti AI" (ZoundHub): attivo solo con catalogo pronto.
+        .filterHiddenZoundHubAiDesktop { it.name }
 
     val lazyListState = rememberLazyListState()
 
