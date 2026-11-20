@@ -3,9 +3,7 @@ package it.fast4x.riplay.extensions.voice
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.media.AudioDeviceInfo
 import android.media.AudioFormat
-import android.media.AudioManager
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.media.audiofx.AcousticEchoCanceler
@@ -32,6 +30,11 @@ import timber.log.Timber
  * [AcousticEchoCanceler] removes the song that is playing from the captured
  * signal when the device supports it. Without echo cancellation the detector
  * still works, but the music has to stay well below the adaptive noise floor.
+ *
+ * The detector never changes the global audio mode. Taking
+ * `MODE_IN_COMMUNICATION` while a song was playing rerouted playback and made
+ * the YouTube player pause before the user had said anything, which is exactly
+ * the "enabling hands-free stops the song" bug this class must avoid.
  */
 internal class SpeechStartDetector(private val context: Context) {
 
@@ -55,34 +58,9 @@ internal class SpeechStartDetector(private val context: Context) {
             return false
         }
 
-        // The platform echo canceler runs on the voice-communication path.
-        // Without communication mode some songs leak through the canceler at
-        // near-speech levels, which made the detector wake the recognizer for
-        // music. Only take the mode over when it is idle, and give it back as
-        // soon as the canceler has converged so the volume keys keep
-        // controlling media again.
-        //
-        // Communication mode is only needed while the song plays through the
-        // built-in speaker and can bleed into the microphone. With headphones,
-        // Bluetooth or USB output the mode would reroute playback and turn the
-        // volume keys into voice-call keys for no benefit, so leave it alone.
-        val audioManager = context.getSystemService(AudioManager::class.java)
-        val externalOutput = isExternalOutputConnected(audioManager)
-        val restoreMode = if (AcousticEchoCanceler.isAvailable() && !externalOutput) {
-            audioManager?.mode?.takeIf { it == AudioManager.MODE_NORMAL }
-        } else {
-            null
-        }
-        if (externalOutput) {
-            Timber.d("SpeechStartDetector: external output active, keeping audio mode")
-        }
-        if (restoreMode != null) {
-            runCatching { audioManager?.mode = AudioManager.MODE_IN_COMMUNICATION }
-                .onFailure {
-                    Timber.w(it, "SpeechStartDetector: could not set communication mode")
-                }
-        }
-
+        // The platform echo canceler runs on the voice-communication capture
+        // path. Do not switch the device to communication mode for it: that
+        // rerouted playback on real devices and made the app look paused.
         val record = runCatching {
             AudioRecord.Builder()
                 .setAudioSource(MediaRecorder.AudioSource.VOICE_COMMUNICATION)
@@ -101,16 +79,10 @@ internal class SpeechStartDetector(private val context: Context) {
 
         if (record == null || record.state != AudioRecord.STATE_INITIALIZED) {
             record?.release()
-            restoreAudioMode(audioManager, restoreMode)
             return false
         }
 
         val echoCanceler = createEchoCanceler(record.audioSessionId)
-        if (echoCanceler == null) {
-            // No echo canceler, so communication mode cannot help. Give the
-            // mode back immediately instead of holding it for the whole session.
-            restoreAudioMode(audioManager, restoreMode)
-        }
         try {
             record.startRecording()
             if (record.recordingState != AudioRecord.RECORDSTATE_RECORDING) {
@@ -123,15 +95,9 @@ internal class SpeechStartDetector(private val context: Context) {
             val gate = SpeechTriggerGate()
             gate.reset(startedAt)
             var processedFrames = 0
-            var modeRestored = restoreMode == null || echoCanceler == null
 
             while (coroutineContext.isActive) {
                 val now = SystemClock.elapsedRealtime()
-                if (!modeRestored && now - startedAt >= MODE_HOLD_MS) {
-                    modeRestored = true
-                    restoreAudioMode(audioManager, restoreMode)
-                    Timber.d("SpeechStartDetector: released communication mode")
-                }
                 val read = record.read(frame, 0, frame.size, AudioRecord.READ_NON_BLOCKING)
                 if (read > 0) {
                     val levelDb = rmsDb(frame, read)
@@ -171,31 +137,7 @@ internal class SpeechStartDetector(private val context: Context) {
             runCatching { if (record.recordingState == AudioRecord.RECORDSTATE_RECORDING) record.stop() }
             runCatching { record.release() }
             runCatching { echoCanceler?.release() }
-            restoreAudioMode(audioManager, restoreMode)
         }
-    }
-
-    private fun restoreAudioMode(audioManager: AudioManager?, restoreMode: Int?) {
-        if (audioManager == null || restoreMode == null) return
-        // A call or another app may have taken the mode over meanwhile.
-        if (audioManager.mode != AudioManager.MODE_IN_COMMUNICATION) return
-        runCatching { audioManager.mode = restoreMode }
-            .onFailure { Timber.w(it, "SpeechStartDetector: could not restore audio mode") }
-    }
-
-    /**
-     * True when a wired, Bluetooth, USB or hearing-aid sink is connected, so
-     * the song is not coming out of the built-in speaker. Communication mode
-     * would not improve echo cancellation there but would still reroute audio.
-     */
-    private fun isExternalOutputConnected(audioManager: AudioManager?): Boolean {
-        if (audioManager == null) return false
-        val devices = runCatching {
-            audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
-        }.onFailure {
-            Timber.w(it, "SpeechStartDetector: could not query audio outputs")
-        }.getOrNull() ?: return false
-        return devices.any { it.isSink && it.type in EXTERNAL_OUTPUT_TYPES }
     }
 
     private fun createEchoCanceler(audioSessionId: Int): AcousticEchoCanceler? {
@@ -231,22 +173,6 @@ internal class SpeechStartDetector(private val context: Context) {
         const val SAMPLE_RATE = 16_000
         const val FRAME_SAMPLES = SAMPLE_RATE / 50 // 20 ms
         const val POLL_INTERVAL_MS = 20L
-        const val MODE_HOLD_MS = 4_000L // let the echo canceler converge, then free the mode
         const val LOG_EVERY_FRAMES = 50 // about once per second
-
-        val EXTERNAL_OUTPUT_TYPES = setOf(
-            AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,
-            AudioDeviceInfo.TYPE_BLUETOOTH_SCO,
-            AudioDeviceInfo.TYPE_BLE_HEADSET,
-            AudioDeviceInfo.TYPE_BLE_SPEAKER,
-            AudioDeviceInfo.TYPE_WIRED_HEADSET,
-            AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
-            AudioDeviceInfo.TYPE_USB_HEADSET,
-            AudioDeviceInfo.TYPE_USB_DEVICE,
-            AudioDeviceInfo.TYPE_HEARING_AID,
-            AudioDeviceInfo.TYPE_HDMI,
-            AudioDeviceInfo.TYPE_HDMI_ARC,
-            AudioDeviceInfo.TYPE_HDMI_EARC
-        )
     }
 }

@@ -35,9 +35,10 @@ sealed interface VoiceCommand {
 /**
  * Result of looking at all the hypotheses returned by a hands-free session.
  *
- * The recognizer can split "Hello RiPlay, next" into a wake-word-only result
- * followed by the command, or it can clip the beginning of the wake word
- * because the detector starts it after speech has already begun.
+ * The recognizer can split "Hello, play Faded" into a wake-word-only result
+ * and the command. A command is only executed without its own wake word when
+ * the same session also produced a wake-word-only result; a transcript with
+ * no wake word at all is ignored.
  */
 sealed interface HandsFreeSelection {
     data class Command(val text: String, val wakeWord: Boolean) : HandsFreeSelection
@@ -165,38 +166,43 @@ object VoiceCommandParser {
     /**
      * Picks the best transcript from a hands-free recognition session.
      *
-     * Prefer a hypothesis that contains the wake word and a command. If the
-     * wake word was clipped because the recognizer starts after the detector
-     * hears speech, a clear command is still accepted. A wake-word-only result
-     * asks the caller to open a short follow-up session.
+     * The microphone also hears the song and nearby conversations, so a
+     * command is only accepted when a wake word is part of the same session:
+     * either in the command hypothesis or as a separate wake-word-only
+     * hypothesis that proves the user started speaking with "Hello"/"RiPlay".
+     * Lyrics with no wake word at all can never pause or skip playback.
+     *
+     * @param allowCommandWithoutWakeWord lets the short follow-up session
+     * accept a command after a wake-word-only result.
      */
-    fun selectHandsFree(hypotheses: List<String>): HandsFreeSelection {
+    fun selectHandsFree(
+        hypotheses: List<String>,
+        allowCommandWithoutWakeWord: Boolean = false,
+    ): HandsFreeSelection {
         val usable = hypotheses
             .map { it.trim() }
             .filter { it.isNotEmpty() }
             .distinct()
         if (usable.isEmpty()) return HandsFreeSelection.Ignore
 
-        val withWakeWord = usable.filter(::hasWakeWord)
-        if (withWakeWord.isNotEmpty()) {
-            withWakeWord
-                .firstOrNull { !isWakeWordOnly(it) && parse(it) != VoiceCommand.Unknown }
-                ?.let { return HandsFreeSelection.Command(it, wakeWord = true) }
+        // Best case: wake word and command in one hypothesis.
+        usable
+            .firstOrNull {
+                hasWakeWord(it) && !isWakeWordOnly(it) && parse(it) != VoiceCommand.Unknown
+            }
+            ?.let { return HandsFreeSelection.Command(it, wakeWord = true) }
 
-            // "Hello" and the command can arrive as two hypotheses. The command
-            // is more useful than opening another session.
+        // The recognizer often splits "Hello, play Faded" into a
+        // wake-word-only result and the command. The separate wake-word
+        // hypothesis is what separates this from a lyric with no wake word.
+        val wakeWordOnly = usable.any(::isWakeWordOnly)
+        if (wakeWordOnly || allowCommandWithoutWakeWord) {
             usable
-                .firstOrNull { !hasWakeWord(it) && parse(it) != VoiceCommand.Unknown }
-                ?.let { return HandsFreeSelection.Command(it, wakeWord = false) }
-
-            if (withWakeWord.any(::isWakeWordOnly)) return HandsFreeSelection.WakeWordOnly
-            return HandsFreeSelection.Ignore
+                .firstOrNull { parse(it) != VoiceCommand.Unknown }
+                ?.let { return HandsFreeSelection.Command(it, wakeWord = hasWakeWord(it)) }
         }
 
-        usable
-            .firstOrNull { parse(it) != VoiceCommand.Unknown }
-            ?.let { return HandsFreeSelection.Command(it, wakeWord = false) }
-        return HandsFreeSelection.Ignore
+        return if (wakeWordOnly) HandsFreeSelection.WakeWordOnly else HandsFreeSelection.Ignore
     }
 
     fun parse(rawInput: String): VoiceCommand {

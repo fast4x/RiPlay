@@ -54,6 +54,7 @@ private const val DETECTOR_RELEASE_DELAY_MS = 120L
 private const val PLAYBACK_WAIT_TIMEOUT_MS = 3_000L
 private const val PLAYBACK_SETTLE_DELAY_MS = 1_200L
 private const val RESUME_AFTER_COMMAND_DELAY_MS = 150L
+private const val RESUME_RETRY_DELAY_MS = 700L
 private const val FAILURE_BACKOFF_MS = 1_200L
 private const val MAX_CONSECUTIVE_FAILURES = 4
 private const val MAX_DETECTOR_FAILURES = 5
@@ -265,6 +266,11 @@ class VoiceCommandController internal constructor(
                 // whether the song was playing before that happens.
                 var shouldResume = isPlaybackRunning()
                 val result = listenOnce(HANDS_FREE_TIMEOUT_MS)
+                Timber.d(
+                    "VoiceCommandController hypotheses: %s (outcome=%s)",
+                    result.hypotheses,
+                    result.outcome
+                )
                 var executed = false
 
                 when (val selection = VoiceCommandParser.selectHandsFree(result.hypotheses)) {
@@ -277,11 +283,18 @@ class VoiceCommandController internal constructor(
                     }
                     HandsFreeSelection.WakeWordOnly -> {
                         // The user usually says the command right after the wake
-                        // word. Keep a short session open so "Hello ... next"
+                        // word. Keep a short session open so "RiPlay ... next"
                         // split across two recognitions still works.
                         val followUp = listenOnce(FOLLOW_UP_TIMEOUT_MS)
-                        val followSelection =
-                            VoiceCommandParser.selectHandsFree(followUp.hypotheses)
+                        Timber.d(
+                            "VoiceCommandController follow-up hypotheses: %s (outcome=%s)",
+                            followUp.hypotheses,
+                            followUp.outcome
+                        )
+                        val followSelection = VoiceCommandParser.selectHandsFree(
+                            followUp.hypotheses,
+                            allowCommandWithoutWakeWord = true
+                        )
                         if (followSelection is HandsFreeSelection.Command) {
                             if (VoiceCommandParser.parse(followSelection.text) ==
                                 VoiceCommand.Pause
@@ -300,7 +313,10 @@ class VoiceCommandController internal constructor(
                 val recognizerRan = result.outcome == ListenOutcome.Result ||
                         result.outcome == ListenOutcome.Silence ||
                         result.outcome == ListenOutcome.Error
-                resumePlaybackIfNeeded(shouldResume && recognizerRan)
+                resumePlaybackIfNeeded(
+                    enabled = shouldResume && recognizerRan,
+                    retry = !executed
+                )
 
                 failures = if (result.outcome == ListenOutcome.Error) failures + 1 else 0
                 when (result.outcome) {
@@ -337,10 +353,21 @@ class VoiceCommandController internal constructor(
         handsFreeJob = null
     }
 
-    private suspend fun resumePlaybackIfNeeded(enabled: Boolean) {
+    private suspend fun resumePlaybackIfNeeded(enabled: Boolean, retry: Boolean = false) {
         if (!enabled) return
         delay(RESUME_AFTER_COMMAND_DELAY_MS)
         if (!coroutineContext.isActive) return
+        resumePlaybackOnce()
+        if (!retry) return
+
+        // A pending focus-loss pause can swallow the first play() in the
+        // WebView bridge. Reassert it once after the player has settled.
+        delay(RESUME_RETRY_DELAY_MS)
+        if (!coroutineContext.isActive) return
+        resumePlaybackOnce()
+    }
+
+    private fun resumePlaybackOnce() {
         runCatching { resumePlayback?.invoke() }
             .onFailure { Timber.w(it, "VoiceCommandController could not resume playback") }
     }

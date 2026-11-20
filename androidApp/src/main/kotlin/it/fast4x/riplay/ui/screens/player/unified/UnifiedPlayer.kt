@@ -506,9 +506,9 @@ fun UnifiedPlayer(
             binder.playerState.value.isPlaying || binder.hybridPlayer.isPlaying
         }
     ) { transcript, handsFree ->
-        // Hands-free transcripts are filtered by the controller: it prefers a
-        // wake-word hypothesis and only accepts an utterance without one when
-        // the voice detector already established that somebody spoke.
+        // Hands-free commands must contain the wake word (except for the short
+        // follow-up after a wake-word-only result), so lyrics and background
+        // speech cannot pause or skip the song.
         if (!handsFree) {
             SmartMessage(
                 message = context.getString(R.string.voice_you_said, transcript),

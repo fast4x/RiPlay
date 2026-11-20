@@ -155,11 +155,19 @@ class VoiceCommandParserTest {
             VoiceCommandParser.selectHandsFree(listOf("hello play faded"))
         )
         assertEquals(
+            HandsFreeSelection.Command("hello next", wakeWord = true),
+            VoiceCommandParser.selectHandsFree(listOf("hello next"))
+        )
+        assertEquals(
+            HandsFreeSelection.WakeWordOnly,
+            VoiceCommandParser.selectHandsFree(listOf("riplay"))
+        )
+        assertEquals(
             HandsFreeSelection.WakeWordOnly,
             VoiceCommandParser.selectHandsFree(listOf("hello"))
         )
         assertEquals(
-            HandsFreeSelection.Command("play faded", wakeWord = false),
+            HandsFreeSelection.Ignore,
             VoiceCommandParser.selectHandsFree(listOf("play faded"))
         )
         assertEquals(
@@ -173,6 +181,49 @@ class VoiceCommandParserTest {
         assertEquals(
             HandsFreeSelection.Ignore,
             VoiceCommandParser.selectHandsFree(emptyList())
+        )
+    }
+
+    @Test
+    fun handsFreeIgnoresLyricsWithoutWakeWord() {
+        assertEquals(
+            HandsFreeSelection.Ignore,
+            VoiceCommandParser.selectHandsFree(listOf("stop the music"))
+        )
+        assertEquals(
+            HandsFreeSelection.Ignore,
+            VoiceCommandParser.selectHandsFree(listOf("pause"))
+        )
+        assertEquals(
+            HandsFreeSelection.Ignore,
+            VoiceCommandParser.selectHandsFree(
+                listOf("hello darkness my old friend", "stop the music")
+            )
+        )
+    }
+
+    @Test
+    fun followUpAcceptsACommandAfterAWakeWord() {
+        assertEquals(
+            HandsFreeSelection.Command("play faded", wakeWord = false),
+            VoiceCommandParser.selectHandsFree(
+                listOf("play faded"),
+                allowCommandWithoutWakeWord = true
+            )
+        )
+        assertEquals(
+            HandsFreeSelection.Command("next", wakeWord = false),
+            VoiceCommandParser.selectHandsFree(
+                listOf("riplay", "next"),
+                allowCommandWithoutWakeWord = true
+            )
+        )
+        assertEquals(
+            HandsFreeSelection.Ignore,
+            VoiceCommandParser.selectHandsFree(
+                listOf("we can leave the christmas lights"),
+                allowCommandWithoutWakeWord = true
+            )
         )
     }
 
