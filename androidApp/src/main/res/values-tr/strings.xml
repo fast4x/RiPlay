@@ -1704,9 +1704,9 @@
     <string name="voice_unavailable">Bu cihazda konuşma tanıma özelliği mevcut değildir</string>
     <string name="app_language_system_country">Sistem Ülkesi</string>
     <string name="app_language_country">Ülke</string>
-    <string name="seek_to_tap_info_enable_buttons_to_seek_forward_or_backward">Enable buttons to seek forward or backward</string>
-    <string name="seek_time">Seek time</string>
-    <string name="seek_time_info_seek_forward_and_backward_time">Seek forward and backward time</string>
+    <string name="seek_to_tap_info_enable_buttons_to_seek_forward_or_backward">İleri veya geri sarma düğmelerini etkinleştir</string>
+    <string name="seek_time">Geri sarma zamanı</string>
+    <string name="seek_time_info_seek_forward_and_backward_time">İleri ve geri sarma zamanı</string>
     <string name="title_zoundhub">ZoundHub AI badge</string>
     <string name="enable_zoundhub">Enable ZoundHub AI detection</string>
     <string name="enable_zoundhub_info">Shows an AI badge next to artists, albums and songs flagged by ZoundHub (zoundhub.com), a free and open source directory of AI signals in music. The signal is at artist level and is propagated to their releases.</string>
