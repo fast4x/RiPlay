@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
@@ -29,6 +30,7 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.ui.components.themed.TextPlaceholder
+import it.fast4x.riplay.ui.components.themed.AiArtistBadge
 import it.fast4x.riplay.ui.styling.shimmer
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.ui.styling.secondary
@@ -173,15 +175,23 @@ fun AlbumItem(
 
             if (!alternative || showAuthors) {
                 cleanAuthors?.let {
-                    BasicText(
-                        text = it,
-                        style = typography().xs.semiBold.secondary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                            .align(textAlignment)
-                    )
+                    // ZoundHub: badge AI propagato dall'artista dell'album
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.align(textAlignment)
+                    ) {
+                        BasicText(
+                            text = it,
+                            style = typography().xs.semiBold.secondary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier
+                                .weight(1f)
+                                .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                        )
+
+                        AiArtistBadge(artistText = authors)
+                    }
                 }
             }
 

@@ -87,6 +87,13 @@ class AlbumRepository() {
         return existing.copy(
             mbId = incoming.mbId ?: existing.mbId,
             youtubeAlbumId = incoming.youtubeAlbumId ?: existing.youtubeAlbumId,
+            // Provenienza match MB: si tiene il punteggio più alto
+            mbMatchScore = maxOf(incoming.mbMatchScore ?: 0f, existing.mbMatchScore ?: 0f)
+                .takeIf { it > 0f } ?: (incoming.mbMatchScore ?: existing.mbMatchScore),
+            mbMatchedAt = incoming.mbMatchedAt ?: existing.mbMatchedAt,
+            // Un match riuscito pulisce la negative cache
+            mbLookupFailedAt = if (incoming.mbId != null) null
+                else (incoming.mbLookupFailedAt ?: existing.mbLookupFailedAt),
             isYoutubeAlbum = incoming.isYoutubeAlbum || existing.isYoutubeAlbum,
             title = incoming.title ?: existing.title,
             authorsText = incoming.authorsText ?: existing.authorsText,

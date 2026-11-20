@@ -29,6 +29,7 @@ import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Playlist
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.items.SongItem
+import it.fast4x.riplay.items.filterHiddenZoundHubAiDesktop
 import it.fast4x.riplay.styling.Dimensions.layoutColumnBottomSpacer
 import it.fast4x.riplay.utils.LoadImage
 
@@ -55,6 +56,9 @@ fun PlaylistSongsPage(
         }
     }
 
+    // Filtro "nascondi contenuti AI" (ZoundHub): attivo solo con catalogo pronto.
+    val visibleSongs = songs.filterHiddenZoundHubAiDesktop { it.artistsText }
+
     val lazyListState = rememberLazyListState()
 
     Column(
@@ -75,7 +79,7 @@ fun PlaylistSongsPage(
                         .fillMaxWidth()
                 ) {
                     Text(
-                        text = "${playlist.name} (${songs.size})",
+                        text = "${playlist.name} (${visibleSongs.size})",
                         style = TextStyle(
                             fontSize = typography.titleSmall.fontSize,
                             color = Color.White,
@@ -85,7 +89,7 @@ fun PlaylistSongsPage(
                 }
             }
             itemsIndexed(
-                items = songs,
+                items = visibleSongs,
                 key = { _, song -> song.id }
             ) { index, song ->
                 SongItem(

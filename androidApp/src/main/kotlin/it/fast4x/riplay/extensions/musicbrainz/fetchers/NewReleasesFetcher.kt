@@ -177,9 +177,14 @@ class NewReleasesFetcher {
     }
 
     private fun extractArtistCredit(details: MBReleaseGroupDetailResponse): String? {
-        // Se hai aggiunto artistCredit al data class, usalo
-        // Altrimenti lascia null e verrà recuperato on-demand
-        return null
+        // FIX (Fase 1): prima ritornava SEMPRE null mentre
+        // getRecentAlbumsWithArtist ("novità dai tuoi artisti") richiede
+        // artistCredit IS NOT NULL — la sezione non poteva mai popolarsi.
+        // L'include artist-credits già arriva dalla query MB: lo usiamo.
+        return details.artistCredit
+            ?.mapNotNull { it.name }
+            ?.joinToString(", ")
+            ?.takeIf { it.isNotBlank() }
     }
 
     private fun computePopularityScore(details: MBReleaseGroupDetailResponse): Float {

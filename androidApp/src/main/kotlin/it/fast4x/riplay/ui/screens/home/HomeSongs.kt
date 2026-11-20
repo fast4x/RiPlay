@@ -178,6 +178,10 @@ import it.fast4x.riplay.ui.styling.semiBold
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
+import androidx.compose.runtime.produceState
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -191,12 +195,28 @@ import it.fast4x.riplay.utils.asSong
 import it.fast4x.riplay.utils.formatAsDuration
 import it.fast4x.riplay.ui.components.tab.TabHeader
 import it.fast4x.riplay.ui.components.themed.EnumsMenu
+import it.fast4x.riplay.ui.components.themed.rememberZoundHubAiHiddenPredicate
+import it.fast4x.riplay.ui.components.themed.zoundHubArtistNames
 import it.fast4x.riplay.utils.getRoundnessShape
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 import it.fast4x.riplay.utils.isMusicVault
 import it.fast4x.riplay.utils.isWebDav
+import it.fast4x.zoundhub.ZoundHubService
 import kotlinx.coroutines.delay
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlin.sequences.filter
+
+/**
+ * Risultato della preparazione della lista brani SUL DISPOSITIVO per
+ * HomeSongs (FIX FREEZE v1.3): organizzazione cartelle, sort, blacklist e
+ * filtro AI vengono calcolati su Dispatchers.Default via produceState; la
+ * composizione legge solo questo stato prodotto (mai bloccante).
+ */
+private data class OnDevicePrepared(
+    val songs: List<SongEntity>,
+    val folders: List<Folder>,
+    val currentFolder: Folder?,
+)
 
 
 @ExperimentalSerializationApi
@@ -275,9 +295,14 @@ fun HomeSongs(
     var songs: List<SongEntity> = emptyList()
     var folders: List<Folder> = emptyList()
 
+    // Filtro "nascondi contenuti AI" (ZoundHub): attivo solo con catalogo pronto.
+    val zoundHubAiHidden = rememberZoundHubAiHiddenPredicate()
+
     // Chiave di ricerca normalizzata: String? -> String ("" se null)
     val q = filter.orEmpty()
 
+    // visibleItems/filteredSongs gestiscono solo la ricerca testuale:
+    // il filtro AI e' gia' stato applicato a monte, sul dato caricato.
     val visibleItems = remember(items, q) {
         if (q.isBlank()) items
         else items.filter {
@@ -363,7 +388,7 @@ fun HomeSongs(
         Database.blacklisted(listOf(BlacklistType.Song.name, BlacklistType.Video.name, BlacklistType.Folder.name))
     }.collectAsState(initial = null, context = Dispatchers.IO)
 
-    LaunchedEffect(isNetworkConnected, sortByOnDevice, sortOrderOnDevice,
+    LaunchedEffect(Unit, isNetworkConnected, sortByOnDevice, sortOrderOnDevice,
         sortBy,
         builtInPlaylist,
         sortOrder,
@@ -371,7 +396,10 @@ fun HomeSongs(
         showHiddenSongs,
         includeLocalSongs,
         Unit,
-        topPlaylistPeriod) {
+        topPlaylistPeriod,
+        // ZoundHub: al cambio di impostazione/catalogo il predicato cambia
+        // istanza e il caricamento dati si rilancia col filtro aggiornato
+        zoundHubAiHidden) {
 
         val targetBuiltInPlaylist = if (!isNetworkConnected && builtInPlaylist !in listOf(
                 BuiltInPlaylist.OnDevice,
@@ -388,41 +416,56 @@ fun HomeSongs(
         when (targetBuiltInPlaylist) {
             BuiltInPlaylist.All, BuiltInPlaylist.MusicVault -> {
                 Database.songs(sortBy, sortOrder, showHiddenSongs)
-                    .collect {
-                        items = it.filter { item ->
+                    // FIX FREEZE v1.3: blacklist + filtro AI su Dispatchers.Default;
+                    // il collect sul main si limita ad assegnare il risultato.
+                    .map { list ->
+                        list.filter { item ->
                             blacklisted.value?.map { it.path }?.contains(item.song.id) == false
                         }
                             .filter {
                                 if (builtInPlaylist == BuiltInPlaylist.All) true else it.song.isMusicVault
                             }
+                            // ZoundHub: nasconde i brani AI a livello dati
+                            // (cache processuale thread-safe, vedi AiBadge.kt)
+                            .filter { !zoundHubAiHidden(it.song.zoundHubArtistNames()) }
                     }
+                    .flowOn(Dispatchers.Default)
+                    .collect { items = it }
 
             }
 
             BuiltInPlaylist.Favorites, BuiltInPlaylist.Top, BuiltInPlaylist.Disliked -> {
                     if (builtInPlaylist == BuiltInPlaylist.Favorites) {
                         Database.songsFavorites(sortBy, sortOrder)
-                            .collect {
-                                items = (if (autoShuffle) it.shuffled() else it).filter { item ->
+                            .map { list ->
+                                (if (autoShuffle) list.shuffled() else list).filter { item ->
                                     blacklisted.value?.map { it.path }
                                         ?.contains(item.song.id) == false
                                 }
+                                    // ZoundHub: nasconde i brani AI a livello dati
+                                    .filter { !zoundHubAiHidden(it.song.zoundHubArtistNames()) }
                             }
+                            .flowOn(Dispatchers.Default)
+                            .collect { items = it }
                     }
                     if (builtInPlaylist == BuiltInPlaylist.Disliked) {
                         Database.songsDisliked(sortBy, sortOrder)
-                            .collect {
-                                items = (if (autoShuffle) it.shuffled() else it).filter { item ->
+                            .map { list ->
+                                (if (autoShuffle) list.shuffled() else list).filter { item ->
                                     blacklisted.value?.map { it.path }
                                         ?.contains(item.song.id) == false
                                 }
+                                    // ZoundHub: nasconde i brani AI a livello dati
+                                    .filter { !zoundHubAiHidden(it.song.zoundHubArtistNames()) }
                             }
+                            .flowOn(Dispatchers.Default)
+                            .collect { items = it }
                     }
                     if (builtInPlaylist == BuiltInPlaylist.Top) {
                         if (topPlaylistPeriod.duration == Duration.INFINITE) {
                             Database.songsEntityByPlayTimeWithLimitDesc(limit = maxTopPlaylistItems.number.toInt())
-                                .collect {
-                                    items = it.filter { item ->
+                                .map { list ->
+                                    list.filter { item ->
                                         if (excludeSongWithDurationLimit == DurationInMinutes.Disabled) true
                                         else (item.song.durationText?.let { durationTextToMillis(it) }
                                             ?: 0L) < excludeSongWithDurationLimit.milliSeconds
@@ -430,13 +473,17 @@ fun HomeSongs(
                                         blacklisted.value?.map { it.path }
                                             ?.contains(item.song.id) == false
                                     }
+                                        // ZoundHub: nasconde i brani AI a livello dati
+                                        .filter { !zoundHubAiHidden(it.song.zoundHubArtistNames()) }
                                 }
+                                .flowOn(Dispatchers.Default)
+                                .collect { items = it }
                         } else {
                             Database.trendingSongEntity(
                                 limit = maxTopPlaylistItems.number.toInt(),
                                 period = topPlaylistPeriod.duration.inWholeMilliseconds
-                            ).collect {
-                                items = it.filter { item ->
+                            ).map { list ->
+                                list.filter { item ->
                                     if (excludeSongWithDurationLimit == DurationInMinutes.Disabled) true
                                     else (item.song.durationText?.let { durationTextToMillis(it) }
                                         ?: 0L) < excludeSongWithDurationLimit.milliSeconds
@@ -444,7 +491,11 @@ fun HomeSongs(
                                     blacklisted.value?.map { it.path }
                                         ?.contains(item.song.id) == false
                                 }
+                                    // ZoundHub: nasconde i brani AI a livello dati
+                                    .filter { !zoundHubAiHidden(it.song.zoundHubArtistNames()) }
                             }
+                            .flowOn(Dispatchers.Default)
+                            .collect { items = it }
                         }
                     }
 
@@ -460,33 +511,64 @@ fun HomeSongs(
             }
 
             BuiltInPlaylist.WebDav -> {
-                Database.songDao().getWebDavSongsAsFlow().collect { it ->
-                    items = it.filter { item ->
-                        blacklisted.value?.map { it.path }?.contains(item.song.id) == false
-                                && item.song.isWebDav
+                Database.songDao().getWebDavSongsAsFlow()
+                    .map { list ->
+                        list.filter { item ->
+                            blacklisted.value?.map { it.path }?.contains(item.song.id) == false
+                                    && item.song.isWebDav
+                        }
+                            // ZoundHub: nasconde i brani AI a livello dati
+                            .filter { !zoundHubAiHidden(it.song.zoundHubArtistNames()) }
                     }
-                    //Timber.d("HomeSongs: WebDav collect songs = ${items.size}")
-                }
+                    .flowOn(Dispatchers.Default)
+                    .collect { items = it }
+                //Timber.d("HomeSongs: WebDav collect songs = ${items.size}")
             }
         }
     }
 
     /********** OnDevice Logic */
     if (builtInPlaylist == BuiltInPlaylist.OnDevice) {
+        // FIX FREEZE v1.3: organizzazione cartelle, sort, blacklist e filtro AI
+        // girano su Dispatchers.Default via produceState: la composizione si
+        // limita a leggere lo stato prodotto (primo frame lista vuota, poi
+        // arriva la lista pronta — reattivo, mai bloccante).
+        val devicePrepared by produceState(
+            initialValue = OnDevicePrepared(emptyList(), emptyList(), null),
+            songsDevice, currentFolderPath, showFolders,
+            sortByFolderOnDevice to sortOrderOnDevice, // coppia chiavi sort (max 5 chiavi produceState)
+            zoundHubAiHidden
+        ) {
+            value = withContext(Dispatchers.Default) {
+                if (showFolders) {
+                    val organized = OnDeviceOrganize.organizeSongsIntoFolders(songsDevice)
+                    val folder = OnDeviceOrganize.getFolderByPath(organized, currentFolderPath)
+                    val sorted = OnDeviceOrganize.sortSongs(
+                        sortOrder,
+                        sortByFolderOnDevice,
+                        folder?.songs?.map { it.toSongEntity() } ?: emptyList()
+                    ).filter { item -> blacklisted.value?.map { it.path }?.contains(item.song.id) == false }
+                        // ZoundHub: nasconde i brani AI a livello dati
+                        .filter { !zoundHubAiHidden(it.song.zoundHubArtistNames()) }
+                    OnDevicePrepared(sorted, folder?.subFolders?.toList() ?: emptyList(), folder)
+                } else {
+                    val prepared = songsDevice.map { it.toSongEntity() }
+                        .filter { item -> blacklisted.value?.map { it.path }?.contains(item.song.id) == false }
+                        // ZoundHub: nasconde i brani AI a livello dati
+                        .filter { !zoundHubAiHidden(it.song.zoundHubArtistNames()) }
+                    OnDevicePrepared(prepared, emptyList(), null)
+                }
+            }
+        }
+
         if (showFolders) {
-            val organized = OnDeviceOrganize.organizeSongsIntoFolders(songsDevice)
-            currentFolder = OnDeviceOrganize.getFolderByPath(organized, currentFolderPath)
-            songs = OnDeviceOrganize.sortSongs(
-                sortOrder,
-                sortByFolderOnDevice,
-                currentFolder?.songs?.map { it.toSongEntity() } ?: emptyList()
-            ).filter { item -> blacklisted.value?.map { it.path }?.contains(item.song.id) == false }
+            currentFolder = devicePrepared.currentFolder
+            songs = devicePrepared.songs
             filteredSongs = songs
-            folders = currentFolder?.subFolders?.toList() ?: emptyList()
+            folders = devicePrepared.folders
             filteredFolders = folders
         } else {
-            songs = songsDevice.map { it.toSongEntity() }
-                .filter { item -> blacklisted.value?.map { it.path }?.contains(item.song.id) == false }
+            songs = devicePrepared.songs
             filteredSongs = songs
         }
     }
@@ -1420,56 +1502,60 @@ fun HomeSongs(
                                                         ); playIndex = 0
                                                     }
 
-                                                    QueueSelection.CENTERED -> {
-                                                        val minIndex = max(0, index - maxSongs / 2);
-                                                        val maxIndex = min(
-                                                            index + maxSongs / 2,
-                                                            items.size
-                                                        ); itemsRange =
-                                                            minIndex..<maxIndex; playIndex =
-                                                            index - minIndex
-                                                    }
+                                                        QueueSelection.CENTERED -> {
+                                                            val minIndex =
+                                                                max(0, index - maxSongs / 2);
+                                                            val maxIndex = min(
+                                                                index + maxSongs / 2,
+                                                                items.size
+                                                            ); itemsRange =
+                                                                minIndex..<maxIndex; playIndex =
+                                                                index - minIndex
+                                                        }
 
-                                                    QueueSelection.END_OF_QUEUE -> {
-                                                        val minIndex = max(0, index - maxSongs + 1);
-                                                        val maxIndex =
-                                                            min(index, items.size); itemsRange =
-                                                            minIndex..maxIndex; playIndex =
-                                                            index - minIndex
-                                                    }
+                                                        QueueSelection.END_OF_QUEUE -> {
+                                                            val minIndex =
+                                                                max(0, index - maxSongs + 1);
+                                                            val maxIndex =
+                                                                min(index, items.size); itemsRange =
+                                                                minIndex..maxIndex; playIndex =
+                                                                index - minIndex
+                                                        }
 
-                                                    QueueSelection.END_OF_QUEUE_WINDOWED -> {
-                                                        val minIndex = max(0, index - maxSongs + 1);
-                                                        val maxIndex = min(
-                                                            minIndex + maxSongs,
-                                                            items.size
-                                                        ); itemsRange =
-                                                            minIndex..<maxIndex; playIndex =
-                                                            index - minIndex
+                                                        QueueSelection.END_OF_QUEUE_WINDOWED -> {
+                                                            val minIndex =
+                                                                max(0, index - maxSongs + 1);
+                                                            val maxIndex = min(
+                                                                minIndex + maxSongs,
+                                                                items.size
+                                                            ); itemsRange =
+                                                                minIndex..<maxIndex; playIndex =
+                                                                index - minIndex
+                                                        }
                                                     }
                                                 }
-                                            }
-                                            val itemsLimited = items.slice(itemsRange)
-                                                .map(SongEntity::asMediaItem)
-                                            val index = itemsLimited.indexOf(song.asMediaItem)
-                                            binder?.stopRadio()
-                                            binder?.hybridPlayer?.forcePlayAtIndex(
-                                                itemsLimited,
-                                                index
-                                            )
+                                                val itemsLimited = items.slice(itemsRange)
+                                                    .map(SongEntity::asMediaItem)
+                                                val index = itemsLimited.indexOf(song.asMediaItem)
+                                                binder?.stopRadio()
+                                                binder?.hybridPlayer?.forcePlayAtIndex(
+                                                    itemsLimited,
+                                                    index
+                                                )
 
-                                    }
+                                            }
+                                        )
+                                        .animateItem(
+                                            fadeInSpec = tween(200),
+                                            fadeOutSpec = tween(200),
+                                            placementSpec = spring(
+                                                stiffness = Spring.StiffnessMediumLow,
+                                                dampingRatio = Spring.DampingRatioMediumBouncy
+                                            )
+                                        ),
                                 )
-                                .animateItem(
-                                    fadeInSpec = tween(200),
-                                    fadeOutSpec = tween(200),
-                                    placementSpec = spring(
-                                        stiffness = Spring.StiffnessMediumLow,
-                                        dampingRatio = Spring.DampingRatioMediumBouncy
-                                    )
-                                ),
-                        )
-                    }
+                            }
+
                 }
             }
 

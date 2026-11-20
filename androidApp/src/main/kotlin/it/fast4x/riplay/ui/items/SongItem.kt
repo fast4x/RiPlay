@@ -57,6 +57,7 @@ import it.fast4x.riplay.utils.thumbnailShape
 import it.fast4x.riplay.utils.typography
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.themed.AddToPlaylistPlayerMenu
+import it.fast4x.riplay.ui.components.themed.AiArtistBadge
 import it.fast4x.riplay.ui.components.themed.HeaderIconButton
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
@@ -435,7 +436,10 @@ fun SongItem(
             }
 
             // Riga autore + durata + MusicVaultButton
+            // ZoundHub: badge AI propagato dall'artista del brano (click = dettagli)
             Row(verticalAlignment = Alignment.CenterVertically) {
+                AiArtistBadge(artistText = authors.takeIf { it.isNotBlank() })
+
                 BasicText(
                     text = authors,
                     style = typography().xs.semiBold.secondary,

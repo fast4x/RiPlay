@@ -74,4 +74,13 @@ interface MBAlbumDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(mbAlbum: MBAlbum)
 
+    // TTL del catalogo: rimuove le righe non aggiornate da :cutoff (epoch ms).
+    // Il catalogo è una cache di arricchimento, non un archivio: senza pruning
+    // cresce senza limiti (settimanalmente si aggiungono centinaia di righe).
+    @Query("DELETE FROM mb_album WHERE fetchedAt < :cutoff")
+    suspend fun deleteOlderThan(cutoff: Long): Int
+
+    @Query("SELECT COUNT(*) FROM mb_album")
+    suspend fun countAll(): Int
+
 }

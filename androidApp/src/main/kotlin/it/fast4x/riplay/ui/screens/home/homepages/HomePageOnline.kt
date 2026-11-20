@@ -86,6 +86,8 @@ import it.fast4x.riplay.ui.components.themed.MoodItemColored
 import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenu
 import it.fast4x.riplay.ui.components.themed.Title
 import it.fast4x.riplay.ui.components.themed.TitleMiniSection
+import it.fast4x.riplay.ui.components.themed.rememberZoundHubAiHiddenPredicate
+import it.fast4x.riplay.ui.components.themed.zoundHubArtistNames
 import it.fast4x.riplay.ui.items.AlbumItem
 import it.fast4x.riplay.ui.items.ArtistItem
 import it.fast4x.riplay.ui.items.PlaylistItem
@@ -293,6 +295,9 @@ fun HomePageOnline(
 
     val disableScrollingText = appearanceSettings.disableScrollingText
 
+    // Filtro "nascondi contenuti AI" (ZoundHub): attivo solo con catalogo pronto.
+    val zoundHubAiHidden = rememberZoundHubAiHiddenPredicate()
+
 
     PullToRefreshBox(
         refreshing = refreshing,
@@ -384,7 +389,9 @@ fun HomePageOnline(
                                     .height(totalGridHeight)
                             ) {
                                 items(
-                                    items = section.items
+                                    items = section.items.filter { item ->
+                                        item?.zoundHubArtistNames()?.let { zoundHubAiHidden(it) } != true
+                                    }
                                 ) { item ->
                                     when (item) {
                                         is Environment.SongItem -> {
@@ -513,6 +520,7 @@ fun HomePageOnline(
                             LazyRow(contentPadding = endPaddingValues) {
                                 items(section.items.filter { item ->
                                     blacklisted.value?.map { it.path }?.contains(item?.key) == false
+                                        && item?.zoundHubArtistNames()?.let { zoundHubAiHidden(it) } != true
                                 }) { item ->
                                     when (item) {
                                         is Environment.SongItem -> {

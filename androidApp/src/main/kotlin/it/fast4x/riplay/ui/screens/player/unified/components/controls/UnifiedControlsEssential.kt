@@ -80,6 +80,7 @@ import it.fast4x.riplay.services.playback.common.PlayerState
 import it.fast4x.riplay.ui.components.themed.IconButton
 import it.fast4x.riplay.ui.components.themed.SelectorArtistsDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
+import it.fast4x.riplay.ui.components.themed.AiArtistBadge
 import it.fast4x.riplay.ui.screens.settings.isYtSyncEnabled
 import it.fast4x.riplay.ui.styling.bold
 import it.fast4x.riplay.ui.styling.favoritesIcon
@@ -360,11 +361,16 @@ fun UnifiedInfoAlbumAndArtistEssential(
 
         if (!disableScrollingText) modifierArtist = modifierArtist.basicMarquee()
 
-        BoxWithConstraints(
-            modifier = Modifier
-                .applyIf(!disableScrollingText){horizontalfadingEdge2(0.025f)},
-            contentAlignment = Alignment.Center
+        // ZoundHub: badge AI dell'artista in riproduzione (click = dettagli)
+        Row(
+            verticalAlignment = Alignment.CenterVertically
         ) {
+
+            BoxWithConstraints(
+                modifier = Modifier
+                    .applyIf(!disableScrollingText){horizontalfadingEdge2(0.025f)},
+                contentAlignment = Alignment.Center
+            ) {
             BasicText(
                 text = artist ?: "",
                 style = TextStyle(
@@ -397,6 +403,10 @@ fun UnifiedInfoAlbumAndArtistEssential(
                     .applyIf(!disableScrollingText){padding(horizontal = maxWidth*0.025f)}
 
             )
+        }
+
+            AiArtistBadge(artistText = artist)
+
         }
 
     }

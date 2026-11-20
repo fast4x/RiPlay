@@ -11,16 +11,20 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ArtistDao {
     // ArtistDao.kt
+    // Negative cache: esclude gli artisti la cui risoluzione mbId è fallita
+    // negli ultimi N giorni (mbLookupFailedAt recente). Con cutoff = 0 si
+    // ri-tentano tutti.
     @Query("""
     SELECT * FROM artist 
     WHERE mbId IS NULL 
       AND name IS NOT NULL 
       AND name != ''
       AND id NOT LIKE 'virtual::%'
+      AND (mbLookupFailedAt IS NULL OR mbLookupFailedAt < :failedBefore)
     ORDER BY timestamp DESC
     LIMIT :limit
 """)
-    suspend fun getArtistsWithoutMbId(limit: Int): List<Artist>
+    suspend fun getArtistsWithoutMbId(limit: Int, failedBefore: Long): List<Artist>
 
     @Query("SELECT * FROM artist WHERE mbId = :mbId LIMIT 1")
     suspend fun getByMbId(mbId: String): Artist?
@@ -43,6 +47,14 @@ interface ArtistDao {
 
     @Query("SELECT * FROM Artist WHERE nature = :nature")
     suspend fun getArtistsByNature(nature: ArtistNature): List<Artist>
+
+    // Ponte ZoundHub: artisti con Spotify ID noto (da url-rels MusicBrainz).
+    // Per questi il match col catalogo AI è ESATTO per ID, senza fuzzy.
+    @Query("SELECT * FROM Artist WHERE spotifyId = :spotifyId LIMIT 1")
+    suspend fun getBySpotifyId(spotifyId: String): Artist?
+
+    @Query("SELECT * FROM Artist WHERE spotifyId IS NOT NULL AND name IS NOT NULL")
+    suspend fun getArtistsWithSpotifyId(): List<Artist>
 
     @Query("""
     SELECT * FROM Artist

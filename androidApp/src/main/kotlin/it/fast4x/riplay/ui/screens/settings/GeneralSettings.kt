@@ -60,14 +60,17 @@ import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.enums.ArtistNature
 import it.fast4x.riplay.enums.CheckUpdateState
 import it.fast4x.riplay.enums.Countries
 import it.fast4x.riplay.enums.EqualizerType
 import it.fast4x.riplay.extensions.updater.UpdateDialog
+import it.fast4x.riplay.extensions.zoundhub.ZoundHubClient
 import it.fast4x.riplay.services.helpers.AudioDRCHelper
 import it.fast4x.riplay.services.playback.MediaLibraryServiceCallback
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
 import it.fast4x.riplay.ui.components.themed.SecondaryTextButton
+import it.fast4x.riplay.ui.components.themed.formatZoundHubDate
 import it.fast4x.riplay.utils.CheckForNewVersion
 import it.fast4x.riplay.utils.LazyListContainer
 import it.fast4x.riplay.utils.isIgnoringBatteryOptimizations
@@ -78,6 +81,7 @@ import it.fast4x.riplay.ui.components.themed.settingsHeaderItem
 import it.fast4x.riplay.ui.components.themed.settingsGroupHeader
 import it.fast4x.riplay.ui.components.themed.settingsGroupCard
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
+import it.fast4x.zoundhub.ZoundHubCatalogState
 
 
 @ExperimentalAnimationApi
@@ -304,108 +308,259 @@ fun GeneralSettings(
                 }
 
                 if (BuildConfig.FLAVOR == "full") {
-                    if (search.matchesAny(R.string.info_no_update_available, R.string.enable_check_for_update, R.string.when_enabled_a_new_version_is_checked_and_notified_during_startup, R.string.check_update, R.string.info_check_update_now)) {
-                    settingsGroupHeader(title = context.resources.getString(R.string.check_update))
+                    if (search.matchesAny(
+                            R.string.info_no_update_available,
+                            R.string.enable_check_for_update,
+                            R.string.when_enabled_a_new_version_is_checked_and_notified_during_startup,
+                            R.string.check_update,
+                            R.string.info_check_update_now
+                        )
+                    ) {
+                        settingsGroupHeader(title = context.resources.getString(R.string.check_update))
 
 
-                    settingsGroupCard {
+                        settingsGroupCard {
 
-                        var checkUpdateNow by remember { mutableStateOf(false) }
-                        if (checkUpdateNow) {
-                            if (checkUpdateState == CheckUpdateState.Enabled)
-                                UpdateDialog(onClose = { checkUpdateNow = false })
+                            var checkUpdateNow by remember { mutableStateOf(false) }
+                            if (checkUpdateNow) {
+                                if (checkUpdateState == CheckUpdateState.Enabled)
+                                    UpdateDialog(onClose = { checkUpdateNow = false })
 
-                            if (checkUpdateState == CheckUpdateState.OnlyCheck)
-                                CheckForNewVersion(
-                                    onDismiss = { checkUpdateNow = false },
-                                    onNoUpdateAvailable = {
+                                if (checkUpdateState == CheckUpdateState.OnlyCheck)
+                                    CheckForNewVersion(
+                                        onDismiss = { checkUpdateNow = false },
+                                        onNoUpdateAvailable = {
                                             SmartMessage(
                                                 context.resources.getString(R.string.info_no_update_available),
                                                 type = PopupType.Info,
                                                 context = context
                                             )
-                                    },
-                                    onClose = { checkUpdateNow = false }
-                                )
-                        }
-
-                        EnumValueSelectorSettingsEntry(
-                            title = stringResource(R.string.enable_check_for_update),
-                            selectedValue = checkUpdateState,
-                            onValueSelected = {
-                                coroutineScope.launch {
-                                    val new = appSettingsManager.activeSettings.value.copy(checkUpdateState = it)
-                                    appSettingsManager.updateSettings(new)
-                                }
-                            },
-                            valueText = { it.displayName }, icon = R.drawable.update,
-                        )
-                        SettingsDescription(text = stringResource(R.string.when_enabled_a_new_version_is_checked_and_notified_during_startup))
-                        AnimatedVisibility(visible = checkUpdateState != CheckUpdateState.Disabled) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                SettingsDescription(
-                                    text = stringResource(R.string.check_update),
-                                    important = true,
-                                    modifier = Modifier.weight(1f)
-                                )
-
-                                SecondaryTextButton(
-                                    text = stringResource(R.string.info_check_update_now),
-                                    onClick = { checkUpdateNow = true },
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .padding(end = 24.dp)
-                                )
+                                        },
+                                        onClose = { checkUpdateNow = false }
+                                    )
                             }
+
+                            EnumValueSelectorSettingsEntry(
+                                title = stringResource(R.string.enable_check_for_update),
+                                selectedValue = checkUpdateState,
+                                onValueSelected = {
+                                    coroutineScope.launch {
+                                        val new = appSettingsManager.activeSettings.value.copy(
+                                            checkUpdateState = it
+                                        )
+                                        appSettingsManager.updateSettings(new)
+                                    }
+                                },
+                                valueText = { it.displayName }, icon = R.drawable.update,
+                            )
+                            SettingsDescription(text = stringResource(R.string.when_enabled_a_new_version_is_checked_and_notified_during_startup))
+                            AnimatedVisibility(visible = checkUpdateState != CheckUpdateState.Disabled) {
+                                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    SettingsDescription(
+                                        text = stringResource(R.string.check_update),
+                                        important = true,
+                                        modifier = Modifier.weight(1f)
+                                    )
+
+                                    SecondaryTextButton(
+                                        text = stringResource(R.string.info_check_update_now),
+                                        onClick = { checkUpdateNow = true },
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(end = 24.dp)
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+
                         }
-                        Spacer(modifier = Modifier.height(16.dp))
-                    
-                }
                     }
 
                 }
 
 
                 if (search.matchesAny(R.string.system_language, R.string.app_language)) {
-                settingsGroupHeader(title = context.resources.getString(R.string.languages))
+                    settingsGroupHeader(title = context.resources.getString(R.string.languages))
 
 
-                settingsGroupCard {
+                    settingsGroupCard {
 
-                    //SettingsDescription(text = stringResource(R.string.system_language) + ": $systemLocale")
+                        //SettingsDescription(text = stringResource(R.string.system_language) + ": $systemLocale")
 
-                    if (search.matchesAny(R.string.app_language)) {
-                        EnumValueSelectorSettingsEntry(
-                            title = stringResource(R.string.app_language),
-                            selectedValue = languageApp,
-                            onValueSelected = {
-                                coroutineScope.launch {
-                                    val new =
-                                        appSettingsManager.activeSettings.value.copy(languageApp = it)
-                                    appSettingsManager.updateSettings(new)
-                                }
-                            },
-                            valueText = {
-                                languageToName(it)
-                            }, icon = R.drawable.globe,
-                        )
+                        if (search.matchesAny(R.string.app_language)) {
+                            EnumValueSelectorSettingsEntry(
+                                title = stringResource(R.string.app_language),
+                                selectedValue = languageApp,
+                                onValueSelected = {
+                                    coroutineScope.launch {
+                                        val new =
+                                            appSettingsManager.activeSettings.value.copy(languageApp = it)
+                                        appSettingsManager.updateSettings(new)
+                                    }
+                                },
+                                valueText = {
+                                    languageToName(it)
+                                },
+                                icon = R.drawable.globe,
+                            )
 
-                        EnumValueSelectorSettingsEntry(
-                            title = stringResource(R.string.app_language_country),
-                            selectedValue = contentCountry,
-                            onValueSelected = {
-                                coroutineScope.launch {
-                                    val new =
-                                        appSettingsManager.activeSettings.value.copy(contentCountry = it)
-                                    appSettingsManager.updateSettings(new)
-                                }
-                            },
-                            valueText = { if (it == Countries.XX) stringResource(R.string.app_language_system_country) else it.countryName },
-                            icon = R.drawable.globe,
-                        )
+                            EnumValueSelectorSettingsEntry(
+                                title = stringResource(R.string.app_language_country),
+                                selectedValue = contentCountry,
+                                onValueSelected = {
+                                    coroutineScope.launch {
+                                        val new =
+                                            appSettingsManager.activeSettings.value.copy(
+                                                contentCountry = it
+                                            )
+                                        appSettingsManager.updateSettings(new)
+                                    }
+                                },
+                                valueText = { if (it == Countries.XX) stringResource(R.string.app_language_system_country) else it.countryName },
+                                icon = R.drawable.globe,
+                            )
+                        }
+
                     }
-                
                 }
+
+
+                // ── ZoundHub (https://zoundhub.com): badge AI + catalogo locale ──
+                // Catalogo scaricato SOLO a richiesta (pulsante dedicato): ~3 MB,
+                // Dopo il primo refresh il riconoscimento funziona
+                // al 100% offline (match per nome normalizzato + Jaro-Winkler).
+                if (search.matchesAny(
+                        R.string.title_zoundhub,
+                        R.string.enable_zoundhub,
+                        R.string.zoundhub_update_now,
+                        R.string.zoundhub_artists_in_cache,
+                        R.string.zoundhub_last_update,
+                        R.string.zoundhub_last_update_never,
+                        R.string.zoundhub_hide_ai
+                    )
+                ) {
+                    settingsGroupHeader(title = context.resources.getString(R.string.title_zoundhub))
+
+                    settingsGroupCard {
+                        SwitchSettingEntry(
+                            title = stringResource(R.string.enable_zoundhub),
+                            text = "",
+                            isChecked = appSettings.isEnabledZoundHub,
+                            onCheckedChange = {
+                                coroutineScope.launch {
+                                    val new =
+                                        appSettingsManager.activeSettings.value.copy(
+                                            isEnabledZoundHub = it
+                                        )
+                                    appSettingsManager.updateSettings(new)
+                                }
+                            }
+                        )
+
+
+                        // Nasconde da home/ricerca i contenuti di artisti segnalati come AI.
+                        AnimatedVisibility(visible = appSettings.isEnabledZoundHub) {
+                            Column(modifier = Modifier.padding(start = 12.dp)) {
+                                SwitchSettingEntry(
+                                    title = stringResource(R.string.zoundhub_hide_ai),
+                                    text = "",
+                                    isChecked = appSettings.isHiddenZoundHubAi,
+                                    onCheckedChange = {
+                                        coroutineScope.launch {
+                                            val new =
+                                                appSettingsManager.activeSettings.value.copy(
+                                                    isHiddenZoundHubAi = it
+                                                )
+                                            appSettingsManager.updateSettings(new)
+                                        }
+                                    }
+                                )
+
+                                val zoundHubState by ZoundHubClient.store.state.collectAsState()
+
+                                SettingsEntry(
+                                    isEnabled = zoundHubState.status != ZoundHubCatalogState.Status.Loading,
+                                    title = if (zoundHubState.status == ZoundHubCatalogState.Status.Loading)
+                                        stringResource(R.string.zoundhub_updating)
+                                    else
+                                        stringResource(R.string.zoundhub_update_now),
+                                    titleSecondary = when {
+                                        zoundHubState.status == ZoundHubCatalogState.Status.Failed ->
+                                            stringResource(R.string.zoundhub_update_failed) +
+                                                    (zoundHubState.error?.let { " ($it)" } ?: "")
+
+                                        zoundHubState.fetchedAt != null ->
+                                            stringResource(
+                                                R.string.zoundhub_last_update,
+                                                formatZoundHubDate(zoundHubState.fetchedAt)
+                                            )
+
+                                        else ->
+                                            stringResource(R.string.zoundhub_last_update_never)
+                                    },
+                                    text = "",
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            ZoundHubClient.store.refresh().fold(
+                                                onSuccess = {
+                                                    SmartMessage(
+                                                        context.resources.getString(R.string.zoundhub_update_success),
+                                                        type = PopupType.Success,
+                                                        context = context
+                                                    )
+                                                },
+                                                onFailure = {
+                                                    SmartMessage(
+                                                        context.resources.getString(R.string.zoundhub_update_failed),
+                                                        type = PopupType.Error,
+                                                        context = context
+                                                    )
+                                                }
+                                            )
+                                        }
+                                    },
+                                    icon = R.drawable.sync,
+                                )
+
+                                if (zoundHubState.status == ZoundHubCatalogState.Status.Ready) {
+                                    SettingsDescription(
+                                        text = stringResource(
+                                            R.string.zoundhub_artists_in_cache,
+                                            zoundHubState.artistCount.toString()
+                                        )
+                                    )
+
+                                    // Ponte MusicBrainz (Fase 2): artisti della libreria già
+                                    // marcati AI_GENERATED dal backfill ZoundHub (via Spotify ID
+                                    // dagli url-rels MB, o match di nome esatto).
+                                    var aiInLibrary by remember { mutableStateOf<Int?>(null) }
+                                    LaunchedEffect(zoundHubState.status, zoundHubState.fetchedAt) {
+                                        aiInLibrary = try {
+                                            Database.artistDao()
+                                                .getArtistsByNature(ArtistNature.AI_GENERATED)
+                                                .size
+                                        } catch (_: Exception) {
+                                            null
+                                        }
+                                    }
+                                    aiInLibrary?.let {
+                                        SettingsDescription(
+                                            text = stringResource(
+                                                R.string.zoundhub_ai_artists_in_library,
+                                                it.toString()
+                                            )
+                                        )
+                                    }
+                                }
+
+                                SettingsDescription(text = stringResource(R.string.enable_zoundhub_info))
+
+                                SettingsDescription(text = stringResource(R.string.zoundhub_hide_ai_info))
+
+
+                            }
+                        }
+                    }
                 }
 
 

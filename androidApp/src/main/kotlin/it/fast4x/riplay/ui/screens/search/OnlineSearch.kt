@@ -59,6 +59,8 @@ import it.fast4x.riplay.ui.components.themed.FloatingActionsContainerWithScrollT
 import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenu
 import it.fast4x.riplay.ui.components.themed.NowPlayingSongIndicator
 import it.fast4x.riplay.ui.components.themed.TitleMiniSection
+import it.fast4x.riplay.ui.components.themed.rememberZoundHubAiHiddenPredicate
+import it.fast4x.riplay.ui.components.themed.zoundHubArtistNames
 import it.fast4x.riplay.ui.items.AlbumItem
 import it.fast4x.riplay.ui.items.ArtistItem
 import it.fast4x.riplay.ui.items.SongItem
@@ -134,6 +136,9 @@ fun OnlineSearch(
     val binder = LocalPlayerServiceBinder.current
     val disableScrollingText = appearanceSettings.disableScrollingText
 
+    // Filtro "nascondi contenuti AI" (ZoundHub): attivo solo con catalogo pronto.
+    val zoundHubAiHidden = rememberZoundHubAiHiddenPredicate()
+
     Box(
         modifier = Modifier
             .background(colorPalette().background0)
@@ -165,7 +170,7 @@ fun OnlineSearch(
 
                     suggestions.recommendedSong.let {
                         item {
-                            it?.asMediaItem?.let { mediaItem ->
+                            it?.takeUnless { zoundHubAiHidden(it.zoundHubArtistNames()) }?.asMediaItem?.let { mediaItem ->
                                 SongItem(
                                     song = mediaItem,
                                     thumbnailSizePx = songThumbnailSizePx,
@@ -198,7 +203,7 @@ fun OnlineSearch(
                     }
                     suggestions.recommendedAlbum.let {
                         item {
-                            it?.let { album ->
+                            it?.takeUnless { zoundHubAiHidden(it.zoundHubArtistNames()) }?.let { album ->
                                 AlbumItem(
                                     yearCentered = false,
                                     album = album,
@@ -215,7 +220,7 @@ fun OnlineSearch(
                     }
                     suggestions.recommendedArtist.let {
                         item {
-                            it?.let { artist ->
+                            it?.takeUnless { zoundHubAiHidden(it.zoundHubArtistNames()) }?.let { artist ->
                                 ArtistItem(
                                     artist = artist,
                                     thumbnailSizePx = songThumbnailSizePx,

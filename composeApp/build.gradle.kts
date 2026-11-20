@@ -982,6 +982,7 @@ kotlin {
                 implementation(projects.lrclib)
                 implementation(projects.audiotaginfo)
                 implementation(projects.lastfm)
+                implementation(projects.zoundhub)
 
                 implementation(libs.room.runtime)
                 implementation(libs.room.sqlite.bundled)

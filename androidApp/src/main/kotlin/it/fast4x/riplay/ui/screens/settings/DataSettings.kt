@@ -18,6 +18,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import it.fast4x.riplay.data.Database
+import it.fast4x.riplay.enums.ArtistNature
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -27,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
@@ -60,6 +63,9 @@ import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.extensions.databasebackup.BackupUiState
 import it.fast4x.riplay.ui.components.themed.DefaultDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
+import it.fast4x.riplay.ui.components.themed.formatZoundHubDate
+import it.fast4x.zoundhub.ZoundHubCatalogState
+import it.fast4x.riplay.extensions.zoundhub.ZoundHubClient
 import it.fast4x.riplay.utils.typography
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -402,6 +408,117 @@ fun DataSettings(
 
                 SettingsDescription(stringResource(R.string.info_private_cache_location_can_t_cleaned))
                 RestartPlayerService(restartService, onRestart = { restartService = false } )
+            }
+        }
+
+        // ── ZoundHub (https://zoundhub.com): badge AI + catalogo locale ──
+        // Catalogo scaricato SOLO a richiesta (pulsante dedicato): ~3 MB,
+        // ~9.700 artisti AI. Dopo il primo refresh il riconoscimento funziona
+        // al 100% offline (match per nome normalizzato + Jaro-Winkler).
+        if (search.matchesAny(R.string.title_zoundhub, R.string.enable_zoundhub, R.string.zoundhub_update_now, R.string.zoundhub_artists_in_cache, R.string.zoundhub_last_update, R.string.zoundhub_last_update_never, R.string.zoundhub_hide_ai)) {
+            SettingsGroupSpacer()
+
+            SettingsEntryGroupText(title = stringResource(R.string.title_zoundhub))
+
+            SettingsCardContainer {
+                SwitchSettingEntry(
+                    title = stringResource(R.string.enable_zoundhub),
+                    text = "",
+                    isChecked = appSettings.isEnabledZoundHub,
+                    onCheckedChange = {
+                        coroutineScope.launch {
+                            val new = appSettingsManager.activeSettings.value.copy(isEnabledZoundHub = it)
+                            appSettingsManager.updateSettings(new)
+                        }
+                    }
+                )
+
+                // Nasconde da home/ricerca i contenuti di artisti segnalati come AI.
+                // La UI si aggiorna subito: le liste osservano l'impostazione.
+                SwitchSettingEntry(
+                    title = stringResource(R.string.zoundhub_hide_ai),
+                    text = "",
+                    isChecked = appSettings.isHiddenZoundHubAi,
+                    onCheckedChange = {
+                        coroutineScope.launch {
+                            val new = appSettingsManager.activeSettings.value.copy(isHiddenZoundHubAi = it)
+                            appSettingsManager.updateSettings(new)
+                        }
+                    }
+                )
+
+                val zoundHubState by ZoundHubClient.store.state.collectAsState()
+
+                SettingsEntry(
+                    isEnabled = zoundHubState.status != ZoundHubCatalogState.Status.Loading,
+                    title = if (zoundHubState.status == ZoundHubCatalogState.Status.Loading)
+                        stringResource(R.string.zoundhub_updating)
+                    else
+                        stringResource(R.string.zoundhub_update_now),
+                    titleSecondary = when {
+                        zoundHubState.status == ZoundHubCatalogState.Status.Failed ->
+                            stringResource(R.string.zoundhub_update_failed) +
+                                (zoundHubState.error?.let { " ($it)" } ?: "")
+                        zoundHubState.fetchedAt != null ->
+                            stringResource(R.string.zoundhub_last_update, formatZoundHubDate(zoundHubState.fetchedAt))
+                        else ->
+                            stringResource(R.string.zoundhub_last_update_never)
+                    },
+                    text = "",
+                    onClick = {
+                        coroutineScope.launch {
+                            ZoundHubClient.store.refresh().fold(
+                                onSuccess = {
+                                    SmartMessage(
+                                        context.resources.getString(R.string.zoundhub_update_success),
+                                        type = PopupType.Success,
+                                        context = context
+                                    )
+                                },
+                                onFailure = {
+                                    SmartMessage(
+                                        context.resources.getString(R.string.zoundhub_update_failed),
+                                        type = PopupType.Error,
+                                        context = context
+                                    )
+                                }
+                            )
+                        }
+                    },
+                    icon = R.drawable.sync,
+                )
+
+                if (zoundHubState.status == ZoundHubCatalogState.Status.Ready) {
+                    SettingsDescription(
+                        text = stringResource(
+                            R.string.zoundhub_artists_in_cache,
+                            zoundHubState.artistCount.toString()
+                        )
+                    )
+
+                    // Ponte MusicBrainz (Fase 2): artisti della libreria già
+                    // marcati AI_GENERATED dal backfill ZoundHub (via Spotify ID
+                    // dagli url-rels MB, o match di nome esatto).
+                    var aiInLibrary by remember { mutableStateOf<Int?>(null) }
+                    LaunchedEffect(zoundHubState.status, zoundHubState.fetchedAt) {
+                        aiInLibrary = try {
+                            Database.artistDao()
+                                .getArtistsByNature(ArtistNature.AI_GENERATED)
+                                .size
+                        } catch (_: Exception) {
+                            null
+                        }
+                    }
+                    aiInLibrary?.let {
+                        SettingsDescription(
+                            text = stringResource(R.string.zoundhub_ai_artists_in_library, it.toString())
+                        )
+                    }
+                }
+
+                SettingsDescription(text = stringResource(R.string.enable_zoundhub_info))
+
+                SettingsDescription(text = stringResource(R.string.zoundhub_hide_ai_info))
             }
         }
 

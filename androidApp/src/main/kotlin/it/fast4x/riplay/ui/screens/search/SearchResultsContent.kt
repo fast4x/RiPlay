@@ -55,6 +55,8 @@ import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.extensions.persist.persist
 import it.fast4x.riplay.ui.components.LocalGlobalSheetState
 import it.fast4x.riplay.ui.components.SwipeableAlbumItem
+import it.fast4x.riplay.ui.components.themed.rememberZoundHubAiHiddenPredicate
+import it.fast4x.riplay.ui.components.themed.zoundHubArtistNames
 import it.fast4x.riplay.ui.components.SwipeablePlaylistItem
 import it.fast4x.riplay.extensions.smoothloader.Loader
 import it.fast4x.riplay.ui.components.themed.Menu
@@ -120,6 +122,9 @@ fun SearchResultsContent(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
+    // Filtro "nascondi contenuti AI" (ZoundHub): attivo solo con catalogo pronto.
+    val zoundHubAiHidden = rememberZoundHubAiHiddenPredicate()
+
     val headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit = {
 
         Column(modifier = Modifier.background(colorPalette().accent.copy(alpha = 0.15f))) {
@@ -184,6 +189,9 @@ fun SearchResultsContent(
                 headerContent = headerContent,
                 itemContent = { song ->
                     if (parentalControlEnabled && song.explicit)
+                        return@ItemsPage
+
+                    if (zoundHubAiHidden(song.zoundHubArtistNames()))
                         return@ItemsPage
 
                     SwipeablePlaylistItem(
@@ -270,6 +278,9 @@ fun SearchResultsContent(
                 emptyItemsText = emptyItemsText,
                 headerContent = headerContent,
                 itemContent = { album ->
+                    if (zoundHubAiHidden(album.zoundHubArtistNames()))
+                        return@ItemsPage
+
                     var albumPage by persist<Environment.PlaylistOrAlbumPage?>("album/${album.key}/albumPage")
                     SwipeableAlbumItem(
                         albumItem = album,
@@ -503,6 +514,9 @@ fun SearchResultsContent(
                 emptyItemsText = emptyItemsText,
                 headerContent = headerContent,
                 itemContent = { artist ->
+                    if (zoundHubAiHidden(artist.zoundHubArtistNames()))
+                        return@ItemsPage
+
                     var artistById by remember { mutableStateOf<Artist?>(null) }
                     LaunchedEffect(artist) {
                         CoroutineScope(Dispatchers.IO).launch {
@@ -556,6 +570,9 @@ fun SearchResultsContent(
                 emptyItemsText = emptyItemsText,
                 headerContent = headerContent,
                 itemContent = { video ->
+                    if (zoundHubAiHidden(video.zoundHubArtistNames()))
+                        return@ItemsPage
+
                     SwipeablePlaylistItem(
                         mediaItem = video.asMediaItem,
                         onPlayNext = {

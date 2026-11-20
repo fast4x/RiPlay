@@ -418,6 +418,7 @@ dependencies {
     implementation(projects.listenbrainz)
     implementation(projects.simpmusiclyrics)
     implementation(projects.spotifymeta)
+    implementation(projects.zoundhub)
 
     implementation(libs.navigation)
     implementation(libs.media3.session)

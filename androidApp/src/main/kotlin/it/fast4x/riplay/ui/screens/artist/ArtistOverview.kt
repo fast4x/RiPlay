@@ -138,6 +138,8 @@ import it.fast4x.riplay.ui.components.themed.KeywordChips
 import it.fast4x.riplay.ui.components.themed.LayoutWithAdaptiveThumbnail
 import it.fast4x.riplay.extensions.smoothloader.LoaderScreen
 import it.fast4x.riplay.ui.components.themed.RatingBar
+import it.fast4x.riplay.ui.components.themed.rememberZoundHubMatch
+import it.fast4x.riplay.ui.components.themed.ZoundHubArtistSection
 import it.fast4x.riplay.utils.asAlbum
 import it.fast4x.riplay.utils.cleanWikipediaText
 import it.fast4x.riplay.utils.forcePlay
@@ -687,6 +689,12 @@ fun ArtistOverview(
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
                         ) {
+                            // ZoundHub: match AI per questo artista (catalogo locale,
+                            // badge visibile anche nelle righe di liste e player)
+                            val zoundHubMatch = rememberZoundHubMatch(
+                                artistPage?.artist?.info?.name ?: artist?.name
+                            )
+
                             Row(
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically,
@@ -779,6 +787,13 @@ fun ArtistOverview(
 
                                         }
                                     }
+                                }
+                            }
+
+                            // ZoundHub: dettagli del segnale AI dell'artista
+                            AnimatedVisibility(readMore && zoundHubMatch != null) {
+                                zoundHubMatch?.let {
+                                    ZoundHubArtistSection(match = it)
                                 }
                             }
                         }

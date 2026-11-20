@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -71,6 +72,9 @@ import it.fast4x.riplay.ui.components.themed.NonQueuedMediaItemMenu
 import it.fast4x.riplay.ui.components.themed.Title
 import it.fast4x.riplay.ui.components.themed.Title2Actions
 import it.fast4x.riplay.ui.components.themed.TitleMiniSection
+import it.fast4x.riplay.ui.components.themed.rememberZoundHubAiFiltered
+import it.fast4x.riplay.ui.components.themed.rememberZoundHubAiHiddenPredicate
+import it.fast4x.riplay.ui.components.themed.zoundHubArtistNames
 import it.fast4x.riplay.ui.items.AlbumItem
 import it.fast4x.riplay.ui.items.ArtistItem
 import it.fast4x.riplay.ui.items.PlaylistItem
@@ -89,7 +93,9 @@ import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.forcePlay
 import it.fast4x.riplay.utils.insertOrUpdateBlacklist
 import it.fast4x.riplay.utils.typography
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 
@@ -135,22 +141,35 @@ fun HomePageMixedSections(
 ) {
     val coroutineScope = rememberCoroutineScope()
 
-    val relatedInit by remember(relatedInit, blacklisted.value) { mutableStateOf(
-        relatedInit?.copy(
+    // Filtro "nascondi contenuti AI" (ZoundHub): attivo solo con catalogo pronto.
+    // FIX FREEZE v1.3: il predicato delega alla cache processuale dello store e
+    // il filtraggio della RelatedPage (blacklist + AI) gira su
+    // Dispatchers.Default via produceState: mai match fuzzy sul main thread.
+    val zoundHubAiHidden = rememberZoundHubAiHiddenPredicate()
+
+    val relatedInit by produceState(
+        initialValue = relatedInit,
+        relatedInit, blacklisted.value, zoundHubAiHidden
+    ) {
+        value = withContext(Dispatchers.Default) {
+            relatedInit?.copy(
                 songs = relatedInit.songs?.filter { item ->
                     blacklisted.value?.map { it.path }?.contains(item.key) == false
+                        && !zoundHubAiHidden(item.zoundHubArtistNames())
                 },
                 artists = relatedInit.artists?.filter { item ->
                     blacklisted.value?.map { it.path }?.contains(item.key) == false
+                        && !zoundHubAiHidden(item.zoundHubArtistNames())
                 },
                 playlists = relatedInit.playlists?.filter { item ->
                     blacklisted.value?.map { it.path }?.contains(item.key) == false
                 },
                 albums = relatedInit.albums?.filter { item ->
                     blacklisted.value?.map { it.path }?.contains(item.key) == false
+                        && !zoundHubAiHidden(item.zoundHubArtistNames())
                 }
             )
-        )
+        }
     }
 
     Column(
@@ -239,7 +258,7 @@ fun HomePageMixedSections(
                     .fillMaxWidth()
                     .height(totalGridHeight)
             ) {
-                trending?.let { song ->
+                trending?.takeUnless { zoundHubAiHidden(it.zoundHubArtistNames()) }?.let { song ->
                     item {
                         SongItem(
                             song = song,
@@ -375,19 +394,26 @@ fun HomePageMixedSections(
 
         discoverPageInit?.let { page ->
 
-            val newReleaseAlbumsFiltered = mutableListOf<Environment.AlbumItem>()
             val preferredNames = preferitesArtists.map { it.name }.toSet()
 
-            page.newReleaseAlbums.forEach { album ->
-                val apiAuthorsNames = album.authors?.map { it.name } ?: emptyList()
-
-                val match = apiAuthorsNames.any { apiName ->
-
-                    preferredNames.any { dbName ->
-                        apiName?.contains(dbName.toString(), ignoreCase = true) == true
+            // FIX FREEZE v1.3: la selezione "nuovi album dei tuoi artisti"
+            // (match preferiti + filtro AI) gira su Dispatchers.Default via
+            // produceState; prima veniva calcolata SINCRONAMENTE in composizione.
+            val newReleaseAlbumsFiltered by produceState(
+                initialValue = emptyList<Environment.AlbumItem>(),
+                page.newReleaseAlbums, preferredNames, zoundHubAiHidden
+            ) {
+                value = withContext(Dispatchers.Default) {
+                    page.newReleaseAlbums.filter { album ->
+                        val apiAuthorsNames = album.authors?.map { it.name } ?: emptyList()
+                        val match = apiAuthorsNames.any { apiName ->
+                            preferredNames.any { dbName ->
+                                apiName?.contains(dbName.toString(), ignoreCase = true) == true
+                            }
+                        }
+                        match && !zoundHubAiHidden(album.zoundHubArtistNames())
                     }
                 }
-                if (match) newReleaseAlbumsFiltered.add(album)
             }
 
             if (showNewAlbumsArtists)
@@ -424,9 +450,15 @@ fun HomePageMixedSections(
                     onClick = { navController.navigate(NavRoutes.newAlbums.name) },
                 )
 
+                // FIX FREEZE v1.3: filtro AI su Dispatchers.Default
+                val newReleaseAlbumsAiFiltered = rememberZoundHubAiFiltered(
+                    page.newReleaseAlbums
+                ) { it.zoundHubArtistNames() }
+
                 LazyRow(contentPadding = endPaddingValues) {
                     items(
-                        items = page.newReleaseAlbums.distinctBy { it.key },
+                        items = newReleaseAlbumsAiFiltered
+                            .distinctBy { it.key },
                         key = { it.key }) {
                         AlbumItem(
                             album = it,
@@ -564,14 +596,22 @@ fun MoodAndGenresPart(
     blacklisted: State<List<Blacklist>?>
 ) {
 
-    val discoverPageInit by remember(discoverPageInit) {
-        mutableStateOf(
+    // Filtro "nascondi contenuti AI" (ZoundHub): attivo solo con catalogo pronto.
+    // FIX FREEZE v1.3: filtraggio su Dispatchers.Default (produceState).
+    val zoundHubAiHidden = rememberZoundHubAiHiddenPredicate()
+
+    val discoverPageInit by produceState(
+        initialValue = discoverPageInit,
+        discoverPageInit, blacklisted.value, zoundHubAiHidden
+    ) {
+        value = withContext(Dispatchers.Default) {
             discoverPageInit?.copy(
                 newReleaseAlbums = discoverPageInit.newReleaseAlbums.filter { item ->
                     blacklisted.value?.map { it.path }?.contains(item.key) == false
+                        && !zoundHubAiHidden(item.zoundHubArtistNames())
                 },
             )
-        )
+        }
     }
 
     val localMonthlyPlaylists by remember(localMonthlyPlaylists) { mutableStateOf(
@@ -581,25 +621,35 @@ fun MoodAndGenresPart(
         )
     }
 
-    val chartsPageInit by remember(chartsPageInit) { mutableStateOf(
-        chartsPageInit?.copy(
-            playlists = chartsPageInit.playlists?.filter { item ->
-                blacklisted.value?.map { it.path }?.contains(item.key) == false
-            },
-            songs = chartsPageInit.songs?.filter { item ->
-                blacklisted.value?.map { it.path }?.contains(item.key) == false
-            },
-            artists = chartsPageInit.artists?.filter { item ->
-                blacklisted.value?.map { it.path }?.contains(item.key) == false
-            },
-            videos = chartsPageInit.videos?.filter { item ->
-                blacklisted.value?.map { it.path }?.contains(item.key) == false
-            },
-            trending = chartsPageInit.trending?.filter { item ->
-                blacklisted.value?.map { it.path }?.contains(item.key) == false
-            }
-        )
-    ) }
+    // FIX FREEZE v1.3: filtraggio charts su Dispatchers.Default (produceState).
+    val chartsPageInit by produceState(
+        initialValue = chartsPageInit,
+        chartsPageInit, blacklisted.value, zoundHubAiHidden
+    ) {
+        value = withContext(Dispatchers.Default) {
+            chartsPageInit?.copy(
+                playlists = chartsPageInit.playlists?.filter { item ->
+                    blacklisted.value?.map { it.path }?.contains(item.key) == false
+                },
+                songs = chartsPageInit.songs?.filter { item ->
+                    blacklisted.value?.map { it.path }?.contains(item.key) == false
+                        && !zoundHubAiHidden(item.zoundHubArtistNames())
+                },
+                artists = chartsPageInit.artists?.filter { item ->
+                    blacklisted.value?.map { it.path }?.contains(item.key) == false
+                        && !zoundHubAiHidden(item.zoundHubArtistNames())
+                },
+                videos = chartsPageInit.videos?.filter { item ->
+                    blacklisted.value?.map { it.path }?.contains(item.key) == false
+                        && !zoundHubAiHidden(item.zoundHubArtistNames())
+                },
+                trending = chartsPageInit.trending?.filter { item ->
+                    blacklisted.value?.map { it.path }?.contains(item.key) == false
+                        && !zoundHubAiHidden(item.zoundHubArtistNames())
+                }
+            )
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -916,6 +966,9 @@ fun ForYouPart(
     //relatedPageResult: Result<Environment.RelatedPage?>?
 ) {
 
+    // Filtro "nascondi contenuti AI" (ZoundHub): attivo solo con catalogo pronto.
+    val zoundHubAiHidden = rememberZoundHubAiHiddenPredicate()
+
     Column(
         modifier = Modifier.fillMaxSize(),
     ) {
@@ -937,8 +990,16 @@ fun ForYouPart(
                         .padding(horizontal = 16.dp)
                         .padding(vertical = 4.dp)
                 )
+                // FIX FREEZE v1.3: filtro AI della sezione calcolato in
+                // background (Dispatchers.Default) prima del blocco lazy
+                val sectionItemsAiFiltered = rememberZoundHubAiFiltered(
+                    it.items
+                ) { item -> item?.zoundHubArtistNames() }
+
                 LazyRow(contentPadding = endPaddingValues) {
-                    items(it.items.filter {item -> blacklisted.value?.map { it.path }?.contains(item?.key) == false }) { item ->
+                    items(sectionItemsAiFiltered.filter { item ->
+                        blacklisted.value?.map { bl -> bl.path }?.contains(item?.key) == false
+                    }) { item ->
                         when (item) {
                             is Environment.SongItem -> {
                                 Timber.d("Environment homePage SongItem: ${item.info?.name}")

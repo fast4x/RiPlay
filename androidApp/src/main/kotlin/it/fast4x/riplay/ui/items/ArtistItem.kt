@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
@@ -30,6 +31,7 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.data.models.Artist
 import it.fast4x.riplay.ui.components.themed.TextPlaceholder
+import it.fast4x.riplay.ui.components.themed.AiArtistBadge
 import it.fast4x.riplay.ui.styling.shimmer
 import it.fast4x.riplay.utils.applyIf
 import it.fast4x.riplay.ui.styling.secondary
@@ -161,14 +163,20 @@ fun ArtistItem(
             ItemInfoContainer(
                 horizontalAlignment = infoAlignment
             ) {
-                BasicText(
-                    text = cleanName,
-                    style = typography().xs.semiBold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier
-                        .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                )
+                // ZoundHub: badge AI accanto al nome artista (click = dettagli)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    BasicText(
+                        text = cleanName,
+                        style = typography().xs.semiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .weight(1f)
+                            .applyIf(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                    )
+
+                    AiArtistBadge(artistText = name)
+                }
 
                 subscribersCount?.let {
                     BasicText(

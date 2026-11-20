@@ -42,10 +42,11 @@ interface AlbumDao {
       AND authorsText IS NOT NULL
       AND title NOT IN ('Audio', 'WhatsApp Audio', 'Unknown Album')
       AND title NOT LIKE 'Audio %'
+      AND (mbLookupFailedAt IS NULL OR mbLookupFailedAt < :failedBefore)
     ORDER BY timestamp DESC
     LIMIT :limit
 """)
-    suspend fun getYtAlbumsWithoutMbId(limit: Int): List<Album>
+    suspend fun getYtAlbumsWithoutMbId(limit: Int, failedBefore: Long): List<Album>
 
     @Query("""
     SELECT a.* FROM Album a
