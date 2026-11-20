@@ -141,7 +141,7 @@ data class AppSettings(
     // Abilita il badge AI su artisti/album/brani (segnale a livello ARTISTA
     // propagato alle release) e il catalogo locale con aggiornamento manuale
     // dalla sezione Dati delle impostazioni.
-    val isEnabledZoundHub: Boolean = true,
+    val isEnabledZoundHub: Boolean = false,
     // Nasconde dalle liste (home, ricerca) i contenuti di artisti segnalati
     // come AI da ZoundHub. Il filtro e' attivo SOLO con il catalogo scaricato:
     // finche' non e' pronto le liste restano complete (niente falsi vuoti).
