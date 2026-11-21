@@ -54,7 +54,7 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 
 ### 🎨 Customization
 - Themes
-- Audio controls: volume, speed, pitch, normalization, skip silence, bassboost
+- Audio controls: volume, speed, pitch, normalization, skip silence, bassboost, gapless playback, crossfade
 
 
 ### 🌐 Multilingual Support

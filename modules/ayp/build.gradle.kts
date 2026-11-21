@@ -29,4 +29,5 @@ android {
 
 dependencies {
     implementation(libs.appcompat)
+    testImplementation(kotlin("test-junit"))
 }
