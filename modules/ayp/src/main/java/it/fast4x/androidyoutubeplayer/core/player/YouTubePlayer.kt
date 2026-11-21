@@ -20,6 +20,19 @@ interface YouTubePlayer {
    */
   fun cueVideo(videoId: String, startSeconds: Float)
 
+  /**
+   * Pre-cues the next video on the standby player deck so track transitions can swap decks without a cold start.
+   * @param videoId id of the next video to pre-cue
+   * @param startSeconds the time from which the next video should start playing
+   */
+  fun preloadVideo(videoId: String, startSeconds: Float = 0f) {}
+
+  /**
+   * Starts an overlapping dual-deck crossfade in the WebView: the outgoing deck fades out over
+   * [durationMs] while the standby deck immediately starts playing [nextVideoId] and fades in.
+   */
+  fun startCrossfade(nextVideoId: String, durationMs: Int) {}
+
   fun play()
   fun pause()
 

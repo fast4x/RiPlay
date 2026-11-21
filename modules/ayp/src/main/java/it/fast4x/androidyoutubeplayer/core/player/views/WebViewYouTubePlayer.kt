@@ -43,6 +43,8 @@ private class YouTubePlayerImpl(
     webView.invoke("loadVideo", videoId, startSeconds)
   }
   override fun cueVideo(videoId: String, startSeconds: Float) = webView.invoke("cueVideo", videoId, startSeconds)
+  override fun preloadVideo(videoId: String, startSeconds: Float) = webView.invoke("preloadVideo", videoId, startSeconds)
+  override fun startCrossfade(nextVideoId: String, durationMs: Int) = webView.invoke("startCrossfade", nextVideoId, durationMs)
   override fun play() = webView.invoke("playVideo")
   override fun pause() {
 //    val caller = Exception().stackTraceToString()
