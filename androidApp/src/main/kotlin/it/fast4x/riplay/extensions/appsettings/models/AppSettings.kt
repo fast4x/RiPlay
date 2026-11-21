@@ -189,6 +189,7 @@ data class AppSettings(
     val playbackPitch: Float = 1f,
     val audioQualityFormat: AudioQualityFormat = AudioQualityFormat.Auto,
     val castType: CastType = CastType.NONE,
+    val streamRelayEnabled: Boolean = false,
     val skipSilenceEnabled: Boolean = false,
     val stateDuration: Float = 0f,
     val stateMediaId: String = "",

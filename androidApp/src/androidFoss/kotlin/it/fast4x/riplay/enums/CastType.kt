@@ -7,6 +7,10 @@ enum class CastType(val title: Int, val description: Int) {
         title = R.string.ritune_cast,
         description = R.string.ritune_cast_info,
     ),
+    UPNP(
+        title = R.string.upnp_cast,
+        description = R.string.upnp_cast_info,
+    ),
     NONE(
         title = R.string.none,
         description = R.string.none_info,

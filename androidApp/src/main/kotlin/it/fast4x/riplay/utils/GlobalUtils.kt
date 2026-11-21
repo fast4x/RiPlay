@@ -13,6 +13,7 @@ import it.fast4x.riplay.LocalAppearanceSettingsManager
 import it.fast4x.riplay.LocalPlayerServiceBinder
 import it.fast4x.riplay.MainApplication
 import it.fast4x.riplay.cast.ritune.models.RiTuneDevice
+import it.fast4x.riplay.cast.upnp.models.UpnpDevice
 import it.fast4x.riplay.ui.styling.LocalAppearance
 
 @Composable
@@ -66,6 +67,16 @@ object GlobalSharedData {
     var riTuneError: MutableState<String?> = mutableStateOf(null)
     val riTuneCastActive: Boolean
         get() = riTuneDevices.value.any { it.selected }
+
+    var upnpDevices: MutableState<List<UpnpDevice>> = mutableStateOf(emptyList())
+    var upnpConnected = mutableStateOf(false)
+    var upnpError: MutableState<String?> = mutableStateOf(null)
+    val upnpCastActive: Boolean
+        get() = upnpDevices.value.any { it.selected }
+
+    // Server di streaming locale (Fase 2): stato per la UI (selettore cast, impostazioni)
+    var relayServerRunning = mutableStateOf(false)
+    var relayServerUrl: MutableState<String?> = mutableStateOf(null)
 
     var chromecastConnected = mutableStateOf(false)
 

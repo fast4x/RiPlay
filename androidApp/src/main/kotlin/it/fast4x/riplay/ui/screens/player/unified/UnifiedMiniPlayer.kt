@@ -85,6 +85,8 @@ import it.fast4x.riplay.enums.MiniPlayerType
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
+import it.fast4x.riplay.cast.upnp.models.UpnpConnectionStatus
+import it.fast4x.riplay.cast.upnp.models.UpnpRemoteCommand
 import it.fast4x.riplay.enums.AudioVisualizerBaseStyle
 import it.fast4x.riplay.enums.AudioVisualizerStyle
 import it.fast4x.riplay.enums.PlayerTransitionAnimation
@@ -369,16 +371,27 @@ fun UnifiedMiniPlayer(
                                 if (dragAmount < 0) showPlayer()
                                 else if (dragAmount > 20) {
                                     if (!disableClosingPlayerSwipingDown) {
-                                        if (!GlobalSharedData.riTuneCastActive)
-                                            binder.hybridPlayer.pause()
-                                        else
-                                            CoroutineScope(Dispatchers.IO).launch {
-                                                binder.riTuneCastClient.sendCommand(
-                                                    RiTuneRemoteCommand(
-                                                        "play"
+                                        when {
+                                            GlobalSharedData.upnpCastActive &&
+                                                    binder.upnpCastClient.connectionStatus.value == UpnpConnectionStatus.Connected ->
+                                                CoroutineScope(Dispatchers.IO).launch {
+                                                    binder.upnpCastClient.sendCommand(
+                                                        UpnpRemoteCommand("pause")
                                                     )
-                                                )
-                                            }
+                                                }
+
+                                            !GlobalSharedData.riTuneCastActive ->
+                                                binder.hybridPlayer.pause()
+
+                                            else ->
+                                                CoroutineScope(Dispatchers.IO).launch {
+                                                    binder.riTuneCastClient.sendCommand(
+                                                        RiTuneRemoteCommand(
+                                                            "play"
+                                                        )
+                                                    )
+                                                }
+                                        }
                                         binder.hybridPlayer.clearMediaItems()
                                         hidePlayer()
                                         runCatching {
@@ -502,28 +515,50 @@ fun UnifiedMiniPlayer(
                                 .clip(RoundedCornerShape(playPauseRoundness))
                                 .clickable {
                                     if (shouldBePlaying) {
-                                        if (!GlobalSharedData.riTuneCastActive)
-                                            binder.hybridPlayer.pause()
-                                        else
-                                            CoroutineScope(Dispatchers.IO).launch {
-                                                binder.riTuneCastClient.sendCommand(
-                                                    RiTuneRemoteCommand(
-                                                        "pause"
+                                        when {
+                                            GlobalSharedData.upnpCastActive &&
+                                                    binder.upnpCastClient.connectionStatus.value == UpnpConnectionStatus.Connected ->
+                                                CoroutineScope(Dispatchers.IO).launch {
+                                                    binder.upnpCastClient.sendCommand(
+                                                        UpnpRemoteCommand("pause")
                                                     )
-                                                )
-                                            }
+                                                }
+
+                                            !GlobalSharedData.riTuneCastActive ->
+                                                binder.hybridPlayer.pause()
+
+                                            else ->
+                                                CoroutineScope(Dispatchers.IO).launch {
+                                                    binder.riTuneCastClient.sendCommand(
+                                                        RiTuneRemoteCommand(
+                                                            "pause"
+                                                        )
+                                                    )
+                                                }
+                                        }
 
                                     } else {
-                                        if (!GlobalSharedData.riTuneCastActive)
-                                            binder.hybridPlayer.play()
-                                        else
-                                            CoroutineScope(Dispatchers.IO).launch {
-                                                binder.riTuneCastClient.sendCommand(
-                                                    RiTuneRemoteCommand(
-                                                        "play", mediaId = mediaItem.mediaId
+                                        when {
+                                            GlobalSharedData.upnpCastActive &&
+                                                    binder.upnpCastClient.connectionStatus.value == UpnpConnectionStatus.Connected ->
+                                                CoroutineScope(Dispatchers.IO).launch {
+                                                    binder.upnpCastClient.sendCommand(
+                                                        UpnpRemoteCommand("play")
                                                     )
-                                                )
-                                            }
+                                                }
+
+                                            !GlobalSharedData.riTuneCastActive ->
+                                                binder.hybridPlayer.play()
+
+                                            else ->
+                                                CoroutineScope(Dispatchers.IO).launch {
+                                                    binder.riTuneCastClient.sendCommand(
+                                                        RiTuneRemoteCommand(
+                                                            "play", mediaId = mediaItem.mediaId
+                                                        )
+                                                    )
+                                                }
+                                        }
 
                                     }
                                 }

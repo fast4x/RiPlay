@@ -552,7 +552,19 @@ fun ActionBar(
         }
     }
 
-    if (CastHelper.isCastAvailable && castType !in listOf(CastType.NONE, CastType.RITUNECAST)) {
+    // Cast UPnP/DLNA (Sonos, smart TV, speaker DLNA): stesso sheet di RiTune,
+    // il contenuto e' scelto per castType in MainActivity
+    if (castType == CastType.UPNP) {
+        val showCastScreen = LocalRiTuneSheetState.current
+        HeaderIcon(
+            if (GlobalSharedData.upnpCastActive) R.drawable.cast_connected else R.drawable.cast_disconnected,
+            tint = colorPalette().accent
+        ) {
+            showCastScreen.expandSoft()
+        }
+    }
+
+    if (CastHelper.isCastAvailable && castType !in listOf(CastType.NONE, CastType.RITUNECAST, CastType.UPNP)) {
         CastButton()
     }
 

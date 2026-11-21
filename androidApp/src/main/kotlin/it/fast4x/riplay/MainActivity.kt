@@ -184,6 +184,7 @@ import it.fast4x.riplay.extensions.databasebackup.DatabaseBackupManager
 import it.fast4x.riplay.extensions.ondevice.OnDeviceViewModel
 import it.fast4x.riplay.cast.ritune.models.toRiTuneDevice
 import it.fast4x.riplay.cast.ritune.RiTuneCastSelector
+import it.fast4x.riplay.cast.upnp.UpnpCastSelector
 import it.fast4x.riplay.enums.CastType
 import it.fast4x.riplay.extensions.storagewarning.StorageWarningChecker
 import it.fast4x.riplay.services.playback.common.PlayerState
@@ -1643,8 +1644,18 @@ class MainActivity : AppCompatActivity() {
                                                 },
                                                 shape = thumbnailRoundness.shape()
                                             ) {
-                                                RiTuneCastSelector() {
-                                                    //castSheetState.collapseSoft()
+                                                // Il contenuto dipende dal tipo di cast selezionato:
+                                                // UPNP -> selettore UPnP/DLNA (Sonos...), altrimenti RiTune
+                                                val currentCastType = LocalAppSettingsManager.current
+                                                    .activeSettings.collectAsStateWithLifecycle().value.castType
+                                                if (currentCastType == CastType.UPNP) {
+                                                    UpnpCastSelector() {
+                                                        //castSheetState.collapseSoft()
+                                                    }
+                                                } else {
+                                                    RiTuneCastSelector() {
+                                                        //castSheetState.collapseSoft()
+                                                    }
                                                 }
                                             }
 

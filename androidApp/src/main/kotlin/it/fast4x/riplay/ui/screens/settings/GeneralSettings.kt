@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -32,8 +33,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -59,6 +62,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.LocalAppearanceSettingsManager
+import it.fast4x.riplay.cast.upnp.RelayLinkRow
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.enums.ArtistNature
 import it.fast4x.riplay.enums.CheckUpdateState
@@ -66,6 +70,7 @@ import it.fast4x.riplay.enums.Countries
 import it.fast4x.riplay.enums.EqualizerType
 import it.fast4x.riplay.extensions.updater.UpdateDialog
 import it.fast4x.riplay.extensions.zoundhub.ZoundHubClient
+import it.fast4x.riplay.server.RelayManager
 import it.fast4x.riplay.services.helpers.AudioDRCHelper
 import it.fast4x.riplay.services.playback.MediaLibraryServiceCallback
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
@@ -81,6 +86,8 @@ import it.fast4x.riplay.ui.components.themed.settingsHeaderItem
 import it.fast4x.riplay.ui.components.themed.settingsGroupHeader
 import it.fast4x.riplay.ui.components.themed.settingsGroupCard
 import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
+import it.fast4x.riplay.ui.styling.bold
+import it.fast4x.riplay.utils.typography
 import it.fast4x.zoundhub.ZoundHubCatalogState
 
 
@@ -1565,12 +1572,12 @@ fun GeneralSettings(
 
                  // cast to complete in the future
                 if (search.matchesAny(R.string.cast, R.string.enable_ritune_cast, R.string.ritune_cast_info, R.string.cast_type)) {
-                settingsGroupHeader(title = context.resources.getString(R.string.cast))
+                    settingsGroupHeader(title = context.resources.getString(R.string.cast))
 
 
-                settingsGroupCard {
+                    settingsGroupCard {
 
-                    if (search.matchesAny(R.string.cast))
+                        if (search.matchesAny(R.string.cast))
 //                        SwitchSettingEntry(
 //                            title = stringResource(R.string.enable_ritune_cast),
 //                            text = stringResource(R.string.ritune_cast_info),
@@ -1580,25 +1587,125 @@ fun GeneralSettings(
 //                            }
 //, icon = R.drawable.cast_connected,                        )
 
-                        EnumValueSelectorSettingsEntry(
-                            title = stringResource(R.string.cast_type),
-                            selectedValue = castType,
-                            onValueSelected = {
-                                coroutineScope.launch {
-                                    val new = appSettingsManager.activeSettings.value.copy(castType = it)
-                                    appSettingsManager.updateSettings(new)
-                                }
-                                restartActivity = true
-                            },
-                            valueText = { stringResource(it.title) }, icon = R.drawable.cast_disconnected,
-                        )
+                            EnumValueSelectorSettingsEntry(
+                                title = stringResource(R.string.cast_type),
+                                selectedValue = castType,
+                                onValueSelected = {
+                                    coroutineScope.launch {
+                                        val new =
+                                            appSettingsManager.activeSettings.value.copy(castType = it)
+                                        appSettingsManager.updateSettings(new)
+                                    }
+                                    restartActivity = true
+                                },
+                                valueText = { stringResource(it.title) },
+                                icon = R.drawable.cast_disconnected,
+                            )
                         RestartActivity(
                             restartActivity,
-                            onRestart = { restartActivity = false })
+                            onRestart = { restartActivity = false }
+                        )
 
-                
+                    }
                 }
-                }
+
+                    if (search.matchesAny(R.string.upnp_relay_server)) {
+                        settingsGroupHeader(title = context.resources.getString(R.string.upnp_relay_server))
+
+
+                        settingsGroupCard {
+
+                            // Fase 2: server di streaming locale (sorgente per il cast UPnP dei
+                            // file locali + sorgente generica per player esterni via playlist M3U)
+                            SwitchSettingEntry(
+                                title = stringResource(R.string.upnp_relay_server),
+                                text = stringResource(R.string.upnp_relay_server_info),
+                                isChecked = appSettings.streamRelayEnabled,
+                                onCheckedChange = {
+                                    coroutineScope.launch {
+                                        val new = appSettingsManager.activeSettings.value.copy(
+                                            streamRelayEnabled = it
+                                        )
+                                        appSettingsManager.updateSettings(new)
+                                    }
+                                },
+                                icon = R.drawable.server,
+                            )
+
+                            AnimatedVisibility(visible = appSettings.streamRelayEnabled) {
+                                Column(
+                                    modifier = Modifier.padding(start = 16.dp)
+                                ) {
+
+                                    val relayRunning = RelayManager.running.collectAsState().value
+                                    val relayUrl = RelayManager.baseUrl.collectAsState().value
+                                    val clipboard = LocalClipboardManager.current
+
+                                    // r2: l'IP LAN puo' cambiare (riconnessione Wi-Fi): a ogni apertura del
+                                    // selettore ricalcoliamo l'indirizzo mostrato.
+                                    LaunchedEffect(Unit) { RelayManager.refreshUrl() }
+
+                                    Spacer(modifier = Modifier.height(20.dp))
+//                            Text(
+//                                text = stringResource(R.string.upnp_relay_server),
+//                                color = colorPalette().text,
+//                                style = typography().xs.bold,
+//                                modifier = Modifier.padding(bottom = 6.dp)
+//                            )
+
+                                    if (relayRunning && relayUrl != null) {
+
+                                        fun copyToClipboard(url: String) {
+                                            clipboard.setText(AnnotatedString(url))
+                                            SmartMessage(
+                                                context.resources.getString(R.string.upnp_relay_server_copied),
+                                                PopupType.Info,
+                                                context = context
+                                            )
+                                        }
+
+                                        RelayLinkRow(
+                                            label = stringResource(R.string.upnp_relay_server_url),
+                                            url = relayUrl,
+                                            onClick = { copyToClipboard(relayUrl) }
+                                        )
+                                        RelayLinkRow(
+                                            label = stringResource(R.string.upnp_relay_server_playlist),
+                                            url = "$relayUrl/playlist.m3u",
+                                            onClick = { copyToClipboard("$relayUrl/playlist.m3u") }
+                                        )
+                                    } else if (relayRunning) {
+                                        // r2: server in ascolto ma senza IPv4 LAN utilizzabile (Wi-Fi spento,
+                                        // rete senza DHCP o range non standard): il server FUNZIONA ma non
+                                        // abbiamo un indirizzo da mostrare/copiare.
+                                        Text(
+                                            text = stringResource(R.string.upnp_relay_server_active),
+                                            color = colorPalette().text,
+                                            style = typography().xs.bold,
+                                            modifier = Modifier.padding(bottom = 2.dp)
+                                        )
+                                        Text(
+                                            text = stringResource(R.string.upnp_relay_server_no_ip),
+                                            color = colorPalette().text,
+                                            style = typography().xs.bold,
+                                            modifier = Modifier.padding(bottom = 6.dp)
+                                        )
+                                    } else {
+                                        Text(
+                                            text = stringResource(R.string.upnp_relay_server_inactive),
+                                            color = colorPalette().text,
+                                            style = typography().xs.bold,
+                                            modifier = Modifier.padding(bottom = 6.dp)
+                                        )
+                                    }
+
+                                }
+                            }
+
+
+                        }
+                    }
+
 
 
                 if (search.matchesAny(R.string.settings_automatic_playback, R.string.settings_bt_title_bluetooth_audio_devices, R.string.settings_bt_info_resume_playback_when_connected_pause_when_disconnected, R.string.settings_wired_title_wired_audio_devices, R.string.settings_wired_info_resume_playback_when_plugged_pause_when_unplugged)) {

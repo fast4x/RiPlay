@@ -468,6 +468,10 @@ dependencies {
     implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.client.websockets)
 
+    // Server di streaming locale (Fase 2): relay per cast UPnP/DLNA di file
+    // locali + sorgente generica per player esterni (VLC, browser, altri RiPlay)
+    implementation(libs.ktor.server.cio)
+
     implementation(libs.room.ktx)
     implementation(libs.room.runtime)
     implementation(libs.room.sqlite.bundled)

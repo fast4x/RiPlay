@@ -161,6 +161,16 @@ import it.fast4x.riplay.extensions.players.getOnlineMetadata
 import it.fast4x.riplay.cast.ritune.RiTuneCastClient
 import it.fast4x.riplay.cast.ritune.models.RiTuneConnectionStatus
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
+import it.fast4x.riplay.cast.upnp.UpnpCastClient
+import it.fast4x.riplay.cast.upnp.models.UpnpConnectionStatus
+import it.fast4x.riplay.cast.upnp.models.UpnpRemoteCommand
+import it.fast4x.riplay.server.RelayManager
+import it.fast4x.riplay.server.RelayMime
+import it.fast4x.riplay.server.RelayRegistry
+import it.fast4x.riplay.server.RelayUris
+import it.fast4x.riplay.utils.getFileNameFromUri
+import it.fast4x.riplay.utils.LOCAL_KEY_PREFIX
+import it.fast4x.riplay.utils.localMediaStoreUriOrNull
 import it.fast4x.riplay.data.models.QueuedMediaItem
 import it.fast4x.riplay.data.models.UnplayableTrack
 import it.fast4x.riplay.data.models.defaultQueueId
@@ -416,6 +426,9 @@ class PlayerService : MediaLibraryService(),
 
     private val riTuneCastClient: RiTuneCastClient = RiTuneCastClient()
     private var riTuneObserverJob: Job? = null
+
+    private val upnpCastClient: UpnpCastClient = UpnpCastClient()
+    private var upnpObserverJob: Job? = null
 
     private val equalizerHelper: EqualizerHelper by lazy { EqualizerHelper(this) }
 
@@ -786,6 +799,10 @@ class PlayerService : MediaLibraryService(),
 
                 runCatching { initializeRiTune() }
                     .onFailure { Timber.e("PlayerService startup initializeRiTune failed: $it") }
+                runCatching { initializeUpnp() }
+                    .onFailure { Timber.e("PlayerService startup initializeUpnp failed: $it") }
+                runCatching { initializeRelayServer() }
+                    .onFailure { Timber.e("PlayerService startup initializeRelayServer failed: $it") }
                 runCatching { initializeDiscordPresence() }
                     .onFailure { Timber.e("PlayerService startup initializeDiscordPresence failed: $it") }
 
@@ -1081,6 +1098,13 @@ class PlayerService : MediaLibraryService(),
                         (settings.songSortBy != songsSortBy) -> {
                             songsSortBy = settings.songSortBy
                             notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.SONGS)
+                        }
+                        // Fase 2: avvio/stop del server di streaming a runtime, senza riavvio activity
+                        (settings.streamRelayEnabled != relayEnabledObserved) -> {
+                            relayEnabledObserved = settings.streamRelayEnabled
+                            RelayManager.startIfEnabled(this@PlayerService, settings.streamRelayEnabled)
+                            GlobalSharedData.relayServerRunning.value = RelayManager.running.value
+                            GlobalSharedData.relayServerUrl.value = RelayManager.baseUrl.value
                         }
                     }
 
@@ -1668,6 +1692,283 @@ class PlayerService : MediaLibraryService(),
             }
             Timber.d("PlayerService initializeRiTune: JOB TERMINATO (end of loop)")
         }
+    }
+
+    /**
+     * Cast UPnP/DLNA (Sonos, smart TV, speaker DLNA): stesso schema di RiTune.
+     * Il loop monitora connessione e stato del renderer e aggiorna i flow
+     * GlobalSharedData, mentre il routing dei brani avviene in
+     * castCurrentMediaItemToUpnp (guard in onMediaItemTransition).
+     */
+    private fun initializeUpnp() {
+
+        upnpObserverJob?.cancel()
+
+        val isUpnpEnabled = appSettings.castType == CastType.UPNP
+        if (!isUpnpEnabled) return
+
+        var isConnecting = false
+
+        upnpObserverJob = this@PlayerService.serviceScope.launch {
+
+            while (isActive) {
+
+                val connectionStatus = upnpCastClient.connectionStatus.value
+                try {
+                    withContext(Dispatchers.Main) {
+                        GlobalSharedData.upnpError.value = when (connectionStatus) {
+                            is UpnpConnectionStatus.Error -> connectionStatus.message
+                            else -> null
+                        }
+                        GlobalSharedData.upnpConnected.value =
+                            connectionStatus == UpnpConnectionStatus.Connected
+                    }
+                } catch (e: Exception) {
+                    Timber.e("PlayerService initializeUpnp LOOP ERROR: $e")
+                }
+                val isCastActive = GlobalSharedData.upnpCastActive
+
+                val playerState = upnpCastClient.state.value?.state
+                val duration = upnpCastClient.state.value?.duration
+                val second = upnpCastClient.state.value?.currentTime
+
+                if (isCastActive) {
+                    withContext(Dispatchers.Main) {
+
+                        playerState?.let { updatePlayerState(it) }
+
+                        if (duration != null) {
+                            _currentDuration.value = duration
+                        }
+
+                        if (second != null) {
+                            _currentSecond.value = second
+                        }
+                    }
+                }
+
+                if (!isCastActive) {
+                    if (isConnecting) isConnecting = false
+                    if (connectionStatus == UpnpConnectionStatus.Connected) {
+                        upnpCastClient.disconnect()
+                        withContext(Dispatchers.Main) {
+                            hybridPlayer.pause()
+                        }
+                        updatePlayerState(PlayerConstants.PlayerState.PAUSED)
+                        Timber.d("PlayerService initializeUpnp CAST NOT ACTIVE - Disconnected")
+                    }
+
+                } else {
+
+                    if (connectionStatus == UpnpConnectionStatus.Connected) {
+                        if (isConnecting) {
+                            isConnecting = false
+                            withContext(Dispatchers.Main) {
+                                hybridPlayer.pause()
+                            }
+
+                            Timber.d("PlayerService initializeUpnp Connection established successfully")
+                        }
+
+                    } else if (!isConnecting) {
+
+                        Timber.d("PlayerService initializeUpnp CAST ACTIVE - Trying to connect...")
+
+                        val device = GlobalSharedData.upnpDevices.value.firstOrNull { it.selected }
+
+                        if (device != null) {
+                            isConnecting = true
+                            launch {
+                                try {
+                                    upnpCastClient.startConnection(device)
+                                } catch (e: TimeoutCancellationException) {
+                                    isConnecting = false
+                                    Timber.e("PlayerService initializeUpnp CAST TIMEOUT: $e")
+                                } catch (e: Exception) {
+                                    isConnecting = false
+                                    Timber.e("PlayerService initializeUpnp CAST ERROR: $e")
+                                }
+                            }
+
+                        } else {
+                            Timber.w("PlayerService initializeUpnp NO DEVICE SELECTED!")
+                        }
+                    } else {
+                        Timber.d("PlayerService initializeUpnp Connection already in progress, waiting...")
+                    }
+                }
+                delay(1000.milliseconds)
+            }
+        }
+    }
+
+    /** True se il cast UPnP e' attivo e connesso: il playback e' guidato dal renderer di rete. */
+    private fun upnpCastDriving(): Boolean =
+        GlobalSharedData.upnpCastActive &&
+                upnpCastClient.connectionStatus.value == UpnpConnectionStatus.Connected
+
+    /**
+     * Instrada il brano corrente al renderer UPnP (Sonos/DLNA).
+     * - URI http(s) diretto: il dispositivo scarica lo stream dalla rete, il telefono
+     *   non e' nel percorso audio (Fase 1)
+     * - URI locale (file/content: Music Vault, libreria): il server di streaming locale
+     *   (Fase 2) serve il file e il SetAVTransportURI punta a http://<ip-telefono>/...
+     * - senza URI servibile (es. videoId YouTube, riproduzione WebView): avviso e pausa;
+     *   sperimentale, verria abilitato dalla Fase 3
+     */
+    private suspend fun castCurrentMediaItemToUpnp(mediaItem: MediaItem, position: Float) {
+        withContext(Dispatchers.Main) {
+            exoPlayer.pause()
+            _internalYouTubePlayer.value?.pause()
+        }
+        val contentUrl = mediaItem.localConfiguration?.uri?.toString()?.let { uri ->
+            // r4 (coda on device): URI non servibile (es. pseudo-URI "local:<id>" lasciata
+            // da una coda persistente ripristinata con l'app precedente): ricostruiamo
+            // l'URI MediaStore content:// dal mediaId invece di rifiutare il brano con
+            // "contenuto non supportato". Per i brani online (videoId) non cambia nulla.
+            if (!RelayUris.isDirect(uri) && !RelayUris.isLocal(uri)) {
+                val rebuilt = localMediaStoreUriOrNull(mediaItem.mediaId)
+                if (rebuilt != null) {
+                    Timber.tag("Relay").i(
+                        "cast: URI non servibile %s per brano locale %s, ricostruita: %s",
+                        uri, mediaItem.mediaId, rebuilt
+                    )
+                    rebuilt.toString()
+                } else uri
+            } else uri
+        }
+        val title = mediaItem.mediaMetadata.title?.toString()
+        val artist = mediaItem.mediaMetadata.artist?.toString()
+
+        when {
+            // Fase 1: stream diretto raggiungibile dal dispositivo
+            contentUrl != null && RelayUris.isDirect(contentUrl) ->
+                upnpCastClient.sendCommand(
+                    UpnpRemoteCommand(
+                        action = "load",
+                        url = contentUrl,
+                        title = title,
+                        artist = artist,
+                        position = position
+                    )
+                )
+
+            // Fase 2: file locale via server di streaming locale (il device scarica dal telefono)
+            contentUrl != null && RelayUris.isLocal(contentUrl) -> {
+                // r2 self-heal: se il setting e' attivo ma il server non risulta in
+                // esecuzione (es. avvio relay fallito in onCreate, servizio ricreato,
+                // IP Wi-Fi cambiato), proviamo un avvio qui invece di abortire il cast.
+                if (!RelayManager.running.value && appSettings.streamRelayEnabled) {
+                    Timber.tag("Relay").w("cast locale: server non attivo ma setting abilitato, tentativo avvio on-demand")
+                    RelayManager.startIfEnabled(this@PlayerService, true)
+                    GlobalSharedData.relayServerRunning.value = RelayManager.running.value
+                    GlobalSharedData.relayServerUrl.value = RelayManager.baseUrl.value
+                }
+                if (!RelayManager.running.value) {
+                    SmartMessage(
+                        getString(R.string.upnp_local_content_no_relay),
+                        PopupType.Warning,
+                        context = this@PlayerService
+                    )
+                    updatePlayerState(PlayerConstants.PlayerState.PAUSED)
+                    return
+                }
+                val track = RelayManager.registry.register(
+                    RelayRegistry.Candidate(
+                        uri = contentUrl,
+                        title = title,
+                        artist = artist,
+                        mime = RelayMime.fromFileName(
+                            contentUrl.toUri().let { getFileNameFromUri(it) }
+                        )
+                    )
+                )
+                val relayUrl = RelayManager.buildStreamUrl(track)
+                if (relayUrl == null) {
+                    SmartMessage(
+                        getString(R.string.upnp_relay_unavailable),
+                        PopupType.Warning,
+                        context = this@PlayerService
+                    )
+                    updatePlayerState(PlayerConstants.PlayerState.PAUSED)
+                    return
+                }
+                upnpCastClient.sendCommand(
+                    UpnpRemoteCommand(
+                        action = "load",
+                        url = relayUrl,
+                        title = title,
+                        artist = artist,
+                        position = position
+                    )
+                )
+            }
+
+            else -> {
+                SmartMessage(
+                    getString(R.string.upnp_cast_unsupported_content),
+                    PopupType.Warning,
+                    context = this@PlayerService
+                )
+                updatePlayerState(PlayerConstants.PlayerState.PAUSED)
+            }
+        }
+    }
+
+    /**
+     * Server di streaming locale (Fase 2): sorgente per il cast UPnP dei file
+     * locali e sorgente generica per player esterni (VLC, browser, altri RiPlay).
+     * Lifecycle legato al servizio, stato esposto su GlobalSharedData per la UI;
+     * i cambi di setting a runtime sono gestiti da startObservingSettings.
+     */
+    private fun initializeRelayServer() {
+        Timber.tag("Relay").i(
+            "initializeRelayServer: streamRelayEnabled=%s",
+            appSettings.streamRelayEnabled
+        )
+        RelayManager.startIfEnabled(this, appSettings.streamRelayEnabled)
+        relayEnabledObserved = appSettings.streamRelayEnabled
+        GlobalSharedData.relayServerRunning.value = RelayManager.running.value
+        GlobalSharedData.relayServerUrl.value = RelayManager.baseUrl.value
+        Timber.tag("Relay").i(
+            "initializeRelayServer completato: running=%s url=%s",
+            GlobalSharedData.relayServerRunning.value,
+            GlobalSharedData.relayServerUrl.value ?: "<null>"
+        )
+
+        // Ogni mutazione della coda aggiorna la playlist M3U (saveQueue e' chiamato
+        // da tutti i percorsi di modifica coda)
+        serviceScope.launch { syncQueueToRelay() }
+    }
+
+    /** Ultimo valore di streamRelayEnabled visto dall'osservatore dei settings. */
+    private var relayEnabledObserved: Boolean = false
+
+    /** Sincronizza la coda corrente nel registro del relay (playlist M3U per i player esterni). */
+    private suspend fun syncQueueToRelay() {
+        val mediaItems: List<MediaItem> = withContext(Dispatchers.Main) {
+            exoPlayer.currentTimeline.mediaItems
+        }
+        RelayManager.registry.syncQueue(
+            mediaItems.mapNotNull { item ->
+                val rawUri = item.localConfiguration?.uri?.toString() ?: return@mapNotNull null
+                // r4 (coda on device): normalizza le pseudo-URI "local:<id>" (ripristino
+                // coda con app precedente): senza ricostruzione la whitelist conterrebbe
+                // URI non servibili e la playlist M3U mostrerebbe solo i brani Music Vault
+                // (esclusi quelli on device). Per i brani online (videoId) non cambia nulla:
+                // restano in whitelist ma esclusi dalla M3U (Fase 3).
+                val uri = if (!RelayUris.isDirect(rawUri) && !RelayUris.isLocal(rawUri))
+                    localMediaStoreUriOrNull(item.mediaId)?.toString() ?: rawUri
+                else rawUri
+                RelayRegistry.Candidate(
+                    uri = uri,
+                    title = item.mediaMetadata.title?.toString(),
+                    artist = item.mediaMetadata.artist?.toString(),
+                    mime = null // il mime e' risolto dal server al momento della richiesta
+                )
+            }
+        )
+        GlobalSharedData.relayServerUrl.value = RelayManager.baseUrl.value
     }
 
     private fun initializeDiscordPresence() {
@@ -2318,7 +2619,16 @@ class PlayerService : MediaLibraryService(),
                     this@PlayerService.serviceScope.launch { saveQueue() }
 
 
-                if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus.value != RiTuneConnectionStatus.Connected)
+                if (upnpCastDriving())
+                    this@PlayerService.serviceScope.launch {
+                        upnpCastClient.sendCommand(
+                            UpnpRemoteCommand(
+                                "pause",
+                                position = playFromSecond
+                            )
+                        )
+                    }
+                else if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus.value != RiTuneConnectionStatus.Connected)
                     youTubePlayer.pause()
                 else
                     this@PlayerService.serviceScope.launch {
@@ -2483,8 +2793,18 @@ class PlayerService : MediaLibraryService(),
         }
 
         //This initilize chromecast if available (available only on full build variant)
+        // FIX BUG (r2): escluso anche CastType.UPNP. La condizione originale
+        // (castType !in listOf(NONE, RITUNECAST)) nell'albero v0.8.7-rc.5
+        // equivaleva a "solo CHROMECAST"; con l'arrivo di UPNP questo ramo
+        // catturava anche il cast UPnP con due effetti dannosi:
+        //  1. il loop qui sotto, con nessun Chromecast connesso, forzava
+        //     playbackState = PAUSED ogni secondo: il pulsante play/pause del
+        //     UnifiedPlayer (che legge PlayerState via LocalPlayerServiceState)
+        //     restava su "play" mentre la musica suonava, mentre la notifica
+        //     media3 (che legge hybridPlayer direttamente) risultava corretta;
+        //  2. il return in fondo saltava l'inizializzazione della webview YouTube.
         if (CastHelper.isCastAvailable
-            && appSettings.castType !in listOf(CastType.NONE, CastType.RITUNECAST)) {
+            && appSettings.castType !in listOf(CastType.NONE, CastType.RITUNECAST, CastType.UPNP)) {
             this@PlayerService.serviceScope.launch {
                 CastHelper.initChromecastYouTubePlayerContext(this@PlayerService)
                 while (isActive) {
@@ -3093,6 +3413,16 @@ class PlayerService : MediaLibraryService(),
             )
         }
 
+        // ═══ UPnP/DLNA CAST: instrada il brano al renderer di rete (Sonos ecc.) ═══
+        // Il guard intercetta QUALSIASI media item (locale o online) prima che venga
+        // avviato un player locale: il brano va all'altoparlante, non al telefono.
+        if (upnpCastDriving()) {
+            this@PlayerService.serviceScope.launch {
+                castCurrentMediaItemToUpnp(mediaItem, playFromSecond)
+            }
+            return
+        }
+
         // Se l'utente aveva richiesto la visualizzazione di un video, quando passiamo avanti lo resettiamo
         // se in onmediaitemtransition non è ancora stato intercettato, lo facciamo qua
         if (appSettings.forceUserVideoPlayback) {
@@ -3652,31 +3982,57 @@ class PlayerService : MediaLibraryService(),
                     Action.pause.value -> {
                         markUserPauseRequested()
 
-                        if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus.value != RiTuneConnectionStatus.Connected)
-                            hybridPlayer.pause()
-                        else
-                            this@PlayerService.serviceScope.launch {
-                                riTuneCastClient.sendCommand(
-                                    RiTuneRemoteCommand(
-                                        "pause",
-                                        position = playFromSecond
+                        when {
+                            upnpCastDriving() ->
+                                this@PlayerService.serviceScope.launch {
+                                    upnpCastClient.sendCommand(
+                                        UpnpRemoteCommand(
+                                            "pause",
+                                            position = playFromSecond
+                                        )
                                     )
-                                )
-                            }
+                                }
+
+                            !GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus.value != RiTuneConnectionStatus.Connected ->
+                                hybridPlayer.pause()
+
+                            else ->
+                                this@PlayerService.serviceScope.launch {
+                                    riTuneCastClient.sendCommand(
+                                        RiTuneRemoteCommand(
+                                            "pause",
+                                            position = playFromSecond
+                                        )
+                                    )
+                                }
+                        }
                     }
                     Action.play.value -> {
 
-                        if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus.value != RiTuneConnectionStatus.Connected)
-                            hybridPlayer.play()
-                        else
-                            this@PlayerService.serviceScope.launch {
-                                riTuneCastClient.sendCommand(
-                                    RiTuneRemoteCommand(
-                                        "play",
-                                        position = playFromSecond
+                        when {
+                            upnpCastDriving() ->
+                                this@PlayerService.serviceScope.launch {
+                                    upnpCastClient.sendCommand(
+                                        UpnpRemoteCommand(
+                                            "play",
+                                            position = playFromSecond
+                                        )
                                     )
-                                )
-                            }
+                                }
+
+                            !GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus.value != RiTuneConnectionStatus.Connected ->
+                                hybridPlayer.play()
+
+                            else ->
+                                this@PlayerService.serviceScope.launch {
+                                    riTuneCastClient.sendCommand(
+                                        RiTuneRemoteCommand(
+                                            "play",
+                                            position = playFromSecond
+                                        )
+                                    )
+                                }
+                        }
 
                     }
                     Action.next.value -> handlePlayNextRequestedByUser("LegacyActionReceiver.onReceive")
@@ -4067,8 +4423,9 @@ class PlayerService : MediaLibraryService(),
         if (GlobalSharedData.riTuneCastActive &&
             riTuneCastClient.connectionStatus.value == RiTuneConnectionStatus.Connected
         ) return true
+        if (upnpCastDriving()) return true
         return CastHelper.isCastAvailable &&
-                appSettings.castType !in listOf(CastType.NONE, CastType.RITUNECAST)
+                appSettings.castType !in listOf(CastType.NONE, CastType.RITUNECAST, CastType.UPNP)
     }
 
     /** True se c'è una chiamata in corso (il ciclo resumePending dedicato alle
@@ -4845,6 +5202,11 @@ class PlayerService : MediaLibraryService(),
     }
 
     suspend fun saveQueue() {
+        // Playlist M3U del relay: aggiornata ad ogni mutazione della coda,
+        // indipendentemente dalla persistenza della coda
+        runCatching { syncQueueToRelay() }
+            .onFailure { Timber.e("PlayerService saveQueue syncQueueToRelay failed: $it") }
+
         if (!appSettings.persistentQueue) return
 
         val mediaItems: List<MediaItem>
@@ -4931,6 +5293,14 @@ class PlayerService : MediaLibraryService(),
                         if (musicVaultFileName.startsWith("content://")) musicVaultFileName.toUri()
                         else File(MusicVaultRepository.getOutputDir(), musicVaultFileName).toUri()
                     }
+                    // r4 (coda on device): i brani on device (mediaId "local:<id>") prima
+                    // ricevevano la pseudo-URI "local:<id>" (scheme inventato): il relay e il
+                    // cast la considerano non servibile, la playlist M3U escludeva i brani
+                    // on device (in coda risultavano solo quelli Music Vault) e il cast li
+                    // rifiutava con "contenuto non supportato". Ricostruiamo l'URI MediaStore
+                    // content:// come fa Song.asMediaItem per i brani freschi.
+                    song.mediaId.startsWith(LOCAL_KEY_PREFIX) ->
+                        localMediaStoreUriOrNull(song.mediaId) ?: song.mediaId.toUri()
                     else -> song.mediaId.toUri()
                 }
 
@@ -5102,6 +5472,10 @@ class PlayerService : MediaLibraryService(),
         val riTuneCastClient: RiTuneCastClient
             @Synchronized
             get() = this@PlayerService.riTuneCastClient
+
+        val upnpCastClient: UpnpCastClient
+            @Synchronized
+            get() = this@PlayerService.upnpCastClient
 
         val equalizer: EqualizerHelper
             get() = this@PlayerService.equalizerHelper
@@ -5627,6 +6001,17 @@ class PlayerService : MediaLibraryService(),
         resumeDesiredAfterConnectivity = false
         markUserPauseRequested()
 
+        // ═══ UPnP cast driving (r2): pausa verso il renderer di rete, vedi
+        // il commento in requestSmoothPlay.
+        if (upnpCastDriving()) {
+            this@PlayerService.serviceScope.launch {
+                upnpCastClient.sendCommand(
+                    UpnpRemoteCommand("pause", position = playFromSecond)
+                )
+            }
+            return
+        }
+
         if (!_playerState.value.isPlaying || isFading) {
             hybridPlayer.executeActualPause()
             return
@@ -5663,6 +6048,19 @@ class PlayerService : MediaLibraryService(),
         clearUserPauseIntent()
         pausedForConnectivity = false
         pendingRecoveryLoadVideoId = null
+
+        // ═══ UPnP cast driving (r2): il play/pause che arriva da HybridPlayer
+        // (notifica media3, tasti media headset, controller esterni) deve andare
+        // al renderer di rete, NON al player locale: altrimenti la notifica
+        // riavvia l'audio sul telefono mentre il brano suona sull'altoparlante.
+        if (upnpCastDriving()) {
+            this@PlayerService.serviceScope.launch {
+                upnpCastClient.sendCommand(
+                    UpnpRemoteCommand("play", position = playFromSecond)
+                )
+            }
+            return
+        }
 
         // Se la rete è ASSENTE, il play dell'utente esprime la volontà di partire
         // appena possibile: teniamolo a memoria così al ritorno della rete la

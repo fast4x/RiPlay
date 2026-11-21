@@ -2,7 +2,10 @@ package it.fast4x.riplay.utils
 
 
 import android.annotation.SuppressLint
+import android.content.ContentUris
 import android.content.Context
+import android.net.Uri
+import android.provider.MediaStore
 import android.widget.FrameLayout
 import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
@@ -43,6 +46,30 @@ const val LOCAL_KEY_PREFIX = "local:"
 const val MUSIC_VAULT_KEY_PREFIX = "musicvault:"
 const val SPOTIFY_TRACK_KEY_PREFIX = "spotify:track:"
 const val DEEZER_TRACK_KEY_PREFIX = "deezer:track:"
+
+/**
+ * r4 (coda on device): ricostruisce l'URI MediaStore `content://media/external/audio/media/<id>`
+ * per un brano locale con mediaId `local:<id>`.
+ *
+ * Perche' serve: il ripristino della coda persistente (PlayerService.loadQueue) ricostruisce
+ * l'URI dei brani non MusicVault con `mediaId.toUri()`, che per i brani on device produce
+ * la pseudo-URI `local:<id>` (scheme inventato, non riproducibile). Il player locale la
+ * gestisce comunque (la DataSourceFactory ricostruisce il content URI dal mediaId), ma il
+ * cast UPnP e il relay la considerano NON servibile: la playlist M3U escludeva i brani
+ * on device e il cast li rifiutava con "contenuto non supportato".
+ *
+ * @return l'URI content:// MediaStore, o null se il mediaId non e' di un brano locale
+ *         (prefix o id numerico invalidi: in quel caso il chiamante usa l'URI originale).
+ */
+fun localMediaStoreUriOrNull(mediaId: String): Uri? {
+    if (!mediaId.startsWith(LOCAL_KEY_PREFIX)) return null
+    val rawId = mediaId.removePrefix(LOCAL_KEY_PREFIX).toLongOrNull() ?: return null
+    val base = if (isAtLeastAndroid10)
+        MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+    else
+        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+    return ContentUris.withAppendedId(base, rawId)
+}
 
 
 val String.isSpotifyTrack: Boolean

@@ -210,6 +210,8 @@ import it.fast4x.riplay.extensions.voice.VoiceCommandHelpDialog
 import it.fast4x.riplay.extensions.voice.VoiceCommandParser
 import it.fast4x.riplay.extensions.voice.rememberVoiceCommandController
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
+import it.fast4x.riplay.cast.upnp.models.UpnpConnectionStatus
+import it.fast4x.riplay.cast.upnp.models.UpnpRemoteCommand
 import it.fast4x.riplay.enums.AudioVisualizerStyle
 import it.fast4x.riplay.enums.CollapseValue
 import it.fast4x.riplay.enums.PlayerTransitionAnimation
@@ -1682,34 +1684,61 @@ fun UnifiedPlayer(
             },
             isExplicit = mediaItem.isExplicit,
             onPlay = {
-                if (!GlobalSharedData.riTuneCastActive) {
-                    binder.hybridPlayer.play()
-                } else
-                    CoroutineScope(Dispatchers.IO).launch {
-                        riTuneClient.sendCommand(
-                            RiTuneRemoteCommand("play", mediaId = mediaItem.mediaId)
-                        )
-                    }
+                when {
+                    GlobalSharedData.upnpCastActive &&
+                            binder.upnpCastClient.connectionStatus.value == UpnpConnectionStatus.Connected ->
+                        CoroutineScope(Dispatchers.IO).launch {
+                            binder.upnpCastClient.sendCommand(UpnpRemoteCommand("play"))
+                        }
+
+                    !GlobalSharedData.riTuneCastActive -> binder.hybridPlayer.play()
+
+                    else ->
+                        CoroutineScope(Dispatchers.IO).launch {
+                            riTuneClient.sendCommand(
+                                RiTuneRemoteCommand("play", mediaId = mediaItem.mediaId)
+                            )
+                        }
+                }
             },
             onPause = {
-                if (!GlobalSharedData.riTuneCastActive) {
+                when {
+                    GlobalSharedData.upnpCastActive &&
+                            binder.upnpCastClient.connectionStatus.value == UpnpConnectionStatus.Connected ->
+                        CoroutineScope(Dispatchers.IO).launch {
+                            binder.upnpCastClient.sendCommand(UpnpRemoteCommand("pause"))
+                        }
+
+                    !GlobalSharedData.riTuneCastActive ->
                         binder.hybridPlayer.pause()
-                } else
-                    CoroutineScope(Dispatchers.IO).launch {
-                        riTuneClient.sendCommand(
-                            RiTuneRemoteCommand("pause")
-                        )
-                    }
+
+                    else ->
+                        CoroutineScope(Dispatchers.IO).launch {
+                            riTuneClient.sendCommand(
+                                RiTuneRemoteCommand("pause")
+                            )
+                        }
+                }
             },
             onSeekTo = {
-                if (!GlobalSharedData.riTuneCastActive) {
-                    binder.hybridPlayer.seekTo(it.toLong())
-                } else
-                    CoroutineScope(Dispatchers.IO).launch {
-                        riTuneClient.sendCommand(
-                            RiTuneRemoteCommand("seek", position = it.div(1000))
-                        )
-                    }
+                when {
+                    GlobalSharedData.upnpCastActive &&
+                            binder.upnpCastClient.connectionStatus.value == UpnpConnectionStatus.Connected ->
+                        CoroutineScope(Dispatchers.IO).launch {
+                            binder.upnpCastClient.sendCommand(
+                                UpnpRemoteCommand("seek", position = it.div(1000))
+                            )
+                        }
+
+                    !GlobalSharedData.riTuneCastActive -> binder.hybridPlayer.seekTo(it.toLong())
+
+                    else ->
+                        CoroutineScope(Dispatchers.IO).launch {
+                            riTuneClient.sendCommand(
+                                RiTuneRemoteCommand("seek", position = it.div(1000))
+                            )
+                        }
+                }
             },
             onNext = { binder.hybridPlayer.playNext() },
             onPrevious = { binder.hybridPlayer.playPrevious() },

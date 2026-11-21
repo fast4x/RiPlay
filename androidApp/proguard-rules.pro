@@ -53,6 +53,16 @@
 -dontwarn org.slf4j.impl.StaticLoggerBinder
 -dontwarn okhttp3.internal.Util
 
+# Ktor server di streaming locale (Fase 2, ktor-server-cio)
+# r2: keep esplicito dei moduli ktor usati dal server CIO (nuovi nel classpath:
+# ktor-network e kotlinx-io non erano usati dal client OkHttp). Con isMinifyEnabled
+# = true, l'assenza di keep puo' rimuovere classi raggiungibili solo via interni
+# di ktor e rompere il bind a runtime in build release.
+-dontwarn io.ktor.**
+-keep class io.ktor.** { *; }
+-keep class kotlinx.io.** { *; }
+-keep class it.fast4x.riplay.server.** { *; }
+
 ##---------------Begin: proguard configuration for Gson  ----------
 # Gson uses generic type information stored in a class file when working with fields. Proguard
 # removes such information by default, so configure it to keep all of it.

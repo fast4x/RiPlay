@@ -90,6 +90,8 @@ import it.fast4x.riplay.LocalPlayerServiceState
 import it.fast4x.riplay.LocalPlayerSheetState
 import it.fast4x.riplay.R
 import it.fast4x.riplay.cast.ritune.models.RiTuneRemoteCommand
+import it.fast4x.riplay.cast.upnp.models.UpnpConnectionStatus
+import it.fast4x.riplay.cast.upnp.models.UpnpRemoteCommand
 import it.fast4x.riplay.commonutils.toThumbnail
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Info
@@ -958,20 +960,34 @@ private fun MainControlsRow(
             icon = if (playerState.isPlaying) R.drawable.pause else R.drawable.play,
             contentDescription = if (playerState.isPlaying) "Pause" else "Play",
             onClick = {
-                if (!GlobalSharedData.riTuneCastActive) {
-                    if (playerState.isPlaying) {
-                        binder.hybridPlayer.pause()
-                    } else {
-                        binder.hybridPlayer.play()
-                    }
-                } else {
-                    scope.launch {
-                        riTuneClient.sendCommand(
-                            RiTuneRemoteCommand(
-                                if (playerState.isPlaying) "pause" else "play",
-                                mediaId = mediaItem.mediaId
+                when {
+                    GlobalSharedData.upnpCastActive &&
+                            binder.upnpCastClient.connectionStatus.value == UpnpConnectionStatus.Connected ->
+                        scope.launch {
+                            binder.upnpCastClient.sendCommand(
+                                UpnpRemoteCommand(
+                                    if (playerState.isPlaying) "pause" else "play"
+                                )
                             )
-                        )
+                        }
+
+                    !GlobalSharedData.riTuneCastActive -> {
+                        if (playerState.isPlaying) {
+                            binder.hybridPlayer.pause()
+                        } else {
+                            binder.hybridPlayer.play()
+                        }
+                    }
+
+                    else -> {
+                        scope.launch {
+                            riTuneClient.sendCommand(
+                                RiTuneRemoteCommand(
+                                    if (playerState.isPlaying) "pause" else "play",
+                                    mediaId = mediaItem.mediaId
+                                )
+                            )
+                        }
                     }
                 }
             },
