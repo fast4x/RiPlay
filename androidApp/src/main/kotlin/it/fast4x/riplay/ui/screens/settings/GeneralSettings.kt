@@ -1623,6 +1623,10 @@ fun GeneralSettings(
                                 isChecked = appSettings.streamRelayEnabled,
                                 onCheckedChange = {
                                     coroutineScope.launch {
+                                        // Avvia o ferma il server di streaming subito
+                                        if (it) RelayManager.startIfEnabled(context, true)
+                                        else RelayManager.stop()
+
                                         val new = appSettingsManager.activeSettings.value.copy(
                                             streamRelayEnabled = it
                                         )
@@ -1634,7 +1638,7 @@ fun GeneralSettings(
 
                             AnimatedVisibility(visible = appSettings.streamRelayEnabled) {
                                 Column(
-                                    modifier = Modifier.padding(start = 16.dp)
+                                    modifier = Modifier.padding(start = 45.dp)
                                 ) {
 
                                     val relayRunning = RelayManager.running.collectAsState().value
