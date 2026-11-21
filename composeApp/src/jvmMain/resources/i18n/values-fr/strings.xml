@@ -342,8 +342,8 @@
     <string name="settings.discord.manual_token_instructions">​Client de bureau Discord : Paramètres > Avancé > activer les Outils de développement, puis Ctrl+Maj+I > onglet Console > saisir : (webpackChunkdiscord_app.push([[Symbol()]],{},(r)=>r=Object.keys(r.c).map(x=>r.c[x].exports).find(e=>e.hasOwnProperty(\"default\")&amp;&amp;e.default!==void 0&amp;&amp;e.default.getToken!==void 0)).default.getToken(),0]) et copier le résultat.</string>
     <string name="settings.discord.manual_token_connect">Se connecter</string>
     <string name="settings.discord.manual_token_empty">Commencez par coller un jeton.</string>
-    <string name="zoundhub.badge.ai">AI</string>
-    <string name="zoundhub.badge.ai.uncertain">AI?</string>
+    <string name="zoundhub.badge.ai">IA</string>
+    <string name="zoundhub.badge.ai.uncertain">IA ?</string>
     <string name="zoundhub.dialog.title">AI detection info</string>
     <string name="zoundhub.dialog.rating">ZoundHub rating</string>
     <string name="zoundhub.dialog.shscore">SubmitHub AI score</string>
