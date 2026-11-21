@@ -273,7 +273,15 @@ class VoiceCommandController internal constructor(
                 )
                 var executed = false
 
-                when (val selection = VoiceCommandParser.selectHandsFree(result.hypotheses)) {
+                // The detector already proved somebody spoke. The recognizer
+                // starts after speech begins and often clips "Hello", so a
+                // clear command must be usable even without a wake word.
+                // shortcut: lyrics can trigger when echo cancellation is weak;
+                // require a wake word again if that is reported on devices.
+                when (val selection = VoiceCommandParser.selectHandsFree(
+                    result.hypotheses,
+                    allowCommandWithoutWakeWord = true
+                )) {
                     is HandsFreeSelection.Command -> {
                         if (VoiceCommandParser.parse(selection.text) == VoiceCommand.Pause) {
                             shouldResume = false

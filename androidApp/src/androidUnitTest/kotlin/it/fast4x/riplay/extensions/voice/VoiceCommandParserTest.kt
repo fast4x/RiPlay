@@ -203,7 +203,7 @@ class VoiceCommandParserTest {
     }
 
     @Test
-    fun followUpAcceptsACommandAfterAWakeWord() {
+    fun detectorSessionAcceptsACommandWithAClippedWakeWord() {
         assertEquals(
             HandsFreeSelection.Command("play faded", wakeWord = false),
             VoiceCommandParser.selectHandsFree(

@@ -36,9 +36,9 @@ sealed interface VoiceCommand {
  * Result of looking at all the hypotheses returned by a hands-free session.
  *
  * The recognizer can split "Hello, play Faded" into a wake-word-only result
- * and the command. A command is only executed without its own wake word when
- * the same session also produced a wake-word-only result; a transcript with
- * no wake word at all is ignored.
+ * and the command, or clip the wake word entirely because it starts listening
+ * after speech begins. [allowCommandWithoutWakeWord] accepts a clear command
+ * from such a session; with it off, a transcript without a wake word is ignored.
  */
 sealed interface HandsFreeSelection {
     data class Command(val text: String, val wakeWord: Boolean) : HandsFreeSelection
