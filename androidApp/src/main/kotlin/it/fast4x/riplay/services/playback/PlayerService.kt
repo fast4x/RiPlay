@@ -157,6 +157,12 @@ import it.fast4x.riplay.extensions.lastfm.sendNowPlaying
 import it.fast4x.riplay.extensions.lastfm.sendScrobble
 import it.fast4x.riplay.extensions.listenbrainz.sendListenBrainzNowPlaying
 import it.fast4x.riplay.extensions.listenbrainz.sendListenBrainzScrobble
+import it.fast4x.riplay.services.playback.common.EndOfSongAction
+import it.fast4x.riplay.services.playback.common.evaluateEndOfSongAction
+import it.fast4x.riplay.services.playback.common.evaluateWatchdogTransition
+import it.fast4x.riplay.services.playback.common.shouldDeferOnlineFadeInUntilPlaying
+import it.fast4x.riplay.services.playback.common.shouldExoPauseAtEndOfMediaItems
+import it.fast4x.riplay.services.playback.common.shouldInterceptExoAutoTransitionWithSeek
 import it.fast4x.riplay.extensions.players.getOnlineMetadata
 import it.fast4x.riplay.cast.ritune.RiTuneCastClient
 import it.fast4x.riplay.cast.ritune.models.RiTuneConnectionStatus
@@ -390,6 +396,14 @@ class PlayerService : MediaLibraryService(),
     private var debounceDelayMs = 2000L
     private var onlineEndHandledMediaId: String? = null
     private var onlineNearEndTicks = 0
+    @Volatile private var pendingOnlineFadeIn = false
+    @Volatile private var lastPreloadedYtMediaId: String? = null
+    @Volatile private var preloadedTransitionInFlight = false
+    @Volatile private var activeCrossfadeTargetMediaId: String? = null
+    private var preloadNextTrackJob: Job? = null
+    private var loadPendingDebounceJob: Job? = null
+    private var overlapCrossfadeJob: Job? = null
+    private val preloadedLoudnessMap = java.util.concurrent.ConcurrentHashMap<String, Float>()
 
     /**
      * end online configuration
@@ -1086,6 +1100,7 @@ class PlayerService : MediaLibraryService(),
 
 
                     appSettings = settings
+                    updateExoPauseAtEndOfMediaItems()
                 }
         }
         
@@ -1751,6 +1766,7 @@ class PlayerService : MediaLibraryService(),
         val currentState = _playerState.value
         val settings = currentState.settings
         _playerState.value = currentState.copy(settings = settings.copy(repeatMode = QueueLoopType.from(repeatMode)))
+        schedulePreloadNextTrack(500L)
     }
 
     private fun initializeBitmapProvider() {
@@ -1822,6 +1838,7 @@ class PlayerService : MediaLibraryService(),
         hybridPlayer.addListener(this@PlayerService)
         // Dichiariamo subito qual è il motore da preparare, serve anche a registrare il listener delle statistiche se la canzone dipende da exo
         if (currentSong.value?.isLocal == true) hybridPlayer.switchToExo() else hybridPlayer.switchToYoutube()
+        updateExoPauseAtEndOfMediaItems()
 
         // Imposto il volume dell'Hybrid Player
         val deviceVol = getDeviceVolume(this)
@@ -1890,6 +1907,56 @@ class PlayerService : MediaLibraryService(),
             }
         }, MoreExecutors.directExecutor())
 
+    }
+
+    private fun updateExoPauseAtEndOfMediaItems() {
+        if (!::exoPlayer.isInitialized) return
+        val engine = if (::hybridPlayer.isInitialized) hybridPlayer.activeEngine else ActiveEngine.EXOPLAYER
+        exoPlayer.pauseAtEndOfMediaItems = shouldExoPauseAtEndOfMediaItems(
+            activeEngine = engine,
+            crossfadeDuration = appSettings.crossfadeDuration,
+        )
+    }
+
+    private fun schedulePreloadNextTrack(delayMs: Long = 1200L) {
+        preloadNextTrackJob?.cancel()
+        val effectiveDelayMs = if (appSettings.crossfadeDuration != CrossfadeDuration.Off) {
+            maxOf(delayMs, appSettings.crossfadeDuration.milliseconds + 800L)
+        } else {
+            delayMs
+        }
+        preloadNextTrackJob = serviceScope.launch(Dispatchers.Main) {
+            delay(effectiveDelayMs.milliseconds)
+            if (_playerState.value.playbackState == PlaybackState.PLAYING) {
+                preloadNextTrackIfAvailable()
+            }
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun preloadNextTrackIfAvailable() {
+        if (!::hybridPlayer.isInitialized) return
+        val currentMediaId = hybridPlayer.currentMediaItem?.mediaId
+        val nextIndex = nextPlayableIndexAfter(hybridPlayer.currentMediaItemIndex) ?: return
+        val nextItem = runCatching { hybridPlayer.getMediaItemAt(nextIndex) }.getOrNull() ?: return
+        val nextMediaId = nextItem.mediaId
+        if (nextMediaId.isBlank() || nextMediaId == currentMediaId) return
+
+        if (!nextItem.isLocal) {
+            if (nextMediaId != lastPreloadedYtMediaId) {
+                lastPreloadedYtMediaId = nextMediaId
+                Timber.d("PlayerService preloadNextTrackIfAvailable: pre-buffering next track id=$nextMediaId at index=$nextIndex")
+                _internalYouTubePlayer.value?.preloadVideo(nextMediaId, 0f)
+            }
+            if (appSettings.volumeNormalizationEnabled && !preloadedLoudnessMap.containsKey(nextMediaId)) {
+                serviceScope.launch(Dispatchers.IO) {
+                    val loudness = withTimeoutOrNull(1000L.milliseconds) {
+                        Database.loudnessDb(nextMediaId).cancellable().first()
+                    }
+                    preloadedLoudnessMap[nextMediaId] = loudness ?: 0f
+                }
+            }
+        }
     }
 
     fun nextPlayableIndexAfter(current: Int): Int? {
@@ -2080,6 +2147,7 @@ class PlayerService : MediaLibraryService(),
 
             override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {
                 super.onVideoDuration(youTubePlayer, duration)
+                if (duration <= 0f) return
 
                 _currentDuration.value = duration
 
@@ -2197,6 +2265,14 @@ class PlayerService : MediaLibraryService(),
                         //lastError = null  // reset errore dopo riproduzione riuscita
                         onlineNearEndTicks = 0
                         Timber.d("PlayerService YT: Evento PLAYING")
+
+                        if (pendingOnlineFadeIn) {
+                            pendingOnlineFadeIn = false
+                            if (!alarmFadeInProgress) {
+                                startFadeIn()
+                            }
+                        }
+                        schedulePreloadNextTrack(1200L)
 
                         // ── Connettività: il motore online è davvero ripartito,
                         //    chiudiamo qualunque ciclo di pausa/ripresa o recovery ──
@@ -2711,7 +2787,7 @@ class PlayerService : MediaLibraryService(),
 
     @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
-        if (shuffleModeEnabled) {
+        if (shuffleModeEnabled && exoPlayer.mediaItemCount > 0 && exoPlayer.currentMediaItemIndex in 0 until exoPlayer.mediaItemCount) {
             val shuffledIndices = IntArray(exoPlayer.mediaItemCount) { it }
             shuffledIndices.shuffle()
             shuffledIndices[shuffledIndices.indexOf(exoPlayer.currentMediaItemIndex)] = shuffledIndices[0]
@@ -2719,7 +2795,15 @@ class PlayerService : MediaLibraryService(),
             exoPlayer.shuffleOrder = DefaultShuffleOrder(shuffledIndices, System.currentTimeMillis())
         }
 
+        schedulePreloadNextTrack(500L)
         this@PlayerService.serviceScope.launch { saveQueue() }
+    }
+
+    override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+        super.onTimelineChanged(timeline, reason)
+        if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) {
+            schedulePreloadNextTrack(1200L)
+        }
     }
 
     // Gestito tramite onUnBind
@@ -2889,6 +2973,13 @@ class PlayerService : MediaLibraryService(),
 
         //if (hybridPlayer.activeEngine != ActiveEngine.EXOPLAYER) return
 
+        if (playbackState == Player.STATE_ENDED && hybridPlayer.activeEngine == ActiveEngine.EXOPLAYER) {
+            serviceScope.launch(Dispatchers.Main) {
+                handleEndOfSong("exoPlayer STATE_ENDED")
+            }
+            return
+        }
+
         if (playbackState == Player.STATE_READY) {
 
             // Inizializziamo l'equalizzatore solo se non è già inizializzato
@@ -2924,16 +3015,16 @@ class PlayerService : MediaLibraryService(),
         if (reason == Player.DISCONTINUITY_REASON_AUTO_TRANSITION && hybridPlayer.activeEngine == ActiveEngine.EXOPLAYER) {
 
             if (appSettings.crossfadeDuration == CrossfadeDuration.Off) {
-                // SE IL CROSSFADE È SPENTO:
-                // Intercettiamo la transizione automatica nativa di ExoPlayer e la deviamo
-                // sulla nostra handlePlayNext() per pulire i motori (WebView/Exo) e caricare tutto correttamente!
-                Timber.d("PlayerService Listener: Rilevata fine brano Exo con Crossfade OFF. Forzo handlePlayNext()")
-
-                // handlePlayNext() fa il lavoro di sostituzione traccia pulito.
-                // Se dovesse saltare un brano di troppo, uso il workaround diretto
-                //exoPlayer.seekToPreviousMediaItem()
-
-                handlePlayNext("onPositionDiscontinuity")
+                if (shouldInterceptExoAutoTransitionWithSeek(appSettings.crossfadeDuration)) {
+                    handlePlayNext("onPositionDiscontinuity")
+                } else {
+                    lastEndOfSongHandledAtMs = System.currentTimeMillis()
+                    lastWatchdogPosition = -1L
+                    isFading = false
+                    if (!alarmFadeInProgress) {
+                        hybridPlayer.setFadeVolume(1.0f)
+                    }
+                }
             } else {
                 // SE IL CROSSFADE È ATTIVO:
                 // (Ci ha già pensato il monitor del crossfade a sfumare, quindi qui resettiamo solo il volume)
@@ -3102,56 +3193,90 @@ class PlayerService : MediaLibraryService(),
         }
 
         mediaItem.let {
+            onlineNearEndTicks = 0
+            preloadNextTrackJob?.cancel()
+            val isCompletingOverlapCrossfade = (!it.isLocal && it.mediaId == activeCrossfadeTargetMediaId)
+            activeCrossfadeTargetMediaId = null
+            val wasPreloadedOnStandby = (!it.isLocal && (it.mediaId == lastPreloadedYtMediaId || isCompletingOverlapCrossfade))
+            preloadedTransitionInFlight = wasPreloadedOnStandby
+            lastPreloadedYtMediaId = null
 
             if (!it.isLocal){
-                if (!firstTimeStarted) // Ci assicuriamo di Non mostro il loader se è il primo avvio, serve solo a precaricare il player online
+                if (!firstTimeStarted && !isCompletingOverlapCrossfade) // Ci assicuriamo di Non mostro il loader se è il primo avvio o se il crossfade dual-deck è già in riproduzione
                     setLoadPending(LoadPhase.PENDING, "onMediaItemTsransition >> firstTimeStarted = $firstTimeStarted << ")
 
                 exoPlayer.pause()
                 hybridPlayer.switchToYoutube()
+                updateExoPauseAtEndOfMediaItems()
                 playFromSecond = 0f // Resettiamo la posizione iniziale perchè passiamo al successivo
                 maxObservedSecond = 0f // FIX: e anche il punto massimo raggiunto del brano precedente
+                if (!firstTimeStarted) {
+                    _currentDuration.value = 0f
+                    _currentSecond.value = 0f
+                }
 
                 // ═══ FIX PICCO DI VOLUME ALL'AVVIO DI UN BRANO ═══
-                // Non forzare il volume direttamente su _internalYouTubePlayer.value?.setVolume(getSystemMediaVolume())
-                // per non bypassare il pipeline centralizzato di HybridPlayer (fadeMultiplier + normalizzazione loudness).
-                hybridPlayer.setFadeVolume(0f)
+                // Se il crossfade dual-deck JS è già attivo, il mixer JS governa la curva dei due deck
+                // e portiamo il moltiplicatore Kotlin a 1.0f; altrimenti partiamo da 0f.
+                if (isCompletingOverlapCrossfade) {
+                    hybridPlayer.setFadeVolume(1.0f)
+                } else {
+                    hybridPlayer.setFadeVolume(0f)
+                }
 
                 startForegroundPlaceholder()
 
                 if (!GlobalSharedData.riTuneCastActive || riTuneCastClient.connectionStatus.value != RiTuneConnectionStatus.Connected) {
-                    Timber.d("PlayerService [AYP JS YT-BRIDGE] onMediaItemTransition mediaItem not local video cued id = ${it.mediaId} playFromSecond $playFromSecond")
-                    _internalYouTubePlayer.value?.loadVideo(it.mediaId, 0f) // Si parte sempre dall'inizio perchè è il successivo
+                    Timber.d("PlayerService [AYP JS YT-BRIDGE] onMediaItemTransition mediaItem not local video cued id = ${it.mediaId} playFromSecond $playFromSecond (overlapCrossfade=$isCompletingOverlapCrossfade)")
+                    _internalYouTubePlayer.value?.loadVideo(it.mediaId, 0f) // Si parte sempre dall'inizio o promuove il deck già in crossfade
 
-                    if (appSettings.crossfadeDuration == CrossfadeDuration.Off) {
-                        // ═══ FIX PICCO RESIDUO ═══
-                        // Con crossfade disattivo startFadeIn() esce subito senza toccare il volume:
-                        // ripristiniamo subito il livello corretto SEMPRE via pipeline (rispetta la
-                        // normalizzazione), senza forzature immediate al 100%.
-                        // La normalizzazione definitiva del brano arriverà comunque da
-                        // setYtLoudnessDb() non appena il DB fornirà il loudness corretto.
-                        // Il brano, intanto, nasce nel silenzio (setFadeVolume(0f) sopra) mentre la
-                        // WebView sta ancora caricando: il tempo di lettura DB (pochi ms) è coperto.
+                    if (isCompletingOverlapCrossfade) {
+                        pendingOnlineFadeIn = false
+                        isFading = true
+                        val remainingCrossfadeMs = ((appSettings.crossfadeDuration.milliseconds * 35L) / 100L).coerceAtLeast(800L)
+                        this@PlayerService.serviceScope.launch(Dispatchers.Main) {
+                            delay(remainingCrossfadeMs.milliseconds)
+                            isFading = false
+                        }
+                    } else if (!firstTimeStarted && shouldDeferOnlineFadeInUntilPlaying(isLocal = false, crossfadeDuration = appSettings.crossfadeDuration)) {
+                        pendingOnlineFadeIn = true
+                        if (wasPreloadedOnStandby) {
+                            val expectedMediaId = it.mediaId
+                            this@PlayerService.serviceScope.launch(Dispatchers.Main) {
+                                delay(350.milliseconds)
+                                if (pendingOnlineFadeIn && hybridPlayer.currentMediaItem?.mediaId == expectedMediaId) {
+                                    pendingOnlineFadeIn = false
+                                    if (!alarmFadeInProgress) {
+                                        startFadeIn()
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        pendingOnlineFadeIn = false
                         if (appSettings.volumeNormalizationEnabled) {
                             val targetMediaId = it.mediaId
-                            this@PlayerService.serviceScope.launch(Dispatchers.Main) {
-                                val freshLoudness = withTimeoutOrNull(600L.milliseconds) {
-                                    Database.loudnessDb(targetMediaId).cancellable().first()
-                                }
-                                // Se nel frattempo è già partito un altro brano, lasciamo
-                                // gestire il volume alla sua stessa transizione
-                                if (hybridPlayer.currentMediaItem?.mediaId == targetMediaId) {
-                                    hybridPlayer.setYtLoudnessDb(freshLoudness ?: 0f)
-                                    hybridPlayer.setFadeVolume(1.0f)
+                            val cachedLoudness = preloadedLoudnessMap[targetMediaId]
+                            if (cachedLoudness != null) {
+                                hybridPlayer.setYtLoudnessDb(cachedLoudness)
+                                hybridPlayer.setFadeVolume(1.0f)
+                            } else {
+                                this@PlayerService.serviceScope.launch(Dispatchers.Main) {
+                                    val freshLoudness = withContext(Dispatchers.IO) {
+                                        withTimeoutOrNull(250L.milliseconds) {
+                                            Database.loudnessDb(targetMediaId).cancellable().first()
+                                        }
+                                    }
+                                    if (hybridPlayer.currentMediaItem?.mediaId == targetMediaId) {
+                                        hybridPlayer.setYtLoudnessDb(freshLoudness ?: 0f)
+                                        hybridPlayer.setFadeVolume(1.0f)
+                                    }
                                 }
                             }
                         } else {
                             // Normalizzazione disattiva: nessun fattore da attendere, ripristino immediato
                             hybridPlayer.setFadeVolume(1.0f)
                         }
-                    } else {
-                        // Avvia il fade in per il nuovo brano appena parte il play se il fade/crossfade è attivo
-                        startFadeIn()
                     }
                     Timber.d("PlayerService onMediaItemTransition mediaItem not local video cued id = ${it.mediaId} playFromSecond $playFromSecond")
                 } else
@@ -3174,13 +3299,18 @@ class PlayerService : MediaLibraryService(),
 
             } else {
                 // Canzone locale o MusicVault — ferma il player online e lascia andare ExoPlayer
+                pendingOnlineFadeIn = false
+                preloadedTransitionInFlight = false
                 _internalYouTubePlayer.value?.pause()
 
-                // Mettiamo in sicurezza il moltiplicatore del fade AZZERANDOLO subito via codice
-                // prima ancora che parta la coroutine, così ExoPlayer nasce nel silenzio.
-                hybridPlayer.setFadeVolume(0f)
+                if (appSettings.crossfadeDuration != CrossfadeDuration.Off || firstTimeStarted) {
+                    hybridPlayer.setFadeVolume(0f)
+                } else if (!alarmFadeInProgress) {
+                    hybridPlayer.setFadeVolume(1.0f)
+                }
 
                 hybridPlayer.switchToExo()
+                updateExoPauseAtEndOfMediaItems()
 
                 Timber.d("PlayerService onMediaItemTransition resume playback before firstTimeStarted $firstTimeStarted isResumePlaybackOnStart ${appSettings.resumePlaybackOnStart}")
                 if (firstTimeStarted && appSettings.resumePlaybackOnStart) {
@@ -3206,6 +3336,7 @@ class PlayerService : MediaLibraryService(),
                     // startFadeIn() verrà chiamato in onPlaybackStateChanged
                     // quando ExoPlayer dichiara di essere STATE_READY.
                 }
+                schedulePreloadNextTrack(1200L)
             }
 
             bitmapProvider?.load(it.mediaMetadata.artworkUri) { bitmap ->
@@ -3593,10 +3724,21 @@ class PlayerService : MediaLibraryService(),
 
         override fun seekTo(positionMs: Long) {
             Timber.d("TICK-SEEK-RECV positionMs=$positionMs")
+            // Se l'utente fa seek manuale, annulliamo qualunque fade-in differito pendente
+            // cosi' l'evento PLAYING post-seek non azzera il volume a meta' canzone!
+            if (pendingOnlineFadeIn) {
+                pendingOnlineFadeIn = false
+                fadeInJob?.cancel()
+                isFading = false
+                if (!alarmFadeInProgress) {
+                    hybridPlayer.setFadeVolume(1.0f)
+                }
+            }
             // ATTENZIONE: L'API di YouTube IFrame usa i SECONDI (Float), non i millisecondi!
             val seconds = positionMs.toFloat() / 1000f
             _internalYouTubePlayer.value?.seekTo(seconds)
             _currentSecond.value = seconds
+            schedulePreloadNextTrack(500L)
         }
 
         override fun getCurrentPositionMs(): Long {
@@ -3883,59 +4025,28 @@ class PlayerService : MediaLibraryService(),
 
                 // Il guardiano calcola i dati SOLO se c'è una canzone caricata nel player
                 if (duration > 0) {
+                    val decision = evaluateWatchdogTransition(
+                        activeEngine = hybridPlayer.activeEngine,
+                        isPlaying = isPlaying,
+                        isFading = isFading,
+                        crossfadeDuration = appSettings.crossfadeDuration,
+                        durationMs = duration,
+                        positionMs = position,
+                        lastPositionMs = lastWatchdogPosition,
+                        nearEndStallTicks = onlineNearEndTicks,
+                    )
+                    onlineNearEndTicks = decision.nextNearEndStallTicks
 
-                    val timeLeft = duration - position
-                    val crossfadeDurationMs = appSettings.crossfadeDuration.milliseconds
-
-                    // LE LOGICHE DI FINE BRANO SCATTANO SOLO SE L'APP STA EFFETTIVAMENTE SUONANDO
-                    // La logica di fine brano la limitiamo a EXOPLAYER perchè abbiamo mmesso la pausa tra i mediaitems per non creare doppi salti
-                    if (isPlaying && hybridPlayer.activeEngine == ActiveEngine.EXOPLAYER) {
-                        // SE IL CROSSFADE È ATTIVO
-                        //Timber.d("PlayerService PlaybackWatchdog: engine = ${hybridPlayer.activeEngine} isFading = $isFading isPlaying = $isPlaying isPaused = $isPaused timeleft $timeLeft duration=$duration ms, position=$position ms")
-                        if (appSettings.crossfadeDuration != CrossfadeDuration.Off) {
-                            if (timeLeft <= crossfadeDurationMs && timeLeft > -10000 && !isFading) {
-                                isFading = true
-                                val nextMediaItemIndex = hybridPlayer.nextMediaItemIndex
-                                if (nextMediaItemIndex == -1) return@launch // se è nullo non c'è nulla da fare
-                                val nextMediaItem = hybridPlayer.getMediaItemAt(nextMediaItemIndex)
-                                val isNextLocal = nextMediaItem.isLocal
-
-                                Timber.d("PlayerService PlaybackWatchdog: Attivazione Fade Out ($timeLeft ms). Prossimo locale=$isNextLocal")
-                                lastWatchdogPosition = -1L // resetto la posizione precedente durante il cambio
-
-                                handleEndOfSong("cambio con crossfade attivo")
-
-                            }
-                        }
-                        // SE IL CROSSFADE È DISATTIVATO
-                        else {
-                            val isPlayerStalled = timeLeft <= 3500
-                                    && position == lastWatchdogPosition
-                                    && position > 2000 // Protezione: lo stallo non può avvenire nei primi 2 secondi!
-
-
-                            // USIAMO UNA SOGLIA APERTA PER CONTRASTARE LE CHIAMATE MULTIPLE
-                            // La fine naturale può scattare SOLO se la canzone
-                            // è avviata da almeno 5 secondi (position > 5000).
-                            // Questo impedisce al Watchdog di confondersi con i vecchi dati hardware
-                            // nei primissimi millisecondi del cambio traccia!
-                            val isNaturalEnd = timeLeft <= 1200 && position > 5000
-
-                            if ((isNaturalEnd || isPlayerStalled) && !isFading) {
-                                isFading = true
-                                if (isPlayerStalled) {
-                                    Timber.w("PlayerService PlaybackWatchdog: RILEVATO STALLO FINE TRACCIA a $timeLeft ms. Forzo il cambio!")
-                                } else {
-                                    Timber.d("PlayerService PlaybackWatchdog: Fine brano naturale a $timeLeft ms")
-                                }
-                                lastWatchdogPosition = -1L // resetto la posizione precedente durante il cambio
-
-                                handleEndOfSong("cambio con crossfade disattivo")
-
-                            }
+                    if (decision.shouldTriggerEndOfSong) {
+                        val hasNext = nextPlayableIndexAfter(hybridPlayer.currentMediaItemIndex) != null ||
+                            appSettings.queueLoopType != QueueLoopType.Default
+                        if (hasNext || appSettings.crossfadeDuration == CrossfadeDuration.Off) {
+                            Timber.d("PlayerService PlaybackWatchdog: trigger EndOfSong (${decision.reason}) pos=${position}ms dur=${duration}ms timeLeft=${duration - position}ms")
+                            isFading = true
+                            lastWatchdogPosition = -1L
+                            handleEndOfSong(decision.reason ?: "playbackWatchdog")
                         }
                     }
-
 
                     // Aggiorniamo la posizione storica per il prossimo ciclo
                     lastWatchdogPosition = position
@@ -3991,13 +4102,40 @@ class PlayerService : MediaLibraryService(),
             return
         }
 
-        if (appSettings.crossfadeDuration != CrossfadeDuration.Off) {
-            val isNextLocal = hybridPlayer.getMediaItemAt(targetIndex).isLocal
-            if (isNextLocal) startExoToExoCrossfade(targetIndex) else startWebViewFadeOut(targetIndex)
-        } else {
-            handlePlayNext(
+        val isNextLocal = hybridPlayer.getMediaItemAt(targetIndex).isLocal
+        when (
+            evaluateEndOfSongAction(
+                source = source,
+                crossfadeDuration = appSettings.crossfadeDuration,
+                isNextLocal = isNextLocal,
+            )
+        ) {
+            EndOfSongAction.EXO_CROSSFADE_OUT -> startExoToExoCrossfade(targetIndex)
+            EndOfSongAction.WEBVIEW_FADE_OUT -> {
+                if (hybridPlayer.activeEngine == ActiveEngine.YOUTUBE && !isNextLocal) {
+                    val nextMediaId = hybridPlayer.getMediaItemAt(targetIndex).mediaId
+                    val crossfadeMs = appSettings.crossfadeDuration.milliseconds
+                    val crossoverDelayMs = ((crossfadeMs * 65L) / 100L).coerceAtLeast(1000L)
+                    Timber.d("PlayerService: Avvio Dual-Deck Crossfade Overlap WebView ($crossfadeMs ms, crossover in $crossoverDelayMs ms) verso targetIndex=$targetIndex id=$nextMediaId")
+                    activeCrossfadeTargetMediaId = nextMediaId
+                    _internalYouTubePlayer.value?.startCrossfade(nextMediaId, crossfadeMs.toInt())
+                    overlapCrossfadeJob?.cancel()
+                    overlapCrossfadeJob = this@PlayerService.serviceScope.launch(Dispatchers.Main) {
+                        delay(crossoverDelayMs.milliseconds)
+                        if (activeCrossfadeTargetMediaId == nextMediaId) {
+                            handlePlayNext(
+                                "handleEndOfSong dual-deck crossfade crossover da $source targetIndex = $targetIndex",
+                                targetIndex,
+                            )
+                        }
+                    }
+                } else {
+                    startWebViewFadeOut(targetIndex)
+                }
+            }
+            EndOfSongAction.IMMEDIATE_PLAY_NEXT -> handlePlayNext(
                 "handleEndOfSong chiamato da $source targetIndex = $targetIndex",
-                targetIndex
+                targetIndex,
             )
         }
     }
@@ -4407,8 +4545,11 @@ class PlayerService : MediaLibraryService(),
         hybridPlayer.setFadeVolume(0f) // Inizia dal silenzio totale
 
         fadeInJob = this@PlayerService.serviceScope.launch(Dispatchers.Main) {
-            val steps = 20
-            val stepDelay = FADE_IN_DURATION_MS / steps
+            val steps = 25
+            val durationMs = appSettings.crossfadeDuration.milliseconds.coerceAtLeast(FADE_IN_DURATION_MS)
+            val stepDelay = (durationMs / steps).coerceAtLeast(40L)
+
+            Timber.d("PlayerService: Avvio Fade In su base di $durationMs ms")
 
             for (i in 1..steps) {
                 val progress = i.toFloat() / steps
@@ -5047,6 +5188,31 @@ class PlayerService : MediaLibraryService(),
     }
 
     fun setLoadPending(phase: LoadPhase, reason: String) {
+        if (phase == LoadPhase.NONE) {
+            loadPendingDebounceJob?.cancel()
+            loadPendingDebounceJob = null
+            preloadedTransitionInFlight = false
+            applyLoadPendingState(LoadPhase.NONE, reason)
+            return
+        }
+
+        if (preloadedTransitionInFlight) {
+            if (loadPendingDebounceJob?.isActive == true) return
+            loadPendingDebounceJob = serviceScope.launch(Dispatchers.Main) {
+                delay(450.milliseconds)
+                loadPendingDebounceJob = null
+                if (preloadedTransitionInFlight && _playerState.value.playbackState != PlaybackState.PLAYING) {
+                    preloadedTransitionInFlight = false
+                    applyLoadPendingState(LoadPhase.PENDING, "$reason (debounced after preloaded swap)")
+                }
+            }
+            return
+        }
+
+        applyLoadPendingState(phase, reason)
+    }
+
+    private fun applyLoadPendingState(phase: LoadPhase, reason: String) {
         val cur = _playerState.value
         val now = System.currentTimeMillis()
         Timber.w("PlayerService LOAD-PENDING %s→%s reason=%s state=%s Δsince=%d ΔlastAct=%d",
@@ -5496,6 +5662,8 @@ class PlayerService : MediaLibraryService(),
     }
 
     fun handlePlayNextRequestedByUser(source: String) {
+        overlapCrossfadeJob?.cancel()
+        activeCrossfadeTargetMediaId = null
         // Alziamo SUBITO il semaforo prima di fare qualsiasi controllo.
         // Questo congela istantaneamente i controlli del Watchdog supremo perenne!
         isFading = true
@@ -5541,6 +5709,8 @@ class PlayerService : MediaLibraryService(),
     }
 
     fun handlePlayPreviousRequestedByUser(source: String) {
+        overlapCrossfadeJob?.cancel()
+        activeCrossfadeTargetMediaId = null
         // Alziamo subito lo scudo protettivo contro il Watchdog perenne
         isFading = true
 
@@ -5671,6 +5841,8 @@ class PlayerService : MediaLibraryService(),
                 !isCastDrivingPlayback()
 
         if (_playerState.value.isPlaying) return
+        pendingOnlineFadeIn = false
+        fadeInJob?.cancel()
 
         // ADATTAMENTO DINAMICO IN RISALITA
         val isCrossfadeOff = appSettings.crossfadeDuration == CrossfadeDuration.Off

@@ -30,11 +30,11 @@ class SpeechTriggerGateTest {
 
     @Test
     fun speechAfterWarmupAndQuietSettleTriggers() {
-        val gate = SpeechTriggerGate()
+        val gate = SpeechTriggerGate(playbackActive = false)
         gate.reset(0L)
         var now = warmUp(gate)
         now = feed(gate, -120.0, frames = 75, startMs = now)
-        assertTrue(gate.isSettled)
+        assertFalse(gate.isWarmingUp(now))
 
         repeat(3) {
             assertFalse(gate.onFrame(-20.0, now))
@@ -74,7 +74,7 @@ class SpeechTriggerGateTest {
         // The echo canceler has not converged yet and music is still audible,
         // even though it sits below the speech margin.
         now = feed(gate, -28.0, frames = 75, startMs = now)
-        assertFalse(gate.isSettled)
+        assertTrue(gate.peakFloorDb > -30.0)
 
         feed(gate, -10.0, frames = 4, startMs = now) { triggered ->
             assertFalse(triggered)
@@ -83,7 +83,7 @@ class SpeechTriggerGateTest {
 
     @Test
     fun unvoicedFrameResetsTheTriggerCount() {
-        val gate = SpeechTriggerGate()
+        val gate = SpeechTriggerGate(playbackActive = false)
         gate.reset(0L)
         var now = warmUp(gate)
         now = feed(gate, -120.0, frames = 75, startMs = now)
@@ -125,13 +125,13 @@ class SpeechTriggerGateTest {
         gate.reset(0L)
 
         var now = 0L
-        repeat(79) {
+        repeat(59) {
             gate.onFrame(-100.0, now)
             now += frameMs
         }
         gate.onFrame(-20.0, now)
 
         assertTrue(gate.isWarmingUp(now))
-        assertEquals(-20.0, gate.noiseFloorDb)
+        assertEquals(-20.0, gate.peakFloorDb)
     }
 }
