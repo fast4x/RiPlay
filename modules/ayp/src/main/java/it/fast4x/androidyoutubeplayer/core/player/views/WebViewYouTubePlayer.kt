@@ -8,6 +8,7 @@ import android.os.Looper
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
+import android.webkit.ConsoleMessage
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
@@ -169,6 +170,14 @@ internal class WebViewYouTubePlayer (
 
     // Configurazione snella del client grafico
     webChromeClient = object : WebChromeClient() {
+      override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
+        val message = consoleMessage?.message().orEmpty()
+        if (message.startsWith("AYP JS YT-BRIDGE [UNSTARTED_FIX]")) {
+          Log.i("RiPlayYT", message)
+        }
+        return super.onConsoleMessage(consoleMessage)
+      }
+
       override fun getDefaultVideoPoster(): Bitmap? {
         // Restituisce SEMPRE un pixel trasparente. La cover vera la gestisce il DOM HTML
         return try {

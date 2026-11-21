@@ -117,6 +117,7 @@
   // WatchDog per UNSTARTED
   var lastLoadRequest = null;
   var unstartedRetryDone = false;
+  var unstartedWatchdogInterval = null;
   var lastCueRequest = null;   // {videoId, startSeconds} settato in cueVideo()
 
   // Funzione AdBlock protetta da eccezioni Cross-Origin
@@ -208,19 +209,35 @@
               }
           }, 250);
 
-          // Rilevatore per UNSTARTED sempre attivo
-          setInterval(function() {
-              if (!player || !lastLoadRequest) return;
-              if (player.getPlayerState() !== -1) return;          // solo UNSTARTED appeso
-              var stuckFor = performance.now() - lastLoadRequest.at;
-              var st = player.getPlayerState();
-              if (stuckFor > 2000 && !unstartedRetryDone) {
-                  unstartedRetryDone = true; // max 1 retry: poi passano i livelli Kotlin
-                  console.log("AYP JS YT-BRIDGE [RESCUE] state=" + st + " stuck=" + (stuckFor|0) + "ms → re-issue " + lastLoadRequest.videoId);
-                  //console.log("[JS] UNSTARTED persistente " + stuckFor.toFixed(0) + "ms → re-issue loadVideo");
-                  loadVideo(lastLoadRequest.videoId, lastLoadRequest.startSeconds);
+          // FIX 0.8.7-rc.4: recupero solo del primo avvio, non durante la riproduzione.
+          if (unstartedWatchdogInterval !== null) clearInterval(unstartedWatchdogInterval);
+          unstartedWatchdogInterval = setInterval(function() {
+              if (!player || !lastLoadRequest || lastLoadRequest.hasStartedPlayback || unstartedRetryDone) return;
+              var state = player.getPlayerState();
+              if (state !== -1) {
+                  lastLoadRequest.unstartedSince = null;
+                  return;
+              }
+              // Ulteriore protezione: se il tempo e gia avanzato, non ricaricare il brano.
+              var currentTime = typeof player.getCurrentTime === 'function' ? Number(player.getCurrentTime()) || 0 : 0;
+              if (currentTime > (Number(lastLoadRequest.startSeconds) || 0) + 1) {
+                  lastLoadRequest.hasStartedPlayback = true;
+                  return;
+              }
+              var now = performance.now();
+              if (lastLoadRequest.unstartedSince === null) {
+                  lastLoadRequest.unstartedSince = now;
+                  return;
+              }
+              var stuckFor = now - lastLoadRequest.unstartedSince;
+              if (stuckFor >= 2000) {
+                  unstartedRetryDone = true;
+                  console.log("AYP JS YT-BRIDGE [UNSTARTED_FIX] startup retry id=" + lastLoadRequest.videoId + " duration=" + (stuckFor|0));
+                  // NON usare loadVideo(): azzererebbe il flag retry e potrebbe creare un ciclo.
+                  player.loadVideoById(lastLoadRequest.videoId, lastLoadRequest.startSeconds);
               }
           }, 500);
+
 
 
 <!--          setInterval(function() {-->
@@ -250,6 +267,17 @@
   }
 
   function sendPlayerStateChange(playerState) {
+    if (lastLoadRequest) {
+        if (playerState === YT.PlayerState.PLAYING) {
+            lastLoadRequest.hasStartedPlayback = true;
+            lastLoadRequest.unstartedSince = null;
+        } else if (playerState !== YT.PlayerState.UNSTARTED) {
+            lastLoadRequest.unstartedSince = null;
+        } else if (lastLoadRequest.hasStartedPlayback) {
+            console.log("AYP JS YT-BRIDGE [UNSTARTED_FIX] ignored mid-playback UNSTARTED id=" + lastLoadRequest.videoId);
+        }
+    }
+
     clearTimeout(timerId);
 
     initializeAdBlock();
@@ -366,7 +394,7 @@
   function playVideo() {
     if (player && player.getPlayerState() === 5 && lastCueRequest) {
         console.log("AYP JS YT-BRIDGE: play su CUED → load deterministico " + lastCueRequest.videoId);
-        player.loadVideoById(lastCueRequest.videoId, lastCueRequest.startSeconds);  // auto-playa
+        loadVideo(lastCueRequest.videoId, lastCueRequest.startSeconds);  // traccia il nuovo caricamento
         return;
     }
     player.playVideo();
@@ -375,7 +403,7 @@
 
   function loadVideo(videoId, startSeconds) {
     if (!player) return;
-    lastLoadRequest = { videoId: videoId, startSeconds: startSeconds, at: performance.now() };
+    lastLoadRequest = { videoId: videoId, startSeconds: startSeconds, at: performance.now(), hasStartedPlayback: false, unstartedSince: null };
     unstartedRetryDone = false;
     player.loadVideoById(videoId, startSeconds);
     if (YouTubePlayerBridge) YouTubePlayerBridge.sendVideoId(videoId);
@@ -389,6 +417,7 @@
   function cueVideo(videoId, startSeconds) {
     if (!player) return;
     lastCueRequest = { videoId: videoId, startSeconds: startSeconds };
+    lastLoadRequest = null; // nessun rescue per il video precedente durante il cue
     unstartedRetryDone = false;
     player.cueVideoById(videoId, startSeconds);
     if (YouTubePlayerBridge) YouTubePlayerBridge.sendVideoId(videoId);
