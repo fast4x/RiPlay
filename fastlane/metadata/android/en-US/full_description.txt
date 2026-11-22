@@ -25,20 +25,25 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 <li>Listener level ranking with personal monthly and annual badge</li>
 <li>Blacklist, can ignore artist, album, Song, Playlist, Device folder</li>
 <li>Rewind, your year in music</li>
+<li>Last.fm scrobble integration</li>
+<li>ListenBrainz scrobble integration, also support custom server</li>
+<li>Fast Share (direct sharing with installed apps)</li>
+<li>Crossfade (crossfade between songs)</li>
+<li>Cast to another Android device / TV via [RiTune](https://github.com/fast4x/RiTune)</li>
+<li>Cast to UPNP/DLNA compatible devices</li>
+<li>Streaming server, serve your music from any device</li>
 </ul>
 
 <h3>⏰ Smart Features</h3>
 <ul>
-<li>Music Recognize (title & artist)</li>
-<li>Sleep timer</li>
+<li>Sleep timer, stop music when you go to sleep</li>
+<li>Alarm, wake up with your music: schedule a song or a playlist to play at a specific time</li>
+<li>Voice control, control music with voice commands</li>
 <li>Visualizer (microphone permission required)</li>
-<li>Fast Share (direct sharing with installed apps)</li>
-<li>Cast to another Android device / TV via [RiLink](https://github.com/fast4x/RiLink) (experimental)</li>
 <li>Self-closing app scheduling</li>
-<li>Events daily/weekly, new releases from your artists, auto backup and check update</li>
 <li>Android Auto support</li>
-<li>Android TV support (experimental)</li>
-<li>Widget support (experimental)</li>
+<li>Android TV support</li>
+<li>Widget support </li>
 </ul>
 <hr>
 
