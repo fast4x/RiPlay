@@ -249,6 +249,7 @@ class MediaLibraryServiceCallback(
 
         playerService.serviceScope.launch(Dispatchers.IO) {
             try {
+                val sortSettings = playerService.appSettingsManager.activeSettings.value
                 val data = parentId.split('/')
                 val id = data.getOrNull(1) ?: ""
                 val idOnDeviceFolder = parentId.split(MediaId.PLAYLISTS_ONDEVICE).getOrNull(1)?.substringAfter('/') ?: ""
@@ -270,7 +271,7 @@ class MediaLibraryServiceCallback(
 
                     MediaId.SONGS -> {
                         Database
-                            .songsFavorites(playerService.songsSortBy, playerService.songSortOrder)
+                            .songsFavorites(sortSettings.songSortBy, sortSettings.songSortOrder)
                             .first()
                             .take(500)
                             .also { currentSongsListContext = it.map(SongEntity::song) }
@@ -302,7 +303,7 @@ class MediaLibraryServiceCallback(
 
                     MediaId.SONGS_ALL -> {
                         Database
-                            .songs(playerService.songsSortBy, playerService.songSortOrder, 0)
+                            .songs(sortSettings.songSortBy, sortSettings.songSortOrder, 0)
                             .first()
                             .take(500)
                             .also { currentSongsListContext = it.map(SongEntity::song) }
@@ -321,14 +322,13 @@ class MediaLibraryServiceCallback(
                     MediaId.PLAYLISTS -> {
                         if (id == "") {
                             Database
-                                .playlistPreviews(playerService.playlistSortBy, playerService.songSortOrder)
+                                .playlistPreviews(sortSettings.playlistSortBy, sortSettings.playlistSortOrder)
                                 .first()
                                 .fastFilter {
                                     if (playerService.appSettings.showMonthlyPlaylistAA) true
                                     else !it.playlist.name.startsWith(MONTHLY_PREFIX)
                                 }
                                 .map { it.asBrowserMediaItem(Database.playlistThumbnailUrls(it.playlist.id).first().take(1)) }
-                                .sortedBy { it.mediaMetadata.title.toString() }
                                 .map { it.asCleanMediaItem }
                                 .toMutableList()
                                 .apply {
@@ -341,7 +341,7 @@ class MediaLibraryServiceCallback(
                         } else {
                             val playlistLimit = playerService.appSettings.androidAutoPlaylistLimit.number
                             Database
-                                .songsPlaylist(id.toLong(), playerService.playlistSongsSortBy, playerService.songSortOrder)
+                                .songsPlaylist(id.toLong(), sortSettings.playlistSongsSortBy, sortSettings.playlistSortOrder)
                                 .first()
                                 .let { songs -> playlistLimit?.let { limit -> songs.take(limit) } ?: songs }
                                 .also { currentSongsListContext = it.map(SongEntity::song) }
@@ -352,52 +352,48 @@ class MediaLibraryServiceCallback(
 
                     MediaId.PLAYLISTS_IN_LIBRARY -> {
                         Database
-                            .playlistPreviews(playerService.playlistSortBy, playerService.songSortOrder)
+                            .playlistPreviews(sortSettings.playlistSortBy, sortSettings.playlistSortOrder)
                             .first()
                             .fastFilter {
                                 it.playlist.isYoutubePlaylist
                             }
                             .map { it.asBrowserMediaItem(Database.playlistThumbnailUrls(it.playlist.id).first().take(1)) }
-                            .sortedBy { it.mediaMetadata.title.toString() }
                             .map { it.asCleanMediaItem }
                             .toMutableList()
                     }
 
                     MediaId.PLAYLISTS_PODCAST -> {
                         Database
-                            .playlistPreviews(playerService.playlistSortBy, playerService.songSortOrder)
+                            .playlistPreviews(sortSettings.playlistSortBy, sortSettings.playlistSortOrder)
                             .first()
                             .fastFilter {
                                 it.playlist.isPodcast
                             }
                             .map { it.asBrowserMediaItem(Database.playlistThumbnailUrls(it.playlist.id).first().take(1)) }
-                            .sortedBy { it.mediaMetadata.title.toString() }
                             .map { it.asCleanMediaItem }
                             .toMutableList()
                     }
 
                     MediaId.PLAYLISTS_PINNED -> {
                         Database
-                            .playlistPreviews(playerService.playlistSortBy, playerService.songSortOrder)
+                            .playlistPreviews(sortSettings.playlistSortBy, sortSettings.playlistSortOrder)
                             .first()
                             .fastFilter {
                                 it.playlist.isPinned
                             }
                             .map { it.asBrowserMediaItem(Database.playlistThumbnailUrls(it.playlist.id).first().take(1)) }
-                            .sortedBy { it.mediaMetadata.title.toString() }
                             .map { it.asCleanMediaItem }
                             .toMutableList()
                     }
 
                     MediaId.PLAYLISTS_MONTHLY -> {
                         Database
-                            .playlistPreviews(playerService.playlistSortBy, playerService.songSortOrder)
+                            .playlistPreviews(sortSettings.playlistSortBy, sortSettings.playlistSortOrder)
                             .first()
                             .fastFilter {
                                 it.playlist.isMonthly
                             }
                             .map { it.asBrowserMediaItem(Database.playlistThumbnailUrls(it.playlist.id).first().take(1)) }
-                            .sortedBy { it.mediaMetadata.title.toString() }
                             .map { it.asCleanMediaItem }
                             .toMutableList()
                     }
@@ -406,23 +402,23 @@ class MediaLibraryServiceCallback(
                         if (idOnDeviceFolder == "") {
                             onDeviceViewModel.audioFoldersAsPlaylists().first()
                                 .let { folders ->
-                                    when (playerService.playlistSortBy) {
-                                        PlaylistSortBy.Name -> when (playerService.songSortOrder) {
+                                    when (sortSettings.playlistSortBy) {
+                                        PlaylistSortBy.Name -> when (sortSettings.playlistSortOrder) {
                                             SortOrder.Ascending -> folders.sortedBy { it.playlist.name }
                                             SortOrder.Descending -> folders.sortedByDescending { it.playlist.name }
                                         }
 
-                                        PlaylistSortBy.DateAdded -> when (playerService.songSortOrder) {
+                                        PlaylistSortBy.DateAdded -> when (sortSettings.playlistSortOrder) {
                                             SortOrder.Ascending -> folders.sortedBy { it.totalPlayTimeMs }
                                             SortOrder.Descending -> folders.sortedByDescending { it.totalPlayTimeMs }
                                         }
 
-                                        PlaylistSortBy.SongCount -> when (playerService.songSortOrder) {
+                                        PlaylistSortBy.SongCount -> when (sortSettings.playlistSortOrder) {
                                             SortOrder.Ascending -> folders.sortedBy { it.songCount }
                                             SortOrder.Descending -> folders.sortedByDescending { it.songCount }
                                         }
 
-                                        PlaylistSortBy.MostPlayed -> when (playerService.songSortOrder) {
+                                        PlaylistSortBy.MostPlayed -> when (sortSettings.playlistSortOrder) {
                                             SortOrder.Ascending -> folders.sortedBy { it.totalPlayTimeMs }
                                             SortOrder.Descending -> folders.sortedByDescending { it.totalPlayTimeMs }
                                         }
@@ -433,7 +429,6 @@ class MediaLibraryServiceCallback(
                                             true
                                         )
                                     }
-                                        .sortedBy { it.mediaMetadata.title.toString() }
                                         .map { it.asCleanMediaItem }
                                         .toMutableList()
                                 }
@@ -454,7 +449,7 @@ class MediaLibraryServiceCallback(
 
                         if (id == "") {
                             Database
-                                .artists(playerService.artistSortBy, playerService.artistSortOrder)
+                                .artists(sortSettings.artistSortBy, sortSettings.artistSortOrder)
                                 .first()
                                 .map { it.asBrowserMediaItem(MediaId.ARTISTS_FAVORITES) }
                                 .toMutableList()
@@ -519,7 +514,7 @@ class MediaLibraryServiceCallback(
 
                         if (id == "") {
                             Database
-                                .artistsOnDevice(playerService.artistSortBy, playerService.artistSortOrder)
+                                .artistsOnDevice(sortSettings.artistSortBy, sortSettings.artistSortOrder)
                                 .first()
                                 .map { it.asBrowserMediaItem(MediaId.ARTISTS_ONDEVICE) }
                                 .toMutableList()
@@ -537,7 +532,7 @@ class MediaLibraryServiceCallback(
                         if (id == "") {
                             Timber.d("MediaLibraryCallback onLoadChildren inside artists in library id $id")
                             Database
-                                .artistsInLibrary(playerService.artistSortBy, playerService.artistSortOrder)
+                                .artistsInLibrary(sortSettings.artistSortBy, sortSettings.artistSortOrder)
                                 .first()
                                 .map { it.asBrowserMediaItem(MediaId.ARTISTS_IN_LIBRARY) }
                                 .toMutableList()
@@ -602,7 +597,7 @@ class MediaLibraryServiceCallback(
                         if (id == "") {
                             Timber.d("MediaLibraryCallback onLoadChildren inside albums id $id")
                             Database
-                                .albums(playerService.albumSortBy, playerService.albumSortOrder)
+                                .albums(sortSettings.albumSortBy, sortSettings.albumSortOrder)
                                 .first()
                                 .map { it.asBrowserMediaItem(MediaId.ALBUMS_FAVORITES) }
                                 .toMutableList()
@@ -670,7 +665,7 @@ class MediaLibraryServiceCallback(
                         if (id == "") {
                             Timber.d("MediaLibraryCallback onLoadChildren inside albums on device id $id")
                             Database
-                                .albumsOnDevice(playerService.albumSortBy, playerService.albumSortOrder)
+                                .albumsOnDevice(sortSettings.albumSortBy, sortSettings.albumSortOrder)
                                 .first()
                                 .map { it.asBrowserMediaItem(MediaId.ALBUMS_ON_DEVICE) }
                                 .toMutableList()
@@ -689,7 +684,7 @@ class MediaLibraryServiceCallback(
                         if (id == "") {
                             Timber.d("MediaLibraryCallback onLoadChildren inside albums on device id $id")
                             Database
-                                .albumsInLibrary(playerService.albumSortBy, playerService.albumSortOrder)
+                                .albumsInLibrary(sortSettings.albumSortBy, sortSettings.albumSortOrder)
                                 .first()
                                 .map { it.asBrowserMediaItem(MediaId.ALBUMS_IN_LIBRARY) }
                                 .toMutableList()

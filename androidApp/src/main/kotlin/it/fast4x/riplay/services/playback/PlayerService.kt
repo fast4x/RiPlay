@@ -496,6 +496,7 @@ class PlayerService : MediaLibraryService(),
     var songSortOrder: SortOrder = SortOrder.Descending
     var artistSortOrder: SortOrder = SortOrder.Descending
     var albumSortOrder: SortOrder = SortOrder.Descending
+    var playlistSortOrder: SortOrder = SortOrder.Descending
 
     private var isServiceInForeground = false
 
@@ -1075,80 +1076,84 @@ class PlayerService : MediaLibraryService(),
     }
 
     private fun startObservingSettings() {
-        settingsObserverJob = this@PlayerService.serviceScope.launch(Dispatchers.Main) {
-            appSettingsManager.activeSettings      
-                .collect { settings -> 
-                    //Timber.d("PlayerService: impostazioni cambiate $settings")
+        settingsObserverJob?.cancel()
+        settingsObserverJob = serviceScope.launch(Dispatchers.Main) {
+            appSettingsManager.activeSettings.collect { settings ->
+                val streamRelayChanged = settings.streamRelayEnabled != relayEnabledObserved
+                val songsChanged = songsSortBy != settings.songSortBy ||
+                    songSortOrder != settings.songSortOrder
+                val artistsChanged = artistSortBy != settings.artistSortBy ||
+                    artistSortOrder != settings.artistSortOrder
+                val albumsChanged = albumSortBy != settings.albumSortBy ||
+                    albumSortOrder != settings.albumSortOrder
+                val playlistsChanged = playlistSortBy != settings.playlistSortBy ||
+                    playlistSortOrder != settings.playlistSortOrder ||
+                    playlistSongsSortBy != settings.playlistSongsSortBy
+                val onDeviceSongsChanged = appSettings.onDeviceSongSortBy != settings.onDeviceSongSortBy ||
+                    songSortOrder != settings.songSortOrder
+                val onDeviceFoldersChanged = appSettings.onDeviceFolderSortBy != settings.onDeviceFolderSortBy
 
-                    when {
-                        (settings.songSortOrder != songSortOrder) -> {
-                            songSortOrder = settings.songSortOrder
-                            notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.SONGS)
-                        }
-                        (settings.artistSortOrder != artistSortOrder) -> {
-                            artistSortOrder = settings.artistSortOrder
-                            notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.ARTISTS_FAVORITES)
-                        }
-                        (settings.albumSortOrder != albumSortOrder) -> {
-                            albumSortOrder = settings.albumSortOrder
-                            notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.ALBUMS_FAVORITES)
-                        }
-                        (settings.playlistSortBy != playlistSortBy) -> {
-                            playlistSortBy = settings.playlistSortBy
-                            notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.PLAYLISTS)
-                        }
-                        (settings.playlistSongsSortBy != playlistSongsSortBy) -> {
-                            playlistSongsSortBy = settings.playlistSongsSortBy
-                            notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.PLAYLISTS)
-                        }
-                        (settings.artistSortBy != artistSortBy) -> {
-                            artistSortBy = settings.artistSortBy
-                            notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.ARTISTS_FAVORITES)
-                        }
-                        (settings.albumSortBy != albumSortBy) -> {
-                            albumSortBy = settings.albumSortBy
-                            notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.ALBUMS_FAVORITES)
-                        }
-                        (settings.songSortBy != songsSortBy) -> {
-                            songsSortBy = settings.songSortBy
-                            notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.SONGS)
-                        }
-                        // Fase 2: avvio/stop del server di streaming a runtime, senza riavvio activity
-                        (settings.streamRelayEnabled != relayEnabledObserved) -> {
-                            relayEnabledObserved = settings.streamRelayEnabled
-                            RelayManager.startIfEnabled(this@PlayerService, settings.streamRelayEnabled)
-                            GlobalSharedData.relayServerRunning.value = RelayManager.running.value
-                            GlobalSharedData.relayServerUrl.value = RelayManager.baseUrl.value
-                        }
-                    }
+                // Aggiorna lo snapshot prima delle notifiche ad Android Auto.
+                songsSortBy = settings.songSortBy
+                songSortOrder = settings.songSortOrder
+                artistSortBy = settings.artistSortBy
+                artistSortOrder = settings.artistSortOrder
+                albumSortBy = settings.albumSortBy
+                albumSortOrder = settings.albumSortOrder
+                playlistSortBy = settings.playlistSortBy
+                playlistSortOrder = settings.playlistSortOrder
+                playlistSongsSortBy = settings.playlistSongsSortBy
+                appSettings = settings
 
-
-                    appSettings = settings
-                    updateExoPauseAtEndOfMediaItems()
+                // Preserve the streaming relay settings introduced by upstream.
+                if (streamRelayChanged) {
+                    relayEnabledObserved = settings.streamRelayEnabled
+                    RelayManager.startIfEnabled(this@PlayerService, settings.streamRelayEnabled)
+                    GlobalSharedData.relayServerRunning.value = RelayManager.running.value
+                    GlobalSharedData.relayServerUrl.value = RelayManager.baseUrl.value
                 }
+
+                if (songsChanged) {
+                    notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.SONGS)
+                    notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.SONGS_ALL)
+                }
+                if (onDeviceSongsChanged) {
+                    notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.SONGS_ONDEVICE)
+                }
+                if (artistsChanged) {
+                    notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.ARTISTS_FAVORITES)
+                    notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.ARTISTS_IN_LIBRARY)
+                    notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.ARTISTS_ONDEVICE)
+                }
+                if (albumsChanged) {
+                    notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.ALBUMS_FAVORITES)
+                    notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.ALBUMS_IN_LIBRARY)
+                    notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.ALBUMS_ON_DEVICE)
+                }
+                if (playlistsChanged) {
+                    notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.PLAYLISTS)
+                    notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.PLAYLISTS_IN_LIBRARY)
+                    notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.PLAYLISTS_PODCAST)
+                    notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.PLAYLISTS_PINNED)
+                    notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.PLAYLISTS_MONTHLY)
+                    notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.PLAYLISTS_ONDEVICE)
+                }
+                if (onDeviceFoldersChanged) {
+                    notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.PLAYLISTS_ONDEVICE)
+                }
+                updateExoPauseAtEndOfMediaItems()
+            }
         }
-        
     }
 
     fun notifyAutoChildrenChanged(parentId: String) {
-        // 1. Controlla che la sessione non sia null (usando il ?. safe call)
         mediaLibrarySession?.let { session ->
-
-            val params = LibraryParams.Builder()
-                .setExtras(Bundle().apply {
-                    // Diciamo esplicitamente al sistema dell'auto che il contenuto di questo specifico nodo è cambiato
-                    putBoolean("android.media.browse.extra.DOWNLOAD_PROGRESS", true) // Sveglia il sistema di caricamento visivo
-                })
-                .build()
-
-            // 2. connectedControllers è una proprietà di MediaSession/LibrarySession
+            val params = LibraryParams.Builder().build()
             for (controller in session.connectedControllers) {
-
-                // 3. Chiamiamo il metodo SULLA SESSIONE
                 session.notifyChildrenChanged(
                     controller,
                     parentId,
-                    0,
+                    Int.MAX_VALUE,
                     params
                 )
             }
