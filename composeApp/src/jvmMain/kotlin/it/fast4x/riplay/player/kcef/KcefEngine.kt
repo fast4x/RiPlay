@@ -632,6 +632,46 @@ sealed interface KcefState {
  *     DIAGNOSTICA: logEnvironment stampa DISPLAY / WAYLAND_DISPLAY /
  *         XDG_SESSION_TYPE; l'aggiunta del flag e' loggata con la sessione
  *         rilevata.
+ *
+ * 35. v48 (FIX CRASH macOS Tahoe 26.x - crash report RiPlay v0.8.1 del
+ *     27/10/2026, Macmini9,1 / macOS 26.5.1, utente su macOS 26.7.x):
+ *     EXC_BREAKPOINT (SIGTRAP) dentro cef_initialize ALL'AVVIO del
+ *     processo, con frame Rust/cxxbridge nel Chromium Embedded Framework.
+ *     Il report mostra il framework caricato dalla directory dati utente
+ *     con versione org.cef.framework (122.1.9.0) = il VECCHIO bundle
+ *     KCEF/JetBrainsRuntime (Chromium 122, due anni PRIMA di Tahoe):
+ *     Chromium pre-Tahoe e' INCOMPATIBILE con macOS 26 - la classe di
+ *     crash nota (panic Rust nel parsing font, simbolo fontations_ffi
+ *     visibile nei report Dreamweaver 21.7 su CEF 132.3.3 e nei crash
+ *     Raycast/Chrome su Tahoe) abortisce dentro CefInitialize e NON e'
+ *     intercettabile da Java: il processo muore e l'app non si apre mai.
+ *     La migrazione jcefmaven (nota 33: CEF 152 = Chromium 152,
+ *     post-Tahoe) e' gia' la fix strutturale, ma NON impediva ancora di
+ *     eseguire CefInitialize su macOS 26 con un bundle obsoleto residuo
+ *     su disco (bundle KCEF mai migrato, meta corrotta, downgrade).
+ *     Difese aggiunte (tutte PRIMA di qualunque chiamata nativa):
+ *     (a) GATE DI VERSIONE macOS Tahoe: su macOS >= 26 un bundle
+ *         installato con CEF/Chromium < 146 (prima release jcefmaven
+ *         interamente dell'era Tahoe: 146.0.10, maggio 2026; 122 e 132
+ *         confermati crashati) viene RIMOSSO (log preservati) per forzare
+ *         la reinstallazione del bundle pinnato (pre-seed o download); se
+ *         la versione CEF ATTESA dall'app stessa e' pre-Tahoe l'init NON
+ *         parte (stato Failed con messaggio esplicito): l'app resta
+ *         avviabile, mai crash nativo.
+ *     (b) MITIGAZIONE FONT BRIDGE: su macOS >= 26 viene aggiunto
+ *         --disable-features=Fontations,FontationsAll: il parsing font
+ *         Rust (fontations/skrifa, il sottosistema del panic) torna al
+ *         percorso CoreText/Skia pre-fontations; le feature sconosciute
+ *         a una build di Chromium vengono ignorate: flag sicuro.
+ *     (c) KILL-SWITCH utente: proprieta' di sistema
+ *         riplay.kcef.disabled=true OPPURE file "kcef-disabled.flag"
+ *         nella directory dati (accanto a kcef/): KcefEngine.start()
+ *         diventa un no-op documentato (stato Failed con istruzioni):
+ *         l'app si avvia SEMPRE, musica e file locali restano su VLCJ.
+ *         Riattivazione = rimuovere il file/flag e riavviare.
+ *     NB: il crash nativo non viene "gestito" (nessun handler puo'
+ *     fermare un SIGTRAP dentro CefInitialize): viene RESO IMPOSSIBILE
+ *     a monte, prima di qualunque libreria CEF caricata.
  */
 object KcefEngine {
 
@@ -639,7 +679,7 @@ object KcefEngine {
      * Marker di versione del bootstrap: SE NEI LOG NON APPARE QUESTA RIGA,
      * il processo sta eseguendo una build NON aggiornata.
      */
-    const val BOOTSTRAP_VERSION = "v47 (ozone-x11 linux)"
+    const val BOOTSTRAP_VERSION = "v48 (macos-tahoe-cef-gate)"
 
     private const val TAG = "[RiPlay-KCEF]"
 
@@ -1335,8 +1375,8 @@ object KcefEngine {
 
     private fun logEnvironment() {
         log("bootstrap $BOOTSTRAP_VERSION - build corrente se compare QUESTA riga")
-        log("os=${System.getProperty("os.name")} ${System.getProperty("os.arch")} " +
-                "java=${System.getProperty("java.version")} " +
+        log("os=${System.getProperty("os.name")} ${System.getProperty("os.version")} " +
+                "${System.getProperty("os.arch")} java=${System.getProperty("java.version")} " +
                 "java.home=${System.getProperty("java.home")}")
         if (isLinuxOS) {
             log("sessione grafica: ${graphicsSessionDescription()} " +
@@ -2073,12 +2113,125 @@ object KcefEngine {
             else "gate UI: TIMEOUT 20s senza conferma UI -> avvio fase nativa CEF comunque")
     }
 
+    // -------------------------------------------------------------------------
+    // v48 (FIX CRASH macOS Tahoe 26.x): GATE DI COMPATIBILITA' CEF.
+    // Crash report v0.8.1 (27/10/2026, macOS 26.5.1): EXC_BREAKPOINT dentro
+    // cef_initialize con org.cef.framework (122.1.9.0) = bundle KCEF/JBR
+    // pre-Tahoe. Chromium pre-Tahoe su macOS 26 abortisce all'init (classe
+    // nota: panic Rust nel parsing font "fontations", cfr. Dreamweaver su
+    // CEF 132) e il SIGTRAP nativo NON e' intercettabile da Java: l'unica
+    // difesa valida e' NON chiamare mai CefInitialize con un bundle
+    // incompatibile. Soglia 146 = prima release jcefmaven (146.0.10,
+    // maggio 2026) interamente successiva a Tahoe 26.0 (settembre 2025);
+    // 122 e 132 sono confermati crashati, 152 (pinnato dall'app) e'
+    // post-Tahoe.
+    // -------------------------------------------------------------------------
+
+    /** v48: major CEF/Chromium minimo accettato su macOS 26 (Tahoe) o successivi. */
+    private const val MIN_CEF_MAJOR_MACOS_TAHOE = 146
+
+    /** v48: file del kill-switch utente, nella directory dati (accanto a kcef/). */
+    private fun cefDisabledFlagFile(): File? =
+        runCatching { installDir.parentFile?.let { File(it, "kcef-disabled.flag") } }.getOrNull()
+
+    /**
+     * v48: true se l'utente ha disattivato il browser integrato:
+     *  - proprieta' di sistema riplay.kcef.disabled=true (o 1/yes);
+     *  - OPPURE file "kcef-disabled.flag" nella directory dati.
+     * Letto PRIMA di qualunque operazione nativa: funziona anche quando
+     * l'avvio precedente e' morto con un SIGTRAP nativo dentro CEF.
+     */
+    private fun isCefDisabledByUser(): Boolean {
+        val prop = System.getProperty("riplay.kcef.disabled")?.trim()?.lowercase()
+        if (prop == "true" || prop == "1" || prop == "yes") return true
+        val flag = cefDisabledFlagFile() ?: return false
+        return runCatching { flag.isFile }.getOrDefault(false)
+    }
+
+    /** v48: major di macOS (26 = Tahoe) da os.version, null se non nota. */
+    private fun macosMajorVersion(): Int? =
+        if (!isMacOS) null
+        else System.getProperty("os.version")?.substringBefore('.')?.trim()?.toIntOrNull()
+
+    /** v48: true su macOS 26 (Tahoe) o successivi. */
+    private val isMacosTahoeOrLater: Boolean
+        get() = (macosMajorVersion() ?: 0) >= 26
+
+    /**
+     * v48: major CEF da un release tag jcefmaven
+     * ("jcef-17e805a+cef-152.0.6+g708dc14+chromium-152.0.7977.83" -> 152).
+     * NB: il match e' ancorato a inizio stringa o al separatore "+": il
+     * prefisso "jcef-" dei tag contiene a sua volta "cef-" (con "jcef-"
+     * il match naive catturerebbe l'hash del repo JCEF, non la versione).
+     */
+    private fun cefMajorFromTag(tag: String?): Int? =
+        if (tag.isNullOrBlank()) null
+        else Regex("(?:^|[+])cef-(\\d+)").find(tag)
+            ?.groupValues?.get(1)?.toIntOrNull()
+
+    /**
+     * v48: major CEF del bundle INSTALLATO (build_meta.json in installDir),
+     * null se il bundle non e' installato o la meta e' illeggibile.
+     */
+    private fun installedBundleCefMajor(): Int? = runCatching {
+        val meta = File(installDir, "build_meta.json")
+        if (!meta.isFile) return@runCatching null
+        cefMajorFromTag(CefBuildInfo.fromFile(meta).releaseTag)
+    }.getOrNull()
+
+    /**
+     * v48: GATE pre-init su macOS Tahoe. Ritorna false quando l'init NON
+     * deve partire per niente (versione CEF attesa dall'app stessa pre-Tahoe):
+     * il chiamante mette lo stato Failed SENZA toccare natives. Ritorna true
+     * dopo aver (eventualmente) rimosso un bundle installato incompatibile:
+     * il pre-seed/download che segue reinstalla la versione pinnata.
+     */
+    private fun enforceMacosTahoeCefCompatibility(): Boolean {
+        if (!isMacosTahoeOrLater) return true
+        val osVer = System.getProperty("os.version") ?: "?"
+        val expected = expectedBundleTag()
+        val expectedMajor = cefMajorFromTag(expected)
+        log("gate Tahoe: macOS $osVer (>= 26) - CEF atteso dall'app: ${expected ?: "n/d"} " +
+                "(major=${expectedMajor ?: "n/d"}), minimo accettato: $MIN_CEF_MAJOR_MACOS_TAHOE")
+        if (expectedMajor != null && expectedMajor < MIN_CEF_MAJOR_MACOS_TAHOE) {
+            log("gate Tahoe: BLOCCO init - la versione CEF di questa build ($expectedMajor) e' " +
+                    "pre-Tahoe e su macOS 26+ abortisce dentro CefInitialize: nessuna chiamata nativa")
+            return false
+        }
+        val installed = installedBundleCefMajor()
+        if (installed != null && installed < MIN_CEF_MAJOR_MACOS_TAHOE) {
+            log("gate Tahoe: bundle INSTALLATO obsoleto (CEF $installed, pre-Tahoe) RIMOSSO: " +
+                    "verra' reinstallato il bundle ${expected ?: "pinnato"} (pre-seed o download jcefmaven)")
+            wipeBundleDirPreservingLogs()
+            runCatching { preseedStampFile().delete() }
+        } else if (installed != null) {
+            log("gate Tahoe: bundle installato compatibile (CEF $installed)")
+        }
+        return true
+    }
+
     fun start() {
         installGlobalUncaughtExceptionHandler()
         if (started) return
         synchronized(this) {
             if (started) return
             started = true
+            // v48 (crash report macOS 26): kill-switch PRIMA di qualunque
+            // operazione nativa. Un SIGTRAP dentro CefInitialize non e'
+            // intercettabile da Java: l'unico modo per garantire l'avvio
+            // dell'app su macchine ancora affette e' poter spengere il
+            // motore CEF da fuori (flag file / system property).
+            if (isCefDisabledByUser()) {
+                val flag = cefDisabledFlagFile()
+                val msg = "Browser integrato (CEF/YouTube) disattivato con il kill-switch di RiPlay " +
+                        "(v48): musica e file locali funzionano normalmente (VLCJ), il player YouTube " +
+                        "resta spento. Per riattivare il browser rimuovi " +
+                        (flag?.absolutePath ?: "il file kcef-disabled.flag nella directory dati di RiPlay") +
+                        " o la proprieta' di sistema riplay.kcef.disabled e riavvia."
+                log("start: kill-switch attivo -> CEF non inizializzato: $msg")
+                _state.value = KcefState.Failed(msg)
+                return
+            }
             _state.value = KcefState.Locating
             Thread({
                 try {
@@ -2108,6 +2261,25 @@ object KcefEngine {
                     // -> NESSUN download ~150MB al primo avvio. Qualunque
                     // problema = fallback COMPLETO al download automatico.
                     migrateLegacyLayout()
+
+                    // v48 (crash report macOS 26): gate di compatibilita' Tahoe
+                    // PRIMA del pre-seed: un bundle pre-Tahoe residuo su disco
+                    // viene rimosso qui e sostituito subito dal pre-seed / dal
+                    // download della versione pinnata (nessun doppio download);
+                    // se la versione CEF attesa dall'app stessa fosse pre-Tahoe
+                    // l'init NON parte (Failed): mai CefInitialize incompatibile.
+                    if (!enforceMacosTahoeCefCompatibility()) {
+                        _state.value = KcefState.Failed(
+                            withLogHint(
+                                "Il browser integrato di questa build usa CEF/Chromium precedente a " +
+                                        "macOS 26 (Tahoe), che su questo sistema va in crash all'avvio " +
+                                        "(EXC_BREAKPOINT in CefInitialize): inizializzazione bloccata. " +
+                                        "Aggiorna RiPlay a una build con CEF >= $MIN_CEF_MAJOR_MACOS_TAHOE."
+                            )
+                        )
+                        return@Thread
+                    }
+
                     preSeedPackagedBundle()
 
                     // STEP 3z: permessi di esecuzione e quarantena
@@ -2221,6 +2393,17 @@ object KcefEngine {
                         "--disable-quic",
                         "--app-user-model-id=" + WindowsAppIdentity.AUMID
                     )
+                    // v48 (crash macOS Tahoe): su macOS >= 26 il parsing font
+                    // Rust di Chromium (fontations/skrifa) e' il sottosistema
+                    // che va in panic (EXC_BREAKPOINT) su Tahoe: torna al
+                    // percorso CoreText/Skia pre-fontations. Le feature
+                    // sconosciute a una data build di Chromium vengono
+                    // ignorate: flag sicuro anche su build future.
+                    if (isMacosTahoeOrLater) {
+                        builder.addJcefArgs("--disable-features=Fontations,FontationsAll")
+                        log("v48: macOS ${System.getProperty("os.version")} >= 26: aggiunto " +
+                                "--disable-features=Fontations,FontationsAll (font bridge Rust fuori uso)")
+                    }
                     // v47 (FIX "seconda finestra" Wayland - nota 34 in testa al
                     // file): su Linux il browser CEF DEVE stare sullo stesso
                     // server X della finestra AWT (X11/XWayland), altrimenti
@@ -2240,9 +2423,14 @@ object KcefEngine {
                     log("builder args: --disable-gpu --disable-gpu-compositing --no-sandbox " +
                             "--autoplay-policy=no-user-gesture-required --disable-quic " +
                             "--app-user-model-id=" + WindowsAppIdentity.AUMID +
+                            (if (isMacosTahoeOrLater) " --disable-features=Fontations,FontationsAll" else "") +
                             if (isLinuxOS) " --ozone-platform=x11" else "")
                     val s = builder.getCefSettings()
                     s.cache_path = cacheDir.absolutePath
+                    // v48: root_cache_path esplicito (jcefmaven avvisa con
+                    // "Please customize CefSettings.root_cache_path" quando
+                    // resta sul default temporaneo di sistema).
+                    s.root_cache_path = cacheDir.absolutePath
                     s.windowless_rendering_enabled = false
                     // STEP 2l: replica l'UA del player Android (AYP)
                     s.user_agent = ANDROID_AYP_USER_AGENT
