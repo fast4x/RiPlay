@@ -672,6 +672,52 @@ sealed interface KcefState {
  *     NB: il crash nativo non viene "gestito" (nessun handler puo'
  *     fermare un SIGTRAP dentro CefInitialize): viene RESO IMPOSSIBILE
  *     a monte, prima di qualunque libreria CEF caricata.
+ *
+ * 36. v49 (FIX JPMS "cannot access sun.awt.AWTAccessor" all'inizializzazione
+ *     CEF - caso utente su macOS 26.7.3 DOPO la v48): con il bundle CEF
+ *     corretto, l'errore successivo e' un IllegalAccessError del sistema di
+ *     moduli Java: org.cef.browser.mac.CefBrowserWindowMac accede via
+ *     bytecode a sun.awt.AWTAccessor (per il peer NSView mac), ma java.desktop
+ *     NON esporta sun.awt (JDK 9+, di default forte dal 16). Fix a due
+ *     livelli:
+ *     (a) LAUNCHER (root cause, build.gradle.kts): application.jvmArgs con
+ *         il set completo di flag del README jcefmaven (OSR + MacOSX):
+ *         --add-exports java.base/java.lang, java.desktop/sun.awt,
+ *         java.desktop/sun.java2d + --add-opens sun.awt, sun.lwawt,
+ *         sun.lwawt.macosx (mac-only gli ultimi due). Il plugin Compose
+ *         1.12.2 li applica sia al task run sia al launcher pacchettizzato
+ *         (--java-options nel cfg dell'app image; i task branded
+ *         --app-image li preservano: verificato con jpackage).
+ *     (b) SONDA PRE-INIT (difesa, questa versione): PRIMA di qualunque
+ *         operazione nativa KcefEngine replica l'accesso che CEF compie
+ *         (core reflection su sun.awt.AWTAccessor.getComponentAccessor:
+ *         stesso check di modulo del link-time di CefBrowserWindowMac).
+ *         Se la JVM NON ha l'export (app avviata senza i flag: java -jar
+ *         manuale, run config IDE vecchia, launcher esterno), l'init NON
+ *         parte: stato Failed con messaggio esplicito (flag esatti) e app
+ *         resta avviabile: niente IllegalAccessError opaco a
+ *         browser-creation. NB: la sonda NON usa Module.isExported, che
+ *         resterebbe false anche con --add-exports ...=ALL-UNNAMED
+ *         (verificato su JDK 21: l'export ALL-UNNAMED non e' "uncondizionale").
+ *
+ * 37. v50 (FIX REGRESSIONE Windows del gate JPMS v49 - caso utente Windows 11
+ *     con JVM avviata senza flag): la sonda v49 bloccava l'init CEF su TUTTE
+ *     le piattaforme quando la JVM parte senza
+ *     --add-exports=java.desktop/sun.awt. Su Windows il blocco e' SBAGLIATO:
+ *     l'unica classe che muore senza l'export e' org.cef.browser.mac.
+ *     CefBrowserWindowMac (peer NSView/NSWindow), caricata ED eseguita SOLO
+ *     su macOS; su Windows/Linux JCEF non la usa e init + creazione browser
+ *     funzionano senza flag (l'utente riporta Windows operativo fino alla
+ *     v48, senza flag). Il README jcefmaven del resto richiede i --add-opens
+ *     sun.lwawt* SOLO su MacOSX e gli --add-exports solo per la modalita'
+ *     OSR/JOGL. Il gate ora e' PLATFORM-AWARE:
+ *     (a) macOS: probe sun.awt invariata, BLOCCO se l'export manca (v49).
+ *     (b) Windows/Linux: flag mancanti = solo log informativo (con i flag
+ *         consigliati), init prosegue IDENTICO alla v48: nessun comportamento
+ *         nuovo a runtime, su Windows la v50 si comporta come la v48.
+ *     Il launcher (build.gradle.kts) continua a impostare i 4 flag base su
+ *     TUTTE le piattaforme: i pacchetti ufficiali (msi/deb/dmg) restano
+ *     allineati al README jcefmaven anche su Windows/Linux.
  */
 object KcefEngine {
 
@@ -679,7 +725,7 @@ object KcefEngine {
      * Marker di versione del bootstrap: SE NEI LOG NON APPARE QUESTA RIGA,
      * il processo sta eseguendo una build NON aggiornata.
      */
-    const val BOOTSTRAP_VERSION = "v48 (macos-tahoe-cef-gate)"
+    const val BOOTSTRAP_VERSION = "v50 (platform-aware-jpms-gate)"
 
     private const val TAG = "[RiPlay-KCEF]"
 
@@ -2210,6 +2256,88 @@ object KcefEngine {
         return true
     }
 
+    // -------------------------------------------------------------------------
+    // v49 (FIX JPMS sun.awt): SONDA DI ACCESSO AI MODULI + FLAG RICHIESTI.
+    // CefBrowserWindowMac accede via bytecode a sun.awt.AWTAccessor
+    // (getComponentAccessor, peer NSView su macOS): check di LINK-TIME del
+    // modulo java.desktop che non si puo' intercettare a runtime. La sonda
+    // lo REPLICA via core reflection: su un membro PUBLIC di un pacchetto
+    // NON esportato Method.invoke lancia IllegalAccessException con lo
+    // STESSO modulo/pacchetto dell'errore bytecode; con
+    // --add-exports=java.desktop/sun.awt=ALL-UNNAMED la invoke riesce
+    // (verificato con e senza flag su JDK 21). AWTAccessor.getComponentAccessor
+    // e' statico/idempotente: chiamarlo qui e' innocuo.
+    // -------------------------------------------------------------------------
+    // v50 (FIX Windows): il BLOCCO vale SOLO su macOS. La classe che muore
+    // senza l'export e' org.cef.browser.mac.CefBrowserWindowMac (peer NSView,
+    // esiste/caricata solo su mac): su Windows/Linux JCEF non la usa e
+    // init + browser funzionano senza flag (pre-v49): vedere
+    // enforceJvmModuleAccessForCef (flag mancanti = log informativo).
+    // -------------------------------------------------------------------------
+
+    /** v49: flag JPMS richiesti da jcefmaven (README: OSR mode + MacOSX). */
+    private val cefRequiredJvmFlags: List<String> = listOf(
+        "--add-exports=java.base/java.lang=ALL-UNNAMED",
+        "--add-exports=java.desktop/sun.awt=ALL-UNNAMED",
+        "--add-exports=java.desktop/sun.java2d=ALL-UNNAMED",
+        "--add-opens=java.desktop/sun.awt=ALL-UNNAMED"
+    ) + if (isMacOS) listOf(
+        "--add-opens=java.desktop/sun.lwawt=ALL-UNNAMED",
+        "--add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED"
+    ) else emptyList()
+
+    /**
+     * v49: true se QUESTA JVM esporta java.desktop/sun.awt verso il
+     * classloader dell'app (unnamed module), cioe' se e' avviata con
+     * --add-exports=java.desktop/sun.awt=ALL-UNNAMED.
+     */
+    private fun jvmExportsSunAwtToApp(): Boolean = runCatching {
+        Class.forName("sun.awt.AWTAccessor")
+            .getMethod("getComponentAccessor")
+            .invoke(null)
+        true
+    }.getOrDefault(false)
+
+    /**
+     * v49: ritorna false quando l'init CEF NON deve partire perche' la JVM
+     * e' stata avviata senza i flag JPMS richiesti da JCEF: il chiamante
+     * mette lo stato Failed SENZA toccare natives (niente IllegalAccessError
+     * opaco a browser-creation, app resta avviabile).
+     *
+     * v50 (FIX Windows): il ritorno false (BLOCCO) avviene SOLO su macOS,
+     * dove CefBrowserWindowMac (org.cef.browser.mac: accede via bytecode a
+     * sun.awt.AWTAccessor per il peer NSView) viene effettivamente caricata
+     * ed eseguita. Su Windows/Linux JCEF non usa quella classe: init e
+     * creazione browser funzionano senza flag (comportamento pre-v49,
+     * confermato sul campo fino alla v48), quindi flag mancanti = solo log
+     * informativo e init prosegue regolare (nessuna regresione).
+     */
+    private fun enforceJvmModuleAccessForCef(): Boolean {
+        if (jvmExportsSunAwtToApp()) {
+            log("gate JPMS: java.desktop/sun.awt accessibile all'app (add-exports presenti): OK")
+            return true
+        }
+        if (!isMacOS) {
+            // v50: su Windows/Linux i flag NON sono richiesti: CefBrowserWindowMac
+            // non viene caricata su questa piattaforma e nessun'altra classe del
+            // percorso JCEF locale accede a sun.awt (pre-v49 funzionava cosi').
+            // Bloccare come la v49 spegne il player YouTube senza motivo.
+            log("gate JPMS: JVM avviata SENZA --add-exports=java.desktop/sun.awt ma su " +
+                    System.getProperty("os.name") + " NON e' richiesto: CefBrowserWindowMac esiste " +
+                    "solo su macOS e il percorso JCEF locale non accede a sun.awt: " +
+                    "init prosegue senza blocco (comportamento pre-v49).")
+            log("gate JPMS: flag comunque consigliati (README jcefmaven, gia' impostati dal " +
+                    "launcher nei pacchetti ufficiali):")
+            cefRequiredJvmFlags.forEach { log("gate JPMS:   $it") }
+            return true
+        }
+        log("gate JPMS: BLOCCO init - JVM avviata SENZA --add-exports=java.desktop/sun.awt: " +
+                "CefBrowserWindowMac non puo' accedere a sun.awt.AWTAccessor " +
+                "(IllegalAccessError a browser-creation). Flag JPMS richiesti dal launcher:")
+        cefRequiredJvmFlags.forEach { log("gate JPMS:   $it") }
+        return false
+    }
+
     fun start() {
         installGlobalUncaughtExceptionHandler()
         if (started) return
@@ -2236,6 +2364,33 @@ object KcefEngine {
             Thread({
                 try {
                     logEnvironment()
+
+                    // v49 (FIX JPMS sun.awt): SONDA PRIMA DI QUALUNQUE
+                    // OPERAZIONE NATIVA (no tocca bundle/UI-ready: e' un
+                    // check puro della JVM). Se l'app e' avviata senza i
+                    // flag add-exports/add-opens richiesti da JCEF (launcher
+                    // non aggiornato: java -jar manuale, config IDE vecchia,
+                    // pacchetto pre-v49), la creazione del browser morirebbe
+                    // con IllegalAccessError NON intercettabile ("module
+                    // java.desktop does not export sun.awt"). L'init NON
+                    // parte: stato Failed con i flag esatti, app avviabile.
+                    // v50 (FIX Windows): il BLOCCO e' SOLO-macOS: su
+                    // Windows/Linux flag mancanti NON fermano piu' l'init
+                    // (era la regressione v49): vedere
+                    // enforceJvmModuleAccessForCef.
+                    if (!enforceJvmModuleAccessForCef()) {
+                        _state.value = KcefState.Failed(
+                            withLogHint(
+                                "La JVM che esegue RiPlay non ha i permessi JPMS richiesti dal browser " +
+                                        "integrato su macOS (java.desktop/sun.awt non esportato all'app): il player " +
+                                        "YouTube non puo' partire. Musica e file locali funzionano normalmente " +
+                                        "(VLCJ). Serve avviare l'app con i flag JVM mostrati nel log " +
+                                        "(gate JPMS): il launcher di RiPlay v50 li imposta da solo " +
+                                        "(build.gradle.kts, application.jvmArgs) - aggiorna la build."
+                            )
+                        )
+                        return@Thread
+                    }
 
                     // STEP 3z2 (macOS): GATE UI - non toccare il bundle/natives
                     // finche' l'UI principale non e' composta (notifyUiReady da

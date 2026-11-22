@@ -267,6 +267,50 @@ compose.desktop {
 
         mainClass = "MainKt"
 
+        // =============================================================================
+        // v49 (FIX JPMS "cannot access sun.awt.AWTAccessor" all'inizializzazione
+        // di CEF - errore utente su macOS 26.7.3):
+        // jcefmaven/JCEF su JDK 9+ richiede che la JVM sia avviata con
+        // --add-exports/--add-opens espliciti verso i pacchetti interni di
+        // java.desktop/java.base. Senza, la creazione del browser muore con
+        // IllegalAccessError ("module java.desktop does not export sun.awt"
+        // da org.cef.browser.mac.CefBrowserWindowMac -> sun.awt.AWTAccessor):
+        // il flag NON si puo' aggiungere a runtime, va messo AL LAUNCHER.
+        // Set completo (README jcefmaven: sezione "OSR mode" = exports per
+        // JOGL/java.lang/sun.awt/sun.java2d; sezione "MacOSX" = opens per
+        // sun.awt/sun.lwawt/sun.lwawt.macosx; RiPlay usa rendering OSR):
+        //   - exports: bytecode diretto (CefBrowserWindowMac + JOGL OSR);
+        //   - opens: percorsi riflessivi mac di jcef.
+        // Il plugin Compose 1.12.2 applica application.jvmArgs a DUE livelli
+        // (verificato sui sorgenti del plugin decompilati):
+        //   1. task "run" (sviluppo: ./gradlew run) - configureRunTask;
+        //   2. launcher pacchettizzato: la DSL arriva a jpackage come
+        //      --java-options (configurePackageTask -> launcherJvmArgs) e
+        //      finisce nella sezione [JavaOptions] del .cfg dell'app image
+        //      prodotta da createDistributable; i task "branded" (STEP 4c)
+        //      pacchettizzano QUELL'app image con jpackage --app-image, che
+        //      NON rigenera il .cfg -> i flag restano nell'app installata
+        //      (verificato empiricamente: deb costruito da app image
+        //      conserva [JavaOptions] integro).
+        // I due flag mac-only (--add-opens sun.lwawt/sun.lwawt.macosx) sono
+        // emessi solo su host macOS (riplayMacHost): su Linux/Windows la JVM
+        // li accetterebbe ma con warning ("package not in java.desktop",
+        // verificato su JDK 21 Linux) e in ogni caso non servirebbero
+        // (jpackage non cross-builda: target = host).
+        // =============================================================================
+        jvmArgs(
+            "--add-exports=java.base/java.lang=ALL-UNNAMED",
+            "--add-exports=java.desktop/sun.awt=ALL-UNNAMED",
+            "--add-exports=java.desktop/sun.java2d=ALL-UNNAMED",
+            "--add-opens=java.desktop/sun.awt=ALL-UNNAMED"
+        )
+        if (riplayMacHost) {
+            jvmArgs(
+                "--add-opens=java.desktop/sun.lwawt=ALL-UNNAMED",
+                "--add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED"
+            )
+        }
+
         // STEP 3q: versione allineata all'app Android (versionName)
         // STEP 3ah: qui resta la versione COMPLETA (anche con suffisso
         // "-rc.1"): e' solo metadato, jpackage NON la vede mai (i package*
