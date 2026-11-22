@@ -28,6 +28,7 @@ import it.fast4x.environment.utils.EnvironmentPreferenceItem
 import it.fast4x.environment.utils.EnvironmentPreferences
 import it.fast4x.environment.utils.fromMusicShelfRenderer
 import it.fast4x.riplay.R
+import it.fast4x.riplay.commonutils.EXPLICIT_PREFIX
 import it.fast4x.riplay.commonutils.cleanPrefix
 import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.data.Database
@@ -56,6 +57,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import timber.log.Timber
 import java.io.File
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
@@ -354,8 +356,8 @@ suspend fun Result<LibraryPage?>.completed(): Result<LibraryPage> = runCatching 
 @OptIn(UnstableApi::class)
 suspend fun matchSongInPlaylist(song: Song, playlistId : Long, position : Int, playlist : Playlist?) {
     val isExtPlaylist = (song.thumbnailUrl == "") && (song.durationText != "0:00")
-    var songNotFound: Song
-    var random4Digit  = Random.nextInt(1000, 10000)
+    val random4Digit  = Random.nextInt(1000, 10000)
+
     fun filteredText(text : String): String{
         val filteredText = text
             .lowercase()
@@ -436,83 +438,125 @@ suspend fun matchSongInPlaylist(song: Song, playlistId : Long, position : Int, p
         return -1
     }
 
-    val matchedSong = searchResults?.getOrNull(findSongIndex())
-    val artistsNames = matchedSong?.authors?.filter { it.endpoint != null }?.map { it.name }
+    // Il match viene calcolato UNA volta sola e riusato
+    // (prima findSongIndex() veniva rieseguito anche dentro la transazione)
+    val matchedIndex = findSongIndex()
+    val matchedSong = searchResults?.getOrNull(matchedIndex)
+    val matchedSongId = matchedSong?.asMediaItem?.mediaId
     val artistNameString = matchedSong?.asMediaItem?.mediaMetadata?.artist?.toString() ?: ""
-    val artistsIds = matchedSong?.authors?.filter { it.endpoint != null }?.map { it.endpoint?.browseId }
+
+    // Solo album/artisti con browseId REALE: niente più padri con id = ""
+    // (prima il filtro era su endpoint != null, ma browseId poteva comunque essere null)
+    val realAlbumId = matchedSong?.album?.endpoint?.browseId?.takeIf { it.isNotBlank() }
+    val artistPairs = matchedSong?.authors
+        ?.mapNotNull { author ->
+            author.endpoint?.browseId?.takeIf { it.isNotBlank() }?.let { browseId ->
+                browseId to author.name
+            }
+        }
 
     Database.asyncTransaction {
-        if (findSongIndex() != -1) {
-            if (isYtSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable){
-                Database.asyncTransaction {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        if (removeYTSongFromPlaylist(
-                                song.id,
-                                playlist.browseId ?: "",
-                                playlist.id
-                            )
-                        )
-                            deleteSongFromPlaylist(song.id, playlist.id)
+        try {
+            if (matchedIndex != -1 && matchedSong != null && matchedSongId != null) {
+                val ytSync = isYtSyncEnabled() && playlist != null && playlist.isYoutubePlaylist && playlist.isEditable
 
-                    }
+                // 1) PADRE PRIMA DEI FIGLI: insert atteso (suspend) del brano matchato.
+                //    Prima: Database.insert(matchedSong.asMediaItem) è fire-and-forget
+                //    (lancia una coroutine e ritorna subito), quindi le mappe potevano
+                //    essere scritte PRIMA del brano -> FOREIGN KEY constraint failed (787).
+                //    insert(song) è @Insert(IGNORE): ritorna -1L se il brano esiste già,
+                //    quindi qui il padre è GARANTITO in ogni caso.
+                val matchedSongData = matchedSong.asSong.let { s ->
+                    s.copy(
+                        // stessa gestione del prefisso EXPLICIT fatta da Database.insert(mediaItem)
+                        title = if (!s.title.startsWith(EXPLICIT_PREFIX, true) && matchedSong.explicit)
+                            EXPLICIT_PREFIX + s.title else s.title,
+                        isAudioOnly = if (matchedSong.isAudioOnly) 1 else 0
+                    )
                 }
+                insert(matchedSongData)
 
-            } else {
-                deleteSongFromPlaylist(song.id, playlist?.id ?: 0L)
-            }
-            if (matchedSong != null) {
-                if (songExist(matchedSong.asSong.id) == 0) {
-                    Database.insert(matchedSong.asMediaItem)
-                }
+                // 2) rimozione LOCALE e sincrona della vecchia traccia dalla playlist
+                //    (è una riga figlia: sempre FK-safe, e deve avvenire prima della delete)
+                deleteSongFromPlaylist(song.id, playlistId)
+
+                // 3) ora che il padre esiste, la mappa playlist -> brano matchato
                 insert(
                     SongPlaylistMap(
-                        songId = matchedSong.asMediaItem.mediaId,
+                        songId = matchedSongId,
                         playlistId = playlistId,
                         position = position
                     ).default()
                 )
-                insert(
-                    Album(id = matchedSong.album?.endpoint?.browseId ?: "", title = matchedSong.asMediaItem.mediaMetadata.albumTitle?.toString()),
-                    SongAlbumMap(songId = matchedSong.asMediaItem.mediaId, albumId = matchedSong.album?.endpoint?.browseId ?: "", position = null)
-                )
-                CoroutineScope(Dispatchers.IO).launch {
-                    val album = Database.album(matchedSong.album?.endpoint?.browseId ?: "").firstOrNull()
-                    album?.copy(thumbnailUrl = matchedSong.thumbnail?.url)?.let { update(it) }
 
-                    if (isYtSyncEnabled() && playlist?.isYoutubePlaylist == true && playlist.isEditable){
-                        addToPlaylist(playlist.browseId ?: "", matchedSong.asMediaItem.mediaId)
+                // 4) album solo se c'è un browseId reale (niente Album con id = ""),
+                //    thumbnail aggiornata in sequenza, senza coroutine parallele
+                realAlbumId?.let { albumId ->
+                    insert(
+                        Album(id = albumId, title = matchedSong.asMediaItem.mediaMetadata.albumTitle?.toString()),
+                        SongAlbumMap(songId = matchedSongId, albumId = albumId, position = null)
+                    )
+                    Database.album(albumId).firstOrNull()?.let { album ->
+                        update(album.copy(thumbnailUrl = matchedSong.thumbnail?.url))
                     }
                 }
-                if ((artistsNames != null) && (artistsIds != null)) {
-                    artistsNames.let { artistNames ->
-                        artistsIds.let { artistIds ->
-                            if (artistNames.size == artistIds.size) {
-                                insert(
-                                    artistNames.mapIndexed { index, artistName ->
-                                        Artist(id = (artistIds[index]) ?: "", name = artistName)
-                                    },
-                                    artistIds.map { artistId ->
-                                        SongArtistMap(songId = matchedSong.asMediaItem.mediaId, artistId = (artistId) ?: "")
-                                    }
-                                )
-                            }
+
+                // 5) artisti solo con browseId reale (niente Artist con id = "")
+                if (!artistPairs.isNullOrEmpty()) {
+                    insert(
+                        artistPairs.map { (artistId, artistName) ->
+                            Artist(id = artistId, name = artistName)
+                        },
+                        artistPairs.map { (artistId, _) ->
+                            SongArtistMap(songId = matchedSongId, artistId = artistId)
                         }
+                    )
+                }
+
+                Database.updateSongArtist(matchedSongId, artistNameString)
+
+                // 6) cancellazione del brano Spotify originale: SOLO dopo aver staccato la
+                //    sua SongPlaylistMap (punto 2) e mai se coincide con il brano matchato
+                //    (evita di cancellare il brano a cui le mappe appena scritte referenziano)
+                if (song.thumbnailUrl == "" && song.id != matchedSongId) {
+                    Database.delete(song)
+                }
+
+                // 7) operazioni remote YouTube: SOLO rete + eventuale delete di una riga
+                //    figlia (FK-safe). Nessuna scrittura locale da cui altro codice dipenda.
+                if (ytSync && playlist != null) {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        if (removeYTSongFromPlaylist(song.id, playlist.browseId ?: "", playlist.id))
+                            deleteSongFromPlaylist(song.id, playlistId)
+                        addToPlaylist(playlist.browseId ?: "", matchedSongId)
                     }
                 }
-                Database.updateSongArtist(matchedSong.asMediaItem.mediaId, artistNameString)
-                if (song.thumbnailUrl == "") Database.delete(song)
+
+            } else if (song.id == ((cleanPrefix(song.title) + song.artistsText).filter { it.isLetterOrDigit() })) {
+                // Brano non trovato su YouTube: ordine corretto
+                // mappa -> brano vecchio -> brano rimpiazzo -> nuova mappa.
+                // Prima Database.delete(song) veniva eseguito con la SongPlaylistMap ancora attaccata.
+                deleteSongFromPlaylist(song.id, playlistId)
+
+                val songNotFound = song.copy(
+                    id = shuffle(song.artistsText + random4Digit + cleanPrefix(song.title) + "56Music")
+                        .filter { it.isLetterOrDigit() }
+                )
+                Database.delete(song)
+                insert(songNotFound)
+                insert(
+                    SongPlaylistMap(
+                        songId = songNotFound.id,
+                        playlistId = playlistId,
+                        position = position
+                    ).default()
+                )
             }
-        } else if (song.id == ((cleanPrefix(song.title) +song.artistsText).filter {it.isLetterOrDigit()})){
-            songNotFound = song.copy(id = shuffle(song.artistsText+random4Digit+ cleanPrefix(song.title) +"56Music").filter{it.isLetterOrDigit()})
-            Database.delete(song)
-            Database.insert(songNotFound)
-            Database.insert(
-                SongPlaylistMap(
-                    songId = songNotFound.id,
-                    playlistId = playlistId,
-                    position = position
-                ).default()
-            )
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            // Nessun errore DB deve più crashare l'app durante l'import
+            Timber.e(e, "matchSongInPlaylist: db write failed for song ${song.id} (playlist $playlistId)")
         }
     }
 }
