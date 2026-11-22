@@ -1377,10 +1377,10 @@ Volume BAS : titre précédent</string>
     <string name="onboard_permission_settings">Paramètres</string>
     <string name="ritune_cast">RiTune Cast</string>
     <string name="ritune_available_devices">Appareils disponibles :</string>
-    <string name="upnp_cast">UPnP / DLNA Cast</string>
-    <string name="upnp_cast_info">"Cast to UPnP/DLNA network devices (Sonos, smart TVs, DLNA speakers). The device must be on the same Wi-Fi network as this phone."</string>
-    <string name="upnp_available_devices">Available devices:</string>
-    <string name="upnp_searching_devices">Searching for UPnP/DLNA devices on the network…</string>
+    <string name="upnp_cast">Diffusion UPnP / DLNA</string>
+    <string name="upnp_cast_info">"Diffusez du contenu vers des appareils réseau UPnP/DLNA (Sonos, téléviseurs connectés, enceintes DLNA). L'appareil doit être connecté au même réseau Wi-Fi que ce téléphone."</string>
+    <string name="upnp_available_devices">Appareils disponibles :</string>
+    <string name="upnp_searching_devices">Recherche d\'appareils UPnP/DLNA sur le réseau…</string>
     <string name="upnp_no_devices_found">No UPnP/DLNA devices found. Check that the device is on the same Wi-Fi network, then reopen this screen, or enter its IP address below.</string>
     <string name="upnp_manual_connection">Manual connection</string>
     <string name="upnp_manual_ip_hint">Device IP address (e.g. 192.168.1.50:1400)</string>
