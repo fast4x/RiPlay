@@ -176,7 +176,7 @@
     <string name="nav.settings">Impostazioni</string>
     <string name="settings.tab.appearance">Aspetto</string>
     <string name="settings.tab.data">Dati</string>
-    <string name="settings.tab.accounts">Account</string>
+    <string name="settings.tab.accounts">Profilo</string>
     <string name="settings.tab.about">Info</string>
     <string name="settings.data.info">Esporta o importa un backup del database della libreria (brani, playlist, cronologia e preferiti). Il backup è un singolo file .db, compatibile con Android; il ripristino viene completato al riavvio di RiPlay.</string>
     <string name="settings.data.db_path">Database: {path}</string>
@@ -207,7 +207,7 @@
     <string name="settings.accounts.login_instructions">Completa l\'accesso nella finestra qui sotto. Quando YouTube Music si apre con il tuo account, la connessione viene salvata automaticamente.</string>
     <string name="settings.accounts.kcef_not_ready">Il browser integrato non è ancora pronto ({state})</string>
     <string name="settings.accounts.waiting_login">In attesa del completamento dell\'accesso...</string>
-    <string name="settings.about.tagline">RiPlay {version} (Desktop) by fast4x</string>
+    <string name="settings.about.tagline">RiPlay {version} (Desktop) di fast4x</string>
     <string name="settings.about.social">Social</string>
     <string name="settings.about.telegram">Telegram</string>
     <string name="settings.about.telegram_info">Gruppo ufficiale di RiPlay</string>
@@ -224,7 +224,7 @@
     <string name="settings.about.github_redirect">Verrai reindirizzato a GitHub</string>
     <string name="splash.loading">Caricamento...</string>
     <string name="overlay.lyrics_toggle">Testo</string>
-    <string name="overlay.visualizer_toggle">Visualizer</string>
+    <string name="overlay.visualizer_toggle">Visualizzatore</string>
     <string name="lyrics.title">Testo</string>
     <string name="lyrics.idle">Apri per cercare il testo di questo brano</string>
     <string name="lyrics.loading">Ricerca del testo in corso...</string>
@@ -342,8 +342,8 @@
     <string name="settings.discord.manual_token_instructions">Client Discord desktop: Impostazioni &gt; Avanzate &gt; attiva Strumenti per sviluppatori, poi Ctrl+Shift+I &gt; scheda Console &gt; incolla: (webpackChunkdiscord_app.push([[Symbol()],{},(r)=&gt;r=Object.keys(r.c).map(x=&gt;r.c[x].exports).find(e=&gt;e.hasOwnProperty(&quot;default&quot;)&amp;&amp;e.default!==void 0&amp;&amp;e.default.getToken!==void 0)).default.getToken(),0]) e copia il risultato.</string>
     <string name="settings.discord.manual_token_connect">Collega</string>
     <string name="settings.discord.manual_token_empty">Incolla prima un token.</string>
-    <string name="zoundhub.badge.ai">AI</string>
-    <string name="zoundhub.badge.ai.uncertain">AI?</string>
+    <string name="zoundhub.badge.ai">IA</string>
+    <string name="zoundhub.badge.ai.uncertain">IA?</string>
     <string name="zoundhub.dialog.title">Info rilevamento AI</string>
     <string name="zoundhub.dialog.rating">Valutazione ZoundHub</string>
     <string name="zoundhub.dialog.shscore">Punteggio SubmitHub AI</string>
