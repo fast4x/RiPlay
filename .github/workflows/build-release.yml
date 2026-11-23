@@ -1166,11 +1166,55 @@ jobs:
             # 🔧 FIX: GITHUB_REPOSITORY è una env di default; || true evita fallimento
             # se grep filtra tutte le righe
             git log --pretty=format:"- %s ([%h](https://github.com/${GITHUB_REPOSITORY}/commit/%H))" --reverse \
-              | grep -v "Update stats and chart \[skip ci\]" | head -20 > /tmp/changelog.txt || true
+              | grep -v "Update stats and chart \[skip ci\]" > /tmp/changelog_raw.txt || true
           else
             echo "📋 Changes between $PREVIOUS_TAG and $CURRENT_TAG"
             git log "${PREVIOUS_TAG}..HEAD" --pretty=format:"- %s ([%h](https://github.com/${GITHUB_REPOSITORY}/commit/%H))" \
-              | grep -v "Update stats and chart \[skip ci\]" > /tmp/changelog.txt || true
+              | grep -v "Update stats and chart \[skip ci\]" > /tmp/changelog_raw.txt || true
+          fi
+
+          # ============================================================
+          # Aggiornamenti lingue Crowdin:
+          # i merge PR dal ramo l10n_* e i singoli commit di traduzione NON
+          # vengono elencati voce per voce nel changelog; se nel range c'è
+          # almeno un aggiornamento lingue, viene mostrata UNA SOLA riga
+          # "- Update languages".
+          #
+          # Pattern riconosciuti (verificati sulla history del repo):
+          #  - "New translations strings.xml (Lingua)"        -> commit Crowdin
+          #  - "New Crowdin updates"                          -> vecchi PR Crowdin
+          #  - "Merge pull request #N from fast4x/l10n_*"     -> PR Crowdin
+          #  - "Merge branch '...' into l10n_*"               -> sync manuali sul ramo l10n
+          #  - "Merge remote-tracking branch 'origin/main'"   -> sync automatici del ramo
+          #  - "Merge remote-tracking branch 'origin/master'"    l10n con il branch default
+          #     (solo nella forma BARE: le sync dei contributori verso branch di
+          #      feature hanno il suffisso "into <branch>" e restano nel changelog,
+          #      per questo il pattern richiede " ([..." subito dopo il subject)
+          # ============================================================
+          CROWDIN_RE='^- (New translations |New Crowdin updates|Merge .*l10n_|Merge remote-tracking branch .origin/(main|master). \(\[)'
+
+          # Ci sono aggiornamenti lingue Crowdin nel range?
+          if grep -Eq "${CROWDIN_RE}" /tmp/changelog_raw.txt; then
+            echo "🌐 Crowdin language updates detected: collapsing into a single '- Update languages' entry"
+            HAS_CROWDIN=1
+          else
+            HAS_CROWDIN=0
+          fi
+
+          # Rimuove le voci Crowdin dal changelog
+          grep -Ev "${CROWDIN_RE}" /tmp/changelog_raw.txt > /tmp/changelog.txt || true
+
+          # Fallback "prima release" (nessun tag precedente): mantiene il
+          # limite ai primi 20 commit dopo il filtro Crowdin
+          if [ -z "$PREVIOUS_TAG" ]; then
+            head -20 /tmp/changelog.txt > /tmp/changelog_head.txt || true
+            mv /tmp/changelog_head.txt /tmp/changelog.txt
+          fi
+
+          # La riga unica viene aggiunta solo se nel range ci sono
+          # effettivamente aggiornamenti lingue
+          if [ "$HAS_CROWDIN" -eq 1 ]; then
+            echo "- Updated translations" >> /tmp/changelog.txt
           fi
 
           echo "" >> /tmp/changelog.txt
