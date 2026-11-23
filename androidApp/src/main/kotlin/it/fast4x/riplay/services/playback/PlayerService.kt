@@ -1631,14 +1631,25 @@ class PlayerService : MediaLibraryService(),
                 val isCastActive = GlobalSharedData.riTuneCastActive
 
 
-                val playerState = riTuneCastClient.state.value?.state
-                val duration = riTuneCastClient.state.value?.duration
-                val second = riTuneCastClient.state.value?.currentTime
+                val remoteState = riTuneCastClient.state.value
+                val playerState = remoteState?.state
+                val duration = remoteState?.duration
+                val second = remoteState?.currentTime
 
                 if (isCastActive) {
                     withContext(Dispatchers.Main) {
 
                         playerState?.let { updatePlayerState(it) }
+
+                        // RiTune Cast: dismiss loading only for the current remotely playing track.
+                        if (connectionStatus == RiTuneConnectionStatus.Connected &&
+                            playerState == PlayerConstants.PlayerState.PLAYING &&
+                            remoteState?.mediaId != null &&
+                            remoteState.mediaId == currentMediaItemState.value?.mediaId &&
+                            _playerState.value.loadPending.isPending
+                        ) {
+                            setLoadPending(LoadPhase.NONE, "RiTune Cast PLAYING")
+                        }
 
                         if (duration != null) {
                             _currentDuration.value = duration
