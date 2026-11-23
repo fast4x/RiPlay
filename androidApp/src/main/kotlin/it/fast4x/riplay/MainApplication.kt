@@ -37,6 +37,7 @@ import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.musicbrainz.workers.WorkScheduler
 import it.fast4x.riplay.extensions.musicbrainz.workers.WorkerDependencies
 import it.fast4x.riplay.musicvault.initializeMusicVault
+import it.fast4x.riplay.server.installAndroidRelayServer
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.utils.InitializeEnvironment
 import it.fast4x.riplay.utils.isTVDevice
@@ -144,6 +145,13 @@ class MainApplication : Application(), ImageLoaderFactory {
         /**** LOG *********/
         val logEnabled = appSettingsManager.activeSettings.value.logDebugEnabled
         initializeLog(logEnabled)
+
+        // Server di streaming locale (Relay, modulo condiviso relayserver):
+        // wiring Android (sorgente file/content, token SharedPreferences, log
+        // verso Timber) PRIMA di qualunque uso di RelayManager da parte di
+        // PlayerService o delle impostazioni Cast. L'avvio vero resta governato
+        // dal setting streamRelayEnabled (PlayerService.startObservingSettings).
+        installAndroidRelayServer(this)
 
         /***** APP UPDATE *****/
         // 1) Registra il provider della versione installata per la funzione

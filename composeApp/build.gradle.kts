@@ -1062,6 +1062,12 @@ kotlin {
             // androidApp) per la connessione ListenBrainz della tab Account
             implementation(projects.listenbrainz)
 
+            // Server di streaming locale (Relay): modulo JVM puro condiviso con
+            // androidApp (modules/relayserver). Stesso server di Android: playlist
+            // M3U della coda + brani singoli con Range, per VLC/browser/altri RiPlay
+            // in LAN. Wiring desktop in server/DesktopRelay.kt.
+            implementation(projects.relayserver)
+
             // v46 (jcefmaven): motore CEF = jcefmaven (me.friwi) mantenuto attivo
             // ( ultima release 152.0.6, Chromium 152 ) in sostituzione di KCEF
             // (dev.datlag:kcef, ultima release 2025.03.23, non piu' aggiornato).

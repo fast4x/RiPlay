@@ -62,6 +62,14 @@ project(":chaquopy").projectDir = file("modules/chaquopy")
 include(":spotifymeta")
 project(":spotifymeta").projectDir = file("modules/spotifymeta")
 
+// Server di streaming locale RiPlay (Relay): modulo JVM puro condiviso da
+// androidApp (cast UPnP + VLC/browser) e desktop (VLC/browser/altri RiPlay).
+// Engine Ktor CIO, endpoint/whitelist/Range/M3U comuni; le parti di piattaforma
+// (sorgente byte, persistenza token) restano in androidApp/server/AndroidRelay.kt
+// e composeApp jvmMain/server/DesktopRelay.kt.
+include(":relayserver")
+project(":relayserver").projectDir = file("modules/relayserver")
+
 // ZoundHub: directory open source di segnali AI associati agli artisti
 // (https://zoundhub.com - https://github.com/xoundbyte/zoundhub)
 include(":zoundhub")

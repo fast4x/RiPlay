@@ -1108,7 +1108,7 @@ class PlayerService : MediaLibraryService(),
                 // Preserve the streaming relay settings introduced by upstream.
                 if (streamRelayChanged) {
                     relayEnabledObserved = settings.streamRelayEnabled
-                    RelayManager.startIfEnabled(this@PlayerService, settings.streamRelayEnabled)
+                    RelayManager.startIfEnabled(settings.streamRelayEnabled)
                     GlobalSharedData.relayServerRunning.value = RelayManager.running.value
                     GlobalSharedData.relayServerUrl.value = RelayManager.baseUrl.value
                 }
@@ -1880,7 +1880,7 @@ class PlayerService : MediaLibraryService(),
                 // IP Wi-Fi cambiato), proviamo un avvio qui invece di abortire il cast.
                 if (!RelayManager.running.value && appSettings.streamRelayEnabled) {
                     Timber.tag("Relay").w("cast locale: server non attivo ma setting abilitato, tentativo avvio on-demand")
-                    RelayManager.startIfEnabled(this@PlayerService, true)
+                    RelayManager.startIfEnabled(true)
                     GlobalSharedData.relayServerRunning.value = RelayManager.running.value
                     GlobalSharedData.relayServerUrl.value = RelayManager.baseUrl.value
                 }
@@ -1946,7 +1946,7 @@ class PlayerService : MediaLibraryService(),
             "initializeRelayServer: streamRelayEnabled=%s",
             appSettings.streamRelayEnabled
         )
-        RelayManager.startIfEnabled(this, appSettings.streamRelayEnabled)
+        RelayManager.startIfEnabled(appSettings.streamRelayEnabled)
         relayEnabledObserved = appSettings.streamRelayEnabled
         GlobalSharedData.relayServerRunning.value = RelayManager.running.value
         GlobalSharedData.relayServerUrl.value = RelayManager.baseUrl.value

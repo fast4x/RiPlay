@@ -1624,7 +1624,7 @@ fun GeneralSettings(
                                 onCheckedChange = {
                                     coroutineScope.launch {
                                         // Avvia o ferma il server di streaming subito
-                                        if (it) RelayManager.startIfEnabled(context, true)
+                                        if (it) RelayManager.startIfEnabled(true)
                                         else RelayManager.stop()
 
                                         val new = appSettingsManager.activeSettings.value.copy(

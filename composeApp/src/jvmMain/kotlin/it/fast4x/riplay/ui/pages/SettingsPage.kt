@@ -2,6 +2,7 @@ package it.fast4x.riplay.ui.pages
 
 import it.fast4x.riplay.i18n.ds
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -50,6 +51,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import org.cef.CefClient
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import it.fast4x.environment.models.responses.CachedAccountProfile
 import it.fast4x.riplay.player.kcef.KcefEngine
 import it.fast4x.riplay.player.kcef.KcefState
@@ -58,6 +61,8 @@ import it.fast4x.zoundhub.ZoundHubCatalogState
 import it.fast4x.riplay.items.formatZoundHubDateDesktop
 import it.fast4x.riplay.extensions.zoundhub.DesktopZoundHub
 import it.fast4x.riplay.utils.DesktopCloseToTray
+import it.fast4x.riplay.server.DesktopRelaySettings
+import it.fast4x.riplay.server.RelayManager
 import it.fast4x.riplay.utils.DesktopKaraokeOverlay
 import it.fast4x.riplay.utils.DesktopMiniPlayer
 // STEP 5d: check AGGIORNAMENTI desktop (stesso file .ver di Android)
@@ -209,6 +214,13 @@ private fun GeneralTab() {
         // Service Worker), NON tocca cookie e login; il bundle CEF (kcef/)
         // resta intatto (nessuna re-estrazione, nessun re-download).
         CacheLimitCard()
+
+        // Server di streaming locale (Relay, modulo condiviso relayserver):
+        // stesso server dell'app Android (stesso setting dell'interruttore
+        // "RiPlay streaming server" nelle impostazioni Cast). Serve agli
+        // altri dispositivi della LAN la playlist M3U della coda corrente e
+        // i brani locali, con token d'accesso e supporto seek (Range HTTP).
+        RelayServerCard()
     }
 }
 
@@ -359,6 +371,163 @@ private fun CacheLimitCard() {
             text = ds("settings.cefcache.applied_next_start"),
             color = Color.White.copy(alpha = 0.35f),
             fontSize = 11.sp
+        )
+    }
+}
+
+/**
+ * Card del server di streaming locale (Relay) nella tab Generale.
+ * Struttura: GeneralSwitchCard (interruttore con persistenza immediata via
+ * DesktopRelaySettings, che avvia/ferma il server all'istante) +, quando
+ * attivo, lo stato reale del server con gli indirizzi copiabili (URL base e
+ * playlist M3U della coda corrente), replica Android della sezione
+ * "RiPlay streaming server" di GeneralSettings.
+ *
+ * Il ricalcolo dell'indirizzo parte a ogni apertura della pagina: l'IP LAN
+ * puo' cambiare (nuova rete, riconnessione Wi-Fi), stesso comportamento di
+ * RelayManager.refreshUrl su Android.
+ */
+@Composable
+private fun RelayServerCard() {
+    val clipboard = LocalClipboardManager.current
+    val relayRunning by RelayManager.running.collectAsState()
+    val relayUrl by RelayManager.baseUrl.collectAsState()
+    val enabled = DesktopRelaySettings.enabled
+
+    // Conferma di copia inline (es. SmartMessage Android): sparisce da sola
+    var copied by remember { mutableStateOf(false) }
+    LaunchedEffect(copied) {
+        if (copied) {
+            kotlinx.coroutines.delay(2_000)
+            copied = false
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color.White.copy(alpha = 0.06f))
+            .border(1.dp, Color.White.copy(alpha = 0.10f), RoundedCornerShape(14.dp))
+            .padding(horizontal = 14.dp, vertical = 12.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = ds("settings.relay.title"),
+                    color = if (enabled) RiPlayAccent else Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = ds("settings.relay.desc"),
+                    color = Color.White.copy(alpha = 0.55f),
+                    fontSize = 12.sp,
+                    lineHeight = 17.sp
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            Switch(
+                checked = enabled,
+                onCheckedChange = { DesktopRelaySettings.setDesktopRelayEnabled(it) },
+                colors = SwitchDefaults.colors(
+                    checkedTrackColor = RiPlayAccent,
+                    checkedThumbColor = Color(0xFF0B0B10),
+                    uncheckedTrackColor = Color.White.copy(alpha = 0.12f),
+                    uncheckedThumbColor = Color.White.copy(alpha = 0.75f),
+                    uncheckedBorderColor = Color.White.copy(alpha = 0.18f)
+                )
+            )
+        }
+
+        AnimatedVisibility(visible = enabled) {
+            Column {
+                Spacer(Modifier.height(8.dp))
+                LaunchedEffect(Unit) { RelayManager.refreshUrl() }
+
+                if (relayRunning && relayUrl != null) {
+                    RelayAddressRow(
+                        label = ds("settings.relay.url"),
+                        url = relayUrl.orEmpty(),
+                        onCopy = {
+                            clipboard.setText(AnnotatedString(relayUrl.orEmpty()))
+                            copied = true
+                        }
+                    )
+                    RelayAddressRow(
+                        label = ds("settings.relay.playlist"),
+                        url = "${relayUrl.orEmpty()}/playlist.m3u",
+                        onCopy = {
+                            clipboard.setText(AnnotatedString("${relayUrl.orEmpty()}/playlist.m3u"))
+                            copied = true
+                        }
+                    )
+                    if (copied) {
+                        Text(
+                            text = ds("settings.relay.copied"),
+                            color = RiPlayAccent,
+                            fontSize = 11.sp,
+                            modifier = Modifier.padding(horizontal = 4.dp)
+                        )
+                    }
+                } else if (relayRunning) {
+                    // Server in ascolto ma senza IPv4 LAN utilizzabile: il server
+                    // FUNZIONA ma non abbiamo un indirizzo da mostrare/copiare.
+                    Text(
+                        text = ds("settings.relay.active"),
+                        color = Color.White.copy(alpha = 0.85f),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text = ds("settings.relay.no_ip"),
+                        color = Color.White.copy(alpha = 0.5f),
+                        fontSize = 11.sp,
+                        lineHeight = 16.sp
+                    )
+                } else {
+                    Text(
+                        text = ds("settings.relay.inactive"),
+                        color = Color.White.copy(alpha = 0.5f),
+                        fontSize = 11.sp,
+                        lineHeight = 16.sp
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Riga indirizzo del relay (desktop): etichetta + URL colorato con l'accento,
+ * click su tutta la riga = copia negli appunti (stesso comportamento della
+ * RelayLinkRow di UpnpCastSelector su Android).
+ */
+@Composable
+private fun RelayAddressRow(
+    label: String,
+    url: String,
+    onCopy: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .clickable { onCopy() }
+            .padding(horizontal = 4.dp, vertical = 6.dp)
+    ) {
+        Text(
+            text = label,
+            color = Color.White.copy(alpha = 0.55f),
+            fontSize = 11.sp
+        )
+        Text(
+            text = url,
+            color = RiPlayAccent,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold
         )
     }
 }

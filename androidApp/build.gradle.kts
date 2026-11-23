@@ -419,6 +419,7 @@ dependencies {
     implementation(projects.simpmusiclyrics)
     implementation(projects.spotifymeta)
     implementation(projects.zoundhub)
+    implementation(projects.relayserver)
 
     implementation(libs.navigation)
     implementation(libs.media3.session)
@@ -468,10 +469,10 @@ dependencies {
     implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.client.websockets)
 
-    // Server di streaming locale (Fase 2): relay per cast UPnP/DLNA di file
-    // locali + sorgente generica per player esterni (VLC, browser, altri RiPlay)
-    implementation(libs.ktor.server.cio)
-
+    // Server di streaming locale (Fase 2): RELAY SPOSTATO nel modulo condiviso
+    // modules/relayserver (usato anche dal desktop). La dipendenza Ktor server
+    // arriva transitivamente dal modulo (api(libs.ktor.server.cio)); qui resta
+    // solo il wiring Android (AndroidRelay.kt).
     implementation(libs.room.ktx)
     implementation(libs.room.runtime)
     implementation(libs.room.sqlite.bundled)

@@ -26,14 +26,17 @@ import io.ktor.server.routing.routing
 import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.writeFully
 import java.io.InputStream
-import timber.log.Timber
 
 /**
  * RiPlay Relay — endpoint HTTP puro Ktor (Fase 2), senza dipendenze Android.
+ * Modulo condiviso relayserver: usato da androidApp (cast UPnP + VLC/browser)
+ * e dalla versione desktop (VLC/browser/altri RiPlay).
  *
- * Il serving dei byte e' delegato a [RelayStreamSource]: nell'app l'implementazione
- * legge da file locali/content:// (RelayServer), nei test JVM da un buffer.
- * Cosi' routing, token, Range e M3U sono testabili E2E su JVM con il codice reale.
+ * Il serving dei byte e' delegato a [RelayStreamSource]: nell'app Android l'
+ * implementazione legge da file locali/content:// (AndroidRelayStreamSource),
+ * su desktop da percorsi file (DesktopRelayStreamSource), nei test JVM da un
+ * buffer. Cosi' routing, token, Range e M3U sono testabili E2E su JVM con il
+ * codice reale.
  *
  * r2: OGNI richiesta viene loggata (tag "Relay"): prima una connessione VLC
  * riuscita non lasciava NESSUNA traccia nel log e sembrava un "server morto".
@@ -69,7 +72,7 @@ data class RelayMeta(
 
 /**
  * Sorgente dei byte per l'endpoint /s/{id}.
- * Implementazioni: file locali (app), buffer (test).
+ * Implementazioni: file locali (Android: file+content, desktop: file), buffer (test).
  */
 interface RelayStreamSource {
 
@@ -93,8 +96,8 @@ fun Application.relayEndpoints(
     // una 404 di routing era completamente invisibile nel log.
     install(createApplicationPlugin(name = "RelayRequestLogger") {
         on(ResponseSent) { call ->
-            Timber.tag(RELAY_LOG_TAG).i(
-                "<-%s %s da %s -> %s",
+            RelayLog.i(
+                RELAY_LOG_TAG, "<-%s %s da %s -> %s",
                 call.request.origin.method.value,
                 call.request.origin.uri,
                 call.request.origin.remoteHost,
@@ -102,9 +105,8 @@ fun Application.relayEndpoints(
             )
         }
         on(CallFailed) { call, cause ->
-            Timber.tag(RELAY_LOG_TAG).e(
-                cause,
-                "XX %s %s da %s FALLITA: %s",
+            RelayLog.e(
+                cause, RELAY_LOG_TAG, "XX %s %s da %s FALLITA: %s",
                 call.request.origin.method.value,
                 call.request.origin.uri,
                 call.request.origin.remoteHost,
@@ -130,14 +132,14 @@ fun Application.relayEndpoints(
             // quindi anche il solo link base avvia la coda; nel browser scarica l'm3u.
             get {
                 if (!call.parameters.validToken()) {
-                    Timber.tag(RELAY_LOG_TAG).w("GET /relay token ERRATO (404)")
+                    RelayLog.w(RELAY_LOG_TAG, "GET /relay token ERRATO (404)")
                     return@get call.respondText("", status = HttpStatusCode.NotFound)
                 }
                 // Host/porta con cui il client ci ha raggiunto (coerente con playlist.m3u):
                 // il link redirect funziona anche se il server e' raggiunto via IP diverso.
                 val origin = call.request.origin
                 val target = "http://${origin.serverHost}:${origin.serverPort}/relay/$token/playlist.m3u"
-                Timber.tag(RELAY_LOG_TAG).i("GET /relay da %s -> 302 %s", origin.remoteHost, target)
+                RelayLog.i(RELAY_LOG_TAG, "GET /relay da %s -> 302 %s", origin.remoteHost, target)
                 call.respondRedirect(target)
             }
 
@@ -145,7 +147,7 @@ fun Application.relayEndpoints(
 
             get("/s/{id}") {
                 if (!call.parameters.validToken()) {
-                    Timber.tag(RELAY_LOG_TAG).w("GET /s/%s token ERRATO (404)", call.parameters["id"])
+                    RelayLog.w(RELAY_LOG_TAG, "GET /s/%s token ERRATO (404)", call.parameters["id"])
                     return@get call.respondText("", status = HttpStatusCode.NotFound)
                 }
                 serveTrack(call, registry, source)
@@ -153,19 +155,19 @@ fun Application.relayEndpoints(
 
             head("/s/{id}") {
                 if (!call.parameters.validToken()) {
-                    Timber.tag(RELAY_LOG_TAG).w("HEAD /s/%s token ERRATO (404)", call.parameters["id"])
+                    RelayLog.w(RELAY_LOG_TAG, "HEAD /s/%s token ERRATO (404)", call.parameters["id"])
                     return@head call.respondText("", status = HttpStatusCode.NotFound)
                 }
                 val id = call.parameters["id"] ?: return@head call.respondText("", status = HttpStatusCode.NotFound)
                 val track = registry.track(id) ?: run {
-                    Timber.tag(RELAY_LOG_TAG).w("HEAD /s/%s traccia non in whitelist (404)", id)
+                    RelayLog.w(RELAY_LOG_TAG, "HEAD /s/%s traccia non in whitelist (404)", id)
                     return@head call.respondText("", status = HttpStatusCode.NotFound)
                 }
                 val meta = source.probe(track) ?: run {
-                    Timber.tag(RELAY_LOG_TAG).w("HEAD /s/%s sorgente non leggibile (404): %s", id, track.uri)
+                    RelayLog.w(RELAY_LOG_TAG, "HEAD /s/%s sorgente non leggibile (404): %s", id, track.uri)
                     return@head call.respondText("", status = HttpStatusCode.NotFound)
                 }
-                Timber.tag(RELAY_LOG_TAG).i("HEAD /s/%s -> 200 size=%s mime=%s", id, meta.totalSize, meta.mime)
+                RelayLog.i(RELAY_LOG_TAG, "HEAD /s/%s -> 200 size=%s mime=%s", id, meta.totalSize, meta.mime)
                 call.respond(object : OutgoingContent.NoContent() {
                     override val contentLength: Long? = if (meta.totalSize > 0) meta.totalSize else null
                     override val contentType: ContentType? = meta.mime?.takeIf { it.isNotBlank() }?.let { ContentType.parse(it) }
@@ -179,11 +181,11 @@ fun Application.relayEndpoints(
 
             get("/playlist.m3u") {
                 if (!call.parameters.validToken()) {
-                    Timber.tag(RELAY_LOG_TAG).w("GET playlist.m3u token ERRATO (404)")
+                    RelayLog.w(RELAY_LOG_TAG, "GET playlist.m3u token ERRATO (404)")
                     return@get call.respondText("", status = HttpStatusCode.NotFound)
                 }
 
-                // L'indirizzo del telefono e' quello con cui il client ha raggiunto il
+                // L'indirizzo dell'host e' quello con cui il client ha raggiunto il
                 // server: i link generati funzionano sempre, indipendentemente da quale
                 // interfaccia di rete il client ha usato per connettersi.
                 val origin = call.request.origin
@@ -199,8 +201,8 @@ fun Application.relayEndpoints(
                         else -> null // videoId e altri formati non servibili (Fase 3)
                     }
                 }
-                Timber.tag(RELAY_LOG_TAG).i(
-                    "GET playlist.m3u da %s -> %d brani in coda",
+                RelayLog.i(
+                    RELAY_LOG_TAG, "GET playlist.m3u da %s -> %d brani in coda",
                     origin.remoteHost, registry.queue().size
                 )
                 call.response.headers.append(HttpHeaders.CacheControl, "no-store")
@@ -211,12 +213,12 @@ fun Application.relayEndpoints(
 
             get("/info") {
                 if (!call.parameters.validToken()) {
-                    Timber.tag(RELAY_LOG_TAG).w("GET /info token ERRATO (404)")
+                    RelayLog.w(RELAY_LOG_TAG, "GET /info token ERRATO (404)")
                     return@get call.respondText("", status = HttpStatusCode.NotFound)
                 }
                 val queue = registry.queue()
                 val nowPlaying = queue.firstOrNull()
-                Timber.tag(RELAY_LOG_TAG).d("GET info da %s (coda=%d)", call.request.origin.remoteHost, queue.size)
+                RelayLog.d(RELAY_LOG_TAG, "GET info da %s (coda=%d)", call.request.origin.remoteHost, queue.size)
                 call.respondText(
                     buildString {
                         append("{")
@@ -238,12 +240,12 @@ private suspend fun serveTrack(call: ApplicationCall, registry: RelayRegistry, s
     val id = call.parameters["id"] ?: return call.respondText("", status = HttpStatusCode.NotFound)
     val track = registry.track(id)
     if (track == null) {
-        Timber.tag(RELAY_LOG_TAG).w("GET /s/%s traccia non in whitelist (404)", id)
+        RelayLog.w(RELAY_LOG_TAG, "GET /s/%s traccia non in whitelist (404)", id)
         return call.respondText("", status = HttpStatusCode.NotFound)
     }
     val meta = source.probe(track)
     if (meta == null) {
-        Timber.tag(RELAY_LOG_TAG).w("GET /s/%s sorgente non leggibile (404): %s", id, track.uri)
+        RelayLog.w(RELAY_LOG_TAG, "GET /s/%s sorgente non leggibile (404): %s", id, track.uri)
         return call.respondText("", status = HttpStatusCode.NotFound)
     }
 
@@ -252,20 +254,28 @@ private suspend fun serveTrack(call: ApplicationCall, registry: RelayRegistry, s
 
     // Header Range presente ma oltre fine risorsa: 416 (RFC 7233)
     if (rangeHeader != null && range == null && meta.totalSize > 0) {
-        Timber.tag(RELAY_LOG_TAG).w("GET /s/%s range oltre fine (416): %s size=%d", id, rangeHeader, meta.totalSize)
+        RelayLog.w(RELAY_LOG_TAG, "GET /s/%s range oltre fine (416): %s size=%d", id, rangeHeader, meta.totalSize)
         call.response.headers.append(HttpHeaders.ContentRange, "bytes */${meta.totalSize}")
         return call.respondText("", status = HttpStatusCode.RequestedRangeNotSatisfiable)
     }
 
-    val input = source.open(track, range)
-    if (input == null) {
-        Timber.tag(RELAY_LOG_TAG).w("GET /s/%s apertura stream fallita (404): %s", id, track.uri)
+    val rawInput = source.open(track, range)
+    if (rawInput == null) {
+        RelayLog.w(RELAY_LOG_TAG, "GET /s/%s apertura stream fallita (404): %s", id, track.uri)
         return call.respondText("", status = HttpStatusCode.NotFound)
     }
+    // CORREZIONE durante la migrazione al modulo condiviso: le sorgenti posizionano
+    // lo stream all'inizio del range ma non lo LIMITANO alla sua lunghezza (versione
+    // Android: seek(range.start) + lettura fino a EOF). Con Content-Length = length
+    // del range ma N piu' byte spediti, i client HTTP rigorosi (e il riutilizzo della
+    // connessione keep-alive) si rompono e VLC puo' stampare byte spazzatura nel
+    // pipeline. Il wrapper limita la lettura ESATTAMENTE ai byte promessi.
+    val input: InputStream = range?.let { LimitedInputStream(rawInput, it.length) } ?: rawInput
 
     try {
         val status = if (range != null) HttpStatusCode.PartialContent else HttpStatusCode.OK
-        Timber.tag(RELAY_LOG_TAG).i(
+        RelayLog.i(
+            RELAY_LOG_TAG,
             "GET /s/%s da %s -> %s range=%s mime=%s",
             id,
             call.request.origin.remoteHost,
@@ -297,6 +307,37 @@ private suspend fun pump(input: InputStream, writer: ByteWriteChannel) {
         if (read <= 0) break
         writer.writeFully(buffer, 0, read)
         writer.flush()
+    }
+}
+
+/**
+ * InputStream che consuma al piu' [limit] byte della sorgente (streaming
+ * conforme al Content-Length di una risposta 206 Partial Content).
+ */
+private class LimitedInputStream(
+    private val source: InputStream,
+    private val limit: Long,
+) : InputStream() {
+
+    private var remaining = limit
+
+    override fun read(): Int {
+        if (remaining <= 0) return -1
+        val b = source.read()
+        if (b >= 0) remaining -= 1
+        return b
+    }
+
+    override fun read(b: ByteArray, off: Int, len: Int): Int {
+        if (remaining <= 0) return -1
+        val requested = minOf(len.toLong(), remaining).toInt()
+        val read = source.read(b, off, requested)
+        if (read > 0) remaining -= read
+        return read
+    }
+
+    override fun close() {
+        runCatching { source.close() }
     }
 }
 

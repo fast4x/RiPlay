@@ -1,24 +1,20 @@
 package it.fast4x.riplay.server
 
-import android.content.Context
-import android.net.Uri
-import android.webkit.MimeTypeMap
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
-import it.fast4x.riplay.utils.getFileNameFromUri
-import timber.log.Timber
 import java.io.File
 import java.io.InputStream
-import java.io.RandomAccessFile
 import java.net.NetworkInterface
 import java.security.SecureRandom
 
 /**
  * RiPlay Relay — server di streaming locale (Fase 2), engine Ktor CIO.
  *
+ * Modulo condiviso relayserver: identico comportamento su Android e desktop.
+ *
  * Doppio ruolo:
- * 1. sorgente per il cast UPnP/DLNA dei contenuti senza URL diretto (file locali,
- *    Music Vault, content://): il `SetAVTransportURI` punta a
+ * 1. sorgente per il cast UPnP/DLNA (Android) dei contenuti senza URL diretto
+ *    (file locali, Music Vault, content://): il `SetAVTransportURI` punta a
  *    `http://<ip-telefono>:<porta>/relay/<token>/s/<id>` e l'altoparlante scarica
  *    lo stream dal telefono
  * 2. sorgente generica per software esterni (VLC, browser, altri RiPlay):
@@ -28,16 +24,23 @@ import java.security.SecureRandom
  * - token di accesso casuale, generato al primo avvio e persistente (link M3U stabili)
  * - solo i brani nel registro (whitelist) sono servibili
  * - il server ascolta solo sulla LAN: nessuna esposizione oltre la rete locale
+ *
+ * Le parti dipendenti dalla piattaforma sono iniettate dal chiamante
+ * (androidApp -> AndroidRelay.kt, composeApp jvmMain -> DesktopRelay.kt):
+ * - [RelayStreamSource]: da dove vengono i byte dei brani (file/content Android,
+ *   percorsi file desktop, buffer nei test)
+ * - [RelayTokenStore]: dove persiste il token di accesso (SharedPreferences su
+ *   Android, ~/.riplay/relay.properties su desktop)
  */
 class RelayServer(
-    private val context: Context,
     private val registry: RelayRegistry,
     source: RelayStreamSource? = null,
+    private val tokenStore: RelayTokenStore? = null,
     private val preferredPort: Int = DEFAULT_PORT,
 ) {
 
-    /** Sorgente dei byte: iniettabile nei test, di default serve i file locali. */
-    private val effectiveSource: RelayStreamSource = source ?: LocalSource()
+    /** Sorgente dei byte: iniettabile nei test, obbligatoria in produzione. */
+    private val effectiveSource: RelayStreamSource = source ?: NullRelaySource
 
     private var embedded: io.ktor.server.engine.EmbeddedServer<*, *>? = null
 
@@ -72,28 +75,27 @@ class RelayServer(
         repeat(PORT_ATTEMPTS) { attempt ->
             val port = preferredPort + attempt
             try {
-                Timber.tag(TAG).i("start: tentativo bind 0.0.0.0:%d (%d/%d)", port, attempt + 1, PORT_ATTEMPTS)
+                RelayLog.i(TAG, "start: tentativo bind 0.0.0.0:%d (%d/%d)", port, attempt + 1, PORT_ATTEMPTS)
                 val server = embeddedServer(CIO, host = "0.0.0.0", port = port) {
                     relayEndpoints(token = token, registry = registry, source = effectiveSource)
                 }
                 server.start(wait = false)
                 embedded = server
                 actualPort = port
-                Timber.tag(TAG).i(
-                    "server AVVIATO su 0.0.0.0:%d (tutte le interfacce; token %s...)",
+                RelayLog.i(
+                    TAG, "server AVVIATO su 0.0.0.0:%d (tutte le interfacce; token %s...)",
                     port, token.take(4)
                 )
                 return true
             } catch (e: Throwable) {
-                Timber.tag(TAG).w(
-                    e,
-                    "porta %d non disponibile (tentativo %d/%d): %s: %s",
+                RelayLog.w(
+                    e, TAG, "porta %d non disponibile (tentativo %d/%d): %s: %s",
                     port, attempt + 1, PORT_ATTEMPTS, e.javaClass.name, e.message
                 )
             }
         }
-        Timber.tag(TAG).e(
-            "nessuna porta libera da %d a %d (bind su 0.0.0.0, tutte le interfacce)",
+        RelayLog.e(
+            TAG, "nessuna porta libera da %d a %d (bind su 0.0.0.0, tutte le interfacce)",
             preferredPort, preferredPort + PORT_ATTEMPTS - 1
         )
         return false
@@ -102,14 +104,14 @@ class RelayServer(
     fun stop() {
         runCatching { embedded?.stop(500, 1_000) }
         embedded = null
-        Timber.tag(TAG).i("server FERMATO")
+        RelayLog.i(TAG, "server FERMATO")
     }
 
     /** Base URL del server sull'interfaccia Wi-Fi/LAN corrente (null se offline). */
     fun baseUrl(): String? {
         val ip = firstLanIpv4()
         if (ip == null) {
-            Timber.tag(TAG).w("baseUrl: nessun indirizzo IPv4 LAN rilevato (Wi-Fi spento o solo VPN/cellulare?)")
+            RelayLog.w(TAG, "baseUrl: nessun indirizzo IPv4 LAN rilevato (Wi-Fi spento o solo VPN/cellulare?)")
             return null
         }
         return "http://$ip:$actualPort/relay/$token"
@@ -119,114 +121,20 @@ class RelayServer(
     fun streamUrlFor(track: RelayTrack): String? =
         baseUrl()?.let { RelayUris.streamUrl(it, track) }
 
-    // ─────────────────── Serving file locali ───────────────────
-
-    /** Sorgente dei byte per i brani registrati: file:// via RandomAccessFile
-     *  (Range esatto), content:// via ContentResolver (skip per il seek). */
-    private inner class LocalSource : RelayStreamSource {
-
-        override fun probe(track: RelayTrack): RelayMeta? {
-            val uri = runCatching { Uri.parse(track.uri) }.getOrNull() ?: return null
-            val size = localContentLength(uri) ?: return null
-            if (size <= 0) return null
-            return RelayMeta(totalSize = size, mime = track.mime ?: RelayMime.fromFileName(fileNameOf(uri)))
-        }
-
-        override fun open(track: RelayTrack, range: HttpRange?): InputStream? {
-            val uri = runCatching { Uri.parse(track.uri) }.getOrNull() ?: return null
-            return openLocalStream(uri, range)
-        }
-    }
-
-    private fun fileNameOf(uri: Uri): String? = context.getFileNameFromUri(uri)
-
-    private fun localContentLength(uri: Uri): Long? {
-        return try {
-            when (uri.scheme) {
-                "file" -> File(uri.path ?: return null).takeIf { it.isFile }?.length()
-                "content" -> {
-                    val afd = context.contentResolver.openAssetFileDescriptor(uri, "r")
-                    val length = afd?.use { it.length } ?: -1L
-                    if (length > 0) length
-                    else
-                        context.contentResolver.openInputStream(uri)?.use { input ->
-                            var total = 0L
-                            val skip = ByteArray(64 * 1024)
-                            while (true) {
-                                val read = input.read(skip)
-                                if (read <= 0) break
-                                total += read
-                            }
-                            total
-                        }
-                }
-                else -> null
-            }
-        } catch (e: Exception) {
-            Timber.w("RelayServer probe $uri failed: ${e.message}")
-            null
-        }
-    }
-
-    private fun openLocalStream(uri: Uri, range: HttpRange?): InputStream? {
-        return try {
-            when (uri.scheme) {
-                "file" -> {
-                    val file = File(uri.path ?: return null)
-                    if (!file.isFile) return null
-                    val raf = RandomAccessFile(file, "r")
-                    if (range != null) raf.seek(range.start)
-                    // RandomAccessFile close: delegato al chiamante via InputStream.close
-                    object : InputStream() {
-                        override fun read(): Int = raf.read()
-                        override fun read(b: ByteArray, off: Int, len: Int): Int = raf.read(b, off, len)
-                        override fun close() { raf.close() }
-                    }
-                }
-
-                "content" -> {
-                    val input = context.contentResolver.openInputStream(uri) ?: return null
-                    if (range != null && range.start > 0) skipFully(input, range.start)
-                    input
-                }
-
-                else -> null
-            }
-        } catch (e: Exception) {
-            Timber.w("RelayServer open $uri range=$range failed: ${e.message}")
-            null
-        }
-    }
-
-    private fun skipFully(input: InputStream, bytes: Long) {
-        var remaining = bytes
-        while (remaining > 0) {
-            val skipped = input.skip(remaining)
-            if (skipped > 0) {
-                remaining -= skipped
-            } else {
-                // skip() puo' restare a 0: consuma un byte alla volta
-                if (input.read() < 0) return
-                remaining -= 1
-            }
-        }
-    }
-
-    // ─────────────────── Token e rete ───────────────────
+    // ─────────────────── Token ───────────────────
 
     private fun loadOrCreateToken(): String {
-        val prefs = context.getSharedPreferences("relay_prefs", Context.MODE_PRIVATE)
-        prefs.getString("token", null)?.let { return it }
+        tokenStore?.load()?.let { return it }
         val bytes = ByteArray(12)
         SecureRandom().nextBytes(bytes)
         val token = bytes.joinToString("") { "%02x".format(it) }
-        prefs.edit().putString("token", token).apply()
+        tokenStore?.save(token)
         return token
     }
 
     companion object {
 
-        /** Tag per i log diagnostici (Timber.tag): filtrabile in logcat anche in release. */
+        /** Tag per i log diagnostici (filtrabile anche in console/logcat). */
         const val TAG = "RelayServer"
 
         const val DEFAULT_PORT = 8765
@@ -241,6 +149,12 @@ class RelayServer(
          * "server non attivo" anche a server in ascolto. Ora: 1) site-local su
          * wlan/eth, 2) qualunque IPv4 su wlan/eth, 3) qualunque site-local, 4) qualunque
          * IPv4 non-loopback. Ogni candidato viene loggato (diagnostica VLC).
+         *
+         * java.net.NetworkInterface e' API JVM standard: funziona identica su Android
+         * (ART) e desktop (HotSpot). I nomi interfaccia variano per OS (wlan0/eth0 su
+         * Linux, en0 su macOS, "eth"/"wlan" anche su Windows): la regola wlan/eth
+         * preferisce le interfacce Wi-Fi/cavo, il fallback Site-local -> qualunque
+         * IPv4 non-loopback copre i nomi non standard.
          */
         fun firstLanIpv4(): String? {
             val siteLocal = mutableListOf<Pair<String, String>>()   // (nome interfaccia, ip)
@@ -260,8 +174,8 @@ class RelayServer(
                         }
                 }
             }
-            Timber.tag(TAG).d(
-                "interfacce LAN: siteLocal=%s other=%s",
+            RelayLog.d(
+                TAG, "interfacce LAN: siteLocal=%s other=%s",
                 siteLocal.joinToString { "${it.first}=${it.second}" },
                 others.joinToString { "${it.first}=${it.second}" }
             )
@@ -276,22 +190,61 @@ class RelayServer(
     }
 }
 
+/**
+ * Persistenza del token di accesso del relay (link M3U stabili tra riavvii).
+ * Implementazioni: SharedPreferences su Android ("relay_prefs"), file
+ * ~/.riplay/relay.properties su desktop.
+ */
+interface RelayTokenStore {
+    /** Token salvato in precedenza, o null se mai generato. */
+    fun load(): String?
+
+    /** Salva il token generato. Chiamato una sola volta (primo avvio). */
+    fun save(token: String)
+}
+
+/**
+ * Sorgente di riserva quando nessuna sorgente reale e' stata iniettata
+ * (istanze di test/diagnostica): nessun brano e' servibile, risponde sempre 404.
+ */
+private object NullRelaySource : RelayStreamSource {
+    override fun probe(track: RelayTrack): RelayMeta? = null
+    override fun open(track: RelayTrack, range: HttpRange?): InputStream? = null
+}
+
 /** MIME type dal nome file (per il Content-Type verso i renderer). */
 object RelayMime {
 
-    private val FALLBACK = "application/octet-stream"
+    /**
+     * Hook per resolver di estensioni specifici della piattaforma. Android lo
+     * imposta su android.webkit.MimeTypeMap (stesso comportamento della versione
+     * pre-refactor: MimeTypeMap PRIMA, poi la tabella interna); desktop lo lascia
+     * null e usa solo la tabella interna.
+     */
+    @Volatile
+    var extensionResolver: ((extension: String) -> String?)? = null
 
     fun fromFileName(fileName: String?): String? {
-        val extension = fileName
-            ?.substringAfterLast('/', "")
-            ?.substringAfterLast('.', "")
-            ?.lowercase()
-            ?: return null
+        if (fileName.isNullOrBlank()) return null
+        // Nome con o senza percorso: l'ultimo segmento dopo '/' (senza slash = nome gia' nudo).
+        // CORREZIONE durante la migrazione al modulo condiviso: la versione Android usava
+        // substringAfterLast('/', "") che ritorna STRINGA VUOTA quando il nome non contiene
+        // slash (es. "song.mp3" da getFileNameFromUri/ContentResolver DISPLAY_NAME): l'estensione
+        // andava perduta, fallbackFor non era mai raggiunto e i file uscivano quasi sempre
+        // come application/octet-stream. Con missingDelimiterValue = fileName il nome resta
+        // intatto e la tabella MIME funziona (Content-Type corretto verso renderer UPnP/VLC).
+        val base = fileName.substringAfterLast('/', fileName)
+        // Nessun punto = nessuna estensione: null ("" come default e' qui corretto).
+        val extension = base.substringAfterLast('.', "").lowercase()
         if (extension.isBlank()) return null
-        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: fallbackFor(extension)
+        return extensionResolver?.invoke(extension) ?: fallbackFor(extension)
     }
 
-    /** Estensioni audio comuni che MimeTypeMap a volte non conosce. */
+    /**
+     * Estensioni audio/video comuni che il resolver di piattaforma a volte non
+     * conosce (MIME dell'ultima versione Android; desktop copre anche wma/aiff/
+     * ape/wv/mka che MimeTypeMap non mappa comunque).
+     */
     private fun fallbackFor(extension: String): String? = when (extension) {
         "mp3" -> "audio/mpeg"
         "m4a", "mp4", "aac" -> "audio/mp4"
@@ -300,6 +253,12 @@ object RelayMime {
         "opus" -> "audio/ogg"
         "wav" -> "audio/wav"
         "m3u", "m3u8" -> "audio/x-mpegurl"
+        // estensioni extra per il desktop (VLC serve un Content-Type valido)
+        "wma" -> "audio/x-ms-wma"
+        "aif", "aiff" -> "audio/aiff"
+        "ape" -> "audio/x-ape"
+        "wv" -> "audio/x-wavpack"
+        "mka" -> "audio/x-matroska"
         else -> null
     }
 }
