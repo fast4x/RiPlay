@@ -39,11 +39,11 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 - Rewind, your year in music
 - Last.fm scrobble integration
 - ListenBrainz scrobble integration, also support custom server
-- Fast Share (direct sharing with installed apps)
 - Crossfade (crossfade between songs)
 - Cast to another Android device / TV via [RiTune](https://github.com/fast4x/RiTune)
 - Cast to UPNP/DLNA compatible devices
 - Streaming server, serve your music from any device
+- ZoundHub, make AI generated music visible
 
 ### ⏰ Smart Features
 - Sleep timer, stop music when you go to sleep
@@ -51,6 +51,7 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 - Voice control, control music with voice commands
 - Visualizer (microphone permission required)
 - Self-closing app scheduling
+- Fast Share (direct sharing with installed apps)
 - Android Auto support
 - Android TV support
 - Widget support 
@@ -184,9 +185,11 @@ RiPlay wouldn't be possible without the amazing work of these projects and contr
 - [KuGou](https://www.kugou.com), [LrcLib](https://lrclib.net), [SimpMusic Lyrics](https://simpmusic.org) – Lyrics providers
 - [HypnoticCanvas](https://mikepenz.github.io/HypnoticCanvas/) – shaders for Compose  
 - [AudioTag.info](https://audiotag.info) – music recognition API
-- [WSABuilds](https://github.com/MustardChef/WSABuilds) - Run Windows Subsystem For Android on your Windows 10 and Windows 11 PC using prebuilt binaries
+- [WSABuilds](https://github.com/MustardChef/WSABuilds) - Run Windows Subsystem For Android on your Windows 10 and Windows 11 PC using prebuilt binaries.
 - [Waydroid](https://github.com/waydroid/waydroid) - A container-based approach to boot a full Android system on a regular GNU/Linux system like Ubuntu.
 - [MusicBrainz](https://musicbrainz.org/) - MusicBrainz is an open music encyclopedia that collects music metadata and makes it available to the public.
+- [ListenBrainz](https://listenbrainz.org/) - ListenBrainz keeps track of music you listen to and provides you with insights into your listening habits.
+- [ZoundHub](https://github.com/xoundbyte/zoundhub) - We bring together signals associated with AI-generated music so you can make informed choices about the music you support.
 
 ---
 
