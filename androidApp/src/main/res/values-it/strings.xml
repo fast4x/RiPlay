@@ -1444,11 +1444,11 @@
     <string name="settings_title_on_device_music_folder">On device music folder</string>
     <string name="import_playlist_riplay">Import playlist from RiPlay</string>
     <string name="import_playlist_exportify_net">Import playlist from Exportify.net</string>
-    <string name="import_playlist_spotify_url">Import playlist from Spotify link</string>
-    <string name="spotify_playlist_url_placeholder">Spotify playlist link</string>
-    <string name="spotify_playlist_url_invalid">That is not a valid Spotify playlist link</string>
-    <string name="importing_spotify_playlist">Importing Spotify playlist</string>
-    <string name="importing_spotify_playlist_waiting">Reading the playlist…</string>
+    <string name="import_playlist_spotify_url">Importa playlist dal link di Spotify</string>
+    <string name="spotify_playlist_url_placeholder">Link della playlist Spotify</string>
+    <string name="spotify_playlist_url_invalid">Questo link alla playlist Spotify non è valido</string>
+    <string name="importing_spotify_playlist">Importazione della playlist Spotify</string>
+    <string name="importing_spotify_playlist_waiting">Leggendo la playlist…</string>
     <string name="importing_spotify_playlist_progress">%1$d of %2$d</string>
     <string name="importing_spotify_playlist_done">Playlist imported</string>
     <string name="importing_spotify_playlist_failed">Import failed</string>
