@@ -1,6 +1,12 @@
 /*
  * RiPlay + Music Assistant — Glue di integrazione ANDROID del bridge libreria.
  *
+ * SOLO FLAVOR FOSS (src/androidFoss): e' la versione actual del contratto
+ * dichiarato in MusicAssistantBridgeExpect.kt (src/main). La versione full
+ * usa lo stub MusicAssistantBridgeStub.kt e non ha nemmeno il modulo
+ * `riplay-bridge` nel classpath (dipendenza fossImplementation) — condizione
+ * accettata dalla community di Music Assistant per il provider `riplay`.
+ *
  * Il modulo `modules/riplay-bridge` (API REST /api/v1 per il provider Python
  * esterno `riplay`) viene montato DENTRO lo stesso Ktor application del
  * RelayServer tramite il parametro `extraModules` di RelayServer: NESSUNA
@@ -379,9 +385,15 @@ object MusicAssistantBridge {
 }
 
 /**
- * Installa il wiring Android del bridge libreria. Chiamare UNA SOLA VOLTA in
- * MainApplication.onCreate, DOPO [installAndroidRelayServer] e DOPO
- * appSettingsManager.initialize().
+ * Il bridge Music Assistant esiste solo nel flavor FOSS: l'actual foss e'
+ * sempre true (il toggle in GeneralSettings compare solo qui).
+ */
+val isMusicAssistantBridgeSupported: Boolean = true
+
+/**
+ * Implementazione FOSS dell'installazione del wiring Android del bridge
+ * libreria. Chiamare UNA SOLA VOLTA in MainApplication.onCreate, DOPO
+ * [installAndroidRelayServer] e DOPO appSettingsManager.initialize().
  */
 fun installAndroidMusicAssistantBridge(context: Context, enabled: Boolean) {
     MusicAssistantBridge.initialize(context)

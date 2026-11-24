@@ -422,8 +422,12 @@ dependencies {
     implementation(projects.relayserver)
     // Music Assistant (riplay-bridge): API REST /api/v1 della libreria per il
     // provider Python esterno, montata NELLO STESSO Ktor application del relay
-    // (stessa porta, stesso token). Wiring Android in server/BridgeIntegration.kt.
-    implementation(projects.riplayBridge)
+    // (stessa porta, stesso token). SOLO versione FOSS (richiesta della
+    // community Music Assistant): wiring in src/androidFoss/.../server/
+    // BridgeIntegration.kt, stub in src/androidFull/.../server/
+    // MusicAssistantBridgeStub.kt. Nelle build full il modulo non e' nel
+    // classpath, come gia' avviene per chaquopy (fullImplementation).
+    "fossImplementation"(projects.riplayBridge)
 
     implementation(libs.navigation)
     implementation(libs.media3.session)

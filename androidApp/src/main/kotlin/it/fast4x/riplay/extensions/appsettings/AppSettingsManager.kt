@@ -48,7 +48,7 @@ class AppSettingsManager {
 
     suspend fun updateSettings(newSettings: AppSettings) {
         val settings = JsonManager.encodeToString(newSettings)
-        Timber.d("AppSettingsManager updateSettings newSettings: $settings")
+        Timber.d("AppSettingsManager updateSettings")
         _activeSettings.value = newSettings // Aggiorna la RAM istantaneamente
         dao.updateSettings(settings) // Aggiorna il DB
     }

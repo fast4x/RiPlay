@@ -71,6 +71,7 @@ import it.fast4x.riplay.enums.EqualizerType
 import it.fast4x.riplay.extensions.updater.UpdateDialog
 import it.fast4x.riplay.extensions.zoundhub.ZoundHubClient
 import it.fast4x.riplay.server.RelayManager
+import it.fast4x.riplay.server.isMusicAssistantBridgeSupported
 import it.fast4x.riplay.services.helpers.AudioDRCHelper
 import it.fast4x.riplay.services.playback.MediaLibraryServiceCallback
 import it.fast4x.riplay.ui.components.themed.ConfirmationDialog
@@ -1708,24 +1709,30 @@ fun GeneralSettings(
                                     // modulo si monta all'avvio del server: un cambio di
                                     // setting richiede il riavvio (stop + startIfEnabled con
                                     // la nuova configurazione del provider in AndroidRelay).
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    SwitchSettingEntry(
-                                        title = stringResource(R.string.ma_bridge_server),
-                                        text = stringResource(R.string.ma_bridge_server_info),
-                                        isChecked = appSettings.maBridgeEnabled,
-                                        onCheckedChange = {
-                                            coroutineScope.launch {
-                                                // Riavvio del server per rimontare/smontare il modulo bridge
-                                                RelayManager.stop()
-                                                RelayManager.startIfEnabled(appSettings.streamRelayEnabled)
+                                    // Il bridge esiste SOLO nella versione FOSS (richiesta
+                                    // della community Music Assistant): nelle build full
+                                    // l'interruttore non compare e il modulo non viene mai
+                                    // montato (actual stub, MusicAssistantBridgeStub.kt).
+                                    if (isMusicAssistantBridgeSupported) {
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        SwitchSettingEntry(
+                                            title = stringResource(R.string.ma_bridge_server),
+                                            text = stringResource(R.string.ma_bridge_server_info),
+                                            isChecked = appSettings.maBridgeEnabled,
+                                            onCheckedChange = {
+                                                coroutineScope.launch {
+                                                    // Riavvio del server per rimontare/smontare il modulo bridge
+                                                    RelayManager.stop()
+                                                    RelayManager.startIfEnabled(appSettings.streamRelayEnabled)
 
-                                                appSettingsManager.updateSettings(
-                                                    appSettingsManager.activeSettings.value.copy(maBridgeEnabled = it)
-                                                )
-                                            }
-                                        },
-                                        icon = R.drawable.server,
-                                    )
+                                                    appSettingsManager.updateSettings(
+                                                        appSettingsManager.activeSettings.value.copy(maBridgeEnabled = it)
+                                                    )
+                                                }
+                                            },
+                                            icon = R.drawable.server,
+                                        )
+                                    }
 
                                 }
                             }
