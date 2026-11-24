@@ -46,7 +46,7 @@ extensions.configure<ApplicationExtension> {
         targetSdk = 37
 
         versionCode = 114
-        versionName = "0.8.8-rc.1"
+        versionName = "0.8.8-rc.2"
 
 
         // INIT ENVIRONMENT
