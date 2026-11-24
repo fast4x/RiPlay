@@ -1388,6 +1388,8 @@
     <string name="upnp_cast_unsupported_content">Questo brano non ha un URL stream diretto: il cast verso dispositivi UPnP sarà abilitato dal server di streaming di RiPlay (in arrivo).</string>
     <string name="upnp_relay_server">Server di streaming RiPlay</string>
     <string name="upnp_relay_server_info">Server di streaming locale: permette ai dispositivi UPnP/DLNA di riprodurre i file locali (Music Vault, libreria del telefono) e ad app esterne (VLC, browser, altri RiPlay) di riprodurre la coda di RiPlay. Protetto da token di accesso, raggiungibile solo nella rete Wi-Fi.</string>
+    <string name="ma_bridge_server">Bridge libreria Music Assistant</string>
+    <string name="ma_bridge_server_info">Espone la libreria di RiPlay (artisti, album, brani, playlist) a un server Music Assistant tramite l\'API REST /api/v1, servita dallo stesso server di streaming (stessa porta e stesso token di accesso, nessuna porta in piu\'). Richiede il server di streaming attivo; collega il provider esterno \'riplay\' da Music Assistant.</string>
     <string name="upnp_relay_server_active">Server di streaming attivo</string>
     <string name="upnp_relay_server_url">Indirizzo del server (tocca per copiare)</string>
     <string name="upnp_relay_server_playlist">Playlist della coda corrente (M3U, tocca per copiare)</string>
