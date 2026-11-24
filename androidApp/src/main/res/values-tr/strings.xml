@@ -1388,6 +1388,8 @@
     <string name="upnp_cast_unsupported_content">Bu parçanın doğrudan bir akış URL’si yoktur: UPnP cihazlarına aktarım, RiPlay akış sunucusu tarafından etkinleştirilecektir (yakında kullanıma sunulacak).</string>
     <string name="upnp_relay_server">RiPlay akış sunucusu</string>
     <string name="upnp_relay_server_info">Yerel akış sunucusu: UPnP/DLNA cihazlarının yerel dosyaları (Müzik Arşivi, cihaz kütüphanesi) oynatmasına ve harici uygulamaların (VLC, tarayıcı, diğer RiPlay örnekleri) RiPlay\'in kuyruğunu oynatmasına olanak tanır. Bir erişim jetonuyla korunur ve yalnızca Wi-Fi ağınızda erişilebilir.</string>
+    <string name="ma_bridge_server">Music Assistant library bridge</string>
+    <string name="ma_bridge_server_info">Exposes RiPlay\'s library (artists, albums, tracks, playlists) to a Music Assistant server via the /api/v1 REST API, served by the same streaming server (same port and access token, no extra ports). Requires the streaming server to be enabled. Connect the external \'riplay\' provider from Music Assistant.</string>
     <string name="upnp_relay_server_active">Akış sunucusu aktif</string>
     <string name="upnp_relay_server_url">Sunucu adresi (kopyalamak için dokunun)</string>
     <string name="upnp_relay_server_playlist">Şu anki kuyruk çalma listesi (M3U, kopyalamak için dokunun)</string>
