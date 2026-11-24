@@ -1,0 +1,6 @@
+* Add Zoundhub integration for make AI generated music visible
+* Add UPnP/DLNA cast support and local media relay server
+* Add Music Assistant Bridge, require community [Music Assistant Provider](https://github.com/fast4x/riplay-music-assistant) for RiPlay, install from MA Marketplace
+* Start or stop streaming relay server immediately on settings change
+* Fix Android Auto library sorting with active settings
+* Updated translations

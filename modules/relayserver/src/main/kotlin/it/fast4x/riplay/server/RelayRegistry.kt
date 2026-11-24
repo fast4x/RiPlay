@@ -5,7 +5,8 @@ import java.security.MessageDigest
 /**
  * RiPlay Relay — registro dei brani servibili dal server di streaming locale (Fase 2).
  *
- * Puro Kotlin, senza dipendenze Android: testabile su JVM.
+ * Puro Kotlin, senza dipendenze Android: condiviso da androidApp e desktop
+ * (modulo relayserver), testabile su JVM.
  *
  * Due strutture:
  * - whitelist tracce (id -> RelayTrack): solo i brani registrati sono servibili
@@ -13,10 +14,10 @@ import java.security.MessageDigest
  * - ordine coda corrente: alimenta la playlist M3U per i player esterni
  *
  * Semantica:
- * - [register] aggiunge/aggiorna una traccia (usato dal cast UPnP per il brano da inviare)
- * - [syncQueue] ricostruisce l'ordine coda registrando anche i brani nuovi (usato da
- *   PlayerService ad ogni mutazione della coda): NON svuota la whitelist, cosi' il brano
- *   in cast resta servibile anche se fuori coda
+ * - [RelayRegistry.register] aggiunge/aggiorna una traccia (usato dal cast UPnP per il brano da inviare)
+ * - [RelayRegistry.syncQueue] ricostruisce l'ordine coda registrando anche i brani nuovi (usato da
+ *   PlayerService Android ad ogni mutazione della coda e dal watcher coda desktop): NON svuota la
+ *   whitelist, cosi' il brano in cast resta servibile anche se fuori coda
  */
 class RelayRegistry {
 
@@ -99,12 +100,18 @@ data class RelayTrack(
 /**
  * Helper sulle URI servibili dal relay.
  *
- * Regola del cast UPnP:
+ * Regola del cast UPnP (Android):
  * - http(s) diretto -> il dispositivo preleva lo stream dalla rete, il telefono
  *   non e' nel percorso audio (Fase 1)
  * - file/content    -> il dispositivo preleva dal server di streaming locale (Fase 2)
  * - altri casi (es. videoId YouTube senza scheme) -> nessun URL diretto disponibile,
  *   gestione sperimentale rimandata alla Fase 3
+ *
+ * Desktop: i brani locali sono registrati con il PERCORSO ASSOLUTO (come
+ * Song.mediaId, es. "/home/user/Musica/brano.mp3") oppure con URI file://.
+ * [isLocal] riconosce entrambe le forme (estensione desktop: percorsi POSIX
+ * che iniziano con "/" e percorsi Windows con drive "X:\", "X:/") mentre i
+ * videoId YouTube restano esclusi dalla playlist M3U come su Android.
  */
 object RelayUris {
 
@@ -113,7 +120,19 @@ object RelayUris {
 
     fun isLocal(uri: String): Boolean {
         val scheme = uri.substringBefore(":", "").lowercase()
-        return scheme == "file" || scheme == "content"
+        if (scheme == "file" || scheme == "content") return true
+        // Desktop: percorso assoluto POSIX ("/home/user/x.mp3", "/Users/...").
+        // Nessuno scheme: il primo ':' e' assente, scheme == uri intera.
+        if (uri.startsWith("/")) return true
+        // Desktop Windows: "C:\Musica\x.mp3" o "C:/Musica/x.mp3" (drive 1 lettera).
+        val head = uri.take(2)
+        if (head.length == 2 && head[0] in 'A'..'Z' && (head[1] == ':' || head[1] == '\\')) {
+            // "C:\..." (backslash) e' un percorso Windows; "C:" seguito da "/"
+            // e' anch'esso un percorso drive. Un URI "content:" ha piu' di una
+            // lettera prima dei due punti, quindi non matcha.
+            if (head[1] == '\\' || uri.getOrNull(2) == '/' || uri.getOrNull(2) == '\\') return true
+        }
+        return false
     }
 
     /** Id stabile della traccia: sha-256 della URI, troncato a 20 caratteri esadecimali. */
@@ -130,7 +149,7 @@ object RelayUris {
  * Generatore playlist M3U per i player esterni (VLC, browser, altri RiPlay).
  *
  * - brani con URI http(s): viene inserito l'URL originale (il telefono non e' nel percorso)
- * - brani locali: URL del relay (il telefono serve il file)
+ * - brani locali: URL del relay (l'app host serve il file)
  * - brani senza URI servibile: esclusi dalla playlist
  */
 object RelayM3u {

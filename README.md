@@ -43,6 +43,7 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 - Cast to another Android device / TV via [RiTune](https://github.com/fast4x/RiTune)
 - Cast to UPNP/DLNA compatible devices
 - Streaming server, serve your music from any device
+- Music Assistant Bridge, serve your music to Music Assistant. Require community [Music Assistant Provider](https://github.com/fast4x/riplay-music-assistant) for RiPlay, install from MA Marketplace 
 - ZoundHub, make AI generated music visible
 
 ### ⏰ Smart Features

@@ -94,6 +94,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import it.fast4x.riplay.server.syncDesktopRelayQueue
 import it.fast4x.riplay.utils.DesktopUpdateChecker
 import it.fast4x.riplay.utils.DesktopPlaybackHub
 import it.fast4x.riplay.utils.DesktopMediaIntegrations
@@ -531,6 +532,19 @@ fun ThreeColumnsApp(
             delay(300)
             saveQueueIds(playQueue.map { it.song.id })
         }
+    }
+
+    // Server di streaming locale (Relay, modulo condiviso relayserver): ogni
+    // mutazione della coda (o cambio brano) aggiorna la whitelist e l'ordine
+    // della playlist M3U servita agli player esterni (VLC, browser, altri
+    // RiPlay). Stesso ruolo di PlayerService.syncQueueToRelay su Android;
+    // registro aggiornato anche con il server spento, cosi' attivando il
+    // setting la playlist e' subito corretta (nessun costo: struttura in memoria).
+    LaunchedEffect(Unit) {
+        snapshotFlow { playQueue.toList() to nowPlayingSong }
+            .collect { (queue, playing) ->
+                syncDesktopRelayQueue(playing, queue.map { it.song })
+            }
     }
 
 

@@ -61,8 +61,6 @@
     <string name="settings.cefcache.now">Attualmente in uso: {size}</string>
     <string name="settings.cefcache.off">Mai</string>
     <string name="settings.cefcache.applied_next_start">La modifica si applica al prossimo avvio dell\'app.</string>
-    <!-- Server di streaming locale (Relay, modulo condiviso relayserver):
-         stesso server dell'app Android, nella tab Generale desktop. -->
     <string name="settings.relay.title">Server di streaming RiPlay</string>
     <string name="settings.relay.desc">Server di streaming locale: permette agli altri dispositivi della rete (VLC, browser, RiPlay su telefono) di riprodurre la coda corrente e i file locali di RiPlay. Protetto da token d\'accesso e raggiungibile solo in LAN; è lo stesso server dell\'app Android.</string>
     <string name="settings.relay.active">Server di streaming attivo</string>

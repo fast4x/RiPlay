@@ -190,6 +190,11 @@ data class AppSettings(
     val audioQualityFormat: AudioQualityFormat = AudioQualityFormat.Auto,
     val castType: CastType = CastType.NONE,
     val streamRelayEnabled: Boolean = false,
+    // Music Assistant (riplay-bridge): espone la libreria via API REST /api/v1
+    // NELLO STESSO server di streaming (stessa porta/token). Richiede il server
+    // attivo; il modulo si monta allo start, quindi un cambio richiede il
+    // riavvio del server (gestito da PlayerService.startObservingSettings).
+    val maBridgeEnabled: Boolean = false,
     val skipSilenceEnabled: Boolean = false,
     val stateDuration: Float = 0f,
     val stateMediaId: String = "",

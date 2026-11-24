@@ -816,6 +816,31 @@ interface Database {
     @Query("SELECT position FROM SongPlaylistMap WHERE playlistId = :playlistId AND songId = :id")
     suspend fun positionInPlaylist(id: String, playlistId: Long): Int
 
+    // Music Assistant bridge (riplay-bridge): paginazione playlist per /api/v1.
+    @Query("SELECT * FROM Playlist ORDER BY name COLLATE NOCASE ASC LIMIT :limit OFFSET :offset")
+    suspend fun playlistsPaged(limit: Int, offset: Int): List<Playlist>
+
+    @Query("SELECT COUNT(*) FROM Playlist")
+    suspend fun countPlaylists(): Int
+
+    @Query("SELECT * FROM Playlist WHERE id = :id")
+    suspend fun playlistById(id: Long): Playlist?
+
+    // Snapshot sospensivo dei brani di una playlist (stessa query di
+    // playlistSongs, che qui serve come valore e non come Flow: il bridge
+    // Music Assistant interroga il catalogo on-demand via REST).
+    @RewriteQueriesToDropUnusedColumns
+    @Transaction
+    @Query(
+        """
+        SELECT * FROM SortedSongPlaylistMap SPLM
+        INNER JOIN Song on Song.id = SPLM.songId
+        WHERE playlistId = :id
+        ORDER BY SPLM.position
+        """
+    )
+    suspend fun playlistSongsSnapshot(id: Long): List<Song>
+
     @Query("SELECT COUNT(1) FROM Song WHERE likedAt IS NOT NULL")
     fun likedSongsCount(): Flow<Int>
 

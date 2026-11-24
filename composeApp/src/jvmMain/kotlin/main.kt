@@ -55,6 +55,10 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberWindowState
 import kotlinx.coroutines.delay
 import it.fast4x.riplay.ui.components.RiPlayAccent
+import it.fast4x.riplay.server.DesktopRelaySettings
+import it.fast4x.riplay.server.RelayManager
+import it.fast4x.riplay.server.installDesktopRelayServer
+import it.fast4x.riplay.server.installDesktopMusicAssistantBridge
 import it.fast4x.riplay.utils.DesktopUpdateChecker
 
 
@@ -283,6 +287,24 @@ private fun bootstrapDesktopApp() {
     WindowsAppIdentity.setup()
 
     initializeEnvironment()
+
+    // Server di streaming locale (Relay, modulo condiviso relayserver):
+    // wiring desktop (sorgente file, token in ~/.riplay/relay.properties)
+    // e, se l'interruttore era attivo alla chiusura precedente, avvio
+    // immediato: la playlist M3U e' servibile prima ancora che la UI composta.
+    // NB: non tocca Environment, ma resta DOPO initializeEnvironment per
+    // mantenere l'ordine documentato del bootstrap (vedi doc sotto).
+    installDesktopRelayServer()
+    // Music Assistant (riplay-bridge): wiring desktop del bridge libreria.
+    // Il modulo Ktor /api/v1 viene montato NELLO STESSO application del
+    // relay quando l'interruttore della SettingsPage e' attivo (chiave
+    // 'ma.enabled' in ~/.riplay/relay.properties). Nessuna porta in piu':
+    // stessa porta e stesso token del relay. Va PRIMA di startIfEnabled:
+    // il provider del relay legge lo stato del bridge alla creazione del server.
+    installDesktopMusicAssistantBridge()
+    if (DesktopRelaySettings.enabled) {
+        RelayManager.startIfEnabled(true)
+    }
     println("[RiPlay-Env] endpoint host='${Environment._1Vv31MecRl}' accountMenu='${Environment._qkHMinedvm}' origin='${Environment._XsHo8IdebO}'")
     if (Environment._1Vv31MecRl.isBlank())
         println("[RiPlay-Env] ATTENZIONE: host vuoto -> controllare le chiavi env_* (es. CrQ0JjAXgv) in gradle.properties")

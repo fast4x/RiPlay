@@ -46,7 +46,7 @@ extensions.configure<ApplicationExtension> {
         targetSdk = 37
 
         versionCode = 114
-        versionName = "0.8.8-rc.1"
+        versionName = "0.8.8-rc.2"
 
 
         // INIT ENVIRONMENT
@@ -419,6 +419,11 @@ dependencies {
     implementation(projects.simpmusiclyrics)
     implementation(projects.spotifymeta)
     implementation(projects.zoundhub)
+    implementation(projects.relayserver)
+    // Music Assistant (riplay-bridge): API REST /api/v1 della libreria per il
+    // provider Python esterno, montata NELLO STESSO Ktor application del relay
+    // (stessa porta, stesso token). Wiring Android in server/BridgeIntegration.kt.
+    implementation(projects.riplayBridge)
 
     implementation(libs.navigation)
     implementation(libs.media3.session)
@@ -468,10 +473,10 @@ dependencies {
     implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.client.websockets)
 
-    // Server di streaming locale (Fase 2): relay per cast UPnP/DLNA di file
-    // locali + sorgente generica per player esterni (VLC, browser, altri RiPlay)
-    implementation(libs.ktor.server.cio)
-
+    // Server di streaming locale (Fase 2): RELAY SPOSTATO nel modulo condiviso
+    // modules/relayserver (usato anche dal desktop). La dipendenza Ktor server
+    // arriva transitivamente dal modulo (api(libs.ktor.server.cio)); qui resta
+    // solo il wiring Android (AndroidRelay.kt).
     implementation(libs.room.ktx)
     implementation(libs.room.runtime)
     implementation(libs.room.sqlite.bundled)

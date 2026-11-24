@@ -69,4 +69,11 @@ interface ArtistDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(artist: Artist)
 
+    // Music Assistant bridge (riplay-bridge): paginazione libreria per /api/v1.
+    @Query("SELECT * FROM Artist WHERE name IS NOT NULL ORDER BY name COLLATE NOCASE ASC LIMIT :limit OFFSET :offset")
+    suspend fun getAllArtistsPaged(limit: Int, offset: Int): List<Artist>
+
+    @Query("SELECT COUNT(*) FROM Artist WHERE name IS NOT NULL")
+    suspend fun countArtists(): Int
+
 }

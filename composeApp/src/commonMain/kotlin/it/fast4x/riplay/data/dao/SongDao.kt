@@ -126,6 +126,28 @@ interface SongDao {
     @Upsert
     suspend fun upsert(song: Song)
 
+    // Music Assistant bridge (riplay-bridge): paginazione libreria per /api/v1.
+    // Stessa semantica di getSongsByAlbum/countSongsByAlbum, con offset.
+    @Query("""
+    SELECT * FROM Song
+    WHERE isPodcast = 0
+    ORDER BY title COLLATE NOCASE ASC
+    LIMIT :limit OFFSET :offset
+""")
+    suspend fun getAllSongsPaged(limit: Int, offset: Int): List<Song>
+
+    @Query("SELECT COUNT(*) FROM Song WHERE isPodcast = 0")
+    suspend fun countSongs(): Int
+
+    @Query("""
+    SELECT * FROM Song
+    WHERE albumId = :albumId
+      AND isPodcast = 0
+    ORDER BY id ASC
+    LIMIT :limit OFFSET :offset
+""")
+    suspend fun getSongsByAlbumPaged(albumId: String, limit: Int, offset: Int): List<Song>
+
 }
 // Helper extension
 suspend fun SongDao.getSongsByDecade(decade: Int, limit: Int): List<Song> =
