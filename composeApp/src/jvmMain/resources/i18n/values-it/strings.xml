@@ -61,6 +61,18 @@
     <string name="settings.cefcache.now">Attualmente in uso: {size}</string>
     <string name="settings.cefcache.off">Mai</string>
     <string name="settings.cefcache.applied_next_start">La modifica si applica al prossimo avvio dell\'app.</string>
+    <!-- Server di streaming locale (Relay, modulo condiviso relayserver):
+         stesso server dell'app Android, nella tab Generale desktop. -->
+    <string name="settings.relay.title">Server di streaming RiPlay</string>
+    <string name="settings.relay.desc">Server di streaming locale: permette agli altri dispositivi della rete (VLC, browser, RiPlay su telefono) di riprodurre la coda corrente e i file locali di RiPlay. Protetto da token d\'accesso e raggiungibile solo in LAN; è lo stesso server dell\'app Android.</string>
+    <string name="settings.relay.active">Server di streaming attivo</string>
+    <string name="settings.relay.url">Indirizzo del server (click per copiare)</string>
+    <string name="settings.relay.playlist">Playlist della coda corrente (M3U, click per copiare)</string>
+    <string name="settings.relay.copied">Link copiato</string>
+    <string name="settings.relay.inactive">Server di streaming inattivo. La playlist della coda diventa disponibile appena parte la riproduzione.</string>
+    <string name="settings.relay.no_ip">Il server è in ascolto ma non è stato rilevato un indirizzo IP LAN: verifica la connessione di rete e riapri le impostazioni.</string>
+    <string name="settings.ma.title">Libreria Music Assistant</string>
+    <string name="settings.ma.desc">Espone la libreria di RiPlay (artisti, album, brani, playlist) a un server Music Assistant tramite l\'API /api/v1, servita dallo stesso server di streaming (stessa porta e stesso token). Richiede il server di streaming attivo; collega il provider esterno \'riplay\' da Music Assistant.</string>
     <string name="karaoke.no_synced">Testo sincronizzato non disponibile</string>
     <string name="karaoke.mode.line">Riga</string>
     <string name="karaoke.mode.word">Parola</string>
