@@ -61,6 +61,18 @@
     <string name="settings.cefcache.now">Taille actuellement utilisée : {size}</string>
     <string name="settings.cefcache.off">Jamais</string>
     <string name="settings.cefcache.applied_next_start">Les modifications prendront effet au prochain démarrage de l\'application.</string>
+    <!-- Server di streaming locale (Relay, modulo condiviso relayserver):
+         stesso server dell'app Android, nella tab Generale desktop. -->
+    <string name="settings.relay.title">RiPlay streaming server</string>
+    <string name="settings.relay.desc">Local streaming server: lets other devices on your network (VLC, browser, RiPlay on phone) play RiPlay\'s current queue and local files. Protected by an access token and reachable only on your LAN; it is the same server as the Android app.</string>
+    <string name="settings.relay.active">Streaming server active</string>
+    <string name="settings.relay.url">Server address (click to copy)</string>
+    <string name="settings.relay.playlist">Current queue playlist (M3U, click to copy)</string>
+    <string name="settings.relay.copied">Link copied</string>
+    <string name="settings.relay.inactive">Streaming server inactive. The queue playlist becomes available as soon as playback starts.</string>
+    <string name="settings.relay.no_ip">The server is listening but no LAN IP address was detected: check the network connection, then reopen the settings.</string>
+    <string name="settings.ma.title">Music Assistant library</string>
+    <string name="settings.ma.desc">Exposes RiPlay\'s library (artists, albums, tracks, playlists) to a Music Assistant server via the /api/v1 API, served by the same streaming server (same port and access token). Requires the streaming server to be enabled; connect the external \'riplay\' provider from Music Assistant.</string>
     <string name="karaoke.no_synced">Aucune parole synchronisée n\'est disponible</string>
     <string name="karaoke.mode.line">Ligne</string>
     <string name="karaoke.mode.word">Mot</string>
