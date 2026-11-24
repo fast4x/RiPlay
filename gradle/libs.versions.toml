@@ -93,6 +93,10 @@ ktor-client-content-negotiation = {group = "io.ktor", name = "ktor-client-conten
 ktor-client-encoding = {group = "io.ktor", name = "ktor-client-encoding", version.ref = "ktor"}
 ktor-client-serialization = {group = "io.ktor", name = "ktor-client-serialization", version.ref = "ktor"}
 ktor-server-cio = { group = "io.ktor", name = "ktor-server-cio", version.ref = "ktor" }
+# riplay-bridge (Music Assistant): auth Bearer, ContentNegotiation JSON e test host, stessa versione ktor
+ktor-server-auth = { group = "io.ktor", name = "ktor-server-auth", version.ref = "ktor" }
+ktor-server-content-negotiation = { group = "io.ktor", name = "ktor-server-content-negotiation", version.ref = "ktor" }
+ktor-server-test-host = { group = "io.ktor", name = "ktor-server-test-host", version.ref = "ktor" }
 ktor-serialization-json = {group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor"}
 ktor-serialization-kotlinx-xml = { group = "io.ktor", name = "ktor-serialization-kotlinx-xml", version.ref = "ktor" }
 ktor-serialization-kotlinx-protobuf = { group = "io.ktor", name = "ktor-serialization-kotlinx-protobuf", version.ref = "ktor" }

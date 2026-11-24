@@ -79,4 +79,11 @@ interface AlbumDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(album: Album)
 
+    // Music Assistant bridge (riplay-bridge): paginazione libreria per /api/v1.
+    @Query("SELECT * FROM Album WHERE title IS NOT NULL ORDER BY title COLLATE NOCASE ASC LIMIT :limit OFFSET :offset")
+    suspend fun getAllAlbumsPaged(limit: Int, offset: Int): List<Album>
+
+    @Query("SELECT COUNT(*) FROM Album WHERE title IS NOT NULL")
+    suspend fun countAlbums(): Int
+
 }

@@ -58,6 +58,7 @@ import it.fast4x.riplay.ui.components.RiPlayAccent
 import it.fast4x.riplay.server.DesktopRelaySettings
 import it.fast4x.riplay.server.RelayManager
 import it.fast4x.riplay.server.installDesktopRelayServer
+import it.fast4x.riplay.server.installDesktopMusicAssistantBridge
 import it.fast4x.riplay.utils.DesktopUpdateChecker
 
 
@@ -294,6 +295,13 @@ private fun bootstrapDesktopApp() {
     // NB: non tocca Environment, ma resta DOPO initializeEnvironment per
     // mantenere l'ordine documentato del bootstrap (vedi doc sotto).
     installDesktopRelayServer()
+    // Music Assistant (riplay-bridge): wiring desktop del bridge libreria.
+    // Il modulo Ktor /api/v1 viene montato NELLO STESSO application del
+    // relay quando l'interruttore della SettingsPage e' attivo (chiave
+    // 'ma.enabled' in ~/.riplay/relay.properties). Nessuna porta in piu':
+    // stessa porta e stesso token del relay. Va PRIMA di startIfEnabled:
+    // il provider del relay legge lo stato del bridge alla creazione del server.
+    installDesktopMusicAssistantBridge()
     if (DesktopRelaySettings.enabled) {
         RelayManager.startIfEnabled(true)
     }

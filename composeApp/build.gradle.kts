@@ -1068,6 +1068,11 @@ kotlin {
             // in LAN. Wiring desktop in server/DesktopRelay.kt.
             implementation(projects.relayserver)
 
+            // Music Assistant (riplay-bridge): API REST /api/v1 della libreria
+            // per il provider Python esterno, montata NELLO STESSO Ktor
+            // application del relay (stessa porta, stesso token). Wiring
+            // desktop in server/DesktopBridge.kt.
+            implementation(projects.riplayBridge)
             // v46 (jcefmaven): motore CEF = jcefmaven (me.friwi) mantenuto attivo
             // ( ultima release 152.0.6, Chromium 152 ) in sostituzione di KCEF
             // (dev.datlag:kcef, ultima release 2025.03.23, non piu' aggiornato).

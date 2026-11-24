@@ -72,6 +72,8 @@
     <string name="settings.relay.copied">Link copied</string>
     <string name="settings.relay.inactive">Streaming server inactive. The queue playlist becomes available as soon as playback starts.</string>
     <string name="settings.relay.no_ip">The server is listening but no LAN IP address was detected: check the network connection, then reopen the settings.</string>
+    <string name="settings.ma.title">Music Assistant library</string>
+    <string name="settings.ma.desc">Exposes RiPlay\'s library (artists, albums, tracks, playlists) to a Music Assistant server via the /api/v1 API, served by the same streaming server (same port and access token). Requires the streaming server to be enabled; connect the external \'riplay\' provider from Music Assistant.</string>
     <string name="karaoke.no_synced">No synced lyrics available</string>
     <string name="karaoke.mode.line">Line</string>
     <string name="karaoke.mode.word">Word</string>

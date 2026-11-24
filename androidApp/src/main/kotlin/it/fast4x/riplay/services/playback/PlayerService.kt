@@ -1113,6 +1113,18 @@ class PlayerService : MediaLibraryService(),
                     GlobalSharedData.relayServerUrl.value = RelayManager.baseUrl.value
                 }
 
+                // Music Assistant bridge (riplay-bridge): il modulo si monta solo
+                // all'avvio del server, quindi un cambio di setting richiede il
+                // riavvio (stop + startIfEnabled) per rimontare/smontare il modulo
+                // nella stessa applicazione Ktor del relay.
+                if (settings.maBridgeEnabled != maBridgeObserved) {
+                    maBridgeObserved = settings.maBridgeEnabled
+                    RelayManager.stop()
+                    RelayManager.startIfEnabled(settings.streamRelayEnabled)
+                    GlobalSharedData.relayServerRunning.value = RelayManager.running.value
+                    GlobalSharedData.relayServerUrl.value = RelayManager.baseUrl.value
+                }
+
                 if (songsChanged) {
                     notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.SONGS)
                     notifyAutoChildrenChanged(MediaLibraryServiceCallback.MediaId.SONGS_ALL)
@@ -1948,6 +1960,7 @@ class PlayerService : MediaLibraryService(),
         )
         RelayManager.startIfEnabled(appSettings.streamRelayEnabled)
         relayEnabledObserved = appSettings.streamRelayEnabled
+        maBridgeObserved = appSettings.maBridgeEnabled
         GlobalSharedData.relayServerRunning.value = RelayManager.running.value
         GlobalSharedData.relayServerUrl.value = RelayManager.baseUrl.value
         Timber.tag("Relay").i(
@@ -1963,6 +1976,8 @@ class PlayerService : MediaLibraryService(),
 
     /** Ultimo valore di streamRelayEnabled visto dall'osservatore dei settings. */
     private var relayEnabledObserved: Boolean = false
+    /** Ultimo valore di maBridgeEnabled visto dall'osservatore dei settings. */
+    private var maBridgeObserved: Boolean = false
 
     /** Sincronizza la coda corrente nel registro del relay (playlist M3U per i player esterni). */
     private suspend fun syncQueueToRelay() {

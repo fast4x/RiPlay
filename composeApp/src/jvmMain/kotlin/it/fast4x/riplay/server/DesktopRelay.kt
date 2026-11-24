@@ -33,12 +33,18 @@ import java.io.RandomAccessFile
  * servite dal relay; i brani WebDAV (id "webdav:<url>") passano per l'URL
  * diretto; i videoId YouTube restano in whitelist ma esclusi dalla M3U
  * (comportamento identico al Fase 2 Android).
+ *
+ * Music Assistant: il bridge libreria (modulo riplay-bridge, API /api/v1 per
+ * il provider Python esterno) viene montato nella STESSA applicazione Ktor
+ * tramite extraModules quando abilitato (DesktopBridge.kt, stesso package).
  */
 
 /**
  * Installa il wiring desktop nel modulo condiviso. Chiamare UNA SOLA VOLTA,
  * in bootstrapDesktopApp (main.kt), PRIMA di [RelayManager.startIfEnabled].
  * Idempotente: chiamate successive sovrascrivono il provider senza effetti.
+ * Chiamare prima installDesktopMusicAssistantBridge() (DesktopBridge.kt): il
+ * provider legge lo stato del bridge al momento della CREAZIONE del server.
  */
 fun installDesktopRelayServer() {
     RelayManager.install(RelayServerProvider {
@@ -46,6 +52,10 @@ fun installDesktopRelayServer() {
             registry = RelayManager.registry,
             source = DesktopRelayStreamSource,
             tokenStore = DesktopRelayTokenStore,
+            // Music Assistant bridge (riplay-bridge): montato nella STESSA
+            // applicazione Ktor quando abilitato (DesktopBridge.kt, stesso package).
+            // null = applicazione identica a prima (solo relay).
+            extraModules = desktopMusicAssistantBridgeModule(),
         )
     })
     println("[RiPlay-Relay] wiring desktop del server di streaming installato")

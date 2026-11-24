@@ -420,6 +420,10 @@ dependencies {
     implementation(projects.spotifymeta)
     implementation(projects.zoundhub)
     implementation(projects.relayserver)
+    // Music Assistant (riplay-bridge): API REST /api/v1 della libreria per il
+    // provider Python esterno, montata NELLO STESSO Ktor application del relay
+    // (stessa porta, stesso token). Wiring Android in server/BridgeIntegration.kt.
+    implementation(projects.riplayBridge)
 
     implementation(libs.navigation)
     implementation(libs.media3.session)

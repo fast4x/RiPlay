@@ -1389,6 +1389,8 @@
     <string name="upnp_cast_unsupported_content">This track has no direct stream URL: casting to UPnP devices will be enabled by the RiPlay stream server (coming soon).</string>
     <string name="upnp_relay_server">RiPlay streaming server</string>
     <string name="upnp_relay_server_info">Local streaming server: lets UPnP/DLNA devices play local files (Music Vault, device library) and lets external apps (VLC, browser, other RiPlay instances) play RiPlay\'s queue. Protected by an access token, reachable only on your Wi-Fi network.</string>
+    <string name="ma_bridge_server">Music Assistant library bridge</string>
+    <string name="ma_bridge_server_info">Exposes RiPlay\'s library (artists, albums, tracks, playlists) to a Music Assistant server via the /api/v1 REST API, served by the same streaming server (same port and access token, no extra ports). Requires the streaming server to be enabled. Connect the external \'riplay\' provider from Music Assistant.</string>
     <string name="upnp_relay_server_active">Streaming server active</string>
     <string name="upnp_relay_server_url">Server address (tap to copy)</string>
     <string name="upnp_relay_server_playlist">Current queue playlist (M3U, tap to copy)</string>

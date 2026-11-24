@@ -235,7 +235,7 @@ fun SettingsEntry(
                     BasicText(
                         text = titleSecondary,
                         style = typography().xxs.secondary.copy(color = colorPalette().textSecondary),
-                        maxLines = 3,
+                        maxLines = 10,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }

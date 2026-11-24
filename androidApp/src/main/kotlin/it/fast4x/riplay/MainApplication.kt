@@ -37,6 +37,7 @@ import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.musicbrainz.workers.WorkScheduler
 import it.fast4x.riplay.extensions.musicbrainz.workers.WorkerDependencies
 import it.fast4x.riplay.musicvault.initializeMusicVault
+import it.fast4x.riplay.server.installAndroidMusicAssistantBridge
 import it.fast4x.riplay.server.installAndroidRelayServer
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.utils.InitializeEnvironment
@@ -152,6 +153,17 @@ class MainApplication : Application(), ImageLoaderFactory {
         // PlayerService o delle impostazioni Cast. L'avvio vero resta governato
         // dal setting streamRelayEnabled (PlayerService.startObservingSettings).
         installAndroidRelayServer(this)
+
+        // Music Assistant (riplay-bridge): wiring Android del bridge libreria.
+        // Il modulo Ktor /api/v1 viene montato NELLO STESSO application del
+        // relay quando il setting maBridgeEnabled e' attivo (il toggle lo mostra
+        // GeneralSettings sotto "RiPlay streaming server"). Nessuna porta in
+        // piu': stessa porta e stesso token del relay. La parte Python sta nel
+        // repo esterno riplay-music-assistant (provider Music Assistant).
+        installAndroidMusicAssistantBridge(
+            context = this,
+            enabled = appSettingsManager.activeSettings.value.maBridgeEnabled,
+        )
 
         /***** APP UPDATE *****/
         // 1) Registra il provider della versione installata per la funzione

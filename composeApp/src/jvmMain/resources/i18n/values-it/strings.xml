@@ -72,6 +72,8 @@
     <string name="settings.relay.copied">Link copiato</string>
     <string name="settings.relay.inactive">Server di streaming inattivo. La playlist della coda diventa disponibile appena parte la riproduzione.</string>
     <string name="settings.relay.no_ip">Il server è in ascolto ma non è stato rilevato un indirizzo IP LAN: verifica la connessione di rete e riapri le impostazioni.</string>
+    <string name="settings.ma.title">Libreria Music Assistant</string>
+    <string name="settings.ma.desc">Espone la libreria di RiPlay (artisti, album, brani, playlist) a un server Music Assistant tramite l\'API /api/v1, servita dallo stesso server di streaming (stessa porta e stesso token). Richiede il server di streaming attivo; collega il provider esterno \'riplay\' da Music Assistant.</string>
     <string name="karaoke.no_synced">Testo sincronizzato non disponibile</string>
     <string name="karaoke.mode.line">Riga</string>
     <string name="karaoke.mode.word">Parola</string>

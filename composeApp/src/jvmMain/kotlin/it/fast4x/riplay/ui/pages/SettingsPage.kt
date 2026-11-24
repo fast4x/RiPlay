@@ -61,6 +61,7 @@ import it.fast4x.zoundhub.ZoundHubCatalogState
 import it.fast4x.riplay.items.formatZoundHubDateDesktop
 import it.fast4x.riplay.extensions.zoundhub.DesktopZoundHub
 import it.fast4x.riplay.utils.DesktopCloseToTray
+import it.fast4x.riplay.server.DesktopMusicAssistantBridge
 import it.fast4x.riplay.server.DesktopRelaySettings
 import it.fast4x.riplay.server.RelayManager
 import it.fast4x.riplay.utils.DesktopKaraokeOverlay
@@ -493,6 +494,42 @@ private fun RelayServerCard() {
                         color = Color.White.copy(alpha = 0.5f),
                         fontSize = 11.sp,
                         lineHeight = 16.sp
+                    )
+                }
+
+                // Music Assistant (riplay-bridge): espone la libreria via API /api/v1
+                // NELLO STESSO server di streaming (stessa porta e stesso token, nessuna
+                // porta in piu'). Richiede il server attivo: per questo l'interruttore
+                // vive DENTRO la card del relay. Il riavvio per montare/smontare il
+                // modulo e' gestito da DesktopMusicAssistantBridge.setMaBridgeEnabled.
+                Spacer(Modifier.height(12.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = ds("settings.ma.title"),
+                            color = if (DesktopMusicAssistantBridge.enabled) RiPlayAccent else Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = ds("settings.ma.desc"),
+                            color = Color.White.copy(alpha = 0.55f),
+                            fontSize = 12.sp,
+                            lineHeight = 17.sp
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Switch(
+                        checked = DesktopMusicAssistantBridge.enabled,
+                        onCheckedChange = { DesktopMusicAssistantBridge.setMaBridgeEnabled(it) },
+                        colors = SwitchDefaults.colors(
+                            checkedTrackColor = RiPlayAccent,
+                            checkedThumbColor = Color(0xFF0B0B10),
+                            uncheckedTrackColor = Color.White.copy(alpha = 0.12f),
+                            uncheckedThumbColor = Color.White.copy(alpha = 0.75f),
+                            uncheckedBorderColor = Color.White.copy(alpha = 0.18f)
+                        )
                     )
                 }
             }

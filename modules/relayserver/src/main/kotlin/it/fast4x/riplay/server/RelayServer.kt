@@ -1,5 +1,6 @@
 package it.fast4x.riplay.server
 
+import io.ktor.server.application.Application
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
 import java.io.File
@@ -31,12 +32,21 @@ import java.security.SecureRandom
  *   percorsi file desktop, buffer nei test)
  * - [RelayTokenStore]: dove persiste il token di accesso (SharedPreferences su
  *   Android, ~/.riplay/relay.properties su desktop)
+ *
+ * Moduli aggiuntivi sulla STESSA applicazione Ktor (stessa porta, stesso token):
+ * - [extraModules]: funzioni opzionali che installano ulteriori routing/plugins
+ *   nell'applicazione del relay, invocate DOPO relayEndpoints con il token
+ *   corrente. Oggi ospita il bridge Music Assistant (modulo riplay-bridge,
+ *   API /api/v1 della libreria per il provider Python esterno): il bridge non
+ *   apre porte nuove e non eroga byte, pubblica solo URL verso /relay/<token>/s/<id>.
+ *   null/assente = applicazione identica a prima (solo relay).
  */
 class RelayServer(
     private val registry: RelayRegistry,
     source: RelayStreamSource? = null,
     private val tokenStore: RelayTokenStore? = null,
     private val preferredPort: Int = DEFAULT_PORT,
+    private val extraModules: (Application.(token: String) -> Unit)? = null,
 ) {
 
     /** Sorgente dei byte: iniettabile nei test, obbligatoria in produzione. */
@@ -78,6 +88,10 @@ class RelayServer(
                 RelayLog.i(TAG, "start: tentativo bind 0.0.0.0:%d (%d/%d)", port, attempt + 1, PORT_ATTEMPTS)
                 val server = embeddedServer(CIO, host = "0.0.0.0", port = port) {
                     relayEndpoints(token = token, registry = registry, source = effectiveSource)
+                    // Moduli aggiuntivi nella STESSA applicazione Ktor (stessa porta,
+                    // stesso token): oggi il bridge Music Assistant (riplay-bridge).
+                    // Vedi BridgeIntegration.kt (androidApp) e DesktopBridge.kt (desktop).
+                    extraModules?.invoke(this, token)
                 }
                 server.start(wait = false)
                 embedded = server

@@ -32,3 +32,4 @@ androidApp/APK keystore/
 /androidApp/full/
 /androidApp/foss/
 /gradle/gradle-daemon-jvm.properties
+/modules/riplay-bridge/README-INTEGRAZIONE.md

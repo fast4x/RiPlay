@@ -1703,6 +1703,30 @@ fun GeneralSettings(
                                         )
                                     }
 
+                                    // Music Assistant (riplay-bridge): espone la libreria via
+                                    // API REST /api/v1 NELLO STESSO server di streaming. Il
+                                    // modulo si monta all'avvio del server: un cambio di
+                                    // setting richiede il riavvio (stop + startIfEnabled con
+                                    // la nuova configurazione del provider in AndroidRelay).
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    SwitchSettingEntry(
+                                        title = stringResource(R.string.ma_bridge_server),
+                                        text = stringResource(R.string.ma_bridge_server_info),
+                                        isChecked = appSettings.maBridgeEnabled,
+                                        onCheckedChange = {
+                                            coroutineScope.launch {
+                                                // Riavvio del server per rimontare/smontare il modulo bridge
+                                                RelayManager.stop()
+                                                RelayManager.startIfEnabled(appSettings.streamRelayEnabled)
+
+                                                appSettingsManager.updateSettings(
+                                                    appSettingsManager.activeSettings.value.copy(maBridgeEnabled = it)
+                                                )
+                                            }
+                                        },
+                                        icon = R.drawable.server,
+                                    )
+
                                 }
                             }
 

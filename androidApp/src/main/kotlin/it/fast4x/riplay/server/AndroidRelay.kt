@@ -60,6 +60,10 @@ fun installAndroidRelayServer(context: Context) {
             registry = RelayManager.registry,
             source = AndroidRelayStreamSource(appContext),
             tokenStore = AndroidRelayTokenStore(appContext),
+            // Music Assistant bridge (modulo riplay-bridge): montato nella STESSA
+            // applicazione Ktor quando abilitato (BridgeIntegration.kt, stesso
+            // package). null = applicazione identica a prima (solo relay).
+            extraModules = androidMusicAssistantBridgeModule(),
         )
     })
     Timber.tag("RelayManager").i("wiring Android del server di streaming installato")
