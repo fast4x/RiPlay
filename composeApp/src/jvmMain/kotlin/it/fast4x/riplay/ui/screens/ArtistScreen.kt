@@ -1,5 +1,6 @@
 package it.fast4x.riplay.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
 import it.fast4x.riplay.i18n.ds
 
 import androidx.compose.foundation.Image
@@ -82,6 +83,8 @@ import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.NewReleases
 import androidx.compose.material.icons.filled.Shuffle
+import it.fast4x.riplay.items.AiArtistBadgeDesktop
+import it.fast4x.riplay.items.rememberZoundHubMatchDesktop
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import riplay.composeapp.generated.resources.Res
@@ -388,6 +391,12 @@ fun ArtistScreen(
     // ZoundHub: dialog di risoluzione Spotify ID (suggestion artista)
     var showSpotifyResolverDialog by remember { mutableStateOf(false) }
 
+    // ZoundHub: match AI per questo artista (catalogo locale,
+    // badge visibile anche nelle righe di liste e player)
+    val zoundHubMatch = rememberZoundHubMatchDesktop(
+        artist?.name
+    )
+
     val translator = Translator()
     val languageDestination = languageDestination()
 
@@ -465,6 +474,13 @@ fun ArtistScreen(
                     }
                 }
 
+                // ZoundHub: dettagli del segnale AI dell'artista
+                AnimatedVisibility(zoundHubMatch != null) {
+                    zoundHubMatch?.let {
+                        AiArtistBadgeDesktop(artistText = artist?.name)
+                    }
+                }
+
                 // RIGA DI AZIONI: SEGUI (bookmark) + shuffle brani
                 Row(
                     horizontalArrangement = Arrangement.SpaceAround,
@@ -514,6 +530,7 @@ fun ArtistScreen(
                         }
                     )
 
+
                     // ZoundHub: "Suggerisci artista" — apre il form GitHub issue
                     // pre-compilato del repo xoundbyte/zoundhub per proporre
                     // l'artista al catalogo. L'URL Spotify arriva dal resolver
@@ -524,7 +541,7 @@ fun ArtistScreen(
                     HeaderActionIcon(
                         icon = Icons.Filled.NewReleases,
                         contentDescription = ds("zoundhub.suggest.artist"),
-                        enabled = artistUi.value != null,
+                        enabled = artistUi.value != null && zoundHubMatch == null,
                         onClick = {
                             if (currentArtist?.spotifyId != null) {
                                 runCatching {

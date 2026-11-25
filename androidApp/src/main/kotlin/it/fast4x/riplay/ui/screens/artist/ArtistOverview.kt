@@ -836,7 +836,7 @@ fun ArtistOverview(
                             // ZoundHub); se assente parte il dialog di risoluzione
                             // (Wikidata automatica + ricerca manuale nel browser con
                             // incolla-URL), e l'ID confermato viene salvato nel db.
-                            AnimatedVisibility(visible = readMore) {
+                            AnimatedVisibility(visible = readMore && zoundHubMatch == null) {
                                 Row(
                                     horizontalArrangement = Arrangement.Center,
                                     modifier = Modifier
