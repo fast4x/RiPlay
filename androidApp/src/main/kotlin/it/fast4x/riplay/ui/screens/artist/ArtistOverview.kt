@@ -96,6 +96,7 @@ import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.enums.QrType
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.extensions.qrcodeanalyzer.GenerateQrButton
+import it.fast4x.riplay.extensions.zoundhub.ZoundHubSpotifyResolverDialog
 import it.fast4x.riplay.extensions.zoundhub.openZoundHubArtistSuggestion
 import it.fast4x.riplay.extensions.musicbrainz.MBMetadataHelper
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
@@ -221,6 +222,9 @@ fun ArtistOverview(
 
     var showFastShare by remember { mutableStateOf(false) }
 
+    // ZoundHub: dialog di risoluzione Spotify ID (suggestion artista)
+    var showSpotifyResolverDialog by remember { mutableStateOf(false) }
+
     val coroutineScope = rememberCoroutineScope()
 
     // ── TV: focus iniziale sull'azione principale (Play) ─────────
@@ -239,6 +243,33 @@ fun ArtistOverview(
     }
 
     LoaderScreen(show = artistPage == null)
+
+    // ZoundHub: risoluzione dell'Spotify ID mancante prima della
+    // suggestion (Wikidata automatica o ricerca manuale Spotify).
+    // FUORI dalla LazyColumn: i Dialog vanno in scope composable puro.
+    if (showSpotifyResolverDialog) {
+        ZoundHubSpotifyResolverDialog(
+            artistName = artist?.name ?: artistPage?.artist?.info?.name.orEmpty(),
+            onDismiss = { showSpotifyResolverDialog = false },
+            onResolved = { spotifyId, _ ->
+                // persiste la scelta utente: la prossima apertura
+                // della pagina apre la suggestion in direct mode
+                coroutineScope.launch(Dispatchers.IO) {
+                    artist?.let { Database.update(it.copy(spotifyId = spotifyId)) }
+                }
+                SmartMessage(
+                    context.resources.getString(R.string.zoundhub_resolver_saved),
+                    context = context
+                )
+                openZoundHubArtistSuggestion(
+                    context,
+                    artist,
+                    artistPage?.artist?.info?.name,
+                    spotifyIdOverride = spotifyId
+                )
+            }
+        )
+    }
 
     LaunchedEffect(browseId) {
         if (artistPage == null) {
@@ -465,8 +496,7 @@ fun ArtistOverview(
                         )
 
                         GenerateQrButton(
-                            Modifier
-                                .align(Alignment.TopCenter)
+                            Modifier.align(Alignment.TopCenter)
                                 .padding(top = 5.dp),
                             QrType.artist, browseId
                         )
@@ -803,10 +833,10 @@ fun ArtistOverview(
                             // issue pre-compilato del repo xoundbyte/zoundhub per
                             // proporre l'artista al catalogo. L'URL Spotify arriva
                             // dal resolver MusicBrainz quando disponibile (Ponte
-                            // ZoundHub), altrimenti il campo resta vuoto da riempire;
-                            // i link noti (YT Music, MusicBrainz, Wikipedia) sono
-                            // gia' allegati nelle note.
-                            AnimatedVisibility(visible = readMore && zoundHubMatch == null) {
+                            // ZoundHub); se assente parte il dialog di risoluzione
+                            // (Wikidata automatica + ricerca manuale nel browser con
+                            // incolla-URL), e l'ID confermato viene salvato nel db.
+                            AnimatedVisibility(visible = readMore) {
                                 Row(
                                     horizontalArrangement = Arrangement.Center,
                                     modifier = Modifier
@@ -816,22 +846,8 @@ fun ArtistOverview(
                                     SecondaryTextButton(
                                         text = stringResource(R.string.zoundhub_suggest_artist),
                                         onClick = {
-                                            // Punto di ottimizzazione, ricerca spotify id se non presente e prima di aprire il form di segnalazione
-//                                            coroutineScope.launch {
-//                                                var artistChecked = artist
-//                                                if(artistChecked?.spotifyId == null || artistChecked.spotifyId?.isEmpty() == true) {
-//                                                    val result =
-//                                                        MbArtistLinkResolver().spotifyUrlFromChannelId(
-//                                                            browseId
-//                                                        )
-//                                                    Timber.d("ArtistOverview MbArtistLinkResolver: $result")
-//                                                    result?.let {
-//                                                        artistChecked =
-//                                                            artist?.copy(spotifyId = it.spotifyId)
-//
-//                                                    }
-//                                                }
-
+                                            val knownSpotifyId = artist?.spotifyId
+                                            if (knownSpotifyId != null) {
                                                 SmartMessage(
                                                     context.resources.getString(R.string.zoundhub_suggest_artist_opening),
                                                     context = context
@@ -841,7 +857,9 @@ fun ArtistOverview(
                                                     artist,
                                                     artistPage?.artist?.info?.name
                                                 )
-                                            //}
+                                            } else {
+                                                showSpotifyResolverDialog = true
+                                            }
                                         }
                                     )
                                 }
@@ -1049,9 +1067,9 @@ fun ArtistOverview(
                                                 modifier = Modifier
                                                     .tvFocusRing(focusedScale = 1f)
                                                     .clickable(onClick = {
-                                                        onNavigateTo()
-                                                        navController.navigate("${NavRoutes.album.name}/${item.key}")
-                                                    })
+                                                    onNavigateTo()
+                                                    navController.navigate("${NavRoutes.album.name}/${item.key}")
+                                                })
 
                                             )
                                         }
@@ -1078,9 +1096,9 @@ fun ArtistOverview(
                                                 modifier = Modifier
                                                     .tvFocusRing(focusedScale = 1f)
                                                     .clickable(onClick = {
-                                                        onNavigateTo()
-                                                        navController.navigate("${NavRoutes.artist.name}/${item.key}")
-                                                    })
+                                                    onNavigateTo()
+                                                    navController.navigate("${NavRoutes.artist.name}/${item.key}")
+                                                })
                                             )
                                         }
 
@@ -1108,9 +1126,9 @@ fun ArtistOverview(
                                                 modifier = Modifier
                                                     .tvFocusRing(focusedScale = 1f)
                                                     .clickable(onClick = {
-                                                        onNavigateTo()
-                                                        navController.navigate("${NavRoutes.playlist.name}/${item.key}")
-                                                    })
+                                                    onNavigateTo()
+                                                    navController.navigate("${NavRoutes.playlist.name}/${item.key}")
+                                                })
                                             )
                                         }
 

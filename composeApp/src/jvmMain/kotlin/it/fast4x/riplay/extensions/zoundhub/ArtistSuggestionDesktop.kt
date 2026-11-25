@@ -36,23 +36,28 @@ fun zoundHubArtistSuggestionNotesDesktop(
     artist?.shareYTMUrl?.let { add("YouTube Music: $it") }
     artist?.mbId?.let { add("MusicBrainz: https://musicbrainz.org/artist/$it") }
     artist?.wikipediaUrl?.takeIf { it.isNotBlank() }?.let { add("Wikipedia: $it") }
-    add("Reported from RiPlay (Desktop)")
+    add("Reported from RiPlay (Desktop): https://github.com/fast4x/RiPlay")
 }
 
 /**
  * URL Spotify noto per l'artista: prima lo spotifyId dal resolver
- * MusicBrainz, poi l'eventuale link spotify tra le url-rels MB.
+ * MusicBrainz (o confermato dall'utente nel dialog di risoluzione),
+ * poi l'eventuale link spotify tra le url-rels MB.
  */
-fun zoundHubArtistSpotifyUrlDesktop(artist: Artist?): String? =
-    artist?.spotifyId?.let { ZoundHubService.spotifyArtistUrl(it) }
+fun zoundHubArtistSpotifyUrlDesktop(artist: Artist?, spotifyIdOverride: String? = null): String? {
+    val effectiveId = spotifyIdOverride ?: artist?.spotifyId
+    return effectiveId?.let { ZoundHubService.spotifyArtistUrl(it) }
         ?: artist?.links?.firstOrNull { it.platform == "spotify" }?.url
+}
 
 /** URL completo del form GitHub issue pre-compilato per l'artista (desktop). */
 fun zoundHubArtistSuggestionUrlDesktop(
     artist: Artist?,
     fallbackArtistName: String?,
+    spotifyIdOverride: String? = null,
 ): String = ZoundHubService.newArtistIssueUrl(
-    spotifyArtistUrl = zoundHubArtistSpotifyUrlDesktop(artist),
+    title = "${ZoundHubService.DEFAULT_ISSUE_TITLE}: ${artist?.name ?: fallbackArtistName}",
+    spotifyArtistUrl = zoundHubArtistSpotifyUrlDesktop(artist, spotifyIdOverride),
     notes = zoundHubArtistSuggestionNotesDesktop(artist, fallbackArtistName)
 )
 

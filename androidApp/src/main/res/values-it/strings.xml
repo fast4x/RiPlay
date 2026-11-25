@@ -1761,4 +1761,16 @@
     <string name="zoundhub_section_title">Segnali AI (ZoundHub)</string>
     <string name="zoundhub_suggest_artist">Suggerisci artista a ZoundHub</string>
     <string name="zoundhub_suggest_artist_opening">Apertura del form di suggerimento su GitHub…</string>
+    <string name="zoundhub_resolver_title">Risolvi artista Spotify</string>
+    <string name="zoundhub_resolver_artist">Artista: %s</string>
+    <string name="zoundhub_resolver_auto_searching">Ricerca dell\u2019artista su Wikidata…</string>
+    <string name="zoundhub_resolver_found_wikidata">Trovato su Wikidata. Conferma per salvare l\u2019ID Spotify nella tua libreria e aprire il form di suggerimento.</string>
+    <string name="zoundhub_resolver_found_manual">Corrispondenza col link incollato. Conferma per salvare l\u2019ID Spotify nella tua libreria e aprire il form di suggerimento.</string>
+    <string name="zoundhub_resolver_not_found">Non trovato automaticamente. La ricerca Spotify è aperta nel browser: tocca l\u2019artista giusto, copia il suo URL e incollalo qui sotto.</string>
+    <string name="zoundhub_resolver_search_opened">La ricerca Spotify è stata aperta nel browser.</string>
+    <string name="zoundhub_resolver_paste_hint">https://open.spotify.com/artist/…</string>
+    <string name="zoundhub_resolver_invalid_url">Link non valido: incolla l\u2019URL di un artista Spotify (o un ID di 22 caratteri).</string>
+    <string name="zoundhub_resolver_confirm">Conferma e apri suggerimento</string>
+    <string name="zoundhub_resolver_confirm_paste">Usa questo link</string>
+    <string name="zoundhub_resolver_saved">ID Spotify salvato: verrà riutilizzato la prossima volta</string>
 </resources>

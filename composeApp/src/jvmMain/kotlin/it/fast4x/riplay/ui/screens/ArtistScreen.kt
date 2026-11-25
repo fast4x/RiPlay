@@ -52,6 +52,7 @@ import it.fast4x.environment.utils.completed
 import it.fast4x.riplay.items.AlbumItem
 import it.fast4x.riplay.items.PlaylistItem
 import it.fast4x.riplay.items.SongItem
+import it.fast4x.riplay.extensions.zoundhub.ZoundHubSpotifyResolverDialogDesktop
 import it.fast4x.riplay.extensions.zoundhub.openZoundHubArtistSuggestionDesktop
 import it.fast4x.riplay.extensions.zoundhub.zoundHubArtistSuggestionUrlDesktop
 import it.fast4x.riplay.styling.Dimensions.albumThumbnailSize
@@ -384,6 +385,9 @@ fun ArtistScreen(
         mutableStateOf(false)
     }
 
+    // ZoundHub: dialog di risoluzione Spotify ID (suggestion artista)
+    var showSpotifyResolverDialog by remember { mutableStateOf(false) }
+
     val translator = Translator()
     val languageDestination = languageDestination()
 
@@ -513,21 +517,26 @@ fun ArtistScreen(
                     // ZoundHub: "Suggerisci artista" — apre il form GitHub issue
                     // pre-compilato del repo xoundbyte/zoundhub per proporre
                     // l'artista al catalogo. L'URL Spotify arriva dal resolver
-                    // MusicBrainz quando gia' in db (Ponte ZoundHub), altrimenti
-                    // il campo resta vuoto da riempire; i link noti (YT Music,
-                    // MusicBrainz, Wikipedia) sono gia' allegati nelle note.
+                    // MusicBrainz quando gia' in db (Ponte ZoundHub); se assente
+                    // parte il dialog di risoluzione (Wikidata automatica +
+                    // ricerca manuale nel browser con incolla-URL), e l'ID
+                    // confermato viene salvato nel db.
                     HeaderActionIcon(
                         icon = Icons.Filled.NewReleases,
                         contentDescription = ds("zoundhub.suggest.artist"),
                         enabled = artistUi.value != null,
                         onClick = {
-                            runCatching {
-                                openZoundHubArtistSuggestionDesktop(
-                                    zoundHubArtistSuggestionUrlDesktop(
-                                        artist = currentArtist,
-                                        fallbackArtistName = artistUi.value?.name
+                            if (currentArtist?.spotifyId != null) {
+                                runCatching {
+                                    openZoundHubArtistSuggestionDesktop(
+                                        zoundHubArtistSuggestionUrlDesktop(
+                                            artist = currentArtist,
+                                            fallbackArtistName = artistUi.value?.name
+                                        )
                                     )
-                                )
+                                }
+                            } else {
+                                showSpotifyResolverDialog = true
                             }
                         }
                     )
@@ -863,5 +872,34 @@ fun ArtistScreen(
                 Spacer(modifier = Modifier.height(layoutColumnBottomSpacer))
             }
         }
+    }
+
+    // ZoundHub: risoluzione dell'Spotify ID mancante prima della suggestion
+    // (Wikidata automatica o ricerca manuale Spotify nel browser dell'utente).
+    // FUORI dal Box principale: i Dialog vanno in scope composable puro.
+    if (showSpotifyResolverDialog) {
+        ZoundHubSpotifyResolverDialogDesktop(
+            artistName = artistUi.value?.name ?: currentArtist?.name.orEmpty(),
+            onDismiss = { showSpotifyResolverDialog = false },
+            coroutineScope = coroutineScope,
+            onResolved = { spotifyId, _ ->
+                // persiste la scelta utente: la prossima apertura della
+                // pagina apre la suggestion in direct mode
+                coroutineScope.launch {
+                    currentArtist?.let {
+                        Database.update(it.copy(spotifyId = spotifyId))
+                    }
+                }
+                runCatching {
+                    openZoundHubArtistSuggestionDesktop(
+                        zoundHubArtistSuggestionUrlDesktop(
+                            artist = currentArtist,
+                            fallbackArtistName = artistUi.value?.name,
+                            spotifyIdOverride = spotifyId
+                        )
+                    )
+                }
+            }
+        )
     }
 }

@@ -367,6 +367,17 @@
     <string name="zoundhub.dialog.source">Fonte dati: zoundhub.com — directory della comunità, può contenere errori o cambiare nel tempo.</string>
     <string name="zoundhub.open.page">Apri pagina ZoundHub</string>
     <string name="zoundhub.suggest.artist">Suggerisci artista a ZoundHub</string>
+    <string name="zoundhub.resolver.title">Risolvi artista Spotify</string>
+    <string name="zoundhub.resolver.artist">Artista: {name}</string>
+    <string name="zoundhub.resolver.auto_searching">Ricerca dell\u2019artista su Wikidata…</string>
+    <string name="zoundhub.resolver.found.wikidata">Trovato su Wikidata. Conferma per salvare l\u2019ID Spotify nella tua libreria e aprire il form di suggerimento.</string>
+    <string name="zoundhub.resolver.found.manual">Corrispondenza col link incollato. Conferma per salvare l\u2019ID Spotify nella tua libreria e aprire il form di suggerimento.</string>
+    <string name="zoundhub.resolver.not_found">Non trovato automaticamente. La ricerca Spotify è aperta nel browser: scegli l\u2019artista giusto, copia il suo URL e incollalo qui sotto.</string>
+    <string name="zoundhub.resolver.search_opened">La ricerca Spotify è stata aperta nel browser.</string>
+    <string name="zoundhub.resolver.paste_hint">https://open.spotify.com/artist/…</string>
+    <string name="zoundhub.resolver.invalid_url">Link non valido: incolla l\u2019URL di un artista Spotify (o un ID di 22 caratteri).</string>
+    <string name="zoundhub.resolver.confirm">Conferma e apri suggerimento</string>
+    <string name="zoundhub.resolver.confirm_paste">Usa questo link</string>
     <string name="settings.zoundhub.title">Badge AI ZoundHub</string>
     <string name="settings.zoundhub.desc">Mostra un badge AI accanto ad artisti, album e brani segnalati da ZoundHub (zoundhub.com), directory gratuita e open source dei segnali AI nella musica. Il segnale è a livello di artista e viene propagato alle sue release.</string>
     <string name="settings.zoundhub.hide_ai">Nascondi contenuti generati con AI</string>

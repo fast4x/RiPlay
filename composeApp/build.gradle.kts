@@ -1027,6 +1027,7 @@ kotlin {
                 implementation(projects.audiotaginfo)
                 implementation(projects.lastfm)
                 implementation(projects.zoundhub)
+                implementation(projects.spotifymeta)
 
                 implementation(libs.room.runtime)
                 implementation(libs.room.sqlite.bundled)

@@ -30,7 +30,7 @@ import it.fast4x.zoundhub.ZoundHubService
 fun zoundHubArtistSuggestionNotes(
     artist: Artist?,
     fallbackArtistName: String?,
-    platformLabel: String = "RiPlay (Android)",
+    platformLabel: String = "RiPlay (Android): https://github.com/fast4x/RiPlay",
 ): List<String> = buildList {
     val name = artist?.name ?: fallbackArtistName
     if (!name.isNullOrBlank()) add("Artist name: $name")
@@ -42,29 +42,39 @@ fun zoundHubArtistSuggestionNotes(
 
 /**
  * URL Spotify noto per l'artista: prima lo spotifyId dal resolver
- * MusicBrainz, poi l'eventuale link spotify tra le url-rels MB.
+ * MusicBrainz (o confermato dall'utente nel dialog di risoluzione),
+ * poi l'eventuale link spotify tra le url-rels MB.
  */
-fun zoundHubArtistSpotifyUrl(artist: Artist?): String? =
-    artist?.spotifyId?.let { ZoundHubService.spotifyArtistUrl(it) }
+fun zoundHubArtistSpotifyUrl(artist: Artist?, spotifyIdOverride: String? = null): String? {
+    val effectiveId = spotifyIdOverride ?: artist?.spotifyId
+    return effectiveId?.let { ZoundHubService.spotifyArtistUrl(it) }
         ?: artist?.links?.firstOrNull { it.platform == "spotify" }?.url
+}
 
 /** URL completo del form GitHub issue pre-compilato per l'artista. */
 fun zoundHubArtistSuggestionUrl(
     artist: Artist?,
     fallbackArtistName: String?,
+    spotifyIdOverride: String? = null,
 ): String = ZoundHubService.newArtistIssueUrl(
-    spotifyArtistUrl = zoundHubArtistSpotifyUrl(artist),
+    title = "${ZoundHubService.DEFAULT_ISSUE_TITLE}: ${artist?.name ?: fallbackArtistName}",
+    spotifyArtistUrl = zoundHubArtistSpotifyUrl(artist, spotifyIdOverride),
     notes = zoundHubArtistSuggestionNotes(artist, fallbackArtistName)
 )
 
-/** Apre il form di suggestion nel browser (silenzioso se non c'e' browser). */
+/**
+ * Apre il form di suggestion nel browser (silenzioso se non c'e' browser).
+ * [spotifyIdOverride]: ID appena risolto col dialog (gia' salvato nel db
+ * dal chiamante) — evita la rilettura dell'entity prima dell'apertura.
+ */
 fun openZoundHubArtistSuggestion(
     context: Context,
     artist: Artist?,
     fallbackArtistName: String?,
+    spotifyIdOverride: String? = null,
 ) {
     try {
-        val url = zoundHubArtistSuggestionUrl(artist, fallbackArtistName)
+        val url = zoundHubArtistSuggestionUrl(artist, fallbackArtistName, spotifyIdOverride)
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivity(intent)
