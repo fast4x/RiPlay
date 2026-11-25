@@ -366,6 +366,7 @@
     <string name="zoundhub.dialog.propagated">L’artista è segnalato come generato da AI da ZoundHub: i badge su album e brani derivano dal segnale dell’artista, non dai singoli brani.</string>
     <string name="zoundhub.dialog.source">Fonte dati: zoundhub.com — directory della comunità, può contenere errori o cambiare nel tempo.</string>
     <string name="zoundhub.open.page">Apri pagina ZoundHub</string>
+    <string name="zoundhub.suggest.artist">Suggerisci artista a ZoundHub</string>
     <string name="settings.zoundhub.title">Badge AI ZoundHub</string>
     <string name="settings.zoundhub.desc">Mostra un badge AI accanto ad artisti, album e brani segnalati da ZoundHub (zoundhub.com), directory gratuita e open source dei segnali AI nella musica. Il segnale è a livello di artista e viene propagato alle sue release.</string>
     <string name="settings.zoundhub.hide_ai">Nascondi contenuti generati con AI</string>

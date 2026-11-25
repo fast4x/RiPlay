@@ -52,6 +52,8 @@ import it.fast4x.environment.utils.completed
 import it.fast4x.riplay.items.AlbumItem
 import it.fast4x.riplay.items.PlaylistItem
 import it.fast4x.riplay.items.SongItem
+import it.fast4x.riplay.extensions.zoundhub.openZoundHubArtistSuggestionDesktop
+import it.fast4x.riplay.extensions.zoundhub.zoundHubArtistSuggestionUrlDesktop
 import it.fast4x.riplay.styling.Dimensions.albumThumbnailSize
 import it.fast4x.riplay.styling.Dimensions.fadeSpacingBottom
 import it.fast4x.riplay.styling.Dimensions.fadeSpacingTop
@@ -77,6 +79,7 @@ import dev.rebelonion.translator.Translator
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.filled.NewReleases
 import androidx.compose.material.icons.filled.Shuffle
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -503,6 +506,28 @@ fun ArtistScreen(
                                     collection(shuffled, shuffled.first())
                                 else
                                     onSongClick(shuffled.first())
+                            }
+                        }
+                    )
+
+                    // ZoundHub: "Suggerisci artista" — apre il form GitHub issue
+                    // pre-compilato del repo xoundbyte/zoundhub per proporre
+                    // l'artista al catalogo. L'URL Spotify arriva dal resolver
+                    // MusicBrainz quando gia' in db (Ponte ZoundHub), altrimenti
+                    // il campo resta vuoto da riempire; i link noti (YT Music,
+                    // MusicBrainz, Wikipedia) sono gia' allegati nelle note.
+                    HeaderActionIcon(
+                        icon = Icons.Filled.NewReleases,
+                        contentDescription = ds("zoundhub.suggest.artist"),
+                        enabled = artistUi.value != null,
+                        onClick = {
+                            runCatching {
+                                openZoundHubArtistSuggestionDesktop(
+                                    zoundHubArtistSuggestionUrlDesktop(
+                                        artist = currentArtist,
+                                        fallbackArtistName = artistUi.value?.name
+                                    )
+                                )
                             }
                         }
                     )

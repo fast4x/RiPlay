@@ -117,8 +117,62 @@ class ZoundHubService(
         const val PATH_ARTIST_STATS = "/data/artist-stats.json"
         const val PATH_ARTIST_PAGES = "/data/artist-pages"
 
+        /** Repo GitHub che ospita il catalogo (dove si aprono le suggestion). */
+        const val GITHUB_ISSUE_REPO = "xoundbyte/zoundhub"
+
+        /** Base degli URL artista Spotify canonici. */
+        const val SPOTIFY_ARTIST_URL_BASE = "https://open.spotify.com/artist/"
+
+        /** Titolo standard delle suggestion artista (template issue del repo). */
+        const val DEFAULT_ISSUE_TITLE = "Artist suggestion"
+
         /** URL pubblico della scheda artista (usato dai link "apri pagina"). */
         fun artistPageUrl(slug: String): String = "$BASE_URL/artist/$slug"
+
+        /** URL Spotify canonico di un artista a partire dallo Spotify ID. */
+        fun spotifyArtistUrl(spotifyId: String): String = "$SPOTIFY_ARTIST_URL_BASE$spotifyId"
+
+        /**
+         * URL del form GitHub "nuova issue" di ZoundHub con titolo e corpo
+         * pre-compilati (artist suggestion).
+         *
+         * Il corpo replica il template del repo:
+         *   Spotify artist URL: <url — vuoto se sconosciuto, l'utente lo incolla>
+         *
+         *   Source links and notes:
+         *   - <nota 1>
+         *   - <nota 2>
+         *
+         * REGOLA DI ENCODING: solo i VALORI dei parametri vengono
+         * percent-encoded (mai l'URL base, '?' e '&'): un doppio encoding
+         * produrrebbe %253A al posto di %3A. URLEncoder usa l'encoding
+         * "form" (lo spazio diventa '+'), che GitHub accetta; si normalizza
+         * comunque in '%20' che e' piu' robusto su ogni client/browser.
+         * I ritorni a capo del corpo (\n) diventano automaticamente %0A.
+         *
+         * Ogni piattaforma (Android/desktop) passa le proprie note; se
+         * l'URL Spotify non e' risolvibile il campo resta vuoto come nel
+         * template originale, cosi' l'utente puo' incollarlo prima dell'invio.
+         */
+        fun newArtistIssueUrl(
+            title: String = DEFAULT_ISSUE_TITLE,
+            spotifyArtistUrl: String? = null,
+            notes: List<String> = emptyList(),
+            repo: String = GITHUB_ISSUE_REPO,
+        ): String {
+            val body = buildString {
+                appendLine("Spotify artist URL: ${spotifyArtistUrl.orEmpty()}")
+                appendLine()
+                appendLine("Source links and notes:")
+                notes.filter { it.isNotBlank() }.forEach { appendLine("- $it") }
+            }
+            return "https://github.com/$repo/issues/new" +
+                    "?title=${encodeUrlParam(title)}&body=${encodeUrlParam(body)}"
+        }
+
+        /** Percent-encoding di un valore per query string (spazio come %20). */
+        private fun encodeUrlParam(value: String): String =
+            java.net.URLEncoder.encode(value, Charsets.UTF_8).replace("+", "%20")
 
         /**
          * Bucket (0..63) di una scheda artista, replica esatta della

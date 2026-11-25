@@ -96,6 +96,7 @@ import it.fast4x.riplay.data.models.defaultQueue
 import it.fast4x.riplay.enums.QrType
 import it.fast4x.riplay.extensions.appviewmodel.rememberIsNetworkConnected
 import it.fast4x.riplay.extensions.qrcodeanalyzer.GenerateQrButton
+import it.fast4x.riplay.extensions.zoundhub.openZoundHubArtistSuggestion
 import it.fast4x.riplay.extensions.musicbrainz.MBMetadataHelper
 import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
 import it.fast4x.riplay.extensions.musicbrainz.repository.ArtistRepository
@@ -464,7 +465,8 @@ fun ArtistOverview(
                         )
 
                         GenerateQrButton(
-                            Modifier.align(Alignment.TopCenter)
+                            Modifier
+                                .align(Alignment.TopCenter)
                                 .padding(top = 5.dp),
                             QrType.artist, browseId
                         )
@@ -796,6 +798,54 @@ fun ArtistOverview(
                                     ZoundHubArtistSection(match = it)
                                 }
                             }
+
+                            // ZoundHub: "Suggerisci artista" — apre il form GitHub
+                            // issue pre-compilato del repo xoundbyte/zoundhub per
+                            // proporre l'artista al catalogo. L'URL Spotify arriva
+                            // dal resolver MusicBrainz quando disponibile (Ponte
+                            // ZoundHub), altrimenti il campo resta vuoto da riempire;
+                            // i link noti (YT Music, MusicBrainz, Wikipedia) sono
+                            // gia' allegati nelle note.
+                            AnimatedVisibility(visible = readMore && zoundHubMatch == null) {
+                                Row(
+                                    horizontalArrangement = Arrangement.Center,
+                                    modifier = Modifier
+                                        .padding(top = 8.dp)
+                                        .fillMaxWidth()
+                                ) {
+                                    SecondaryTextButton(
+                                        text = stringResource(R.string.zoundhub_suggest_artist),
+                                        onClick = {
+                                            // Punto di ottimizzazione, ricerca spotify id se non presente e prima di aprire il form di segnalazione
+//                                            coroutineScope.launch {
+//                                                var artistChecked = artist
+//                                                if(artistChecked?.spotifyId == null || artistChecked.spotifyId?.isEmpty() == true) {
+//                                                    val result =
+//                                                        MbArtistLinkResolver().spotifyUrlFromChannelId(
+//                                                            browseId
+//                                                        )
+//                                                    Timber.d("ArtistOverview MbArtistLinkResolver: $result")
+//                                                    result?.let {
+//                                                        artistChecked =
+//                                                            artist?.copy(spotifyId = it.spotifyId)
+//
+//                                                    }
+//                                                }
+
+                                                SmartMessage(
+                                                    context.resources.getString(R.string.zoundhub_suggest_artist_opening),
+                                                    context = context
+                                                )
+                                                openZoundHubArtistSuggestion(
+                                                    context,
+                                                    artist,
+                                                    artistPage?.artist?.info?.name
+                                                )
+                                            //}
+                                        }
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -999,9 +1049,9 @@ fun ArtistOverview(
                                                 modifier = Modifier
                                                     .tvFocusRing(focusedScale = 1f)
                                                     .clickable(onClick = {
-                                                    onNavigateTo()
-                                                    navController.navigate("${NavRoutes.album.name}/${item.key}")
-                                                })
+                                                        onNavigateTo()
+                                                        navController.navigate("${NavRoutes.album.name}/${item.key}")
+                                                    })
 
                                             )
                                         }
@@ -1028,9 +1078,9 @@ fun ArtistOverview(
                                                 modifier = Modifier
                                                     .tvFocusRing(focusedScale = 1f)
                                                     .clickable(onClick = {
-                                                    onNavigateTo()
-                                                    navController.navigate("${NavRoutes.artist.name}/${item.key}")
-                                                })
+                                                        onNavigateTo()
+                                                        navController.navigate("${NavRoutes.artist.name}/${item.key}")
+                                                    })
                                             )
                                         }
 
@@ -1058,9 +1108,9 @@ fun ArtistOverview(
                                                 modifier = Modifier
                                                     .tvFocusRing(focusedScale = 1f)
                                                     .clickable(onClick = {
-                                                    onNavigateTo()
-                                                    navController.navigate("${NavRoutes.playlist.name}/${item.key}")
-                                                })
+                                                        onNavigateTo()
+                                                        navController.navigate("${NavRoutes.playlist.name}/${item.key}")
+                                                    })
                                             )
                                         }
 

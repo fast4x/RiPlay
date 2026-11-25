@@ -1759,4 +1759,6 @@
     <string name="zoundhub_dialog_source">Fonte dati: zoundhub.com — directory della comunità, può contenere errori o cambiare nel tempo.</string>
     <string name="zoundhub_open_page">Apri pagina ZoundHub</string>
     <string name="zoundhub_section_title">Segnali AI (ZoundHub)</string>
+    <string name="zoundhub_suggest_artist">Suggerisci artista a ZoundHub</string>
+    <string name="zoundhub_suggest_artist_opening">Apertura del form di suggerimento su GitHub…</string>
 </resources>
