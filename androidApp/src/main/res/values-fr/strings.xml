@@ -1389,8 +1389,8 @@ Volume BAS : titre précédent</string>
     <string name="upnp_cast_unsupported_content">Ce morceau ne dispose pas d\'URL de diffusion directe : la diffusion vers des appareils UPnP sera prise en charge par le serveur de diffusion RiPlay (bientôt disponible).</string>
     <string name="upnp_relay_server">Serveur de streaming RiPlay</string>
     <string name="upnp_relay_server_info">Serveur de streaming local : permet aux appareils UPnP/DLNA de lire des fichiers locaux (Music Vault, bibliothèque de l\'appareil) et aux applications externes (VLC, navigateur, autres instances de RiPlay) de lire la file d\'attente de RiPlay. Protégé par un jeton d\'accès, accessible uniquement sur votre réseau Wi-Fi.</string>
-    <string name="ma_bridge_server">Music Assistant library bridge</string>
-    <string name="ma_bridge_server_info">Exposes RiPlay\'s library (artists, albums, tracks, playlists) to a Music Assistant server via the /api/v1 REST API, served by the same streaming server (same port and access token, no extra ports). Requires the streaming server to be enabled. Connect the external \'riplay\' provider from Music Assistant.</string>
+    <string name="ma_bridge_server">Pont de bibliothèque « Music Assistant »</string>
+    <string name="ma_bridge_server_info">Expose la bibliothèque de RiPlay (artistes, albums, titres, playlists) à un serveur Music Assistant via l\'API REST /api/v1, hébergée par le même serveur de streaming (même port et même jeton d\'accès, aucun port supplémentaire). Nécessite que le serveur de streaming soit activé. Connectez le fournisseur externe « riplay » depuis Music Assistant.</string>
     <string name="upnp_relay_server_active">Serveur de streaming actif</string>
     <string name="upnp_relay_server_url">Adresse du serveur (appuyer pour copier)</string>
     <string name="upnp_relay_server_playlist">Playlist actuelle de la file d\'attente (M3U, appuyez pour copier)</string>
