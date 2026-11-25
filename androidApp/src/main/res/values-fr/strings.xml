@@ -1760,10 +1760,10 @@ Volume BAS : titre précédent</string>
     <string name="zoundhub_dialog_source">Source des données : zoundhub.com — annuaire communautaire ; ces informations peuvent contenir des erreurs ou évoluer au fil du temps.</string>
     <string name="zoundhub_open_page">Ouvrir la page ZoundHub</string>
     <string name="zoundhub_section_title">Signaux IA (ZoundHub)</string>
-    <string name="zoundhub_suggest_artist">Suggest artist to ZoundHub</string>
-    <string name="zoundhub_suggest_artist_opening">Opening the suggestion form on GitHub…</string>
-    <string name="zoundhub_resolver_title">Resolve Spotify artist</string>
-    <string name="zoundhub_resolver_artist">Artist: %s</string>
+    <string name="zoundhub_suggest_artist">Proposer un artiste à ZoundHub</string>
+    <string name="zoundhub_suggest_artist_opening">Ouvrir le formulaire de suggestion sur GitHub…</string>
+    <string name="zoundhub_resolver_title">Identifier un artiste sur Spotify</string>
+    <string name="zoundhub_resolver_artist">Artiste : %s</string>
     <string name="zoundhub_resolver_auto_searching">Looking up the artist on Wikidata…</string>
     <string name="zoundhub_resolver_found_wikidata">Found on Wikidata. Confirm to save the Spotify ID in your library and open the suggestion form.</string>
     <string name="zoundhub_resolver_found_manual">Matched with the pasted link. Confirm to save the Spotify ID in your library and open the suggestion form.</string>
