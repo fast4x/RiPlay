@@ -87,7 +87,7 @@ RiPlay is a powerful, open-source music player designed for music lovers who wan
 - **Danish:** cultcats  
 - **Finnish:** Smk90, rikalaj  
 - **Czech:** ikanakova, JZITNIK-github  
-- **Hungarian:** Zan1456, Ndvok  
+- **Hungarian:** mihaly.gabor, Zan1456, Ndvok  
 - **Romanian:** OrangeZXZ  
 - **Greek:** Marinkas  
 - **Turkish:** LeonDayi, OpenSoftware-World, abfreeman, 2010furs, Muha Aliss  
