@@ -1,0 +1,4 @@
+* Display AI artist badge and hide ZoundHub suggestions when matched in desktop
+* Add Spotify artist ID resolver dialog for ZoundHub artist suggestions
+* Add ZoundHub artist suggestion feature for Android and Desktop
+* Updated translations
