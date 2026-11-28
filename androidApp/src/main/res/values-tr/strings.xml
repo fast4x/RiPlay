@@ -1747,4 +1747,21 @@
     <string name="zoundhub_dialog_source">Veri kaynağı: zoundhub.com — topluluk rehberi, hatalar içerebilir veya zamanla değişebilir.</string>
     <string name="zoundhub_open_page">ZoundHub sayfasını aç</string>
     <string name="zoundhub_section_title">Yapay zeka sinyalleri (ZoundHub)</string>
+    <string name="zoundhub_suggest_artist">ZoundHub’a sanatçı önerin</string>
+    <string name="zoundhub_suggest_artist_opening">GitHub’da öneri formunu açıyorum…</string>
+    <string name="zoundhub_resolver_title">Spotify sanatçısını belirle</string>
+    <string name="zoundhub_resolver_artist">Sanatçı: %s</string>
+    <string name="zoundhub_resolver_auto_searching">Wikidata\'da sanatçıyı arıyorum…</string>
+    <string name="zoundhub_resolver_found_wikidata">Wikidata\'da bulundu. Spotify kimliğini kütüphanenize kaydetmek ve öneri formunu açmak için onaylayın.</string>
+    <string name="zoundhub_resolver_found_manual">Yapıştırılan bağlantıyla eşleşti. Spotify kimliğini kütüphanenize kaydetmek ve öneri formunu açmak için onaylayın.</string>
+    <string name="zoundhub_resolver_not_found">Otomatik olarak bulunamadı. Spotify araması tarayıcınızda açıldı: Doğru sanatçıyı seçin, URL’sini kopyalayın ve aşağıya yapıştırın.</string>
+    <string name="zoundhub_resolver_search_opened">Tarayıcınızda Spotify araması açıldı.</string>
+    <string name="zoundhub_resolver_paste_hint">https://open.spotify.com/artist/…</string>
+    <string name="zoundhub_resolver_invalid_url">Geçersiz bağlantı: Bir Spotify sanatçısı URL’si (veya 22 karakterlik bir kimlik numarası) yapıştırın.</string>
+    <string name="zoundhub_resolver_confirm">Öneriyi onayla ve aç</string>
+    <string name="zoundhub_resolver_confirm_paste">Bu bağlantıyı kullanın</string>
+    <string name="zoundhub_resolver_saved">Spotify kimliği kaydedildi: Bir dahaki sefere tekrar kullanılacak</string>
+    <string name="settings_plugins_no_plugins_detected">No plugins detected</string>
+    <string name="settings_plugins_click_to_visit_the_github_plugins_page">Click to visit the GitHub plugins page</string>
+    <string name="settings_plugins_title">Plugins</string>
 </resources>

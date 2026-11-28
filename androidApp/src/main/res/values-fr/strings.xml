@@ -1748,4 +1748,21 @@ Volume BAS : titre précédent</string>
     <string name="zoundhub_dialog_source">Source des données : zoundhub.com — annuaire communautaire ; ces informations peuvent contenir des erreurs ou évoluer au fil du temps.</string>
     <string name="zoundhub_open_page">Ouvrir la page ZoundHub</string>
     <string name="zoundhub_section_title">Signaux IA (ZoundHub)</string>
+    <string name="zoundhub_suggest_artist">Proposer un artiste à ZoundHub</string>
+    <string name="zoundhub_suggest_artist_opening">Ouvrir le formulaire de suggestion sur GitHub…</string>
+    <string name="zoundhub_resolver_title">Identifier un artiste sur Spotify</string>
+    <string name="zoundhub_resolver_artist">Artiste : %s</string>
+    <string name="zoundhub_resolver_auto_searching">Recherche de l’artiste sur Wikidata…</string>
+    <string name="zoundhub_resolver_found_wikidata">Trouvé sur Wikidata. Confirmez pour enregistrer l\'identifiant Spotify dans votre bibliothèque et ouvrir le formulaire de suggestion.</string>
+    <string name="zoundhub_resolver_found_manual">Correspond au lien collé. Confirmez pour enregistrer l\'identifiant Spotify dans votre bibliothèque et ouvrir le formulaire de suggestion.</string>
+    <string name="zoundhub_resolver_not_found">Résultat introuvable automatiquement. La recherche Spotify s\'est ouverte dans votre navigateur : sélectionnez le bon artiste, copiez son URL et collez-la ci-dessous.</string>
+    <string name="zoundhub_resolver_search_opened">La recherche Spotify s\'est ouverte dans votre navigateur.</string>
+    <string name="zoundhub_resolver_paste_hint">https://open.spotify.com/artist/…</string>
+    <string name="zoundhub_resolver_invalid_url">Lien non valide : collez l\'URL d\'un artiste Spotify (ou un identifiant de 22 caractères).</string>
+    <string name="zoundhub_resolver_confirm">Valider et ouvrir la suggestion</string>
+    <string name="zoundhub_resolver_confirm_paste">Cliquez sur ce lien</string>
+    <string name="zoundhub_resolver_saved">Identifiant Spotify enregistré : il sera réutilisé la prochaine fois</string>
+    <string name="settings_plugins_no_plugins_detected">No plugins detected</string>
+    <string name="settings_plugins_click_to_visit_the_github_plugins_page">Click to visit the GitHub plugins page</string>
+    <string name="settings_plugins_title">Plugins</string>
 </resources>
