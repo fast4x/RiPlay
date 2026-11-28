@@ -50,7 +50,7 @@
     <string name="sleeptimer.cancel">Annuler la minuterie</string>
     <string name="miniplayer.restore">Retour à la fenêtre principale</string>
     <string name="settings.tab.general">Généralités</string>
-    <string name="settings.miniplayer.title">Mode minimal (Picture-in-Picture)</string>
+    <string name="settings.miniplayer.title">Mode minimal (fenêtre flottante)</string>
     <string name="settings.miniplayer.desc">Lorsque cette option est activée, la réduction de la fenêtre principale fait apparaître un petit lecteur qui reste toujours au premier plan, affichant la pochette du morceau, les boutons lecture/pause, suivant/précédent ainsi qu\'une barre de temps permettant de se déplacer. Un clic sur la pochette fait réapparaître la fenêtre principale.</string>
     <string name="settings.closetotray.title">Icône dans la barre d\'état système à la fermeture</string>
     <string name="settings.closetotray.desc">Lorsque cette option est activée, fermer la fenêtre à l\'aide du « X » (ou de la combinaison Alt+F4) ne ferme pas RiPlay : l\'application reste dans la zone de notification et continue la lecture ; double-cliquez sur l\'icône pour rouvrir la fenêtre, puis utilisez l\'option « Quitter RiPlay » dans son menu pour quitter définitivement l\'application. Lorsque cette option est désactivée (par défaut), le « X » ferme l\'application.</string>
