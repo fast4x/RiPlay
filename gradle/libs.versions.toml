@@ -51,7 +51,6 @@ jsoup = "1.23.2"
 newpipeExt = "v0.26.0"
 recyclerview = "1.4.0"
 jaudiotagger = "3.0.1"
-chaquopy = "17.0.0"
 camerax = "1.6.2"
 zxing = "3.5.4"
 splashscreen = "1.2.0"
@@ -170,7 +169,6 @@ jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-plugin
 kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "kotlin-ksp" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin"}
 room = { id = "androidx.room", version.ref = "room" }
-chaquopy = { id ="com.chaquo.python", version.ref = "chaquopy"}
 
 
 

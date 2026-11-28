@@ -1,6 +1,5 @@
 package it.fast4x.riplay.utils
 
-import it.fast4x.riplay.data.update
 import it.fast4x.riplay.data.insert
 import android.content.ContentUris
 import android.net.Uri
@@ -20,7 +19,7 @@ import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.data.models.SongEntity
 import it.fast4x.riplay.musicvault.MusicVaultRepository
-import it.fast4x.riplay.musicvault.MusicVaultState
+import it.fast4x.riplay.enums.MusicVaultState
 import it.fast4x.riplay.services.playback.common.MediaInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

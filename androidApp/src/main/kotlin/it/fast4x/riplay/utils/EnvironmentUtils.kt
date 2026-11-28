@@ -1,6 +1,5 @@
 package it.fast4x.riplay.utils
 
-import it.fast4x.riplay.data.update
 import it.fast4x.riplay.data.insert
 import android.content.ContentUris
 import android.content.Context
@@ -42,7 +41,7 @@ import it.fast4x.riplay.data.models.SongArtistMap
 import it.fast4x.riplay.data.models.SongPlaylistMap
 import it.fast4x.riplay.enums.PopupType
 import it.fast4x.riplay.musicvault.MusicVaultRepository
-import it.fast4x.riplay.musicvault.MusicVaultState
+import it.fast4x.riplay.enums.MusicVaultState
 import it.fast4x.riplay.extensions.lastfm.sendLoveTrack
 import it.fast4x.riplay.extensions.lastfm.sendUnloveTrack
 import it.fast4x.riplay.extensions.listenbrainz.sendListenBrainzLoveTrack

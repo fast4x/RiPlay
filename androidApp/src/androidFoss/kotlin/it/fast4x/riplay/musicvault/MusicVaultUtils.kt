@@ -10,16 +10,9 @@ import kotlinx.coroutines.CoroutineScope
 
 fun initializeMusicVault(coroutineScope: CoroutineScope, context: Context) = null
 
-fun checkAndStartMusicVault() = null
-
-@Composable
-fun MusicVaultFolderSetting() {}
-
-@Composable
-fun MusicVaultDisclaimerDialog(
-    onAccept: () -> Unit,
-    onDecline: () -> Unit
-) {}
+// Protocollo MusicVault: il plugin esterno esiste solo nel flavor full.
+// Stub richiesti dal main source set per la variante foss.
+fun isMusicVaultPluginAvailable(context: Context): Boolean = false
 
 @Composable
 fun MusicVaultButton(

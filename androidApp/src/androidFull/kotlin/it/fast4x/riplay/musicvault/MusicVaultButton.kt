@@ -18,10 +18,20 @@ import it.fast4x.riplay.LocalAppSettingsManager
 import it.fast4x.riplay.R
 import it.fast4x.riplay.data.Database
 import it.fast4x.riplay.data.models.Song
+import it.fast4x.riplay.enums.MusicVaultState
 import it.fast4x.riplay.utils.colorPalette
 import it.fast4x.riplay.utils.isExclusivelyLocal
 import timber.log.Timber
 
+/**
+ * Pulsante Music Vault.
+ *
+ * Con la delega al plugin esterno (protocollo "MusicVault")
+ *
+ * Visibilita': il pulsante esiste solo se Music Vault e' attivo (flag) e se il
+ * plugin compatibile e' installato sul dispositivo (check con cache TTL, vedi
+ * VaultPluginClient.isPluginAvailable).
+ */
 @Composable
 fun MusicVaultButton(
     song: Song,
@@ -31,9 +41,12 @@ fun MusicVaultButton(
     val appSettingsManager = LocalAppSettingsManager.current
     val appSettings = appSettingsManager.activeSettings.collectAsStateWithLifecycle().value
 
-    //var musicVaultEnabled by rememberPreference(MUSIC_VAULT_ENABLED.key, false)
     val musicVaultEnabled = appSettings.musicVaultEnabled
     if (!musicVaultEnabled) return
+
+    // Nessun plugin compatibile installato: niente pulsante (il flag e' comunque
+    // nascosto in impostazioni; qui si copre il caso plugin disinstallato dopo)
+    if (!isMusicVaultPluginAvailable(context)) return
 
     val sizeModifier = Modifier.size(size)
 
@@ -57,24 +70,13 @@ fun MusicVaultButton(
         }
     }
 
-    // Combina stato WorkManager + stato db
-    val workManagerState by MusicVaultService.observeState(context, song.id)
-        .collectAsState(initial = state)
-
-    // WorkManager ha priorità quando è attivo (DOWNLOADING/QUEUED)
-    val workState = when (workManagerState) {
-        MusicVaultState.DOWNLOADING,
-        MusicVaultState.QUEUED -> workManagerState
-        else -> state  // negli altri casi usa lo stato dal db
-    }
-
     IconButton(
         onClick = {
-            when (workState) {
+            when (state) {
                 MusicVaultState.NONE,
                 MusicVaultState.FAILED,
                 MusicVaultState.FILE_MISSING -> MusicVaultService.enqueue(context, song)
-                MusicVaultState.DOWNLOADING,
+                MusicVaultState.RUNNING,
                 MusicVaultState.QUEUED -> MusicVaultService.cancel(context, song.id)
                 MusicVaultState.COMPLETED -> {
                     Timber.d("MusicVaultButton COMPLETED > deleteSong ${song.id}")
@@ -83,7 +85,7 @@ fun MusicVaultButton(
             }
         }
     ) {
-        when (workState) {
+        when (state) {
             MusicVaultState.NONE -> Icon(
                 painter = painterResource(R.drawable.ic_musicvault_none),
                 contentDescription = "Salva in MusicVault",
@@ -97,7 +99,7 @@ fun MusicVaultButton(
                 modifier = sizeModifier
                 )
 
-            MusicVaultState.DOWNLOADING -> Icon(
+            MusicVaultState.RUNNING -> Icon(
                     painter = painterResource(R.drawable.ic_musicvault_downloading),
                     contentDescription = "Salvo in MusicVault",
                     tint = colorPalette().accent,

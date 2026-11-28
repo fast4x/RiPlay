@@ -57,8 +57,6 @@ include(":listenbrainz")
 project(":listenbrainz").projectDir = file("modules/listenbrainz")
 include(":simpmusiclyrics")
 project(":simpmusiclyrics").projectDir = file("modules/simpmusiclyrics")
-include(":chaquopy")
-project(":chaquopy").projectDir = file("modules/chaquopy")
 include(":spotifymeta")
 project(":spotifymeta").projectDir = file("modules/spotifymeta")
 

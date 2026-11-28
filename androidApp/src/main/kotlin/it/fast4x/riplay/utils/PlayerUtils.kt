@@ -28,7 +28,7 @@ import it.fast4x.riplay.data.models.Queues
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.enums.DurationInMinutes
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.musicvault.MusicVaultState
+import it.fast4x.riplay.enums.MusicVaultState
 import it.fast4x.riplay.services.playback.PlayerService
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import kotlinx.coroutines.CoroutineScope

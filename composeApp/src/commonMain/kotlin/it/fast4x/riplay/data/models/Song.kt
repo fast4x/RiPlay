@@ -13,7 +13,7 @@ import it.fast4x.riplay.commonutils.durationTextToMillis
 import it.fast4x.riplay.commonutils.setDisLikeState
 import it.fast4x.riplay.commonutils.setLikeState
 import it.fast4x.riplay.enums.LinkType
-import it.fast4x.riplay.musicvault.MusicVaultState
+import it.fast4x.riplay.enums.MusicVaultState
 import kotlinx.serialization.Serializable
 
 @Serializable

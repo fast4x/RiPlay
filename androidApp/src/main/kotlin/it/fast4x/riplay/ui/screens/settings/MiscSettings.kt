@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -14,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,6 +23,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
@@ -34,9 +35,7 @@ import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavigationBarPosition
 import it.fast4x.riplay.enums.NavRoutes
 import it.fast4x.riplay.enums.PopupType
-import it.fast4x.riplay.musicvault.MusicVaultDisclaimerDialog
-import it.fast4x.riplay.musicvault.MusicVaultFolderSetting
-import it.fast4x.riplay.musicvault.checkAndStartMusicVault
+import it.fast4x.riplay.musicvault.isMusicVaultPluginAvailable
 import it.fast4x.riplay.extensions.alarm.loadAlarms
 import it.fast4x.riplay.extensions.alarm.nextTriggerAtMillis
 import it.fast4x.riplay.ui.components.themed.Search
@@ -45,8 +44,6 @@ import it.fast4x.riplay.ui.components.themed.InputTextDialog
 import it.fast4x.riplay.ui.components.themed.SmartMessage
 import it.fast4x.riplay.ui.styling.Dimensions
 import it.fast4x.riplay.ui.styling.LocalAppearance
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileInputStream
@@ -57,6 +54,7 @@ import it.fast4x.riplay.ui.components.themed.settingsSearchBarItem
 import it.fast4x.riplay.ui.components.themed.settingsHeaderItem
 import it.fast4x.riplay.ui.components.themed.settingsGroupHeader
 import it.fast4x.riplay.ui.components.themed.settingsGroupCard
+import it.fast4x.riplay.ui.components.themed.settingsGroupCardWithTitle
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -139,8 +137,11 @@ fun MiscSettings(
     }
 
     val musicVaultEnabled = appSettings.musicVaultEnabled
-    val disclaimerAccepted = appSettings.musicVaultDisclaimerAccepted
-    var showDisclaimer by remember { mutableStateOf(false) }
+    // Flag visibile SOLO quando un plugin compatibile (protocollo MusicVault)
+    // e' installato sul dispositivo. La configurazione vive nel plugin.
+    val musicVaultPluginAvailable = remember { isMusicVaultPluginAvailable(context) }
+
+    val uriHandler = LocalUriHandler.current
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -189,65 +190,40 @@ fun MiscSettings(
 
 
             if (BuildConfig.FLAVOR == "full") {
-                if (search.matchesAny(R.string.settings_music_vault_title, R.string.settings_music_vault_enable_personal_audio_saving, R.string.settings_music_vault_save_songs_from_youtube_for_personal_offline_listening)) {
-                settingsGroupHeader(title = context.resources.getString(R.string.settings_music_vault_title))
 
+                settingsGroupHeader(title = "Plugins")
+
+                if (search.matchesAny(R.string.settings_music_vault_title)) {
                     settingsGroupCard {
 
-                        SwitchSettingEntry(
-                            title = stringResource(R.string.settings_music_vault_enable_personal_audio_saving),
-                            text = stringResource(R.string.settings_music_vault_save_songs_from_youtube_for_personal_offline_listening),
-                            isChecked = musicVaultEnabled,
-                            onCheckedChange = {
-                                coroutineScope.launch {
-                                    if (it) {
-                                        if (disclaimerAccepted) {
-                                            val new = appSettingsManager.activeSettings.value.copy(musicVaultEnabled = true)
-                                            appSettingsManager.updateSettings(new)
-                                        } else showDisclaimer = true
-                                    } else {
-                                        val new = appSettingsManager.activeSettings.value.copy(
-                                            musicVaultEnabled = false,
-                                            musicVaultDisclaimerAccepted = false
-                                        )
-                                        appSettingsManager.updateSettings(new)
-                                    }
-                                }
-                            }, icon = R.drawable.cd,
-                        )
-
-                        // Disclaimer dialog
-                        if (showDisclaimer) {
-                            MusicVaultDisclaimerDialog(
-                                onAccept = {
+                        // Unico elemento della sezione: il flag di attivazione/disattivazione
+                        // del plugin, mostrato solo se un plugin compatibile e' installato.
+                        if (musicVaultPluginAvailable) {
+                            SwitchSettingEntry(
+                                title = stringResource(R.string.settings_music_vault_title),
+                                text = "",
+                                isChecked = musicVaultEnabled,
+                                onCheckedChange = { enabled ->
                                     coroutineScope.launch {
-                                        val new = appSettingsManager.activeSettings.value.copy(
-                                            musicVaultEnabled = true,
-                                            musicVaultDisclaimerAccepted = true
+                                        appSettingsManager.updateSettings(
+                                            appSettingsManager.activeSettings.value.copy(
+                                                musicVaultEnabled = enabled
+                                            )
                                         )
-                                        appSettingsManager.updateSettings(new)
                                     }
-
-                                    showDisclaimer = false
-                                    CoroutineScope(Dispatchers.IO).launch {
-                                        // Disclaimer accettato quindi Music Vault può essere avviato
-                                        checkAndStartMusicVault()
-                                    }
+                                }, icon = R.drawable.cd,
+                            )
+                        } else {
+                            SettingsEntry(
+                                title = stringResource(R.string.settings_plugins_no_plugins_detected),
+                                text = stringResource(R.string.settings_plugins_click_to_visit_the_github_plugins_page),
+                                onClick = {
+                                    uriHandler.openUri("https://github.com/fast4x/MusicVault")
                                 },
-                                onDecline = {
-                                    showDisclaimer = false
-                                }
                             )
                         }
-
-                        AnimatedVisibility(
-                            visible = musicVaultEnabled && disclaimerAccepted
-                        ) {
-                            MusicVaultFolderSetting()
-                        }
-                
+                    }
                 }
-            }
 
             }
 

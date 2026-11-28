@@ -20,7 +20,7 @@ object MusicVaultRepository {
 
     val appSettingsManager = (appContext() as MainApplication).appSettingsManager
     private fun getSavedPath(): String? {
-        val path = appSettingsManager.activeSettings.value.musicVaultPath //appContext().preferences.getString(MUSIC_VAULT_PATH.key, "")
+        val path = appSettingsManager.activeSettings.value.musicVaultPath
         return path.takeIf { it?.isNotBlank() == true }
     }
 

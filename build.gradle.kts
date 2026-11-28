@@ -9,5 +9,4 @@ plugins {
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.jetbrainsCompose) apply false
-    alias(libs.plugins.chaquopy) apply false
 }

@@ -14,8 +14,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -23,6 +25,7 @@ import androidx.navigation.NavController
 import it.fast4x.riplay.BuildConfig
 import it.fast4x.riplay.R
 import it.fast4x.riplay.enums.NavigationBarPosition
+import it.fast4x.riplay.musicvault.isMusicVaultPluginAvailable
 import it.fast4x.riplay.ui.components.themed.Search
 import it.fast4x.riplay.ui.components.themed.HeaderWithIcon
 import it.fast4x.riplay.ui.styling.Dimensions
@@ -40,6 +43,10 @@ fun About(
 ) {
     val uriHandler = LocalUriHandler.current
     val search = Search.init(alwaysVisible = true)
+    val context = LocalContext.current
+    // Flag visibile SOLO quando un plugin compatibile (protocollo MusicVault)
+    // e' installato sul dispositivo. La configurazione vive nel plugin.
+    val musicVaultPluginAvailable = remember { isMusicVaultPluginAvailable(context) }
 
     Column(
         modifier = Modifier
@@ -92,6 +99,16 @@ fun About(
                 text= "by fast4x",
                 onClick = {},
                 icon = R.drawable.information_circle,
+            )
+
+            SettingsEntry(
+                title = if (musicVaultPluginAvailable) stringResource(R.string.settings_plugins_title) else stringResource(R.string.settings_plugins_no_plugins_detected),
+                text = if (musicVaultPluginAvailable) stringResource(R.string.settings_music_vault_title) else "",
+                onClick = {
+                    if (!musicVaultPluginAvailable)
+                        uriHandler.openUri("https://github.com/fast4x/MusicVault")
+                },
+                icon = R.drawable.cd
             )
         }
 

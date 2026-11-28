@@ -29,13 +29,10 @@ import android.media.audiofx.AudioEffect
 import android.media.audiofx.BassBoost
 import android.media.audiofx.LoudnessEnhancer
 import android.media.audiofx.PresetReverb
-import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.session.MediaSessionCompat
 import android.view.LayoutInflater
 import androidx.annotation.OptIn
 import androidx.compose.runtime.Stable
@@ -199,7 +196,7 @@ import it.fast4x.riplay.extensions.musicbrainz.MusicBrainz
 import it.fast4x.riplay.musicvault.MusicVaultEvent
 import it.fast4x.riplay.musicvault.MusicVaultEvents
 import it.fast4x.riplay.musicvault.MusicVaultRepository
-import it.fast4x.riplay.musicvault.MusicVaultState
+import it.fast4x.riplay.enums.MusicVaultState
 import it.fast4x.riplay.services.helpers.AudioDRCHelper
 import it.fast4x.riplay.services.helpers.EqualizerHelper
 import it.fast4x.riplay.services.lyricsoverlay.LyricsOverlayManager

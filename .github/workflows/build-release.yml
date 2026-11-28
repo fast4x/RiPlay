@@ -28,6 +28,19 @@
 #    che riplayPackageVersionForHost (STEP 3v/3x) in build.gradle.kts
 #    ritagli le sole componenti numeriche dal tag, scartando il suffisso.
 #
+# STEP 3ai (RIMOZIONE PYTHON / CHAQUOPY):
+#  - Il progetto non incorpora piu' Python via Chaquopy: eliminati i due
+#    step "Set up Python 3.13" (actions/setup-python@v5) dai job build-apk
+#    e build-desktop. Servivano solo come buildPython per il modulo
+#    Chaquopy configurato nella build Gradle; senza il modulo, Gradle non
+#    ha piu' NESSUNA dipendenza da Python e i runner hanno gia' tutto il
+#    resto (JDK via setup-java, python3 di sistema per gli script).
+#  - NESSUN IMPATTO sul resto del workflow: il pre-seed CEF
+#    (fetch-kcef-bundle.sh, STEP 3ae) estrae il tar dal jar con la catena
+#    "python -> unzip -> jar JDK" che usa il python3 di sistema gia'
+#    presente su ogni runner (con fallback unzip/jar); nessun altro step
+#    dipende dallo step setup-python rimosso.
+#
 # NOTE TECNICHE:
 #  - jpackage NON fa cross-building: ogni formato desktop esce solo dal
 #    runner del suo sistema (MSI solo su windows-latest, DEB/RPM solo su
@@ -411,11 +424,6 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Set up Python 3.13
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
@@ -533,13 +541,6 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: gradle
-
-      # Il modulo chaquopy (python 3.13) e' configurato nella stessa build
-      # Gradle: il setup evita sorprese in fase di configurazione
-      - name: Set up Python 3.13
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -1243,7 +1244,7 @@ jobs:
             echo "### 📦 Downloads"
             echo "**Android**"
             echo "- **APK Full** (all features)"
-            echo "- **APK FOSS** (all features less chromecast, check for updates, musicvault)"
+            echo "- **APK FOSS** (all features less chromecast, check for updates, musicvault plugin)"
             echo ""
             echo "**Native Desktop** (CEF included, no download; VLC required for local files)"
             echo "- **Windows** - MSI installer"

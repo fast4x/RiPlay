@@ -1,3 +1,28 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+
+    <!-- Protocollo MusicVault: visibilita' delle app esterne (plugin) che
+         dichiarano il service del protocollo (Android 11+ package visibility). -->
+    <queries>
+        <intent>
+            <action android:name="com.musicvault.action.ENQUEUE" />
+        </intent>
+    </queries>
+
+    <application>
+        <!-- Riceve gli esiti del plugin esterno (broadcast espliciti verso il
+             package RiPlay). exported=true e' obbligatorio perche' il mittente
+             e' un'altra app; gli aggiornamenti sul database sono protetti dal
+             controllo di stato QUEUED/DOWNLOADING. -->
+        <receiver
+            android:name="it.fast4x.riplay.musicvault.VaultPluginResultReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.musicvault.action.RESULT_STARTED" />
+                <action android:name="com.musicvault.action.RESULT_PROGRESS" />
+                <action android:name="com.musicvault.action.RESULT_COMPLETED" />
+                <action android:name="com.musicvault.action.RESULT_FAILED" />
+            </intent-filter>
+        </receiver>
+    </application>
 </manifest>

@@ -1,12 +1,11 @@
 package it.fast4x.riplay.data
 
 import androidx.room.TypeConverter
-import androidx.room.TypeConverters
 import it.fast4x.riplay.data.models.Album
 import it.fast4x.riplay.extensions.musicbrainz.models.ExternalLink
 import it.fast4x.riplay.enums.AlbumNature
 import it.fast4x.riplay.enums.ArtistNature
-import it.fast4x.riplay.musicvault.MusicVaultState
+import it.fast4x.riplay.enums.MusicVaultState
 import kotlinx.serialization.json.Json
 
 object Converters {

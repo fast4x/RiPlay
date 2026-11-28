@@ -425,8 +425,7 @@ dependencies {
     // (stessa porta, stesso token). SOLO versione FOSS (richiesta della
     // community Music Assistant): wiring in src/androidFoss/.../server/
     // BridgeIntegration.kt, stub in src/androidFull/.../server/
-    // MusicAssistantBridgeStub.kt. Nelle build full il modulo non e' nel
-    // classpath, come gia' avviene per chaquopy (fullImplementation).
+    // MusicAssistantBridgeStub.kt. Nelle build full il modulo non e' nel classpath.
     "fossImplementation"(projects.riplayBridge)
 
     implementation(libs.navigation)
@@ -522,7 +521,6 @@ dependencies {
     "fullImplementation"(libs.media3.ui)
     "fullImplementation"(libs.media3.cast)
     "fullImplementation"(projects.aypcast)
-    "fullImplementation"(projects.chaquopy)
 
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit"))

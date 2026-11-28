@@ -73,7 +73,7 @@ import it.fast4x.riplay.data.dao.SongDao
 import it.fast4x.riplay.data.models.Song
 import it.fast4x.riplay.extensions.musicbrainz.workers.WorkerDependencies.database
 import it.fast4x.riplay.musicvault.MusicVaultRepository
-import it.fast4x.riplay.musicvault.MusicVaultState
+import it.fast4x.riplay.enums.MusicVaultState
 import it.fast4x.riplay.utils.localMediaStoreUriOrNull
 import kotlinx.coroutines.runBlocking
 import java.io.File

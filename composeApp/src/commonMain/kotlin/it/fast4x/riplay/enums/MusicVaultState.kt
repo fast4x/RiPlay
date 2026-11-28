@@ -1,9 +1,9 @@
-package it.fast4x.riplay.musicvault
+package it.fast4x.riplay.enums
 
 enum class MusicVaultState {
     NONE,
     QUEUED,
-    DOWNLOADING,
+    RUNNING,
     COMPLETED,
     FAILED,
     FILE_MISSING
