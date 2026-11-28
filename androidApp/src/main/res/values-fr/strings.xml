@@ -820,8 +820,8 @@ Volume BAS : titre précédent</string>
     <string name="no_thumbnail_present">Aucune miniature présente</string>
     <string name="removed_thumbnail">Miniature supprimée</string>
     <string name="failed_to_remove_thumbnail">Échec de la suppression de la miniature</string>
-    <string name="settings_enable_pip">Activer Picture in Picture</string>
-    <string name="settings_enable_pip_auto">Activer Picture in Picture automatiquement</string>
+    <string name="settings_enable_pip">Activer la fenêtre flottante</string>
+    <string name="settings_enable_pip_auto">Activer la fenêtre flottante automatiquement</string>
     <string name="pipmodule_cover">Pochette</string>
     <string name="pipmodule_lyrics">Paroles</string>
     <string name="pip_action_play">Lecture</string>
@@ -834,7 +834,7 @@ Volume BAS : titre précédent</string>
     <string name="floating_lyrics_permission_missing">Accordez l\'autorisation « Afficher par-dessus les autres applications » pour activer l\'affichage flottant des paroles</string>
     <string name="floating_lyrics_mode_line">Ligne</string>
     <string name="floating_lyrics_mode_word">Mot</string>
-    <string name="menu_go_to_picture_in_picture">PIP</string>
+    <string name="menu_go_to_picture_in_picture">Fenêtre flottante</string>
     <string name="pip_info_from_android_12_pip_can_be_automatically_enabled">À partir d\'Android 12, PIP peut être activé automatiquement</string>
     <string name="showsecondline">Afficher la traduction à la deuxième ligne</string>
     <string name="enter_the_value">Saisissez la valeur</string>
@@ -1762,7 +1762,7 @@ Volume BAS : titre précédent</string>
     <string name="zoundhub_resolver_confirm">Valider et ouvrir la suggestion</string>
     <string name="zoundhub_resolver_confirm_paste">Cliquez sur ce lien</string>
     <string name="zoundhub_resolver_saved">Identifiant Spotify enregistré : il sera réutilisé la prochaine fois</string>
-    <string name="settings_plugins_no_plugins_detected">No plugins detected</string>
-    <string name="settings_plugins_click_to_visit_the_github_plugins_page">Click to visit the GitHub plugins page</string>
+    <string name="settings_plugins_no_plugins_detected">Aucun plugin détecté</string>
+    <string name="settings_plugins_click_to_visit_the_github_plugins_page">Cliquez ici pour accéder à la page des plugins sur GitHub</string>
     <string name="settings_plugins_title">Plugins</string>
 </resources>
